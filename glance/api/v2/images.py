@@ -111,7 +111,7 @@ class ImagesController(object):
                 change_method = getattr(self, change_method_name)
                 change_method(req, image, change)
 
-            if len(changes) > 0:
+            if changes:
                     image_repo.save(image)
 
         except exception.NotFound:

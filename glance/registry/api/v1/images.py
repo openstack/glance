@@ -196,7 +196,7 @@ class Controller(object):
         elif 'changes-since' not in filters:
             filters['deleted'] = False
 
-        if len(properties) > 0:
+        if properties:
             filters['properties'] = properties
 
         return filters

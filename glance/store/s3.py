@@ -147,7 +147,7 @@ class StoreLocation(glance.store.location.StoreLocation):
             path_parts = path.split('/')
             self.key = path_parts.pop()
             self.bucket = path_parts.pop()
-            if len(path_parts) > 0:
+            if path_parts:
                 self.s3serviceurl = '/'.join(path_parts).strip('/')
             else:
                 reason = _("Badly formed S3 URI. Missing s3 service URL.")
