@@ -8,6 +8,14 @@ class UnsupportedBackend(BackendException):
 class Backend(object):
     CHUNKSIZE = 4096
 
+class TestStrBackend(Backend):
+    @classmethod
+    def get(cls, parsed_uri):
+        """
+        teststr://data
+        """
+        yield parsed_uri.netloc
+
 class FilesystemBackend(Backend):
     @classmethod
     def get(cls, parsed_uri, opener=lambda p: open(p, "b")):
@@ -55,7 +63,8 @@ def _scheme2backend(scheme):
     return {
         "file": FilesystemBackend,
         "http": HTTPBackend,
-        "https": HTTPBackend
+        "https": HTTPBackend,
+        "teststr": TestStrBackend
     }[scheme]
 
 def get_from_backend(uri, **kwargs):

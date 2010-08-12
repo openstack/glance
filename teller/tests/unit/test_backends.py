@@ -2,10 +2,7 @@ import unittest
 from StringIO import StringIO
 from teller.backends import Backend, get_from_backend
 
-class TellerTest(unittest.TestCase):
-    pass
-
-class TestBackends(TellerTest):
+class TestBackends(unittest.TestCase):
     def setUp(self):
         Backend.CHUNKSIZE = 2
 
@@ -38,8 +35,6 @@ class TestBackends(TellerTest):
 
         chunks = [c for c in fetcher]
         self.assertEqual(chunks, ["fa", "ke", "da", "ta"])
-
-
 
 if __name__ == "__main__":
     unittest.main()
