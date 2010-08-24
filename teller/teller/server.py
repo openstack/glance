@@ -16,7 +16,7 @@ class ImageController(object):
         """
         """
         #TODO: add real lookup fn
-        #self.image_lookup_fn = mock_parallax_lookup
+        #self.image_lookup_fn = parallax_lookup()
         self.log_requests = conf.get('log_requests', 't')[:1].lower() == 't'
 
     def GET(self, request):
