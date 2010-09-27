@@ -36,7 +36,7 @@ class local_sdist(sdist):
 
 
 name = 'glance'
-version = '0.0.1'
+version = '0.1.1'
 
 setup(
     name=name,
