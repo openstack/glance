@@ -53,6 +53,7 @@ class ParallaxAdapter(object):
         finally:
             conn.close()
 
+
 class FakeParallaxAdapter(ParallaxAdapter):
     """
     A Mock ParallaxAdapter returns a mocked response for any uri with 
@@ -65,8 +66,5 @@ class FakeParallaxAdapter(ParallaxAdapter):
             mock_res = { "objects":[{"uri":"teststr://chunk0", "size":1235},
                                     {"uri": "teststr://chunk1", "size":12345}]}
             return mock_res
-
-
-
 
 

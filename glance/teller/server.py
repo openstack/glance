@@ -21,8 +21,8 @@ from webob.exc import HTTPAccepted, HTTPBadRequest, HTTPCreated, \
     HTTPNotModified, HTTPPreconditionFailed, \
     HTTPRequestTimeout, HTTPUnprocessableEntity, HTTPMethodNotAllowed
 
-from teller.backends import get_from_backend
-from teller.parallax import ParallaxAdapter
+from glance.teller.backends import get_from_backend
+from glance.teller.parallax import ParallaxAdapter
 
 
 def PPRINT_OBJ(obj):

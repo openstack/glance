@@ -1,8 +1,7 @@
 import unittest
 from webob import Request
-#TODO: should this be teller.image ?
-from teller import server as image_server
-from teller import parallax
+from glance.teller import parallax
+from glance.teller import server as image_server
 
 class TestImageController(unittest.TestCase):
     def setUp(self):

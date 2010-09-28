@@ -22,7 +22,7 @@ from cloudfiles import Connection
 from cloudfiles.authentication import MockAuthentication as Auth
 
 from swiftfakehttp import CustomHTTPConnection
-from teller.backends import Backend, BackendException, get_from_backend
+from glance.teller.backends import Backend, BackendException, get_from_backend
 
 
 class TestBackends(unittest.TestCase):
