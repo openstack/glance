@@ -2,34 +2,31 @@ import unittest
 from webob import Request
 #TODO: should this be teller.image ?
 from teller import server as image_server
+from teller import parallax
 
 class TestImageController(unittest.TestCase):
     def setUp(self):
         conf = {}
-        self.image_controller = image_server.ImageController(conf)
+        fake_parallax = parallax.FakeParallaxAdapter
 
-    def test_GET(self):
+        self.image_controller = image_server.ImageController(conf)
+        self.image_controller.image_lookup_fn = fake_parallax.lookup
+
+    def test_GET_success(self):
         # uri must be specified
         request = Request.blank("/image")
         response = self.image_controller.GET(request)
         self.assertEqual(response.status_int, 400) # should be 422?
 
         # FIXME: need urllib.quote here?
-        image_uri = "http://parallax/myacct/my-image"
+        image_uri = "http://parallax-success/myacct/my-image"
         request = Request.blank("/image?uri=%s" % image_uri)
-        def mock_parallax_lookup(uri):
-            return {"objects": [{"uri": "teststr://chunk0"},
-                                {"uri": "teststr://chunk1"}]}
-
-        self.image_controller.image_lookup_fn = mock_parallax_lookup
         response = self.image_controller.GET(request)
-        self.assertEqual("chunk0chunk1", response.body)
+        self.assertEqual("//chunk0//chunk1", response.body)
 
-        image_uri = "http://parallax/myacct/does-not-exist"
+    def test_GET_failure(self):
+        image_uri = "http://parallax-failure/myacct/does-not-exist"
         request = Request.blank("/image?uri=%s" % image_uri)
-        def mock_parallax_lookup(uri):
-            return None
-        self.image_controller.image_lookup_fn = mock_parallax_lookup
         response = self.image_controller.GET(request)
         self.assertEqual(response.status_int, 404)
 

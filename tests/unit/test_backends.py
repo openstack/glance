@@ -37,6 +37,7 @@ class TestBackends(unittest.TestCase):
                 pass
 
         fetcher = get_from_backend("file:///path/to/file.tar.gz",
+                                   expected_size=8,
                                    opener=lambda _: FakeFile())
 
         chunks = [c for c in fetcher]
@@ -54,6 +55,7 @@ class TestBackends(unittest.TestCase):
                 pass
 
         fetcher = get_from_backend("http://netloc/path/to/file.tar.gz",
+                                   expected_size=8,
                                    conn_class=FakeHTTPConnection)
 
         chunks = [c for c in fetcher]
@@ -70,10 +72,13 @@ class TestBackends(unittest.TestCase):
                 conn.connection = CustomHTTPConnection("localhost", 8000)
                 return conn
 
-        swift_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
+        swift_uri="swift://user:password@localhost/container1/file.tar.gz"
+        swift_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 
+                         'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
 
-        fetcher = get_from_backend("swift://user:password@localhost/container1/file.tar.gz",
-                                  conn_class=FakeSwift)
+        fetcher = get_from_backend(swift_uri,
+                                   expected_size=21,
+                                   conn_class=FakeSwift)
 
         chunks = [c for c in fetcher]
 
@@ -92,7 +97,8 @@ class TestBackends(unittest.TestCase):
 
         swift_url="swift://localhost/container1/file.tar.gz"
 
-        self.assertRaises(BackendException, get_from_backend, swift_url)
+        self.assertRaises(BackendException, get_from_backend, 
+                          swift_url, expected_size=21)
 
 
 if __name__ == "__main__":

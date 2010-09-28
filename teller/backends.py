@@ -35,16 +35,16 @@ class Backend(object):
 
 class TestStrBackend(Backend):
     @classmethod
-    def get(cls, parsed_uri):
+    def get(cls, parsed_uri, expected_size):
         """
         teststr://data
         """
-        yield parsed_uri.netloc
+        yield parsed_uri.path
 
 
 class FilesystemBackend(Backend):
     @classmethod
-    def get(cls, parsed_uri, opener=lambda p: open(p, "b")):
+    def get(cls, parsed_uri, expected_size, opener=lambda p: open(p, "b")):
         """
         file:///path/to/file.tar.gz.0
         """
@@ -61,7 +61,7 @@ class FilesystemBackend(Backend):
 
 class HTTPBackend(Backend):
     @classmethod
-    def get(cls, parsed_uri, conn_class=None):
+    def get(cls, parsed_uri, expected_size, conn_class=None):
         """
         http://netloc/path/to/file.tar.gz.0
         https://netloc/path/to/file.tar.gz.0
@@ -94,7 +94,7 @@ class SwiftBackend(Backend):
     EXAMPLE_URL="swift://user:password@auth_url/container/file.gz.0"
 
     @classmethod
-    def get(cls, parsed_uri, conn_class=None):
+    def get(cls, parsed_uri, expected_size, conn_class=None):
         """
         Takes a parsed_uri in the format of: 
         swift://user:password@auth_url/container/file.gz.0, connects to the 
@@ -122,8 +122,12 @@ class SwiftBackend(Backend):
         container = swift_conn.get_container(container)
         obj = container.get_object(file)
 
-        # Return the generator provided from obj.stream()
-        return obj.stream(chunksize=cls.CHUNKSIZE)
+        if obj.size == expected_size:
+            # Return the generator provided from obj.stream()
+            return obj.stream(chunksize=cls.CHUNKSIZE)
+        else:
+            raise BackendException("Expected %s size file, Swift has %s"
+                                   % (expected_size, obj.size))
 
 
 def _scheme2backend(scheme):

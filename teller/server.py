@@ -22,6 +22,7 @@ from webob.exc import HTTPAccepted, HTTPBadRequest, HTTPCreated, \
     HTTPRequestTimeout, HTTPUnprocessableEntity, HTTPMethodNotAllowed
 
 from teller.backends import get_from_backend
+from teller.parallax import ParallaxAdapter
 
 
 def PPRINT_OBJ(obj):
@@ -53,7 +54,7 @@ class ImageController(object):
 
         def image_iter():
             for obj in image["objects"]:
-                for chunk in get_from_backend(obj["uri"]):
+                for chunk in get_from_backend(obj["uri"], expected_size=obj["size"]):
                     yield chunk
 
         return request.get_response(Response(app_iter=image_iter()))
