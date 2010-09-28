@@ -1,0 +1,72 @@
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+
+# Copyright 2010 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+"""
+Defines interface for DB access
+"""
+
+from common import exception
+from common import flags
+from common import utils
+
+
+FLAGS = flags.FLAGS
+flags.DEFINE_string('db_backend', 'sqlalchemy',
+                    'The backend to use for db')
+
+
+IMPL = utils.LazyPluggable(FLAGS['db_backend'],
+                           sqlalchemy='glance.db.sqlalchemy.api')
+
+
+###################
+
+
+def image_create(context, values):
+    """Create an image from the values dictionary."""
+    return IMPL.image_create(context, values)
+
+
+
+def image_destroy(context, image_id):
+    """Destroy the image or raise if it does not exist."""
+    return IMPL.image_destroy(context, image_id)
+
+
+def image_get(context, image_id):
+    """Get an image or raise if it does not exist."""
+    return IMPL.image_get(context, image_id)
+
+
+def image_get_all(context):
+    """Get all images."""
+    return IMPL.image_get_all(context)
+
+
+def image_get_by_str(context, str_id):
+    """Get an image by string id."""
+    return IMPL.image_get_by_str(context, str_id)
+
+
+def image_update(context, image_id, values):
+    """Set the given properties on an image and update it.
+
+    Raises NotFound if image does not exist.
+
+    """
+    return IMPL.image_update(context, image_id, values)
+
