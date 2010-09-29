@@ -37,7 +37,7 @@ class ImageController(object):
         """
         """
         #TODO: add real lookup fn
-        #self.image_lookup_fn = parallax_lookup()
+        self.image_lookup_fn = ParallaxAdapter.lookup
         self.log_requests = conf.get('log_requests', 't')[:1].lower() == 't'
 
     def GET(self, request):
@@ -54,7 +54,8 @@ class ImageController(object):
 
         def image_iter():
             for obj in image["objects"]:
-                for chunk in get_from_backend(obj["uri"], expected_size=obj["size"]):
+                for chunk in get_from_backend(obj["location"], 
+                                              expected_size=obj["size"]):
                     yield chunk
 
         return request.get_response(Response(app_iter=image_iter()))
