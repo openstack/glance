@@ -172,3 +172,4 @@ def DECLARE(name, module_string, flag_values=FLAGS):
 DEFINE_string('sql_connection',
               'sqlite:///%s/glance.sqlite' % os.path.abspath("./"),
               'connection string for sql database')
+DEFINE_bool('verbose', False, 'show debug output')
