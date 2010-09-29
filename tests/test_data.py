@@ -15,7 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from common.db import api
+from glance.common.db import api
 
 
 def make_fake_image():
@@ -27,12 +27,12 @@ def make_fake_image():
              public=True,
              image_type="tarball"))
 
-    api.image_chunk_create(
+    api.image_file_create(
         None, 
         dict(image_id=image.id,
              location="swift://myacct/mycontainer/obj.tar.gz.0",
              size=101))
-    api.image_chunk_create(
+    api.image_file_create(
         None, 
         dict(image_id=image.id,
              location="swift://myacct/mycontainer/obj.tar.gz.1",
@@ -41,8 +41,8 @@ def make_fake_image():
     api.image_metadatum_create(
         None,
         dict(image_id=image.id,
-             key_name="testkey",
-             key_data="testvalue"))
+             key="testkey",
+             value="testvalue"))
 
 
 if __name__ == "__main__":

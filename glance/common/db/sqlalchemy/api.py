@@ -70,8 +70,8 @@ def image_get(context, image_id):
     session = get_session()
     try:
         return session.query(models.Image
-                     ).options(joinedload(models.Image.image_chunks)
-                     ).options(joinedload(models.Image.image_metadata)
+                     ).options(joinedload(models.Image.files)
+                     ).options(joinedload(models.Image.metadata)
                      ).filter_by(deleted=_deleted(context)
                      ).filter_by(id=image_id
                      ).one()
@@ -85,8 +85,8 @@ def image_get_all(context):
     session = get_session()
     # TODO(sirp): add back eager loading
     return session.query(models.Image
-                 #).options(joinedload(models.Image.image_chunks)
-                 #).options(joinedload(models.Image.image_metadata)
+                 #).options(joinedload(models.Image.files)
+                 #).options(joinedload(models.Image.metadata)
                  ).filter_by(deleted=_deleted(context)
                  ).all()
 
@@ -107,12 +107,12 @@ def image_update(_context, image_id, values):
 ###################
 
 
-def image_chunk_create(_context, values):
-    image_chunk_ref = models.ImageChunk()
+def image_file_create(_context, values):
+    image_file_ref = models.ImageFile()
     for (key, value) in values.iteritems():
-        image_chunk_ref[key] = value
-    image_chunk_ref.save()
-    return image_chunk_ref
+        image_file_ref[key] = value
+    image_file_ref.save()
+    return image_file_ref
 
 
 ###################

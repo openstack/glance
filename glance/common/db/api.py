@@ -74,9 +74,9 @@ def image_update(context, image_id, values):
 ###################
 
 
-def image_chunk_create(context, values):
-    """Create an image chunk from the values dictionary."""
-    return IMPL.image_chunk_create(context, values)
+def image_file_create(context, values):
+    """Create an image file from the values dictionary."""
+    return IMPL.image_file_create(context, values)
 
 
 ###################

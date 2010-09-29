@@ -27,7 +27,10 @@ from webob import exc
 
 
 class Controller(wsgi.Controller):
+    """Image Controller """
 
+    # TODO(sirp): this is not currently used, but should eventually
+    # incorporate it
     _serialization_metadata = {
         'application/xml': {
             "attributes": {
@@ -52,20 +55,18 @@ class Controller(wsgi.Controller):
         except exception.NotFound:
             raise exc.HTTPNotFound()
 
-        chunk_dicts = []
-        for chunk in image.image_chunks:
-            chunk_dict = dict(location=chunk.location, size=chunk.size)
-            chunk_dicts.append(chunk_dict)
+        file_dicts = [dict(location=f.location, size=f.size)
+                      for f in image.files]
 
-        metadata_dicts = []
-        for metadatum in image.image_metadata:
-            metadatum_dict = dict(key=metadatum.key, value=metadatum.value)
-            metadata_dicts.append(metadatum_dict)
-
-        image_dict = dict(id=image.id, name=image.name, state=image.state,
-                          public=image.public, chunks=chunk_dicts,
-                          metadata=metadata_dicts)
-        return dict(image=image_dict)
+        metadata_dicts = [dict(key=m.key, value=m.value)
+                          for m in image.metadata]
+        
+        return dict(id=image.id, 
+                    name=image.name,
+                    state=image.state,
+                    public=image.public,
+                    files=file_dicts,
+                    metadata=metadata_dicts)
 
     def delete(self, req, id):
         """Delete is not currently supported """

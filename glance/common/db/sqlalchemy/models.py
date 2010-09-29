@@ -158,13 +158,13 @@ class Image(BASE, ModelBase):
     #        assert(val is None)
 
 
-class ImageChunk(BASE, ModelBase):
-    """Represents an image chunk in the datastore"""
-    __tablename__ = 'image_chunks'
-    __prefix__ = 'chunk'
+class ImageFile(BASE, ModelBase):
+    """Represents an image file in the datastore"""
+    __tablename__ = 'image_files'
+    __prefix__ = 'img-file'
     id = Column(Integer, primary_key=True)
     image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
-    image = relationship(Image, backref=backref('image_chunks'))
+    image = relationship(Image, backref=backref('files'))
 
     location = Column(String(255))
     size = Column(Integer)
@@ -176,7 +176,7 @@ class ImageMetadatum(BASE, ModelBase):
     __prefix__ = 'mdata'
     id = Column(Integer, primary_key=True)
     image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
-    image = relationship(Image, backref=backref('image_metadata'))
+    image = relationship(Image, backref=backref('metadata'))
     
     key = Column(String(255), index=True, unique=True)
     value = Column(Text)
@@ -185,7 +185,7 @@ class ImageMetadatum(BASE, ModelBase):
 def register_models():
     """Register Models and create metadata"""
     from sqlalchemy import create_engine
-    models = (Image, ImageChunk, ImageMetadatum)
+    models = (Image, ImageFile, ImageMetadatum)
     engine = create_engine(FLAGS.sql_connection, echo=False)
     for model in models:
         model.metadata.create_all(engine)

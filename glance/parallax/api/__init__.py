@@ -36,22 +36,14 @@ from glance.parallax.api import images
 
 FLAGS = flags.FLAGS
 
-class API(wsgi.Middleware):
+
+class API(wsgi.Router):
     """WSGI entry point for all Parallax requests."""
 
     def __init__(self):
         # TODO(sirp): should we add back the middleware for parallax
-        app = APIRouter()
-        super(API, self).__init__(app)
-
-class APIRouter(wsgi.Router):
-    """
-    Routes requests on the Parallax to the appropriate controller
-    and method.
-    """
-
-    def __init__(self):
         mapper = routes.Mapper()
         mapper.resource("image", "images", controller=images.Controller(),
                         collection={'detail': 'GET'})
-        super(APIRouter, self).__init__(mapper)
+        super(API, self).__init__(mapper)
+
