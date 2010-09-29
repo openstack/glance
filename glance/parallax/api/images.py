@@ -15,10 +15,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+"""
+Parllax Image controller
+"""
+
+
 from glance.common import wsgi
 from glance.common import db
 from glance.common import exception
 from webob import exc
+
 
 class Controller(wsgi.Controller):
 
@@ -30,9 +36,6 @@ class Controller(wsgi.Controller):
             }
         }
     }
-
-    def __init__(self):
-        pass
 
     def index(self, req):
         """Index is not currently supported """
@@ -75,3 +78,4 @@ class Controller(wsgi.Controller):
     def update(self, req, id):
         """Update is not currently supported """
         raise exc.HTTPNotImplemented()
+

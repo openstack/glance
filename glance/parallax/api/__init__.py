@@ -17,7 +17,7 @@
 #    under the License.
 
 """
-WSGI middleware for Rackspace API controllers.
+Parallax API controllers.
 """
 
 import json
