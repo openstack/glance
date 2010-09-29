@@ -19,15 +19,17 @@
 Implementation of SQLAlchemy backend
 """
 
+import sys
 from common import db
 from common import exception
 from common import flags
 from common.db.sqlalchemy import models
 from common.db.sqlalchemy.session import get_session
-from sqlalchemy import or_
+from sqlalchemy.orm import exc
+
 #from sqlalchemy.orm import joinedload_all
 # TODO(sirp): add back eager loading
-#from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql import func
 
 FLAGS = flags.FLAGS
@@ -65,6 +67,17 @@ def image_destroy(_context, image_id):
 
 
 def image_get(context, image_id):
+    session = get_session()
+    try:
+        return session.query(models.Image
+                     ).options(joinedload(models.Image.image_chunks)
+                     ).options(joinedload(models.Image.image_metadata)
+                     ).filter_by(deleted=_deleted(context)
+                     ).filter_by(id=image_id
+                     ).one()
+    except exc.NoResultFound:
+        new_exc = exception.NotFound("No model for id %s" % image_id)
+        raise new_exc.__class__, new_exc, sys.exc_info()[2]
     return models.Image.find(image_id, deleted=_deleted(context))
 
 
@@ -90,4 +103,25 @@ def image_update(_context, image_id, values):
             image_ref[key] = value
         image_ref.save(session=session)
 
+
+###################
+
+
+def image_chunk_create(_context, values):
+    image_chunk_ref = models.ImageChunk()
+    for (key, value) in values.iteritems():
+        image_chunk_ref[key] = value
+    image_chunk_ref.save()
+    return image_chunk_ref
+
+
+###################
+
+
+def image_metadatum_create(_context, values):
+    image_metadatum_ref = models.ImageMetadatum()
+    for (key, value) in values.iteritems():
+        image_metadatum_ref[key] = value
+    image_metadatum_ref.save()
+    return image_metadatum_ref
 

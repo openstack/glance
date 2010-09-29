@@ -223,6 +223,7 @@ class Controller(object):
         Uses self._serialization_metadata if it exists, which is a dict mapping
         MIME types to information needed to serialize to that type.
         """
+        # FIXME(sirp): type(self) should just be `self`
         _metadata = getattr(type(self), "_serialization_metadata", {})
         serializer = Serializer(request.environ, _metadata)
         return serializer.to_content_type(data)
@@ -251,7 +252,9 @@ class Serializer(object):
         will be decided based on the Content Type requested in self.environ:
         by Accept: header, or by URL suffix.
         """
-        mimetype = 'application/xml'
+        # FIXME(sirp): for now, supporting json only
+        #mimetype = 'application/xml'
+        mimetype = 'application/json'
         # TODO(gundlach): determine mimetype from request
         return self._methods.get(mimetype, repr)(data)
 

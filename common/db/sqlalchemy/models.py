@@ -31,7 +31,8 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from common.db.sqlalchemy.session import get_session
 
-from common import auth
+# FIXME(sirp): confirm this is not needed
+#from common import auth
 from common import exception
 from common import flags
 
@@ -126,18 +127,19 @@ class Image(BASE, ModelBase):
     __prefix__ = 'img'
     
     id = Column(Integer, primary_key=True)
+    name = Column(String(255))
     image_type = Column(String(255))
     state = Column(String(255))
     public = Column(Boolean, default=False)
 
-    @validates('image_type')
-    def validate_image_type(self, key, image_type):
-        assert(image_type in ('machine', 'kernel', 'ramdisk', 'raw'))
-
-    @validates('state')
-    def validate_state(self, key, state):
-        assert(state in ('available', 'pending', 'disabled'))
-
+    #@validates('image_type')
+    #def validate_image_type(self, key, image_type):
+    #    assert(image_type in ('machine', 'kernel', 'ramdisk', 'raw'))
+    #
+    #@validates('state')
+    #def validate_state(self, key, state):
+    #    assert(state in ('available', 'pending', 'disabled'))
+    #
     # TODO(sirp): should these be stored as metadata?
     #user_id = Column(String(255))
     #project_id = Column(String(255))
@@ -176,8 +178,8 @@ class ImageMetadatum(BASE, ModelBase):
     image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
     image = relationship(Image, backref=backref('image_metadata'))
     
-    key_name = Column(String(255), index=True, unique=True)
-    key_data = Column(Text)
+    key = Column(String(255), index=True, unique=True)
+    value = Column(Text)
 
 
 def register_models():

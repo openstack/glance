@@ -30,7 +30,7 @@ flags.DEFINE_string('db_backend', 'sqlalchemy',
 
 
 IMPL = utils.LazyPluggable(FLAGS['db_backend'],
-                           sqlalchemy='glance.db.sqlalchemy.api')
+                           sqlalchemy='common.db.sqlalchemy.api')
 
 
 ###################
@@ -69,4 +69,20 @@ def image_update(context, image_id, values):
 
     """
     return IMPL.image_update(context, image_id, values)
+
+
+###################
+
+
+def image_chunk_create(context, values):
+    """Create an image chunk from the values dictionary."""
+    return IMPL.image_chunk_create(context, values)
+
+
+###################
+
+
+def image_metadatum_create(context, values):
+    """Create an image metadatum from the values dictionary."""
+    return IMPL.image_metadatum_create(context, values)
 

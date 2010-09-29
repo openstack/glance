@@ -16,6 +16,8 @@
 #    under the License.
 
 from common import wsgi
+from common import db
+from common import exception
 from webob import exc
 
 class Controller(wsgi.Controller):
@@ -33,34 +35,43 @@ class Controller(wsgi.Controller):
         pass
 
     def index(self, req):
-        """Return all public images in brief."""
-        return dict(images=[dict(id=img['id'], name=img['name'])
-                            for img in self.detail(req)['images']])
+        """Index is not currently supported """
+        raise exc.HTTPNotImplemented()
 
     def detail(self, req):
-        """Return all public images in detail."""
-        data = self._service.index()
-        for img in data:
-            img['id'] = self._id_translator.to_rs_id(img['id'])
-        return dict(images=data)
+        """Detail is not currently supported """
+        raise exc.HTTPNotImplemented()
 
     def show(self, req, id):
         """Return data about the given image id."""
-        opaque_id = self._id_translator.from_rs_id(id)
-        img = self._service.show(opaque_id)
-        img['id'] = id
-        return dict(image=img)
+        try:
+            image = db.image_get(None, id)
+        except exception.NotFound:
+            raise exc.HTTPNotFound()
+
+        chunk_dicts = []
+        for chunk in image.image_chunks:
+            chunk_dict = dict(location=chunk.location, size=chunk.size)
+            chunk_dicts.append(chunk_dict)
+
+        metadata_dicts = []
+        for metadatum in image.image_metadata:
+            metadatum_dict = dict(key=metadatum.key, value=metadatum.value)
+            metadata_dicts.append(metadatum_dict)
+
+        image_dict = dict(id=image.id, name=image.name, state=image.state,
+                          public=image.public, chunks=chunk_dicts,
+                          metadata=metadata_dicts)
+        return dict(image=image_dict)
 
     def delete(self, req, id):
-        # Only public images are supported for now.
-        raise exc.HTTPNotFound()
+        """Delete is not currently supported """
+        raise exc.HTTPNotImplemented()
 
     def create(self, req):
-        # Only public images are supported for now, so a request to
-        # make a backup of a server cannot be supproted.
-        raise exc.HTTPNotFound()
+        """Create is not currently supported """
+        raise exc.HTTPNotImplemented()
 
     def update(self, req, id):
-        # Users may not modify public images, and that's all that 
-        # we support for now.
-        raise exc.HTTPNotFound()
+        """Update is not currently supported """
+        raise exc.HTTPNotImplemented()
