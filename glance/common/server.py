@@ -29,7 +29,7 @@ import signal
 import sys
 import time
 
-from common import flags
+from glance.common import flags
 
 
 FLAGS = flags.FLAGS

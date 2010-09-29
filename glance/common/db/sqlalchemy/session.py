@@ -15,10 +15,28 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 """
-SQLAlchemy database backend
+Session Handling for SQLAlchemy backend
 """
-from common.db.sqlalchemy import models
 
-models.register_models()
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from glance.common import flags
+
+FLAGS = flags.FLAGS
+
+_ENGINE = None
+_MAKER = None
+
+def get_session(autocommit=True, expire_on_commit=False):
+    """Helper method to grab session"""
+    global _ENGINE
+    global _MAKER
+    if not _MAKER:
+        if not _ENGINE:
+            _ENGINE = create_engine(FLAGS.sql_connection, echo=False)
+        _MAKER = sessionmaker(bind=_ENGINE,
+                              autocommit=autocommit,
+                              expire_on_commit=expire_on_commit)
+    return _MAKER()

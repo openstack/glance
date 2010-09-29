@@ -1,4 +1,5 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
 
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
@@ -16,27 +17,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 """
-Session Handling for SQLAlchemy backend
+DB abstraction for Nova and Glance
 """
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-from common import flags
-
-FLAGS = flags.FLAGS
-
-_ENGINE = None
-_MAKER = None
-
-def get_session(autocommit=True, expire_on_commit=False):
-    """Helper method to grab session"""
-    global _ENGINE
-    global _MAKER
-    if not _MAKER:
-        if not _ENGINE:
-            _ENGINE = create_engine(FLAGS.sql_connection, echo=False)
-        _MAKER = sessionmaker(bind=_ENGINE,
-                              autocommit=autocommit,
-                              expire_on_commit=expire_on_commit)
-    return _MAKER()
+from glance.common.db.api import *

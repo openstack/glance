@@ -15,9 +15,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from common import wsgi
-from common import db
-from common import exception
+from glance.common import wsgi
+from glance.common import db
+from glance.common import exception
 from webob import exc
 
 class Controller(wsgi.Controller):

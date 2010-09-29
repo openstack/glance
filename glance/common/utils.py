@@ -31,9 +31,9 @@ import sys
 
 from twisted.internet.threads import deferToThread
 
-from common import exception
-from common import flags
-from common.exception import ProcessExecutionError
+from glance.common import exception
+from glance.common import flags
+from glance.common.exception import ProcessExecutionError
 
 
 FLAGS = flags.FLAGS

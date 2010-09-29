@@ -20,11 +20,11 @@ Implementation of SQLAlchemy backend
 """
 
 import sys
-from common import db
-from common import exception
-from common import flags
-from common.db.sqlalchemy import models
-from common.db.sqlalchemy.session import get_session
+from glance.common import db
+from glance.common import exception
+from glance.common import flags
+from glance.common.db.sqlalchemy import models
+from glance.common.db.sqlalchemy.session import get_session
 from sqlalchemy.orm import exc
 
 #from sqlalchemy.orm import joinedload_all

@@ -29,12 +29,12 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy import ForeignKey, DateTime, Boolean, Text
 from sqlalchemy.ext.declarative import declarative_base
 
-from common.db.sqlalchemy.session import get_session
+from glance.common.db.sqlalchemy.session import get_session
 
 # FIXME(sirp): confirm this is not needed
 #from common import auth
-from common import exception
-from common import flags
+from glance.common import exception
+from glance.common import flags
 
 FLAGS = flags.FLAGS
 

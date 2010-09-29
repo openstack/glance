@@ -28,10 +28,10 @@ import webob.dec
 import webob.exc
 import webob
 
-from common import flags
-from common import utils
-from common import wsgi
-from parallax.api import images
+from glance.common import flags
+from glance.common import utils
+from glance.common import wsgi
+from glance.parallax.api import images
 
 
 FLAGS = flags.FLAGS

@@ -32,11 +32,11 @@ possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
 if os.path.exists(os.path.join(possible_topdir, 'parallax', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
-from common import flags
-from common import utils
-from common import server
-from common import wsgi
-from parallax import api
+from glance.common import flags
+from glance.common import utils
+from glance.common import server
+from glance.common import wsgi
+from glance.parallax import api
 
 
 FLAGS = flags.FLAGS

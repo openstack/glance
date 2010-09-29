@@ -19,9 +19,9 @@
 Defines interface for DB access
 """
 
-from common import exception
-from common import flags
-from common import utils
+from glance.common import exception
+from glance.common import flags
+from glance.common import utils
 
 
 FLAGS = flags.FLAGS
@@ -30,7 +30,7 @@ flags.DEFINE_string('db_backend', 'sqlalchemy',
 
 
 IMPL = utils.LazyPluggable(FLAGS['db_backend'],
-                           sqlalchemy='common.db.sqlalchemy.api')
+                           sqlalchemy='glance.common.db.sqlalchemy.api')
 
 
 ###################
