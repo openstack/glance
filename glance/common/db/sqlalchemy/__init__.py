@@ -17,5 +17,8 @@
 #    under the License.
 
 """
-Parallax API 
+SQLAlchemy database backend
 """
+from glance.common.db.sqlalchemy import models
+
+models.register_models()
