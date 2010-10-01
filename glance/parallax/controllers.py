@@ -64,8 +64,29 @@ class ImageController(wsgi.Controller):
         """ Create a dict represenation of an image which we can use to
         serialize the image.
         """
-        files = [dict(location=f.location, size=f.size) for f in image.files]
-        metadata = dict((m.key, m.value) for m in image.metadata)
+        def _fetch_attrs(obj, attrs):
+            return dict([(a, getattr(obj, a)) for a in attrs])
+
+        # attributes common to all models
+        base_attrs = set(['id', 'created_at', 'updated_at', 'deleted_at',
+                          'deleted'])
+
+        file_attrs = base_attrs | set(['location', 'size'])
+        files = [_fetch_attrs(f, file_attrs) for f in image.files]
+
+        # TODO(sirp): should this be a dict, or a list of dicts?
+        # A plain dict is more convenient, but list of dicts would provide
+        # access to created_at, etc
+        metadata = dict((m.key, m.value) for m in image.metadata 
+                        if not m.deleted)
+
+        image_attrs = base_attrs | set(['name', 'image_type', 'state', 'public'])
+        
+        image_dict = _fetch_attrs(image, image_attrs)
+        image_dict['files'] = files
+        image_dict['metadata'] = metadata
+        return image_dict
+
         return dict(id=image.id, 
                     name=image.name,
                     state=image.state,

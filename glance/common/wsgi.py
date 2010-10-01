@@ -23,6 +23,7 @@ Utility methods for working with WSGI servers
 
 import logging
 import sys
+import datetime
 
 import eventlet
 import eventlet.wsgi
@@ -260,7 +261,12 @@ class Serializer(object):
 
     def _to_json(self, data):
         import json
-        return json.dumps(data)
+        def sanitizer(obj):
+            if isinstance(obj, datetime.datetime):
+                return obj.isoformat()
+            return obj
+
+        return json.dumps(data, default=sanitizer)
 
     def _to_xml(self, data):
         metadata = self.metadata.get('application/xml', {})

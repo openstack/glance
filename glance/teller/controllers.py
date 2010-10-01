@@ -23,14 +23,12 @@ from webob import exc, Response
 from glance.common import wsgi
 from glance.common import exception
 from glance.parallax import db
-from glance.teller.backends import get_from_backend
-from glance.teller.parallax import ParallaxAdapter
+from glance.teller import backends
+from glance.teller import registries
 
 
 class ImageController(wsgi.Controller):
     """Image Controller """
-
-    image_lookup_fn = ParallaxAdapter.lookup
 
     def index(self, req):
         """
@@ -38,6 +36,9 @@ class ImageController(wsgi.Controller):
         req['uri']. If it exists, we connect to the appropriate backend as
         determined by the URI scheme and yield chunks of data back to the
         client. 
+
+        Optionally, we can pass in 'registry' which will use a given
+        RegistryAdapter for the request. This is useful for testing.
         """
         try:
             uri = req.str_GET['uri']
@@ -45,7 +46,14 @@ class ImageController(wsgi.Controller):
             return exc.HTTPBadRequest(body="Missing uri", request=req,
                                       content_type="text/plain")
 
-        image = self.image_lookup_fn(uri)
+        registry = req.str_GET.get('registry', 'parallax')
+
+        try:
+            image = registries.lookup_by_registry(registry, uri)
+        except registries.UnknownRegistryAdapter:
+            return exc.HTTPBadRequest(body="Uknown registry '%s'" % registry,
+                                      request=req,
+                                      content_type="text/plain")
 
         if not image:
             raise exc.HTTPNotFound(body='Image not found', request=req,
@@ -53,8 +61,10 @@ class ImageController(wsgi.Controller):
 
         def image_iterator():
             for file in image['files']:
-                for chunk in get_from_backend(file['location'], 
-                                              expected_size=file['size']):
+                chunks = backends.get_from_backend(
+                    file['location'], expected_size=file['size'])
+
+                for chunk in chunks:
                     yield chunk
 
 
