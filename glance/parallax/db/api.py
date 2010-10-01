@@ -30,7 +30,7 @@ flags.DEFINE_string('db_backend', 'sqlalchemy',
 
 
 IMPL = utils.LazyPluggable(FLAGS['db_backend'],
-                           sqlalchemy='glance.common.db.sqlalchemy.api')
+                           sqlalchemy='glance.parallax.db.sqlalchemy.api')
 
 
 ###################
@@ -39,7 +39,6 @@ IMPL = utils.LazyPluggable(FLAGS['db_backend'],
 def image_create(context, values):
     """Create an image from the values dictionary."""
     return IMPL.image_create(context, values)
-
 
 
 def image_destroy(context, image_id):

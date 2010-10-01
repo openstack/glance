@@ -20,3 +20,4 @@
 DB abstraction for Nova and Glance
 """
 
+from glance.parallax.db.api import *

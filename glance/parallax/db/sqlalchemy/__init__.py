@@ -17,33 +17,11 @@
 #    under the License.
 
 """
-Parallax API controllers.
+SQLAlchemy models for glance data
 """
 
-import json
-import time
-
-import routes
-import webob.dec
-import webob.exc
-import webob
-
-from glance.common import flags
-from glance.common import utils
-from glance.common import wsgi
-from glance.parallax.api import images
+from glance.parallax.db.sqlalchemy import models
 
 
-FLAGS = flags.FLAGS
-
-
-class API(wsgi.Router):
-    """WSGI entry point for all Parallax requests."""
-
-    def __init__(self):
-        # TODO(sirp): should we add back the middleware for parallax
-        mapper = routes.Mapper()
-        mapper.resource("image", "images", controller=images.Controller(),
-                        collection={'detail': 'GET'})
-        super(API, self).__init__(mapper)
+models.register_models()
 

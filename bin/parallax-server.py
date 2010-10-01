@@ -36,7 +36,7 @@ from glance.common import flags
 from glance.common import utils
 from glance.common import server
 from glance.common import wsgi
-from glance.parallax import api
+from glance.parallax import controllers
 
 
 FLAGS = flags.FLAGS
@@ -44,7 +44,7 @@ FLAGS = flags.FLAGS
 flags.DEFINE_integer('parallax_port', 9191, 'Parallax port')
 
 def main(_args):
-    wsgi.run_server(api.API(), FLAGS.parallax_port)
+    wsgi.run_server(controllers.API(), FLAGS.parallax_port)
 
 if __name__ == '__main__':
     utils.default_flagfile()

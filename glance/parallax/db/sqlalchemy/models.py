@@ -173,7 +173,7 @@ class ImageFile(BASE, ModelBase):
 class ImageMetadatum(BASE, ModelBase):
     """Represents an image metadata in the datastore"""
     __tablename__ = 'image_metadata'
-    __prefix__ = 'mdata'
+    __prefix__ = 'img-meta'
     id = Column(Integer, primary_key=True)
     image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
     image = relationship(Image, backref=backref('metadata'))
