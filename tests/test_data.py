@@ -30,13 +30,13 @@ def make_fake_image():
     db.image_file_create(
         None, 
         dict(image_id=image.id,
-             location="swift://myacct/mycontainer/obj.tar.gz.0",
-             size=101))
+             location="teststr://chunk0",
+             size=6))
     db.image_file_create(
         None, 
         dict(image_id=image.id,
-             location="swift://myacct/mycontainer/obj.tar.gz.1",
-             size=101))
+             location="teststr://chunk1",
+             size=6))
 
     db.image_metadatum_create(
         None,

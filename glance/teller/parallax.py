@@ -49,11 +49,10 @@ class ParallaxAdapter(object):
             # The image exists
             if response.status == 200: 
                 result = response.read()
-                
-                json = json.loads(result)
+                image_json = json.loads(result)
                 
                 try:
-                    return json["image"]
+                    return image_json["image"]
                 except KeyError:
                     raise ParallaxAdapterException("Missing 'image' key")
 
