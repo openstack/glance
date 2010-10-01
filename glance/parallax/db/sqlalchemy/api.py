@@ -78,16 +78,24 @@ def image_get(context, image_id):
     except exc.NoResultFound:
         new_exc = exception.NotFound("No model for id %s" % image_id)
         raise new_exc.__class__, new_exc, sys.exc_info()[2]
-    return models.Image.find(image_id, deleted=_deleted(context))
 
 
 def image_get_all(context):
     session = get_session()
-    # TODO(sirp): add back eager loading
     return session.query(models.Image
-                 #).options(joinedload(models.Image.files)
-                 #).options(joinedload(models.Image.metadata)
+                 ).options(joinedload(models.Image.files)
+                 ).options(joinedload(models.Image.metadata)
                  ).filter_by(deleted=_deleted(context)
+                 ).all()
+
+
+def image_get_all_public(context, public):
+    session = get_session()
+    return session.query(models.Image
+                 ).options(joinedload(models.Image.files)
+                 ).options(joinedload(models.Image.metadata)
+                 ).filter_by(deleted=_deleted(context)
+                 ).filter_by(public=public
                  ).all()
 
 

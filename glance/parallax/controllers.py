@@ -27,10 +27,12 @@ from webob import exc
 
 class ImageController(wsgi.Controller):
     """Image Controller """
-
+    
     def index(self, req):
-        """Index is not currently supported """
-        raise exc.HTTPNotImplemented()
+        """Return data for all public, non-deleted images """
+        images = db.image_get_all_public(None)
+        image_dicts = [self._make_image_dict(i) for i in images]
+        return dict(images=image_dicts)
 
     def detail(self, req):
         """Detail is not currently supported """
@@ -42,16 +44,8 @@ class ImageController(wsgi.Controller):
             image = db.image_get(None, id)
         except exception.NotFound:
             raise exc.HTTPNotFound()
-
-        files = [dict(location=f.location, size=f.size) for f in image.files]
-        metadata = dict((m.key, m.value) for m in image.metadata)
         
-        return dict(id=image.id, 
-                    name=image.name,
-                    state=image.state,
-                    public=image.public,
-                    files=files,
-                    metadata=metadata)
+        return dict(image=self._make_image_dict(image))
 
     def delete(self, req, id):
         """Delete is not currently supported """
@@ -64,6 +58,20 @@ class ImageController(wsgi.Controller):
     def update(self, req, id):
         """Update is not currently supported """
         raise exc.HTTPNotImplemented()
+
+    @staticmethod
+    def _make_image_dict(image):
+        """ Create a dict represenation of an image which we can use to
+        serialize the image.
+        """
+        files = [dict(location=f.location, size=f.size) for f in image.files]
+        metadata = dict((m.key, m.value) for m in image.metadata)
+        return dict(id=image.id, 
+                    name=image.name,
+                    state=image.state,
+                    public=image.public,
+                    files=files,
+                    metadata=metadata)
 
 
 class API(wsgi.Router):

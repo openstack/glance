@@ -19,6 +19,8 @@ import httplib
 import json
 import urlparse
 
+class ParallaxAdapterException(Exception):
+    pass
 
 class ParallaxAdapter(object):
     """
@@ -47,9 +49,14 @@ class ParallaxAdapter(object):
             # The image exists
             if response.status == 200: 
                 result = response.read()
-
+                
                 json = json.loads(result)
-                return json
+                
+                try:
+                    return json["image"]
+                except KeyError:
+                    raise ParallaxAdapterException("Missing 'image' key")
+
         finally:
             conn.close()
 
@@ -63,8 +70,8 @@ class FakeParallaxAdapter(ParallaxAdapter):
     def lookup(cls, image_uri):
         if image_uri.count("success"):
             # A successful attempt
-            mock_res = { "objects":[{"uri":"teststr://chunk0", "size":1235},
-                                    {"uri": "teststr://chunk1", "size":12345}]}
+            mock_res = {"files": [{"location":"teststr://chunk0", "size":1235},
+                                  {"location": "teststr://chunk1", "size":12345}]}
             return mock_res
 
 

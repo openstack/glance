@@ -56,6 +56,11 @@ def image_get_all(context):
     return IMPL.image_get_all(context)
 
 
+def image_get_all_public(context, public=True):
+    """Get all public images."""
+    return IMPL.image_get_all_public(context, public=public)
+
+
 def image_get_by_str(context, str_id):
     """Get an image by string id."""
     return IMPL.image_get_by_str(context, str_id)

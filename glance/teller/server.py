@@ -53,7 +53,7 @@ class ImageController(object):
                                 content_type="text/plain")
 
         def image_iter():
-            for obj in image["objects"]:
+            for obj in image["files"]:
                 for chunk in get_from_backend(obj["location"], 
                                               expected_size=obj["size"]):
                     yield chunk
