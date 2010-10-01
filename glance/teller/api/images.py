@@ -18,7 +18,7 @@
 from glance.common import wsgi, db, exception
 from glance.teller.backends import get_from_backend
 from glance.teller.parallax import ParallaxAdapter
-from webob import exc
+from webob import exc, Response
 
 
 class Controller(wsgi.Controller):
@@ -42,15 +42,22 @@ class Controller(wsgi.Controller):
         client. 
         """
 
+        #info(twitch) I don't know if this would actually happen in the wild.
+        if uri is None:
+            return exc.HTTPBadRequest(body="Missing uri", request=request,
+                                      content_type="text/plain")
+
         image = self.image_lookup_fn(uri)
-        if not image
+        if not image:
             raise exc.HTTPNotFound(body='Image not found', request=request,
                                    content_type='text/plain')
 
         def image_iterator():
             for file in image['files']:
                 for chunk in get_from_backend(file['location'], 
-                                              expected_size=file['size'])
+                                              expected_size=file['size']):
+                    yield chunk
+
 
         return request.get_response(Response(app_iter=image_iterator()))
 

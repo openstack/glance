@@ -63,8 +63,10 @@ class FakeParallaxAdapter(ParallaxAdapter):
     def lookup(cls, image_uri):
         if image_uri.count("success"):
             # A successful attempt
-            mock_res = { "objects":[{"uri":"teststr://chunk0", "size":1235},
-                                    {"uri": "teststr://chunk1", "size":12345}]}
+            mock_res = { "files":[{"location":"teststr://chunk0", 
+                                   "size":1235},
+                                  {"location": "teststr://chunk1", 
+                                   "size":12345}]}
             return mock_res
 
 
