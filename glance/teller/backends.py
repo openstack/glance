@@ -96,7 +96,7 @@ class SwiftBackend(Backend):
     """
 
     RE_SWIFT_TOKENS = re.compile(r":|@|/")
-    EXAMPLE_URL="swift://user:password@auth_url/container/file.gz.0"
+    EXAMPLE_URL = "swift://user:password@auth_url/container/file.gz.0"
 
     @classmethod
     def get(cls, parsed_uri, expected_size, conn_class=None):
@@ -106,33 +106,52 @@ class SwiftBackend(Backend):
         swift instance at auth_url and downloads the file. Returns the generator
         provided by stream() on the swift object representing the file.
         """
+        (user, api_key, authurl, container, file) = \
+            cls.parse_swift_tokens(parsed_uri)
+
         if conn_class:
             pass # Use the provided conn_class
         else:
             conn_class = cloudfiles
 
+        swift_conn = conn_class.get_connection(username=user, api_key=api_key,
+                                               authurl=authurl)
+
+        container = swift_conn.get_container(container)
+
+        obj = container.get_object(file)
+
+        if obj.size != expected_size:
+            raise BackendException("Expected %s size file, Swift has %s"
+                                   % (expected_size, obj.size))
+
+        # Return the generator provided from obj.stream()
+        return obj.stream(chunksize=cls.CHUNKSIZE)
+
+    @classmethod
+    def parse_swift_tokens(cls, parsed_uri):
+        """
+        Parsing the swift uri is three phases:
+            1) urlparse to split the tokens
+            2) use RE to split on @ and /
+            3) reassemble authurl
+        """
         try:
             split_url = parsed_uri.path[2:]
             swift_tokens = cls.RE_SWIFT_TOKENS.split(split_url)
-            user, api_key, authurl, container, file = swift_tokens
+            
+            (user, api_key) = swift_tokens[:2]    # beginning
+            authurl_parts = swift_tokens[2:-2]    # middle
+            (container, file) = swift_tokens[-2:] # end
+
         except ValueError:
             raise BackendException(
                  "Expected four values to unpack in: swift:%s. "
                  "Should have received something like: %s."
                  % (parsed_uri.path, cls.EXAMPLE_URL))
 
-        swift_conn = conn_class.get_connection(username=user, api_key=api_key,
-                                               authurl=authurl)
-
-        container = swift_conn.get_container(container)
-        obj = container.get_object(file)
-
-        if obj.size == expected_size:
-            # Return the generator provided from obj.stream()
-            return obj.stream(chunksize=cls.CHUNKSIZE)
-        else:
-            raise BackendException("Expected %s size file, Swift has %s"
-                                   % (expected_size, obj.size))
+        authurl = "https://%s" % '/'.join(authurl_parts)
+        return user, api_key, authurl, container, file
 
 
 BACKENDS = {
@@ -146,11 +165,12 @@ BACKENDS = {
 def get_from_backend(uri, **kwargs):
     """ Yields chunks of data from backend specified by uri """
     parsed_uri = urlparse.urlparse(uri)
+    scheme = parsed_uri.scheme
 
     try:
-        backend = BACKENDS[parsed_uri.scheme]
+        backend = BACKENDS[scheme]
     except KeyError:
-        raise UnsupportedBackend("No backend found for '%s'" % parsed_uri.scheme)
+        raise UnsupportedBackend("No backend found for '%s'" % scheme)
 
     return backend.get(parsed_uri, **kwargs)
 
