@@ -20,6 +20,7 @@ from glance.parallax import db
 
 def make_real_image():
     """Create a real image record """
+
     # TODO(sirp): Create a testing account, and define gflags for
     # test_swift_username and test_swift_api_key
     USERNAME = "blah" # fill these out for testing

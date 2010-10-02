@@ -34,7 +34,7 @@ class RegistryAdapter(object):
     """ Base class for all image endpoints """
 
     @classmethod
-    def lookup(cls, image_uri):
+    def lookup(cls, parsed_uri):
         """ Subclasses must define a lookup method which returns an dictionary
         representing the image.
         """
@@ -47,34 +47,34 @@ class ParallaxAdapter(RegistryAdapter):
     """
 
     @classmethod
-    def lookup(cls, image_uri):
+    def lookup(cls, parsed_uri):
         """
         Take an image uri from Nova, and check if that parallax instance has a
         register of it. Takes an unparsed URI, returns a dict of the image 
         registration metadata or None.
         """
-
-        parsed_image_uri = urlparse.urlparse(image_uri)
-        if parsed_image_uri.scheme == 'http':
+        scheme = parsed_uri.scheme
+        if scheme == 'http':
             conn_class = httplib.HTTPConnection
-        elif parsed_image_uri.scheme == 'https':
+        elif scheme == 'https':
             conn_class = httplib.HTTPSConnection
+        else:
+            raise RegistryAdapterException(
+                "Unrecognized scheme '%s'" % scheme)
 
+        conn = conn_class(parsed_uri.netloc)
         try:
-            conn = conn_class(parsed_image_uri.netloc)
-            conn.request('GET', parsed_image_uri.path, "", {})
+            conn.request('GET', parsed_uri.path, "", {})
             response = conn.getresponse()
 
             # The image exists
             if response.status == 200: 
                 result = response.read()
                 image_json = json.loads(result)
-                
                 try:
                     return image_json["image"]
                 except KeyError:
                     raise RegistryAdapterException("Missing 'image' key")
-
         finally:
             conn.close()
 
@@ -84,16 +84,16 @@ class FakeParallaxAdapter(ParallaxAdapter):
     A Mock ParallaxAdapter returns a mocked response for any uri with 
     one or more 'success' and None for everything else.
     """
+
     @classmethod
-    def lookup(cls, image_uri):
-        if image_uri.count("success"):
+    def lookup(cls, parsed_uri):
+        if parsed_uri.netloc.count("success"):
             # A successful attempt
             files = [dict(location="teststr://chunk0", size=1235),
                      dict(location="teststr://chunk1", size=12345)]
             
-            mock_res = dict(files=files)
-            
-            return mock_res
+            return dict(files=files)
+
 
 REGISTRY_ADAPTERS = {
     'parallax': ParallaxAdapter,
@@ -107,6 +107,7 @@ def lookup_by_registry(registry, image_uri):
     except KeyError:
         raise UnknownRegistryAdapter("'%s' not found" % registry)
     
-    return adapter.lookup(image_uri)
+    parsed_uri = urlparse.urlparse(image_uri)
+    return adapter.lookup(parsed_uri)
 
 
