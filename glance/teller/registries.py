@@ -49,9 +49,9 @@ class ParallaxAdapter(RegistryAdapter):
     @classmethod
     def lookup(cls, parsed_uri):
         """
-        Take an image uri from Nova, and check if that parallax instance has a
-        register of it. Takes an unparsed URI, returns a dict of the image 
-        registration metadata or None.
+        Takes a parsed_uri, checks if that image is registered in Parallax,
+        and if so, returns the image metadata. If the image does not exist,
+        we return None.
         """
         scheme = parsed_uri.scheme
         if scheme == 'http':
