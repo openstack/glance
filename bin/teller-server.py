@@ -18,7 +18,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 """
-Parallax API daemon.
+Teller API daemon.
 """
 
 import os
@@ -29,23 +29,23 @@ import sys
 possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
                                    os.pardir,
                                    os.pardir))
-if os.path.exists(os.path.join(possible_topdir, 'parallax', '__init__.py')):
+if os.path.exists(os.path.join(possible_topdir, 'teller', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
 from glance.common import flags
 from glance.common import utils
 from glance.common import server
 from glance.common import wsgi
-from glance.parallax import controllers
+from glance.teller import controllers
 
 
 FLAGS = flags.FLAGS
 # TODO(sirp): ensure no conflicts in port selection
-flags.DEFINE_integer('parallax_port', 9191, 'Parallax port')
+flags.DEFINE_integer('teller_port', 9292, 'Teller port')
 
 def main(_args):
-    wsgi.run_server(controllers.API(), FLAGS.parallax_port)
+    wsgi.run_server(controllers.API(), FLAGS.teller_port)
 
 if __name__ == '__main__':
     utils.default_flagfile()
-    server.serve('parallax-server', main)
+    server.serve('teller-server', main)

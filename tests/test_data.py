@@ -15,30 +15,30 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glance.common.db import api
+from glance.parallax import db
 
 
 def make_fake_image():
     """Create a fake image record """
-    image = api.image_create(
+    image = db.image_create(
         None,
         dict(name="Test Image",
              state="available",
              public=True,
              image_type="tarball"))
 
-    api.image_file_create(
+    db.image_file_create(
         None, 
         dict(image_id=image.id,
-             location="swift://myacct/mycontainer/obj.tar.gz.0",
-             size=101))
-    api.image_file_create(
+             location="teststr://chunk0",
+             size=6))
+    db.image_file_create(
         None, 
         dict(image_id=image.id,
-             location="swift://myacct/mycontainer/obj.tar.gz.1",
-             size=101))
+             location="teststr://chunk1",
+             size=6))
 
-    api.image_metadatum_create(
+    db.image_metadatum_create(
         None,
         dict(image_id=image.id,
              key="testkey",

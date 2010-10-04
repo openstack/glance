@@ -21,6 +21,14 @@ import re
 import urlparse
 
 
+def _file_iter(f, size):
+    """ Return an iterator for a file-like object """
+    chunk = f.read(size)
+    while chunk:
+        yield chunk
+        chunk = f.read(size)
+
+
 class BackendException(Exception):
     pass
 
@@ -53,19 +61,18 @@ class FilesystemBackend(Backend):
             return p
 
         with opener(sanitize_path(parsed_uri.path)) as f:
-            chunk = f.read(cls.CHUNKSIZE)
-            while chunk:
-                yield chunk
-                chunk = f.read(cls.CHUNKSIZE)
+            return _file_iter(f, cls.CHUNKSIZE)
          
 
 class HTTPBackend(Backend):
+    """ An implementation of the HTTP Backend Adapter """
+
     @classmethod
     def get(cls, parsed_uri, expected_size, conn_class=None):
+        """Takes a parsed uri for an HTTP resource, fetches it, ane yields the
+        data.
         """
-        http://netloc/path/to/file.tar.gz.0
-        https://netloc/path/to/file.tar.gz.0
-        """
+
         if conn_class:
             pass # use the conn_class passed in
         elif parsed_uri.scheme == "http":
@@ -74,14 +81,12 @@ class HTTPBackend(Backend):
             conn_class = httplib.HTTPSConnection
         else:
             raise BackendException("scheme '%s' not supported for HTTPBackend")
+        
         conn = conn_class(parsed_uri.netloc)
         conn.request("GET", parsed_uri.path, "", {})
+        
         try:
-            response = conn.getresponse()
-            chunk = response.read(cls.CHUNKSIZE)
-            while chunk:
-                yield chunk
-                chunk = response.read(cls.CHUNKSIZE)
+            return _file_iter(conn.getresponse(), cls.CHUNKSIZE)
         finally:
             conn.close()
 
@@ -130,24 +135,22 @@ class SwiftBackend(Backend):
                                    % (expected_size, obj.size))
 
 
-def _scheme2backend(scheme):
-    return {
-        "file": FilesystemBackend,
-        "http": HTTPBackend,
-        "https": HTTPBackend,
-        "swift": SwiftBackend,
-        "teststr": TestStrBackend
-    }[scheme]
-
+BACKENDS = {
+    "file": FilesystemBackend,
+    "http": HTTPBackend,
+    "https": HTTPBackend,
+    "swift": SwiftBackend,
+    "teststr": TestStrBackend
+}
 
 def get_from_backend(uri, **kwargs):
-    """
-    Yields chunks of data from backend specified by uri
-    """
+    """ Yields chunks of data from backend specified by uri """
     parsed_uri = urlparse.urlparse(uri)
+
     try:
-        return _scheme2backend(parsed_uri.scheme).get(parsed_uri, **kwargs)
+        backend = BACKENDS[parsed_uri.scheme]
     except KeyError:
         raise UnsupportedBackend("No backend found for '%s'" % parsed_uri.scheme)
 
+    return backend.get(parsed_uri, **kwargs)
 

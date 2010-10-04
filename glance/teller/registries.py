@@ -20,7 +20,28 @@ import json
 import urlparse
 
 
-class ParallaxAdapter(object):
+class RegistryAdapterException(Exception):
+    """ Base class for all RegistryAdapter exceptions """
+    pass
+
+
+class UnknownRegistryAdapter(RegistryAdapterException):
+    """ Raised if we don't recognize the requested Registry protocol """
+    pass
+
+
+class RegistryAdapter(object):
+    """ Base class for all image endpoints """
+
+    @classmethod
+    def lookup(cls, image_uri):
+        """ Subclasses must define a lookup method which returns an dictionary
+        representing the image.
+        """
+        raise NotImplementedError
+
+
+class ParallaxAdapter(RegistryAdapter):
     """
     ParallaxAdapter stuff
     """
@@ -47,9 +68,13 @@ class ParallaxAdapter(object):
             # The image exists
             if response.status == 200: 
                 result = response.read()
+                image_json = json.loads(result)
+                
+                try:
+                    return image_json["image"]
+                except KeyError:
+                    raise RegistryAdapterException("Missing 'image' key")
 
-                json = json.loads(result)
-                return json
         finally:
             conn.close()
 
@@ -63,10 +88,25 @@ class FakeParallaxAdapter(ParallaxAdapter):
     def lookup(cls, image_uri):
         if image_uri.count("success"):
             # A successful attempt
-            mock_res = { "files":[{"location":"teststr://chunk0", 
-                                   "size":1235},
-                                  {"location": "teststr://chunk1", 
-                                   "size":12345}]}
+            files = [dict(location="teststr://chunk0", size=1235),
+                     dict(location="teststr://chunk1", size=12345)]
+            
+            mock_res = dict(files=files)
+            
             return mock_res
+
+REGISTRY_ADAPTERS = {
+    'parallax': ParallaxAdapter,
+    'fake_parallax': FakeParallaxAdapter
+}
+
+def lookup_by_registry(registry, image_uri):
+    """ Convenience function to lookup based on a registry protocol """
+    try:
+        adapter = REGISTRY_ADAPTERS[registry]
+    except KeyError:
+        raise UnknownRegistryAdapter("'%s' not found" % registry)
+    
+    return adapter.lookup(image_uri)
 
 
