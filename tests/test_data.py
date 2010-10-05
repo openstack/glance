@@ -18,6 +18,33 @@
 from glance.parallax import db
 
 
+def make_real_image():
+    """Create a real image record """
+
+    # TODO(sirp): Create a testing account, and define gflags for
+    # test_swift_username and test_swift_api_key
+    USERNAME = "blah" # fill these out for testing
+    API_KEY = "blah"
+
+    image = db.image_create(
+        None,
+        dict(name="testsnap",
+             state="available",
+             public=True,
+             image_type="tarball"))
+
+    location = (
+        "swift://%s:%s@"
+        "auth.api.rackspacecloud.com/v1.0/cloudservers"
+        "/testsnap_cloudserver11037.tar.gz.0"
+    ) % (USERNAME, API_KEY)
+
+    size = 198848316
+
+    db.image_file_create(None, 
+        dict(image_id=image.id, location=location, size=size))
+
+
 def make_fake_image():
     """Create a fake image record """
     image = db.image_create(
@@ -47,3 +74,4 @@ def make_fake_image():
 
 if __name__ == "__main__":
     make_fake_image()
+    #make_real_image() # NOTE: uncomment if you have a username and api_key

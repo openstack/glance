@@ -81,18 +81,11 @@ class ImageController(wsgi.Controller):
                         if not m.deleted)
 
         image_attrs = base_attrs | set(['name', 'image_type', 'state', 'public'])
-        
         image_dict = _fetch_attrs(image, image_attrs)
+
         image_dict['files'] = files
         image_dict['metadata'] = metadata
         return image_dict
-
-        return dict(id=image.id, 
-                    name=image.name,
-                    state=image.state,
-                    public=image.public,
-                    files=files,
-                    metadata=metadata)
 
 
 class API(wsgi.Router):

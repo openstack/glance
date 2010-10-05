@@ -65,6 +65,7 @@ class TestBackends(unittest.TestCase):
         class FakeSwift(object):
             def __init__(self, *args, **kwargs): 
                 pass
+
             @classmethod
             def get_connection(self, *args, **kwargs):
                 auth = Auth("user", "password")
@@ -72,7 +73,7 @@ class TestBackends(unittest.TestCase):
                 conn.connection = CustomHTTPConnection("localhost", 8000)
                 return conn
 
-        swift_uri="swift://user:password@localhost/container1/file.tar.gz"
+        swift_uri = "swift://user:password@localhost/container1/file.tar.gz"
         swift_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 
                          'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
 
@@ -88,6 +89,7 @@ class TestBackends(unittest.TestCase):
         class FakeSwift(object):
             def __init__(self, *args, **kwargs): 
                 pass
+
             @classmethod
             def get_connection(self, *args, **kwargs):
                 auth = Auth("user", "password")
@@ -95,7 +97,7 @@ class TestBackends(unittest.TestCase):
                 conn.connection = CustomHTTPConnection("localhost", 8000)
                 return conn
 
-        swift_url="swift://localhost/container1/file.tar.gz"
+        swift_url = "swift://localhost/container1/file.tar.gz"
 
         self.assertRaises(BackendException, get_from_backend, 
                           swift_url, expected_size=21)

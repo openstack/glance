@@ -51,7 +51,7 @@ class ImageController(wsgi.Controller):
         try:
             image = registries.lookup_by_registry(registry, uri)
         except registries.UnknownRegistryAdapter:
-            return exc.HTTPBadRequest(body="Uknown registry '%s'" % registry,
+            return exc.HTTPBadRequest(body="Unknown registry '%s'" % registry,
                                       request=req,
                                       content_type="text/plain")
 
@@ -66,7 +66,6 @@ class ImageController(wsgi.Controller):
 
                 for chunk in chunks:
                     yield chunk
-
 
         return req.get_response(Response(app_iter=image_iterator()))
     
@@ -99,11 +98,4 @@ class API(wsgi.Router):
         mapper.resource("image", "image", controller=ImageController(),
                         collection={'detail': 'GET'})
         super(API, self).__init__(mapper)
-
-
-
-
-
-
-
 
