@@ -1,2 +1,3 @@
 *.pyc
 glance.egg-info
+glance.sqlite

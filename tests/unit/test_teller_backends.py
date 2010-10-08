@@ -16,20 +16,29 @@
 #    under the License.
 
 from StringIO import StringIO
-import unittest
 
-from cloudfiles import Connection
-from cloudfiles.authentication import MockAuthentication as Auth
+import stubout
+import unittest2 as unittest
 
-from swiftfakehttp import CustomHTTPConnection
+from tests import stubs
+from glance.teller.backends.swift import SwiftBackend
 from glance.teller.backends import Backend, BackendException, get_from_backend
 
+Backend.CHUNKSIZE = 2
 
-class TestBackends(unittest.TestCase):
+class TestBackend(unittest.TestCase):
     def setUp(self):
-        Backend.CHUNKSIZE = 2
+        """Establish a clean test environment"""
+        self.stubs = stubout.StubOutForTesting()
 
-    def test_filesystem_get_from_backend(self):
+    def tearDown(self):
+        """Clear the test environment"""
+        self.stubs.UnsetAll()
+
+
+class TestFilesystemBackend(TestBackend):
+
+    def test_get(self):
         class FakeFile(object):
             def __enter__(self, *args, **kwargs):
                 return StringIO('fakedata')
@@ -43,7 +52,14 @@ class TestBackends(unittest.TestCase):
         chunks = [c for c in fetcher]
         self.assertEqual(chunks, ["fa", "ke", "da", "ta"])
 
-    def test_http_get_from_backend(self):
+
+class TestHTTPBackend(TestBackend):
+
+    def setUp(self):
+        super(TestHTTPBackend, self).setUp()
+        #stubs.stub_out_http_connection()
+
+    def test_get(self):
         class FakeHTTPConnection(object):
             def __init__(self, *args, **kwargs):
                 pass
@@ -61,17 +77,14 @@ class TestBackends(unittest.TestCase):
         chunks = [c for c in fetcher]
         self.assertEqual(chunks, ["fa", "ke", "da", "ta"])
 
-    def test_swift_get_from_backend(self):
-        class FakeSwift(object):
-            def __init__(self, *args, **kwargs): 
-                pass
 
-            @classmethod
-            def get_connection(self, *args, **kwargs):
-                auth = Auth("user", "password")
-                conn = Connection(auth=auth)
-                conn.connection = CustomHTTPConnection("localhost", 8000)
-                return conn
+class TestSwiftBackend(TestBackend):
+
+    def setUp(self):
+        super(TestSwiftBackend, self).setUp()
+        stubs.stub_out_swift(self.stubs)
+
+    def test_get(self):
 
         swift_uri = "swift://user:password@localhost/container1/file.tar.gz"
         swift_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 
@@ -79,29 +92,15 @@ class TestBackends(unittest.TestCase):
 
         fetcher = get_from_backend(swift_uri,
                                    expected_size=21,
-                                   conn_class=FakeSwift)
+                                   conn_class=SwiftBackend)
 
         chunks = [c for c in fetcher]
 
         self.assertEqual(chunks, swift_returns)
 
-    def test_swift_get_from_backend_with_bad_uri(self):
-        class FakeSwift(object):
-            def __init__(self, *args, **kwargs): 
-                pass
-
-            @classmethod
-            def get_connection(self, *args, **kwargs):
-                auth = Auth("user", "password")
-                conn = Connection(auth=auth)
-                conn.connection = CustomHTTPConnection("localhost", 8000)
-                return conn
+    def test_get_bad_uri(self):
 
         swift_url = "swift://localhost/container1/file.tar.gz"
 
         self.assertRaises(BackendException, get_from_backend, 
                           swift_url, expected_size=21)
-
-
-if __name__ == "__main__":
-    unittest.main()
