@@ -97,11 +97,3 @@ class API(wsgi.Router):
         mapper.resource("image", "images", controller=ImageController(),
                         collection={'detail': 'GET'})
         super(API, self).__init__(mapper)
-
-
-
-
-
-
-
-

@@ -43,5 +43,3 @@ class HTTPBackend(backends.Backend):
             return backends._file_iter(conn.getresponse(), cls.CHUNKSIZE)
         finally:
             conn.close()
-
-

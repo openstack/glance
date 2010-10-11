@@ -20,17 +20,17 @@ import json
 import urlparse
 
 
-class RegistryAdapterException(Exception):
+class ImageRegistryException(Exception):
     """ Base class for all RegistryAdapter exceptions """
     pass
 
 
-class UnknownRegistryAdapter(RegistryAdapterException):
+class UnknownImageRegistry(ImageRegistryException):
     """ Raised if we don't recognize the requested Registry protocol """
     pass
 
 
-class RegistryAdapter(object):
+class ImageRegistry(object):
     """ Base class for all image endpoints """
 
     @classmethod
@@ -41,9 +41,9 @@ class RegistryAdapter(object):
         raise NotImplementedError
 
 
-class ParallaxAdapter(RegistryAdapter):
+class Parallax(ImageRegistry):
     """
-    ParallaxAdapter stuff
+    Parallax stuff
     """
 
     @classmethod
@@ -59,7 +59,7 @@ class ParallaxAdapter(RegistryAdapter):
         elif scheme == 'https':
             conn_class = httplib.HTTPSConnection
         else:
-            raise RegistryAdapterException(
+            raise ImageRegistryException(
                 "Unrecognized scheme '%s'" % scheme)
 
         conn = conn_class(parsed_uri.netloc)
@@ -74,40 +74,24 @@ class ParallaxAdapter(RegistryAdapter):
                 try:
                     return image_json["image"]
                 except KeyError:
-                    raise RegistryAdapterException("Missing 'image' key")
+                    raise ImageRegistryException("Missing 'image' key")
+        except Exception: # gaierror
+            return None
         finally:
             conn.close()
 
 
-class FakeParallaxAdapter(ParallaxAdapter):
-    """
-    A Mock ParallaxAdapter returns a mocked response for any uri with 
-    one or more 'success' and None for everything else.
-    """
-
-    @classmethod
-    def lookup(cls, parsed_uri):
-        if parsed_uri.netloc.count("success"):
-            # A successful attempt
-            files = [dict(location="teststr://chunk0", size=1235),
-                     dict(location="teststr://chunk1", size=12345)]
-            
-            return dict(files=files)
-
-
 REGISTRY_ADAPTERS = {
-    'parallax': ParallaxAdapter,
-    'fake_parallax': FakeParallaxAdapter
+    'parallax': Parallax
 }
+
 
 def lookup_by_registry(registry, image_uri):
     """ Convenience function to lookup based on a registry protocol """
     try:
         adapter = REGISTRY_ADAPTERS[registry]
     except KeyError:
-        raise UnknownRegistryAdapter("'%s' not found" % registry)
+        raise UnknownImageRegistry("'%s' not found" % registry)
     
     parsed_uri = urlparse.urlparse(image_uri)
     return adapter.lookup(parsed_uri)
-
-

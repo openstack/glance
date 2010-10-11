@@ -15,7 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import cloudfiles
 from glance.teller.backends import Backend, BackendException
 
 
@@ -39,6 +38,10 @@ class SwiftBackend(Backend):
         if conn_class:
             pass # Use the provided conn_class
         else:
+            # Import cloudfiles here because stubout will replace this call
+            # with a faked swift client in the unittests, avoiding import
+            # errors if the test system does not have cloudfiles installed
+            import cloudfiles
             conn_class = cloudfiles
 
         swift_conn = conn_class.get_connection(username=user, api_key=api_key,
@@ -64,14 +67,15 @@ class SwiftBackend(Backend):
             3) reassemble authurl
         """
         path = parsed_uri.path.lstrip('//')
+        netloc = parsed_uri.netloc
 
         try:
-            creds, path = path.split('@')
+            creds, netloc = netloc.split('@')
             user, api_key = creds.split(':')
             path_parts = path.split('/')
             file = path_parts.pop()
             container = path_parts.pop()
-        except ValueError:
+        except (ValueError, IndexError):
             raise BackendException(
                  "Expected four values to unpack in: swift:%s. "
                  "Should have received something like: %s."
@@ -80,5 +84,3 @@ class SwiftBackend(Backend):
         authurl = "https://%s" % '/'.join(path_parts)
 
         return user, api_key, authurl, container, file
-
-

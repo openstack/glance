@@ -39,20 +39,9 @@ class Backend(object):
     CHUNKSIZE = 4096
 
 
-class TestStrBackend(Backend):
-    """ Backend used for testing """
-
-    @classmethod
-    def get(cls, parsed_uri, expected_size):
-        """
-        teststr://data
-        """
-        yield parsed_uri.path
-
-
 class FilesystemBackend(Backend):
     @classmethod
-    def get(cls, parsed_uri, expected_size, opener=lambda p: open(p, "b")):
+    def get(cls, parsed_uri, expected_size, opener=lambda p: open(p, "rb")):
         """ Filesystem-based backend
 
         file:///path/to/file.tar.gz.0
@@ -72,8 +61,7 @@ def get_from_backend(uri, **kwargs):
         "file": FilesystemBackend,
         "http": HTTPBackend,
         "https": HTTPBackend,
-        "swift": SwiftBackend,
-        "teststr": TestStrBackend
+        "swift": SwiftBackend
     }
 
     parsed_uri = urlparse.urlparse(uri)
@@ -85,4 +73,3 @@ def get_from_backend(uri, **kwargs):
         raise UnsupportedBackend("No backend found for '%s'" % scheme)
 
     return backend.get(parsed_uri, **kwargs)
-
