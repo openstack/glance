@@ -16,7 +16,7 @@
 #    under the License.
 
 import stubout
-import unittest2 as unittest
+import unittest
 from webob import Request, exc
 
 from glance.teller import controllers

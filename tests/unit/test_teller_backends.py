@@ -18,7 +18,7 @@
 from StringIO import StringIO
 
 import stubout
-import unittest2 as unittest
+import unittest
 
 from glance.teller.backends.swift import SwiftBackend
 from glance.teller.backends import Backend, BackendException, get_from_backend
