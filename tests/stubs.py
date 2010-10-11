@@ -17,11 +17,70 @@
 
 """Stubouts, mocks and fixtures for the test suite"""
 
+import httplib
+import StringIO
+
 import stubout
 
 import glance.teller.backends.swift
 
-def stub_out_swift(stubs):
+def stub_out_http_backend(stubs):
+    """Stubs out the httplib.HTTPRequest.getresponse to return
+    faked-out data instead of grabbing actual contents of a resource
+
+    The stubbed getresponse() returns an iterator over 
+    the data "I am a teapot, short and stout\n"
+
+    :param stubs: Set of stubout stubs
+
+    """
+
+    class FakeHTTPConnection(object):
+
+        DATA = 'I am a teapot, short and stout\n'
+
+        def getresponse(self):
+            return StringIO.StringIO(self.DATA)
+
+        def request(self, *_args, **_kwargs):
+            pass
+
+    fake_http_conn = FakeHTTPConnection()
+    stubs.Set(httplib.HTTPConnection, 'request',
+              fake_http_conn.request)
+    stubs.Set(httplib.HTTPSConnection, 'request',
+              fake_http_conn.request)
+    stubs.Set(httplib.HTTPConnection, 'getresponse',
+              fake_http_conn.getresponse)
+    stubs.Set(httplib.HTTPSConnection, 'getresponse',
+              fake_http_conn.getresponse)
+
+
+def stub_out_filesystem_backend(stubs):
+    """Stubs out the Filesystem Teller service to return fake
+    data from files.
+
+    The stubbed service always yields the following fixture::
+
+        //chunk0
+        //chunk1
+
+    :param stubs: Set of stubout stubs
+
+    """
+    class FakeFilesystemBackend(object):
+
+        @classmethod
+        def get(cls, parsed_uri, expected_size, conn_class=None):
+
+            return StringIO.StringIO(parsed_uri.path)
+
+    fake_filesystem_backend = FakeFilesystemBackend()
+    stubs.Set(glance.teller.backends.FilesystemBackend, 'get',
+              fake_filesystem_backend.get)
+
+
+def stub_out_swift_backend(stubs):
     """Stubs out the Swift Teller backend with fake data
     and calls.
 
@@ -58,3 +117,33 @@ def stub_out_swift(stubs):
     fake_swift_backend = FakeSwiftBackend()
     stubs.Set(glance.teller.backends.swift.SwiftBackend, 'get',
               fake_swift_backend.get)
+
+
+def stub_out_parallax(stubs):
+    """Stubs out the Parallax registry with fake data returns.
+
+    The stubbed Parallax always returns the following fixture::
+
+        {'files': [
+          {'location': 'file:///chunk0', 'size': 12345},
+          {'location': 'file:///chunk1', 'size': 1235}
+        ]}
+
+    :param stubs: Set of stubout stubs
+
+    """
+    class FakeParallax(object):
+
+        DATA = \
+            {'files': [
+              {'location': 'file:///chunk0', 'size': 12345},
+              {'location': 'file:///chunk1', 'size': 1235}
+            ]}
+
+        @classmethod
+        def lookup(cls, _parsed_uri):
+            return cls.DATA
+
+    fake_parallax_registry = FakeParallax()
+    stubs.Set(glance.teller.registries.Parallax, 'lookup',
+              fake_parallax_registry.lookup)

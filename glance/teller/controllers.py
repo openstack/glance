@@ -18,8 +18,11 @@
 Teller Image controller
 """
 
+import logging
+
 import routes
 from webob import exc, Response
+
 from glance.common import wsgi
 from glance.common import exception
 from glance.parallax import db
@@ -50,7 +53,8 @@ class ImageController(wsgi.Controller):
 
         try:
             image = registries.lookup_by_registry(registry, uri)
-        except registries.UnknownRegistryAdapter:
+            logging.debug("Found image registry for URI: %s. Got: %s", uri, image)
+        except registries.UnknownImageRegistry:
             return exc.HTTPBadRequest(body="Unknown registry '%s'" % registry,
                                       request=req,
                                       content_type="text/plain")
@@ -98,4 +102,3 @@ class API(wsgi.Router):
         mapper.resource("image", "image", controller=ImageController(),
                         collection={'detail': 'GET'})
         super(API, self).__init__(mapper)
-

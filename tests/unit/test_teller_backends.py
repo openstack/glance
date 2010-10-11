@@ -20,9 +20,9 @@ from StringIO import StringIO
 import stubout
 import unittest2 as unittest
 
-from tests import stubs
 from glance.teller.backends.swift import SwiftBackend
 from glance.teller.backends import Backend, BackendException, get_from_backend
+from tests import stubs
 
 Backend.CHUNKSIZE = 2
 
@@ -57,38 +57,40 @@ class TestHTTPBackend(TestBackend):
 
     def setUp(self):
         super(TestHTTPBackend, self).setUp()
-        #stubs.stub_out_http_connection()
+        stubs.stub_out_http_backend(self.stubs)
 
-    def test_get(self):
-        class FakeHTTPConnection(object):
-            def __init__(self, *args, **kwargs):
-                pass
-            def request(self, *args, **kwargs):
-                pass
-            def getresponse(self):
-                return StringIO('fakedata')
-            def close(self):
-                pass
-
-        fetcher = get_from_backend("http://netloc/path/to/file.tar.gz",
-                                   expected_size=8,
-                                   conn_class=FakeHTTPConnection)
+    def test_http_get(self):
+        url = "http://netloc/path/to/file.tar.gz"
+        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 
+                            'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
+        fetcher = get_from_backend(url,
+                                   expected_size=8)
 
         chunks = [c for c in fetcher]
-        self.assertEqual(chunks, ["fa", "ke", "da", "ta"])
+        self.assertEqual(chunks, expected_returns)
+
+    def test_https_get(self):
+        url = "https://netloc/path/to/file.tar.gz"
+        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 
+                            'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
+        fetcher = get_from_backend(url,
+                                   expected_size=8)
+
+        chunks = [c for c in fetcher]
+        self.assertEqual(chunks, expected_returns)
 
 
 class TestSwiftBackend(TestBackend):
 
     def setUp(self):
         super(TestSwiftBackend, self).setUp()
-        stubs.stub_out_swift(self.stubs)
+        stubs.stub_out_swift_backend(self.stubs)
 
     def test_get(self):
 
         swift_uri = "swift://user:password@localhost/container1/file.tar.gz"
-        swift_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 
-                         'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
+        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 
+                            'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
 
         fetcher = get_from_backend(swift_uri,
                                    expected_size=21,
@@ -96,7 +98,7 @@ class TestSwiftBackend(TestBackend):
 
         chunks = [c for c in fetcher]
 
-        self.assertEqual(chunks, swift_returns)
+        self.assertEqual(chunks, expected_returns)
 
     def test_get_bad_uri(self):
 
