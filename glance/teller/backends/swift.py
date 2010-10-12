@@ -70,7 +70,13 @@ class SwiftBackend(Backend):
         netloc = parsed_uri.netloc
 
         try:
-            creds, netloc = netloc.split('@')
+            try:
+                creds, netloc = netloc.split('@')
+            except ValueError:
+                # Python 2.6.1 compat
+                # see lp659445 and Python issue7904
+                creds, path = path.split('@')
+
             user, api_key = creds.split(':')
             path_parts = path.split('/')
             file = path_parts.pop()
