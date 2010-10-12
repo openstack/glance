@@ -20,6 +20,7 @@ import stubout
 import unittest
 import webob
 
+from glance.common import exception
 from glance.parallax import controllers
 from glance.parallax import db
 from tests import stubs
@@ -82,8 +83,7 @@ class TestImageController(unittest.TestCase):
 
     def test_create_image(self):
         """Tests that the /images POST parallax API creates the image"""
-        fixture = {'id': 3,
-                   'name': 'fake public image',
+        fixture = {'name': 'fake public image',
                    'is_public': True,
                    'image_type': 'kernel'
                   }
@@ -102,5 +102,27 @@ class TestImageController(unittest.TestCase):
         for k,v in fixture.iteritems():
             self.assertEquals(v, res_dict[k])
 
+        # Test ID auto-assigned properly
+        self.assertEquals(3, res_dict['id'])
+
         # Test status was updated properly
         self.assertEquals('available', res_dict['status'])
+
+    def test_create_image_with_bad_status(self):
+        """Tests proper exception is raised if a bad status is set"""
+        fixture = {'id': 3,
+                   'name': 'fake public image',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'status': 'bad status'
+                  }
+
+        req = webob.Request.blank('/images')
+            
+        req.method = 'POST'
+        req.body = json.dumps(fixture)
+
+        # TODO(jaypipes): Port Nova's Fault infrastructure
+        # over to Glance to support exception catching into
+        # standard HTTP errors.
+        self.assertRaises(exception.Invalid, req.get_response, controllers.API())

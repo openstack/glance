@@ -23,6 +23,7 @@ import StringIO
 
 import stubout
 
+from glance.common import exception
 import glance.teller.backends.swift
 import glance.parallax.db.sqlalchemy.api
 
@@ -187,14 +188,21 @@ def stub_out_parallax_db_image_api(stubs):
                 'files': [],
                 'metadata': []}]
 
+        VALID_STATUSES = ('available', 'disabled', 'pending')
+
         def __init__(self):
             self.images = self.FIXTURES
             self.next_id = 3
 
         def image_create(self, _context, values):
             values['id'] = self.next_id
+
             if 'status' not in values.keys():
                 values['status'] = 'available'
+            else:
+                if not values['status'] in self.VALID_STATUSES:
+                    raise exception.Invalid("Invalid status '%s' for image" % values['status'])
+            
             self.next_id += 1
             self.images.extend(values)
             return values

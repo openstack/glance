@@ -132,11 +132,15 @@ class Image(BASE, ModelBase):
 
     @validates('image_type')
     def validate_image_type(self, key, image_type):
-        assert(image_type in ('machine', 'kernel', 'ramdisk', 'raw'))
+        if not image_type in ('machine', 'kernel', 'ramdisk', 'raw'):
+            raise exception.Invalid("Invalid image type '%s' for image." % image_type)
+        return image_type
     
     @validates('status')
     def validate_status(self, key, state):
-        assert(state in ('available', 'pending', 'disabled'))
+        if not state in ('available', 'pending', 'disabled'):
+            raise exception.Invalid("Invalid status '%s' for image." % status)
+        return image_type
     
     # TODO(sirp): should these be stored as metadata?
     #user_id = Column(String(255))
