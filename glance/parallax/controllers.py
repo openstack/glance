@@ -18,15 +18,20 @@
 Parllax Image controller
 """
 
+import json
 import routes
+from webob import exc
+
 from glance.common import wsgi
 from glance.common import exception
 from glance.parallax import db
-from webob import exc
 
 
 class ImageController(wsgi.Controller):
     """Image Controller """
+
+    def __init__(self):
+        super(ImageController, self).__init__()
     
     def index(self, req):
         """Return data for all public, non-deleted images """
@@ -52,8 +57,25 @@ class ImageController(wsgi.Controller):
         raise exc.HTTPNotImplemented()
 
     def create(self, req):
-        """Create is not currently supported """
-        raise exc.HTTPNotImplemented()
+        """Registers a new image with the registry.
+
+        :param req: Request body.  A JSON-ified dict of information about
+                    the image.
+
+        :retval Returns the newly-created image information as a mapping,
+                which will include the newly-created image's internal id
+                in the 'id' field
+
+        """
+        image_data = json.loads(req.body)
+
+        # Ensure the image has a status set
+        if 'status' not in image_data.keys():
+            image_data['status'] = 'available'
+
+        context = None
+        new_image = db.image_create(context, image_data)
+        return dict(new_image)
 
     def update(self, req, id):
         """Update is not currently supported """
@@ -64,23 +86,23 @@ class ImageController(wsgi.Controller):
         """ Create a dict represenation of an image which we can use to
         serialize the image.
         """
-        def _fetch_attrs(obj, attrs):
-            return dict([(a, getattr(obj, a)) for a in attrs])
+        def _fetch_attrs(d, attrs):
+            return dict([(a, d[a]) for a in attrs])
 
         # attributes common to all models
         base_attrs = set(['id', 'created_at', 'updated_at', 'deleted_at',
                           'deleted'])
 
         file_attrs = base_attrs | set(['location', 'size'])
-        files = [_fetch_attrs(f, file_attrs) for f in image.files]
+        files = [_fetch_attrs(f, file_attrs) for f in image['files']]
 
         # TODO(sirp): should this be a dict, or a list of dicts?
         # A plain dict is more convenient, but list of dicts would provide
         # access to created_at, etc
-        metadata = dict((m.key, m.value) for m in image.metadata 
-                        if not m.deleted)
+        metadata = dict((m['key'], m['value']) for m in image['metadata'] 
+                        if not m['deleted'])
 
-        image_attrs = base_attrs | set(['name', 'image_type', 'state', 'public'])
+        image_attrs = base_attrs | set(['name', 'image_type', 'status', 'is_public'])
         image_dict = _fetch_attrs(image, image_attrs)
 
         image_dict['files'] = files
@@ -94,6 +116,6 @@ class API(wsgi.Router):
     def __init__(self):
         # TODO(sirp): should we add back the middleware for parallax?
         mapper = routes.Mapper()
-        mapper.resource("image", "images", controller=ImageController(),
-                        collection={'detail': 'GET'})
+        mapper.resource("image", "images", controller=ImageController())
+        mapper.connect("/", controller=ImageController(), action="index")
         super(API, self).__init__(mapper)

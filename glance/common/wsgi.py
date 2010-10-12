@@ -224,7 +224,6 @@ class Controller(object):
         Uses self._serialization_metadata if it exists, which is a dict mapping
         MIME types to information needed to serialize to that type.
         """
-        # FIXME(sirp): type(self) should just be `self`
         _metadata = getattr(type(self), "_serialization_metadata", {})
         serializer = Serializer(request.environ, _metadata)
         return serializer.to_content_type(data)

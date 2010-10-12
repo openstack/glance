@@ -95,7 +95,7 @@ def image_get_all_public(context, public):
                  ).options(joinedload(models.Image.files)
                  ).options(joinedload(models.Image.metadata)
                  ).filter_by(deleted=_deleted(context)
-                 ).filter_by(public=public
+                 ).filter_by(is_public=public
                  ).all()
 
 

@@ -23,22 +23,20 @@ SQLAlchemy models for glance data
 import sys
 import datetime
 
-# TODO(vish): clean up these imports
-from sqlalchemy.orm import relationship, backref, exc, object_mapper
+from sqlalchemy.orm import relationship, backref, exc, object_mapper, validates
 from sqlalchemy import Column, Integer, String
 from sqlalchemy import ForeignKey, DateTime, Boolean, Text
 from sqlalchemy.ext.declarative import declarative_base
 
 from glance.common.db.sqlalchemy.session import get_session
 
-# FIXME(sirp): confirm this is not needed
-#from common import auth
 from glance.common import exception
 from glance.common import flags
 
 FLAGS = flags.FLAGS
 
 BASE = declarative_base()
+
 
 #TODO(sirp): ModelBase should be moved out so Glance and Nova can share it
 class ModelBase(object):
@@ -128,18 +126,18 @@ class Image(BASE, ModelBase):
     
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
-    image_type = Column(String(255))
-    state = Column(String(255))
-    public = Column(Boolean, default=False)
+    image_type = Column(String(30))
+    status = Column(String(30))
+    is_public = Column(Boolean, default=False)
 
-    #@validates('image_type')
-    #def validate_image_type(self, key, image_type):
-    #    assert(image_type in ('machine', 'kernel', 'ramdisk', 'raw'))
-    #
-    #@validates('state')
-    #def validate_state(self, key, state):
-    #    assert(state in ('available', 'pending', 'disabled'))
-    #
+    @validates('image_type')
+    def validate_image_type(self, key, image_type):
+        assert(image_type in ('machine', 'kernel', 'ramdisk', 'raw'))
+    
+    @validates('status')
+    def validate_status(self, key, state):
+        assert(state in ('available', 'pending', 'disabled'))
+    
     # TODO(sirp): should these be stored as metadata?
     #user_id = Column(String(255))
     #project_id = Column(String(255))
