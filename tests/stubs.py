@@ -17,12 +17,15 @@
 
 """Stubouts, mocks and fixtures for the test suite"""
 
+import datetime
 import httplib
 import StringIO
 
 import stubout
 
+from glance.common import exception
 import glance.teller.backends.swift
+import glance.parallax.db.sqlalchemy.api
 
 def stub_out_http_backend(stubs):
     """Stubs out the httplib.HTTPRequest.getresponse to return
@@ -147,3 +150,87 @@ def stub_out_parallax(stubs):
     fake_parallax_registry = FakeParallax()
     stubs.Set(glance.teller.registries.Parallax, 'lookup',
               fake_parallax_registry.lookup)
+
+
+def stub_out_parallax_db_image_api(stubs):
+    """Stubs out the database set/fetch API calls for Parallax
+    so the calls are routed to an in-memory dict. This helps us
+    avoid having to manually clear or flush the SQLite database.
+
+    The "datastore" always starts with this set of image fixtures.
+
+    :param stubs: Set of stubout stubs
+
+    """
+    class FakeDatastore(object):
+
+        FIXTURES = [
+            {'id': 1,
+                'name': 'fake image #1',
+                'status': 'available',
+                'image_type': 'kernel',
+                'is_public': False,
+                'created_at': datetime.datetime.utcnow(),
+                'updated_at': datetime.datetime.utcnow(),
+                'deleted_at': None,
+                'deleted': False,
+                'files': [],
+                'metadata': []},
+            {'id': 2,
+                'name': 'fake image #2',
+                'status': 'available',
+                'image_type': 'kernel',
+                'is_public': True,
+                'created_at': datetime.datetime.utcnow(),
+                'updated_at': datetime.datetime.utcnow(),
+                'deleted_at': None,
+                'deleted': False,
+                'files': [],
+                'metadata': []}]
+
+        VALID_STATUSES = ('available', 'disabled', 'pending')
+
+        def __init__(self):
+            self.images = self.FIXTURES
+            self.next_id = 3
+
+        def image_create(self, _context, values):
+            values['id'] = self.next_id
+
+            if 'status' not in values.keys():
+                values['status'] = 'available'
+            else:
+                if not values['status'] in self.VALID_STATUSES:
+                    raise exception.Invalid("Invalid status '%s' for image" % values['status'])
+            
+            self.next_id += 1
+            self.images.extend(values)
+            return values
+
+        def image_destroy(self, _context, image_id):
+            try:
+                del self.images[image_id]
+            except KeyError:
+                new_exc = exception.NotFound("No model for id %s" % image_id)
+                raise new_exc.__class__, new_exc, sys.exc_info()[2]
+
+        def image_get(self, _context, image_id):
+            if image_id not in self.images.keys() or self.images[image_id]['deleted']:
+                new_exc = exception.NotFound("No model for id %s" % image_id)
+                raise new_exc.__class__, new_exc, sys.exc_info()[2]
+            else:
+                return self.images[image_id]
+
+        def image_get_all_public(self, _context, public):
+            return [f for f in self.images
+                    if f['is_public'] == public]
+
+    fake_datastore = FakeDatastore()
+    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_create',
+              fake_datastore.image_create)
+    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_destroy',
+              fake_datastore.image_destroy)
+    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_get',
+              fake_datastore.image_get)
+    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_get_all_public',
+              fake_datastore.image_get_all_public)

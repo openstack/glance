@@ -41,12 +41,12 @@ process_options $options
 
 if [ $never_venv -eq 1 ]; then
   # Just run the test suites in current environment
-  python run_tests.py
+  nosetests --logging-clear-handlers
   exit
 fi
 
 if [ -e ${venv} ]; then
-  ${with_venv} nosetests
+  ${with_venv} nosetests --logging-clear-handlers
 else  
   if [ $always_venv -eq 1 ]; then
     # Automatically install the virtualenv
@@ -58,9 +58,9 @@ else
       # Install the virtualenv and run the test suite in it
       python tools/install_venv.py
     else
-      nosetests
+      nosetests --logging-clear-handlers
       exit
     fi
   fi
-  ${with_venv} nosetests
+  ${with_venv} nosetests --logging-clear-handlers
 fi

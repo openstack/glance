@@ -95,7 +95,7 @@ class ImageController(wsgi.Controller):
 
 
 class API(wsgi.Router):
-    """WSGI entry point for all Parallax requests."""
+    """WSGI entry point for all Teller requests."""
 
     def __init__(self):
         mapper = routes.Mapper()
