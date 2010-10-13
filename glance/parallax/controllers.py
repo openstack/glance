@@ -28,20 +28,41 @@ from glance.parallax import db
 
 
 class ImageController(wsgi.Controller):
-    """Image Controller """
 
-    def __init__(self):
-        super(ImageController, self).__init__()
+    """Image Controller """
     
     def index(self, req):
-        """Return data for all public, non-deleted images """
+        """Return basic information for all public, non-deleted images
+        
+        :param req: the Request object coming from the wsgi layer
+        :retval a mapping of the following form::
+
+            dict(images=[image_list])
+
+        Where image_list is a sequence of mappings::
+
+            {'id': image_id, 'name': image_name}
+        
+        """
         images = db.image_get_all_public(None)
-        image_dicts = [self._make_image_dict(i) for i in images]
+        image_dicts = [dict(id=i['id'], name=i['name']) for i in images]
         return dict(images=image_dicts)
 
     def detail(self, req):
-        """Detail is not currently supported """
-        raise exc.HTTPNotImplemented()
+        """Return detailed information for all public, non-deleted images
+        
+        :param req: the Request object coming from the wsgi layer
+        :retval a mapping of the following form::
+
+            dict(images=[image_list])
+
+        Where image_list is a sequence of mappings containing
+        all image model fields.
+        
+        """
+        images = db.image_get_all_public(None)
+        image_dicts = [self._make_image_dict(i) for i in images]
+        return dict(images=image_dicts)
 
     def show(self, req, id):
         """Return data about the given image id."""
@@ -70,8 +91,7 @@ class ImageController(wsgi.Controller):
         image_data = json.loads(req.body)
 
         # Ensure the image has a status set
-        if 'status' not in image_data.keys():
-            image_data['status'] = 'available'
+        image_data.setdefault('status', 'available')
 
         context = None
         new_image = db.image_create(context, image_data)
@@ -116,6 +136,7 @@ class API(wsgi.Router):
     def __init__(self):
         # TODO(sirp): should we add back the middleware for parallax?
         mapper = routes.Mapper()
-        mapper.resource("image", "images", controller=ImageController())
+        mapper.resource("image", "images", controller=ImageController(),
+                       collection={'detail': 'GET'})
         mapper.connect("/", controller=ImageController(), action="index")
         super(API, self).__init__(mapper)

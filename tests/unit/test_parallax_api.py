@@ -43,11 +43,7 @@ class TestImageController(unittest.TestCase):
         
         """
         fixture = {'id': 2,
-                   'name': 'fake image #2',
-                   'is_public': True,
-                   'image_type': 'kernel',
-                   'status': 'available'
-                  }
+                   'name': 'fake image #2'}
         req = webob.Request.blank('/')
         res = req.get_response(controllers.API())
         res_dict = json.loads(res.body)
@@ -59,9 +55,27 @@ class TestImageController(unittest.TestCase):
         for k,v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
 
-    def test_get_images(self):
+    def test_get_index(self):
         """Tests that the /images parallax API returns list of
         public images
+        
+        """
+        fixture = {'id': 2,
+                   'name': 'fake image #2'}
+        req = webob.Request.blank('/images')
+        res = req.get_response(controllers.API())
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        for k,v in fixture.iteritems():
+            self.assertEquals(v, images[0][k])
+
+    def test_get_details(self):
+        """Tests that the /images/detail parallax API returns
+        a mapping containing a list of detailed image information
         
         """
         fixture = {'id': 2,
@@ -70,7 +84,7 @@ class TestImageController(unittest.TestCase):
                    'image_type': 'kernel',
                    'status': 'available'
                   }
-        req = webob.Request.blank('/images')
+        req = webob.Request.blank('/images/detail')
         res = req.get_response(controllers.API())
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
