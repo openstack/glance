@@ -140,3 +140,43 @@ class TestImageController(unittest.TestCase):
         # over to Glance to support exception catching into
         # standard HTTP errors.
         self.assertRaises(exception.Invalid, req.get_response, controllers.API())
+
+    def test_update_image(self):
+        """Tests that the /images PUT parallax API updates the image"""
+        fixture = {'name': 'fake public image #2',
+                   'image_type': 'ramdisk'
+                  }
+
+        req = webob.Request.blank('/images/2')
+            
+        req.method = 'PUT'
+        req.body = json.dumps(fixture)
+
+        res = req.get_response(controllers.API())
+
+        self.assertEquals(res.status_int, 200)
+
+        res_dict = json.loads(res.body)
+
+        for k,v in fixture.iteritems():
+            self.assertEquals(v, res_dict[k])
+
+    def test_update_image_not_existing(self):
+        """Tests proper exception is raised if attempt to update non-existing
+        image"""
+        fixture = {'id': 3,
+                   'name': 'fake public image',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'status': 'bad status'
+                  }
+
+        req = webob.Request.blank('/images/3')
+            
+        req.method = 'PUT'
+        req.body = json.dumps(fixture)
+
+        # TODO(jaypipes): Port Nova's Fault infrastructure
+        # over to Glance to support exception catching into
+        # standard HTTP errors.
+        self.assertRaises(exception.NotFound, req.get_response, controllers.API())

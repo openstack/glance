@@ -53,8 +53,7 @@ def _deleted(context):
 
 def image_create(_context, values):
     image_ref = models.Image()
-    for (key, value) in values.iteritems():
-        image_ref[key] = value
+    image_ref.update(values)
     image_ref.save()
     return image_ref
 
@@ -107,8 +106,7 @@ def image_update(_context, image_id, values):
     session = get_session()
     with session.begin():
         image_ref = models.Image.find(image_id, session=session)
-        for (key, value) in values.iteritems():
-            image_ref[key] = value
+        image_ref.update(values)
         image_ref.save(session=session)
 
 

@@ -98,22 +98,33 @@ class ImageController(wsgi.Controller):
         return dict(new_image)
 
     def update(self, req, id):
-        """Update is not currently supported """
-        raise exc.HTTPNotImplemented()
+        """Updates an existing image with the registry.
+
+        :param req: Request body.  A JSON-ified dict of information about
+                    the image.  This will replace the information in the
+                    registry about this image
+        :param id:  The opaque internal identifier for the image
+
+        :retval Returns the updated image information as a mapping,
+
+        """
+        image_data = json.loads(req.body)
+
+        context = None
+        updated_image = db.image_update(context, id, image_data)
+        return dict(updated_image)
 
     @staticmethod
     def _make_image_dict(image):
-        """ Create a dict represenation of an image which we can use to
+        """Create a dict representation of an image which we can use to
         serialize the image.
+        
         """
+        
         def _fetch_attrs(d, attrs):
             return dict([(a, d[a]) for a in attrs])
 
-        # attributes common to all models
-        base_attrs = set(['id', 'created_at', 'updated_at', 'deleted_at',
-                          'deleted'])
-
-        file_attrs = base_attrs | set(['location', 'size'])
+        file_attrs = db.BASE_MODEL_ATTRS | set(['location', 'size'])
         files = [_fetch_attrs(f, file_attrs) for f in image['files']]
 
         # TODO(sirp): should this be a dict, or a list of dicts?
@@ -122,7 +133,7 @@ class ImageController(wsgi.Controller):
         metadata = dict((m['key'], m['value']) for m in image['metadata'] 
                         if not m['deleted'])
 
-        image_attrs = base_attrs | set(['name', 'image_type', 'status', 'is_public'])
+        image_attrs = db.BASE_MODEL_ATTRS | set(['name', 'image_type', 'status', 'is_public'])
         image_dict = _fetch_attrs(image, image_attrs)
 
         image_dict['files'] = files
