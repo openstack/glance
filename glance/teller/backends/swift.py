@@ -30,36 +30,48 @@ class SwiftBackend(Backend):
         Takes a parsed_uri in the format of: 
         swift://user:password@auth_url/container/file.gz.0, connects to the 
         swift instance at auth_url and downloads the file. Returns the generator
-        provided by stream() on the swift object representing the file.
+        resp_body provided by get_object.
         """
-        (user, api_key, authurl, container, file) = \
-            cls.parse_swift_tokens(parsed_uri)
-
         if conn_class:
             pass # Use the provided conn_class
         else:
+            # NOTE(sirp): A standard import statement won't work here because
+            # this file ('swift.py') is shadowing the swift module, and since
+            # the import statement searches locally before globally, we'd end
+            # up importing ourselves.
+            #
+            # see http://docs.python.org/library/functions.html#__import__
+            PERFORM_ABSOLUTE_IMPORTS = 0
+            swift = __import__('swift.common.client', globals(), locals(), [],
+                                PERFORM_ABSOLUTE_IMPORTS)
+
             # Import cloudfiles here because stubout will replace this call
             # with a faked swift client in the unittests, avoiding import
             # errors if the test system does not have cloudfiles installed
-            import cloudfiles
-            conn_class = cloudfiles
+            conn_class = swift.common.client.Connection
 
-        swift_conn = conn_class.get_connection(username=user, api_key=api_key,
-                                               authurl=authurl)
+        (user, key, authurl, container, obj) = \
+            cls._parse_swift_tokens(parsed_uri)
+        
+        # TODO(sirp): snet=False for now, however, if the instance of
+        # swift we're talking to is within our same region, we should set
+        # snet=True
+        swift_conn = conn_class(
+            authurl=authurl, user=user, key=key, snet=False)
 
-        container = swift_conn.get_container(container)
+        (resp_headers, resp_body) = swift_conn.get_object(
+            container=container, obj=obj, resp_chunk_size=cls.CHUNKSIZE)
 
-        obj = container.get_object(file)
-
-        if obj.size != expected_size:
-            raise BackendException("Expected %s size file, Swift has %s"
-                                   % (expected_size, obj.size))
-
-        # Return the generator provided from obj.stream()
-        return obj.stream(chunksize=cls.CHUNKSIZE)
-
+        obj_size = int(resp_headers['content-length'])
+        if  obj_size != expected_size:
+            raise BackendException("Expected %s byte file, Swift has %s bytes"
+                                   % (expected_size, obj_size))
+        
+        return resp_body
+    
+    
     @classmethod
-    def parse_swift_tokens(cls, parsed_uri):
+    def _parse_swift_tokens(cls, parsed_uri):
         """
         Parsing the swift uri is three phases:
             1) urlparse to split the tokens
@@ -77,9 +89,9 @@ class SwiftBackend(Backend):
                 # see lp659445 and Python issue7904
                 creds, path = path.split('@')
 
-            user, api_key = creds.split(':')
+            user, key = creds.split(':')
             path_parts = path.split('/')
-            file = path_parts.pop()
+            obj = path_parts.pop()
             container = path_parts.pop()
         except (ValueError, IndexError):
             raise BackendException(
@@ -89,4 +101,4 @@ class SwiftBackend(Backend):
 
         authurl = "https://%s" % '/'.join(path_parts)
 
-        return user, api_key, authurl, container, file
+        return user, key, authurl, container, obj
