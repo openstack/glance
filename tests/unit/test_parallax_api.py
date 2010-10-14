@@ -180,3 +180,45 @@ class TestImageController(unittest.TestCase):
         # over to Glance to support exception catching into
         # standard HTTP errors.
         self.assertRaises(exception.NotFound, req.get_response, controllers.API())
+
+    def test_delete_image(self):
+        """Tests that the /images DELETE parallax API deletes the image"""
+
+        # Grab the original number of images
+        req = webob.Request.blank('/images')
+        res = req.get_response(controllers.API())
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        orig_num_images = len(res_dict['images'])
+
+        # Delete image #2
+        req = webob.Request.blank('/images/2')
+            
+        req.method = 'DELETE'
+
+        res = req.get_response(controllers.API())
+
+        self.assertEquals(res.status_int, 200)
+
+        # Verify one less image
+        req = webob.Request.blank('/images')
+        res = req.get_response(controllers.API())
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        new_num_images = len(res_dict['images'])
+        self.assertEquals(new_num_images, orig_num_images - 1)
+
+    def test_delete_image_not_existing(self):
+        """Tests proper exception is raised if attempt to delete non-existing
+        image"""
+
+        req = webob.Request.blank('/images/3')
+            
+        req.method = 'DELETE'
+
+        # TODO(jaypipes): Port Nova's Fault infrastructure
+        # over to Glance to support exception catching into
+        # standard HTTP errors.
+        self.assertRaises(exception.NotFound, req.get_response, controllers.API())

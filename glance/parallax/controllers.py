@@ -74,8 +74,16 @@ class ImageController(wsgi.Controller):
         return dict(image=self._make_image_dict(image))
 
     def delete(self, req, id):
-        """Delete is not currently supported """
-        raise exc.HTTPNotImplemented()
+        """Deletes an existing image with the registry.
+
+        :param req: Request body.  Ignored.
+        :param id:  The opaque internal identifier for the image
+
+        :retval Returns 200 if delete was successful, a fault if not.
+
+        """
+        context = None
+        updated_image = db.image_destroy(context, id)
 
     def create(self, req):
         """Registers a new image with the registry.

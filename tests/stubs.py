@@ -202,7 +202,8 @@ def stub_out_parallax_db_image_api(stubs):
                 values['status'] = 'available'
             else:
                 if not values['status'] in self.VALID_STATUSES:
-                    raise exception.Invalid("Invalid status '%s' for image" % values['status'])
+                    raise exception.Invalid("Invalid status '%s' for image" %
+                                            values['status'])
             
             self.next_id += 1
             self.images.append(values)
@@ -222,7 +223,8 @@ def stub_out_parallax_db_image_api(stubs):
             images = [i for i in self.images if str(i['id']) == str(image_id)]
 
             if len(images) != 1 or images[0]['deleted']:
-                new_exc = exception.NotFound("No model for id %s %s" % (image_id, str(self.images)))
+                new_exc = exception.NotFound("No model for id %s %s" %
+                                             (image_id, str(self.images)))
                 raise new_exc.__class__, new_exc, sys.exc_info()[2]
             else:
                 return images[0]
