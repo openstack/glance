@@ -103,7 +103,7 @@ class ImageController(wsgi.Controller):
 
         context = None
         new_image = db.image_create(context, image_data)
-        return dict(new_image)
+        return dict(image=new_image)
 
     def update(self, req, id):
         """Updates an existing image with the registry.
@@ -120,7 +120,7 @@ class ImageController(wsgi.Controller):
 
         context = None
         updated_image = db.image_update(context, id, image_data)
-        return dict(updated_image)
+        return dict(image=updated_image)
 
     @staticmethod
     def _make_image_dict(image):

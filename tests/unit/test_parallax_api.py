@@ -114,13 +114,13 @@ class TestImageController(unittest.TestCase):
         res_dict = json.loads(res.body)
 
         for k,v in fixture.iteritems():
-            self.assertEquals(v, res_dict[k])
+            self.assertEquals(v, res_dict['image'][k])
 
         # Test ID auto-assigned properly
-        self.assertEquals(3, res_dict['id'])
+        self.assertEquals(3, res_dict['image']['id'])
 
         # Test status was updated properly
-        self.assertEquals('available', res_dict['status'])
+        self.assertEquals('available', res_dict['image']['status'])
 
     def test_create_image_with_bad_status(self):
         """Tests proper exception is raised if a bad status is set"""
@@ -159,7 +159,7 @@ class TestImageController(unittest.TestCase):
         res_dict = json.loads(res.body)
 
         for k,v in fixture.iteritems():
-            self.assertEquals(v, res_dict[k])
+            self.assertEquals(v, res_dict['image'][k])
 
     def test_update_image_not_existing(self):
         """Tests proper exception is raised if attempt to update non-existing
