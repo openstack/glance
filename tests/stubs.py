@@ -109,8 +109,8 @@ def stub_out_swift_backend(stubs):
             SwiftBackend = glance.teller.backends.swift.SwiftBackend
 
             # raise BackendException if URI is bad.
-            (user, api_key, authurl, container, file) = \
-                SwiftBackend.parse_swift_tokens(parsed_uri)
+            (user, key, authurl, container, obj) = \
+                SwiftBackend._parse_swift_tokens(parsed_uri)
 
             def chunk_it():
                 for i in xrange(0, len(cls.DATA), cls.CHUNK_SIZE):

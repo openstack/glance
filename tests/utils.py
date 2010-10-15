@@ -18,10 +18,10 @@
 """Common utilities used in testing"""
 
 
-def is_cloudfiles_available():
+def is_swift_available():
     """Returns True if Swift/Cloudfiles is importable"""
     try:
-        import cloudfiles
+        import swift
         return True
     except ImportError:
         return False
