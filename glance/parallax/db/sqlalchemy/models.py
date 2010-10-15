@@ -106,6 +106,11 @@ class ModelBase(object):
         self.deleted_at = datetime.datetime.utcnow()
         self.save(session=session)
 
+    def update(self, values):
+        """dict.update() behaviour."""
+        for k, v in values.iteritems():
+            self[k] = v
+
     def __setitem__(self, key, value):
         setattr(self, key, value)
 
