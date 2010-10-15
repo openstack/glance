@@ -26,9 +26,10 @@ import datetime
 from sqlalchemy.orm import relationship, backref, exc, object_mapper, validates
 from sqlalchemy import Column, Integer, String
 from sqlalchemy import ForeignKey, DateTime, Boolean, Text
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 
-from glance.common.db.sqlalchemy.session import get_session
+from glance.common.db.sqlalchemy.session import get_session, get_engine
 
 from glance.common import exception
 from glance.common import flags
@@ -133,14 +134,15 @@ class Image(BASE, ModelBase):
     @validates('image_type')
     def validate_image_type(self, key, image_type):
         if not image_type in ('machine', 'kernel', 'ramdisk', 'raw'):
-            raise exception.Invalid("Invalid image type '%s' for image." % image_type)
+            raise exception.Invalid(
+                "Invalid image type '%s' for image." % image_type)
         return image_type
     
     @validates('status')
-    def validate_status(self, key, state):
-        if not state in ('available', 'pending', 'disabled'):
+    def validate_status(self, key, status):
+        if not status in ('available', 'pending', 'disabled'):
             raise exception.Invalid("Invalid status '%s' for image." % status)
-        return image_type
+        return status
     
     # TODO(sirp): should these be stored as metadata?
     #user_id = Column(String(255))
@@ -176,18 +178,24 @@ class ImageMetadatum(BASE, ModelBase):
     """Represents an image metadata in the datastore"""
     __tablename__ = 'image_metadata'
     __prefix__ = 'img-meta'
+    __table_args__ = (UniqueConstraint('image_id', 'key'), {})
+
     id = Column(Integer, primary_key=True)
     image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
     image = relationship(Image, backref=backref('metadata'))
     
-    key = Column(String(255), index=True, unique=True)
+    key = Column(String(255), index=True)
     value = Column(Text)
 
 
 def register_models():
     """Register Models and create metadata"""
-    from sqlalchemy import create_engine
-    models = (Image, ImageFile, ImageMetadatum)
-    engine = create_engine(FLAGS.sql_connection, echo=False)
-    for model in models:
-        model.metadata.create_all(engine)
+    engine = get_engine()
+    BASE.metadata.create_all(engine)
+
+
+def unregister_models():
+    """Unregister Models, useful clearing out data before testing"""
+    engine = get_engine()
+    BASE.metadata.drop_all(engine)
+

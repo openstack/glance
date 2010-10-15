@@ -29,14 +29,20 @@ FLAGS = flags.FLAGS
 _ENGINE = None
 _MAKER = None
 
+
+def get_engine(echo=False):
+    global _ENGINE
+    if not _ENGINE:
+        _ENGINE = create_engine(FLAGS.sql_connection, echo=echo)
+    return _ENGINE
+
+
 def get_session(autocommit=True, expire_on_commit=False):
     """Helper method to grab session"""
-    global _ENGINE
     global _MAKER
     if not _MAKER:
-        if not _ENGINE:
-            _ENGINE = create_engine(FLAGS.sql_connection, echo=False)
-        _MAKER = sessionmaker(bind=_ENGINE,
+        engine = get_engine()
+        _MAKER = sessionmaker(bind=engine,
                               autocommit=autocommit,
                               expire_on_commit=expire_on_commit)
     return _MAKER()
