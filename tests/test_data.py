@@ -31,7 +31,7 @@ def make_real_image():
         dict(name="testsnap",
              state="available",
              public=True,
-             image_type="tarball"))
+             image_type="raw"))
 
     location = (
         "swift://%s:%s@"
@@ -52,7 +52,7 @@ def make_fake_image():
         dict(name="Test Image",
              state="available",
              public=True,
-             image_type="tarball"))
+             image_type="raw"))
 
     db.image_file_create(
         None, 
