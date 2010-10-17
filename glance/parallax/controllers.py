@@ -132,8 +132,7 @@ class ImageController(wsgi.Controller):
         def _fetch_attrs(d, attrs):
             return dict([(a, d[a]) for a in attrs])
 
-        file_attrs = db.BASE_MODEL_ATTRS | set(['location', 'size'])
-        files = [_fetch_attrs(f, file_attrs) for f in image['files']]
+        files = [_fetch_attrs(f, db.IMAGE_FILE_ATTRS) for f in image['files']]
 
         # TODO(sirp): should this be a dict, or a list of dicts?
         # A plain dict is more convenient, but list of dicts would provide
@@ -141,8 +140,7 @@ class ImageController(wsgi.Controller):
         metadata = dict((m['key'], m['value']) for m in image['metadata'] 
                         if not m['deleted'])
 
-        image_attrs = db.BASE_MODEL_ATTRS | set(['name', 'image_type', 'status', 'is_public'])
-        image_dict = _fetch_attrs(image, image_attrs)
+        image_dict = _fetch_attrs(image, db.IMAGE_ATTRS)
 
         image_dict['files'] = files
         image_dict['metadata'] = metadata

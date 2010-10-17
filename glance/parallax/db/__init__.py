@@ -25,3 +25,8 @@ from glance.parallax.db.api import *
 # attributes common to all models
 BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
                         'deleted'])
+
+IMAGE_FILE_ATTRS = BASE_MODEL_ATTRS | set(['location', 'size'])
+
+IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'image_type', 'status',
+                                      'is_public'])
