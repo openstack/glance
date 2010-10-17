@@ -96,7 +96,7 @@ class ImageController(wsgi.Controller):
                 in the 'id' field
 
         """
-        image_data = json.loads(req.body)
+        image_data = json.loads(req.body)['image']
 
         # Ensure the image has a status set
         image_data.setdefault('status', 'available')
@@ -116,7 +116,7 @@ class ImageController(wsgi.Controller):
         :retval Returns the updated image information as a mapping,
 
         """
-        image_data = json.loads(req.body)
+        image_data = json.loads(req.body)['image']
 
         context = None
         updated_image = db.image_update(context, id, image_data)

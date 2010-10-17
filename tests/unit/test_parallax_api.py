@@ -105,7 +105,7 @@ class TestImageController(unittest.TestCase):
         req = webob.Request.blank('/images')
             
         req.method = 'POST'
-        req.body = json.dumps(fixture)
+        req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(controllers.API())
 
@@ -134,7 +134,7 @@ class TestImageController(unittest.TestCase):
         req = webob.Request.blank('/images')
             
         req.method = 'POST'
-        req.body = json.dumps(fixture)
+        req.body = json.dumps(dict(image=fixture))
 
         # TODO(jaypipes): Port Nova's Fault infrastructure
         # over to Glance to support exception catching into
@@ -150,7 +150,7 @@ class TestImageController(unittest.TestCase):
         req = webob.Request.blank('/images/2')
             
         req.method = 'PUT'
-        req.body = json.dumps(fixture)
+        req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(controllers.API())
 
@@ -174,7 +174,7 @@ class TestImageController(unittest.TestCase):
         req = webob.Request.blank('/images/3')
             
         req.method = 'PUT'
-        req.body = json.dumps(fixture)
+        req.body = json.dumps(dict(image=fixture))
 
         # TODO(jaypipes): Port Nova's Fault infrastructure
         # over to Glance to support exception catching into
