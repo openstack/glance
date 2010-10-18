@@ -1,3 +1,4 @@
 *.pyc
 glance.egg-info
 glance.sqlite
+*.glance-venv

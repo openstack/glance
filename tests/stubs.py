@@ -20,6 +20,7 @@
 import datetime
 import httplib
 import StringIO
+import sys
 
 import stubout
 
@@ -191,7 +192,7 @@ def stub_out_parallax_db_image_api(stubs):
         VALID_STATUSES = ('available', 'disabled', 'pending')
 
         def __init__(self):
-            self.images = self.FIXTURES
+            self.images = FakeDatastore.FIXTURES
             self.next_id = 3
 
         def image_create(self, _context, values):
@@ -201,25 +202,32 @@ def stub_out_parallax_db_image_api(stubs):
                 values['status'] = 'available'
             else:
                 if not values['status'] in self.VALID_STATUSES:
-                    raise exception.Invalid("Invalid status '%s' for image" % values['status'])
+                    raise exception.Invalid("Invalid status '%s' for image" %
+                                            values['status'])
             
             self.next_id += 1
-            self.images.extend(values)
+            self.images.append(values)
             return values
 
+        def image_update(self, _context, image_id, values):
+            image = self.image_get(_context, image_id)
+            image.update(values)
+            return image
+
         def image_destroy(self, _context, image_id):
-            try:
-                del self.images[image_id]
-            except KeyError:
-                new_exc = exception.NotFound("No model for id %s" % image_id)
-                raise new_exc.__class__, new_exc, sys.exc_info()[2]
+            image = self.image_get(_context, image_id)
+            self.images.remove(image)
 
         def image_get(self, _context, image_id):
-            if image_id not in self.images.keys() or self.images[image_id]['deleted']:
-                new_exc = exception.NotFound("No model for id %s" % image_id)
+
+            images = [i for i in self.images if str(i['id']) == str(image_id)]
+
+            if len(images) != 1 or images[0]['deleted']:
+                new_exc = exception.NotFound("No model for id %s %s" %
+                                             (image_id, str(self.images)))
                 raise new_exc.__class__, new_exc, sys.exc_info()[2]
             else:
-                return self.images[image_id]
+                return images[0]
 
         def image_get_all_public(self, _context, public):
             return [f for f in self.images
@@ -228,6 +236,8 @@ def stub_out_parallax_db_image_api(stubs):
     fake_datastore = FakeDatastore()
     stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_create',
               fake_datastore.image_create)
+    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_update',
+              fake_datastore.image_update)
     stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_destroy',
               fake_datastore.image_destroy)
     stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_get',

@@ -74,8 +74,16 @@ class ImageController(wsgi.Controller):
         return dict(image=self._make_image_dict(image))
 
     def delete(self, req, id):
-        """Delete is not currently supported """
-        raise exc.HTTPNotImplemented()
+        """Deletes an existing image with the registry.
+
+        :param req: Request body.  Ignored.
+        :param id:  The opaque internal identifier for the image
+
+        :retval Returns 200 if delete was successful, a fault if not.
+
+        """
+        context = None
+        updated_image = db.image_destroy(context, id)
 
     def create(self, req):
         """Registers a new image with the registry.
@@ -88,33 +96,43 @@ class ImageController(wsgi.Controller):
                 in the 'id' field
 
         """
-        image_data = json.loads(req.body)
+        image_data = json.loads(req.body)['image']
 
         # Ensure the image has a status set
         image_data.setdefault('status', 'available')
 
         context = None
         new_image = db.image_create(context, image_data)
-        return dict(new_image)
+        return dict(image=new_image)
 
     def update(self, req, id):
-        """Update is not currently supported """
-        raise exc.HTTPNotImplemented()
+        """Updates an existing image with the registry.
+
+        :param req: Request body.  A JSON-ified dict of information about
+                    the image.  This will replace the information in the
+                    registry about this image
+        :param id:  The opaque internal identifier for the image
+
+        :retval Returns the updated image information as a mapping,
+
+        """
+        image_data = json.loads(req.body)['image']
+
+        context = None
+        updated_image = db.image_update(context, id, image_data)
+        return dict(image=updated_image)
 
     @staticmethod
     def _make_image_dict(image):
-        """ Create a dict represenation of an image which we can use to
+        """Create a dict representation of an image which we can use to
         serialize the image.
+        
         """
+        
         def _fetch_attrs(d, attrs):
             return dict([(a, d[a]) for a in attrs])
 
-        # attributes common to all models
-        base_attrs = set(['id', 'created_at', 'updated_at', 'deleted_at',
-                          'deleted'])
-
-        file_attrs = base_attrs | set(['location', 'size'])
-        files = [_fetch_attrs(f, file_attrs) for f in image['files']]
+        files = [_fetch_attrs(f, db.IMAGE_FILE_ATTRS) for f in image['files']]
 
         # TODO(sirp): should this be a dict, or a list of dicts?
         # A plain dict is more convenient, but list of dicts would provide
@@ -122,8 +140,7 @@ class ImageController(wsgi.Controller):
         metadata = dict((m['key'], m['value']) for m in image['metadata'] 
                         if not m['deleted'])
 
-        image_attrs = base_attrs | set(['name', 'image_type', 'status', 'is_public'])
-        image_dict = _fetch_attrs(image, image_attrs)
+        image_dict = _fetch_attrs(image, db.IMAGE_ATTRS)
 
         image_dict['files'] = files
         image_dict['metadata'] = metadata
