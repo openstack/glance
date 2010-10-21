@@ -1,0 +1,5 @@
+include LICENSE run_tests.sh ChangeLog
+include README builddeb.sh
+include MANIFEST.in pylintrc
+graft doc
+graft tools
