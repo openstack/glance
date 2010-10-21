@@ -46,7 +46,7 @@ setup(
     author='OpenStack, LLC.',
     author_email='openstack-admins@lists.launchpad.net',
     url='https://launchpad.net/glance',
-    packages=find_packages(exclude=['test', 'bin']),
+    packages=find_packages(exclude=['tests', 'bin']),
     test_suite='nose.collector',
     cmdclass={'sdist': local_sdist},
     classifiers=[
@@ -57,4 +57,5 @@ setup(
         'Environment :: No Input/Output (Daemon)',
     ],
     install_requires=[], # removed for better compat
-    scripts=[])
+    scripts=['bin/parallax-server',
+             'bin/teller-server'])
