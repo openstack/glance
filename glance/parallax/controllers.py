@@ -83,7 +83,10 @@ class ImageController(wsgi.Controller):
 
         """
         context = None
-        updated_image = db.image_destroy(context, id)
+        try:
+            db.image_destroy(context, id)
+        except exception.NotFound:
+            return exc.HTTPNotFound()
 
     def create(self, req):
         """Registers a new image with the registry.
@@ -102,8 +105,11 @@ class ImageController(wsgi.Controller):
         image_data.setdefault('status', 'available')
 
         context = None
-        new_image = db.image_create(context, image_data)
-        return dict(image=new_image)
+        try:
+            new_image = db.image_create(context, image_data)
+            return dict(image=new_image)
+        except exception.Invalid:
+            return exc.HTTPBadRequest()
 
     def update(self, req, id):
         """Updates an existing image with the registry.
@@ -119,8 +125,11 @@ class ImageController(wsgi.Controller):
         image_data = json.loads(req.body)['image']
 
         context = None
-        updated_image = db.image_update(context, id, image_data)
-        return dict(image=updated_image)
+        try:
+            updated_image = db.image_update(context, id, image_data)
+            return dict(image=updated_image)
+        except exception.NotFound:
+            return exc.HTTPNotFound()
 
     @staticmethod
     def _make_image_dict(image):

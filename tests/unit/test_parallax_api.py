@@ -22,7 +22,6 @@ import webob
 
 from glance.common import exception
 from glance.parallax import controllers
-from glance.parallax import db
 from tests import stubs
 
 
@@ -30,7 +29,6 @@ class TestImageController(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
-        self.image_controller = controllers.ImageController()
         stubs.stub_out_parallax_db_image_api(self.stubs)
 
     def tearDown(self):
@@ -139,7 +137,8 @@ class TestImageController(unittest.TestCase):
         # TODO(jaypipes): Port Nova's Fault infrastructure
         # over to Glance to support exception catching into
         # standard HTTP errors.
-        self.assertRaises(exception.Invalid, req.get_response, controllers.API())
+        res = req.get_response(controllers.API())
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
 
     def test_update_image(self):
         """Tests that the /images PUT parallax API updates the image"""
@@ -179,7 +178,9 @@ class TestImageController(unittest.TestCase):
         # TODO(jaypipes): Port Nova's Fault infrastructure
         # over to Glance to support exception catching into
         # standard HTTP errors.
-        self.assertRaises(exception.NotFound, req.get_response, controllers.API())
+        res = req.get_response(controllers.API())
+        self.assertEquals(res.status_int,
+                          webob.exc.HTTPNotFound.code)
 
     def test_delete_image(self):
         """Tests that the /images DELETE parallax API deletes the image"""
@@ -221,4 +222,6 @@ class TestImageController(unittest.TestCase):
         # TODO(jaypipes): Port Nova's Fault infrastructure
         # over to Glance to support exception catching into
         # standard HTTP errors.
-        self.assertRaises(exception.NotFound, req.get_response, controllers.API())
+        res = req.get_response(controllers.API())
+        self.assertEquals(res.status_int,
+                          webob.exc.HTTPNotFound.code)

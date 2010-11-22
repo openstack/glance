@@ -23,10 +23,13 @@ import StringIO
 import sys
 
 import stubout
+import webob
 
 from glance.common import exception
+from glance.parallax import controllers as parallax_controllers
 import glance.teller.backends.swift
 import glance.parallax.db.sqlalchemy.api
+
 
 def stub_out_http_backend(stubs):
     """Stubs out the httplib.HTTPRequest.getresponse to return
@@ -153,6 +156,53 @@ def stub_out_parallax(stubs):
               fake_parallax_registry.lookup)
 
 
+def stub_out_parallax_server(stubs):
+    """
+    Mocks httplib calls to 127.0.0.1:9292 for testing so
+    that a real Parallax server does not need to be up and
+    running
+    """
+
+    def fake_http_connection_constructor(address, port):
+        """
+        Returns either a faked connection or a real
+        one depending on if the connection is to a parallax
+        server or not...
+        """
+        return FakeParallaxConnection()
+
+
+    class FakeParallaxConnection(object):
+
+        def __init__(self):
+            pass
+
+        def connect(self):
+            return True
+
+        def close(self):
+            return True
+
+        def request(self, method, url, body=None):
+            self.req = webob.Request.blank("/" + url.lstrip("/"))
+            self.req.method = method
+            if body:
+                self.req.body = body
+
+        def getresponse(self):
+            res = self.req.get_response(parallax_controllers.API())
+
+            # httplib.Response has a read() method...fake it out
+            def fake_reader():
+                return res.body
+
+            setattr(res, 'read', fake_reader)
+            return res
+
+    stubs.Set(httplib, 'HTTPConnection',
+              fake_http_connection_constructor)
+
+
 def stub_out_parallax_db_image_api(stubs):
     """Stubs out the database set/fetch API calls for Parallax
     so the calls are routed to an in-memory dict. This helps us
@@ -204,6 +254,13 @@ def stub_out_parallax_db_image_api(stubs):
                 if not values['status'] in self.VALID_STATUSES:
                     raise exception.Invalid("Invalid status '%s' for image" %
                                             values['status'])
+
+            values['deleted'] = False
+            values['files'] = values.get('files', [])
+            values['metadata'] = values.get('metadata', [])
+            values['created_at'] = datetime.datetime.utcnow() 
+            values['updated_at'] = datetime.datetime.utcnow()
+            values['deleted_at'] = None
             
             self.next_id += 1
             self.images.append(values)
