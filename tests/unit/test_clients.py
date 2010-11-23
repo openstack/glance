@@ -30,15 +30,19 @@ class TestBadClients(unittest.TestCase):
     
     """Test exceptions raised for bad clients"""
 
+    def test_bad_protocol(self):
+        """Test unsupported protocol raised"""
+        c = client.ParallaxClient(address="hdsa://127.012..1./")
+        self.assertRaises(client.UnsupportedProtocolError,
+                          c.get_image,
+                          1)
+
     def test_bad_address(self):
-        """Test bad connection credentials produces exception"""
+        """Test unsupported protocol raised"""
+        c = client.ParallaxClient(address="http://127.999.1.1/")
         self.assertRaises(client.ClientConnectionError,
-                          client.ParallaxClient,
-                          address="hdsa://127.012..1./")
-        self.assertRaises(client.ClientConnectionError,
-                          client.ParallaxClient,
-                          address="http://127.0.0.1/",
-                          port="")
+                          c.get_image,
+                          1)
 
 
 class TestParallaxClient(unittest.TestCase):
@@ -60,7 +64,7 @@ class TestParallaxClient(unittest.TestCase):
         """Test correct set of public image returned"""
         fixture = {'id': 2,
                    'name': 'fake image #2'}
-        images = self.client.get_image_index()
+        images = self.client.get_images()
         self.assertEquals(len(images), 1)
 
         for k,v in fixture.iteritems():
@@ -75,7 +79,7 @@ class TestParallaxClient(unittest.TestCase):
                    'status': 'available'
                   }
 
-        images = self.client.get_image_details()
+        images = self.client.get_images_detailed()
         self.assertEquals(len(images), 1)
 
         for k,v in fixture.iteritems():
@@ -90,32 +94,32 @@ class TestParallaxClient(unittest.TestCase):
                    'status': 'available'
                   }
 
-        data = self.client.get_image_metadata(2)
+        data = self.client.get_image(2)
 
         for k,v in fixture.iteritems():
             self.assertEquals(v, data[k])
 
-    def test_get_image_metadata_non_existing(self):
+    def test_get_image_non_existing(self):
         """Tests that NotFound is raised when getting a non-existing image"""
 
         self.assertRaises(exception.NotFound,
-                          self.client.get_image_metadata,
+                          self.client.get_image,
                           42)
 
-    def test_add_image_metadata(self):
+    def test_add_image_metadata_basic(self):
         """Tests that we can add image metadata and returns the new id"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
                    'image_type': 'kernel'
                   }
         
-        new_id = self.client.add_image_metadata(fixture)
+        new_id = self.client.add_image(fixture)
 
         # Test ID auto-assigned properly
         self.assertEquals(3, new_id)
 
         # Test all other attributes set
-        data = self.client.get_image_metadata(3)
+        data = self.client.get_image(3)
 
         for k,v in fixture.iteritems():
             self.assertEquals(v, data[k])
@@ -124,7 +128,49 @@ class TestParallaxClient(unittest.TestCase):
         self.assertTrue('status' in data.keys())
         self.assertEquals('available', data['status'])
 
-    def test_create_image_with_bad_status(self):
+    def test_add_image_metadata_with_properties(self):
+        """Tests that we can add image metadata with properties"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'properties': [{'key':'disco',
+                                   'value': 'baby'}]
+                  }
+        expected = {'name': 'fake public image',
+                    'is_public': True,
+                    'image_type': 'kernel',
+                    'properties': {'disco': 'baby'}
+                  }
+        
+        new_id = self.client.add_image(fixture)
+
+        # Test ID auto-assigned properly
+        self.assertEquals(3, new_id)
+
+        # Test all other attributes set
+        data = self.client.get_image(3)
+
+        for k,v in expected.iteritems():
+            self.assertEquals(v, data[k])
+
+        # Test status was updated properly
+        self.assertTrue('status' in data.keys())
+        self.assertEquals('available', data['status'])
+
+    def test_add_image_already_exists(self):
+        """Tests proper exception is raised if image with ID already exists"""
+        fixture = {'id': 2,
+                   'name': 'fake public image',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'status': 'bad status'
+                  }
+
+        self.assertRaises(exception.Duplicate,
+                          self.client.add_image,
+                          fixture)
+
+    def test_add_image_with_bad_status(self):
         """Tests proper exception is raised if a bad status is set"""
         fixture = {'id': 3,
                    'name': 'fake public image',
@@ -134,7 +180,7 @@ class TestParallaxClient(unittest.TestCase):
                   }
 
         self.assertRaises(client.BadInputError,
-                          self.client.add_image_metadata,
+                          self.client.add_image,
                           fixture)
 
     def test_update_image(self):
@@ -143,10 +189,10 @@ class TestParallaxClient(unittest.TestCase):
                    'image_type': 'ramdisk'
                   }
 
-        self.assertTrue(self.client.update_image_metadata(2, fixture))
+        self.assertTrue(self.client.update_image(2, fixture))
 
         # Test all other attributes set
-        data = self.client.get_image_metadata(2)
+        data = self.client.get_image(2)
 
         for k,v in fixture.iteritems():
             self.assertEquals(v, data[k])
@@ -160,23 +206,28 @@ class TestParallaxClient(unittest.TestCase):
                    'status': 'bad status'
                   }
 
-        self.assertFalse(self.client.update_image_metadata(3, fixture))
+        self.assertRaises(exception.NotFound,
+                          self.client.update_image,
+                          3,
+                          fixture)
 
     def test_delete_image(self):
         """Tests that image metadata is deleted properly"""
 
         # Grab the original number of images
-        orig_num_images = len(self.client.get_image_index())
+        orig_num_images = len(self.client.get_images())
 
         # Delete image #2
-        self.assertTrue(self.client.delete_image_metadata(2))
+        self.assertTrue(self.client.delete_image(2))
 
         # Verify one less image
-        new_num_images = len(self.client.get_image_index())
+        new_num_images = len(self.client.get_images())
 
         self.assertEquals(new_num_images, orig_num_images - 1)
 
     def test_delete_image_not_existing(self):
         """Tests cannot delete non-existing image"""
 
-        self.assertFalse(self.client.delete_image_metadata(3))
+        self.assertRaises(exception.NotFound,
+                          self.client.delete_image,
+                          3)

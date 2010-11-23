@@ -108,6 +108,8 @@ class ImageController(wsgi.Controller):
         try:
             new_image = db.image_create(context, image_data)
             return dict(image=new_image)
+        except exception.Duplicate:
+            return exc.HTTPConflict()
         except exception.Invalid:
             return exc.HTTPBadRequest()
 
@@ -146,13 +148,14 @@ class ImageController(wsgi.Controller):
         # TODO(sirp): should this be a dict, or a list of dicts?
         # A plain dict is more convenient, but list of dicts would provide
         # access to created_at, etc
-        metadata = dict((m['key'], m['value']) for m in image['metadata'] 
-                        if not m['deleted'])
+        properties = dict((p['key'], p['value'])
+                          for p in image['properties']
+                          if not p['deleted'])
 
         image_dict = _fetch_attrs(image, db.IMAGE_ATTRS)
 
         image_dict['files'] = files
-        image_dict['metadata'] = metadata
+        image_dict['properties'] = properties
         return image_dict
 
 

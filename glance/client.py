@@ -32,6 +32,14 @@ from glance.common import exception
 #TODO(jaypipes) Raise proper errors or OpenStack API faults
 
 
+class UnsupportedProtocolError(Exception):
+    """
+    Error resulting from a client connecting to a server
+    on an unsupported protocol
+    """
+    pass
+
+
 class ClientConnectionError(Exception):
     """Error resulting from a client connecting to a server"""
     pass
@@ -62,20 +70,54 @@ class BaseClient(object):
         self.port = kwargs.get('port', self.DEFAULT_PORT)
         url = urlparse.urlparse(self.address)
         self.netloc = url.netloc
+        self.protocol = url.scheme
+        self.connection = None
+
+    def do_request(self, method, action, body=None):
+        """
+        Connects to the server and issues a request.  Handles converting
+        any returned HTTP error status codes to OpenStack/Glance exceptions
+        and closing the server connection. Returns the result data, or
+        raises an appropriate exception.
+
+        :param method: HTTP method ("GET", "POST", "PUT", etc...)
+        :param action: part of URL after root netloc
+        :param headers: mapping of headers to send
+        :param data: string of data to send, or None (default)
+        """
         try:
-            self.connection_type = {'http': httplib.HTTPConnection,
-                                    'https': httplib.HTTPSConnection}\
-                                    [url.scheme]
-            # Do a quick ping to see if the server is even available...
-            c = self.connection_type(self.netloc, self.port)
-            c.connect()
-            c.close()
+            connection_type = {'http': httplib.HTTPConnection,
+                               'https': httplib.HTTPSConnection}\
+                               [self.protocol]
         except KeyError:
-            raise ClientConnectionError("Unsupported protocol %s. Unable to "
-                                        "connect to server." % url.scheme)
+            raise UnsupportedProtocolError("Unsupported protocol %s. Unable "
+                                           " to connect to server."
+                                           % self.protocol)
+        try:
+            c = connection_type(self.netloc, self.port)
+            c.request(method, action, body)
+            res = c.getresponse()
+            status_code = self.get_status_code(res)
+            if status_code == httplib.OK:
+                return res
+            elif status_code == httplib.UNAUTHORIZED:
+                raise exception.NotAuthorized
+            elif status_code == httplib.FORBIDDEN:
+                raise exception.NotAuthorized
+            elif status_code == httplib.NOT_FOUND:
+                raise exception.NotFound
+            elif status_code == httplib.CONFLICT:
+                raise exception.Duplicate
+            elif status_code == httplib.BAD_REQUEST:
+                raise BadInputError
+            else:
+                raise Exception("Unknown error occurred! %d" % status_code)
+
         except (socket.error, IOError), e:
             raise ClientConnectionError("Unable to connect to "
                                         "server. Got error: %s" % e)
+        finally:
+            c.close()
 
     def get_status_code(self, response):
         """
@@ -125,113 +167,57 @@ class ParallaxClient(BaseClient):
         """
         super(ParallaxClient, self).__init__(**kwargs)
 
-    def get_image_index(self):
+    def get_images(self):
         """
         Returns a list of image id/name mappings from Parallax
         """
-        try:
-            c = self.connection_type(self.netloc, self.port)
-            c.request("GET", "images")
-            res = c.getresponse()
-            if self.get_status_code(res) == 200:
-                # Parallax returns a JSONified dict(images=image_list)
-                data = json.loads(res.read())['images']
-                return data
-            else:
-                logging.warn("Parallax returned HTTP error %d from "
-                             "request for /images", res.status_int)
-                return []
-        except (socket.error, IOError), e:
-            raise ClientConnectionError("Unable to connect to Parallax "
-                                        "server. Got error: %s" % e)
-        finally:
-            c.close()
+        res = self.do_request("GET", "images")
+        data = json.loads(res.read())['images']
+        return data
 
-    def get_image_details(self):
+    def get_images_detailed(self):
         """
         Returns a list of detailed image data mappings from Parallax
         """
-        try:
-            c = self.connection_type(self.netloc, self.port)
-            c.request("GET", "images/detail")
-            res = c.getresponse()
-            if self.get_status_code(res) == 200:
-                # Parallax returns a JSONified dict(images=image_list)
-                data = json.loads(res.read())['images']
-                return data
-            else:
-                logging.warn("Parallax returned HTTP error %d from "
-                             "request for /images/detail", res.status_int)
-                return []
-        finally:
-            c.close()
+        res = self.do_request("GET", "images/detail")
+        data = json.loads(res.read())['images']
+        return data
 
-    def get_image_metadata(self, image_id):
+    def get_image(self, image_id):
         """
         Returns a mapping of image metadata from Parallax
 
         :raises exception.NotFound if image is not in registry
         """
-        try:
-            c = self.connection_type(self.netloc, self.port)
-            c.request("GET", "images/%s" % image_id)
-            res = c.getresponse()
-            status_code = self.get_status_code(res)
-            if status_code == 200:
-                # Parallax returns a JSONified dict(image=image_info)
-                data = json.loads(res.read())['image']
-                return data
-            elif status_code == 404:
-                raise exception.NotFound()
-        finally:
-            c.close()
+        res = self.do_request("GET", "images/%s" % image_id)
+        data = json.loads(res.read())['image']
+        return data
 
-    def add_image_metadata(self, image_metadata):
+    def add_image(self, image_metadata):
         """
         Tells parallax about an image's metadata
         """
-        try:
-            c = self.connection_type(self.netloc, self.port)
-            if 'image' not in image_metadata.keys():
-                image_metadata = dict(image=image_metadata)
-            body = json.dumps(image_metadata)
-            c.request("POST", "images", body)
-            res = c.getresponse()
-            status_code = self.get_status_code(res)
-            if status_code == 200:
-                # Parallax returns a JSONified dict(image=image_info)
-                data = json.loads(res.read())
-                return data['image']['id']
-            elif status_code == 400:
-                raise BadInputError("Unable to add metadata to Parallax")
-            else:
-                raise RuntimeError("Unknown error code: %d" % status_code)
-        finally:
-            c.close()
+        if 'image' not in image_metadata.keys():
+            image_metadata = dict(image=image_metadata)
+        body = json.dumps(image_metadata)
+        res = self.do_request("POST", "images", body)
+        # Parallax returns a JSONified dict(image=image_info)
+        data = json.loads(res.read())
+        return data['image']['id']
 
-    def update_image_metadata(self, image_id, image_metadata):
+    def update_image(self, image_id, image_metadata):
         """
         Updates Parallax's information about an image
         """
-        try:
-            if 'image' not in image_metadata.keys():
-                image_metadata = dict(image=image_metadata)
-            c = self.connection_type(self.netloc, self.port)
-            body = json.dumps(image_metadata)
-            c.request("PUT", "images/%s" % image_id, body)
-            res = c.getresponse()
-            return self.get_status_code(res) == 200
-        finally:
-            c.close()
+        if 'image' not in image_metadata.keys():
+            image_metadata = dict(image=image_metadata)
+        body = json.dumps(image_metadata)
+        self.do_request("PUT", "images/%s" % image_id, body)
+        return True
 
-    def delete_image_metadata(self, image_id):
+    def delete_image(self, image_id):
         """
         Deletes Parallax's information about an image
         """
-        try:
-            c = self.connection_type(self.netloc, self.port)
-            c.request("DELETE", "images/%s" % image_id)
-            res = c.getresponse()
-            return self.get_status_code(res) == 200
-        finally:
-            c.close()
+        self.do_request("DELETE", "images/%s" % image_id)
+        return True

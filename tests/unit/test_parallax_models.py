@@ -40,20 +40,20 @@ class TestModels(unittest.TestCase):
         same key
 
         """
-        self._make_metadatum(self.image, key="spam", value="eggs")
+        self._make_property(self.image, key="spam", value="eggs")
         
         second_image = self._make_image(id=3, name='fake image #3')
-        self._make_metadatum(second_image, key="spam", value="eggs")
+        self._make_property(second_image, key="spam", value="eggs")
 
     def test_metadata_key_constraint_bad(self):
         """The same image cannot have two distinct pieces of metadata with the
         same key.
 
         """
-        self._make_metadatum(self.image, key="spam", value="eggs")
+        self._make_property(self.image, key="spam", value="eggs")
 
         self.assertRaises(sa_exc.IntegrityError,
-            self._make_metadatum, self.image, key="spam", value="eggs")
+            self._make_property, self.image, key="spam", value="eggs")
 
     def _make_image(self, id, name):
         """Convenience method to create an image with a given name and id"""
@@ -67,11 +67,9 @@ class TestModels(unittest.TestCase):
         image = db.api.image_create(context, fixture)
         return image
 
-    def _make_metadatum(self, image, key, value):
+    def _make_property(self, image, key, value):
         """Convenience method to create metadata attached to an image"""
         metadata = {'image_id': image['id'], 'key': key, 'value': value}
         context = None
-        metadatum = db.api.image_metadatum_create(context, metadata)
-        return metadatum
-
-
+        property = db.api.image_property_create(context, metadata)
+        return property

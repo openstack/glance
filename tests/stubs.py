@@ -226,7 +226,7 @@ def stub_out_parallax_db_image_api(stubs):
                 'deleted_at': None,
                 'deleted': False,
                 'files': [],
-                'metadata': []},
+                'properties': []},
             {'id': 2,
                 'name': 'fake image #2',
                 'status': 'available',
@@ -237,7 +237,7 @@ def stub_out_parallax_db_image_api(stubs):
                 'deleted_at': None,
                 'deleted': False,
                 'files': [],
-                'metadata': []}]
+                'properties': []}]
 
         VALID_STATUSES = ('available', 'disabled', 'pending')
 
@@ -246,7 +246,12 @@ def stub_out_parallax_db_image_api(stubs):
             self.next_id = 3
 
         def image_create(self, _context, values):
-            values['id'] = self.next_id
+
+            values['id'] = values.get('id', self.next_id)
+
+            if values['id'] in [image['id'] for image in self.images]:
+                raise exception.Duplicate("Duplicate image id: %s" %
+                                          values['id'])
 
             if 'status' not in values.keys():
                 values['status'] = 'available'
@@ -257,10 +262,16 @@ def stub_out_parallax_db_image_api(stubs):
 
             values['deleted'] = False
             values['files'] = values.get('files', [])
-            values['metadata'] = values.get('metadata', [])
+            values['properties'] = values.get('properties', [])
             values['created_at'] = datetime.datetime.utcnow() 
             values['updated_at'] = datetime.datetime.utcnow()
             values['deleted_at'] = None
+
+            for p in values['properties']:
+                p['deleted'] = False
+                p['created_at'] = datetime.datetime.utcnow() 
+                p['updated_at'] = datetime.datetime.utcnow()
+                p['deleted_at'] = None
             
             self.next_id += 1
             self.images.append(values)
