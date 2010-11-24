@@ -149,7 +149,7 @@ class Image(BASE, ModelBase):
             raise exception.Invalid("Invalid status '%s' for image." % status)
         return status
     
-    # TODO(sirp): should these be stored as metadata?
+    # TODO(sirp): should these be stored as properties?
     #user_id = Column(String(255))
     #project_id = Column(String(255))
     #arch = Column(String(255))
@@ -179,22 +179,22 @@ class ImageFile(BASE, ModelBase):
     size = Column(Integer)
 
 
-class ImageMetadatum(BASE, ModelBase):
-    """Represents an image metadata in the datastore"""
-    __tablename__ = 'image_metadata'
-    __prefix__ = 'img-meta'
+class ImageProperty(BASE, ModelBase):
+    """Represents an image properties in the datastore"""
+    __tablename__ = 'image_properties'
+    __prefix__ = 'img-prop'
     __table_args__ = (UniqueConstraint('image_id', 'key'), {})
 
     id = Column(Integer, primary_key=True)
     image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
-    image = relationship(Image, backref=backref('metadata'))
+    image = relationship(Image, backref=backref('properties'))
     
     key = Column(String(255), index=True)
     value = Column(Text)
 
 
 def register_models():
-    """Register Models and create metadata"""
+    """Register Models and create properties"""
     engine = get_engine()
     BASE.metadata.create_all(engine)
 
@@ -203,4 +203,3 @@ def unregister_models():
     """Unregister Models, useful clearing out data before testing"""
     engine = get_engine()
     BASE.metadata.drop_all(engine)
-

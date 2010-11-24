@@ -70,7 +70,7 @@ def image_get(context, image_id):
     try:
         return session.query(models.Image
                      ).options(joinedload(models.Image.files)
-                     ).options(joinedload(models.Image.metadata)
+                     ).options(joinedload(models.Image.properties)
                      ).filter_by(deleted=_deleted(context)
                      ).filter_by(id=image_id
                      ).one()
@@ -83,7 +83,7 @@ def image_get_all(context):
     session = get_session()
     return session.query(models.Image
                  ).options(joinedload(models.Image.files)
-                 ).options(joinedload(models.Image.metadata)
+                 ).options(joinedload(models.Image.properties)
                  ).filter_by(deleted=_deleted(context)
                  ).all()
 
@@ -92,7 +92,7 @@ def image_get_all_public(context, public):
     session = get_session()
     return session.query(models.Image
                  ).options(joinedload(models.Image.files)
-                 ).options(joinedload(models.Image.metadata)
+                 ).options(joinedload(models.Image.properties)
                  ).filter_by(deleted=_deleted(context)
                  ).filter_by(is_public=public
                  ).all()
@@ -124,10 +124,9 @@ def image_file_create(_context, values):
 ###################
 
 
-def image_metadatum_create(_context, values):
-    image_metadatum_ref = models.ImageMetadatum()
+def image_property_create(_context, values):
+    image_properties_ref = models.ImageProperty()
     for (key, value) in values.iteritems():
-        image_metadatum_ref[key] = value
-    image_metadatum_ref.save()
-    return image_metadatum_ref
-
+        image_properties_ref[key] = value
+    image_properties_ref.save()
+    return image_properties_ref

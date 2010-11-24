@@ -86,7 +86,6 @@ def image_file_create(context, values):
 ###################
 
 
-def image_metadatum_create(context, values):
-    """Create an image metadatum from the values dictionary."""
-    return IMPL.image_metadatum_create(context, values)
-
+def image_property_create(context, values):
+    """Create an image property from the values dictionary."""
+    return IMPL.image_property_create(context, values)
