@@ -47,7 +47,10 @@ class TestBadClients(unittest.TestCase):
 
 class TestParallaxClient(unittest.TestCase):
 
-    """Test proper actions made for both valid and invalid requests"""
+    """
+    Test proper actions made for both valid and invalid requests
+    against a Parallax service
+    """
 
     def setUp(self):
         """Establish a clean test environment"""
@@ -76,27 +79,61 @@ class TestParallaxClient(unittest.TestCase):
                    'name': 'fake image #2',
                    'is_public': True,
                    'image_type': 'kernel',
-                   'status': 'available'
-                  }
+                   'status': 'available',
+                   'files': [
+                        {"location": "file://acct/2.tar.gz.0",
+                         "size": 100000},
+                        {"location": "file://acct/2.tar.gz.1",
+                         "size": 100001}],
+                   'properties': []}
+
+        expected = {'id': 2,
+                   'name': 'fake image #2',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'status': 'available',
+                   'files': [
+                        {"location": "file://acct/2.tar.gz.0",
+                         "size": 100000},
+                        {"location": "file://acct/2.tar.gz.1",
+                         "size": 100001}],
+                   'properties': {}}
 
         images = self.client.get_images_detailed()
         self.assertEquals(len(images), 1)
 
-        for k,v in fixture.iteritems():
+        for k,v in expected.iteritems():
             self.assertEquals(v, images[0][k])
 
-    def test_get_image_metadata(self):
+    def test_get_image(self):
         """Tests that the detailed info about an image returned"""
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
                    'image_type': 'kernel',
-                   'status': 'available'
-                  }
+                   'status': 'available',
+                   'files': [
+                        {"location": "file://acct/2.tar.gz.0",
+                         "size": 100000},
+                        {"location": "file://acct/2.tar.gz.1",
+                         "size": 100001}],
+                   'properties': []}
+
+        expected = {'id': 2,
+                   'name': 'fake image #2',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'status': 'available',
+                   'files': [
+                        {"location": "file://acct/2.tar.gz.0",
+                         "size": 100000},
+                        {"location": "file://acct/2.tar.gz.1",
+                         "size": 100001}],
+                   'properties': {}}
 
         data = self.client.get_image(2)
 
-        for k,v in fixture.iteritems():
+        for k,v in expected.iteritems():
             self.assertEquals(v, data[k])
 
     def test_get_image_non_existing(self):
@@ -106,7 +143,7 @@ class TestParallaxClient(unittest.TestCase):
                           self.client.get_image,
                           42)
 
-    def test_add_image_metadata_basic(self):
+    def test_add_image_basic(self):
         """Tests that we can add image metadata and returns the new id"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
@@ -128,7 +165,7 @@ class TestParallaxClient(unittest.TestCase):
         self.assertTrue('status' in data.keys())
         self.assertEquals('available', data['status'])
 
-    def test_add_image_metadata_with_properties(self):
+    def test_add_image_with_properties(self):
         """Tests that we can add image metadata with properties"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
@@ -231,3 +268,22 @@ class TestParallaxClient(unittest.TestCase):
         self.assertRaises(exception.NotFound,
                           self.client.delete_image,
                           3)
+
+
+class TestTellerClient(unittest.TestCase):
+
+    """
+    Test proper actions made for both valid and invalid requests
+    against a Teller service
+    """
+
+    def setUp(self):
+        """Establish a clean test environment"""
+        self.stubs = stubout.StubOutForTesting()
+        stubs.stub_out_parallax_db_image_api(self.stubs)
+        stubs.stub_out_parallax_server(self.stubs)
+        self.client = client.ParallaxClient()
+
+    def tearDown(self):
+        """Clear the test environment"""
+        self.stubs.UnsetAll()

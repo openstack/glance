@@ -148,6 +148,18 @@ class TellerClient(BaseClient):
         """
         super(TellerClient, self).__init__(**kwargs)
 
+    def get_image(self, image_id):
+        """
+        Returns the raw disk image as a mime-encoded blob.
+
+        :param image_id: The opaque image identifier
+
+        :raises exception.NotFound if image is not found
+        """
+        res = self.do_request("GET", "image?%s" % image_id)
+        data = json.loads(res.read())['image']
+        return data
+
 
 class ParallaxClient(BaseClient):
 

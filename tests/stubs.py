@@ -225,7 +225,11 @@ def stub_out_parallax_db_image_api(stubs):
                 'updated_at': datetime.datetime.utcnow(),
                 'deleted_at': None,
                 'deleted': False,
-                'files': [],
+                'files': [
+                    {"location": "swift://user:passwd@acct/container/obj.tar.gz.0",
+                     "size": 100000},
+                    {"location": "swift://user:passwd@acct/container/obj.tar.gz.1",
+                     "size": 100001}],
                 'properties': []},
             {'id': 2,
                 'name': 'fake image #2',
@@ -236,7 +240,11 @@ def stub_out_parallax_db_image_api(stubs):
                 'updated_at': datetime.datetime.utcnow(),
                 'deleted_at': None,
                 'deleted': False,
-                'files': [],
+                'files': [
+                    {"location": "file://acct/2.tar.gz.0",
+                     "size": 100000},
+                    {"location": "file://acct/2.tar.gz.1",
+                     "size": 100001}],
                 'properties': []}]
 
         VALID_STATUSES = ('available', 'disabled', 'pending')
