@@ -56,7 +56,7 @@ class TestParallaxClient(unittest.TestCase):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_parallax_db_image_api(self.stubs)
-        stubs.stub_out_parallax_server(self.stubs)
+        stubs.stub_out_parallax_and_teller_server(self.stubs)
         self.client = client.ParallaxClient()
 
     def tearDown(self):
@@ -81,10 +81,10 @@ class TestParallaxClient(unittest.TestCase):
                    'image_type': 'kernel',
                    'status': 'available',
                    'files': [
-                        {"location": "file://acct/2.tar.gz.0",
-                         "size": 100000},
-                        {"location": "file://acct/2.tar.gz.1",
-                         "size": 100001}],
+                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
+                         "size": 6},
+                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
+                         "size": 7}],
                    'properties': []}
 
         expected = {'id': 2,
@@ -93,10 +93,10 @@ class TestParallaxClient(unittest.TestCase):
                    'image_type': 'kernel',
                    'status': 'available',
                    'files': [
-                        {"location": "file://acct/2.tar.gz.0",
-                         "size": 100000},
-                        {"location": "file://acct/2.tar.gz.1",
-                         "size": 100001}],
+                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
+                         "size": 6},
+                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
+                         "size": 7}],
                    'properties': {}}
 
         images = self.client.get_images_detailed()
@@ -113,10 +113,10 @@ class TestParallaxClient(unittest.TestCase):
                    'image_type': 'kernel',
                    'status': 'available',
                    'files': [
-                        {"location": "file://acct/2.tar.gz.0",
-                         "size": 100000},
-                        {"location": "file://acct/2.tar.gz.1",
-                         "size": 100001}],
+                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
+                         "size": 6},
+                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
+                         "size": 7}],
                    'properties': []}
 
         expected = {'id': 2,
@@ -125,10 +125,10 @@ class TestParallaxClient(unittest.TestCase):
                    'image_type': 'kernel',
                    'status': 'available',
                    'files': [
-                        {"location": "file://acct/2.tar.gz.0",
-                         "size": 100000},
-                        {"location": "file://acct/2.tar.gz.1",
-                         "size": 100001}],
+                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
+                         "size": 6},
+                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
+                         "size": 7}],
                    'properties': {}}
 
         data = self.client.get_image(2)
@@ -281,9 +281,18 @@ class TestTellerClient(unittest.TestCase):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_parallax_db_image_api(self.stubs)
-        stubs.stub_out_parallax_server(self.stubs)
-        self.client = client.ParallaxClient()
+        stubs.stub_out_parallax_and_teller_server(self.stubs)
+        stubs.stub_out_filesystem_backend(self.stubs)
+        self.client = client.TellerClient()
 
     def tearDown(self):
         """Clear the test environment"""
+        stubs.clean_out_fake_filesystem_backend()
         self.stubs.UnsetAll()
+
+    def test_get_image(self):
+        """Test a simple file backend retrieval works as expected"""
+        expected = 'chunk0chunk42'
+        image = self.client.get_image(2)
+
+        self.assertEquals(expected, image)

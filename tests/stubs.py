@@ -19,16 +19,24 @@
 
 import datetime
 import httplib
+import os
+import shutil
 import StringIO
 import sys
+import gzip
 
 import stubout
 import webob
 
 from glance.common import exception
 from glance.parallax import controllers as parallax_controllers
+from glance.teller import controllers as teller_controllers
+import glance.teller.backends
 import glance.teller.backends.swift
 import glance.parallax.db.sqlalchemy.api
+
+
+FAKE_FILESYSTEM_ROOTDIR = os.path.join('/tmp', 'glance-tests')
 
 
 def stub_out_http_backend(stubs):
@@ -63,24 +71,61 @@ def stub_out_http_backend(stubs):
               fake_http_conn.getresponse)
 
 
+def clean_out_fake_filesystem_backend():
+    """
+    Removes any leftover directories used in fake filesystem
+    backend
+    """
+    if os.path.exists(FAKE_FILESYSTEM_ROOTDIR):
+        shutil.rmtree(FAKE_FILESYSTEM_ROOTDIR, ignore_errors=True)
+
+
 def stub_out_filesystem_backend(stubs):
-    """Stubs out the Filesystem Teller service to return fake
+    """
+    Stubs out the Filesystem Teller service to return fake
     data from files.
 
-    The stubbed service always yields the following fixture::
+    We establish a few fake images in a directory under /tmp/glance-tests
+    and ensure that this directory contains the following files:
 
-        //chunk0
-        //chunk1
+        /acct/2.gz.0 <-- zipped tarfile containing "chunk0"
+        /acct/2.gz.1 <-- zipped tarfile containing "chunk42"
+
+    The stubbed service yields the data in the above files.
 
     :param stubs: Set of stubout stubs
 
     """
+
     class FakeFilesystemBackend(object):
 
-        @classmethod
-        def get(cls, parsed_uri, expected_size, conn_class=None):
+        CHUNKSIZE = 100
 
-            return StringIO.StringIO(parsed_uri.path)
+        @classmethod
+        def get(cls, parsed_uri, expected_size, opener=None):
+            filepath = os.path.join('/',
+                                    parsed_uri.netloc,
+                                    parsed_uri.path.strip(os.path.sep))
+            f = gzip.open(filepath, 'rb')
+            data = f.read()
+            f.close()
+            return data
+
+    # Establish a clean faked filesystem with dummy images
+    if os.path.exists(FAKE_FILESYSTEM_ROOTDIR):
+        shutil.rmtree(FAKE_FILESYSTEM_ROOTDIR, ignore_errors=True)
+    os.mkdir(FAKE_FILESYSTEM_ROOTDIR)
+    os.mkdir(os.path.join(FAKE_FILESYSTEM_ROOTDIR, 'acct'))
+
+    f = gzip.open(os.path.join(FAKE_FILESYSTEM_ROOTDIR, 'acct', '2.gz.0'),
+                  "wb")
+    f.write("chunk0")
+    f.close()
+
+    f = gzip.open(os.path.join(FAKE_FILESYSTEM_ROOTDIR, 'acct', '2.gz.1'),
+                  "wb")
+    f.write("chunk42")
+    f.close()
 
     fake_filesystem_backend = FakeFilesystemBackend()
     stubs.Set(glance.teller.backends.FilesystemBackend, 'get',
@@ -156,25 +201,16 @@ def stub_out_parallax(stubs):
               fake_parallax_registry.lookup)
 
 
-def stub_out_parallax_server(stubs):
+def stub_out_parallax_and_teller_server(stubs):
     """
-    Mocks httplib calls to 127.0.0.1:9292 for testing so
-    that a real Parallax server does not need to be up and
+    Mocks calls to 127.0.0.1 on 9191 and 9292 for testing so
+    that a real Teller server does not need to be up and
     running
     """
 
-    def fake_http_connection_constructor(address, port):
-        """
-        Returns either a faked connection or a real
-        one depending on if the connection is to a parallax
-        server or not...
-        """
-        return FakeParallaxConnection()
-
-
     class FakeParallaxConnection(object):
 
-        def __init__(self):
+        def __init__(self, *args, **kwargs):
             pass
 
         def connect(self):
@@ -199,8 +235,54 @@ def stub_out_parallax_server(stubs):
             setattr(res, 'read', fake_reader)
             return res
 
-    stubs.Set(httplib, 'HTTPConnection',
-              fake_http_connection_constructor)
+    class FakeTellerConnection(object):
+
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def connect(self):
+            return True
+
+        def close(self):
+            return True
+
+        def request(self, method, url, body=None):
+            self.req = webob.Request.blank("/" + url.lstrip("/"))
+            self.req.method = method
+            if body:
+                self.req.body = body
+
+        def getresponse(self):
+            res = self.req.get_response(teller_controllers.API())
+
+            # httplib.Response has a read() method...fake it out
+            def fake_reader():
+                return res.body
+
+            setattr(res, 'read', fake_reader)
+            return res
+
+    def fake_get_connection_type(client):
+        """
+        Returns the proper connection type
+        """
+        if client.port == 9191 and client.netloc == '127.0.0.1':
+            return FakeTellerConnection
+        if client.port == 9292 and client.netloc == '127.0.0.1':
+            return FakeParallaxConnection
+        else:
+            try:
+                connection_type = {'http': httplib.HTTPConnection,
+                                   'https': httplib.HTTPSConnection}\
+                                   [client.protocol]
+                return connection_type
+            except KeyError:
+                raise UnsupportedProtocolError("Unsupported protocol %s. Unable "
+                                               " to connect to server."
+                                               % self.protocol)
+
+    stubs.Set(glance.client.BaseClient, 'get_connection_type',
+              fake_get_connection_type)
 
 
 def stub_out_parallax_db_image_api(stubs):
@@ -227,9 +309,9 @@ def stub_out_parallax_db_image_api(stubs):
                 'deleted': False,
                 'files': [
                     {"location": "swift://user:passwd@acct/container/obj.tar.gz.0",
-                     "size": 100000},
+                     "size": 6},
                     {"location": "swift://user:passwd@acct/container/obj.tar.gz.1",
-                     "size": 100001}],
+                     "size": 7}],
                 'properties': []},
             {'id': 2,
                 'name': 'fake image #2',
@@ -241,10 +323,10 @@ def stub_out_parallax_db_image_api(stubs):
                 'deleted_at': None,
                 'deleted': False,
                 'files': [
-                    {"location": "file://acct/2.tar.gz.0",
-                     "size": 100000},
-                    {"location": "file://acct/2.tar.gz.1",
-                     "size": 100001}],
+                    {"location": "file://tmp/glance-tests/acct/2.gz.0",
+                     "size": 6},
+                    {"location": "file://tmp/glance-tests/acct/2.gz.1",
+                     "size": 7}],
                 'properties': []}]
 
         VALID_STATUSES = ('available', 'disabled', 'pending')

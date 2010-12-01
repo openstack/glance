@@ -73,6 +73,20 @@ class BaseClient(object):
         self.protocol = url.scheme
         self.connection = None
 
+    def get_connection_type(self):
+        """
+        Returns the proper connection type
+        """
+        try:
+            connection_type = {'http': httplib.HTTPConnection,
+                               'https': httplib.HTTPSConnection}\
+                               [self.protocol]
+            return connection_type
+        except KeyError:
+            raise UnsupportedProtocolError("Unsupported protocol %s. Unable "
+                                           " to connect to server."
+                                           % self.protocol)
+
     def do_request(self, method, action, body=None):
         """
         Connects to the server and issues a request.  Handles converting
@@ -86,14 +100,7 @@ class BaseClient(object):
         :param data: string of data to send, or None (default)
         """
         try:
-            connection_type = {'http': httplib.HTTPConnection,
-                               'https': httplib.HTTPSConnection}\
-                               [self.protocol]
-        except KeyError:
-            raise UnsupportedProtocolError("Unsupported protocol %s. Unable "
-                                           " to connect to server."
-                                           % self.protocol)
-        try:
+            connection_type = self.get_connection_type()
             c = connection_type(self.netloc, self.port)
             c.request(method, action, body)
             res = c.getresponse()
@@ -116,8 +123,6 @@ class BaseClient(object):
         except (socket.error, IOError), e:
             raise ClientConnectionError("Unable to connect to "
                                         "server. Got error: %s" % e)
-        finally:
-            c.close()
 
     def get_status_code(self, response):
         """
@@ -132,7 +137,7 @@ class BaseClient(object):
 
 class TellerClient(BaseClient):
 
-    """A client for the Teller image caching service"""
+    """A client for the Teller image caching and delivery service"""
 
     DEFAULT_ADDRESS = 'http://127.0.0.1'
     DEFAULT_PORT = 9191
@@ -150,15 +155,17 @@ class TellerClient(BaseClient):
 
     def get_image(self, image_id):
         """
-        Returns the raw disk image as a mime-encoded blob.
+        Returns the raw disk image as a mime-encoded blob stream for the
+        supplied opaque image identifier.
 
         :param image_id: The opaque image identifier
 
         :raises exception.NotFound if image is not found
         """
-        res = self.do_request("GET", "image?%s" % image_id)
-        data = json.loads(res.read())['image']
-        return data
+        # TODO(jaypipes): Handle other registries than Parallax...
+
+        res = self.do_request("GET", "images/%s" % image_id)
+        return res.read()
 
 
 class ParallaxClient(BaseClient):

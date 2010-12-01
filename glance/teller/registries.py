@@ -19,6 +19,8 @@ import httplib
 import json
 import urlparse
 
+from glance import client
+
 
 class ImageRegistryException(Exception):
     """ Base class for all RegistryAdapter exceptions """
@@ -47,38 +49,17 @@ class Parallax(ImageRegistry):
     """
 
     @classmethod
-    def lookup(cls, parsed_uri):
+    def lookup(cls, image_id):
         """
-        Takes a parsed_uri, checks if that image is registered in Parallax,
+        Takes an image ID and checks if that image is registered in Parallax,
         and if so, returns the image metadata. If the image does not exist,
-        we return None.
+        we raise NotFound
         """
-        scheme = parsed_uri.scheme
-        if scheme == 'http':
-            conn_class = httplib.HTTPConnection
-        elif scheme == 'https':
-            conn_class = httplib.HTTPSConnection
-        else:
-            raise ImageRegistryException(
-                "Unrecognized scheme '%s'" % scheme)
-
-        conn = conn_class(parsed_uri.netloc)
-        try:
-            conn.request('GET', parsed_uri.path, "", {})
-            response = conn.getresponse()
-
-            # The image exists
-            if response.status == 200: 
-                result = response.read()
-                image_json = json.loads(result)
-                try:
-                    return image_json["image"]
-                except KeyError:
-                    raise ImageRegistryException("Missing 'image' key")
-        except Exception: # gaierror
-            return None
-        finally:
-            conn.close()
+        # TODO(jaypipes): Make parallax client configurable via options.
+        # Unfortunately, the decision to make all adapters have no state
+        # hinders this...
+        c = client.ParallaxClient()
+        return c.get_image(image_id)
 
 
 REGISTRY_ADAPTERS = {
@@ -86,12 +67,17 @@ REGISTRY_ADAPTERS = {
 }
 
 
-def lookup_by_registry(registry, image_uri):
-    """ Convenience function to lookup based on a registry protocol """
+def lookup_by_registry(registry, image_id):
+    """
+    Convenience function to lookup image metadata for the given
+    opaque image identifier and registry.
+
+    :param registry: String name of registry to use for lookups
+    :param image_id: Opaque image identifier
+    """
     try:
         adapter = REGISTRY_ADAPTERS[registry]
     except KeyError:
         raise UnknownImageRegistry("'%s' not found" % registry)
     
-    parsed_uri = urlparse.urlparse(image_uri)
-    return adapter.lookup(parsed_uri)
+    return adapter.lookup(image_id)

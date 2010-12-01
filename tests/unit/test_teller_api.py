@@ -15,9 +15,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import stubout
 import unittest
-from webob import Request, exc
+
+import stubout
+import webob
 
 from glance.teller import controllers
 from tests import stubs
@@ -27,39 +28,42 @@ class TestImageController(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
+        stubs.stub_out_parallax_and_teller_server(self.stubs)
+        stubs.stub_out_parallax_db_image_api(self.stubs)
+        stubs.stub_out_filesystem_backend(self.stubs)
         self.image_controller = controllers.ImageController()
 
     def tearDown(self):
         """Clear the test environment"""
+        stubs.clean_out_fake_filesystem_backend()
         self.stubs.UnsetAll()
 
-    def test_index_image_with_no_uri_should_raise_http_bad_request(self):
-        # uri must be specified
-        request = Request.blank("/image")
-        response = self.image_controller.index(request)
-        self.assertEqual(response.status_int, 400) # should be 422?
+    def test_index_raises_not_implemented(self):
+        req = webob.Request.blank("/images")
+        res = req.get_response(controllers.API())
+        self.assertEquals(res.status_int, webob.exc.HTTPNotImplemented.code)
 
-    def test_index_image_unrecognized_registry_adapter(self):
-        # FIXME: need urllib.quote here?
-        image_uri = "http://parallax-success/myacct/my-image"
-        request = self._make_request(image_uri, "unknownregistry")
-        response = self.image_controller.index(request)
-        self.assertEqual(response.status_int, 400) # should be 422?
+    def test_blank_raises_not_implemented(self):
+        req = webob.Request.blank("/")
+        res = req.get_response(controllers.API())
+        self.assertEquals(res.status_int, webob.exc.HTTPNotImplemented.code)
 
-    def test_index_image_where_image_exists_should_return_the_data(self):
-        # FIXME: need urllib.quote here?
-        stubs.stub_out_parallax(self.stubs)
-        stubs.stub_out_filesystem_backend(self.stubs)
-        image_uri = "http://parallax/myacct/my-image"
-        request = self._make_request(image_uri)
-        response = self.image_controller.index(request)
-        self.assertEqual("/chunk0/chunk1", response.body)
+    def test_detail_raises_not_implemented(self):
+        req = webob.Request.blank("/images/detail")
+        res = req.get_response(controllers.API())
+        self.assertEquals(res.status_int, webob.exc.HTTPNotImplemented.code)
 
-    def test_index_image_where_image_doesnt_exist_should_raise_not_found(self):
-        image_uri = "http://bad-parallax-uri/myacct/does-not-exist"
-        request = self._make_request(image_uri)
-        self.assertRaises(exc.HTTPNotFound, self.image_controller.index,
-                          request)
+    def test_show_image_unrecognized_registry_adapter(self):
+        req = webob.Request.blank("/images/1?registry=unknown")
+        res = req.get_response(controllers.API())
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
 
-    def _make_request(self, image_uri, registry="parallax"):
-        return Request.blank("/image?uri=%s&registry=%s" % (image_uri, registry))
+    def test_show_image_basic(self):
+        req = webob.Request.blank("/images/2")
+        res = req.get_response(controllers.API())
+        self.assertEqual('chunk0chunk42', res.body)
+
+    def test_show_non_exists_image(self):
+        req = webob.Request.blank("/images/42")
+        res = req.get_response(controllers.API())
+        self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
