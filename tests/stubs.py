@@ -266,9 +266,14 @@ def stub_out_parallax_and_teller_server(stubs):
         """
         Returns the proper connection type
         """
-        if client.port == 9191 and client.netloc == '127.0.0.1':
+        DEFAULT_PARALLAX_PORT = 9191
+        DEFAULT_TELLER_PORT = 9292
+
+        if (client.port == DEFAULT_TELLER_PORT and
+            client.netloc == '127.0.0.1'):
             return FakeTellerConnection
-        if client.port == 9292 and client.netloc == '127.0.0.1':
+        elif (client.port == DEFAULT_PARALLAX_PORT and
+              client.netloc == '127.0.0.1'):
             return FakeParallaxConnection
         else:
             try:

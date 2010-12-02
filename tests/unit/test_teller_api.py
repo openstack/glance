@@ -43,16 +43,6 @@ class TestImageController(unittest.TestCase):
         res = req.get_response(controllers.API())
         self.assertEquals(res.status_int, webob.exc.HTTPNotImplemented.code)
 
-    def test_blank_raises_not_implemented(self):
-        req = webob.Request.blank("/")
-        res = req.get_response(controllers.API())
-        self.assertEquals(res.status_int, webob.exc.HTTPNotImplemented.code)
-
-    def test_detail_raises_not_implemented(self):
-        req = webob.Request.blank("/images/detail")
-        res = req.get_response(controllers.API())
-        self.assertEquals(res.status_int, webob.exc.HTTPNotImplemented.code)
-
     def test_show_image_unrecognized_registry_adapter(self):
         req = webob.Request.blank("/images/1?registry=unknown")
         res = req.get_response(controllers.API())
