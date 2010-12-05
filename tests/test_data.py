@@ -18,13 +18,15 @@
 from glance.parallax import db
 
 
-def make_real_image():
+def make_swift_image():
     """Create a real image record """
 
     # TODO(sirp): Create a testing account, and define gflags for
     # test_swift_username and test_swift_api_key
-    USERNAME = "blah" # fill these out for testing
-    API_KEY = "blah"
+    USERNAME = "your user name here" # fill these out for testing
+    API_KEY = "your api key here"
+    #IMAGE_CHUNKS = [("filename", 123)] # filename, size in bytes
+    IMAGE_CHUNKS = [("your test chunk here", 12345)]
 
     image = db.image_create(
         None,
@@ -33,45 +35,13 @@ def make_real_image():
              public=True,
              image_type="raw"))
 
-    location = (
-        "swift://%s:%s@"
-        "auth.api.rackspacecloud.com/v1.0/cloudservers"
-        "/testsnap_cloudserver11037.tar.gz.0"
-    ) % (USERNAME, API_KEY)
+    for obj, size in IMAGE_CHUNKS:
+        location = (
+            "swift://%s:%s@auth.api.rackspacecloud.com/v1.0/cloudservers/%s"
+        ) % (USERNAME, API_KEY, obj)
 
-    size = 198848316
-
-    db.image_file_create(None, 
-        dict(image_id=image.id, location=location, size=size))
-
-
-def make_fake_image():
-    """Create a fake image record """
-    image = db.image_create(
-        None,
-        dict(name="Test Image",
-             state="available",
-             public=True,
-             image_type="raw"))
-
-    db.image_file_create(
-        None, 
-        dict(image_id=image.id,
-             location="teststr://chunk0",
-             size=6))
-    db.image_file_create(
-        None, 
-        dict(image_id=image.id,
-             location="teststr://chunk1",
-             size=6))
-
-    db.image_metadatum_create(
-        None,
-        dict(image_id=image.id,
-             key="testkey",
-             value="testvalue"))
-
+        db.image_file_create(None, 
+            dict(image_id=image.id, location=location, size=size))
 
 if __name__ == "__main__":
-    make_fake_image()
-    #make_real_image() # NOTE: uncomment if you have a username and api_key
+    make_swift_image() # NOTE: uncomment if you have a username and api_key

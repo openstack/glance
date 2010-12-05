@@ -162,8 +162,7 @@ def make_image_dict(image):
     # A plain dict is more convenient, but list of dicts would provide
     # access to created_at, etc
     properties = dict((p['key'], p['value'])
-                      for p in image['properties']
-                      if 'deleted' in p.keys() and not p['deleted'])
+                      for p in image['properties'] if not p['deleted'])
 
     image_dict = _fetch_attrs(image, db.IMAGE_ATTRS)
 
