@@ -61,7 +61,7 @@ class ImageController(wsgi.Controller):
         
         """
         images = db.image_get_all_public(None)
-        image_dicts = [self._make_image_dict(i) for i in images]
+        image_dicts = [make_image_dict(i) for i in images]
         return dict(images=image_dicts)
 
     def show(self, req, id):
@@ -71,7 +71,7 @@ class ImageController(wsgi.Controller):
         except exception.NotFound:
             raise exc.HTTPNotFound()
         
-        return dict(image=self._make_image_dict(image))
+        return dict(image=make_image_dict(image))
 
     def delete(self, req, id):
         """Deletes an existing image with the registry.
@@ -133,31 +133,6 @@ class ImageController(wsgi.Controller):
         except exception.NotFound:
             return exc.HTTPNotFound()
 
-    @staticmethod
-    def _make_image_dict(image):
-        """Create a dict representation of an image which we can use to
-        serialize the image.
-        
-        """
-        
-        def _fetch_attrs(d, attrs):
-            return dict([(a, d[a]) for a in attrs])
-
-        files = [_fetch_attrs(f, db.IMAGE_FILE_ATTRS) for f in image['files']]
-
-        # TODO(sirp): should this be a dict, or a list of dicts?
-        # A plain dict is more convenient, but list of dicts would provide
-        # access to created_at, etc
-        properties = dict((p['key'], p['value'])
-                          for p in image['properties']
-                          if not p['deleted'])
-
-        image_dict = _fetch_attrs(image, db.IMAGE_ATTRS)
-
-        image_dict['files'] = files
-        image_dict['properties'] = properties
-        return image_dict
-
 
 class API(wsgi.Router):
     """WSGI entry point for all Parallax requests."""
@@ -169,3 +144,29 @@ class API(wsgi.Router):
                        collection={'detail': 'GET'})
         mapper.connect("/", controller=ImageController(), action="index")
         super(API, self).__init__(mapper)
+
+
+def make_image_dict(image):
+    """
+    Create a dict representation of an image which we can use to
+    serialize the image.
+    """
+    
+    def _fetch_attrs(d, attrs):
+        return dict([(a, d[a]) for a in attrs
+                    if a in d.keys()])
+
+    files = [_fetch_attrs(f, db.IMAGE_FILE_ATTRS) for f in image['files']]
+
+    # TODO(sirp): should this be a dict, or a list of dicts?
+    # A plain dict is more convenient, but list of dicts would provide
+    # access to created_at, etc
+    properties = dict((p['key'], p['value'])
+                      for p in image['properties']
+                      if 'deleted' in p.keys() and not p['deleted'])
+
+    image_dict = _fetch_attrs(image, db.IMAGE_ATTRS)
+
+    image_dict['files'] = files
+    image_dict['properties'] = properties
+    return image_dict

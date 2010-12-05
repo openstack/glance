@@ -31,9 +31,9 @@ from glance.teller import registries
 
 
 class ImageController(wsgi.Controller):
-    """Image Controller """
+    """Image Controller"""
 
-    def index(self, req):
+    def show(self, req, id):
         """
         Query the parallax service for the image registry for the passed in 
         req['uri']. If it exists, we connect to the appropriate backend as
@@ -43,42 +43,38 @@ class ImageController(wsgi.Controller):
         Optionally, we can pass in 'registry' which will use a given
         RegistryAdapter for the request. This is useful for testing.
         """
-        try:
-            uri = req.str_GET['uri']
-        except KeyError:
-            return exc.HTTPBadRequest(body="Missing uri", request=req,
-                                      content_type="text/plain")
 
         registry = req.str_GET.get('registry', 'parallax')
 
         try:
-            image = registries.lookup_by_registry(registry, uri)
-            logging.debug("Found image registry for URI: %s. Got: %s", uri, image)
+            image = registries.lookup_by_registry(registry, id)
         except registries.UnknownImageRegistry:
+            logging.debug("Could not find image registry: %s.", registry)
             return exc.HTTPBadRequest(body="Unknown registry '%s'" % registry,
                                       request=req,
                                       content_type="text/plain")
-
-        if not image:
+        except exception.NotFound:
             raise exc.HTTPNotFound(body='Image not found', request=req,
                                    content_type='text/plain')
 
         def image_iterator():
             for file in image['files']:
-                chunks = backends.get_from_backend(
-                    file['location'], expected_size=file['size'])
+                chunks = backends.get_from_backend(file['location'],
+                                                   expected_size=file['size'])
 
                 for chunk in chunks:
                     yield chunk
 
-        return req.get_response(Response(app_iter=image_iterator()))
+        res = Response(app_iter=image_iterator(),
+                       content_type="text/plain")
+        return req.get_response(res)
     
-    def detail(self, req):
-        """Detail is not currently supported """
+    def index(self, req):
+        """Index is not currently supported """
         raise exc.HTTPNotImplemented()
 
-    def show(self, req):
-        """Show is not currently supported """
+    def detail(self, req):
+        """Detail is not currently supported """
         raise exc.HTTPNotImplemented()
 
     def delete(self, req, id):
@@ -95,10 +91,12 @@ class ImageController(wsgi.Controller):
 
 
 class API(wsgi.Router):
+
     """WSGI entry point for all Teller requests."""
 
     def __init__(self):
         mapper = routes.Mapper()
-        mapper.resource("image", "image", controller=ImageController(),
-                        collection={'detail': 'GET'})
+        mapper.resource("image", "images", controller=ImageController(),
+                       collection={'detail': 'GET'})
+        mapper.connect("/", controller=ImageController(), action="index")
         super(API, self).__init__(mapper)
