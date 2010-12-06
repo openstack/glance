@@ -32,30 +32,14 @@ class SwiftBackend(Backend):
         swift instance at auth_url and downloads the file. Returns the generator
         resp_body provided by get_object.
         """
-        if conn_class:
-            pass # Use the provided conn_class
-        else:
-            # NOTE(sirp): A standard import statement won't work here because
-            # this file ('swift.py') is shadowing the swift module, and since
-            # the import statement searches locally before globally, we'd end
-            # up importing ourselves.
-            #
-            # see http://docs.python.org/library/functions.html#__import__
-            PERFORM_ABSOLUTE_IMPORTS = 0
-            swift = __import__('swift.common.client', globals(), locals(), [],
-                                PERFORM_ABSOLUTE_IMPORTS)
-
-            # Import cloudfiles here because stubout will replace this call
-            # with a faked swift client in the unittests, avoiding import
-            # errors if the test system does not have cloudfiles installed
-            conn_class = swift.common.client.Connection
-
         (user, key, authurl, container, obj) = \
             cls._parse_swift_tokens(parsed_uri)
         
         # TODO(sirp): snet=False for now, however, if the instance of
         # swift we're talking to is within our same region, we should set
         # snet=True
+        connection_class = get_connection_class(conn_class)
+
         swift_conn = conn_class(
             authurl=authurl, user=user, key=key, snet=False)
 
@@ -68,7 +52,29 @@ class SwiftBackend(Backend):
                                    % (expected_size, obj_size))
         
         return resp_body
-    
+
+    @classmethod
+    def delete(cls, parsed_uri, conn_class=None):
+        """
+        Deletes the swift object(s) at the parsed_uri location
+        """
+        (user, key, authurl, container, obj) = \
+            cls._parse_swift_tokens(parsed_uri)
+        
+        # TODO(sirp): snet=False for now, however, if the instance of
+        # swift we're talking to is within our same region, we should set
+        # snet=True
+        connection_class = get_connection_class(conn_class)
+
+        swift_conn = conn_class(
+            authurl=authurl, user=user, key=key, snet=False)
+
+        (resp_headers, resp_body) = swift_conn.delete_object(
+            container=container, obj=obj)
+
+        # TODO(jaypipes): What to return here?  After reading the docs
+        # at swift.common.client, I'm not sure what to check for...
+        return resp_body
     
     @classmethod
     def _parse_swift_tokens(cls, parsed_uri):
@@ -102,3 +108,24 @@ class SwiftBackend(Backend):
         authurl = "https://%s" % '/'.join(path_parts)
 
         return user, key, authurl, container, obj
+
+
+def get_connection_class(conn_class):
+    if conn_class:
+        pass # Use the provided conn_class
+    else:
+        # NOTE(sirp): A standard import statement won't work here because
+        # this file ('swift.py') is shadowing the swift module, and since
+        # the import statement searches locally before globally, we'd end
+        # up importing ourselves.
+        #
+        # NOTE(jaypipes): This can be resolved by putting this code in
+        #                 /glance/teller/backends/swift/__init__.py
+        #
+        # see http://docs.python.org/library/functions.html#__import__
+        PERFORM_ABSOLUTE_IMPORTS = 0
+        swift = __import__('swift.common.client', globals(), locals(), [],
+                            PERFORM_ABSOLUTE_IMPORTS)
+
+        conn_class = swift.common.client.Connection
+    return conn_class
