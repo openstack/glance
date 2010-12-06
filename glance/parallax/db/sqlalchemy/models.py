@@ -125,6 +125,15 @@ class ModelBase(object):
         n = self._i.next().name
         return n, getattr(self, n)
 
+    def keys(self):
+        return self.__dict__.keys()
+
+    def values(self):
+        return self.__dict__.values()
+
+    def items(self):
+        return self.__dict__.items()
+
 class Image(BASE, ModelBase):
     """Represents an image in the datastore"""
     __tablename__ = 'images'

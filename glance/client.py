@@ -140,7 +140,7 @@ class TellerClient(BaseClient):
     """A client for the Teller image caching and delivery service"""
 
     DEFAULT_ADDRESS = 'http://127.0.0.1'
-    DEFAULT_PORT = 9191
+    DEFAULT_PORT = 9292
 
     def __init__(self, **kwargs):
         """
@@ -149,7 +149,7 @@ class TellerClient(BaseClient):
 
         :param address: The address where Teller resides (defaults to
                         http://127.0.0.1)
-        :param port: The port where Teller resides (defaults to 9191)
+        :param port: The port where Teller resides (defaults to 9292)
         """
         super(TellerClient, self).__init__(**kwargs)
 
@@ -164,7 +164,7 @@ class TellerClient(BaseClient):
         """
         # TODO(jaypipes): Handle other registries than Parallax...
 
-        res = self.do_request("GET", "images/%s" % image_id)
+        res = self.do_request("GET", "/images/%s" % image_id)
         return res.read()
 
 
@@ -173,7 +173,7 @@ class ParallaxClient(BaseClient):
     """A client for the Parallax image metadata service"""
 
     DEFAULT_ADDRESS = 'http://127.0.0.1'
-    DEFAULT_PORT = 9292
+    DEFAULT_PORT = 9191
 
     def __init__(self, **kwargs):
         """
@@ -182,7 +182,7 @@ class ParallaxClient(BaseClient):
 
         :param address: The address where Parallax resides (defaults to
                         http://127.0.0.1)
-        :param port: The port where Parallax resides (defaults to 9292)
+        :param port: The port where Parallax resides (defaults to 9191)
         """
         super(ParallaxClient, self).__init__(**kwargs)
 
@@ -190,7 +190,7 @@ class ParallaxClient(BaseClient):
         """
         Returns a list of image id/name mappings from Parallax
         """
-        res = self.do_request("GET", "images")
+        res = self.do_request("GET", "/images")
         data = json.loads(res.read())['images']
         return data
 
@@ -198,7 +198,7 @@ class ParallaxClient(BaseClient):
         """
         Returns a list of detailed image data mappings from Parallax
         """
-        res = self.do_request("GET", "images/detail")
+        res = self.do_request("GET", "/images/detail")
         data = json.loads(res.read())['images']
         return data
 
@@ -208,7 +208,7 @@ class ParallaxClient(BaseClient):
 
         :raises exception.NotFound if image is not in registry
         """
-        res = self.do_request("GET", "images/%s" % image_id)
+        res = self.do_request("GET", "/images/%s" % image_id)
         data = json.loads(res.read())['image']
         return data
 
@@ -219,7 +219,7 @@ class ParallaxClient(BaseClient):
         if 'image' not in image_metadata.keys():
             image_metadata = dict(image=image_metadata)
         body = json.dumps(image_metadata)
-        res = self.do_request("POST", "images", body)
+        res = self.do_request("POST", "/images", body)
         # Parallax returns a JSONified dict(image=image_info)
         data = json.loads(res.read())
         return data['image']['id']
@@ -231,12 +231,12 @@ class ParallaxClient(BaseClient):
         if 'image' not in image_metadata.keys():
             image_metadata = dict(image=image_metadata)
         body = json.dumps(image_metadata)
-        self.do_request("PUT", "images/%s" % image_id, body)
+        self.do_request("PUT", "/images/%s" % image_id, body)
         return True
 
     def delete_image(self, image_id):
         """
         Deletes Parallax's information about an image
         """
-        self.do_request("DELETE", "images/%s" % image_id)
+        self.do_request("DELETE", "/images/%s" % image_id)
         return True

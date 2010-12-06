@@ -43,7 +43,6 @@ class ImageController(wsgi.Controller):
         Optionally, we can pass in 'registry' which will use a given
         RegistryAdapter for the request. This is useful for testing.
         """
-
         registry = req.str_GET.get('registry', 'parallax')
 
         try:
@@ -73,10 +72,6 @@ class ImageController(wsgi.Controller):
         """Index is not currently supported """
         raise exc.HTTPNotImplemented()
 
-    def detail(self, req):
-        """Detail is not currently supported """
-        raise exc.HTTPNotImplemented()
-
     def delete(self, req, id):
         """Delete is not currently supported """
         raise exc.HTTPNotImplemented()
@@ -96,7 +91,5 @@ class API(wsgi.Router):
 
     def __init__(self):
         mapper = routes.Mapper()
-        mapper.resource("image", "images", controller=ImageController(),
-                       collection={'detail': 'GET'})
-        mapper.connect("/", controller=ImageController(), action="index")
+        mapper.resource("image", "images", controller=ImageController())
         super(API, self).__init__(mapper)
