@@ -68,6 +68,7 @@ class TestImageController(unittest.TestCase):
         # purpose to allow the most flexibility for migrating
         # image file/chunk locations while keeping an image
         # identifier stable.
+
         req = webob.Request.blank("/images/2")
         req.method = 'DELETE'
         res = req.get_response(parallax_controllers.API())

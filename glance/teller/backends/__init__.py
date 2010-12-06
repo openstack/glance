@@ -25,8 +25,6 @@ from glance.common import exception
 def _file_iter(f, size):
     """
     Return an iterator for a file-like object
-    
-    :raises NotFound if the file does not exist
     """
     chunk = f.read(size)
     while chunk:

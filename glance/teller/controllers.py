@@ -43,7 +43,7 @@ class ImageController(wsgi.Controller):
         Optionally, we can pass in 'registry' which will use a given
         RegistryAdapter for the request. This is useful for testing.
         """
-        registry, image = self.get_image_data(req, id)
+        registry, image = self.get_registry_and_image(req, id)
 
         def image_iterator():
             for file in image['files']:
@@ -76,7 +76,7 @@ class ImageController(wsgi.Controller):
         :raises HttpNotAuthorized if image or any chunk is not
                 deleteable by the requesting user
         """
-        registry, image = self.get_image_data(req, id)
+        registry, image = self.get_registry_and_image(req, id)
 
         try:
             for file in image['files']:
@@ -99,7 +99,7 @@ class ImageController(wsgi.Controller):
         """Update is not currently supported """
         raise exc.HTTPNotImplemented()
 
-    def get_image_data(self, req, id):
+    def get_registry_and_image(self, req, id):
         """
         Returns the registry used and the image metadata for a
         supplied image ID and request object.
@@ -110,7 +110,7 @@ class ImageController(wsgi.Controller):
         :raises HttpBadRequest if image registry is invalid
         :raises HttpNotFound if image is not available
 
-        :retval tuple with (regitry, image)
+        :retval tuple with (registry, image)
         """
         registry = req.str_GET.get('registry', 'parallax')
 
