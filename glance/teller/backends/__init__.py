@@ -15,12 +15,19 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
 import urlparse
+
+from glance.common import exception
 
 
 # TODO(sirp): should this be moved out to common/utils.py ?
 def _file_iter(f, size):
-    """ Return an iterator for a file-like object """
+    """
+    Return an iterator for a file-like object
+    
+    :raises NotFound if the file does not exist
+    """
     chunk = f.read(size)
     while chunk:
         yield chunk
@@ -49,10 +56,35 @@ class FilesystemBackend(Backend):
         #FIXME: must prevent attacks using ".." and "." paths
         with opener(parsed_uri.path) as f:
             return _file_iter(f, cls.CHUNKSIZE)
-         
 
-def get_from_backend(uri, **kwargs):
-    """ Yields chunks of data from backend specified by uri """
+    @classmethod
+    def delete(cls, parsed_uri):
+        """
+        Removes a file from the filesystem backend.
+
+        :param parsed_uri: Parsed pieces of URI in form of::
+            file:///path/to/filename.ext
+
+        :raises NotFound if file does not exist
+        :raises NotAuthorized if cannot delete because of permissions
+        """
+        fn = parsed_uri.path
+        if os.path.exists(fn):
+            try:
+                os.unlink(fn)
+            except OSError:
+                raise exception.NotAuthorized("You cannot delete file %s" % fn)
+        else:
+            raise exception.NotFound("File %s does not exist" % fn) 
+
+
+def get_backend_class(backend):
+    """
+    Returns the backend class as designated in the
+    backend name
+
+    :param backend: Name of backend to create
+    """
     # NOTE(sirp): avoiding circular import
     from glance.teller.backends.http import HTTPBackend
     from glance.teller.backends.swift import SwiftBackend
@@ -64,12 +96,29 @@ def get_from_backend(uri, **kwargs):
         "swift": SwiftBackend
     }
 
-    parsed_uri = urlparse.urlparse(uri)
-    scheme = parsed_uri.scheme
-
     try:
-        backend = BACKENDS[scheme]
+        return BACKENDS[backend]
     except KeyError:
         raise UnsupportedBackend("No backend found for '%s'" % scheme)
 
-    return backend.get(parsed_uri, **kwargs)
+
+def get_from_backend(uri, **kwargs):
+    """Yields chunks of data from backend specified by uri"""
+
+    parsed_uri = urlparse.urlparse(uri)
+    scheme = parsed_uri.scheme
+
+    backend_class = get_backend_class(scheme)
+
+    return backend_class.get(parsed_uri, **kwargs)
+
+
+def delete_from_backend(uri, **kwargs):
+    """Removes chunks of data from backend specified by uri"""
+
+    parsed_uri = urlparse.urlparse(uri)
+    scheme = parsed_uri.scheme
+
+    backend_class = get_backend_class(scheme)
+
+    return backend_class.delete(parsed_uri, **kwargs)

@@ -43,18 +43,7 @@ class ImageController(wsgi.Controller):
         Optionally, we can pass in 'registry' which will use a given
         RegistryAdapter for the request. This is useful for testing.
         """
-        registry = req.str_GET.get('registry', 'parallax')
-
-        try:
-            image = registries.lookup_by_registry(registry, id)
-        except registries.UnknownImageRegistry:
-            logging.debug("Could not find image registry: %s.", registry)
-            return exc.HTTPBadRequest(body="Unknown registry '%s'" % registry,
-                                      request=req,
-                                      content_type="text/plain")
-        except exception.NotFound:
-            raise exc.HTTPNotFound(body='Image not found', request=req,
-                                   content_type='text/plain')
+        registry, image = self.get_image_data(req, id)
 
         def image_iterator():
             for file in image['files']:
@@ -73,8 +62,34 @@ class ImageController(wsgi.Controller):
         raise exc.HTTPNotImplemented()
 
     def delete(self, req, id):
-        """Delete is not currently supported """
-        raise exc.HTTPNotImplemented()
+        """
+        Deletes the image and all its chunks from the Teller service.
+        Note that this DOES NOT delete the image from the image
+        registry (Parallax or other registry service). The caller
+        should delete the metadata from the registry if necessary.
+
+        :param request: The WSGI/Webob Request object
+        :param id: The opaque image identifier
+
+        :raises HttpBadRequest if image registry is invalid
+        :raises HttpNotFound if image or any chunk is not available
+        :raises HttpNotAuthorized if image or any chunk is not
+                deleteable by the requesting user
+        """
+        registry, image = self.get_image_data(req, id)
+
+        try:
+            for file in image['files']:
+                backends.delete_from_backend(file['location'])
+        except exception.NotAuthorized:
+            raise exc.HTTPNotAuthorized(body='You are not authorized to '
+                                        'delete image chunk %s' % file,
+                                        request=req,
+                                        content_type='text/plain')
+        except exception.NotFound:
+            raise exc.HTTPNotFound(body='Image chunk %s not found' %
+                                   file, request=req,
+                                   content_type='text/plain')
 
     def create(self, req):
         """Create is not currently supported """
@@ -83,6 +98,33 @@ class ImageController(wsgi.Controller):
     def update(self, req, id):
         """Update is not currently supported """
         raise exc.HTTPNotImplemented()
+
+    def get_image_data(self, req, id):
+        """
+        Returns the registry used and the image metadata for a
+        supplied image ID and request object.
+
+        :param req: The WSGI/Webob Request object
+        :param id: The opaque image identifier
+
+        :raises HttpBadRequest if image registry is invalid
+        :raises HttpNotFound if image is not available
+
+        :retval tuple with (regitry, image)
+        """
+        registry = req.str_GET.get('registry', 'parallax')
+
+        try:
+            image = registries.lookup_by_registry(registry, id)
+            return registry, image
+        except registries.UnknownImageRegistry:
+            logging.debug("Could not find image registry: %s.", registry)
+            raise exc.HTTPBadRequest(body="Unknown registry '%s'" % registry,
+                                      request=req,
+                                      content_type="text/plain")
+        except exception.NotFound:
+            raise exc.HTTPNotFound(body='Image not found', request=req,
+                                   content_type='text/plain')
 
 
 class API(wsgi.Router):
