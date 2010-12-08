@@ -74,7 +74,6 @@ class SwiftBackend(Backend):
 
         # TODO(jaypipes): What to return here?  After reading the docs
         # at swift.common.client, I'm not sure what to check for...
-        return resp_body
     
     @classmethod
     def _parse_swift_tokens(cls, parsed_uri):
