@@ -84,6 +84,7 @@ class SwiftBackend(Backend):
         try:
             try:
                 creds, netloc = netloc.split('@')
+                path = '/'.join([netloc, path])
             except ValueError:
                 # Python 2.6.1 compat
                 # see lp659445 and Python issue7904
