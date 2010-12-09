@@ -35,15 +35,16 @@ if os.path.exists(os.path.join(possible_topdir, 'parallax', '__init__.py')):
 from glance.common import flags
 from glance.common import utils
 from glance.common import server
-from glance.common import wsgi
-from glance.parallax import controllers
 
 
 FLAGS = flags.FLAGS
-# TODO(sirp): ensure no conflicts in port selection
 flags.DEFINE_integer('parallax_port', 9191, 'Parallax port')
 
 def main(_args):
+    # NOTE(sirp): importing in main so that eventlet is imported AFTER daemonization
+    # see https://bugs.launchpad.net/bugs/687661
+    from glance.common import wsgi
+    from glance.parallax import controllers
     wsgi.run_server(controllers.API(), FLAGS.parallax_port)
 
 if __name__ == '__main__':
