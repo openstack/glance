@@ -19,6 +19,7 @@ from StringIO import StringIO
 
 import stubout
 import unittest
+import urlparse
 
 from glance.teller.backends.swift import SwiftBackend
 from glance.teller.backends import Backend, BackendException, get_from_backend
@@ -106,3 +107,21 @@ class TestSwiftBackend(TestBackend):
 
         self.assertRaises(BackendException, get_from_backend, 
                           swift_url, expected_size=21)
+
+    def test_url_parsing(self):
+
+        swift_uri = "swift://user:password@localhost/v1.0/container1/file.tar.gz"
+
+        parsed_uri = urlparse.urlparse(swift_uri)
+
+        (user, key, authurl, container, obj) = \
+            SwiftBackend._parse_swift_tokens(parsed_uri)
+
+        self.assertEqual(user, 'user')
+        self.assertEqual(key, 'password')
+        self.assertEqual(authurl, 'https://localhost/v1.0')
+        self.assertEqual(container, 'container1')
+        self.assertEqual(obj, 'file.tar.gz')
+
+
+
