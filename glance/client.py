@@ -167,6 +167,13 @@ class TellerClient(BaseClient):
         res = self.do_request("GET", "/images/%s" % image_id)
         return res.read()
 
+    def delete_image(self, image_id):
+        """
+        Deletes Tellers's information about an image.
+        """
+        self.do_request("DELETE", "/images/%s" % image_id)
+        return True
+
 
 class ParallaxClient(BaseClient):
 

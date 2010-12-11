@@ -284,6 +284,7 @@ class TestTellerClient(unittest.TestCase):
         stubs.stub_out_parallax_and_teller_server(self.stubs)
         stubs.stub_out_filesystem_backend(self.stubs)
         self.client = client.TellerClient()
+        self.pclient = client.ParallaxClient()
 
     def tearDown(self):
         """Clear the test environment"""
@@ -296,3 +297,35 @@ class TestTellerClient(unittest.TestCase):
         image = self.client.get_image(2)
 
         self.assertEquals(expected, image)
+
+    def test_get_image_not_existing(self):
+        """Test retrieval of a non-existing image returns a 404"""
+
+        self.assertRaises(exception.NotFound,
+                          self.client.get_image,
+                          3)
+
+    def test_delete_image(self):
+        """Tests that image data is deleted properly"""
+
+        expected = 'chunk0chunk42'
+        image = self.client.get_image(2)
+
+        self.assertEquals(expected, image)
+
+        # Delete image #2
+        self.assertTrue(self.client.delete_image(2))
+
+        # Delete the image metadata for #2 from Parallax
+        self.assertTrue(self.pclient.delete_image(2))
+
+        self.assertRaises(exception.NotFound,
+                          self.client.get_image,
+                          2)
+
+    def test_delete_image_not_existing(self):
+        """Test deletion of a non-existing image returns a 404"""
+
+        self.assertRaises(exception.NotFound,
+                          self.client.delete_image,
+                          3)

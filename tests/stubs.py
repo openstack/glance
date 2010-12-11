@@ -83,7 +83,7 @@ def clean_out_fake_filesystem_backend():
 def stub_out_filesystem_backend(stubs):
     """
     Stubs out the Filesystem Teller service to return fake
-    data from files.
+    gzipped image data from files.
 
     We establish a few fake images in a directory under /tmp/glance-tests
     and ensure that this directory contains the following files:
@@ -104,12 +104,29 @@ def stub_out_filesystem_backend(stubs):
         @classmethod
         def get(cls, parsed_uri, expected_size, opener=None):
             filepath = os.path.join('/',
-                                    parsed_uri.netloc,
+                                    parsed_uri.netloc.lstrip('/'),
                                     parsed_uri.path.strip(os.path.sep))
-            f = gzip.open(filepath, 'rb')
-            data = f.read()
-            f.close()
-            return data
+            if os.path.exists(filepath):
+                f = gzip.open(filepath, 'rb')
+                data = f.read()
+                f.close()
+                return data
+            else:
+                raise exception.NotFound("File %s does not exist" % filepath) 
+
+        @classmethod
+        def delete(self, parsed_uri):
+            filepath = os.path.join('/',
+                                    parsed_uri.netloc.lstrip('/'),
+                                    parsed_uri.path.strip(os.path.sep))
+            if os.path.exists(filepath):
+                try:
+                    os.unlink(filepath)
+                except OSError:
+                    raise exception.NotAuthorized("You cannot delete file %s" %
+                                                  filepath)
+            else:
+                raise exception.NotFound("File %s does not exist" % filepath) 
 
     # Establish a clean faked filesystem with dummy images
     if os.path.exists(FAKE_FILESYSTEM_ROOTDIR):
@@ -130,6 +147,8 @@ def stub_out_filesystem_backend(stubs):
     fake_filesystem_backend = FakeFilesystemBackend()
     stubs.Set(glance.teller.backends.FilesystemBackend, 'get',
               fake_filesystem_backend.get)
+    stubs.Set(glance.teller.backends.FilesystemBackend, 'delete',
+              fake_filesystem_backend.delete)
 
 
 def stub_out_swift_backend(stubs):
