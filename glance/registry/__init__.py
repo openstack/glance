@@ -23,6 +23,31 @@ Registry API
 from glance import client
 
 
+def get_images_list():
+    c = client.RegistryClient()
+    return c.get_images()
+
+
+def get_images_detail():
+    c = client.RegistryClient()
+    return c.get_images_detail()
+
+
 def get_image_metadata(image_id):
     c = client.RegistryClient()
     return c.get_image(image_id)
+
+
+def add_image_metadata(image_data):
+    c = client.RegistryClient()
+    return c.add_image(image_data)
+
+
+def update_image_metadata(image_id):
+    c = client.RegistryClient()
+    return c.update_image(image_id)
+
+
+def delete_image_metadata(image_id):
+    c = client.RegistryClient()
+    return c.delete_image(image_id)

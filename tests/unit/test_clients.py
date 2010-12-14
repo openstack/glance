@@ -284,7 +284,6 @@ class TestGlanceClient(unittest.TestCase):
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_filesystem_backend(self.stubs)
         self.client = client.GlanceClient()
-        self.pclient = client.RegistryClient()
 
     def tearDown(self):
         """Clear the test environment"""
@@ -315,9 +314,6 @@ class TestGlanceClient(unittest.TestCase):
 
         # Delete image #2
         self.assertTrue(self.client.delete_image(2))
-
-        # Delete the image metadata for #2 from Registry
-        self.assertTrue(self.pclient.delete_image(2))
 
         self.assertRaises(exception.NotFound,
                           self.client.get_image,

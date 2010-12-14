@@ -34,6 +34,98 @@ from glance import registry
 class Controller(wsgi.Controller):
 
     """Main Glance controller"""
+    
+    def index(self, req):
+        """
+        Return basic information for all public, non-deleted images
+        
+        :param req: the Request object coming from the wsgi layer
+        :retval a mapping of the following form::
+
+            dict(images=[image_list])
+
+        Where image_list is a sequence of mappings::
+
+            {'id': image_id, 'name': image_name}
+        
+        """
+        images = registry.get_images_list()
+        return dict(images=images)
+
+    def detail(self, req):
+        """Return detailed information for all public, non-deleted images
+        
+        :param req: the Request object coming from the wsgi layer
+        :retval a mapping of the following form::
+
+            dict(images=[image_list])
+
+        Where image_list is a sequence of mappings containing
+        all image model fields.
+        
+        """
+        images = registry.get_images_detail()
+        return dict(images=images)
+
+    def meta(self, req, id):
+        """Return data about the given image id."""
+        reg, image = self.get_registry_and_image(req, id)
+
+        res = Response(request=req)
+        for k, v in image.iteritems():
+            res.headers.add("x-image-meta-%s" % k.lower(), v)
+        return req.get_response(res)
+
+    def create(self, req):
+        """Registers a new image with the registry.
+
+        :param req: Request body.  A JSON-ified dict of information about
+                    the image.
+
+        :retval Returns the newly-created image information as a mapping,
+                which will include the newly-created image's internal id
+                in the 'id' field
+
+        """
+        image_data = json.loads(req.body)['image']
+
+        # Ensure the image has a status set
+        image_data.setdefault('status', 'available')
+
+        try:
+            new_image = registry.add_image_metadata(image_data)
+            return dict(image=new_image)
+        except exception.Duplicate:
+            return exc.HTTPConflict()
+        except exception.Invalid:
+            return exc.HTTPBadRequest()
+
+    def update(self, req, id):
+        """Updates an existing image with the registry.
+
+        :param req: Request body.  A JSON-ified dict of information about
+                    the image.  This will replace the information in the
+                    registry about this image
+        :param id:  The opaque internal identifier for the image
+
+        :retval Returns the updated image information as a mapping,
+
+        """
+        reg, image = self.get_registry_and_image(req, id)
+
+        try:
+            image_data = json.loads(req.body)['image']
+            updated_image = registry.update_image_metadata(id)
+            return dict(image=updated_image)
+        except exception.NotAuthorized:
+            raise exc.HTTPNotAuthorized(body='You are not authorized to '
+                                        'delete image chunk %s' % file,
+                                        request=req,
+                                        content_type='text/plain')
+        except exception.NotFound:
+            raise exc.HTTPNotFound(body='Image chunk %s not found' %
+                                   file, request=req,
+                                   content_type='text/plain')
 
     def show(self, req, id):
         """
@@ -58,10 +150,6 @@ class Controller(wsgi.Controller):
         res = Response(app_iter=image_iterator(),
                        content_type="text/plain")
         return req.get_response(res)
-    
-    def index(self, req):
-        """Index is not currently supported """
-        raise exc.HTTPNotImplemented()
 
     def delete(self, req, id):
         """
@@ -83,6 +171,8 @@ class Controller(wsgi.Controller):
         try:
             for file in image['files']:
                 delete_from_backend(file['location'])
+
+            registry.delete_image_metadata(id)
         except exception.NotAuthorized:
             raise exc.HTTPNotAuthorized(body='You are not authorized to '
                                         'delete image chunk %s' % file,
@@ -92,14 +182,6 @@ class Controller(wsgi.Controller):
             raise exc.HTTPNotFound(body='Image chunk %s not found' %
                                    file, request=req,
                                    content_type='text/plain')
-
-    def create(self, req):
-        """Create is not currently supported """
-        raise exc.HTTPNotImplemented()
-
-    def update(self, req, id):
-        """Update is not currently supported """
-        raise exc.HTTPNotImplemented()
 
     def get_registry_and_image(self, req, id):
         """
@@ -130,5 +212,9 @@ class API(wsgi.Router):
 
     def __init__(self):
         mapper = routes.Mapper()
-        mapper.resource("image", "images", controller=Controller())
+        mapper.resource("image", "images", controller=Controller(),
+                       collection={'detail': 'GET'})
+        mapper.connect("/", controller=Controller(), action="index")
+        mapper.connect("/images/{id}", controller=Controller(), action="meta",
+                       conditions=dict(method=["HEAD"]))
         super(API, self).__init__(mapper)
