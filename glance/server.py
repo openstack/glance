@@ -19,6 +19,7 @@
 Glance WSGI servers
 """
 
+import json
 import logging
 
 import routes
@@ -115,7 +116,7 @@ class Controller(wsgi.Controller):
 
         try:
             image_data = json.loads(req.body)['image']
-            updated_image = registry.update_image_metadata(id)
+            updated_image = registry.update_image_metadata(id, image_data)
             return dict(image=updated_image)
         except exception.NotAuthorized:
             raise exc.HTTPNotAuthorized(body='You are not authorized to '

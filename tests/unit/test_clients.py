@@ -22,6 +22,7 @@ import unittest
 import webob
 
 from glance import client
+from glance.registry import client as rclient
 from glance.common import exception
 from tests import stubs
 
@@ -32,14 +33,14 @@ class TestBadClients(unittest.TestCase):
 
     def test_bad_protocol(self):
         """Test unsupported protocol raised"""
-        c = client.RegistryClient(address="hdsa://127.012..1./")
+        c = client.GlanceClient(address="hdsa://127.012..1./")
         self.assertRaises(client.UnsupportedProtocolError,
                           c.get_image,
                           1)
 
     def test_bad_address(self):
         """Test unsupported protocol raised"""
-        c = client.RegistryClient(address="http://127.999.1.1/")
+        c = client.GlanceClient(address="http://127.999.1.1/")
         self.assertRaises(client.ClientConnectionError,
                           c.get_image,
                           1)
@@ -57,7 +58,7 @@ class TestRegistryClient(unittest.TestCase):
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_registry_and_store_server(self.stubs)
-        self.client = client.RegistryClient()
+        self.client = rclient.RegistryClient()
 
     def tearDown(self):
         """Clear the test environment"""
@@ -150,10 +151,10 @@ class TestRegistryClient(unittest.TestCase):
                    'image_type': 'kernel'
                   }
         
-        new_id = self.client.add_image(fixture)
+        new_image = self.client.add_image(fixture)
 
         # Test ID auto-assigned properly
-        self.assertEquals(3, new_id)
+        self.assertEquals(3, new_image['id'])
 
         # Test all other attributes set
         data = self.client.get_image(3)
@@ -179,20 +180,17 @@ class TestRegistryClient(unittest.TestCase):
                     'properties': {'disco': 'baby'}
                   }
         
-        new_id = self.client.add_image(fixture)
+        new_image = self.client.add_image(fixture)
 
         # Test ID auto-assigned properly
-        self.assertEquals(3, new_id)
-
-        # Test all other attributes set
-        data = self.client.get_image(3)
+        self.assertEquals(3, new_image['id'])
 
         for k,v in expected.iteritems():
-            self.assertEquals(v, data[k])
+            self.assertEquals(v, new_image[k])
 
         # Test status was updated properly
-        self.assertTrue('status' in data.keys())
-        self.assertEquals('available', data['status'])
+        self.assertTrue('status' in new_image.keys())
+        self.assertEquals('available', new_image['status'])
 
     def test_add_image_already_exists(self):
         """Tests proper exception is raised if image with ID already exists"""
@@ -321,6 +319,212 @@ class TestGlanceClient(unittest.TestCase):
 
     def test_delete_image_not_existing(self):
         """Test deletion of a non-existing image returns a 404"""
+
+        self.assertRaises(exception.NotFound,
+                          self.client.delete_image,
+                          3)
+
+    def test_get_image_index(self):
+        """Test correct set of public image returned"""
+        fixture = {'id': 2,
+                   'name': 'fake image #2'}
+        images = self.client.get_images()
+        self.assertEquals(len(images), 1)
+
+        for k,v in fixture.iteritems():
+            self.assertEquals(v, images[0][k])
+
+    def test_get_image_details(self):
+        """Tests that the detailed info about public images returned"""
+        fixture = {'id': 2,
+                   'name': 'fake image #2',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'status': 'available',
+                   'files': [
+                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
+                         "size": 6},
+                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
+                         "size": 7}],
+                   'properties': []}
+
+        expected = {'id': 2,
+                   'name': 'fake image #2',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'status': 'available',
+                   'files': [
+                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
+                         "size": 6},
+                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
+                         "size": 7}],
+                   'properties': {}}
+
+        images = self.client.get_images_detailed()
+        self.assertEquals(len(images), 1)
+
+        for k,v in expected.iteritems():
+            self.assertEquals(v, images[0][k])
+
+    def test_get_image_meta(self):
+        """Tests that the detailed info about an image returned"""
+        fixture = {'id': 2,
+                   'name': 'fake image #2',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'status': 'available',
+                   'files': [
+                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
+                         "size": 6},
+                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
+                         "size": 7}],
+                   'properties': []}
+
+        expected = {'id': 2,
+                   'name': 'fake image #2',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'status': 'available',
+                   'files': [
+                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
+                         "size": 6},
+                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
+                         "size": 7}],
+                   'properties': {}}
+
+        data = self.client.get_image_meta(2)
+
+        for k,v in expected.iteritems():
+            self.assertEquals(v, data[k])
+
+    def test_get_image_non_existing(self):
+        """Tests that NotFound is raised when getting a non-existing image"""
+
+        self.assertRaises(exception.NotFound,
+                          self.client.get_image,
+                          42)
+
+    def test_add_image_basic(self):
+        """Tests that we can add image metadata and returns the new id"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'image_type': 'kernel'
+                  }
+        
+        new_id = self.client.add_image(fixture)
+
+        # Test ID auto-assigned properly
+        self.assertEquals(3, new_id)
+
+        # Test all other attributes set
+        data = self.client.get_image_meta(3)
+
+        for k,v in fixture.iteritems():
+            self.assertEquals(v, data[k])
+
+        # Test status was updated properly
+        self.assertTrue('status' in data.keys())
+        self.assertEquals('available', data['status'])
+
+    def test_add_image_with_properties(self):
+        """Tests that we can add image metadata with properties"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'properties': [{'key':'disco',
+                                   'value': 'baby'}]
+                  }
+        expected = {'name': 'fake public image',
+                    'is_public': True,
+                    'image_type': 'kernel',
+                    'properties': {'disco': 'baby'}
+                  }
+        
+        new_id = self.client.add_image(fixture)
+
+        # Test ID auto-assigned properly
+        self.assertEquals(3, new_id)
+
+        # Test all other attributes set
+        data = self.client.get_image_meta(3)
+
+        for k,v in expected.iteritems():
+            self.assertEquals(v, data[k])
+
+        # Test status was updated properly
+        self.assertTrue('status' in data.keys())
+        self.assertEquals('available', data['status'])
+
+    def test_add_image_already_exists(self):
+        """Tests proper exception is raised if image with ID already exists"""
+        fixture = {'id': 2,
+                   'name': 'fake public image',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'status': 'bad status'
+                  }
+
+        self.assertRaises(exception.Duplicate,
+                          self.client.add_image,
+                          fixture)
+
+    def test_add_image_with_bad_status(self):
+        """Tests proper exception is raised if a bad status is set"""
+        fixture = {'id': 3,
+                   'name': 'fake public image',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'status': 'bad status'
+                  }
+
+        self.assertRaises(client.BadInputError,
+                          self.client.add_image,
+                          fixture)
+
+    def test_update_image(self):
+        """Tests that the /images PUT registry API updates the image"""
+        fixture = {'name': 'fake public image #2',
+                   'image_type': 'ramdisk'
+                  }
+
+        self.assertTrue(self.client.update_image(2, fixture))
+
+        # Test all other attributes set
+        data = self.client.get_image_meta(2)
+
+        for k,v in fixture.iteritems():
+            self.assertEquals(v, data[k])
+
+    def test_update_image_not_existing(self):
+        """Tests non existing image update doesn't work"""
+        fixture = {'id': 3,
+                   'name': 'fake public image',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'status': 'bad status'
+                  }
+
+        self.assertRaises(exception.NotFound,
+                          self.client.update_image,
+                          3,
+                          fixture)
+
+    def test_delete_image(self):
+        """Tests that image metadata is deleted properly"""
+
+        # Grab the original number of images
+        orig_num_images = len(self.client.get_images())
+
+        # Delete image #2
+        self.assertTrue(self.client.delete_image(2))
+
+        # Verify one less image
+        new_num_images = len(self.client.get_images())
+
+        self.assertEquals(new_num_images, orig_num_images - 1)
+
+    def test_delete_image_not_existing(self):
+        """Tests cannot delete non-existing image"""
 
         self.assertRaises(exception.NotFound,
                           self.client.delete_image,

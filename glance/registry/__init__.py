@@ -20,7 +20,7 @@
 Registry API 
 """
 
-from glance import client
+from glance.registry import client
 
 
 def get_images_list():
@@ -30,7 +30,7 @@ def get_images_list():
 
 def get_images_detail():
     c = client.RegistryClient()
-    return c.get_images_detail()
+    return c.get_images_detailed()
 
 
 def get_image_metadata(image_id):
@@ -43,9 +43,9 @@ def add_image_metadata(image_data):
     return c.add_image(image_data)
 
 
-def update_image_metadata(image_id):
+def update_image_metadata(image_id, image_data):
     c = client.RegistryClient()
-    return c.update_image(image_id)
+    return c.update_image(image_id, image_data)
 
 
 def delete_image_metadata(image_id):

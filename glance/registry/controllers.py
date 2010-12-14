@@ -107,7 +107,7 @@ class ImageController(wsgi.Controller):
         context = None
         try:
             new_image = db.image_create(context, image_data)
-            return dict(image=new_image)
+            return dict(image=make_image_dict(new_image))
         except exception.Duplicate:
             return exc.HTTPConflict()
         except exception.Invalid:

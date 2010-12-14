@@ -153,46 +153,6 @@ class GlanceClient(BaseClient):
         """
         super(GlanceClient, self).__init__(**kwargs)
 
-    def get_image(self, image_id):
-        """
-        Returns the raw disk image as a mime-encoded blob stream for the
-        supplied opaque image identifier.
-
-        :param image_id: The opaque image identifier
-
-        :raises exception.NotFound if image is not found
-        """
-        # TODO(jaypipes): Handle other registries than Registry...
-
-        res = self.do_request("GET", "/images/%s" % image_id)
-        return res.read()
-
-    def delete_image(self, image_id):
-        """
-        Deletes Glances's information about an image.
-        """
-        self.do_request("DELETE", "/images/%s" % image_id)
-        return True
-
-
-class RegistryClient(BaseClient):
-
-    """A client for the Registry image metadata service"""
-
-    DEFAULT_ADDRESS = 'http://127.0.0.1'
-    DEFAULT_PORT = 9191
-
-    def __init__(self, **kwargs):
-        """
-        Creates a new client to a Registry service.  All args are keyword
-        arguments.
-
-        :param address: The address where Registry resides (defaults to
-                        http://127.0.0.1)
-        :param port: The port where Registry resides (defaults to 9191)
-        """
-        super(RegistryClient, self).__init__(**kwargs)
-
     def get_images(self):
         """
         Returns a list of image id/name mappings from Registry
@@ -211,13 +171,31 @@ class RegistryClient(BaseClient):
 
     def get_image(self, image_id):
         """
+        Returns the raw disk image as a mime-encoded blob stream for the
+        supplied opaque image identifier.
+
+        :param image_id: The opaque image identifier
+
+        :raises exception.NotFound if image is not found
+        """
+        # TODO(jaypipes): Handle other registries than Registry...
+
+        res = self.do_request("GET", "/images/%s" % image_id)
+        return res.read()
+
+    def get_image_meta(self, image_id):
+        """
         Returns a mapping of image metadata from Registry
 
         :raises exception.NotFound if image is not in registry
         """
-        res = self.do_request("GET", "/images/%s" % image_id)
-        data = json.loads(res.read())['image']
-        return data
+        res = self.do_request("HEAD", "/images/%s" % image_id)
+
+        result = {}
+        for key, value in res.headerlist:
+            if key.startswith('x-image-meta-'):
+                result[key[len('x-image-meta-'):]] = value
+        return result
 
     def add_image(self, image_metadata):
         """
@@ -233,7 +211,7 @@ class RegistryClient(BaseClient):
 
     def update_image(self, image_id, image_metadata):
         """
-        Updates Registry's information about an image
+        Updates Glance's information about an image
         """
         if 'image' not in image_metadata.keys():
             image_metadata = dict(image=image_metadata)
@@ -243,7 +221,7 @@ class RegistryClient(BaseClient):
 
     def delete_image(self, image_id):
         """
-        Deletes Registry's information about an image
+        Deletes Glance's information about an image
         """
         self.do_request("DELETE", "/images/%s" % image_id)
         return True
