@@ -33,14 +33,14 @@ class TestBadClients(unittest.TestCase):
 
     def test_bad_protocol(self):
         """Test unsupported protocol raised"""
-        c = client.GlanceClient(address="hdsa://127.012..1./")
+        c = client.Client(address="hdsa://127.012..1./")
         self.assertRaises(client.UnsupportedProtocolError,
                           c.get_image,
                           1)
 
     def test_bad_address(self):
         """Test unsupported protocol raised"""
-        c = client.GlanceClient(address="http://127.999.1.1/")
+        c = client.Client(address="http://127.999.1.1/")
         self.assertRaises(client.ClientConnectionError,
                           c.get_image,
                           1)
@@ -265,7 +265,7 @@ class TestRegistryClient(unittest.TestCase):
                           3)
 
 
-class TestGlanceClient(unittest.TestCase):
+class TestClient(unittest.TestCase):
 
     """
     Test proper actions made for both valid and invalid requests
@@ -278,7 +278,7 @@ class TestGlanceClient(unittest.TestCase):
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_filesystem_backend()
-        self.client = client.GlanceClient()
+        self.client = client.Client()
 
     def tearDown(self):
         """Clear the test environment"""

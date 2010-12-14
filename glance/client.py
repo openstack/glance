@@ -140,7 +140,7 @@ class BaseClient(object):
             return response.status
 
 
-class GlanceClient(BaseClient):
+class Client(BaseClient):
 
     """Main client class for accessing Glance resources"""
 
@@ -156,7 +156,7 @@ class GlanceClient(BaseClient):
                         http://127.0.0.1)
         :param port: The port where Glance resides (defaults to 9292)
         """
-        super(GlanceClient, self).__init__(**kwargs)
+        super(Client, self).__init__(**kwargs)
 
     def get_images(self):
         """

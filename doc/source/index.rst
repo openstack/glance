@@ -224,6 +224,99 @@ Glance RESTful API for image metadata.
 .. toctree::
     :maxdepth: 1
 
+Using Glance Programmatically with Glance's Client
+==================================================
+
+While it is perfectly acceptable to issue HTTP requests directly to Glance
+via its RESTful API, sometimes it is better to be able to access and modify
+image resources via a client class that removes some of the complexity and
+tedium of dealing with raw HTTP requests.
+
+Glance includes a client class for just this purpose. You can retrieve
+metadata about an image, change metadata about an image, remove images, and
+of course retrieve an image itself via this client class.
+
+Below are some examples of using Glance's Client class.  We assume that
+there is a Glance server running at the address http://glance.openstack.org
+on port `9292`.
+
+Requesting a List of Public VM Images
+-------------------------------------
+
+We want to see a list of available virtual machine images that the Glance
+server knows about.
+
+Using Glance's Client, we can do this using the following code::
+
+  from glance import client
+
+  c = client.Client("http://glance.openstack.org", 9292)
+
+  print c.get_images()
+
+
+Requesting Detailed Metadata on Public VM Images
+------------------------------------------------
+
+We want to see more detailed information on available virtual machine images
+that the Glance server knows about.
+
+Using Glance's Client, we can do this using the following code::
+
+  from glance import client
+
+  c = client.Client("http://glance.openstack.org", 9292)
+
+  print c.get_images_detailed()
+
+
+Requesting Detailed Metadata on a Specific Image
+------------------------------------------------
+
+We want to see detailed information for a specific virtual machine image
+that the Glance server knows about.
+
+We have queried the Glance server for a list of public images and the
+data returned includes the `uri` field for each available image. This
+`uri` field value contains the exact location needed to get the metadata
+for a specific image.
+
+Continuing the example from above, in order to get metadata about the
+first public image returned, we can use the following code::
+
+  from glance import client
+
+  c = client.Client("http://glance.openstack.org", 9292)
+
+  print c.get_image_meta("http://glance.openstack.org/images/1")
+
+
+Retrieving a Virtual Machine Image
+----------------------------------
+
+We want to retrieve that actual raw data for a specific virtual machine image
+that the Glance server knows about.
+
+We have queried the Glance server for a list of public images and the
+data returned includes the `uri` field for each available image. This
+`uri` field value contains the exact location needed to get the metadata
+for a specific image.
+
+Continuing the example from above, in order to get both the metadata about the
+first public image returned and its image data, we can use the following code::
+
+  from glance import client
+
+  c = client.Client("http://glance.openstack.org", 9292)
+
+  meta, image_data = c.get_image("http://glance.openstack.org/images/1")
+
+  print meta
+
+
+.. toctree::
+    :maxdepth: 1
+
 Indices and tables
 ==================
 
