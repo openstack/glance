@@ -16,25 +16,60 @@
 #    under the License.
 
 """
-Glance WSGI servers
+=================
+Glance API Server
+=================
+
+Configuration Options
+---------------------
+
+    `chunksize`: Set to the size, in bytes, that you want
+                 Glance to stream chunks of the image data.
+                 Defaults to 64M
 """
 
 import json
 import logging
 
 import routes
-from webob import exc, Response
+from webob import Response
+from webob.exc import (HTTPNotFound,
+                       HTTPConflict,
+                       HTTPBadRequest)
 
-from glance.common import wsgi
 from glance.common import exception
-from glance.registry import db
+from glance.common import flags
+from glance.common import wsgi
 from glance.store import get_from_backend, delete_from_backend
 from glance import registry
 
 
+flags.DEFINE_integer('image_read_chunksize', 64*1024*1024,
+                     'Size in bytes to read chunks of image data.')
+
+
+FLAGS = flags.FLAGS
+
+
 class Controller(wsgi.Controller):
 
-    """Main Glance controller"""
+    """
+    Main WSGI application controller for Glance.
+    
+    The Glance API is a RESTful web service for image data. The API
+    is as follows::
+        
+        GET /images -- Returns a set of brief metadata about images
+        GET /images/detail -- Returns a set of detailed metadata about
+                              images
+        HEAD /images/<ID> -- Return metadata about an image with id <ID>
+        GET /images/<ID> -- Return image data for image with id <ID>
+        POST /images -- Store image data and return metadata about the
+                        newly-stored image
+        PUT /images/<ID> -- Not supported.  Once images are created, they
+                            are immutable
+        DELETE /images/<ID> -- Delete the image with id <ID>
+    """
     
     def index(self, req):
         """
@@ -70,11 +105,11 @@ class Controller(wsgi.Controller):
 
     def meta(self, req, id):
         """Return data about the given image id."""
-        reg, image = self.get_registry_and_image(req, id)
+        image = self.get_image_meta_or_404(req, id)
 
         res = Response(request=req)
-        for k, v in image.iteritems():
-            res.headers.add("x-image-meta-%s" % k.lower(), v)
+        self.inject_image_meta_headers(res, image)
+
         return req.get_response(res)
 
     def create(self, req):
@@ -97,9 +132,9 @@ class Controller(wsgi.Controller):
             new_image = registry.add_image_metadata(image_data)
             return dict(image=new_image)
         except exception.Duplicate:
-            return exc.HTTPConflict()
+            return HTTPConflict()
         except exception.Invalid:
-            return exc.HTTPBadRequest()
+            return HTTPBadRequest()
 
     def update(self, req, id):
         """Updates an existing image with the registry.
@@ -112,21 +147,11 @@ class Controller(wsgi.Controller):
         :retval Returns the updated image information as a mapping,
 
         """
-        reg, image = self.get_registry_and_image(req, id)
+        image = self.get_image_meta_or_404(req, id)
 
-        try:
-            image_data = json.loads(req.body)['image']
-            updated_image = registry.update_image_metadata(id, image_data)
-            return dict(image=updated_image)
-        except exception.NotAuthorized:
-            raise exc.HTTPNotAuthorized(body='You are not authorized to '
-                                        'delete image chunk %s' % file,
-                                        request=req,
-                                        content_type='text/plain')
-        except exception.NotFound:
-            raise exc.HTTPNotFound(body='Image chunk %s not found' %
-                                   file, request=req,
-                                   content_type='text/plain')
+        image_data = json.loads(req.body)['image']
+        updated_image = registry.update_image_metadata(id, image_data)
+        return dict(image=updated_image)
 
     def show(self, req, id):
         """
@@ -138,7 +163,7 @@ class Controller(wsgi.Controller):
         Optionally, we can pass in 'registry' which will use a given
         RegistryAdapter for the request. This is useful for testing.
         """
-        reg, image = self.get_registry_and_image(req, id)
+        image = self.get_image_meta_or_404(req, id)
 
         def image_iterator():
             for file in image['files']:
@@ -150,14 +175,12 @@ class Controller(wsgi.Controller):
 
         res = Response(app_iter=image_iterator(),
                        content_type="text/plain")
+        self.inject_image_meta_headers(res, image)
         return req.get_response(res)
 
     def delete(self, req, id):
         """
-        Deletes the image and all its chunks from the Teller service.
-        Note that this DOES NOT delete the image from the image
-        registry (Registry or other registry service). The caller
-        should delete the metadata from the registry if necessary.
+        Deletes the image and all its chunks from the Glance
 
         :param request: The WSGI/Webob Request object
         :param id: The opaque image identifier
@@ -167,44 +190,49 @@ class Controller(wsgi.Controller):
         :raises HttpNotAuthorized if image or any chunk is not
                 deleteable by the requesting user
         """
-        reg, image = self.get_registry_and_image(req, id)
+        image = self.get_image_meta_or_404(req, id)
 
-        try:
-            for file in image['files']:
-                delete_from_backend(file['location'])
+        for file in image['files']:
+            delete_from_backend(file['location'])
 
-            registry.delete_image_metadata(id)
-        except exception.NotAuthorized:
-            raise exc.HTTPNotAuthorized(body='You are not authorized to '
-                                        'delete image chunk %s' % file,
-                                        request=req,
-                                        content_type='text/plain')
-        except exception.NotFound:
-            raise exc.HTTPNotFound(body='Image chunk %s not found' %
-                                   file, request=req,
-                                   content_type='text/plain')
+        registry.delete_image_metadata(id)
 
-    def get_registry_and_image(self, req, id):
+    def get_image_meta_or_404(self, request, id):
         """
-        Returns the registry used and the image metadata for a
-        supplied image ID and request object.
+        Grabs the image metadata for an image with a supplied
+        identifier or raises an HTTPNotFound (404) response
 
-        :param req: The WSGI/Webob Request object
+        :param request: The WSGI/Webob Request object
         :param id: The opaque image identifier
 
-        :raises HttpBadRequest if image registry is invalid
-        :raises HttpNotFound if image is not available
-
-        :retval tuple with (registry, image)
+        :raises HTTPNotFound if image does not exist
         """
-        reg = req.str_GET.get('registry', 'registry')
-
         try:
-            image = registry.get_image_metadata(id)
-            return reg, image
+            return registry.get_image_metadata(id)
         except exception.NotFound:
-            raise exc.HTTPNotFound(body='Image not found', request=req,
-                                   content_type='text/plain')
+            raise HTTPNotFound(body='Image not found',
+                               request=request,
+                               content_type='text/plain')
+
+    def inject_image_meta_headers(self, response, image_meta):
+        """
+        Given a response and mapping of image metadata, injects
+        the Response with a set of HTTP headers for the image
+        metadata. Each main image metadata field is injected
+        as a HTTP header with key 'x-image-meta-<FIELD>' except
+        for the properties field, which is further broken out
+        into a set of 'x-image-meta-property-<KEY>' headers
+
+        :param response: The Webob Response object
+        :param image_meta: Mapping of image metadata
+        """
+        for k, v in image_meta.iteritems():
+            if k == 'properties':
+                for pk, pv in v.iteritems():
+                    response.headers.add("x-image-meta-property-%s"
+                                         % pk.lower(), pv)
+
+            response.headers.add("x-image-meta-%s" % k.lower(), v)
 
 
 class API(wsgi.Router):

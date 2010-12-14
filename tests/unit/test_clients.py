@@ -290,10 +290,23 @@ class TestGlanceClient(unittest.TestCase):
 
     def test_get_image(self):
         """Test a simple file backend retrieval works as expected"""
-        expected = 'chunk0chunk42'
-        image = self.client.get_image(2)
+        expected_image = 'chunk0chunk42'
+        expected_meta = {'id': 2,
+                   'name': 'fake image #2',
+                   'is_public': True,
+                   'image_type': 'kernel',
+                   'status': 'available',
+                   'files': [
+                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
+                         "size": 6},
+                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
+                         "size": 7}],
+                   'properties': {}}
+        meta, image = self.client.get_image(2)
 
-        self.assertEquals(expected, image)
+        self.assertEquals(expected_image, image)
+        for k,v in expected_meta.iteritems():
+            self.assertEquals(v, meta[k])
 
     def test_get_image_not_existing(self):
         """Test retrieval of a non-existing image returns a 404"""
@@ -301,21 +314,6 @@ class TestGlanceClient(unittest.TestCase):
         self.assertRaises(exception.NotFound,
                           self.client.get_image,
                           3)
-
-    def test_delete_image(self):
-        """Tests that image data is deleted properly"""
-
-        expected = 'chunk0chunk42'
-        image = self.client.get_image(2)
-
-        self.assertEquals(expected, image)
-
-        # Delete image #2
-        self.assertTrue(self.client.delete_image(2))
-
-        self.assertRaises(exception.NotFound,
-                          self.client.get_image,
-                          2)
 
     def test_delete_image_not_existing(self):
         """Test deletion of a non-existing image returns a 404"""

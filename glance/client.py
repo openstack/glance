@@ -171,17 +171,20 @@ class GlanceClient(BaseClient):
 
     def get_image(self, image_id):
         """
-        Returns the raw disk image as a mime-encoded blob stream for the
-        supplied opaque image identifier.
+        Returns a tuple with the image's metadata and the raw disk image as
+        a mime-encoded blob stream for the supplied opaque image identifier.
 
         :param image_id: The opaque image identifier
 
+        :retval Tuple containing (image_meta, image_blob)
         :raises exception.NotFound if image is not found
         """
         # TODO(jaypipes): Handle other registries than Registry...
 
         res = self.do_request("GET", "/images/%s" % image_id)
-        return res.read()
+
+        image = self.get_image_meta_headers(res)
+        return image, res.read()
 
     def get_image_meta(self, image_id):
         """
@@ -191,11 +194,8 @@ class GlanceClient(BaseClient):
         """
         res = self.do_request("HEAD", "/images/%s" % image_id)
 
-        result = {}
-        for key, value in res.headerlist:
-            if key.startswith('x-image-meta-'):
-                result[key[len('x-image-meta-'):]] = value
-        return result
+        image = self.get_image_meta_headers(res)
+        return image
 
     def add_image(self, image_metadata):
         """
@@ -225,3 +225,21 @@ class GlanceClient(BaseClient):
         """
         self.do_request("DELETE", "/images/%s" % image_id)
         return True
+
+    def get_image_meta_headers(self, response):
+        """
+        Processes HTTP headers from a supplied response that
+        match the x-image-meta and x-image-meta-property and
+        returns a mapping of image metadata and properties
+
+        :param response: Response to process
+        """
+        result = {}
+        properties = {}
+        for key, value in response.headerlist:
+            if key.startswith('x-image-meta-property-'):
+                properties[key[len('x-image-meta-property-'):]] = value
+            if key.startswith('x-image-meta-'):
+                result[key[len('x-image-meta-'):]] = value
+        result['properties'] = properties
+        return result
