@@ -39,19 +39,22 @@ class TestBackend(unittest.TestCase):
 
 class TestFilesystemBackend(TestBackend):
 
-    def test_get(self):
-        class FakeFile(object):
-            def __enter__(self, *args, **kwargs):
-                return StringIO('fakedata')
-            def __exit__(self, *args, **kwargs):
-                pass
+    def setUp(self):
+        """Establish a clean test environment"""
+        stubs.stub_out_filesystem_backend()
 
-        fetcher = get_from_backend("file:///path/to/file.tar.gz",
-                                   expected_size=8,
-                                   opener=lambda _: FakeFile())
+    def tearDown(self):
+        """Clear the test environment"""
+        stubs.clean_out_fake_filesystem_backend()
+
+    def test_get(self):
+
+        fetcher = get_from_backend("file:///tmp/glance-tests/2",
+                                   expected_size=19,
+                                   chunksize=10)
 
         chunks = [c for c in fetcher]
-        self.assertEqual(chunks, ["fa", "ke", "da", "ta"])
+        self.assertEqual(chunks, ["chunk00000", "remainder"])
 
 
 class TestHTTPBackend(TestBackend):

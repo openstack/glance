@@ -32,7 +32,7 @@ class TestImageController(unittest.TestCase):
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_registry_db_image_api(self.stubs)
-        stubs.stub_out_filesystem_backend(self.stubs)
+        stubs.stub_out_filesystem_backend()
 
     def tearDown(self):
         """Clear the test environment"""
@@ -83,7 +83,7 @@ class TestImageController(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'available'
                   }
         req = webob.Request.blank('/images/detail')
@@ -101,7 +101,7 @@ class TestImageController(unittest.TestCase):
         """Tests that the /images POST registry API creates the image"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel'
+                   'type': 'kernel'
                   }
 
         req = webob.Request.blank('/images')
@@ -129,7 +129,7 @@ class TestImageController(unittest.TestCase):
         fixture = {'id': 3,
                    'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'bad status'
                   }
 
@@ -147,7 +147,7 @@ class TestImageController(unittest.TestCase):
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
-                   'image_type': 'ramdisk'
+                   'type': 'ramdisk'
                   }
 
         req = webob.Request.blank('/images/2')
@@ -170,7 +170,7 @@ class TestImageController(unittest.TestCase):
         fixture = {'id': 3,
                    'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'bad status'
                   }
 
@@ -244,7 +244,7 @@ class TestImageController(unittest.TestCase):
     def test_show_image_basic(self):
         req = webob.Request.blank("/images/2")
         res = req.get_response(server.API())
-        self.assertEqual('chunk0chunk42', res.body)
+        self.assertEqual('chunk00000remainder', res.body)
 
     def test_show_non_exists_image(self):
         req = webob.Request.blank("/images/42")

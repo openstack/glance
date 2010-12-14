@@ -26,7 +26,5 @@ from glance.registry.db.api import *
 BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
                         'deleted'])
 
-IMAGE_FILE_ATTRS = BASE_MODEL_ATTRS | set(['location', 'size'])
-
-IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'image_type', 'status',
-                                      'is_public'])
+IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'type', 'status', 'size_in_bytes',
+                                      'is_public', 'location'])

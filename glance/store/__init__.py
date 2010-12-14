@@ -89,3 +89,15 @@ def delete_from_backend(uri, **kwargs):
     backend_class = get_backend_class(scheme)
 
     return backend_class.delete(parsed_uri, **kwargs)
+
+
+def get_store_from_location(location):
+    """
+    Given a location (assumed to be a URL), attempt to determine
+    the store from the location.  We use here a simple guess that
+    the scheme of the parsed URL is the store...
+
+    :param location: Location to check for the store
+    """
+    loc_pieces = urlparse.urlparse(location)
+    return loc_pieces.scheme

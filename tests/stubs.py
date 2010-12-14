@@ -23,7 +23,6 @@ import os
 import shutil
 import StringIO
 import sys
-import gzip
 
 import stubout
 import webob
@@ -38,7 +37,7 @@ import glance.store.swift
 import glance.registry.db.sqlalchemy.api
 
 
-FAKE_FILESYSTEM_ROOTDIR = os.path.join('/tmp', 'glance-tests')
+FAKE_FILESYSTEM_ROOTDIR = os.path.join('//tmp', 'glance-tests')
 
 
 def stub_out_http_backend(stubs):
@@ -82,75 +81,28 @@ def clean_out_fake_filesystem_backend():
         shutil.rmtree(FAKE_FILESYSTEM_ROOTDIR, ignore_errors=True)
 
 
-def stub_out_filesystem_backend(stubs):
+def stub_out_filesystem_backend():
     """
     Stubs out the Filesystem Glance service to return fake
-    gzipped image data from files.
+    pped image data from files.
 
-    We establish a few fake images in a directory under /tmp/glance-tests
+    We establish a few fake images in a directory under //tmp/glance-tests
     and ensure that this directory contains the following files:
 
-        /acct/2.gz.0 <-- zipped tarfile containing "chunk0"
-        /acct/2.gz.1 <-- zipped tarfile containing "chunk42"
+        //tmp/glance-tests/2 <-- file containing "chunk00000remainder"
 
     The stubbed service yields the data in the above files.
 
-    :param stubs: Set of stubout stubs
-
     """
-
-    class FakeFilesystemBackend(object):
-
-        CHUNKSIZE = 100
-
-        @classmethod
-        def get(cls, parsed_uri, expected_size, opener=None):
-            filepath = os.path.join('/',
-                                    parsed_uri.netloc.lstrip('/'),
-                                    parsed_uri.path.strip(os.path.sep))
-            if os.path.exists(filepath):
-                f = gzip.open(filepath, 'rb')
-                data = f.read()
-                f.close()
-                return data
-            else:
-                raise exception.NotFound("File %s does not exist" % filepath) 
-
-        @classmethod
-        def delete(self, parsed_uri):
-            filepath = os.path.join('/',
-                                    parsed_uri.netloc.lstrip('/'),
-                                    parsed_uri.path.strip(os.path.sep))
-            if os.path.exists(filepath):
-                try:
-                    os.unlink(filepath)
-                except OSError:
-                    raise exception.NotAuthorized("You cannot delete file %s" %
-                                                  filepath)
-            else:
-                raise exception.NotFound("File %s does not exist" % filepath) 
 
     # Establish a clean faked filesystem with dummy images
     if os.path.exists(FAKE_FILESYSTEM_ROOTDIR):
         shutil.rmtree(FAKE_FILESYSTEM_ROOTDIR, ignore_errors=True)
     os.mkdir(FAKE_FILESYSTEM_ROOTDIR)
-    os.mkdir(os.path.join(FAKE_FILESYSTEM_ROOTDIR, 'acct'))
 
-    f = gzip.open(os.path.join(FAKE_FILESYSTEM_ROOTDIR, 'acct', '2.gz.0'),
-                  "wb")
-    f.write("chunk0")
+    f = open(os.path.join(FAKE_FILESYSTEM_ROOTDIR, '2'), "wb")
+    f.write("chunk00000remainder")
     f.close()
-
-    f = gzip.open(os.path.join(FAKE_FILESYSTEM_ROOTDIR, 'acct', '2.gz.1'),
-                  "wb")
-    f.write("chunk42")
-    f.close()
-
-    fake_filesystem_backend = FakeFilesystemBackend()
-    stubs.Set(glance.store.filesystem.FilesystemBackend, 'get',
-              fake_filesystem_backend.get)
-    stubs.Set(glance.store.filesystem.FilesystemBackend, 'delete',
-              fake_filesystem_backend.delete)
 
 
 def stub_out_swift_backend(stubs):
@@ -266,6 +218,9 @@ def stub_out_registry_and_store_server(stubs):
 
         def close(self):
             return True
+        
+        def putheader(self, k, v):
+            self.req.headers[k] = v
 
         def request(self, method, url, body=None):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
@@ -327,32 +282,26 @@ def stub_out_registry_db_image_api(stubs):
             {'id': 1,
                 'name': 'fake image #1',
                 'status': 'available',
-                'image_type': 'kernel',
+                'type': 'kernel',
                 'is_public': False,
                 'created_at': datetime.datetime.utcnow(),
                 'updated_at': datetime.datetime.utcnow(),
                 'deleted_at': None,
                 'deleted': False,
-                'files': [
-                    {"location": "swift://user:passwd@acct/container/obj.tar.gz.0",
-                     "size": 6},
-                    {"location": "swift://user:passwd@acct/container/obj.tar.gz.1",
-                     "size": 7}],
+                'size_in_bytes': 13,
+                'location': "swift://user:passwd@acct/container/obj.tar.0",
                 'properties': []},
             {'id': 2,
                 'name': 'fake image #2',
                 'status': 'available',
-                'image_type': 'kernel',
+                'type': 'kernel',
                 'is_public': True,
                 'created_at': datetime.datetime.utcnow(),
                 'updated_at': datetime.datetime.utcnow(),
                 'deleted_at': None,
                 'deleted': False,
-                'files': [
-                    {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                     "size": 6},
-                    {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                     "size": 7}],
+                'size_in_bytes': 19,
+                'location': "file:///tmp/glance-tests/2",
                 'properties': []}]
 
         VALID_STATUSES = ('available', 'disabled', 'pending')
@@ -377,17 +326,25 @@ def stub_out_registry_db_image_api(stubs):
                                             values['status'])
 
             values['deleted'] = False
-            values['files'] = values.get('files', [])
-            values['properties'] = values.get('properties', [])
+            values['properties'] = values.get('properties', {})
             values['created_at'] = datetime.datetime.utcnow() 
             values['updated_at'] = datetime.datetime.utcnow()
             values['deleted_at'] = None
 
-            for p in values['properties']:
-                p['deleted'] = False
-                p['created_at'] = datetime.datetime.utcnow() 
-                p['updated_at'] = datetime.datetime.utcnow()
-                p['deleted_at'] = None
+            props = []
+
+            if 'properties' in values.keys():
+                for k,v in values['properties'].iteritems():
+                    p = {}
+                    p['key'] = k
+                    p['value'] = v
+                    p['deleted'] = False
+                    p['created_at'] = datetime.datetime.utcnow() 
+                    p['updated_at'] = datetime.datetime.utcnow()
+                    p['deleted_at'] = None
+                    props.append(p)
+
+            values['properties'] = props
             
             self.next_id += 1
             self.images.append(values)

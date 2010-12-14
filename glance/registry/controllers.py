@@ -74,7 +74,8 @@ class ImageController(wsgi.Controller):
         return dict(image=make_image_dict(image))
 
     def delete(self, req, id):
-        """Deletes an existing image with the registry.
+        """
+        Deletes an existing image with the registry.
 
         :param req: Request body.  Ignored.
         :param id:  The opaque internal identifier for the image
@@ -89,7 +90,8 @@ class ImageController(wsgi.Controller):
             return exc.HTTPNotFound()
 
     def create(self, req):
-        """Registers a new image with the registry.
+        """
+        Registers a new image with the registry.
 
         :param req: Request body.  A JSON-ified dict of information about
                     the image.
@@ -106,8 +108,8 @@ class ImageController(wsgi.Controller):
 
         context = None
         try:
-            new_image = db.image_create(context, image_data)
-            return dict(image=make_image_dict(new_image))
+            image_data = db.image_create(context, image_data)
+            return dict(image=make_image_dict(image_data))
         except exception.Duplicate:
             return exc.HTTPConflict()
         except exception.Invalid:
@@ -129,7 +131,7 @@ class ImageController(wsgi.Controller):
         context = None
         try:
             updated_image = db.image_update(context, id, image_data)
-            return dict(image=updated_image)
+            return dict(image=make_image_dict(updated_image))
         except exception.NotFound:
             return exc.HTTPNotFound()
 
@@ -156,8 +158,6 @@ def make_image_dict(image):
         return dict([(a, d[a]) for a in attrs
                     if a in d.keys()])
 
-    files = [_fetch_attrs(f, db.IMAGE_FILE_ATTRS) for f in image['files']]
-
     # TODO(sirp): should this be a dict, or a list of dicts?
     # A plain dict is more convenient, but list of dicts would provide
     # access to created_at, etc
@@ -166,6 +166,5 @@ def make_image_dict(image):
 
     image_dict = _fetch_attrs(image, db.IMAGE_ATTRS)
 
-    image_dict['files'] = files
     image_dict['properties'] = properties
     return image_dict

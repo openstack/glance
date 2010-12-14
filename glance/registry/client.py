@@ -103,4 +103,3 @@ class RegistryClient(BaseClient):
         """
         self.do_request("DELETE", "/images/%s" % image_id)
         return True
-

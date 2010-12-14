@@ -23,19 +23,57 @@ import os
 import urlparse
 
 from glance.common import exception
+from glance.common import flags
 import glance.store
+
+FLAGS = flags.FLAGS
+
+
+class ChunkedFile(object):
+    """
+    We send this back to the Glance API server as
+    something that can iterate over a large file
+    """
+
+    def __init__(self, filepath, chunksize=FLAGS.image_read_chunksize):
+        self.chunksize = chunksize
+        self.filepath = filepath
+        self.fp = open(self.filepath, 'rb')
+
+    def __iter__(self):
+        """Return an iterator over the image file"""
+        try:
+            while True:
+                chunk = self.fp.read(self.chunksize)
+                if chunk:
+                    yield chunk
+                else:
+                    break
+        finally:
+            self.close()
+
+    def close(self):
+        """Close the internal file pointer"""
+        if self.fp:
+            self.fp.close()
+            self.fp = None
+
 
 
 class FilesystemBackend(glance.store.Backend):
     @classmethod
-    def get(cls, parsed_uri, expected_size, opener=lambda p: open(p, "rb")):
+    def get(cls, parsed_uri, opener=lambda p: open(p, "rb"), expected_size=None,
+           chunksize=FLAGS.image_read_chunksize):
         """ Filesystem-based backend
 
         file:///path/to/file.tar.gz.0
         """
-        #FIXME: must prevent attacks using ".." and "." paths
-        with opener(parsed_uri.path) as f:
-            return glance.store._file_iter(f, cls.CHUNKSIZE)
+
+        filepath = parsed_uri.path
+        if not os.path.exists(filepath):
+            raise exception.NotFound("Image file %s not found" % filepath)
+        else:
+            return ChunkedFile(filepath, chunksize)
 
     @classmethod
     def delete(cls, parsed_uri):
@@ -55,4 +93,4 @@ class FilesystemBackend(glance.store.Backend):
             except OSError:
                 raise exception.NotAuthorized("You cannot delete file %s" % fn)
         else:
-            raise exception.NotFound("File %s does not exist" % fn) 
+            raise exception.NotFound("Image file %s does not exist" % fn) 

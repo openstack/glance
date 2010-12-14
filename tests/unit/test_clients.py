@@ -79,25 +79,19 @@ class TestRegistryClient(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'available',
-                   'files': [
-                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                         "size": 6},
-                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                         "size": 7}],
-                   'properties': []}
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {}}
 
         expected = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'available',
-                   'files': [
-                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                         "size": 6},
-                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                         "size": 7}],
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
         images = self.client.get_images_detailed()
@@ -111,25 +105,19 @@ class TestRegistryClient(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'available',
-                   'files': [
-                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                         "size": 6},
-                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                         "size": 7}],
-                   'properties': []}
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {}}
 
         expected = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'available',
-                   'files': [
-                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                         "size": 6},
-                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                         "size": 7}],
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
         data = self.client.get_image(2)
@@ -148,7 +136,9 @@ class TestRegistryClient(unittest.TestCase):
         """Tests that we can add image metadata and returns the new id"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel'
+                   'type': 'kernel',
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/acct/3.gz.0",
                   }
         
         new_image = self.client.add_image(fixture)
@@ -170,14 +160,17 @@ class TestRegistryClient(unittest.TestCase):
         """Tests that we can add image metadata with properties"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel',
-                   'properties': [{'key':'disco',
-                                   'value': 'baby'}]
+                   'type': 'kernel',
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
         expected = {'name': 'fake public image',
                     'is_public': True,
-                    'image_type': 'kernel',
-                    'properties': {'disco': 'baby'}
+                    'type': 'kernel',
+                    'size_in_bytes': 19,
+                    'location': "file:///tmp/glance-tests/2",
+                    'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
         
         new_image = self.client.add_image(fixture)
@@ -197,8 +190,10 @@ class TestRegistryClient(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel',
-                   'status': 'bad status'
+                   'type': 'kernel',
+                   'status': 'bad status',
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
                   }
 
         self.assertRaises(exception.Duplicate,
@@ -210,8 +205,10 @@ class TestRegistryClient(unittest.TestCase):
         fixture = {'id': 3,
                    'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel',
-                   'status': 'bad status'
+                   'type': 'kernel',
+                   'status': 'bad status',
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
                   }
 
         self.assertRaises(client.BadInputError,
@@ -221,7 +218,7 @@ class TestRegistryClient(unittest.TestCase):
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
-                   'image_type': 'ramdisk'
+                   'type': 'ramdisk'
                   }
 
         self.assertTrue(self.client.update_image(2, fixture))
@@ -237,7 +234,7 @@ class TestRegistryClient(unittest.TestCase):
         fixture = {'id': 3,
                    'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'bad status'
                   }
 
@@ -280,7 +277,7 @@ class TestGlanceClient(unittest.TestCase):
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_registry_and_store_server(self.stubs)
-        stubs.stub_out_filesystem_backend(self.stubs)
+        stubs.stub_out_filesystem_backend()
         self.client = client.GlanceClient()
 
     def tearDown(self):
@@ -290,17 +287,14 @@ class TestGlanceClient(unittest.TestCase):
 
     def test_get_image(self):
         """Test a simple file backend retrieval works as expected"""
-        expected_image = 'chunk0chunk42'
+        expected_image = 'chunk00000remainder'
         expected_meta = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'available',
-                   'files': [
-                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                         "size": 6},
-                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                         "size": 7}],
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
         meta, image = self.client.get_image(2)
 
@@ -313,13 +307,6 @@ class TestGlanceClient(unittest.TestCase):
 
         self.assertRaises(exception.NotFound,
                           self.client.get_image,
-                          3)
-
-    def test_delete_image_not_existing(self):
-        """Test deletion of a non-existing image returns a 404"""
-
-        self.assertRaises(exception.NotFound,
-                          self.client.delete_image,
                           3)
 
     def test_get_image_index(self):
@@ -337,25 +324,19 @@ class TestGlanceClient(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'available',
-                   'files': [
-                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                         "size": 6},
-                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                         "size": 7}],
-                   'properties': []}
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {}}
 
         expected = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'available',
-                   'files': [
-                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                         "size": 6},
-                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                         "size": 7}],
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
         images = self.client.get_images_detailed()
@@ -369,25 +350,19 @@ class TestGlanceClient(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'available',
-                   'files': [
-                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                         "size": 6},
-                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                         "size": 7}],
-                   'properties': []}
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {}}
 
         expected = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'available',
-                   'files': [
-                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                         "size": 6},
-                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                         "size": 7}],
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
         data = self.client.get_image_meta(2)
@@ -402,11 +377,24 @@ class TestGlanceClient(unittest.TestCase):
                           self.client.get_image,
                           42)
 
+    def test_add_image_without_location_or_raw_data(self):
+        """Tests client throws Invalid if missing both location and raw data"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'type': 'kernel'
+                  }
+        
+        self.assertRaises(exception.Invalid,
+                          self.client.add_image,
+                          fixture)
+
     def test_add_image_basic(self):
         """Tests that we can add image metadata and returns the new id"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel'
+                   'type': 'kernel',
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
                   }
         
         new_id = self.client.add_image(fixture)
@@ -428,14 +416,17 @@ class TestGlanceClient(unittest.TestCase):
         """Tests that we can add image metadata with properties"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel',
-                   'properties': [{'key':'disco',
-                                   'value': 'baby'}]
+                   'type': 'kernel',
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
         expected = {'name': 'fake public image',
                     'is_public': True,
-                    'image_type': 'kernel',
-                    'properties': {'disco': 'baby'}
+                    'type': 'kernel',
+                    'size_in_bytes': 19,
+                    'location': "file:///tmp/glance-tests/2",
+                    'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
         
         new_id = self.client.add_image(fixture)
@@ -458,8 +449,10 @@ class TestGlanceClient(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel',
-                   'status': 'bad status'
+                   'type': 'kernel',
+                   'status': 'bad status',
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
                   }
 
         self.assertRaises(exception.Duplicate,
@@ -467,22 +460,25 @@ class TestGlanceClient(unittest.TestCase):
                           fixture)
 
     def test_add_image_with_bad_status(self):
-        """Tests proper exception is raised if a bad status is set"""
-        fixture = {'id': 3,
-                   'name': 'fake public image',
+        """Tests a bad status is set to a proper one by server"""
+        fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel',
-                   'status': 'bad status'
+                   'type': 'kernel',
+                   'status': 'bad status',
+                   'size_in_bytes': 19,
+                   'location': "file:///tmp/glance-tests/2",
                   }
 
-        self.assertRaises(client.BadInputError,
-                          self.client.add_image,
-                          fixture)
+        new_id = self.client.add_image(fixture)
+
+        data = self.client.get_image_meta(new_id)
+
+        self.assertEquals(data['status'], 'available')
 
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
-                   'image_type': 'ramdisk'
+                   'type': 'ramdisk'
                   }
 
         self.assertTrue(self.client.update_image(2, fixture))
@@ -498,7 +494,7 @@ class TestGlanceClient(unittest.TestCase):
         fixture = {'id': 3,
                    'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'bad status'
                   }
 

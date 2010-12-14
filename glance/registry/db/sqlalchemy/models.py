@@ -141,16 +141,18 @@ class Image(BASE, ModelBase):
     
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
-    image_type = Column(String(30))
+    type = Column(String(30))
+    size_in_bytes = Column(Integer)
     status = Column(String(30))
     is_public = Column(Boolean, default=False)
+    location = Column(Text)
 
-    @validates('image_type')
-    def validate_image_type(self, key, image_type):
-        if not image_type in ('machine', 'kernel', 'ramdisk', 'raw'):
+    @validates('type')
+    def validate_type(self, key, type):
+        if not type in ('machine', 'kernel', 'ramdisk', 'raw'):
             raise exception.Invalid(
-                "Invalid image type '%s' for image." % image_type)
-        return image_type
+                "Invalid image type '%s' for image." % type)
+        return type
     
     @validates('status')
     def validate_status(self, key, status):
@@ -174,18 +176,6 @@ class Image(BASE, ModelBase):
     #def validate_ramdisk_id(self, key, val):
     #    if val != 'machine':
     #        assert(val is None)
-
-
-class ImageFile(BASE, ModelBase):
-    """Represents an image file in the datastore"""
-    __tablename__ = 'image_files'
-    __prefix__ = 'img-file'
-    id = Column(Integer, primary_key=True)
-    image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
-    image = relationship(Image, backref=backref('files'))
-
-    location = Column(String(255))
-    size = Column(Integer)
 
 
 class ImageProperty(BASE, ModelBase):

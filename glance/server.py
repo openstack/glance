@@ -40,8 +40,11 @@ from webob.exc import (HTTPNotFound,
 from glance.common import exception
 from glance.common import flags
 from glance.common import wsgi
-from glance.store import get_from_backend, delete_from_backend
+from glance.store import (get_from_backend,
+                          delete_from_backend,
+                          get_store_from_location)
 from glance import registry
+from glance import util
 
 
 flags.DEFINE_integer('image_read_chunksize', 64*1024*1024,
@@ -66,83 +69,176 @@ class Controller(wsgi.Controller):
         GET /images/<ID> -- Return image data for image with id <ID>
         POST /images -- Store image data and return metadata about the
                         newly-stored image
-        PUT /images/<ID> -- Not supported.  Once images are created, they
-                            are immutable
+        PUT /images/<ID> -- Update image metadata (not image data, since
+                            image data is immutable once stored)
         DELETE /images/<ID> -- Delete the image with id <ID>
     """
     
     def index(self, req):
         """
-        Return basic information for all public, non-deleted images
+        Returns the following information for all public, available images:
+
+            * id -- The opaque image identifier
+            * name -- The name of the image
+            * size_in_bytes -- Size of image data in bytes
+            * type -- One of 'kernel', 'ramdisk', 'raw', or 'machine'
         
-        :param req: the Request object coming from the wsgi layer
-        :retval a mapping of the following form::
+        :param request: The WSGI/Webob Request object
+        :retval The response body is a mapping of the following form::
 
-            dict(images=[image_list])
-
-        Where image_list is a sequence of mappings::
-
-            {'id': image_id, 'name': image_name}
-        
+            {'images': [
+                {'id': <ID>,
+                 'name': <NAME>,
+                 'size_in_bytes': <SIZE>,
+                 'type': <TYPE>}, ...
+            ]}
         """
         images = registry.get_images_list()
         return dict(images=images)
 
     def detail(self, req):
-        """Return detailed information for all public, non-deleted images
+        """
+        Returns detailed information for all public, available images
         
-        :param req: the Request object coming from the wsgi layer
-        :retval a mapping of the following form::
+        :param request: The WSGI/Webob Request object
+        :retval The response body is a mapping of the following form::
 
-            dict(images=[image_list])
-
-        Where image_list is a sequence of mappings containing
-        all image model fields.
-        
+            {'images': [
+                {'id': <ID>,
+                 'name': <NAME>,
+                 'size_in_bytes': <SIZE>,
+                 'type': <TYPE>,
+                 'store': <STORE>,
+                 'status': <STATUS>,
+                 'created_at': <TIMESTAMP>,
+                 'updated_at': <TIMESTAMP>,
+                 'deleted_at': <TIMESTAMP>|<NONE>,
+                 'properties': {'distro': 'Ubuntu 10.04 LTS', ...}}, ...
+            ]}
         """
         images = registry.get_images_detail()
         return dict(images=images)
 
     def meta(self, req, id):
-        """Return data about the given image id."""
+        """
+        Returns metadata about an image in the HTTP headers of the
+        response object
+
+        :param request: The WSGI/Webob Request object
+        :param id: The opaque image identifier
+
+        :raises HTTPNotFound if image metadata is not available to user
+        """
         image = self.get_image_meta_or_404(req, id)
 
         res = Response(request=req)
-        self.inject_image_meta_headers(res, image)
+        util.inject_image_meta_into_headers(res, image)
 
         return req.get_response(res)
 
-    def create(self, req):
-        """Registers a new image with the registry.
-
-        :param req: Request body.  A JSON-ified dict of information about
-                    the image.
-
-        :retval Returns the newly-created image information as a mapping,
-                which will include the newly-created image's internal id
-                in the 'id' field
-
+    def show(self, req, id):
         """
-        image_data = json.loads(req.body)['image']
+        Returns an iterator as a Response object that
+        can be used to retrieve an image's data. The
+        content-type of the response is the content-type
+        of the image, or application/octet-stream if none
+        is known or found.
 
-        # Ensure the image has a status set
-        image_data.setdefault('status', 'available')
+        :param request: The WSGI/Webob Request object
+        :param id: The opaque image identifier
+
+        :raises HTTPNotFound if image is not available to user
+        """
+        image = self.get_image_meta_or_404(req, id)
+        chunksize = FLAGS.image_read_chunksize
+
+        def image_iterator():
+            chunks = get_from_backend(image['location'],
+                                      expected_size=image['size_in_bytes'],
+                                      chunksize=chunksize)
+
+            for chunk in chunks:
+                yield chunk
+
+        res = Response(app_iter=image_iterator(),
+                       content_type="text/plain")
+        util.inject_image_meta_into_headers(res, image)
+        return req.get_response(res)
+
+    def create(self, req):
+        """
+        Adds a new image to Glance. The body of the request may be a
+        mime-encoded image data. Metadata about the image is sent via
+        HTTP Headers.
+
+        If the metadata about the image does not include a location
+        to find the image, or if the image location is not valid,
+        the request body *must* be encoded as application/octet-stream
+        and be the image data itself, otherwise an HTTPBadRequest is
+        returned.
+
+        Upon a successful save of the image data and metadata, a response
+        containing metadata about the image is returned, including its
+        opaque identifier.
+
+        :param request: The WSGI/Webob Request object
+
+        :see The `id_type` configuration option (default: uuid) determines
+             the type of identifier that Glance generates for an image
+
+        :raises HTTPBadRequest if no x-image-meta-location is missing
+                and the request body is not application/octet-stream
+                image data.
+        """
+
+        # Verify the request and headers before we generate a new id
+
+        image_in_body = False
+        image_store = None
+        header_keys = [k.lower() for k in req.headers.keys()]
+        if 'x-image-meta-location' not in header_keys:
+            if ('content-type' not in header_keys or
+                req.headers['content-type'] != 'application/octet-stream'):
+                raise HTTPBadRequest("Image location was not specified in "
+                                     "headers and the request body was not "
+                                     "mime-encoded as application/"
+                                     "octet-stream.", request=req)
+            else:
+                if 'x-image-meta-store' in headers_keys:
+                    image_store = req.headers['x-image-meta-store']
+                image_status = 'pending'  # set to available when stored...
+                image_in_body = True
+        else:
+            image_location = req.headers['x-image-meta-location']
+            image_store = get_store_from_location(image_location)
+            image_status = 'available'
+
+        image_meta = util.get_image_meta_from_headers(req)
+        image_meta['status'] = image_status
+        image_meta['store'] = image_store
 
         try:
-            new_image = registry.add_image_metadata(image_data)
-            return dict(image=new_image)
+            image_meta = registry.add_image_metadata(image_meta)
+
+            if image_in_body:
+                #store = stores.get_store()
+                #store.add_image(req.body)
+                image_meta['status'] = 'available'
+                registries.update_image(image_meta)
+
+            return dict(image=image_meta)
+
         except exception.Duplicate:
             return HTTPConflict()
         except exception.Invalid:
             return HTTPBadRequest()
 
     def update(self, req, id):
-        """Updates an existing image with the registry.
+        """
+        Updates an existing image with the registry.
 
-        :param req: Request body.  A JSON-ified dict of information about
-                    the image.  This will replace the information in the
-                    registry about this image
-        :param id:  The opaque internal identifier for the image
+        :param request: The WSGI/Webob Request object
+        :param id: The opaque image identifier
 
         :retval Returns the updated image information as a mapping,
 
@@ -152,31 +248,6 @@ class Controller(wsgi.Controller):
         image_data = json.loads(req.body)['image']
         updated_image = registry.update_image_metadata(id, image_data)
         return dict(image=updated_image)
-
-    def show(self, req, id):
-        """
-        Query the registry service for the image registry for the passed in 
-        req['uri']. If it exists, we connect to the appropriate backend as
-        determined by the URI scheme and yield chunks of data back to the
-        client. 
-
-        Optionally, we can pass in 'registry' which will use a given
-        RegistryAdapter for the request. This is useful for testing.
-        """
-        image = self.get_image_meta_or_404(req, id)
-
-        def image_iterator():
-            for file in image['files']:
-                chunks = get_from_backend(file['location'],
-                                                   expected_size=file['size'])
-
-                for chunk in chunks:
-                    yield chunk
-
-        res = Response(app_iter=image_iterator(),
-                       content_type="text/plain")
-        self.inject_image_meta_headers(res, image)
-        return req.get_response(res)
 
     def delete(self, req, id):
         """
@@ -192,8 +263,7 @@ class Controller(wsgi.Controller):
         """
         image = self.get_image_meta_or_404(req, id)
 
-        for file in image['files']:
-            delete_from_backend(file['location'])
+        delete_from_backend(image['location'])
 
         registry.delete_image_metadata(id)
 
@@ -213,26 +283,6 @@ class Controller(wsgi.Controller):
             raise HTTPNotFound(body='Image not found',
                                request=request,
                                content_type='text/plain')
-
-    def inject_image_meta_headers(self, response, image_meta):
-        """
-        Given a response and mapping of image metadata, injects
-        the Response with a set of HTTP headers for the image
-        metadata. Each main image metadata field is injected
-        as a HTTP header with key 'x-image-meta-<FIELD>' except
-        for the properties field, which is further broken out
-        into a set of 'x-image-meta-property-<KEY>' headers
-
-        :param response: The Webob Response object
-        :param image_meta: Mapping of image metadata
-        """
-        for k, v in image_meta.iteritems():
-            if k == 'properties':
-                for pk, pv in v.iteritems():
-                    response.headers.add("x-image-meta-property-%s"
-                                         % pk.lower(), pv)
-
-            response.headers.add("x-image-meta-%s" % k.lower(), v)
 
 
 class API(wsgi.Router):

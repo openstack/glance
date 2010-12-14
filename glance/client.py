@@ -26,6 +26,7 @@ import urlparse
 import socket
 import sys
 
+from glance import util
 from glance.common import exception
 
 #TODO(jaypipes) Allow a logger param for client classes
@@ -87,7 +88,7 @@ class BaseClient(object):
                                            " to connect to server."
                                            % self.protocol)
 
-    def do_request(self, method, action, body=None):
+    def do_request(self, method, action, body=None, headers=None):
         """
         Connects to the server and issues a request.  Handles converting
         any returned HTTP error status codes to OpenStack/Glance exceptions
@@ -96,13 +97,17 @@ class BaseClient(object):
 
         :param method: HTTP method ("GET", "POST", "PUT", etc...)
         :param action: part of URL after root netloc
-        :param headers: mapping of headers to send
-        :param data: string of data to send, or None (default)
+        :param body: string of data to send, or None (default)
+        :param headers: mapping of key/value pairs to add as headers
         """
         try:
             connection_type = self.get_connection_type()
             c = connection_type(self.netloc, self.port)
             c.request(method, action, body)
+            if headers:
+                for k, v in headers.iteritems():
+                    c.putheader(k, v)
+
             res = c.getresponse()
             status_code = self.get_status_code(res)
             if status_code == httplib.OK:
@@ -183,7 +188,7 @@ class GlanceClient(BaseClient):
 
         res = self.do_request("GET", "/images/%s" % image_id)
 
-        image = self.get_image_meta_headers(res)
+        image = util.get_image_meta_from_headers(res)
         return image, res.read()
 
     def get_image_meta(self, image_id):
@@ -194,17 +199,23 @@ class GlanceClient(BaseClient):
         """
         res = self.do_request("HEAD", "/images/%s" % image_id)
 
-        image = self.get_image_meta_headers(res)
+        image = util.get_image_meta_from_headers(res)
         return image
 
-    def add_image(self, image_metadata):
+    def add_image(self, image_meta, image_data=None):
         """
-        Tells registry about an image's metadata
+        Tells Glance about an image's metadata as well
+        as optionally the image_data itself
         """
-        if 'image' not in image_metadata.keys():
-            image_metadata = dict(image=image_metadata)
-        body = json.dumps(image_metadata)
-        res = self.do_request("POST", "/images", body)
+        if not image_data and 'location' not in image_meta.keys():
+            raise exception.Invalid("You must either specify a location "
+                                    "for the image or supply the actual "
+                                    "image data when adding an image to "
+                                    "Glance")
+        body = image_data
+        headers = util.image_meta_to_http_headers(image_meta)
+        
+        res = self.do_request("POST", "/images", body, headers)
         # Registry returns a JSONified dict(image=image_info)
         data = json.loads(res.read())
         return data['image']['id']
@@ -225,21 +236,3 @@ class GlanceClient(BaseClient):
         """
         self.do_request("DELETE", "/images/%s" % image_id)
         return True
-
-    def get_image_meta_headers(self, response):
-        """
-        Processes HTTP headers from a supplied response that
-        match the x-image-meta and x-image-meta-property and
-        returns a mapping of image metadata and properties
-
-        :param response: Response to process
-        """
-        result = {}
-        properties = {}
-        for key, value in response.headerlist:
-            if key.startswith('x-image-meta-property-'):
-                properties[key[len('x-image-meta-property-'):]] = value
-            if key.startswith('x-image-meta-'):
-                result[key[len('x-image-meta-'):]] = value
-        result['properties'] = properties
-        return result
