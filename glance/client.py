@@ -135,23 +135,23 @@ class BaseClient(object):
             return response.status
 
 
-class TellerClient(BaseClient):
+class GlanceClient(BaseClient):
 
-    """A client for the Teller image caching and delivery service"""
+    """Main client class for accessing Glance resources"""
 
     DEFAULT_ADDRESS = 'http://127.0.0.1'
     DEFAULT_PORT = 9292
 
     def __init__(self, **kwargs):
         """
-        Creates a new client to a Teller service.  All args are keyword
+        Creates a new client to a Glance service.  All args are keyword
         arguments.
 
-        :param address: The address where Teller resides (defaults to
+        :param address: The address where Glance resides (defaults to
                         http://127.0.0.1)
-        :param port: The port where Teller resides (defaults to 9292)
+        :param port: The port where Glance resides (defaults to 9292)
         """
-        super(TellerClient, self).__init__(**kwargs)
+        super(GlanceClient, self).__init__(**kwargs)
 
     def get_image(self, image_id):
         """
@@ -169,7 +169,7 @@ class TellerClient(BaseClient):
 
     def delete_image(self, image_id):
         """
-        Deletes Tellers's information about an image.
+        Deletes Glances's information about an image.
         """
         self.do_request("DELETE", "/images/%s" % image_id)
         return True

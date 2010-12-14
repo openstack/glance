@@ -44,38 +44,6 @@ class Backend(object):
     CHUNKSIZE = 4096
 
 
-class FilesystemBackend(Backend):
-    @classmethod
-    def get(cls, parsed_uri, expected_size, opener=lambda p: open(p, "rb")):
-        """ Filesystem-based backend
-
-        file:///path/to/file.tar.gz.0
-        """
-        #FIXME: must prevent attacks using ".." and "." paths
-        with opener(parsed_uri.path) as f:
-            return _file_iter(f, cls.CHUNKSIZE)
-
-    @classmethod
-    def delete(cls, parsed_uri):
-        """
-        Removes a file from the filesystem backend.
-
-        :param parsed_uri: Parsed pieces of URI in form of::
-            file:///path/to/filename.ext
-
-        :raises NotFound if file does not exist
-        :raises NotAuthorized if cannot delete because of permissions
-        """
-        fn = parsed_uri.path
-        if os.path.exists(fn):
-            try:
-                os.unlink(fn)
-            except OSError:
-                raise exception.NotAuthorized("You cannot delete file %s" % fn)
-        else:
-            raise exception.NotFound("File %s does not exist" % fn) 
-
-
 def get_backend_class(backend):
     """
     Returns the backend class as designated in the
@@ -84,8 +52,9 @@ def get_backend_class(backend):
     :param backend: Name of backend to create
     """
     # NOTE(sirp): avoiding circular import
-    from glance.teller.backends.http import HTTPBackend
-    from glance.teller.backends.swift import SwiftBackend
+    from glance.store.http import HTTPBackend
+    from glance.store.swift import SwiftBackend
+    from glance.store.filesystem import FilesystemBackend
 
     BACKENDS = {
         "file": FilesystemBackend,

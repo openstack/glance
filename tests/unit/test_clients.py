@@ -56,7 +56,7 @@ class TestParallaxClient(unittest.TestCase):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_parallax_db_image_api(self.stubs)
-        stubs.stub_out_parallax_and_teller_server(self.stubs)
+        stubs.stub_out_parallax_and_store_server(self.stubs)
         self.client = client.ParallaxClient()
 
     def tearDown(self):
@@ -270,20 +270,20 @@ class TestParallaxClient(unittest.TestCase):
                           3)
 
 
-class TestTellerClient(unittest.TestCase):
+class TestGlanceClient(unittest.TestCase):
 
     """
     Test proper actions made for both valid and invalid requests
-    against a Teller service
+    against a Glance service
     """
 
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_parallax_db_image_api(self.stubs)
-        stubs.stub_out_parallax_and_teller_server(self.stubs)
+        stubs.stub_out_parallax_and_store_server(self.stubs)
         stubs.stub_out_filesystem_backend(self.stubs)
-        self.client = client.TellerClient()
+        self.client = client.GlanceClient()
         self.pclient = client.ParallaxClient()
 
     def tearDown(self):

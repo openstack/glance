@@ -20,7 +20,7 @@ import unittest
 import stubout
 import webob
 
-from glance.teller import controllers as teller_controllers
+from glance import server
 from glance.parallax import controllers as parallax_controllers
 from tests import stubs
 
@@ -29,7 +29,7 @@ class TestImageController(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_parallax_and_teller_server(self.stubs)
+        stubs.stub_out_parallax_and_store_server(self.stubs)
         stubs.stub_out_parallax_db_image_api(self.stubs)
         stubs.stub_out_filesystem_backend(self.stubs)
 
@@ -40,28 +40,28 @@ class TestImageController(unittest.TestCase):
 
     def test_index_raises_not_implemented(self):
         req = webob.Request.blank("/images")
-        res = req.get_response(teller_controllers.API())
+        res = req.get_response(server.API())
         self.assertEquals(res.status_int, webob.exc.HTTPNotImplemented.code)
 
     def test_show_image_unrecognized_registry_adapter(self):
         req = webob.Request.blank("/images/1?registry=unknown")
-        res = req.get_response(teller_controllers.API())
+        res = req.get_response(server.API())
         self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
 
     def test_show_image_basic(self):
         req = webob.Request.blank("/images/2")
-        res = req.get_response(teller_controllers.API())
+        res = req.get_response(server.API())
         self.assertEqual('chunk0chunk42', res.body)
 
     def test_show_non_exists_image(self):
         req = webob.Request.blank("/images/42")
-        res = req.get_response(teller_controllers.API())
+        res = req.get_response(server.API())
         self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
 
     def test_delete_image(self):
         req = webob.Request.blank("/images/2")
         req.method = 'DELETE'
-        res = req.get_response(teller_controllers.API())
+        res = req.get_response(server.API())
         self.assertEquals(res.status_int, 200)
 
         # Deletion from registry is not done from Teller on
@@ -76,11 +76,11 @@ class TestImageController(unittest.TestCase):
 
         req = webob.Request.blank("/images/2")
         req.method = 'GET'
-        res = req.get_response(teller_controllers.API())
+        res = req.get_response(server.API())
         self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code, res.body)
 
     def test_delete_non_exists_image(self):
         req = webob.Request.blank("/images/42")
         req.method = 'DELETE'
-        res = req.get_response(teller_controllers.API())
+        res = req.get_response(server.API())
         self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)

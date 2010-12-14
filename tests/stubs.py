@@ -30,9 +30,11 @@ import webob
 
 from glance.common import exception
 from glance.parallax import controllers as parallax_controllers
-from glance.teller import controllers as teller_controllers
-import glance.teller.backends
-import glance.teller.backends.swift
+from glance import server
+import glance.store
+import glance.store.filesystem
+import glance.store.http
+import glance.store.swift
 import glance.parallax.db.sqlalchemy.api
 
 
@@ -82,7 +84,7 @@ def clean_out_fake_filesystem_backend():
 
 def stub_out_filesystem_backend(stubs):
     """
-    Stubs out the Filesystem Teller service to return fake
+    Stubs out the Filesystem Glance service to return fake
     gzipped image data from files.
 
     We establish a few fake images in a directory under /tmp/glance-tests
@@ -145,14 +147,14 @@ def stub_out_filesystem_backend(stubs):
     f.close()
 
     fake_filesystem_backend = FakeFilesystemBackend()
-    stubs.Set(glance.teller.backends.FilesystemBackend, 'get',
+    stubs.Set(glance.store.filesystem.FilesystemBackend, 'get',
               fake_filesystem_backend.get)
-    stubs.Set(glance.teller.backends.FilesystemBackend, 'delete',
+    stubs.Set(glance.store.filesystem.FilesystemBackend, 'delete',
               fake_filesystem_backend.delete)
 
 
 def stub_out_swift_backend(stubs):
-    """Stubs out the Swift Teller backend with fake data
+    """Stubs out the Swift Glance backend with fake data
     and calls.
 
     The stubbed swift backend provides back an iterator over
@@ -173,7 +175,7 @@ def stub_out_swift_backend(stubs):
 
         @classmethod
         def get(cls, parsed_uri, expected_size, conn_class=None):
-            SwiftBackend = glance.teller.backends.swift.SwiftBackend
+            SwiftBackend = glance.store.swift.SwiftBackend
 
             # raise BackendException if URI is bad.
             (user, key, authurl, container, obj) = \
@@ -186,7 +188,7 @@ def stub_out_swift_backend(stubs):
             return chunk_it()
 
     fake_swift_backend = FakeSwiftBackend()
-    stubs.Set(glance.teller.backends.swift.SwiftBackend, 'get',
+    stubs.Set(glance.store.swift.SwiftBackend, 'get',
               fake_swift_backend.get)
 
 
@@ -216,14 +218,14 @@ def stub_out_parallax(stubs):
             return cls.DATA
 
     fake_parallax_registry = FakeParallax()
-    stubs.Set(glance.teller.registries.Parallax, 'lookup',
+    stubs.Set(glance.store.registries.Parallax, 'lookup',
               fake_parallax_registry.lookup)
 
 
-def stub_out_parallax_and_teller_server(stubs):
+def stub_out_parallax_and_store_server(stubs):
     """
     Mocks calls to 127.0.0.1 on 9191 and 9292 for testing so
-    that a real Teller server does not need to be up and
+    that a real Glance server does not need to be up and
     running
     """
 
@@ -254,7 +256,7 @@ def stub_out_parallax_and_teller_server(stubs):
             setattr(res, 'read', fake_reader)
             return res
 
-    class FakeTellerConnection(object):
+    class FakeGlanceConnection(object):
 
         def __init__(self, *args, **kwargs):
             pass
@@ -272,7 +274,7 @@ def stub_out_parallax_and_teller_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            res = self.req.get_response(teller_controllers.API())
+            res = self.req.get_response(server.API())
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():
@@ -290,7 +292,7 @@ def stub_out_parallax_and_teller_server(stubs):
 
         if (client.port == DEFAULT_TELLER_PORT and
             client.netloc == '127.0.0.1'):
-            return FakeTellerConnection
+            return FakeGlanceConnection
         elif (client.port == DEFAULT_PARALLAX_PORT and
               client.netloc == '127.0.0.1'):
             return FakeParallaxConnection

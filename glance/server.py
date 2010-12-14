@@ -14,8 +14,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 """
-Teller Image controller
+Glance WSGI servers
 """
 
 import logging
@@ -26,12 +27,13 @@ from webob import exc, Response
 from glance.common import wsgi
 from glance.common import exception
 from glance.parallax import db
-from glance.teller import backends
-from glance.teller import registries
+from glance.store import get_from_backend, delete_from_backend
+from glance.store import registries
 
 
-class ImageController(wsgi.Controller):
-    """Image Controller"""
+class Controller(wsgi.Controller):
+
+    """Main Glance controller"""
 
     def show(self, req, id):
         """
@@ -47,7 +49,7 @@ class ImageController(wsgi.Controller):
 
         def image_iterator():
             for file in image['files']:
-                chunks = backends.get_from_backend(file['location'],
+                chunks = get_from_backend(file['location'],
                                                    expected_size=file['size'])
 
                 for chunk in chunks:
@@ -80,7 +82,7 @@ class ImageController(wsgi.Controller):
 
         try:
             for file in image['files']:
-                backends.delete_from_backend(file['location'])
+                delete_from_backend(file['location'])
         except exception.NotAuthorized:
             raise exc.HTTPNotAuthorized(body='You are not authorized to '
                                         'delete image chunk %s' % file,
@@ -129,9 +131,9 @@ class ImageController(wsgi.Controller):
 
 class API(wsgi.Router):
 
-    """WSGI entry point for all Teller requests."""
+    """WSGI entry point for all Glance API requests."""
 
     def __init__(self):
         mapper = routes.Mapper()
-        mapper.resource("image", "images", controller=ImageController())
+        mapper.resource("image", "images", controller=Controller())
         super(API, self).__init__(mapper)

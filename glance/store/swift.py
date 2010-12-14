@@ -15,10 +15,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glance.teller.backends import Backend, BackendException
+import glance.store
 
 
-class SwiftBackend(Backend):
+class SwiftBackend(glance.store.Backend):
     """
     An implementation of the swift backend adapter.
     """
@@ -48,7 +48,7 @@ class SwiftBackend(Backend):
 
         obj_size = int(resp_headers['content-length'])
         if  obj_size != expected_size:
-            raise BackendException("Expected %s byte file, Swift has %s bytes"
+            raise glance.store.BackendException("Expected %s byte file, Swift has %s bytes"
                                    % (expected_size, obj_size))
         
         return resp_body
@@ -100,7 +100,7 @@ class SwiftBackend(Backend):
             obj = path_parts.pop()
             container = path_parts.pop()
         except (ValueError, IndexError):
-            raise BackendException(
+            raise glance.store.BackendException(
                  "Expected four values to unpack in: swift:%s. "
                  "Should have received something like: %s."
                  % (parsed_uri.path, cls.EXAMPLE_URL))
@@ -120,7 +120,7 @@ def get_connection_class(conn_class):
         # up importing ourselves.
         #
         # NOTE(jaypipes): This can be resolved by putting this code in
-        #                 /glance/teller/backends/swift/__init__.py
+        #                 /glance/store/swift/__init__.py
         #
         # see http://docs.python.org/library/functions.html#__import__
         PERFORM_ABSOLUTE_IMPORTS = 0

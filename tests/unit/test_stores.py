@@ -21,8 +21,8 @@ import stubout
 import unittest
 import urlparse
 
-from glance.teller.backends.swift import SwiftBackend
-from glance.teller.backends import Backend, BackendException, get_from_backend
+from glance.store.swift import SwiftBackend
+from glance.store import Backend, BackendException, get_from_backend
 from tests import stubs
 
 Backend.CHUNKSIZE = 2
@@ -122,6 +122,3 @@ class TestSwiftBackend(TestBackend):
         self.assertEqual(authurl, 'https://localhost/v1.0')
         self.assertEqual(container, 'container1')
         self.assertEqual(obj, 'file.tar.gz')
-
-
-
