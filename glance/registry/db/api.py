@@ -30,7 +30,7 @@ flags.DEFINE_string('db_backend', 'sqlalchemy',
 
 
 IMPL = utils.LazyPluggable(FLAGS['db_backend'],
-                           sqlalchemy='glance.parallax.db.sqlalchemy.api')
+                           sqlalchemy='glance.registry.db.sqlalchemy.api')
 
 
 ###################

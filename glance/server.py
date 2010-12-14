@@ -26,9 +26,9 @@ from webob import exc, Response
 
 from glance.common import wsgi
 from glance.common import exception
-from glance.parallax import db
+from glance.registry import db
 from glance.store import get_from_backend, delete_from_backend
-from glance.store import registries
+from glance import registry
 
 
 class Controller(wsgi.Controller):
@@ -37,7 +37,7 @@ class Controller(wsgi.Controller):
 
     def show(self, req, id):
         """
-        Query the parallax service for the image registry for the passed in 
+        Query the registry service for the image registry for the passed in 
         req['uri']. If it exists, we connect to the appropriate backend as
         determined by the URI scheme and yield chunks of data back to the
         client. 
@@ -45,7 +45,7 @@ class Controller(wsgi.Controller):
         Optionally, we can pass in 'registry' which will use a given
         RegistryAdapter for the request. This is useful for testing.
         """
-        registry, image = self.get_registry_and_image(req, id)
+        reg, image = self.get_registry_and_image(req, id)
 
         def image_iterator():
             for file in image['files']:
@@ -67,7 +67,7 @@ class Controller(wsgi.Controller):
         """
         Deletes the image and all its chunks from the Teller service.
         Note that this DOES NOT delete the image from the image
-        registry (Parallax or other registry service). The caller
+        registry (Registry or other registry service). The caller
         should delete the metadata from the registry if necessary.
 
         :param request: The WSGI/Webob Request object
@@ -78,7 +78,7 @@ class Controller(wsgi.Controller):
         :raises HttpNotAuthorized if image or any chunk is not
                 deleteable by the requesting user
         """
-        registry, image = self.get_registry_and_image(req, id)
+        reg, image = self.get_registry_and_image(req, id)
 
         try:
             for file in image['files']:
@@ -114,16 +114,11 @@ class Controller(wsgi.Controller):
 
         :retval tuple with (registry, image)
         """
-        registry = req.str_GET.get('registry', 'parallax')
+        reg = req.str_GET.get('registry', 'registry')
 
         try:
-            image = registries.lookup_by_registry(registry, id)
-            return registry, image
-        except registries.UnknownImageRegistry:
-            logging.debug("Could not find image registry: %s.", registry)
-            raise exc.HTTPBadRequest(body="Unknown registry '%s'" % registry,
-                                      request=req,
-                                      content_type="text/plain")
+            image = registry.get_image_metadata(id)
+            return reg, image
         except exception.NotFound:
             raise exc.HTTPNotFound(body='Image not found', request=req,
                                    content_type='text/plain')

@@ -24,7 +24,7 @@ from webob import exc
 
 from glance.common import wsgi
 from glance.common import exception
-from glance.parallax import db
+from glance.registry import db
 
 
 class ImageController(wsgi.Controller):
@@ -135,10 +135,10 @@ class ImageController(wsgi.Controller):
 
 
 class API(wsgi.Router):
-    """WSGI entry point for all Parallax requests."""
+    """WSGI entry point for all Registry requests."""
 
     def __init__(self):
-        # TODO(sirp): should we add back the middleware for parallax?
+        # TODO(sirp): should we add back the middleware for registry?
         mapper = routes.Mapper()
         mapper.resource("image", "images", controller=ImageController(),
                        collection={'detail': 'GET'})

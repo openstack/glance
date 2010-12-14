@@ -19,15 +19,15 @@ import unittest
 import sqlalchemy.exceptions as sa_exc
 
 from glance.common import exception
-from glance.parallax import db
+from glance.registry import db
 from glance.common import flags
-from glance.parallax.db.sqlalchemy import models
+from glance.registry.db.sqlalchemy import models
 
 FLAGS = flags.FLAGS
 
 
 class TestModels(unittest.TestCase):
-    """ Test Parllax SQLAlchemy models using an in-memory sqlite DB"""
+    """Test Registry SQLAlchemy models using an in-memory sqlite DB"""
 
     def setUp(self):
         FLAGS.sql_connection = "sqlite://" # in-memory db

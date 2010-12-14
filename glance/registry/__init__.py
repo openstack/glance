@@ -17,5 +17,12 @@
 #    under the License.
 
 """
-Parallax API 
+Registry API 
 """
+
+from glance import client
+
+
+def get_image_metadata(image_id):
+    c = client.RegistryClient()
+    return c.get_image(image_id)

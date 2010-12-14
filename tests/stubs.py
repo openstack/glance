@@ -29,13 +29,13 @@ import stubout
 import webob
 
 from glance.common import exception
-from glance.parallax import controllers as parallax_controllers
+from glance.registry import controllers as registry_controllers
 from glance import server
 import glance.store
 import glance.store.filesystem
 import glance.store.http
 import glance.store.swift
-import glance.parallax.db.sqlalchemy.api
+import glance.registry.db.sqlalchemy.api
 
 
 FAKE_FILESYSTEM_ROOTDIR = os.path.join('/tmp', 'glance-tests')
@@ -192,10 +192,10 @@ def stub_out_swift_backend(stubs):
               fake_swift_backend.get)
 
 
-def stub_out_parallax(stubs):
-    """Stubs out the Parallax registry with fake data returns.
+def stub_out_registry(stubs):
+    """Stubs out the Registry registry with fake data returns.
 
-    The stubbed Parallax always returns the following fixture::
+    The stubbed Registry always returns the following fixture::
 
         {'files': [
           {'location': 'file:///chunk0', 'size': 12345},
@@ -205,7 +205,7 @@ def stub_out_parallax(stubs):
     :param stubs: Set of stubout stubs
 
     """
-    class FakeParallax(object):
+    class FakeRegistry(object):
 
         DATA = \
             {'files': [
@@ -217,19 +217,19 @@ def stub_out_parallax(stubs):
         def lookup(cls, _parsed_uri):
             return cls.DATA
 
-    fake_parallax_registry = FakeParallax()
-    stubs.Set(glance.store.registries.Parallax, 'lookup',
-              fake_parallax_registry.lookup)
+    fake_registry_registry = FakeRegistry()
+    stubs.Set(glance.store.registries.Registry, 'lookup',
+              fake_registry_registry.lookup)
 
 
-def stub_out_parallax_and_store_server(stubs):
+def stub_out_registry_and_store_server(stubs):
     """
     Mocks calls to 127.0.0.1 on 9191 and 9292 for testing so
     that a real Glance server does not need to be up and
     running
     """
 
-    class FakeParallaxConnection(object):
+    class FakeRegistryConnection(object):
 
         def __init__(self, *args, **kwargs):
             pass
@@ -247,7 +247,7 @@ def stub_out_parallax_and_store_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            res = self.req.get_response(parallax_controllers.API())
+            res = self.req.get_response(registry_controllers.API())
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():
@@ -295,7 +295,7 @@ def stub_out_parallax_and_store_server(stubs):
             return FakeGlanceConnection
         elif (client.port == DEFAULT_PARALLAX_PORT and
               client.netloc == '127.0.0.1'):
-            return FakeParallaxConnection
+            return FakeRegistryConnection
         else:
             try:
                 connection_type = {'http': httplib.HTTPConnection,
@@ -311,8 +311,8 @@ def stub_out_parallax_and_store_server(stubs):
               fake_get_connection_type)
 
 
-def stub_out_parallax_db_image_api(stubs):
-    """Stubs out the database set/fetch API calls for Parallax
+def stub_out_registry_db_image_api(stubs):
+    """Stubs out the database set/fetch API calls for Registry
     so the calls are routed to an in-memory dict. This helps us
     avoid having to manually clear or flush the SQLite database.
 
@@ -418,13 +418,13 @@ def stub_out_parallax_db_image_api(stubs):
                     if f['is_public'] == public]
 
     fake_datastore = FakeDatastore()
-    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_create',
+    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_create',
               fake_datastore.image_create)
-    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_update',
+    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_update',
               fake_datastore.image_update)
-    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_destroy',
+    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_destroy',
               fake_datastore.image_destroy)
-    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_get',
+    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_get',
               fake_datastore.image_get)
-    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_get_all_public',
+    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_get_all_public',
               fake_datastore.image_get_all_public)

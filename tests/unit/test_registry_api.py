@@ -21,7 +21,7 @@ import unittest
 import webob
 
 from glance.common import exception
-from glance.parallax import controllers
+from glance.registry import controllers
 from tests import stubs
 
 
@@ -29,14 +29,14 @@ class TestImageController(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_parallax_db_image_api(self.stubs)
+        stubs.stub_out_registry_db_image_api(self.stubs)
 
     def tearDown(self):
         """Clear the test environment"""
         self.stubs.UnsetAll()
 
     def test_get_root(self):
-        """Tests that the root parallax API returns "index",
+        """Tests that the root registry API returns "index",
         which is a list of public images
         
         """
@@ -54,7 +54,7 @@ class TestImageController(unittest.TestCase):
             self.assertEquals(v, images[0][k])
 
     def test_get_index(self):
-        """Tests that the /images parallax API returns list of
+        """Tests that the /images registry API returns list of
         public images
         
         """
@@ -72,7 +72,7 @@ class TestImageController(unittest.TestCase):
             self.assertEquals(v, images[0][k])
 
     def test_get_details(self):
-        """Tests that the /images/detail parallax API returns
+        """Tests that the /images/detail registry API returns
         a mapping containing a list of detailed image information
         
         """
@@ -94,7 +94,7 @@ class TestImageController(unittest.TestCase):
             self.assertEquals(v, images[0][k])
 
     def test_create_image(self):
-        """Tests that the /images POST parallax API creates the image"""
+        """Tests that the /images POST registry API creates the image"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
                    'image_type': 'kernel'
@@ -141,7 +141,7 @@ class TestImageController(unittest.TestCase):
         self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
 
     def test_update_image(self):
-        """Tests that the /images PUT parallax API updates the image"""
+        """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
                    'image_type': 'ramdisk'
                   }
@@ -183,7 +183,7 @@ class TestImageController(unittest.TestCase):
                           webob.exc.HTTPNotFound.code)
 
     def test_delete_image(self):
-        """Tests that the /images DELETE parallax API deletes the image"""
+        """Tests that the /images DELETE registry API deletes the image"""
 
         # Grab the original number of images
         req = webob.Request.blank('/images')

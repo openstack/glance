@@ -32,32 +32,32 @@ class TestBadClients(unittest.TestCase):
 
     def test_bad_protocol(self):
         """Test unsupported protocol raised"""
-        c = client.ParallaxClient(address="hdsa://127.012..1./")
+        c = client.RegistryClient(address="hdsa://127.012..1./")
         self.assertRaises(client.UnsupportedProtocolError,
                           c.get_image,
                           1)
 
     def test_bad_address(self):
         """Test unsupported protocol raised"""
-        c = client.ParallaxClient(address="http://127.999.1.1/")
+        c = client.RegistryClient(address="http://127.999.1.1/")
         self.assertRaises(client.ClientConnectionError,
                           c.get_image,
                           1)
 
 
-class TestParallaxClient(unittest.TestCase):
+class TestRegistryClient(unittest.TestCase):
 
     """
     Test proper actions made for both valid and invalid requests
-    against a Parallax service
+    against a Registry service
     """
 
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_parallax_db_image_api(self.stubs)
-        stubs.stub_out_parallax_and_store_server(self.stubs)
-        self.client = client.ParallaxClient()
+        stubs.stub_out_registry_db_image_api(self.stubs)
+        stubs.stub_out_registry_and_store_server(self.stubs)
+        self.client = client.RegistryClient()
 
     def tearDown(self):
         """Clear the test environment"""
@@ -221,7 +221,7 @@ class TestParallaxClient(unittest.TestCase):
                           fixture)
 
     def test_update_image(self):
-        """Tests that the /images PUT parallax API updates the image"""
+        """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
                    'image_type': 'ramdisk'
                   }
@@ -280,11 +280,11 @@ class TestGlanceClient(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_parallax_db_image_api(self.stubs)
-        stubs.stub_out_parallax_and_store_server(self.stubs)
+        stubs.stub_out_registry_db_image_api(self.stubs)
+        stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_filesystem_backend(self.stubs)
         self.client = client.GlanceClient()
-        self.pclient = client.ParallaxClient()
+        self.pclient = client.RegistryClient()
 
     def tearDown(self):
         """Clear the test environment"""
@@ -316,7 +316,7 @@ class TestGlanceClient(unittest.TestCase):
         # Delete image #2
         self.assertTrue(self.client.delete_image(2))
 
-        # Delete the image metadata for #2 from Parallax
+        # Delete the image metadata for #2 from Registry
         self.assertTrue(self.pclient.delete_image(2))
 
         self.assertRaises(exception.NotFound,

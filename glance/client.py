@@ -162,7 +162,7 @@ class GlanceClient(BaseClient):
 
         :raises exception.NotFound if image is not found
         """
-        # TODO(jaypipes): Handle other registries than Parallax...
+        # TODO(jaypipes): Handle other registries than Registry...
 
         res = self.do_request("GET", "/images/%s" % image_id)
         return res.read()
@@ -175,27 +175,27 @@ class GlanceClient(BaseClient):
         return True
 
 
-class ParallaxClient(BaseClient):
+class RegistryClient(BaseClient):
 
-    """A client for the Parallax image metadata service"""
+    """A client for the Registry image metadata service"""
 
     DEFAULT_ADDRESS = 'http://127.0.0.1'
     DEFAULT_PORT = 9191
 
     def __init__(self, **kwargs):
         """
-        Creates a new client to a Parallax service.  All args are keyword
+        Creates a new client to a Registry service.  All args are keyword
         arguments.
 
-        :param address: The address where Parallax resides (defaults to
+        :param address: The address where Registry resides (defaults to
                         http://127.0.0.1)
-        :param port: The port where Parallax resides (defaults to 9191)
+        :param port: The port where Registry resides (defaults to 9191)
         """
-        super(ParallaxClient, self).__init__(**kwargs)
+        super(RegistryClient, self).__init__(**kwargs)
 
     def get_images(self):
         """
-        Returns a list of image id/name mappings from Parallax
+        Returns a list of image id/name mappings from Registry
         """
         res = self.do_request("GET", "/images")
         data = json.loads(res.read())['images']
@@ -203,7 +203,7 @@ class ParallaxClient(BaseClient):
 
     def get_images_detailed(self):
         """
-        Returns a list of detailed image data mappings from Parallax
+        Returns a list of detailed image data mappings from Registry
         """
         res = self.do_request("GET", "/images/detail")
         data = json.loads(res.read())['images']
@@ -211,7 +211,7 @@ class ParallaxClient(BaseClient):
 
     def get_image(self, image_id):
         """
-        Returns a mapping of image metadata from Parallax
+        Returns a mapping of image metadata from Registry
 
         :raises exception.NotFound if image is not in registry
         """
@@ -221,19 +221,19 @@ class ParallaxClient(BaseClient):
 
     def add_image(self, image_metadata):
         """
-        Tells parallax about an image's metadata
+        Tells registry about an image's metadata
         """
         if 'image' not in image_metadata.keys():
             image_metadata = dict(image=image_metadata)
         body = json.dumps(image_metadata)
         res = self.do_request("POST", "/images", body)
-        # Parallax returns a JSONified dict(image=image_info)
+        # Registry returns a JSONified dict(image=image_info)
         data = json.loads(res.read())
         return data['image']['id']
 
     def update_image(self, image_id, image_metadata):
         """
-        Updates Parallax's information about an image
+        Updates Registry's information about an image
         """
         if 'image' not in image_metadata.keys():
             image_metadata = dict(image=image_metadata)
@@ -243,7 +243,7 @@ class ParallaxClient(BaseClient):
 
     def delete_image(self, image_id):
         """
-        Deletes Parallax's information about an image
+        Deletes Registry's information about an image
         """
         self.do_request("DELETE", "/images/%s" % image_id)
         return True
