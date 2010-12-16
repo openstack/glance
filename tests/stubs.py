@@ -261,9 +261,14 @@ def stub_out_registry_and_store_server(stubs):
                 raise UnsupportedProtocolError("Unsupported protocol %s. Unable "
                                                " to connect to server."
                                                % self.protocol)
+    def fake_image_iter(self):
+        for i in self.response.app_iter:
+            yield i
 
     stubs.Set(glance.client.BaseClient, 'get_connection_type',
               fake_get_connection_type)
+    stubs.Set(glance.client.ImageBodyIterator, '__iter__',
+              fake_image_iter)
 
 
 def stub_out_registry_db_image_api(stubs):
@@ -288,7 +293,7 @@ def stub_out_registry_db_image_api(stubs):
                 'updated_at': datetime.datetime.utcnow(),
                 'deleted_at': None,
                 'deleted': False,
-                'size_in_bytes': 13,
+                'size': 13,
                 'location': "swift://user:passwd@acct/container/obj.tar.0",
                 'properties': []},
             {'id': 2,
@@ -300,7 +305,7 @@ def stub_out_registry_db_image_api(stubs):
                 'updated_at': datetime.datetime.utcnow(),
                 'deleted_at': None,
                 'deleted': False,
-                'size_in_bytes': 19,
+                'size': 19,
                 'location': "file:///tmp/glance-tests/2",
                 'properties': []}]
 

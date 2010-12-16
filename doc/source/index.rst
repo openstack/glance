@@ -55,7 +55,7 @@ mapping in the following format::
     {'uri': 'http://glance.openstack.org/images/1',
      'name': 'Ubuntu 10.04 Plain',
      'type': 'kernel',
-     'size_in_bytes': '5368709120'}
+     'size': '5368709120'}
     ...]}
 
 Notes:
@@ -77,7 +77,7 @@ JSON-encoded mapping in the following format::
     {'uri': 'http://glance.openstack.org/images/1',
      'name': 'Ubuntu 10.04 Plain 5GB',
      'type': 'kernel',
-     'size_in_bytes': '5368709120',
+     'size': '5368709120',
      'store': 'swift',
      'created_at': '2010-02-03 09:34:01',
      'updated_at': '2010-02-03 09:34:01',
@@ -122,7 +122,7 @@ following shows an example of the HTTP headers returned from the above
   x-image-meta-uri              http://glance.openstack.org/images/1
   x-image-meta-name             Ubuntu 10.04 Plain 5GB
   x-image-meta-type             kernel
-  x-image-meta-size_in_bytes    5368709120
+  x-image-meta-size             5368709120
   x-image-meta-store            swift
   x-image-meta-created_at       2010-02-03 09:34:01
   x-image-meta-updated_at       2010-02-03 09:34:01
@@ -169,7 +169,7 @@ returned from the above `GET` request::
   x-image-meta-uri              http://glance.openstack.org/images/1
   x-image-meta-name             Ubuntu 10.04 Plain 5GB
   x-image-meta-type             kernel
-  x-image-meta-size_in_bytes    5368709120
+  x-image-meta-size             5368709120
   x-image-meta-store            swift
   x-image-meta-created_at       2010-02-03 09:34:01
   x-image-meta-updated_at       2010-02-03 09:34:01
@@ -188,12 +188,11 @@ Notes:
    `x-image-meta-property-`.  These headers are free-form key/value pairs
    that have been saved with the image metadata. The key is the string
    after `x-image-meta-property-` and the value is the value of the header
- * The response's `Content-Type` header shall be equal to the value of
-   the `x-image-meta-size_in_bytes` header
+ * The response's `Content-Length` header shall be equal to the value of
+   the `x-image-meta-size` header
  * The image data itself will be the body of the HTTP response returned
    from the request, which will have content-type of
    `application/octet-stream`.
- * The response may have an optional content-encoding of `gzip`
 
 
 .. toctree::
@@ -237,7 +236,7 @@ metadata about an image, change metadata about an image, remove images, and
 of course retrieve an image itself via this client class.
 
 Below are some examples of using Glance's Client class.  We assume that
-there is a Glance server running at the address http://glance.openstack.org
+there is a Glance server running at the address `glance.openstack.org`
 on port `9292`.
 
 Requesting a List of Public VM Images
@@ -250,7 +249,7 @@ Using Glance's Client, we can do this using the following code::
 
   from glance import client
 
-  c = client.Client("http://glance.openstack.org", 9292)
+  c = client.Client("glance.openstack.org", 9292)
 
   print c.get_images()
 
@@ -265,7 +264,7 @@ Using Glance's Client, we can do this using the following code::
 
   from glance import client
 
-  c = client.Client("http://glance.openstack.org", 9292)
+  c = client.Client("glance.openstack.org", 9292)
 
   print c.get_images_detailed()
 
@@ -286,7 +285,7 @@ first public image returned, we can use the following code::
 
   from glance import client
 
-  c = client.Client("http://glance.openstack.org", 9292)
+  c = client.Client("glance.openstack.org", 9292)
 
   print c.get_image_meta("http://glance.openstack.org/images/1")
 
@@ -307,11 +306,20 @@ first public image returned and its image data, we can use the following code::
 
   from glance import client
 
-  c = client.Client("http://glance.openstack.org", 9292)
+  c = client.Client("glance.openstack.org", 9292)
 
-  meta, image_data = c.get_image("http://glance.openstack.org/images/1")
+  meta, image_file = c.get_image("http://glance.openstack.org/images/1")
 
   print meta
+
+  f = open('some_local_file', 'wb')
+  for chunk in image_file:
+      f.write(chunk)
+  f.close()
+
+Note that the return from Client.get_image() is a tuple of (`metadata`, `file`)
+where `metadata` is a mapping of metadata about the image and `file` is a
+generator that yields chunks of image data.
 
 
 .. toctree::

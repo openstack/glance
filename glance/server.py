@@ -23,9 +23,6 @@ Glance API Server
 Configuration Options
 ---------------------
 
-    `chunksize`: Set to the size, in bytes, that you want
-                 Glance to stream chunks of the image data.
-                 Defaults to 64M
 """
 
 import json
@@ -45,10 +42,6 @@ from glance.store import (get_from_backend,
                           get_store_from_location)
 from glance import registry
 from glance import util
-
-
-flags.DEFINE_integer('image_read_chunksize', 64*1024*1024,
-                     'Size in bytes to read chunks of image data.')
 
 
 FLAGS = flags.FLAGS
@@ -80,7 +73,7 @@ class Controller(wsgi.Controller):
 
             * id -- The opaque image identifier
             * name -- The name of the image
-            * size_in_bytes -- Size of image data in bytes
+            * size -- Size of image data in bytes
             * type -- One of 'kernel', 'ramdisk', 'raw', or 'machine'
         
         :param request: The WSGI/Webob Request object
@@ -89,7 +82,7 @@ class Controller(wsgi.Controller):
             {'images': [
                 {'id': <ID>,
                  'name': <NAME>,
-                 'size_in_bytes': <SIZE>,
+                 'size': <SIZE>,
                  'type': <TYPE>}, ...
             ]}
         """
@@ -106,7 +99,7 @@ class Controller(wsgi.Controller):
             {'images': [
                 {'id': <ID>,
                  'name': <NAME>,
-                 'size_in_bytes': <SIZE>,
+                 'size': <SIZE>,
                  'type': <TYPE>,
                  'store': <STORE>,
                  'status': <STATUS>,
@@ -150,12 +143,10 @@ class Controller(wsgi.Controller):
         :raises HTTPNotFound if image is not available to user
         """
         image = self.get_image_meta_or_404(req, id)
-        chunksize = FLAGS.image_read_chunksize
 
         def image_iterator():
             chunks = get_from_backend(image['location'],
-                                      expected_size=image['size_in_bytes'],
-                                      chunksize=chunksize)
+                                      expected_size=image['size'])
 
             for chunk in chunks:
                 yield chunk

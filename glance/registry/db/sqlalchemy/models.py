@@ -142,7 +142,7 @@ class Image(BASE, ModelBase):
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
     type = Column(String(30))
-    size_in_bytes = Column(Integer)
+    size = Column(Integer)
     status = Column(String(30))
     is_public = Column(Boolean, default=False)
     location = Column(Text)

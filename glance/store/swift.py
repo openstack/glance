@@ -24,6 +24,8 @@ class SwiftBackend(glance.store.Backend):
     """
     EXAMPLE_URL = "swift://user:password@auth_url/container/file.gz.0"
 
+    CHUNKSIZE = 65536
+
     @classmethod
     def get(cls, parsed_uri, expected_size, conn_class=None):
         """

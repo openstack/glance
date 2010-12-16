@@ -50,11 +50,12 @@ class TestFilesystemBackend(TestBackend):
     def test_get(self):
 
         fetcher = get_from_backend("file:///tmp/glance-tests/2",
-                                   expected_size=19,
-                                   chunksize=10)
+                                   expected_size=19)
 
-        chunks = [c for c in fetcher]
-        self.assertEqual(chunks, ["chunk00000", "remainder"])
+        data = ""
+        for chunk in fetcher:
+            data += chunk
+        self.assertEqual(data, "chunk00000remainder")
 
 
 class TestHTTPBackend(TestBackend):

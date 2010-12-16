@@ -30,13 +30,15 @@ FLAGS = flags.FLAGS
 
 
 class ChunkedFile(object):
+
     """
     We send this back to the Glance API server as
     something that can iterate over a large file
     """
 
-    def __init__(self, filepath, chunksize=FLAGS.image_read_chunksize):
-        self.chunksize = chunksize
+    CHUNKSIZE = 65536
+
+    def __init__(self, filepath):
         self.filepath = filepath
         self.fp = open(self.filepath, 'rb')
 
@@ -44,7 +46,7 @@ class ChunkedFile(object):
         """Return an iterator over the image file"""
         try:
             while True:
-                chunk = self.fp.read(self.chunksize)
+                chunk = self.fp.read(ChunkedFile.CHUNKSIZE)
                 if chunk:
                     yield chunk
                 else:
@@ -62,8 +64,7 @@ class ChunkedFile(object):
 
 class FilesystemBackend(glance.store.Backend):
     @classmethod
-    def get(cls, parsed_uri, opener=lambda p: open(p, "rb"), expected_size=None,
-           chunksize=FLAGS.image_read_chunksize):
+    def get(cls, parsed_uri, opener=lambda p: open(p, "rb"), expected_size=None):
         """ Filesystem-based backend
 
         file:///path/to/file.tar.gz.0
@@ -73,7 +74,7 @@ class FilesystemBackend(glance.store.Backend):
         if not os.path.exists(filepath):
             raise exception.NotFound("Image file %s not found" % filepath)
         else:
-            return ChunkedFile(filepath, chunksize)
+            return ChunkedFile(filepath)
 
     @classmethod
     def delete(cls, parsed_uri):

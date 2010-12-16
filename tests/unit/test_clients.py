@@ -17,6 +17,7 @@
 
 import json
 import stubout
+import StringIO
 import unittest
 
 import webob
@@ -81,7 +82,7 @@ class TestRegistryClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'status': 'available',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
@@ -90,7 +91,7 @@ class TestRegistryClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'status': 'available',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
@@ -107,7 +108,7 @@ class TestRegistryClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'status': 'available',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
@@ -116,7 +117,7 @@ class TestRegistryClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'status': 'available',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
@@ -137,7 +138,7 @@ class TestRegistryClient(unittest.TestCase):
         fixture = {'name': 'fake public image',
                    'is_public': True,
                    'type': 'kernel',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/acct/3.gz.0",
                   }
         
@@ -161,14 +162,14 @@ class TestRegistryClient(unittest.TestCase):
         fixture = {'name': 'fake public image',
                    'is_public': True,
                    'type': 'kernel',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
         expected = {'name': 'fake public image',
                     'is_public': True,
                     'type': 'kernel',
-                    'size_in_bytes': 19,
+                    'size': 19,
                     'location': "file:///tmp/glance-tests/2",
                     'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
@@ -192,7 +193,7 @@ class TestRegistryClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'status': 'bad status',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                   }
 
@@ -207,7 +208,7 @@ class TestRegistryClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'status': 'bad status',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                   }
 
@@ -293,12 +294,16 @@ class TestClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'status': 'available',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
-        meta, image = self.client.get_image(2)
+        meta, image_chunks = self.client.get_image(2)
 
-        self.assertEquals(expected_image, image)
+        image_data = ""
+        for image_chunk in image_chunks:
+            image_data += image_chunk
+
+        self.assertEquals(expected_image, image_data)
         for k,v in expected_meta.iteritems():
             self.assertEquals(v, meta[k])
 
@@ -326,7 +331,7 @@ class TestClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'status': 'available',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
@@ -335,7 +340,7 @@ class TestClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'status': 'available',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
@@ -352,7 +357,7 @@ class TestClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'status': 'available',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
@@ -361,7 +366,7 @@ class TestClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'status': 'available',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
@@ -393,7 +398,7 @@ class TestClient(unittest.TestCase):
         fixture = {'name': 'fake public image',
                    'is_public': True,
                    'type': 'kernel',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                   }
         
@@ -417,14 +422,14 @@ class TestClient(unittest.TestCase):
         fixture = {'name': 'fake public image',
                    'is_public': True,
                    'type': 'kernel',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
         expected = {'name': 'fake public image',
                     'is_public': True,
                     'type': 'kernel',
-                    'size_in_bytes': 19,
+                    'size': 19,
                     'location': "file:///tmp/glance-tests/2",
                     'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
@@ -451,7 +456,7 @@ class TestClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'status': 'bad status',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                   }
 
@@ -465,7 +470,7 @@ class TestClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'status': 'bad status',
-                   'size_in_bytes': 19,
+                   'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                   }
 

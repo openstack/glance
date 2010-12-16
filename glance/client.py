@@ -51,6 +51,35 @@ class BadInputError(Exception):
     pass
 
 
+class ImageBodyIterator(object):
+
+    """
+    A class that acts as an iterator over an image file's
+    chunks of data.  This is returned as part of the result
+    tuple from `glance.client.Client.get_image`
+    """
+
+    CHUNKSIZE = 10
+
+    def __init__(self, response):
+        """
+        Constructs the object from an HTTPResponse object
+        """
+        self.response = response
+
+    def __iter__(self):
+        """
+        Exposes an iterator over the chunks of data in the
+        image file.
+        """
+        while True:
+            chunk = self.response.read(ImageBodyIterator.CHUNKSIZE)
+            if chunk:
+                yield chunk
+            else:
+                break
+
+
 class BaseClient(object):
 
     """A base client class"""
@@ -189,7 +218,7 @@ class Client(BaseClient):
         res = self.do_request("GET", "/images/%s" % image_id)
 
         image = util.get_image_meta_from_headers(res)
-        return image, res.read()
+        return image, ImageBodyIterator(res)
 
     def get_image_meta(self, image_id):
         """
