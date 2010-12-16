@@ -59,7 +59,7 @@ class ImageBodyIterator(object):
     tuple from `glance.client.Client.get_image`
     """
 
-    CHUNKSIZE = 10
+    CHUNKSIZE = 65536
 
     def __init__(self, response):
         """
