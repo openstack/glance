@@ -1,5 +1,4 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
 
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
@@ -16,17 +15,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 """
-DB abstraction for Nova and Glance
+SQLAlchemy models for glance data
 """
 
-from glance.parallax.db.api import *
+from glance.registry.db.sqlalchemy import models
 
-# attributes common to all models
-BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
-                        'deleted'])
 
-IMAGE_FILE_ATTRS = BASE_MODEL_ATTRS | set(['location', 'size'])
-
-IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'image_type', 'status',
-                                      'is_public'])
+models.register_models()

@@ -24,7 +24,7 @@ from glance.common import db
 from glance.common import exception
 from glance.common import flags
 from glance.common.db.sqlalchemy.session import get_session
-from glance.parallax.db.sqlalchemy import models
+from glance.registry.db.sqlalchemy import models
 from sqlalchemy.orm import exc
 
 #from sqlalchemy.orm import joinedload_all

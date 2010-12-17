@@ -17,11 +17,13 @@
 
 import json
 import stubout
+import StringIO
 import unittest
 
 import webob
 
 from glance import client
+from glance.registry import client as rclient
 from glance.common import exception
 from tests import stubs
 
@@ -32,32 +34,32 @@ class TestBadClients(unittest.TestCase):
 
     def test_bad_protocol(self):
         """Test unsupported protocol raised"""
-        c = client.ParallaxClient(address="hdsa://127.012..1./")
+        c = client.Client(address="hdsa://127.012..1./")
         self.assertRaises(client.UnsupportedProtocolError,
                           c.get_image,
                           1)
 
     def test_bad_address(self):
         """Test unsupported protocol raised"""
-        c = client.ParallaxClient(address="http://127.999.1.1/")
+        c = client.Client(address="http://127.999.1.1/")
         self.assertRaises(client.ClientConnectionError,
                           c.get_image,
                           1)
 
 
-class TestParallaxClient(unittest.TestCase):
+class TestRegistryClient(unittest.TestCase):
 
     """
     Test proper actions made for both valid and invalid requests
-    against a Parallax service
+    against a Registry service
     """
 
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_parallax_db_image_api(self.stubs)
-        stubs.stub_out_parallax_and_teller_server(self.stubs)
-        self.client = client.ParallaxClient()
+        stubs.stub_out_registry_db_image_api(self.stubs)
+        stubs.stub_out_registry_and_store_server(self.stubs)
+        self.client = rclient.RegistryClient()
 
     def tearDown(self):
         """Clear the test environment"""
@@ -78,25 +80,19 @@ class TestParallaxClient(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'available',
-                   'files': [
-                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                         "size": 6},
-                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                         "size": 7}],
-                   'properties': []}
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {}}
 
         expected = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'available',
-                   'files': [
-                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                         "size": 6},
-                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                         "size": 7}],
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
         images = self.client.get_images_detailed()
@@ -110,25 +106,19 @@ class TestParallaxClient(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'available',
-                   'files': [
-                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                         "size": 6},
-                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                         "size": 7}],
-                   'properties': []}
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {}}
 
         expected = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'available',
-                   'files': [
-                        {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                         "size": 6},
-                        {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                         "size": 7}],
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
         data = self.client.get_image(2)
@@ -147,13 +137,15 @@ class TestParallaxClient(unittest.TestCase):
         """Tests that we can add image metadata and returns the new id"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel'
+                   'type': 'kernel',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/acct/3.gz.0",
                   }
         
-        new_id = self.client.add_image(fixture)
+        new_image = self.client.add_image(fixture)
 
         # Test ID auto-assigned properly
-        self.assertEquals(3, new_id)
+        self.assertEquals(3, new_image['id'])
 
         # Test all other attributes set
         data = self.client.get_image(3)
@@ -169,38 +161,40 @@ class TestParallaxClient(unittest.TestCase):
         """Tests that we can add image metadata with properties"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel',
-                   'properties': [{'key':'disco',
-                                   'value': 'baby'}]
+                   'type': 'kernel',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
         expected = {'name': 'fake public image',
                     'is_public': True,
-                    'image_type': 'kernel',
-                    'properties': {'disco': 'baby'}
+                    'type': 'kernel',
+                    'size': 19,
+                    'location': "file:///tmp/glance-tests/2",
+                    'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
         
-        new_id = self.client.add_image(fixture)
+        new_image = self.client.add_image(fixture)
 
         # Test ID auto-assigned properly
-        self.assertEquals(3, new_id)
-
-        # Test all other attributes set
-        data = self.client.get_image(3)
+        self.assertEquals(3, new_image['id'])
 
         for k,v in expected.iteritems():
-            self.assertEquals(v, data[k])
+            self.assertEquals(v, new_image[k])
 
         # Test status was updated properly
-        self.assertTrue('status' in data.keys())
-        self.assertEquals('available', data['status'])
+        self.assertTrue('status' in new_image.keys())
+        self.assertEquals('available', new_image['status'])
 
     def test_add_image_already_exists(self):
         """Tests proper exception is raised if image with ID already exists"""
         fixture = {'id': 2,
                    'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel',
-                   'status': 'bad status'
+                   'type': 'kernel',
+                   'status': 'bad status',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
                   }
 
         self.assertRaises(exception.Duplicate,
@@ -212,8 +206,10 @@ class TestParallaxClient(unittest.TestCase):
         fixture = {'id': 3,
                    'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel',
-                   'status': 'bad status'
+                   'type': 'kernel',
+                   'status': 'bad status',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
                   }
 
         self.assertRaises(client.BadInputError,
@@ -221,9 +217,9 @@ class TestParallaxClient(unittest.TestCase):
                           fixture)
 
     def test_update_image(self):
-        """Tests that the /images PUT parallax API updates the image"""
+        """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
-                   'image_type': 'ramdisk'
+                   'type': 'ramdisk'
                   }
 
         self.assertTrue(self.client.update_image(2, fixture))
@@ -239,7 +235,7 @@ class TestParallaxClient(unittest.TestCase):
         fixture = {'id': 3,
                    'name': 'fake public image',
                    'is_public': True,
-                   'image_type': 'kernel',
+                   'type': 'kernel',
                    'status': 'bad status'
                   }
 
@@ -270,21 +266,20 @@ class TestParallaxClient(unittest.TestCase):
                           3)
 
 
-class TestTellerClient(unittest.TestCase):
+class TestClient(unittest.TestCase):
 
     """
     Test proper actions made for both valid and invalid requests
-    against a Teller service
+    against a Glance service
     """
 
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_parallax_db_image_api(self.stubs)
-        stubs.stub_out_parallax_and_teller_server(self.stubs)
-        stubs.stub_out_filesystem_backend(self.stubs)
-        self.client = client.TellerClient()
-        self.pclient = client.ParallaxClient()
+        stubs.stub_out_registry_db_image_api(self.stubs)
+        stubs.stub_out_registry_and_store_server(self.stubs)
+        stubs.stub_out_filesystem_backend()
+        self.client = client.Client()
 
     def tearDown(self):
         """Clear the test environment"""
@@ -293,10 +288,24 @@ class TestTellerClient(unittest.TestCase):
 
     def test_get_image(self):
         """Test a simple file backend retrieval works as expected"""
-        expected = 'chunk0chunk42'
-        image = self.client.get_image(2)
+        expected_image = 'chunk00000remainder'
+        expected_meta = {'id': 2,
+                   'name': 'fake image #2',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'status': 'available',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {}}
+        meta, image_chunks = self.client.get_image(2)
 
-        self.assertEquals(expected, image)
+        image_data = ""
+        for image_chunk in image_chunks:
+            image_data += image_chunk
+
+        self.assertEquals(expected_image, image_data)
+        for k,v in expected_meta.iteritems():
+            self.assertEquals(v, meta[k])
 
     def test_get_image_not_existing(self):
         """Test retrieval of a non-existing image returns a 404"""
@@ -305,26 +314,216 @@ class TestTellerClient(unittest.TestCase):
                           self.client.get_image,
                           3)
 
+    def test_get_image_index(self):
+        """Test correct set of public image returned"""
+        fixture = {'id': 2,
+                   'name': 'fake image #2'}
+        images = self.client.get_images()
+        self.assertEquals(len(images), 1)
+
+        for k,v in fixture.iteritems():
+            self.assertEquals(v, images[0][k])
+
+    def test_get_image_details(self):
+        """Tests that the detailed info about public images returned"""
+        fixture = {'id': 2,
+                   'name': 'fake image #2',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'status': 'available',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {}}
+
+        expected = {'id': 2,
+                   'name': 'fake image #2',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'status': 'available',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {}}
+
+        images = self.client.get_images_detailed()
+        self.assertEquals(len(images), 1)
+
+        for k,v in expected.iteritems():
+            self.assertEquals(v, images[0][k])
+
+    def test_get_image_meta(self):
+        """Tests that the detailed info about an image returned"""
+        fixture = {'id': 2,
+                   'name': 'fake image #2',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'status': 'available',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {}}
+
+        expected = {'id': 2,
+                   'name': 'fake image #2',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'status': 'available',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {}}
+
+        data = self.client.get_image_meta(2)
+
+        for k,v in expected.iteritems():
+            self.assertEquals(v, data[k])
+
+    def test_get_image_non_existing(self):
+        """Tests that NotFound is raised when getting a non-existing image"""
+
+        self.assertRaises(exception.NotFound,
+                          self.client.get_image,
+                          42)
+
+    def test_add_image_without_location_or_raw_data(self):
+        """Tests client throws Invalid if missing both location and raw data"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'type': 'kernel'
+                  }
+        
+        self.assertRaises(exception.Invalid,
+                          self.client.add_image,
+                          fixture)
+
+    def test_add_image_basic(self):
+        """Tests that we can add image metadata and returns the new id"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                  }
+        
+        new_id = self.client.add_image(fixture)
+
+        # Test ID auto-assigned properly
+        self.assertEquals(3, new_id)
+
+        # Test all other attributes set
+        data = self.client.get_image_meta(3)
+
+        for k,v in fixture.iteritems():
+            self.assertEquals(v, data[k])
+
+        # Test status was updated properly
+        self.assertTrue('status' in data.keys())
+        self.assertEquals('available', data['status'])
+
+    def test_add_image_with_properties(self):
+        """Tests that we can add image metadata with properties"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'}
+                  }
+        expected = {'name': 'fake public image',
+                    'is_public': True,
+                    'type': 'kernel',
+                    'size': 19,
+                    'location': "file:///tmp/glance-tests/2",
+                    'properties': {'distro': 'Ubuntu 10.04 LTS'}
+                  }
+        
+        new_id = self.client.add_image(fixture)
+
+        # Test ID auto-assigned properly
+        self.assertEquals(3, new_id)
+
+        # Test all other attributes set
+        data = self.client.get_image_meta(3)
+
+        for k,v in expected.iteritems():
+            self.assertEquals(v, data[k])
+
+        # Test status was updated properly
+        self.assertTrue('status' in data.keys())
+        self.assertEquals('available', data['status'])
+
+    def test_add_image_already_exists(self):
+        """Tests proper exception is raised if image with ID already exists"""
+        fixture = {'id': 2,
+                   'name': 'fake public image',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'status': 'bad status',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                  }
+
+        self.assertRaises(exception.Duplicate,
+                          self.client.add_image,
+                          fixture)
+
+    def test_add_image_with_bad_status(self):
+        """Tests a bad status is set to a proper one by server"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'status': 'bad status',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                  }
+
+        new_id = self.client.add_image(fixture)
+
+        data = self.client.get_image_meta(new_id)
+
+        self.assertEquals(data['status'], 'available')
+
+    def test_update_image(self):
+        """Tests that the /images PUT registry API updates the image"""
+        fixture = {'name': 'fake public image #2',
+                   'type': 'ramdisk'
+                  }
+
+        self.assertTrue(self.client.update_image(2, fixture))
+
+        # Test all other attributes set
+        data = self.client.get_image_meta(2)
+
+        for k,v in fixture.iteritems():
+            self.assertEquals(v, data[k])
+
+    def test_update_image_not_existing(self):
+        """Tests non existing image update doesn't work"""
+        fixture = {'id': 3,
+                   'name': 'fake public image',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'status': 'bad status'
+                  }
+
+        self.assertRaises(exception.NotFound,
+                          self.client.update_image,
+                          3,
+                          fixture)
+
     def test_delete_image(self):
-        """Tests that image data is deleted properly"""
+        """Tests that image metadata is deleted properly"""
 
-        expected = 'chunk0chunk42'
-        image = self.client.get_image(2)
-
-        self.assertEquals(expected, image)
+        # Grab the original number of images
+        orig_num_images = len(self.client.get_images())
 
         # Delete image #2
         self.assertTrue(self.client.delete_image(2))
 
-        # Delete the image metadata for #2 from Parallax
-        self.assertTrue(self.pclient.delete_image(2))
+        # Verify one less image
+        new_num_images = len(self.client.get_images())
 
-        self.assertRaises(exception.NotFound,
-                          self.client.get_image,
-                          2)
+        self.assertEquals(new_num_images, orig_num_images - 1)
 
     def test_delete_image_not_existing(self):
-        """Test deletion of a non-existing image returns a 404"""
+        """Tests cannot delete non-existing image"""
 
         self.assertRaises(exception.NotFound,
                           self.client.delete_image,

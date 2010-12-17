@@ -84,8 +84,8 @@ def get_backend_class(backend):
     :param backend: Name of backend to create
     """
     # NOTE(sirp): avoiding circular import
-    from glance.teller.backends.http import HTTPBackend
-    from glance.teller.backends.swift import SwiftBackend
+    from glance.store.backends.http import HTTPBackend
+    from glance.store.backends.swift import SwiftBackend
 
     BACKENDS = {
         "file": FilesystemBackend,

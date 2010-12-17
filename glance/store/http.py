@@ -16,9 +16,10 @@
 #    under the License.
 
 import httplib
-from glance.teller import backends
 
-class HTTPBackend(backends.Backend):
+import glance.store
+
+class HTTPBackend(glance.store.Backend):
     """ An implementation of the HTTP Backend Adapter """
 
     @classmethod
@@ -34,12 +35,12 @@ class HTTPBackend(backends.Backend):
         elif parsed_uri.scheme == "https":
             conn_class = httplib.HTTPSConnection
         else:
-            raise BackendException("scheme '%s' not supported for HTTPBackend")
+            raise glance.store.BackendException("scheme '%s' not supported for HTTPBackend")
         
         conn = conn_class(parsed_uri.netloc)
         conn.request("GET", parsed_uri.path, "", {})
         
         try:
-            return backends._file_iter(conn.getresponse(), cls.CHUNKSIZE)
+            return glance.store._file_iter(conn.getresponse(), cls.CHUNKSIZE)
         finally:
             conn.close()

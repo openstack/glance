@@ -26,6 +26,7 @@ import urlparse
 import socket
 import sys
 
+from glance import util
 from glance.common import exception
 
 #TODO(jaypipes) Allow a logger param for client classes
@@ -48,6 +49,35 @@ class ClientConnectionError(Exception):
 class BadInputError(Exception):
     """Error resulting from a client sending bad input to a server"""
     pass
+
+
+class ImageBodyIterator(object):
+
+    """
+    A class that acts as an iterator over an image file's
+    chunks of data.  This is returned as part of the result
+    tuple from `glance.client.Client.get_image`
+    """
+
+    CHUNKSIZE = 65536
+
+    def __init__(self, response):
+        """
+        Constructs the object from an HTTPResponse object
+        """
+        self.response = response
+
+    def __iter__(self):
+        """
+        Exposes an iterator over the chunks of data in the
+        image file.
+        """
+        while True:
+            chunk = self.response.read(ImageBodyIterator.CHUNKSIZE)
+            if chunk:
+                yield chunk
+            else:
+                break
 
 
 class BaseClient(object):
@@ -87,7 +117,7 @@ class BaseClient(object):
                                            " to connect to server."
                                            % self.protocol)
 
-    def do_request(self, method, action, body=None):
+    def do_request(self, method, action, body=None, headers=None):
         """
         Connects to the server and issues a request.  Handles converting
         any returned HTTP error status codes to OpenStack/Glance exceptions
@@ -96,13 +126,17 @@ class BaseClient(object):
 
         :param method: HTTP method ("GET", "POST", "PUT", etc...)
         :param action: part of URL after root netloc
-        :param headers: mapping of headers to send
-        :param data: string of data to send, or None (default)
+        :param body: string of data to send, or None (default)
+        :param headers: mapping of key/value pairs to add as headers
         """
         try:
             connection_type = self.get_connection_type()
             c = connection_type(self.netloc, self.port)
             c.request(method, action, body)
+            if headers:
+                for k, v in headers.iteritems():
+                    c.putheader(k, v)
+
             res = c.getresponse()
             status_code = self.get_status_code(res)
             if status_code == httplib.OK:
@@ -135,67 +169,27 @@ class BaseClient(object):
             return response.status
 
 
-class TellerClient(BaseClient):
+class Client(BaseClient):
 
-    """A client for the Teller image caching and delivery service"""
+    """Main client class for accessing Glance resources"""
 
     DEFAULT_ADDRESS = 'http://127.0.0.1'
     DEFAULT_PORT = 9292
 
     def __init__(self, **kwargs):
         """
-        Creates a new client to a Teller service.  All args are keyword
+        Creates a new client to a Glance service.  All args are keyword
         arguments.
 
-        :param address: The address where Teller resides (defaults to
+        :param address: The address where Glance resides (defaults to
                         http://127.0.0.1)
-        :param port: The port where Teller resides (defaults to 9292)
+        :param port: The port where Glance resides (defaults to 9292)
         """
-        super(TellerClient, self).__init__(**kwargs)
-
-    def get_image(self, image_id):
-        """
-        Returns the raw disk image as a mime-encoded blob stream for the
-        supplied opaque image identifier.
-
-        :param image_id: The opaque image identifier
-
-        :raises exception.NotFound if image is not found
-        """
-        # TODO(jaypipes): Handle other registries than Parallax...
-
-        res = self.do_request("GET", "/images/%s" % image_id)
-        return res.read()
-
-    def delete_image(self, image_id):
-        """
-        Deletes Tellers's information about an image.
-        """
-        self.do_request("DELETE", "/images/%s" % image_id)
-        return True
-
-
-class ParallaxClient(BaseClient):
-
-    """A client for the Parallax image metadata service"""
-
-    DEFAULT_ADDRESS = 'http://127.0.0.1'
-    DEFAULT_PORT = 9191
-
-    def __init__(self, **kwargs):
-        """
-        Creates a new client to a Parallax service.  All args are keyword
-        arguments.
-
-        :param address: The address where Parallax resides (defaults to
-                        http://127.0.0.1)
-        :param port: The port where Parallax resides (defaults to 9191)
-        """
-        super(ParallaxClient, self).__init__(**kwargs)
+        super(Client, self).__init__(**kwargs)
 
     def get_images(self):
         """
-        Returns a list of image id/name mappings from Parallax
+        Returns a list of image id/name mappings from Registry
         """
         res = self.do_request("GET", "/images")
         data = json.loads(res.read())['images']
@@ -203,7 +197,7 @@ class ParallaxClient(BaseClient):
 
     def get_images_detailed(self):
         """
-        Returns a list of detailed image data mappings from Parallax
+        Returns a list of detailed image data mappings from Registry
         """
         res = self.do_request("GET", "/images/detail")
         data = json.loads(res.read())['images']
@@ -211,29 +205,53 @@ class ParallaxClient(BaseClient):
 
     def get_image(self, image_id):
         """
-        Returns a mapping of image metadata from Parallax
+        Returns a tuple with the image's metadata and the raw disk image as
+        a mime-encoded blob stream for the supplied opaque image identifier.
+
+        :param image_id: The opaque image identifier
+
+        :retval Tuple containing (image_meta, image_blob)
+        :raises exception.NotFound if image is not found
+        """
+        # TODO(jaypipes): Handle other registries than Registry...
+
+        res = self.do_request("GET", "/images/%s" % image_id)
+
+        image = util.get_image_meta_from_headers(res)
+        return image, ImageBodyIterator(res)
+
+    def get_image_meta(self, image_id):
+        """
+        Returns a mapping of image metadata from Registry
 
         :raises exception.NotFound if image is not in registry
         """
-        res = self.do_request("GET", "/images/%s" % image_id)
-        data = json.loads(res.read())['image']
-        return data
+        res = self.do_request("HEAD", "/images/%s" % image_id)
 
-    def add_image(self, image_metadata):
+        image = util.get_image_meta_from_headers(res)
+        return image
+
+    def add_image(self, image_meta, image_data=None):
         """
-        Tells parallax about an image's metadata
+        Tells Glance about an image's metadata as well
+        as optionally the image_data itself
         """
-        if 'image' not in image_metadata.keys():
-            image_metadata = dict(image=image_metadata)
-        body = json.dumps(image_metadata)
-        res = self.do_request("POST", "/images", body)
-        # Parallax returns a JSONified dict(image=image_info)
+        if not image_data and 'location' not in image_meta.keys():
+            raise exception.Invalid("You must either specify a location "
+                                    "for the image or supply the actual "
+                                    "image data when adding an image to "
+                                    "Glance")
+        body = image_data
+        headers = util.image_meta_to_http_headers(image_meta)
+        
+        res = self.do_request("POST", "/images", body, headers)
+        # Registry returns a JSONified dict(image=image_info)
         data = json.loads(res.read())
         return data['image']['id']
 
     def update_image(self, image_id, image_metadata):
         """
-        Updates Parallax's information about an image
+        Updates Glance's information about an image
         """
         if 'image' not in image_metadata.keys():
             image_metadata = dict(image=image_metadata)
@@ -243,7 +261,7 @@ class ParallaxClient(BaseClient):
 
     def delete_image(self, image_id):
         """
-        Deletes Parallax's information about an image
+        Deletes Glance's information about an image
         """
         self.do_request("DELETE", "/images/%s" % image_id)
         return True

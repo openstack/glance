@@ -21,8 +21,8 @@ import stubout
 import unittest
 import urlparse
 
-from glance.teller.backends.swift import SwiftBackend
-from glance.teller.backends import Backend, BackendException, get_from_backend
+from glance.store.swift import SwiftBackend
+from glance.store import Backend, BackendException, get_from_backend
 from tests import stubs
 
 Backend.CHUNKSIZE = 2
@@ -39,19 +39,23 @@ class TestBackend(unittest.TestCase):
 
 class TestFilesystemBackend(TestBackend):
 
+    def setUp(self):
+        """Establish a clean test environment"""
+        stubs.stub_out_filesystem_backend()
+
+    def tearDown(self):
+        """Clear the test environment"""
+        stubs.clean_out_fake_filesystem_backend()
+
     def test_get(self):
-        class FakeFile(object):
-            def __enter__(self, *args, **kwargs):
-                return StringIO('fakedata')
-            def __exit__(self, *args, **kwargs):
-                pass
 
-        fetcher = get_from_backend("file:///path/to/file.tar.gz",
-                                   expected_size=8,
-                                   opener=lambda _: FakeFile())
+        fetcher = get_from_backend("file:///tmp/glance-tests/2",
+                                   expected_size=19)
 
-        chunks = [c for c in fetcher]
-        self.assertEqual(chunks, ["fa", "ke", "da", "ta"])
+        data = ""
+        for chunk in fetcher:
+            data += chunk
+        self.assertEqual(data, "chunk00000remainder")
 
 
 class TestHTTPBackend(TestBackend):
@@ -122,6 +126,3 @@ class TestSwiftBackend(TestBackend):
         self.assertEqual(authurl, 'https://localhost/v1.0')
         self.assertEqual(container, 'container1')
         self.assertEqual(obj, 'file.tar.gz')
-
-
-

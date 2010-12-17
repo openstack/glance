@@ -23,20 +23,21 @@ import os
 import shutil
 import StringIO
 import sys
-import gzip
 
 import stubout
 import webob
 
 from glance.common import exception
-from glance.parallax import controllers as parallax_controllers
-from glance.teller import controllers as teller_controllers
-import glance.teller.backends
-import glance.teller.backends.swift
-import glance.parallax.db.sqlalchemy.api
+from glance.registry import controllers as registry_controllers
+from glance import server
+import glance.store
+import glance.store.filesystem
+import glance.store.http
+import glance.store.swift
+import glance.registry.db.sqlalchemy.api
 
 
-FAKE_FILESYSTEM_ROOTDIR = os.path.join('/tmp', 'glance-tests')
+FAKE_FILESYSTEM_ROOTDIR = os.path.join('//tmp', 'glance-tests')
 
 
 def stub_out_http_backend(stubs):
@@ -80,79 +81,32 @@ def clean_out_fake_filesystem_backend():
         shutil.rmtree(FAKE_FILESYSTEM_ROOTDIR, ignore_errors=True)
 
 
-def stub_out_filesystem_backend(stubs):
+def stub_out_filesystem_backend():
     """
-    Stubs out the Filesystem Teller service to return fake
-    gzipped image data from files.
+    Stubs out the Filesystem Glance service to return fake
+    pped image data from files.
 
-    We establish a few fake images in a directory under /tmp/glance-tests
+    We establish a few fake images in a directory under //tmp/glance-tests
     and ensure that this directory contains the following files:
 
-        /acct/2.gz.0 <-- zipped tarfile containing "chunk0"
-        /acct/2.gz.1 <-- zipped tarfile containing "chunk42"
+        //tmp/glance-tests/2 <-- file containing "chunk00000remainder"
 
     The stubbed service yields the data in the above files.
 
-    :param stubs: Set of stubout stubs
-
     """
-
-    class FakeFilesystemBackend(object):
-
-        CHUNKSIZE = 100
-
-        @classmethod
-        def get(cls, parsed_uri, expected_size, opener=None):
-            filepath = os.path.join('/',
-                                    parsed_uri.netloc.lstrip('/'),
-                                    parsed_uri.path.strip(os.path.sep))
-            if os.path.exists(filepath):
-                f = gzip.open(filepath, 'rb')
-                data = f.read()
-                f.close()
-                return data
-            else:
-                raise exception.NotFound("File %s does not exist" % filepath) 
-
-        @classmethod
-        def delete(self, parsed_uri):
-            filepath = os.path.join('/',
-                                    parsed_uri.netloc.lstrip('/'),
-                                    parsed_uri.path.strip(os.path.sep))
-            if os.path.exists(filepath):
-                try:
-                    os.unlink(filepath)
-                except OSError:
-                    raise exception.NotAuthorized("You cannot delete file %s" %
-                                                  filepath)
-            else:
-                raise exception.NotFound("File %s does not exist" % filepath) 
 
     # Establish a clean faked filesystem with dummy images
     if os.path.exists(FAKE_FILESYSTEM_ROOTDIR):
         shutil.rmtree(FAKE_FILESYSTEM_ROOTDIR, ignore_errors=True)
     os.mkdir(FAKE_FILESYSTEM_ROOTDIR)
-    os.mkdir(os.path.join(FAKE_FILESYSTEM_ROOTDIR, 'acct'))
 
-    f = gzip.open(os.path.join(FAKE_FILESYSTEM_ROOTDIR, 'acct', '2.gz.0'),
-                  "wb")
-    f.write("chunk0")
+    f = open(os.path.join(FAKE_FILESYSTEM_ROOTDIR, '2'), "wb")
+    f.write("chunk00000remainder")
     f.close()
-
-    f = gzip.open(os.path.join(FAKE_FILESYSTEM_ROOTDIR, 'acct', '2.gz.1'),
-                  "wb")
-    f.write("chunk42")
-    f.close()
-
-    fake_filesystem_backend = FakeFilesystemBackend()
-    stubs.Set(glance.teller.backends.FilesystemBackend, 'get',
-              fake_filesystem_backend.get)
-    stubs.Set(glance.teller.backends.FilesystemBackend, 'delete',
-              fake_filesystem_backend.delete)
 
 
 def stub_out_swift_backend(stubs):
-    """Stubs out the Swift Teller backend with fake data
+    """Stubs out the Swift Glance backend with fake data
     and calls.
 
     The stubbed swift backend provides back an iterator over
@@ -173,7 +127,7 @@ def stub_out_swift_backend(stubs):
 
         @classmethod
         def get(cls, parsed_uri, expected_size, conn_class=None):
-            SwiftBackend = glance.teller.backends.swift.SwiftBackend
+            SwiftBackend = glance.store.swift.SwiftBackend
 
             # raise BackendException if URI is bad.
             (user, key, authurl, container, obj) = \
@@ -186,14 +140,14 @@ def stub_out_swift_backend(stubs):
             return chunk_it()
 
     fake_swift_backend = FakeSwiftBackend()
-    stubs.Set(glance.teller.backends.swift.SwiftBackend, 'get',
+    stubs.Set(glance.store.swift.SwiftBackend, 'get',
               fake_swift_backend.get)
 
 
-def stub_out_parallax(stubs):
-    """Stubs out the Parallax registry with fake data returns.
+def stub_out_registry(stubs):
+    """Stubs out the Registry registry with fake data returns.
 
-    The stubbed Parallax always returns the following fixture::
+    The stubbed Registry always returns the following fixture::
 
         {'files': [
           {'location': 'file:///chunk0', 'size': 12345},
@@ -203,7 +157,7 @@ def stub_out_parallax(stubs):
     :param stubs: Set of stubout stubs
 
     """
-    class FakeParallax(object):
+    class FakeRegistry(object):
 
         DATA = \
             {'files': [
@@ -215,19 +169,19 @@ def stub_out_parallax(stubs):
         def lookup(cls, _parsed_uri):
             return cls.DATA
 
-    fake_parallax_registry = FakeParallax()
-    stubs.Set(glance.teller.registries.Parallax, 'lookup',
-              fake_parallax_registry.lookup)
+    fake_registry_registry = FakeRegistry()
+    stubs.Set(glance.store.registries.Registry, 'lookup',
+              fake_registry_registry.lookup)
 
 
-def stub_out_parallax_and_teller_server(stubs):
+def stub_out_registry_and_store_server(stubs):
     """
     Mocks calls to 127.0.0.1 on 9191 and 9292 for testing so
-    that a real Teller server does not need to be up and
+    that a real Glance server does not need to be up and
     running
     """
 
-    class FakeParallaxConnection(object):
+    class FakeRegistryConnection(object):
 
         def __init__(self, *args, **kwargs):
             pass
@@ -245,7 +199,7 @@ def stub_out_parallax_and_teller_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            res = self.req.get_response(parallax_controllers.API())
+            res = self.req.get_response(registry_controllers.API())
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():
@@ -254,7 +208,7 @@ def stub_out_parallax_and_teller_server(stubs):
             setattr(res, 'read', fake_reader)
             return res
 
-    class FakeTellerConnection(object):
+    class FakeGlanceConnection(object):
 
         def __init__(self, *args, **kwargs):
             pass
@@ -264,6 +218,9 @@ def stub_out_parallax_and_teller_server(stubs):
 
         def close(self):
             return True
+        
+        def putheader(self, k, v):
+            self.req.headers[k] = v
 
         def request(self, method, url, body=None):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
@@ -272,7 +229,7 @@ def stub_out_parallax_and_teller_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            res = self.req.get_response(teller_controllers.API())
+            res = self.req.get_response(server.API())
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():
@@ -290,10 +247,10 @@ def stub_out_parallax_and_teller_server(stubs):
 
         if (client.port == DEFAULT_TELLER_PORT and
             client.netloc == '127.0.0.1'):
-            return FakeTellerConnection
+            return FakeGlanceConnection
         elif (client.port == DEFAULT_PARALLAX_PORT and
               client.netloc == '127.0.0.1'):
-            return FakeParallaxConnection
+            return FakeRegistryConnection
         else:
             try:
                 connection_type = {'http': httplib.HTTPConnection,
@@ -304,13 +261,18 @@ def stub_out_parallax_and_teller_server(stubs):
                 raise UnsupportedProtocolError("Unsupported protocol %s. Unable "
                                                " to connect to server."
                                                % self.protocol)
+    def fake_image_iter(self):
+        for i in self.response.app_iter:
+            yield i
 
     stubs.Set(glance.client.BaseClient, 'get_connection_type',
               fake_get_connection_type)
+    stubs.Set(glance.client.ImageBodyIterator, '__iter__',
+              fake_image_iter)
 
 
-def stub_out_parallax_db_image_api(stubs):
-    """Stubs out the database set/fetch API calls for Parallax
+def stub_out_registry_db_image_api(stubs):
+    """Stubs out the database set/fetch API calls for Registry
     so the calls are routed to an in-memory dict. This helps us
     avoid having to manually clear or flush the SQLite database.
 
@@ -325,32 +287,26 @@ def stub_out_parallax_db_image_api(stubs):
             {'id': 1,
                 'name': 'fake image #1',
                 'status': 'available',
-                'image_type': 'kernel',
+                'type': 'kernel',
                 'is_public': False,
                 'created_at': datetime.datetime.utcnow(),
                 'updated_at': datetime.datetime.utcnow(),
                 'deleted_at': None,
                 'deleted': False,
-                'files': [
-                    {"location": "swift://user:passwd@acct/container/obj.tar.gz.0",
-                     "size": 6},
-                    {"location": "swift://user:passwd@acct/container/obj.tar.gz.1",
-                     "size": 7}],
+                'size': 13,
+                'location': "swift://user:passwd@acct/container/obj.tar.0",
                 'properties': []},
             {'id': 2,
                 'name': 'fake image #2',
                 'status': 'available',
-                'image_type': 'kernel',
+                'type': 'kernel',
                 'is_public': True,
                 'created_at': datetime.datetime.utcnow(),
                 'updated_at': datetime.datetime.utcnow(),
                 'deleted_at': None,
                 'deleted': False,
-                'files': [
-                    {"location": "file://tmp/glance-tests/acct/2.gz.0",
-                     "size": 6},
-                    {"location": "file://tmp/glance-tests/acct/2.gz.1",
-                     "size": 7}],
+                'size': 19,
+                'location': "file:///tmp/glance-tests/2",
                 'properties': []}]
 
         VALID_STATUSES = ('available', 'disabled', 'pending')
@@ -375,17 +331,25 @@ def stub_out_parallax_db_image_api(stubs):
                                             values['status'])
 
             values['deleted'] = False
-            values['files'] = values.get('files', [])
-            values['properties'] = values.get('properties', [])
+            values['properties'] = values.get('properties', {})
             values['created_at'] = datetime.datetime.utcnow() 
             values['updated_at'] = datetime.datetime.utcnow()
             values['deleted_at'] = None
 
-            for p in values['properties']:
-                p['deleted'] = False
-                p['created_at'] = datetime.datetime.utcnow() 
-                p['updated_at'] = datetime.datetime.utcnow()
-                p['deleted_at'] = None
+            props = []
+
+            if 'properties' in values.keys():
+                for k,v in values['properties'].iteritems():
+                    p = {}
+                    p['key'] = k
+                    p['value'] = v
+                    p['deleted'] = False
+                    p['created_at'] = datetime.datetime.utcnow() 
+                    p['updated_at'] = datetime.datetime.utcnow()
+                    p['deleted_at'] = None
+                    props.append(p)
+
+            values['properties'] = props
             
             self.next_id += 1
             self.images.append(values)
@@ -416,13 +380,13 @@ def stub_out_parallax_db_image_api(stubs):
                     if f['is_public'] == public]
 
     fake_datastore = FakeDatastore()
-    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_create',
+    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_create',
               fake_datastore.image_create)
-    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_update',
+    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_update',
               fake_datastore.image_update)
-    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_destroy',
+    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_destroy',
               fake_datastore.image_destroy)
-    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_get',
+    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_get',
               fake_datastore.image_get)
-    stubs.Set(glance.parallax.db.sqlalchemy.api, 'image_get_all_public',
+    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_get_all_public',
               fake_datastore.image_get_all_public)
