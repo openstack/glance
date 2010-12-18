@@ -69,7 +69,6 @@ def image_get(context, image_id):
     session = get_session()
     try:
         return session.query(models.Image
-                     ).options(joinedload(models.Image.files)
                      ).options(joinedload(models.Image.properties)
                      ).filter_by(deleted=_deleted(context)
                      ).filter_by(id=image_id
@@ -82,7 +81,6 @@ def image_get(context, image_id):
 def image_get_all(context):
     session = get_session()
     return session.query(models.Image
-                 ).options(joinedload(models.Image.files)
                  ).options(joinedload(models.Image.properties)
                  ).filter_by(deleted=_deleted(context)
                  ).all()
@@ -91,7 +89,6 @@ def image_get_all(context):
 def image_get_all_public(context, public):
     session = get_session()
     return session.query(models.Image
-                 ).options(joinedload(models.Image.files)
                  ).options(joinedload(models.Image.properties)
                  ).filter_by(deleted=_deleted(context)
                  ).filter_by(is_public=public
