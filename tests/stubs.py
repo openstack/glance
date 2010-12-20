@@ -28,7 +28,7 @@ import stubout
 import webob
 
 from glance.common import exception
-from glance.registry import controllers as registry_controllers
+from glance.registry import server as rserver
 from glance import server
 import glance.store
 import glance.store.filesystem
@@ -199,7 +199,7 @@ def stub_out_registry_and_store_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            res = self.req.get_response(registry_controllers.API())
+            res = self.req.get_response(rserver.API())
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():

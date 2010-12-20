@@ -42,6 +42,8 @@ flags.DEFINE_bool('daemonize', False, 'daemonize this process')
 #              clutter.
 flags.DEFINE_bool('use_syslog', True, 'output to syslog when daemonizing')
 flags.DEFINE_string('logfile', None, 'log file to output to')
+flags.DEFINE_string('logdir',  None, 'directory to keep log files in '
+                                     '(will be prepended to $logfile)')
 flags.DEFINE_string('pidfile', None, 'pid file to output to')
 flags.DEFINE_string('working_directory', './', 'working directory...')
 flags.DEFINE_integer('uid', os.getuid(), 'uid under which to run')
@@ -54,11 +56,11 @@ def stop(pidfile):
     """
     # Get the pid from the pidfile
     try:
-        pid = int(open(pidfile,'r').read().strip())
+        pid = int(open(pidfile, 'r').read().strip())
     except IOError:
         message = "pidfile %s does not exist. Daemon not running?\n"
         sys.stderr.write(message % pidfile)
-        return # not an error in a restart
+        return
 
     # Try killing the daemon process
     try:
@@ -106,6 +108,7 @@ def serve(name, main):
 def daemonize(args, name, main):
     """Does the work of daemonizing the process"""
     logging.getLogger('amqplib').setLevel(logging.WARN)
+    files_to_keep = []
     if FLAGS.daemonize:
         logger = logging.getLogger()
         formatter = logging.Formatter(
@@ -114,12 +117,16 @@ def daemonize(args, name, main):
             syslog = logging.handlers.SysLogHandler(address='/dev/log')
             syslog.setFormatter(formatter)
             logger.addHandler(syslog)
+            files_to_keep.append(syslog.socket)
         else:
             if not FLAGS.logfile:
                 FLAGS.logfile = '%s.log' % name
+            if FLAGS.logdir:
+                FLAGS.logfile = os.path.join(FLAGS.logdir, FLAGS.logfile)
             logfile = logging.FileHandler(FLAGS.logfile)
             logfile.setFormatter(formatter)
             logger.addHandler(logfile)
+            files_to_keep.append(logfile.stream)
         stdin, stdout, stderr = None, None, None
     else:
         stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
@@ -139,6 +146,6 @@ def daemonize(args, name, main):
             stdout=stdout,
             stderr=stderr,
             uid=FLAGS.uid,
-            gid=FLAGS.gid
-            ):
+            gid=FLAGS.gid,
+            files_preserve=files_to_keep):
         main(args)
