@@ -70,6 +70,11 @@ class Invalid(Error):
     pass
 
 
+class BadInputError(Exception):
+    """Error resulting from a client sending bad input to a server"""
+    pass
+
+
 def wrap_exception(f):
     def _wrap(*args, **kw):
         try:

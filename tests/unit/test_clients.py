@@ -16,6 +16,7 @@
 #    under the License.
 
 import json
+import os
 import stubout
 import StringIO
 import unittest
@@ -24,8 +25,11 @@ import webob
 
 from glance import client
 from glance.registry import client as rclient
+from glance.common import flags
 from glance.common import exception
 from tests import stubs
+
+FLAGS = flags.FLAGS
 
 
 class TestBadClients(unittest.TestCase):
@@ -212,7 +216,7 @@ class TestRegistryClient(unittest.TestCase):
                    'location': "file:///tmp/glance-tests/2",
                   }
 
-        self.assertRaises(client.BadInputError,
+        self.assertRaises(exception.BadInputError,
                           self.client.add_image,
                           fixture)
 
@@ -279,10 +283,13 @@ class TestClient(unittest.TestCase):
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_filesystem_backend()
+        self.orig_filesystem_store_datadir = FLAGS.filesystem_store_datadir
+        FLAGS.filesystem_store_datadir = stubs.FAKE_FILESYSTEM_ROOTDIR
         self.client = client.Client()
 
     def tearDown(self):
         """Clear the test environment"""
+        FLAGS.filesystem_store_datadir = self.orig_filesystem_store_datadir
         stubs.clean_out_fake_filesystem_backend()
         self.stubs.UnsetAll()
 
@@ -479,6 +486,85 @@ class TestClient(unittest.TestCase):
         data = self.client.get_image_meta(new_id)
 
         self.assertEquals(data['status'], 'available')
+
+    def test_add_image_with_image_data_as_string(self):
+        """Tests can add image by passing image data as string"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'size': 19,
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'}
+                  }
+
+        image_data_fixture = r"chunk0000remainder"
+
+        new_id = self.client.add_image(fixture, image_data_fixture)
+
+        self.assertEquals(3, new_id)
+
+        new_meta, new_image_chunks = self.client.get_image(3)
+
+        new_image_data = ""
+        for image_chunk in new_image_chunks:
+            new_image_data += image_chunk
+
+        self.assertEquals(image_data_fixture, new_image_data)
+        for k,v in fixture.iteritems():
+            self.assertEquals(v, new_meta[k])
+
+    def test_add_image_with_image_data_as_file(self):
+        """Tests can add image by passing image data as file"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'size': 19,
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'}
+                  }
+
+        image_data_fixture = r"chunk0000remainder"
+
+        tmp_image_filepath = '/tmp/rubbish-image'
+
+        if os.path.exists(tmp_image_filepath):
+            os.unlink(tmp_image_filepath)
+
+        tmp_file = open(tmp_image_filepath, 'wb')
+        tmp_file.write(image_data_fixture)
+        tmp_file.close()
+
+        new_id = self.client.add_image(fixture, open(tmp_image_filepath))
+
+        self.assertEquals(3, new_id)
+
+        if os.path.exists(tmp_image_filepath):
+            os.unlink(tmp_image_filepath)
+
+        new_meta, new_image_chunks = self.client.get_image(3)
+
+        new_image_data = ""
+        for image_chunk in new_image_chunks:
+            new_image_data += image_chunk
+
+        self.assertEquals(image_data_fixture, new_image_data)
+        for k,v in fixture.iteritems():
+            self.assertEquals(v, new_meta[k])
+
+    def test_add_image_with_bad_store(self):
+        """Tests BadRequest raised when supplying bad store name in meta"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'size': 19,
+                   'store': 'bad',
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'}
+                  }
+
+        image_data_fixture = r"chunk0000remainder"
+
+        self.assertRaises(exception.BadInputError,
+                          self.client.add_image,
+                          fixture,
+                          image_data_fixture)
 
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
