@@ -218,7 +218,6 @@ class Controller(wsgi.Controller):
 
         image_meta['status'] = image_status
         image_meta['store'] = image_store
-
         try:
             image_meta = registry.add_image_metadata(image_meta)
 

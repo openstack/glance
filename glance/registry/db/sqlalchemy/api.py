@@ -52,10 +52,19 @@ def _deleted(context):
 
 
 def image_create(_context, values):
+    values['size'] = int(values['size'])
+    values['is_public'] = bool(values['size'])
+    properties = values.pop('properties', {})
+
     image_ref = models.Image()
     image_ref.update(values)
     image_ref.save()
-    return image_ref
+ 
+    for key, value in properties.iteritems():
+        prop_values = {'image_id': image_ref.id, 'key': key, 'value': value}
+        image_property_create(_context, prop_values)
+ 
+    return image_get(_context, image_ref.id)
 
 
 def image_destroy(_context, image_id):
@@ -102,9 +111,17 @@ def image_get_by_str(context, str_id):
 def image_update(_context, image_id, values):
     session = get_session()
     with session.begin():
+        values['size'] = int(values['size'])
+        values['is_public'] = bool(values['size'])
+        properties = values.pop('properties', {})
+
         image_ref = models.Image.find(image_id, session=session)
         image_ref.update(values)
         image_ref.save(session=session)
+
+        for key, value in properties.iteritems():
+            prop_values = {'image_id': image_ref.id, 'key': key, 'value': value}
+            image_property_create(_context, prop_values)
 
 
 ###################
