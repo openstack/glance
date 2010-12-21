@@ -115,7 +115,12 @@ class FilesystemBackend(glance.store.Backend):
         :retval The location that was written, with file:// scheme prepended
         """
         
-        filepath = os.path.join(FLAGS.filesystem_store_datadir, str(id))
+        datadir = FLAGS.filesystem_store_datadir
+
+        if not os.path.exists(datadir):
+            os.makedirs(datadir)
+        
+        filepath = os.path.join(datadir, str(id))
 
         if os.path.exists(filepath):
             raise exception.Duplicate("Image file %s already exists!"

@@ -137,18 +137,17 @@ class BaseClient(object):
             if status_code == httplib.OK:
                 return res
             elif status_code == httplib.UNAUTHORIZED:
-                raise exception.NotAuthorized(res.body)
+                raise exception.NotAuthorized
             elif status_code == httplib.FORBIDDEN:
-                raise exception.NotAuthorized(res.body)
+                raise exception.NotAuthorized
             elif status_code == httplib.NOT_FOUND:
-                raise exception.NotFound(res.body)
+                raise exception.NotFound
             elif status_code == httplib.CONFLICT:
-                raise exception.Duplicate(res.body)
+                raise exception.Duplicate
             elif status_code == httplib.BAD_REQUEST:
-                raise exception.BadInputError(res.body)
+                raise exception.BadInputError
             else:
-                raise Exception("Unknown error occurred! %d (%s)"
-                                % (status_code, res.body))
+                raise Exception("Unknown error occurred! %d" % status_code)
 
         except (socket.error, IOError), e:
             raise ClientConnectionError("Unable to connect to "
