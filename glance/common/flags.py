@@ -173,3 +173,5 @@ DEFINE_string('sql_connection',
               'sqlite:///%s/glance.sqlite' % os.path.abspath("./"),
               'connection string for sql database')
 DEFINE_bool('verbose', False, 'show debug output')
+DEFINE_string('default_store', 'file',
+              'Default storage backend. Default: "file"')

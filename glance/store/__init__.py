@@ -66,7 +66,7 @@ def get_backend_class(backend):
     try:
         return BACKENDS[backend]
     except KeyError:
-        raise UnsupportedBackend("No backend found for '%s'" % scheme)
+        raise UnsupportedBackend("No backend found for '%s'" % backend)
 
 
 def get_from_backend(uri, **kwargs):

@@ -37,7 +37,7 @@ import glance.store.swift
 import glance.registry.db.sqlalchemy.api
 
 
-FAKE_FILESYSTEM_ROOTDIR = os.path.join('//tmp', 'glance-tests')
+FAKE_FILESYSTEM_ROOTDIR = os.path.join('/tmp', 'glance-tests')
 
 
 def stub_out_http_backend(stubs):
@@ -356,6 +356,22 @@ def stub_out_registry_db_image_api(stubs):
             return values
 
         def image_update(self, _context, image_id, values):
+
+            props = []
+
+            if 'properties' in values.keys():
+                for k,v in values['properties'].iteritems():
+                    p = {}
+                    p['key'] = k
+                    p['value'] = v
+                    p['deleted'] = False
+                    p['created_at'] = datetime.datetime.utcnow() 
+                    p['updated_at'] = datetime.datetime.utcnow()
+                    p['deleted_at'] = None
+                    props.append(p)
+
+            values['properties'] = props
+
             image = self.image_get(_context, image_id)
             image.update(values)
             return image

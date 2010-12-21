@@ -46,11 +46,6 @@ class ClientConnectionError(Exception):
     pass
 
 
-class BadInputError(Exception):
-    """Error resulting from a client sending bad input to a server"""
-    pass
-
-
 class ImageBodyIterator(object):
 
     """
@@ -150,7 +145,7 @@ class BaseClient(object):
             elif status_code == httplib.CONFLICT:
                 raise exception.Duplicate
             elif status_code == httplib.BAD_REQUEST:
-                raise BadInputError
+                raise exception.BadInputError
             else:
                 raise Exception("Unknown error occurred! %d" % status_code)
 
@@ -235,17 +230,33 @@ class Client(BaseClient):
         """
         Tells Glance about an image's metadata as well
         as optionally the image_data itself
+
+        :param image_meta: Mapping of information about the
+                           image
+        :param image_data: Optional string of raw image data
+                           or file-like object that can be
+                           used to read the image data
+
+        :retval The newly-stored image's metadata.
         """
         if not image_data and 'location' not in image_meta.keys():
             raise exception.Invalid("You must either specify a location "
                                     "for the image or supply the actual "
                                     "image data when adding an image to "
                                     "Glance")
-        body = image_data
         headers = util.image_meta_to_http_headers(image_meta)
+        if image_data:
+            if hasattr(image_data, 'read'):
+                # TODO(jaypipes): This is far from efficient. Implement
+                # chunked transfer encoding if size is not in image_meta
+                body = image_data.read()
+            else:
+                body = image_data
+            headers['content-type'] = 'application/octet-stream'
+        else:
+            body = None
         
         res = self.do_request("POST", "/images", body, headers)
-        # Registry returns a JSONified dict(image=image_info)
         data = json.loads(res.read())
         return data['image']['id']
 
