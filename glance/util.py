@@ -18,7 +18,7 @@
 """
 A few utility routines used throughout Glance
 """
-
+from datetime import datetime
 
 def image_meta_to_http_headers(image_meta):
     """
@@ -76,3 +76,13 @@ def get_image_meta_from_headers(response):
             result[field_name] = value
     result['properties'] = properties
     return result
+
+def datetime_from_iso8601(datetime_str):
+    """
+    Returns a datetime object from a supplied sting that is a valid ISO 8601
+    timestamp
+
+    :param datetime_str: ISO 8601 datetime string
+    """
+    return datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S.%f")
+

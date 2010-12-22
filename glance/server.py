@@ -225,6 +225,7 @@ class Controller(wsgi.Controller):
                 try:
                     location = store.add(image_meta['id'], req.body)
                 except exception.Duplicate, e:
+                    logging.error("Error adding image to store: %s", str(e))
                     return HTTPConflict(str(e), request=req)
                 image_meta['status'] = 'available'
                 image_meta['location'] = location
@@ -233,8 +234,10 @@ class Controller(wsgi.Controller):
             return dict(image=image_meta)
 
         except exception.Duplicate:
-            return HTTPConflict("An image with identifier %s already exists"
-                                % image_meta['id'], request=req)
+            msg = "An image with identifier %s already exists"\
+                  % image_meta['id']
+            logging.error(msg)
+            return HTTPConflict(msg, request=req)
         except exception.Invalid:
             return HTTPBadRequest()
 

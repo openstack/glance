@@ -25,6 +25,7 @@ from glance.common import exception
 from glance.common import flags
 from glance.common.db.sqlalchemy.session import get_session
 from glance.registry.db.sqlalchemy import models
+from glance.util import datetime_from_iso8601
 from sqlalchemy.orm import exc
 
 #from sqlalchemy.orm import joinedload_all
@@ -52,19 +53,7 @@ def _deleted(context):
 
 
 def image_create(_context, values):
-    values['size'] = int(values['size'])
-    values['is_public'] = bool(values.get('is_public', False))
-    properties = values.pop('properties', {})
-
-    image_ref = models.Image()
-    image_ref.update(values)
-    image_ref.save()
- 
-    for key, value in properties.iteritems():
-        prop_values = {'image_id': image_ref.id, 'key': key, 'value': value}
-        image_property_create(_context, prop_values)
- 
-    return image_get(_context, image_ref.id)
+    return _image_update(_context, values, None)
 
 
 def image_destroy(_context, image_id):
@@ -109,13 +98,29 @@ def image_get_by_str(context, str_id):
 
 
 def image_update(_context, image_id, values):
+    return _image_update(_context, values, image_id)
+
+
+def _image_update(_context, values, image_id):
+    """ Used internally by image_create and image_update
+
+    :param image_id: If None, create the image, otherwise, find and update it
+    """
     session = get_session()
     with session.begin():
+        for attr in ('created_at', 'updated_at', 'deleted_at'):
+            if attr in values and values[attr]:
+                values[attr] = datetime_from_iso8601(values[attr])
+
         values['size'] = int(values['size'])
         values['is_public'] = bool(values.get('is_public', False))
         properties = values.pop('properties', {})
 
-        image_ref = models.Image.find(image_id, session=session)
+        if image_id:
+            image_ref = models.Image.find(image_id, session=session)
+        else:
+            image_ref = models.Image()
+
         image_ref.update(values)
         image_ref.save(session=session)
 
@@ -123,6 +128,7 @@ def image_update(_context, image_id, values):
             prop_values = {'image_id': image_ref.id, 'key': key, 'value': value}
             image_property_create(_context, prop_values)
 
+    return image_get(_context, image_ref.id)
 
 ###################
 
