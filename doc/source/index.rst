@@ -41,7 +41,6 @@ other ways to interact with the community.
 
 .. _`OpenStack wiki`: http://wiki.openstack.org
 
-
 Concepts
 ========
 

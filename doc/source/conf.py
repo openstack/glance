@@ -31,8 +31,7 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.append([os.path.abspath('../teller'),
-    os.path.abspath('../parallax'),
+sys.path.append([os.path.abspath('../glance'),
     os.path.abspath('..'),
     os.path.abspath('../bin')
     ])
@@ -45,7 +44,11 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.todo',
 todo_include_todos = True
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = []
+if os.getenv('HUDSON_PUBLISH_DOCS'):
+  templates_path = ['_ga', '_templates']
+else:
+  templates_path = ['_templates']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -104,14 +107,15 @@ show_authors = True
 pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
-modindex_common_prefix = ['parallax.','teller.']
+modindex_common_prefix = ['glance.']
 
 
 # -- Options for HTML output ---------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'default'
+html_theme_path = ["."]
+html_theme = '_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -119,7 +123,7 @@ html_theme = 'default'
 #html_theme_options = {}
 
 # Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+#html_theme_path = ['_theme']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
