@@ -45,6 +45,9 @@ class ModelBase(object):
     __table_args__ = {'mysql_engine': 'InnoDB'}
     __table_initialized__ = False
     __prefix__ = 'none'
+    __protected_attributes__ = set([
+        "created_at", "updated_at", "deleted_at", "deleted"])
+
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.datetime.utcnow)
     deleted_at = Column(DateTime)
@@ -160,23 +163,6 @@ class Image(BASE, ModelBase):
             raise exception.Invalid("Invalid status '%s' for image." % status)
         return status
     
-    # TODO(sirp): should these be stored as properties?
-    #user_id = Column(String(255))
-    #project_id = Column(String(255))
-    #arch = Column(String(255))
-    #default_kernel_id = Column(String(255))
-    #default_ramdisk_id = Column(String(255))
-    #
-    #@validates('default_kernel_id')
-    #def validate_kernel_id(self, key, val):
-    #    if val != 'machine':
-    #        assert(val is None)
-    # 
-    #@validates('default_ramdisk_id')
-    #def validate_ramdisk_id(self, key, val):
-    #    if val != 'machine':
-    #        assert(val is None)
-
 
 class ImageProperty(BASE, ModelBase):
     """Represents an image properties in the datastore"""

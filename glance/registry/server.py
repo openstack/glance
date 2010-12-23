@@ -28,12 +28,11 @@ from glance.registry import db
 
 
 class ImageController(wsgi.Controller):
-
     """Image Controller """
-    
+
     def index(self, req):
         """Return basic information for all public, non-deleted images
-        
+
         :param req: the Request object coming from the wsgi layer
         :retval a mapping of the following form::
 
@@ -42,7 +41,7 @@ class ImageController(wsgi.Controller):
         Where image_list is a sequence of mappings::
 
             {'id': image_id, 'name': image_name}
-        
+
         """
         images = db.image_get_all_public(None)
         image_dicts = [dict(id=i['id'], name=i['name']) for i in images]
@@ -50,7 +49,7 @@ class ImageController(wsgi.Controller):
 
     def detail(self, req):
         """Return detailed information for all public, non-deleted images
-        
+
         :param req: the Request object coming from the wsgi layer
         :retval a mapping of the following form::
 
@@ -58,7 +57,7 @@ class ImageController(wsgi.Controller):
 
         Where image_list is a sequence of mappings containing
         all image model fields.
-        
+
         """
         images = db.image_get_all_public(None)
         image_dicts = [make_image_dict(i) for i in images]
@@ -70,7 +69,7 @@ class ImageController(wsgi.Controller):
             image = db.image_get(None, id)
         except exception.NotFound:
             raise exc.HTTPNotFound()
-        
+
         return dict(image=make_image_dict(image))
 
     def delete(self, req, id):
@@ -153,7 +152,7 @@ def make_image_dict(image):
     Create a dict representation of an image which we can use to
     serialize the image.
     """
-    
+
     def _fetch_attrs(d, attrs):
         return dict([(a, d[a]) for a in attrs
                     if a in d.keys()])

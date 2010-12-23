@@ -52,19 +52,7 @@ def _deleted(context):
 
 
 def image_create(_context, values):
-    values['size'] = int(values['size'])
-    values['is_public'] = bool(values.get('is_public', False))
-    properties = values.pop('properties', {})
-
-    image_ref = models.Image()
-    image_ref.update(values)
-    image_ref.save()
- 
-    for key, value in properties.iteritems():
-        prop_values = {'image_id': image_ref.id, 'key': key, 'value': value}
-        image_property_create(_context, prop_values)
- 
-    return image_get(_context, image_ref.id)
+    return _image_update(_context, values, None)
 
 
 def image_destroy(_context, image_id):
@@ -109,13 +97,47 @@ def image_get_by_str(context, str_id):
 
 
 def image_update(_context, image_id, values):
+    return _image_update(_context, values, image_id)
+
+
+###################
+
+
+def image_property_create(_context, values):
+    _drop_protected_attrs(models.Image, values)
+    image_property_ref = models.ImageProperty()
+    image_property_ref.update(values)
+    image_property_ref.save()
+    return image_property_ref
+
+
+def _drop_protected_attrs(model_class, values):
+    """Removed protected attributes from values dictionary using the models
+    __protected_attributes__ field.
+    """
+    for attr in model_class.__protected_attributes__:
+        if attr in values:
+            del values[attr]
+
+
+def _image_update(_context, values, image_id):
+    """Used internally by image_create and image_update
+
+    :param image_id: If None, create the image, otherwise, find and update it
+    """
     session = get_session()
     with session.begin():
+        _drop_protected_attrs(models.Image, values)
+
         values['size'] = int(values['size'])
         values['is_public'] = bool(values.get('is_public', False))
         properties = values.pop('properties', {})
 
-        image_ref = models.Image.find(image_id, session=session)
+        if image_id:
+            image_ref = models.Image.find(image_id, session=session)
+        else:
+            image_ref = models.Image()
+
         image_ref.update(values)
         image_ref.save(session=session)
 
@@ -123,22 +145,4 @@ def image_update(_context, image_id, values):
             prop_values = {'image_id': image_ref.id, 'key': key, 'value': value}
             image_property_create(_context, prop_values)
 
-
-###################
-
-
-def image_file_create(_context, values):
-    image_file_ref = models.ImageFile()
-    image_file_ref.update(values)
-    image_file_ref.save()
-    return image_file_ref
-
-
-###################
-
-
-def image_property_create(_context, values):
-    image_property_ref = models.ImageProperty()
-    image_property_ref.update(values)
-    image_property_ref.save()
-    return image_property_ref
+    return image_get(_context, image_ref.id)

@@ -114,7 +114,7 @@ class SwiftBackend(glance.store.Backend):
 
 def get_connection_class(conn_class):
     if conn_class:
-        pass # Use the provided conn_class
+        pass  # Use the provided conn_class
     else:
         # NOTE(sirp): A standard import statement won't work here because
         # this file ('swift.py') is shadowing the swift module, and since

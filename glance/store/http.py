@@ -29,7 +29,7 @@ class HTTPBackend(glance.store.Backend):
         """
 
         if conn_class:
-            pass # use the conn_class passed in
+            pass  # use the conn_class passed in
         elif parsed_uri.scheme == "http":
             conn_class = httplib.HTTPConnection
         elif parsed_uri.scheme == "https":
