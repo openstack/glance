@@ -24,7 +24,7 @@ A host that runs the `bin/glance-api` service is said to be a *Glance API
 Server*.
 
 Assume there is a Glance API server running at the URL
-http://glance.openstack.org. 
+http://glance.example.com. 
 
 Let's walk through how a user might request information from this server.
 
@@ -34,12 +34,12 @@ Requesting a List of Public VM Images
 We want to see a list of available virtual machine images that the Glance
 server knows about.
 
-We issue a `GET` request to http://glance.openstack.org/images/ to retrieve
+We issue a `GET` request to http://glance.example.com/images/ to retrieve
 this list of available *public* images. The data is returned as a JSON-encoded
 mapping in the following format::
 
   {'images': [
-    {'uri': 'http://glance.openstack.org/images/1',
+    {'uri': 'http://glance.example.com/images/1',
      'name': 'Ubuntu 10.04 Plain',
      'type': 'kernel',
      'size': '5368709120'}
@@ -56,12 +56,12 @@ Requesting Detailed Metadata on Public VM Images
 We want to see more detailed information on available virtual machine images
 that the Glance server knows about.
 
-We issue a `GET` request to http://glance.openstack.org/images/detail to
+We issue a `GET` request to http://glance.example.com/images/detail to
 retrieve this list of available *public* images. The data is returned as a
 JSON-encoded mapping in the following format::
 
   {'images': [
-    {'uri': 'http://glance.openstack.org/images/1',
+    {'uri': 'http://glance.example.com/images/1',
      'name': 'Ubuntu 10.04 Plain 5GB',
      'type': 'kernel',
      'size': '5368709120',
@@ -79,7 +79,7 @@ Notes:
  * All images returned from the above `GET` request are *public* images
  * All timestamps returned are in UTC
  * The `updated_at` timestamp is the timestamp when an image's metadata
-   was last updated, not it's image data, as all image data is immutable
+   was last updated, not its image data, as all image data is immutable
    once stored in Glance
  * The `properties` field is a mapping of free-form key/value pairs that
    have been saved with the image metadata
@@ -100,13 +100,13 @@ Continuing the example from above, in order to get metadata about the
 first public image returned, we can issue a `HEAD` request to the Glance
 server for the image's URI.
 
-We issue a `HEAD` request to http://glance.openstack.org/images/1 to
+We issue a `HEAD` request to http://glance.example.com/images/1 to
 retrieve complete metadata for that image. The metadata is returned as a
 set of HTTP headers that begin with the prefix `x-image-meta-`. The
 following shows an example of the HTTP headers returned from the above
 `HEAD` request::
 
-  x-image-meta-uri              http://glance.openstack.org/images/1
+  x-image-meta-uri              http://glance.example.com/images/1
   x-image-meta-name             Ubuntu 10.04 Plain 5GB
   x-image-meta-type             kernel
   x-image-meta-size             5368709120
@@ -122,7 +122,7 @@ Notes:
 
  * All timestamps returned are in UTC
  * The `x-image-meta-updated_at` timestamp is the timestamp when an
-   image's metadata was last updated, not it's image data, as all 
+   image's metadata was last updated, not its image data, as all 
    image data is immutable once stored in Glance
  * There may be multiple headers that begin with the prefix
    `x-image-meta-property-`.  These headers are free-form key/value pairs
@@ -145,7 +145,7 @@ Continuing the example from above, in order to get metadata about the
 first public image returned, we can issue a `HEAD` request to the Glance
 server for the image's URI.
 
-We issue a `GET` request to http://glance.openstack.org/images/1 to
+We issue a `GET` request to http://glance.example.com/images/1 to
 retrieve metadata for that image as well as the image itself encoded
 into the response body.
 
@@ -153,7 +153,7 @@ The metadata is returned as a set of HTTP headers that begin with the
 prefix `x-image-meta-`. The following shows an example of the HTTP headers
 returned from the above `GET` request::
 
-  x-image-meta-uri              http://glance.openstack.org/images/1
+  x-image-meta-uri              http://glance.example.com/images/1
   x-image-meta-name             Ubuntu 10.04 Plain 5GB
   x-image-meta-type             kernel
   x-image-meta-size             5368709120
@@ -169,7 +169,7 @@ Notes:
 
  * All timestamps returned are in UTC
  * The `x-image-meta-updated_at` timestamp is the timestamp when an
-   image's metadata was last updated, not it's image data, as all 
+   image's metadata was last updated, not its image data, as all 
    image data is immutable once stored in Glance
  * There may be multiple headers that begin with the prefix
    `x-image-meta-property-`.  These headers are free-form key/value pairs
@@ -194,10 +194,10 @@ wish to do two things:
 
 We can do the above two activities in a single call to the Glance API.
 Assuming, like in the examples above, that a Glance API server is running
-at `glance.openstack.org`, we issue a `POST` request to add an image to
+at `glance.example.com`, we issue a `POST` request to add an image to
 Glance::
 
-  POST http://glance.openstack.org/images/
+  POST http://glance.example.com/images/
 
 The metadata about the image is sent to Glance in HTTP headers. The body
 of the HTTP request to the Glance API will be the MIME-encoded disk

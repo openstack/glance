@@ -27,7 +27,7 @@ metadata about an image, change metadata about an image, remove images, and
 of course retrieve an image itself via this client class.
 
 Below are some examples of using Glance's Client class.  We assume that
-there is a Glance server running at the address `glance.openstack.org`
+there is a Glance server running at the address `glance.example.com`
 on port `9292`.
 
 Requesting a List of Public VM Images
@@ -40,7 +40,7 @@ Using Glance's Client, we can do this using the following code::
 
   from glance import client
 
-  c = client.Client("glance.openstack.org", 9292)
+  c = client.Client("glance.example.com", 9292)
 
   print c.get_images()
 
@@ -55,7 +55,7 @@ Using Glance's Client, we can do this using the following code::
 
   from glance import client
 
-  c = client.Client("glance.openstack.org", 9292)
+  c = client.Client("glance.example.com", 9292)
 
   print c.get_images_detailed()
 
@@ -76,9 +76,9 @@ first public image returned, we can use the following code::
 
   from glance import client
 
-  c = client.Client("glance.openstack.org", 9292)
+  c = client.Client("glance.example.com", 9292)
 
-  print c.get_image_meta("http://glance.openstack.org/images/1")
+  print c.get_image_meta("http://glance.example.com/images/1")
 
 
 Retrieving a Virtual Machine Image
@@ -97,9 +97,9 @@ first public image returned and its image data, we can use the following code::
 
   from glance import client
 
-  c = client.Client("glance.openstack.org", 9292)
+  c = client.Client("glance.example.com", 9292)
 
-  meta, image_file = c.get_image("http://glance.openstack.org/images/1")
+  meta, image_file = c.get_image("http://glance.example.com/images/1")
 
   print meta
 
@@ -124,7 +124,7 @@ wish to do two things:
 
 We can do the above two activities in a single call to the Glance client.
 Assuming, like in the examples above, that a Glance API server is running
-at `glance.openstack.org`, we issue a call to `glance.client.Client.add_image`.
+at `glance.example.com`, we issue a call to `glance.client.Client.add_image`.
 
 The method signature is as follows::
 
@@ -219,7 +219,7 @@ Glance::
 
   from glance.client import Client
 
-  c = Client("glance.openstack.org", 9292)
+  c = Client("glance.example.com", 9292)
 
   meta = {'name': 'Ubuntu 10.10 5G',
           'type': 'machine',
