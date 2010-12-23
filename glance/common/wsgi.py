@@ -21,6 +21,7 @@
 Utility methods for working with WSGI servers
 """
 
+import json
 import logging
 import sys
 import datetime
@@ -115,11 +116,11 @@ class Middleware(Application):
     behavior.
     """
 
-    def __init__(self, application): # pylint: disable-msg=W0231
+    def __init__(self, application):  # pylint: disable-msg=W0231
         self.application = application
 
     @webob.dec.wsgify
-    def __call__(self, req): # pylint: disable-msg=W0221
+    def __call__(self, req):  # pylint: disable-msg=W0221
         """Override to implement middleware behavior."""
         return self.application
 
@@ -237,7 +238,7 @@ class Controller(object):
         arg_dict['req'] = req
         result = method(**arg_dict)
         if type(result) is dict:
-            return self._serialize(result, req) 
+            return self._serialize(result, req)
         else:
             return result
 
@@ -282,7 +283,6 @@ class Serializer(object):
         return self._methods.get(mimetype, repr)(data)
 
     def _to_json(self, data):
-        import json
         def sanitizer(obj):
             if isinstance(obj, datetime.datetime):
                 return obj.isoformat()
@@ -320,7 +320,7 @@ class Serializer(object):
                 else:
                     node = self._to_xml_node(doc, metadata, k, v)
                     result.appendChild(node)
-        else: # atom
+        else:  # atom
             node = doc.createTextNode(str(data))
             result.appendChild(node)
         return result

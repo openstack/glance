@@ -57,10 +57,10 @@ class Controller(wsgi.Controller):
 
     """
     Main WSGI application controller for Glance.
-    
+
     The Glance API is a RESTful web service for image data. The API
     is as follows::
-        
+
         GET /images -- Returns a set of brief metadata about images
         GET /images/detail -- Returns a set of detailed metadata about
                               images
@@ -72,7 +72,7 @@ class Controller(wsgi.Controller):
                             image data is immutable once stored)
         DELETE /images/<ID> -- Delete the image with id <ID>
     """
-    
+
     def index(self, req):
         """
         Returns the following information for all public, available images:
@@ -81,7 +81,7 @@ class Controller(wsgi.Controller):
             * name -- The name of the image
             * size -- Size of image data in bytes
             * type -- One of 'kernel', 'ramdisk', 'raw', or 'machine'
-        
+
         :param request: The WSGI/Webob Request object
         :retval The response body is a mapping of the following form::
 
@@ -98,7 +98,7 @@ class Controller(wsgi.Controller):
     def detail(self, req):
         """
         Returns detailed information for all public, available images
-        
+
         :param request: The WSGI/Webob Request object
         :retval The response body is a mapping of the following form::
 

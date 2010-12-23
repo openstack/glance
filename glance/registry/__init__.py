@@ -17,7 +17,7 @@
 #    under the License.
 
 """
-Registry API 
+Registry API
 """
 
 from glance.registry import client

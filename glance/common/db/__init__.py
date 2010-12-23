@@ -19,4 +19,3 @@
 """
 DB abstraction for Nova and Glance
 """
-

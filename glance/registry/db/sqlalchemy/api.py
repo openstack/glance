@@ -25,7 +25,6 @@ from glance.common import exception
 from glance.common import flags
 from glance.common.db.sqlalchemy.session import get_session
 from glance.registry.db.sqlalchemy import models
-from glance.util import datetime_from_iso8601
 from sqlalchemy.orm import exc
 
 #from sqlalchemy.orm import joinedload_all
@@ -101,16 +100,34 @@ def image_update(_context, image_id, values):
     return _image_update(_context, values, image_id)
 
 
+###################
+
+
+def image_property_create(_context, values):
+    _drop_protected_attrs(models.Image, values)
+    image_property_ref = models.ImageProperty()
+    image_property_ref.update(values)
+    image_property_ref.save()
+    return image_property_ref
+
+
+def _drop_protected_attrs(model_class, values):
+    """Removed protected attributes from values dictionary using the models
+    __protected_attributes__ field.
+    """
+    for attr in model_class.__protected_attributes__:
+        if attr in values:
+            del values[attr]
+
+
 def _image_update(_context, values, image_id):
-    """ Used internally by image_create and image_update
+    """Used internally by image_create and image_update
 
     :param image_id: If None, create the image, otherwise, find and update it
     """
     session = get_session()
     with session.begin():
-        for attr in ('created_at', 'updated_at', 'deleted_at'):
-            if attr in values and values[attr]:
-                values[attr] = datetime_from_iso8601(values[attr])
+        _drop_protected_attrs(models.Image, values)
 
         values['size'] = int(values['size'])
         values['is_public'] = bool(values.get('is_public', False))
@@ -129,22 +146,3 @@ def _image_update(_context, values, image_id):
             image_property_create(_context, prop_values)
 
     return image_get(_context, image_ref.id)
-
-###################
-
-
-def image_file_create(_context, values):
-    image_file_ref = models.ImageFile()
-    image_file_ref.update(values)
-    image_file_ref.save()
-    return image_file_ref
-
-
-###################
-
-
-def image_property_create(_context, values):
-    image_property_ref = models.ImageProperty()
-    image_property_ref.update(values)
-    image_property_ref.save()
-    return image_property_ref

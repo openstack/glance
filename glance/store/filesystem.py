@@ -66,10 +66,10 @@ class ChunkedFile(object):
             self.fp = None
 
 
-
 class FilesystemBackend(glance.store.Backend):
     @classmethod
-    def get(cls, parsed_uri, opener=lambda p: open(p, "rb"), expected_size=None):
+    def get(cls, parsed_uri, opener=lambda p: open(p, "rb"),
+            expected_size=None):
         """ Filesystem-based backend
 
         file:///path/to/file.tar.gz.0
