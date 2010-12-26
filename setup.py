@@ -57,5 +57,5 @@ setup(
         'Environment :: No Input/Output (Daemon)',
     ],
     install_requires=[], # removed for better compat
-    scripts=['bin/parallax-server',
-             'bin/teller-server'])
+    scripts=['bin/glance-api',
+             'bin/glance-registry'])
