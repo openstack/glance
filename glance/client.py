@@ -254,7 +254,6 @@ class Client(BaseClient):
         if image_data:
             headers['content-type'] = 'application/octet-stream'
 
-        print "req.body in client.add_image: %s" % body
         res = self.do_request("POST", "/images", body, headers)
         data = json.loads(res.read())
         return data['image']['id']

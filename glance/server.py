@@ -187,7 +187,6 @@ class Controller(wsgi.Controller):
 
         # Verify the request and headers before we generate a new id
 
-        print "req.body in glance.server.Controller.create: %s" % req.body
         image_in_body = False
         image_store = None
         header_keys = [k.lower() for k in req.headers.keys()]
