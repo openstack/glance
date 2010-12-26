@@ -101,7 +101,7 @@ class BaseClient(object):
         """
         Returns the proper connection type
         """
-        if self.use_ssl:
+        if not self.use_ssl:
             return httplib.HTTPConnection
         else:
             return httplib.HTTPSConnection
