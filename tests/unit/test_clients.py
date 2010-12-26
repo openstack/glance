@@ -36,16 +36,9 @@ class TestBadClients(unittest.TestCase):
     
     """Test exceptions raised for bad clients"""
 
-    def test_bad_protocol(self):
-        """Test unsupported protocol raised"""
-        c = client.Client(address="hdsa://127.012..1./")
-        self.assertRaises(client.UnsupportedProtocolError,
-                          c.get_image,
-                          1)
-
     def test_bad_address(self):
         """Test ClientConnectionError raised"""
-        c = client.Client(address="http://127.999.1.1/")
+        c = client.Client(host="127.999.1.1")
         self.assertRaises(client.ClientConnectionError,
                           c.get_image,
                           1)

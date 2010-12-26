@@ -35,7 +35,7 @@ class RegistryClient(BaseClient):
 
     """A client for the Registry image metadata service"""
 
-    DEFAULT_ADDRESS = 'http://127.0.0.1'
+    DEFAULT_HOST = '0.0.0.0'
     DEFAULT_PORT = 9191
 
     def __init__(self, **kwargs):
@@ -43,8 +43,8 @@ class RegistryClient(BaseClient):
         Creates a new client to a Registry service.  All args are keyword
         arguments.
 
-        :param address: The address where Registry resides (defaults to
-                        http://127.0.0.1)
+        :param host: The host where Registry resides (defaults to
+                     0.0.0.0)
         :param port: The port where Registry resides (defaults to 9191)
         """
         super(RegistryClient, self).__init__(**kwargs)

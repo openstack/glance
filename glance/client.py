@@ -79,40 +79,34 @@ class BaseClient(object):
 
     """A base client class"""
 
-    DEFAULT_ADDRESS = 'http://127.0.0.1'
+    DEFAULT_HOST = '0.0.0.0'
     DEFAULT_PORT = 9090
+    DEFAULT_USE_SSL = False
 
     def __init__(self, **kwargs):
         """
         Creates a new client to some service.  All args are keyword
         arguments.
 
-        :param address: The address where service resides (defaults to
-                        http://127.0.0.1)
+        :param host: The host where service resides (defaults to
+                        0.0.0.0)
         :param port: The port where service resides (defaults to 9090)
         """
-        self.address = kwargs.get('address', self.DEFAULT_ADDRESS)
-        self.port = kwargs.get('port', self.DEFAULT_PORT)
-        url = urlparse.urlparse(self.address)
-        self.netloc = url.netloc
-        self.protocol = url.scheme
+        self.host = kwargs.get('host', self.DEFAULT_HOST)
+        self.port = kwargs.get('port', int(self.DEFAULT_PORT))
+        self.use_ssl = kwargs.get('use_ssl', bool(self.DEFAULT_USE_SSL))
         self.connection = None
 
     def get_connection_type(self):
         """
         Returns the proper connection type
         """
-        try:
-            connection_type = {'http': httplib.HTTPConnection,
-                               'https': httplib.HTTPSConnection}\
-                               [self.protocol]
-            return connection_type
-        except KeyError:
-            raise UnsupportedProtocolError("Unsupported protocol %s. Unable "
-                                           " to connect to server."
-                                           % self.protocol)
+        if self.use_ssl:
+            return httplib.HTTPConnection
+        else:
+            return httplib.HTTPSConnection
 
-    def do_request(self, method, action, body=None, headers=None):
+    def do_request(self, method, action, body=None, headers={}):
         """
         Connects to the server and issues a request.  Handles converting
         any returned HTTP error status codes to OpenStack/Glance exceptions
@@ -126,12 +120,8 @@ class BaseClient(object):
         """
         try:
             connection_type = self.get_connection_type()
-            c = connection_type(self.netloc, self.port)
-            c.request(method, action, body)
-            if headers:
-                for k, v in headers.iteritems():
-                    c.putheader(k, v)
-
+            c = connection_type(self.host, self.port)
+            c.request(method, action, body, headers)
             res = c.getresponse()
             status_code = self.get_status_code(res)
             if status_code == httplib.OK:
@@ -147,6 +137,7 @@ class BaseClient(object):
             elif status_code == httplib.BAD_REQUEST:
                 raise exception.BadInputError
             else:
+                print res.read()
                 raise Exception("Unknown error occurred! %d" % status_code)
 
         except (socket.error, IOError), e:
@@ -168,7 +159,7 @@ class Client(BaseClient):
 
     """Main client class for accessing Glance resources"""
 
-    DEFAULT_ADDRESS = 'http://127.0.0.1'
+    DEFAULT_HOST = '0.0.0.0'
     DEFAULT_PORT = 9292
 
     def __init__(self, **kwargs):
@@ -176,8 +167,8 @@ class Client(BaseClient):
         Creates a new client to a Glance service.  All args are keyword
         arguments.
 
-        :param address: The address where Glance resides (defaults to
-                        http://127.0.0.1)
+        :param host: The host where Glance resides (defaults to
+                     0.0.0.0)
         :param port: The port where Glance resides (defaults to 9292)
         """
         super(Client, self).__init__(**kwargs)
@@ -244,7 +235,6 @@ class Client(BaseClient):
                                     "for the image or supply the actual "
                                     "image data when adding an image to "
                                     "Glance")
-        headers = util.image_meta_to_http_headers(image_meta)
         if image_data:
             if hasattr(image_data, 'read'):
                 # TODO(jaypipes): This is far from efficient. Implement
@@ -252,10 +242,19 @@ class Client(BaseClient):
                 body = image_data.read()
             else:
                 body = image_data
-            headers['content-type'] = 'application/octet-stream'
         else:
             body = None
 
+        if not 'size' in image_meta.keys():
+            if body:
+                image_meta['size'] = len(body)
+
+        headers = util.image_meta_to_http_headers(image_meta)
+        
+        if image_data:
+            headers['content-type'] = 'application/octet-stream'
+
+        print "req.body in client.add_image: %s" % body
         res = self.do_request("POST", "/images", body, headers)
         data = json.loads(res.read())
         return data['image']['id']
