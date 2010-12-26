@@ -137,7 +137,6 @@ class BaseClient(object):
             elif status_code == httplib.BAD_REQUEST:
                 raise exception.BadInputError
             else:
-                print res.read()
                 raise Exception("Unknown error occurred! %d" % status_code)
 
         except (socket.error, IOError), e:
