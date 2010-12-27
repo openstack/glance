@@ -38,7 +38,7 @@ class TestBadClients(unittest.TestCase):
 
     def test_bad_address(self):
         """Test ClientConnectionError raised"""
-        c = client.Client(host="127.999.1.1")
+        c = client.Client("127.999.1.1")
         self.assertRaises(client.ClientConnectionError,
                           c.get_image,
                           1)
@@ -56,7 +56,7 @@ class TestRegistryClient(unittest.TestCase):
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_registry_and_store_server(self.stubs)
-        self.client = rclient.RegistryClient()
+        self.client = rclient.RegistryClient("0.0.0.0")
 
     def tearDown(self):
         """Clear the test environment"""
@@ -278,7 +278,7 @@ class TestClient(unittest.TestCase):
         stubs.stub_out_filesystem_backend()
         self.orig_filesystem_store_datadir = FLAGS.filesystem_store_datadir
         FLAGS.filesystem_store_datadir = stubs.FAKE_FILESYSTEM_ROOTDIR
-        self.client = client.Client()
+        self.client = client.Client("0.0.0.0")
 
     def tearDown(self):
         """Clear the test environment"""

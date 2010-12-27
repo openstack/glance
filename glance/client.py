@@ -30,15 +30,6 @@ from glance import util
 from glance.common import exception
 
 #TODO(jaypipes) Allow a logger param for client classes
-#TODO(jaypipes) Raise proper errors or OpenStack API faults
-
-
-class UnsupportedProtocolError(Exception):
-    """
-    Error resulting from a client connecting to a server
-    on an unsupported protocol
-    """
-    pass
 
 
 class ClientConnectionError(Exception):
@@ -79,34 +70,31 @@ class BaseClient(object):
 
     """A base client class"""
 
-    DEFAULT_HOST = '0.0.0.0'
     DEFAULT_PORT = 9090
-    DEFAULT_USE_SSL = False
 
-    def __init__(self, **kwargs):
+    def __init__(self, host, port=None, use_ssl=False):
         """
-        Creates a new client to some service.  All args are keyword
-        arguments.
+        Creates a new client to some service.
 
-        :param host: The host where service resides (defaults to
-                        0.0.0.0)
+        :param host: The host where service resides (defaults to 0.0.0.0)
         :param port: The port where service resides (defaults to 9090)
+        :param use_ssl: Should we use HTTPS? (defaults to False)
         """
-        self.host = kwargs.get('host', self.DEFAULT_HOST)
-        self.port = kwargs.get('port', int(self.DEFAULT_PORT))
-        self.use_ssl = kwargs.get('use_ssl', bool(self.DEFAULT_USE_SSL))
+        self.host = host
+        self.port = port or int(self.DEFAULT_PORT)
+        self.use_ssl = use_ssl
         self.connection = None
 
     def get_connection_type(self):
         """
         Returns the proper connection type
         """
-        if not self.use_ssl:
-            return httplib.HTTPConnection
-        else:
+        if self.use_ssl:
             return httplib.HTTPSConnection
+        else:
+            return httplib.HTTPConnection
 
-    def do_request(self, method, action, body=None, headers={}):
+    def do_request(self, method, action, body=None, headers=None):
         """
         Connects to the server and issues a request.  Handles converting
         any returned HTTP error status codes to OpenStack/Glance exceptions
@@ -120,6 +108,7 @@ class BaseClient(object):
         """
         try:
             connection_type = self.get_connection_type()
+            headers = headers or {}
             c = connection_type(self.host, self.port)
             c.request(method, action, body, headers)
             res = c.getresponse()
@@ -161,16 +150,17 @@ class Client(BaseClient):
     DEFAULT_HOST = '0.0.0.0'
     DEFAULT_PORT = 9292
 
-    def __init__(self, **kwargs):
+    def __init__(self, host, port=None, use_ssl=False):
         """
-        Creates a new client to a Glance service.  All args are keyword
-        arguments.
+        Creates a new client to a Glance API service.
 
-        :param host: The host where Glance resides (defaults to
-                     0.0.0.0)
+        :param host: The host where Glance resides (defaults to 0.0.0.0)
         :param port: The port where Glance resides (defaults to 9292)
+        :param use_ssl: Should we use HTTPS? (defaults to False)
         """
-        super(Client, self).__init__(**kwargs)
+
+        port = port or self.DEFAULT_PORT
+        super(Client, self).__init__(host, port, use_ssl)
 
     def get_images(self):
         """
