@@ -192,9 +192,11 @@ def stub_out_registry_and_store_server(stubs):
         def close(self):
             return True
 
-        def request(self, method, url, body=None):
+        def request(self, method, url, body=None, headers={}):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
             self.req.method = method
+            if headers:
+                self.req.headers = headers
             if body:
                 self.req.body = body
 
@@ -218,13 +220,12 @@ def stub_out_registry_and_store_server(stubs):
 
         def close(self):
             return True
-        
-        def putheader(self, k, v):
-            self.req.headers[k] = v
 
-        def request(self, method, url, body=None):
+        def request(self, method, url, body=None, headers={}):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
             self.req.method = method
+            if headers:
+                self.req.headers = headers
             if body:
                 self.req.body = body
 
@@ -242,25 +243,16 @@ def stub_out_registry_and_store_server(stubs):
         """
         Returns the proper connection type
         """
-        DEFAULT_PARALLAX_PORT = 9191
-        DEFAULT_TELLER_PORT = 9292
+        DEFAULT_REGISTRY_PORT = 9191
+        DEFAULT_API_PORT = 9292
 
-        if (client.port == DEFAULT_TELLER_PORT and
-            client.netloc == '127.0.0.1'):
+        if (client.port == DEFAULT_API_PORT and
+            client.host == '0.0.0.0'):
             return FakeGlanceConnection
-        elif (client.port == DEFAULT_PARALLAX_PORT and
-              client.netloc == '127.0.0.1'):
+        elif (client.port == DEFAULT_REGISTRY_PORT and
+              client.host == '0.0.0.0'):
             return FakeRegistryConnection
-        else:
-            try:
-                connection_type = {'http': httplib.HTTPConnection,
-                                   'https': httplib.HTTPSConnection}\
-                                   [client.protocol]
-                return connection_type
-            except KeyError:
-                raise UnsupportedProtocolError("Unsupported protocol %s. Unable "
-                                               " to connect to server."
-                                               % self.protocol)
+
     def fake_image_iter(self):
         for i in self.response.app_iter:
             yield i

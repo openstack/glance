@@ -29,9 +29,9 @@ def image_meta_to_http_headers(image_meta):
     :param image_meta: Mapping of image metadata
     """
     headers = {}
-    for k, v in image_meta.iteritems():
+    for k, v in image_meta.items():
         if k == 'properties':
-            for pk, pv in v.iteritems():
+            for pk, pv in v.items():
                 headers["x-image-meta-property-%s"
                         % pk.lower()] = pv
 
@@ -53,7 +53,7 @@ def inject_image_meta_into_headers(response, image_meta):
     """
     headers = image_meta_to_http_headers(image_meta)
 
-    for k, v in headers.iteritems():
+    for k, v in headers.items():
         response.headers.add(k, v)
 
 
@@ -67,7 +67,13 @@ def get_image_meta_from_headers(response):
     """
     result = {}
     properties = {}
-    for key, value in response.headers.iteritems():
+
+    if hasattr(response, 'getheaders'):  # httplib.HTTPResponse
+        headers = response.getheaders()
+    else:  # webob.Response
+        headers = response.headers.items()
+
+    for key, value in headers:
         key = str(key.lower())
         if key.startswith('x-image-meta-property-'):
             properties[key[len('x-image-meta-property-'):]] = value

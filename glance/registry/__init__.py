@@ -24,30 +24,30 @@ from glance.registry import client
 
 
 def get_images_list():
-    c = client.RegistryClient()
+    c = client.RegistryClient("0.0.0.0")
     return c.get_images()
 
 
 def get_images_detail():
-    c = client.RegistryClient()
+    c = client.RegistryClient("0.0.0.0")
     return c.get_images_detailed()
 
 
 def get_image_metadata(image_id):
-    c = client.RegistryClient()
+    c = client.RegistryClient("0.0.0.0")
     return c.get_image(image_id)
 
 
 def add_image_metadata(image_data):
-    c = client.RegistryClient()
+    c = client.RegistryClient("0.0.0.0")
     return c.add_image(image_data)
 
 
 def update_image_metadata(image_id, image_data):
-    c = client.RegistryClient()
+    c = client.RegistryClient("0.0.0.0")
     return c.update_image(image_id, image_data)
 
 
 def delete_image_metadata(image_id):
-    c = client.RegistryClient()
+    c = client.RegistryClient("0.0.0.0")
     return c.delete_image(image_id)
