@@ -70,18 +70,16 @@ class BaseClient(object):
 
     """A base client class"""
 
-    DEFAULT_PORT = 9090
-
-    def __init__(self, host, port=None, use_ssl=False):
+    def __init__(self, host, port, use_ssl):
         """
         Creates a new client to some service.
 
-        :param host: The host where service resides (defaults to 0.0.0.0)
-        :param port: The port where service resides (defaults to 9090)
-        :param use_ssl: Should we use HTTPS? (defaults to False)
+        :param host: The host where service resides
+        :param port: The port where service resides
+        :param use_ssl: Should we use HTTPS?
         """
         self.host = host
-        self.port = port or int(self.DEFAULT_PORT)
+        self.port = port
         self.use_ssl = use_ssl
         self.connection = None
 
@@ -147,14 +145,13 @@ class Client(BaseClient):
 
     """Main client class for accessing Glance resources"""
 
-    DEFAULT_HOST = '0.0.0.0'
     DEFAULT_PORT = 9292
 
     def __init__(self, host, port=None, use_ssl=False):
         """
         Creates a new client to a Glance API service.
 
-        :param host: The host where Glance resides (defaults to 0.0.0.0)
+        :param host: The host where Glance resides
         :param port: The port where Glance resides (defaults to 9292)
         :param use_ssl: Should we use HTTPS? (defaults to False)
         """

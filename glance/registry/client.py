@@ -41,8 +41,8 @@ class RegistryClient(BaseClient):
         """
         Creates a new client to a Glance Registry service.
 
-        :param host: The host where Glance resides (defaults to 0.0.0.0)
-        :param port: The port where Glance resides (defaults to 9292)
+        :param host: The host where Glance resides
+        :param port: The port where Glance resides (defaults to 9191)
         :param use_ssl: Should we use HTTPS? (defaults to False)
         """
 
