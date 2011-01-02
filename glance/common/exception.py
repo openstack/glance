@@ -47,7 +47,7 @@ class ApiError(Error):
     def __init__(self, message='Unknown', code='Unknown'):
         self.message = message
         self.code = code
-        super(ApiError, self).__init__('%s: %s'% (code, message))
+        super(ApiError, self).__init__('%s: %s' % (code, message))
 
 
 class NotFound(Error):

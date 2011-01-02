@@ -142,7 +142,9 @@ def _image_update(_context, values, image_id):
         image_ref.save(session=session)
 
         for key, value in properties.iteritems():
-            prop_values = {'image_id': image_ref.id, 'key': key, 'value': value}
+            prop_values = {'image_id': image_ref.id,
+                           'key': key,
+                           'value': value}
             image_property_create(_context, prop_values)
 
     return image_get(_context, image_ref.id)

@@ -19,6 +19,7 @@ import httplib
 
 import glance.store
 
+
 class HTTPBackend(glance.store.Backend):
     """ An implementation of the HTTP Backend Adapter """
 
@@ -35,11 +36,12 @@ class HTTPBackend(glance.store.Backend):
         elif parsed_uri.scheme == "https":
             conn_class = httplib.HTTPSConnection
         else:
-            raise glance.store.BackendException("scheme '%s' not supported for HTTPBackend")
-        
+            raise glance.store.BackendException(
+                "scheme '%s' not supported for HTTPBackend")
+
         conn = conn_class(parsed_uri.netloc)
         conn.request("GET", parsed_uri.path, "", {})
-        
+
         try:
             return glance.store._file_iter(conn.getresponse(), cls.CHUNKSIZE)
         finally:
