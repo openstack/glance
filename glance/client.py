@@ -236,7 +236,7 @@ class Client(BaseClient):
                 image_meta['size'] = len(body)
 
         headers = util.image_meta_to_http_headers(image_meta)
-        
+
         if image_data:
             headers['content-type'] = 'application/octet-stream'
 

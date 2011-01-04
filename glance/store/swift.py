@@ -29,14 +29,14 @@ class SwiftBackend(glance.store.Backend):
     @classmethod
     def get(cls, parsed_uri, expected_size, conn_class=None):
         """
-        Takes a parsed_uri in the format of: 
-        swift://user:password@auth_url/container/file.gz.0, connects to the 
-        swift instance at auth_url and downloads the file. Returns the generator
-        resp_body provided by get_object.
+        Takes a parsed_uri in the format of:
+        swift://user:password@auth_url/container/file.gz.0, connects to the
+        swift instance at auth_url and downloads the file. Returns the
+        generator resp_body provided by get_object.
         """
         (user, key, authurl, container, obj) = \
             cls._parse_swift_tokens(parsed_uri)
-        
+
         # TODO(sirp): snet=False for now, however, if the instance of
         # swift we're talking to is within our same region, we should set
         # snet=True
@@ -50,9 +50,10 @@ class SwiftBackend(glance.store.Backend):
 
         obj_size = int(resp_headers['content-length'])
         if  obj_size != expected_size:
-            raise glance.store.BackendException("Expected %s byte file, Swift has %s bytes"
-                                   % (expected_size, obj_size))
-        
+            raise glance.store.BackendException(
+                "Expected %s byte file, Swift has %s bytes" %
+                (expected_size, obj_size))
+
         return resp_body
 
     @classmethod
@@ -62,7 +63,7 @@ class SwiftBackend(glance.store.Backend):
         """
         (user, key, authurl, container, obj) = \
             cls._parse_swift_tokens(parsed_uri)
-        
+
         # TODO(sirp): snet=False for now, however, if the instance of
         # swift we're talking to is within our same region, we should set
         # snet=True
@@ -76,7 +77,7 @@ class SwiftBackend(glance.store.Backend):
 
         # TODO(jaypipes): What to return here?  After reading the docs
         # at swift.common.client, I'm not sure what to check for...
-    
+
     @classmethod
     def _parse_swift_tokens(cls, parsed_uri):
         """
