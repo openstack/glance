@@ -80,7 +80,7 @@ class TestImageController(unittest.TestCase):
                    'name': 'fake image #2',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'available'
+                   'status': 'active'
                   }
         req = webob.Request.blank('/images/detail')
         res = req.get_response(server.API())
@@ -118,7 +118,7 @@ class TestImageController(unittest.TestCase):
         self.assertEquals(3, res_dict['image']['id'])
 
         # Test status was updated properly
-        self.assertEquals('available', res_dict['image']['status'])
+        self.assertEquals('active', res_dict['image']['status'])
 
     def test_create_image_with_bad_status(self):
         """Tests proper exception is raised if a bad status is set"""

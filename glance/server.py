@@ -162,7 +162,69 @@ class Controller(wsgi.Controller):
         util.inject_image_meta_into_headers(res, image)
         return req.get_response(res)
 
+
+    def _reserve(self, req):
+        image_meta = util.get_image_meta_from_headers(req)
+        image_meta['status'] = 'queued'
+        
+        try:
+            image_meta = registry.add_image_metadata(image_meta)
+            return image_meta
+        except exception.Duplicate:
+            msg = "An image with identifier %s already exists"\
+                  % image_meta['id']
+            logging.error(msg)
+            raise HTTPConflict(msg, request=req)
+        except exception.Invalid:
+            raise HTTPBadRequest()
+
+    def _upload(self, req, image_meta):
+        content_type = req.headers.get('content-type', 'notset')
+        if content_type != 'application/octet-stream':
+            raise HTTPBadRequest(
+                "Content-Type must be application/octet-stream")
+
+        image_store = req.headers.get(
+            'x-image-meta-store', FLAGS.default_store)
+        
+        store = self.get_store_or_400(req, image_store)
+
+        image_meta['status'] = 'saving'
+        registry.update_image_metadata(image_meta['id'], image_meta)
+
+        try:
+            location = store.add(image_meta['id'], req.body)
+            return location
+        except exception.Duplicate, e:
+            logging.error("Error adding image to store: %s", str(e))
+            raise HTTPConflict(str(e), request=req)
+
+    def _activate(self, req, image_meta, location):
+        image_meta['location'] = location
+        image_meta['status'] = 'active'
+        registry.update_image_metadata(image_meta['id'], image_meta)
+
+    def _kill(self, req, image_meta):
+        image_meta['status'] = 'killed'
+        registry.update_image_metadata(image_meta['id'], image_meta)
+
     def create(self, req):
+        image_meta = self._reserve(req)
+        if req.body:
+            try:
+                location = self._upload(req, image_meta)
+                self._activate(req, image_meta, location)
+            except:
+                self._kill(req, image_meta)
+                raise
+        else:
+            if req.headers.has_key('x-image-meta-location'):
+                location = req.headers['x-image-meta-location']
+                self._activate(req, image_meta, location)
+
+        return dict(image=image_meta)
+
+    def old_create(self, req):
         """
         Adds a new image to Glance. The body of the request may be a
         mime-encoded image data. Metadata about the image is sent via
@@ -242,6 +304,25 @@ class Controller(wsgi.Controller):
             return HTTPBadRequest()
 
     def update(self, req, id):
+        orig_image_meta = self.get_image_meta_or_404(req, id)
+        new_image_meta = util.get_image_meta_from_headers(req)
+
+        if req.body and (orig_image_meta['status'] != 'queued'):
+            raise HTTPConflict("Cannot upload to an unqueued image")
+
+        image_meta = registry.update_image_metadata(id, new_image_meta)
+
+        if req.body:
+            try:
+                location = self._upload(req, image_meta)
+                self._activate(req, image_meta, location)
+            except:
+                self._kill(req, image_meta)
+                raise
+
+        return dict(image=image_meta)
+
+    def old_update(self, req, id):
         """
         Updates an existing image with the registry.
 

@@ -78,7 +78,7 @@ class TestRegistryClient(unittest.TestCase):
                    'name': 'fake image #2',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'available',
+                   'status': 'active',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
@@ -87,7 +87,7 @@ class TestRegistryClient(unittest.TestCase):
                    'name': 'fake image #2',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'available',
+                   'status': 'active',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
@@ -104,7 +104,7 @@ class TestRegistryClient(unittest.TestCase):
                    'name': 'fake image #2',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'available',
+                   'status': 'active',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
@@ -113,7 +113,7 @@ class TestRegistryClient(unittest.TestCase):
                    'name': 'fake image #2',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'available',
+                   'status': 'active',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
@@ -152,7 +152,7 @@ class TestRegistryClient(unittest.TestCase):
 
         # Test status was updated properly
         self.assertTrue('status' in data.keys())
-        self.assertEquals('available', data['status'])
+        self.assertEquals('active', data['status'])
 
     def test_add_image_with_properties(self):
         """Tests that we can add image metadata with properties"""
@@ -181,7 +181,7 @@ class TestRegistryClient(unittest.TestCase):
 
         # Test status was updated properly
         self.assertTrue('status' in new_image.keys())
-        self.assertEquals('available', new_image['status'])
+        self.assertEquals('active', new_image['status'])
 
     def test_add_image_already_exists(self):
         """Tests proper exception is raised if image with ID already exists"""
@@ -293,7 +293,7 @@ class TestClient(unittest.TestCase):
                    'name': 'fake image #2',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'available',
+                   'status': 'active',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
@@ -330,7 +330,7 @@ class TestClient(unittest.TestCase):
                    'name': 'fake image #2',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'available',
+                   'status': 'active',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
@@ -339,7 +339,7 @@ class TestClient(unittest.TestCase):
                    'name': 'fake image #2',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'available',
+                   'status': 'active',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
@@ -356,7 +356,7 @@ class TestClient(unittest.TestCase):
                    'name': 'fake image #2',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'available',
+                   'status': 'active',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
@@ -365,7 +365,7 @@ class TestClient(unittest.TestCase):
                    'name': 'fake image #2',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'available',
+                   'status': 'active',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
@@ -383,15 +383,14 @@ class TestClient(unittest.TestCase):
                           42)
 
     def test_add_image_without_location_or_raw_data(self):
-        """Tests client throws Invalid if missing both location and raw data"""
+        """Tests client returns image as queued"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
                    'type': 'kernel'
                   }
-        
-        self.assertRaises(exception.Invalid,
-                          self.client.add_image,
-                          fixture)
+       
+        image_meta = self.client.add_image(fixture)
+        self.assertEquals('queued', image_meta['status'])
 
     def test_add_image_basic(self):
         """Tests that we can add image metadata and returns the new id"""
@@ -402,10 +401,11 @@ class TestClient(unittest.TestCase):
                    'location': "file:///tmp/glance-tests/2",
                   }
         
-        new_id = self.client.add_image(fixture)
+        new_image = self.client.add_image(fixture)
+        new_image_id = new_image['id']
 
         # Test ID auto-assigned properly
-        self.assertEquals(3, new_id)
+        self.assertEquals(3, new_image_id)
 
         # Test all other attributes set
         data = self.client.get_image_meta(3)
@@ -415,7 +415,7 @@ class TestClient(unittest.TestCase):
 
         # Test status was updated properly
         self.assertTrue('status' in data.keys())
-        self.assertEquals('available', data['status'])
+        self.assertEquals('active', data['status'])
 
     def test_add_image_with_properties(self):
         """Tests that we can add image metadata with properties"""
@@ -434,10 +434,11 @@ class TestClient(unittest.TestCase):
                     'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
         
-        new_id = self.client.add_image(fixture)
+        new_image = self.client.add_image(fixture)
+        new_image_id = new_image['id']
 
         # Test ID auto-assigned properly
-        self.assertEquals(3, new_id)
+        self.assertEquals(3, new_image_id)
 
         # Test all other attributes set
         data = self.client.get_image_meta(3)
@@ -446,8 +447,8 @@ class TestClient(unittest.TestCase):
             self.assertEquals(v, data[k])
 
         # Test status was updated properly
-        self.assertTrue('status' in data.keys())
-        self.assertEquals('available', data['status'])
+        self.assertTrue('status' in data)
+        self.assertEquals('active', data['status'])
 
     def test_add_image_already_exists(self):
         """Tests proper exception is raised if image with ID already exists"""
@@ -474,11 +475,8 @@ class TestClient(unittest.TestCase):
                    'location': "file:///tmp/glance-tests/2",
                   }
 
-        new_id = self.client.add_image(fixture)
-
-        data = self.client.get_image_meta(new_id)
-
-        self.assertEquals(data['status'], 'available')
+        new_image = self.client.add_image(fixture)
+        self.assertEquals(new_image['status'], 'active')
 
     def test_add_image_with_image_data_as_string(self):
         """Tests can add image by passing image data as string"""
@@ -491,9 +489,9 @@ class TestClient(unittest.TestCase):
 
         image_data_fixture = r"chunk0000remainder"
 
-        new_id = self.client.add_image(fixture, image_data_fixture)
-
-        self.assertEquals(3, new_id)
+        new_image = self.client.add_image(fixture, image_data_fixture)
+        new_image_id = new_image['id']
+        self.assertEquals(3, new_image_id)
 
         new_meta, new_image_chunks = self.client.get_image(3)
 
@@ -525,9 +523,9 @@ class TestClient(unittest.TestCase):
         tmp_file.write(image_data_fixture)
         tmp_file.close()
 
-        new_id = self.client.add_image(fixture, open(tmp_image_filepath))
-
-        self.assertEquals(3, new_id)
+        new_image = self.client.add_image(fixture, open(tmp_image_filepath))
+        new_image_id = new_image['id']
+        self.assertEquals(3, new_image_id)
 
         if os.path.exists(tmp_image_filepath):
             os.unlink(tmp_image_filepath)

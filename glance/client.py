@@ -120,11 +120,11 @@ class BaseClient(object):
             elif status_code == httplib.NOT_FOUND:
                 raise exception.NotFound
             elif status_code == httplib.CONFLICT:
-                raise exception.Duplicate
+                raise exception.Duplicate(res)
             elif status_code == httplib.BAD_REQUEST:
-                raise exception.BadInputError
+                raise exception.BadInputError(res)
             else:
-                raise Exception("Unknown error occurred! %d" % status_code)
+                raise Exception("Unknown error occurred! %s" % res)
 
         except (socket.error, IOError), e:
             raise ClientConnectionError("Unable to connect to "
@@ -216,11 +216,6 @@ class Client(BaseClient):
 
         :retval The newly-stored image's metadata.
         """
-        if not image_data and 'location' not in image_meta.keys():
-            raise exception.Invalid("You must either specify a location "
-                                    "for the image or supply the actual "
-                                    "image data when adding an image to "
-                                    "Glance")
         if image_data:
             if hasattr(image_data, 'read'):
                 # TODO(jaypipes): This is far from efficient. Implement
@@ -242,17 +237,22 @@ class Client(BaseClient):
 
         res = self.do_request("POST", "/images", body, headers)
         data = json.loads(res.read())
-        return data['image']['id']
+        return data['image']
 
-    def update_image(self, image_id, image_metadata):
+    def update_image(self, image_id, image_meta=None, image_data=None):
         """
         Updates Glance's information about an image
         """
-        if 'image' not in image_metadata.keys():
-            image_metadata = dict(image=image_metadata)
-        body = json.dumps(image_metadata)
-        self.do_request("PUT", "/images/%s" % image_id, body)
-        return True
+        if image_meta:
+            if 'image' not in image_meta:
+                image_meta = dict(image=image_meta)
+
+        headers = util.image_meta_to_http_headers(image_meta or {})
+
+        body = image_data # TODO(sirp): more work here?
+        res = self.do_request("PUT", "/images/%s" % image_id, body, headers)
+        data = json.loads(res.read())
+        return data['image']
 
     def delete_image(self, image_id):
         """

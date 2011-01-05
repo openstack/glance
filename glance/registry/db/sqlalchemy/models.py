@@ -159,7 +159,7 @@ class Image(BASE, ModelBase):
     
     @validates('status')
     def validate_status(self, key, status):
-        if not status in ('available', 'pending', 'disabled'):
+        if not status in ('active', 'queued', 'killed', 'saving'):
             raise exception.Invalid("Invalid status '%s' for image." % status)
         return status
     
