@@ -53,6 +53,7 @@ def get_backend_class(backend):
     """
     # NOTE(sirp): avoiding circular import
     from glance.store.http import HTTPBackend
+    from glance.store.s3 import S3Backend
     from glance.store.swift import SwiftBackend
     from glance.store.filesystem import FilesystemBackend
 
@@ -60,13 +61,14 @@ def get_backend_class(backend):
         "file": FilesystemBackend,
         "http": HTTPBackend,
         "https": HTTPBackend,
-        "swift": SwiftBackend
+        "swift": SwiftBackend,
+        "s3": S3Backend
     }
 
     try:
         return BACKENDS[backend]
     except KeyError:
-        raise UnsupportedBackend("No backend found for '%s'" % scheme)
+        raise UnsupportedBackend("No backend found for '%s'" % backend)
 
 
 def get_from_backend(uri, **kwargs):
@@ -101,3 +103,41 @@ def get_store_from_location(location):
     """
     loc_pieces = urlparse.urlparse(location)
     return loc_pieces.scheme
+
+
+def parse_uri_tokens(parsed_uri, example_url):
+    """
+    Given a URI and an example_url, attempt to parse the uri to assemble an
+    authurl. This method returns the user, key, authurl, referenced container,
+    and the object we're looking for in that container.
+
+    Parsing the uri is three phases:
+        1) urlparse to split the tokens
+        2) use RE to split on @ and /
+        3) reassemble authurl
+    
+    """
+    path = parsed_uri.path.lstrip('//')
+    netloc = parsed_uri.netloc
+
+    try:
+        try:
+            creds, netloc = netloc.split('@')
+        except ValueError:
+            # Python 2.6.1 compat
+            # see lp659445 and Python issue7904
+            creds, path = path.split('@')
+        user, key = creds.split(':')
+        path_parts = path.split('/')
+        obj = path_parts.pop()
+        container = path_parts.pop()
+    except (ValueError, IndexError):
+        raise BackendException(
+             "Expected four values to unpack in: %s:%s. "
+             "Should have received something like: %s."
+             % (parsed_uri.scheme, parsed_uri.path, example_url))
+
+    authurl = "https://%s" % '/'.join(path_parts)
+
+    return user, key, authurl, container, obj
+    

@@ -86,18 +86,20 @@ def get_backend_class(backend):
     # NOTE(sirp): avoiding circular import
     from glance.store.backends.http import HTTPBackend
     from glance.store.backends.swift import SwiftBackend
+    from glance.store.backends.s3 import S3Backend
 
     BACKENDS = {
         "file": FilesystemBackend,
         "http": HTTPBackend,
         "https": HTTPBackend,
-        "swift": SwiftBackend
+        "swift": SwiftBackend,
+        "s3": S3Backend
     }
 
     try:
         return BACKENDS[backend]
     except KeyError:
-        raise UnsupportedBackend("No backend found for '%s'" % scheme)
+        raise UnsupportedBackend("No backend found for '%s'" % backend)
 
 
 def get_from_backend(uri, **kwargs):
