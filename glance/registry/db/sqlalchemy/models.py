@@ -137,11 +137,12 @@ class ModelBase(object):
     def items(self):
         return self.__dict__.items()
 
+
 class Image(BASE, ModelBase):
     """Represents an image in the datastore"""
     __tablename__ = 'images'
     __prefix__ = 'img'
-    
+
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
     type = Column(String(30))
@@ -156,13 +157,13 @@ class Image(BASE, ModelBase):
             raise exception.Invalid(
                 "Invalid image type '%s' for image." % type)
         return type
-    
+
     @validates('status')
     def validate_status(self, key, status):
         if not status in ('active', 'queued', 'killed', 'saving'):
             raise exception.Invalid("Invalid status '%s' for image." % status)
         return status
-    
+
 
 class ImageProperty(BASE, ModelBase):
     """Represents an image properties in the datastore"""
@@ -173,7 +174,7 @@ class ImageProperty(BASE, ModelBase):
     id = Column(Integer, primary_key=True)
     image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
     image = relationship(Image, backref=backref('properties'))
-    
+
     key = Column(String(255), index=True)
     value = Column(Text)
 
