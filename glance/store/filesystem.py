@@ -26,6 +26,11 @@ from glance.common import exception
 from glance.common import flags
 import glance.store
 
+
+flags.DEFINE_string('filesystem_store_datadir', '/var/lib/glance/images/',
+                    'Location to write image data. '
+                    'Default: /var/lib/glance/images/')
+
 FLAGS = flags.FLAGS
 
 
@@ -61,10 +66,10 @@ class ChunkedFile(object):
             self.fp = None
 
 
-
 class FilesystemBackend(glance.store.Backend):
     @classmethod
-    def get(cls, parsed_uri, opener=lambda p: open(p, "rb"), expected_size=None):
+    def get(cls, parsed_uri, opener=lambda p: open(p, "rb"),
+            expected_size=None):
         """ Filesystem-based backend
 
         file:///path/to/file.tar.gz.0
@@ -94,4 +99,35 @@ class FilesystemBackend(glance.store.Backend):
             except OSError:
                 raise exception.NotAuthorized("You cannot delete file %s" % fn)
         else:
-            raise exception.NotFound("Image file %s does not exist" % fn) 
+            raise exception.NotFound("Image file %s does not exist" % fn)
+
+    @classmethod
+    def add(cls, id, data):
+        """
+        Stores image data to disk and returns a location that the image was
+        written to. By default, the backend writes the image data to a file
+        `/<DATADIR>/<ID>`, where <DATADIR> is the value of
+        FLAGS.filesystem_store_datadir and <ID> is the supplied image ID.
+
+        :param id: The opaque image identifier
+        :param data: The image data to write
+
+        :retval The location that was written, with file:// scheme prepended
+        """
+
+        datadir = FLAGS.filesystem_store_datadir
+
+        if not os.path.exists(datadir):
+            os.makedirs(datadir)
+
+        filepath = os.path.join(datadir, str(id))
+
+        if os.path.exists(filepath):
+            raise exception.Duplicate("Image file %s already exists!"
+                                      % filepath)
+
+        f = open(filepath, 'wb')
+        f.write(data)
+        f.close()
+
+        return 'file://%s' % filepath

@@ -21,6 +21,7 @@
 Utility methods for working with WSGI servers
 """
 
+import json
 import logging
 import sys
 import datetime
@@ -41,6 +42,29 @@ def run_server(application, port):
     """Run a WSGI server with the given application."""
     sock = eventlet.listen(('0.0.0.0', port))
     eventlet.wsgi.server(sock, application)
+
+
+class Server(object):
+    """Server class to manage multiple WSGI sockets and applications."""
+
+    def __init__(self, threads=1000):
+        self.pool = eventlet.GreenPool(threads)
+
+    def start(self, application, port, host='0.0.0.0', backlog=128):
+        """Run a WSGI server with the given application."""
+        socket = eventlet.listen((host, port), backlog=backlog)
+        self.pool.spawn_n(self._run, application, socket)
+
+    def wait(self):
+        """Wait until all servers have completed running."""
+        try:
+            self.pool.waitall()
+        except KeyboardInterrupt:
+            pass
+
+    def _run(self, application, socket):
+        """Start a WSGI server in a new green thread."""
+        eventlet.wsgi.server(socket, application, custom_pool=self.pool)
 
 
 class Application(object):
@@ -92,11 +116,11 @@ class Middleware(Application):
     behavior.
     """
 
-    def __init__(self, application): # pylint: disable-msg=W0231
+    def __init__(self, application):  # pylint: disable-msg=W0231
         self.application = application
 
     @webob.dec.wsgify
-    def __call__(self, req): # pylint: disable-msg=W0221
+    def __call__(self, req):  # pylint: disable-msg=W0221
         """Override to implement middleware behavior."""
         return self.application
 
@@ -214,7 +238,7 @@ class Controller(object):
         arg_dict['req'] = req
         result = method(**arg_dict)
         if type(result) is dict:
-            return self._serialize(result, req) 
+            return self._serialize(result, req)
         else:
             return result
 
@@ -259,7 +283,6 @@ class Serializer(object):
         return self._methods.get(mimetype, repr)(data)
 
     def _to_json(self, data):
-        import json
         def sanitizer(obj):
             if isinstance(obj, datetime.datetime):
                 return obj.isoformat()
@@ -297,7 +320,7 @@ class Serializer(object):
                 else:
                     node = self._to_xml_node(doc, metadata, k, v)
                     result.appendChild(node)
-        else: # atom
+        else:  # atom
             node = doc.createTextNode(str(data))
             result.appendChild(node)
         return result

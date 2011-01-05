@@ -21,7 +21,7 @@ import unittest
 import webob
 
 from glance.common import exception
-from glance.registry import controllers
+from glance.registry import server
 from tests import stubs
 
 
@@ -43,7 +43,7 @@ class TestImageController(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2'}
         req = webob.Request.blank('/')
-        res = req.get_response(controllers.API())
+        res = req.get_response(server.API())
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -61,7 +61,7 @@ class TestImageController(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2'}
         req = webob.Request.blank('/images')
-        res = req.get_response(controllers.API())
+        res = req.get_response(server.API())
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -83,7 +83,7 @@ class TestImageController(unittest.TestCase):
                    'status': 'available'
                   }
         req = webob.Request.blank('/images/detail')
-        res = req.get_response(controllers.API())
+        res = req.get_response(server.API())
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -105,7 +105,7 @@ class TestImageController(unittest.TestCase):
         req.method = 'POST'
         req.body = json.dumps(dict(image=fixture))
 
-        res = req.get_response(controllers.API())
+        res = req.get_response(server.API())
 
         self.assertEquals(res.status_int, 200)
 
@@ -137,7 +137,7 @@ class TestImageController(unittest.TestCase):
         # TODO(jaypipes): Port Nova's Fault infrastructure
         # over to Glance to support exception catching into
         # standard HTTP errors.
-        res = req.get_response(controllers.API())
+        res = req.get_response(server.API())
         self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
 
     def test_update_image(self):
@@ -151,7 +151,7 @@ class TestImageController(unittest.TestCase):
         req.method = 'PUT'
         req.body = json.dumps(dict(image=fixture))
 
-        res = req.get_response(controllers.API())
+        res = req.get_response(server.API())
 
         self.assertEquals(res.status_int, 200)
 
@@ -178,7 +178,7 @@ class TestImageController(unittest.TestCase):
         # TODO(jaypipes): Port Nova's Fault infrastructure
         # over to Glance to support exception catching into
         # standard HTTP errors.
-        res = req.get_response(controllers.API())
+        res = req.get_response(server.API())
         self.assertEquals(res.status_int,
                           webob.exc.HTTPNotFound.code)
 
@@ -187,7 +187,7 @@ class TestImageController(unittest.TestCase):
 
         # Grab the original number of images
         req = webob.Request.blank('/images')
-        res = req.get_response(controllers.API())
+        res = req.get_response(server.API())
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -198,13 +198,13 @@ class TestImageController(unittest.TestCase):
             
         req.method = 'DELETE'
 
-        res = req.get_response(controllers.API())
+        res = req.get_response(server.API())
 
         self.assertEquals(res.status_int, 200)
 
         # Verify one less image
         req = webob.Request.blank('/images')
-        res = req.get_response(controllers.API())
+        res = req.get_response(server.API())
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -222,6 +222,6 @@ class TestImageController(unittest.TestCase):
         # TODO(jaypipes): Port Nova's Fault infrastructure
         # over to Glance to support exception catching into
         # standard HTTP errors.
-        res = req.get_response(controllers.API())
+        res = req.get_response(server.API())
         self.assertEquals(res.status_int,
                           webob.exc.HTTPNotFound.code)

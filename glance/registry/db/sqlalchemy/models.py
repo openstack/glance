@@ -45,6 +45,9 @@ class ModelBase(object):
     __table_args__ = {'mysql_engine': 'InnoDB'}
     __table_initialized__ = False
     __prefix__ = 'none'
+    __protected_attributes__ = set([
+        "created_at", "updated_at", "deleted_at", "deleted"])
+
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.datetime.utcnow)
     deleted_at = Column(DateTime)
@@ -134,11 +137,12 @@ class ModelBase(object):
     def items(self):
         return self.__dict__.items()
 
+
 class Image(BASE, ModelBase):
     """Represents an image in the datastore"""
     __tablename__ = 'images'
     __prefix__ = 'img'
-    
+
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
     type = Column(String(30))
@@ -153,29 +157,12 @@ class Image(BASE, ModelBase):
             raise exception.Invalid(
                 "Invalid image type '%s' for image." % type)
         return type
-    
+
     @validates('status')
     def validate_status(self, key, status):
         if not status in ('available', 'pending', 'disabled'):
             raise exception.Invalid("Invalid status '%s' for image." % status)
         return status
-    
-    # TODO(sirp): should these be stored as properties?
-    #user_id = Column(String(255))
-    #project_id = Column(String(255))
-    #arch = Column(String(255))
-    #default_kernel_id = Column(String(255))
-    #default_ramdisk_id = Column(String(255))
-    #
-    #@validates('default_kernel_id')
-    #def validate_kernel_id(self, key, val):
-    #    if val != 'machine':
-    #        assert(val is None)
-    # 
-    #@validates('default_ramdisk_id')
-    #def validate_ramdisk_id(self, key, val):
-    #    if val != 'machine':
-    #        assert(val is None)
 
 
 class ImageProperty(BASE, ModelBase):
@@ -187,7 +174,7 @@ class ImageProperty(BASE, ModelBase):
     id = Column(Integer, primary_key=True)
     image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
     image = relationship(Image, backref=backref('properties'))
-    
+
     key = Column(String(255), index=True)
     value = Column(Text)
 

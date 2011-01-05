@@ -30,24 +30,10 @@ from glance import util
 from glance.common import exception
 
 #TODO(jaypipes) Allow a logger param for client classes
-#TODO(jaypipes) Raise proper errors or OpenStack API faults
-
-
-class UnsupportedProtocolError(Exception):
-    """
-    Error resulting from a client connecting to a server
-    on an unsupported protocol
-    """
-    pass
 
 
 class ClientConnectionError(Exception):
     """Error resulting from a client connecting to a server"""
-    pass
-
-
-class BadInputError(Exception):
-    """Error resulting from a client sending bad input to a server"""
     pass
 
 
@@ -84,38 +70,27 @@ class BaseClient(object):
 
     """A base client class"""
 
-    DEFAULT_ADDRESS = 'http://127.0.0.1'
-    DEFAULT_PORT = 9090
-
-    def __init__(self, **kwargs):
+    def __init__(self, host, port, use_ssl):
         """
-        Creates a new client to some service.  All args are keyword
-        arguments.
+        Creates a new client to some service.
 
-        :param address: The address where service resides (defaults to
-                        http://127.0.0.1)
-        :param port: The port where service resides (defaults to 9090)
+        :param host: The host where service resides
+        :param port: The port where service resides
+        :param use_ssl: Should we use HTTPS?
         """
-        self.address = kwargs.get('address', self.DEFAULT_ADDRESS)
-        self.port = kwargs.get('port', self.DEFAULT_PORT)
-        url = urlparse.urlparse(self.address)
-        self.netloc = url.netloc
-        self.protocol = url.scheme
+        self.host = host
+        self.port = port
+        self.use_ssl = use_ssl
         self.connection = None
 
     def get_connection_type(self):
         """
         Returns the proper connection type
         """
-        try:
-            connection_type = {'http': httplib.HTTPConnection,
-                               'https': httplib.HTTPSConnection}\
-                               [self.protocol]
-            return connection_type
-        except KeyError:
-            raise UnsupportedProtocolError("Unsupported protocol %s. Unable "
-                                           " to connect to server."
-                                           % self.protocol)
+        if self.use_ssl:
+            return httplib.HTTPSConnection
+        else:
+            return httplib.HTTPConnection
 
     def do_request(self, method, action, body=None, headers=None):
         """
@@ -131,12 +106,9 @@ class BaseClient(object):
         """
         try:
             connection_type = self.get_connection_type()
-            c = connection_type(self.netloc, self.port)
-            c.request(method, action, body)
-            if headers:
-                for k, v in headers.iteritems():
-                    c.putheader(k, v)
-
+            headers = headers or {}
+            c = connection_type(self.host, self.port)
+            c.request(method, action, body, headers)
             res = c.getresponse()
             status_code = self.get_status_code(res)
             if status_code == httplib.OK:
@@ -150,7 +122,7 @@ class BaseClient(object):
             elif status_code == httplib.CONFLICT:
                 raise exception.Duplicate
             elif status_code == httplib.BAD_REQUEST:
-                raise BadInputError
+                raise exception.BadInputError
             else:
                 raise Exception("Unknown error occurred! %d" % status_code)
 
@@ -173,19 +145,19 @@ class Client(BaseClient):
 
     """Main client class for accessing Glance resources"""
 
-    DEFAULT_ADDRESS = 'http://127.0.0.1'
     DEFAULT_PORT = 9292
 
-    def __init__(self, **kwargs):
+    def __init__(self, host, port=None, use_ssl=False):
         """
-        Creates a new client to a Glance service.  All args are keyword
-        arguments.
+        Creates a new client to a Glance API service.
 
-        :param address: The address where Glance resides (defaults to
-                        http://127.0.0.1)
+        :param host: The host where Glance resides
         :param port: The port where Glance resides (defaults to 9292)
+        :param use_ssl: Should we use HTTPS? (defaults to False)
         """
-        super(Client, self).__init__(**kwargs)
+
+        port = port or self.DEFAULT_PORT
+        super(Client, self).__init__(host, port, use_ssl)
 
     def get_images(self):
         """
@@ -235,17 +207,40 @@ class Client(BaseClient):
         """
         Tells Glance about an image's metadata as well
         as optionally the image_data itself
+
+        :param image_meta: Mapping of information about the
+                           image
+        :param image_data: Optional string of raw image data
+                           or file-like object that can be
+                           used to read the image data
+
+        :retval The newly-stored image's metadata.
         """
         if not image_data and 'location' not in image_meta.keys():
             raise exception.Invalid("You must either specify a location "
                                     "for the image or supply the actual "
                                     "image data when adding an image to "
                                     "Glance")
-        body = image_data
+        if image_data:
+            if hasattr(image_data, 'read'):
+                # TODO(jaypipes): This is far from efficient. Implement
+                # chunked transfer encoding if size is not in image_meta
+                body = image_data.read()
+            else:
+                body = image_data
+        else:
+            body = None
+
+        if not 'size' in image_meta.keys():
+            if body:
+                image_meta['size'] = len(body)
+
         headers = util.image_meta_to_http_headers(image_meta)
-        
+
+        if image_data:
+            headers['content-type'] = 'application/octet-stream'
+
         res = self.do_request("POST", "/images", body, headers)
-        # Registry returns a JSONified dict(image=image_info)
         data = json.loads(res.read())
         return data['image']['id']
 

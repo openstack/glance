@@ -28,7 +28,7 @@ import stubout
 import webob
 
 from glance.common import exception
-from glance.registry import controllers as registry_controllers
+from glance.registry import server as rserver
 from glance import server
 import glance.store
 import glance.store.filesystem
@@ -37,7 +37,7 @@ import glance.store.swift
 import glance.registry.db.sqlalchemy.api
 
 
-FAKE_FILESYSTEM_ROOTDIR = os.path.join('//tmp', 'glance-tests')
+FAKE_FILESYSTEM_ROOTDIR = os.path.join('/tmp', 'glance-tests')
 
 
 def stub_out_http_backend(stubs):
@@ -230,14 +230,16 @@ def stub_out_registry_and_store_server(stubs):
         def close(self):
             return True
 
-        def request(self, method, url, body=None):
+        def request(self, method, url, body=None, headers={}):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
             self.req.method = method
+            if headers:
+                self.req.headers = headers
             if body:
                 self.req.body = body
 
         def getresponse(self):
-            res = self.req.get_response(registry_controllers.API())
+            res = self.req.get_response(rserver.API())
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():
@@ -256,13 +258,12 @@ def stub_out_registry_and_store_server(stubs):
 
         def close(self):
             return True
-        
-        def putheader(self, k, v):
-            self.req.headers[k] = v
 
-        def request(self, method, url, body=None):
+        def request(self, method, url, body=None, headers={}):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
             self.req.method = method
+            if headers:
+                self.req.headers = headers
             if body:
                 self.req.body = body
 
@@ -280,25 +281,16 @@ def stub_out_registry_and_store_server(stubs):
         """
         Returns the proper connection type
         """
-        DEFAULT_PARALLAX_PORT = 9191
-        DEFAULT_TELLER_PORT = 9292
+        DEFAULT_REGISTRY_PORT = 9191
+        DEFAULT_API_PORT = 9292
 
-        if (client.port == DEFAULT_TELLER_PORT and
-            client.netloc == '127.0.0.1'):
+        if (client.port == DEFAULT_API_PORT and
+            client.host == '0.0.0.0'):
             return FakeGlanceConnection
-        elif (client.port == DEFAULT_PARALLAX_PORT and
-              client.netloc == '127.0.0.1'):
+        elif (client.port == DEFAULT_REGISTRY_PORT and
+              client.host == '0.0.0.0'):
             return FakeRegistryConnection
-        else:
-            try:
-                connection_type = {'http': httplib.HTTPConnection,
-                                   'https': httplib.HTTPSConnection}\
-                                   [client.protocol]
-                return connection_type
-            except KeyError:
-                raise UnsupportedProtocolError("Unsupported protocol %s. Unable "
-                                               " to connect to server."
-                                               % self.protocol)
+
     def fake_image_iter(self):
         for i in self.response.app_iter:
             yield i
@@ -394,6 +386,22 @@ def stub_out_registry_db_image_api(stubs):
             return values
 
         def image_update(self, _context, image_id, values):
+
+            props = []
+
+            if 'properties' in values.keys():
+                for k,v in values['properties'].iteritems():
+                    p = {}
+                    p['key'] = k
+                    p['value'] = v
+                    p['deleted'] = False
+                    p['created_at'] = datetime.datetime.utcnow() 
+                    p['updated_at'] = datetime.datetime.utcnow()
+                    p['deleted_at'] = None
+                    props.append(p)
+
+            values['properties'] = props
+
             image = self.image_get(_context, image_id)
             image.update(values)
             return image

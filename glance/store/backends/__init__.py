@@ -73,7 +73,7 @@ class FilesystemBackend(Backend):
             except OSError:
                 raise exception.NotAuthorized("You cannot delete file %s" % fn)
         else:
-            raise exception.NotFound("File %s does not exist" % fn) 
+            raise exception.NotFound("File %s does not exist" % fn)
 
 
 def get_backend_class(backend):

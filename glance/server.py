@@ -23,6 +23,10 @@ Glance API Server
 Configuration Options
 ---------------------
 
+   `default_store`: When no x-image-meta-store header is sent for a
+                    `POST /images` request, this store will be used
+                    for storing the image data. Default: 'file'
+
 """
 
 import json
@@ -39,7 +43,9 @@ from glance.common import flags
 from glance.common import wsgi
 from glance.store import (get_from_backend,
                           delete_from_backend,
-                          get_store_from_location)
+                          get_store_from_location,
+                          get_backend_class,
+                          UnsupportedBackend)
 from glance import registry
 from glance import util
 
@@ -51,10 +57,10 @@ class Controller(wsgi.Controller):
 
     """
     Main WSGI application controller for Glance.
-    
+
     The Glance API is a RESTful web service for image data. The API
     is as follows::
-        
+
         GET /images -- Returns a set of brief metadata about images
         GET /images/detail -- Returns a set of detailed metadata about
                               images
@@ -66,7 +72,7 @@ class Controller(wsgi.Controller):
                             image data is immutable once stored)
         DELETE /images/<ID> -- Delete the image with id <ID>
     """
-    
+
     def index(self, req):
         """
         Returns the following information for all public, available images:
@@ -75,7 +81,7 @@ class Controller(wsgi.Controller):
             * name -- The name of the image
             * size -- Size of image data in bytes
             * type -- One of 'kernel', 'ramdisk', 'raw', or 'machine'
-        
+
         :param request: The WSGI/Webob Request object
         :retval The response body is a mapping of the following form::
 
@@ -92,7 +98,7 @@ class Controller(wsgi.Controller):
     def detail(self, req):
         """
         Returns detailed information for all public, available images
-        
+
         :param request: The WSGI/Webob Request object
         :retval The response body is a mapping of the following form::
 
@@ -174,9 +180,6 @@ class Controller(wsgi.Controller):
 
         :param request: The WSGI/Webob Request object
 
-        :see The `id_type` configuration option (default: uuid) determines
-             the type of identifier that Glance generates for an image
-
         :raises HTTPBadRequest if no x-image-meta-location is missing
                 and the request body is not application/octet-stream
                 image data.
@@ -195,7 +198,7 @@ class Controller(wsgi.Controller):
                                      "mime-encoded as application/"
                                      "octet-stream.", request=req)
             else:
-                if 'x-image-meta-store' in headers_keys:
+                if 'x-image-meta-store' in header_keys:
                     image_store = req.headers['x-image-meta-store']
                 image_status = 'pending'  # set to available when stored...
                 image_in_body = True
@@ -204,23 +207,37 @@ class Controller(wsgi.Controller):
             image_store = get_store_from_location(image_location)
             image_status = 'available'
 
+        # If image is the request body, validate that the requested
+        # or default store is capable of storing the image data...
+        if not image_store:
+            image_store = FLAGS.default_store
+        if image_in_body:
+            store = self.get_store_or_400(req, image_store)
+
         image_meta = util.get_image_meta_from_headers(req)
+
         image_meta['status'] = image_status
         image_meta['store'] = image_store
-
         try:
             image_meta = registry.add_image_metadata(image_meta)
 
             if image_in_body:
-                #store = stores.get_store()
-                #store.add_image(req.body)
+                try:
+                    location = store.add(image_meta['id'], req.body)
+                except exception.Duplicate, e:
+                    logging.error("Error adding image to store: %s", str(e))
+                    return HTTPConflict(str(e), request=req)
                 image_meta['status'] = 'available'
-                registries.update_image(image_meta)
+                image_meta['location'] = location
+                registry.update_image_metadata(image_meta['id'], image_meta)
 
             return dict(image=image_meta)
 
         except exception.Duplicate:
-            return HTTPConflict()
+            msg = "An image with identifier %s already exists"\
+                  % image_meta['id']
+            logging.error(msg)
+            return HTTPConflict(msg, request=req)
         except exception.Invalid:
             return HTTPBadRequest()
 
@@ -274,6 +291,25 @@ class Controller(wsgi.Controller):
             raise HTTPNotFound(body='Image not found',
                                request=request,
                                content_type='text/plain')
+
+    def get_store_or_400(self, request, store_name):
+        """
+        Grabs the storage backend for the supplied store name
+        or raises an HTTPBadRequest (400) response
+
+        :param request: The WSGI/Webob Request object
+        :param id: The opaque image identifier
+
+        :raises HTTPNotFound if image does not exist
+        """
+        try:
+            return get_backend_class(store_name)
+        except UnsupportedBackend:
+            raise HTTPBadRequest(body='Requested store %s not available '
+                                 'for storage on this Glance node'
+                                 % store_name,
+                                 request=request,
+                                 content_type='text/plain')
 
 
 class API(wsgi.Router):

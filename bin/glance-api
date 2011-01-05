@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# pylint: disable-msg=C0103
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
 # Copyright 2010 United States Government as represented by the
@@ -17,20 +16,17 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
+
 """
-Teller API daemon.
+Glance API Server
 """
 
 import os
 import sys
 
-# If ../parallax/__init__.py exists, add ../ to Python search path, so that
-# it will override what happens to be installed in /usr/(local/)lib/python...
-possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
-                                   os.pardir,
-                                   os.pardir))
-if os.path.exists(os.path.join(possible_topdir, 'teller', '__init__.py')):
-    sys.path.insert(0, possible_topdir)
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+sys.path.append(ROOT_DIR)
 
 from glance.common import flags
 from glance.common import utils
@@ -38,15 +34,20 @@ from glance.common import server
 
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('teller_port', 9292, 'Teller port')
+flags.DEFINE_string('api_host', '0.0.0.0', 'API server lives at this address')
+flags.DEFINE_integer('api_port', 9292, 'API server listens on this port')
+
 
 def main(_args):
-    # NOTE(sirp): importing in main so that eventlet is imported AFTER daemonization
-    # see https://bugs.launchpad.net/bugs/687661
+    # NOTE(sirp): importing in main so that eventlet is imported AFTER
+    # daemonization.  See https://bugs.launchpad.net/bugs/687661
     from glance.common import wsgi
-    from glance.teller import controllers
-    wsgi.run_server(controllers.API(), FLAGS.teller_port)
+    from glance.server import API
+    server = wsgi.Server()
+    server.start(API(), FLAGS.api_port, host=FLAGS.api_host)
+    server.wait()
+
 
 if __name__ == '__main__':
     utils.default_flagfile()
-    server.serve('teller-server', main)
+    server.serve('glance-api', main)

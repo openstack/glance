@@ -47,7 +47,7 @@ class ApiError(Error):
     def __init__(self, message='Unknown', code='Unknown'):
         self.message = message
         self.code = code
-        super(ApiError, self).__init__('%s: %s'% (code, message))
+        super(ApiError, self).__init__('%s: %s' % (code, message))
 
 
 class NotFound(Error):
@@ -67,6 +67,11 @@ class NotEmpty(Error):
 
 
 class Invalid(Error):
+    pass
+
+
+class BadInputError(Exception):
+    """Error resulting from a client sending bad input to a server"""
     pass
 
 

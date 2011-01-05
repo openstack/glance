@@ -22,11 +22,14 @@ import stubout
 import webob
 
 from glance import server
-from glance.registry import controllers
+from glance.common import flags
+from glance.registry import server as rserver
 from tests import stubs
 
+FLAGS = flags.FLAGS
 
-class TestImageController(unittest.TestCase):
+
+class TestRegistryAPI(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
@@ -47,7 +50,7 @@ class TestImageController(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2'}
         req = webob.Request.blank('/')
-        res = req.get_response(controllers.API())
+        res = req.get_response(rserver.API())
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -65,7 +68,7 @@ class TestImageController(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2'}
         req = webob.Request.blank('/images')
-        res = req.get_response(controllers.API())
+        res = req.get_response(rserver.API())
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -87,7 +90,7 @@ class TestImageController(unittest.TestCase):
                    'status': 'available'
                   }
         req = webob.Request.blank('/images/detail')
-        res = req.get_response(controllers.API())
+        res = req.get_response(rserver.API())
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -109,7 +112,7 @@ class TestImageController(unittest.TestCase):
         req.method = 'POST'
         req.body = json.dumps(dict(image=fixture))
 
-        res = req.get_response(controllers.API())
+        res = req.get_response(rserver.API())
 
         self.assertEquals(res.status_int, 200)
 
@@ -141,7 +144,7 @@ class TestImageController(unittest.TestCase):
         # TODO(jaypipes): Port Nova's Fault infrastructure
         # over to Glance to support exception catching into
         # standard HTTP errors.
-        res = req.get_response(controllers.API())
+        res = req.get_response(rserver.API())
         self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
 
     def test_update_image(self):
@@ -155,7 +158,7 @@ class TestImageController(unittest.TestCase):
         req.method = 'PUT'
         req.body = json.dumps(dict(image=fixture))
 
-        res = req.get_response(controllers.API())
+        res = req.get_response(rserver.API())
 
         self.assertEquals(res.status_int, 200)
 
@@ -182,7 +185,7 @@ class TestImageController(unittest.TestCase):
         # TODO(jaypipes): Port Nova's Fault infrastructure
         # over to Glance to support exception catching into
         # standard HTTP errors.
-        res = req.get_response(controllers.API())
+        res = req.get_response(rserver.API())
         self.assertEquals(res.status_int,
                           webob.exc.HTTPNotFound.code)
 
@@ -191,7 +194,7 @@ class TestImageController(unittest.TestCase):
 
         # Grab the original number of images
         req = webob.Request.blank('/images')
-        res = req.get_response(controllers.API())
+        res = req.get_response(rserver.API())
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -202,13 +205,13 @@ class TestImageController(unittest.TestCase):
             
         req.method = 'DELETE'
 
-        res = req.get_response(controllers.API())
+        res = req.get_response(rserver.API())
 
         self.assertEquals(res.status_int, 200)
 
         # Verify one less image
         req = webob.Request.blank('/images')
-        res = req.get_response(controllers.API())
+        res = req.get_response(rserver.API())
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -226,11 +229,75 @@ class TestImageController(unittest.TestCase):
         # TODO(jaypipes): Port Nova's Fault infrastructure
         # over to Glance to support exception catching into
         # standard HTTP errors.
-        res = req.get_response(controllers.API())
+        res = req.get_response(rserver.API())
         self.assertEquals(res.status_int,
                           webob.exc.HTTPNotFound.code)
 
+
+class TestGlanceAPI(unittest.TestCase):
+    def setUp(self):
+        """Establish a clean test environment"""
+        self.stubs = stubout.StubOutForTesting()
+        stubs.stub_out_registry_and_store_server(self.stubs)
+        stubs.stub_out_registry_db_image_api(self.stubs)
+        stubs.stub_out_filesystem_backend()
+        self.orig_filesystem_store_datadir = FLAGS.filesystem_store_datadir
+        FLAGS.filesystem_store_datadir = stubs.FAKE_FILESYSTEM_ROOTDIR
+
+    def tearDown(self):
+        """Clear the test environment"""
+        FLAGS.filesystem_store_datadir = self.orig_filesystem_store_datadir
+        stubs.clean_out_fake_filesystem_backend()
+        self.stubs.UnsetAll()
+
+    def test_add_image_no_location_no_image_as_body(self):
+        """Tests raises BadRequest for no body and no loc header"""
+        fixture_headers = {'x-image-meta-store': 'file',
+                            'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k,v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(server.API())
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+
+    def test_add_image_bad_store(self):
+        """Tests raises BadRequest for invalid store header"""
+        fixture_headers = {'x-image-meta-store': 'bad',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k,v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.body = "chunk00000remainder"
+        res = req.get_response(server.API())
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+
+    def test_add_image_basic_file_store(self):
+        """Tests raises BadRequest for invalid store header"""
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k,v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.body = "chunk00000remainder"
+        res = req.get_response(server.API())
+        self.assertEquals(res.status_int, 200)
+
+        res_body = json.loads(res.body)['image']
+        self.assertEquals(res_body['location'],
+                          'file:///tmp/glance-tests/3')
+
     def test_image_meta(self):
+        """Test for HEAD /images/<ID>"""
         expected_headers = {'x-image-meta-id': 2,
                             'x-image-meta-name': 'fake image #2'}
         req = webob.Request.blank("/images/2")

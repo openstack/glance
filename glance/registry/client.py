@@ -35,19 +35,19 @@ class RegistryClient(BaseClient):
 
     """A client for the Registry image metadata service"""
 
-    DEFAULT_ADDRESS = 'http://127.0.0.1'
     DEFAULT_PORT = 9191
 
-    def __init__(self, **kwargs):
+    def __init__(self, host, port=None, use_ssl=False):
         """
-        Creates a new client to a Registry service.  All args are keyword
-        arguments.
+        Creates a new client to a Glance Registry service.
 
-        :param address: The address where Registry resides (defaults to
-                        http://127.0.0.1)
-        :param port: The port where Registry resides (defaults to 9191)
+        :param host: The host where Glance resides
+        :param port: The port where Glance resides (defaults to 9191)
+        :param use_ssl: Should we use HTTPS? (defaults to False)
         """
-        super(RegistryClient, self).__init__(**kwargs)
+
+        port = port or self.DEFAULT_PORT
+        super(RegistryClient, self).__init__(host, port, use_ssl)
 
     def get_images(self):
         """
