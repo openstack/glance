@@ -223,7 +223,7 @@ class Controller(wsgi.Controller):
 
             if image_in_body:
                 try:
-                    location = store.add(image_meta['id'], req.body)
+                    location = store.add(image_meta['id'], req.body_file)
                 except exception.Duplicate, e:
                     logging.error("Error adding image to store: %s", str(e))
                     return HTTPConflict(str(e), request=req)
