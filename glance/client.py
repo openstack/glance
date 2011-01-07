@@ -120,11 +120,11 @@ class BaseClient(object):
             elif status_code == httplib.NOT_FOUND:
                 raise exception.NotFound
             elif status_code == httplib.CONFLICT:
-                raise exception.Duplicate(res)
+                raise exception.Duplicate(res.read())
             elif status_code == httplib.BAD_REQUEST:
-                raise exception.BadInputError(res)
+                raise exception.BadInputError(res.read())
             else:
-                raise Exception("Unknown error occurred! %s" % res)
+                raise Exception("Unknown error occurred! %s" % res.__dict__)
 
         except (socket.error, IOError), e:
             raise ClientConnectionError("Unable to connect to "
@@ -203,12 +203,12 @@ class Client(BaseClient):
         image = util.get_image_meta_from_headers(res)
         return image
 
-    def add_image(self, image_meta, image_data=None):
+    def add_image(self, image_meta=None, image_data=None):
         """
         Tells Glance about an image's metadata as well
         as optionally the image_data itself
 
-        :param image_meta: Mapping of information about the
+        :param image_meta: Optional Mapping of information about the
                            image
         :param image_data: Optional string of raw image data
                            or file-like object that can be
@@ -216,6 +216,9 @@ class Client(BaseClient):
 
         :retval The newly-stored image's metadata.
         """
+        if image_meta is None:
+            image_meta = {}
+
         if image_data:
             if hasattr(image_data, 'read'):
                 # TODO(jaypipes): This is far from efficient. Implement

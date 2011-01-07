@@ -162,7 +162,6 @@ class Controller(wsgi.Controller):
         util.inject_image_meta_into_headers(res, image)
         return req.get_response(res)
 
-
     def _reserve(self, req):
         image_meta = util.get_image_meta_from_headers(req)
         image_meta['status'] = 'queued'
@@ -207,6 +206,30 @@ class Controller(wsgi.Controller):
     def _kill(self, req, image_meta):
         image_meta['status'] = 'killed'
         registry.update_image_metadata(image_meta['id'], image_meta)
+    
+    def _safe_kill(self, req, image_meta):
+        """Mark image killed without raising exceptions if it fails.
+        
+        Since _kill is meant to be called from exceptions handlers, it should
+        not raise itself, rather it should just log its error.
+        """
+        try:
+            self._kill(req, image_meta)
+        except Exception, e:
+            logging.error("Unable to kill image %s: %s",
+                          image_meta['id'], repr(e))
+
+    def _upload_and_activate(self, req, image_meta): 
+        try:
+            location = self._upload(req, image_meta)
+            self._activate(req, image_meta, location)
+        except Exception, e:
+            # NOTE(sirp): _safe_kill uses httplib which, in turn, uses
+            # Eventlet's GreenSocket. Eventlet subsequently clears exceptions
+            # by calling `sys.exc_clear()`. This is why we have to `raise e`
+            # instead of `raise`
+            self._safe_kill(req, image_meta)
+            raise e
 
     def create(self, req):
         """
@@ -241,13 +264,9 @@ class Controller(wsgi.Controller):
                 image data.
         """
         image_meta = self._reserve(req)
+
         if req.body:
-            try:
-                location = self._upload(req, image_meta)
-                self._activate(req, image_meta, location)
-            except:
-                self._kill(req, image_meta)
-                raise
+            self._upload_and_activate(req, image_meta)
         else:
             if req.headers.has_key('x-image-meta-location'):
                 location = req.headers['x-image-meta-location']
@@ -274,12 +293,7 @@ class Controller(wsgi.Controller):
         image_meta = registry.update_image_metadata(id, new_image_meta)
 
         if req.body:
-            try:
-                location = self._upload(req, image_meta)
-                self._activate(req, image_meta, location)
-            except:
-                self._kill(req, image_meta)
-                raise
+            self._upload_and_activate(req, image_meta)
 
         return dict(image=image_meta)
 

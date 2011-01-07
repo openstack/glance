@@ -93,9 +93,13 @@ class RegistryClient(BaseClient):
         """
         if 'image' not in image_metadata.keys():
             image_metadata = dict(image=image_metadata)
+
         body = json.dumps(image_metadata)
-        self.do_request("PUT", "/images/%s" % image_id, body)
-        return True
+
+        res = self.do_request("PUT", "/images/%s" % image_id, body)
+        data = json.loads(res.read())
+        image = data['image']
+        return image
 
     def delete_image(self, image_id):
         """

@@ -129,7 +129,9 @@ def _image_update(_context, values, image_id):
     with session.begin():
         _drop_protected_attrs(models.Image, values)
 
-        values['size'] = int(values['size'])
+        if 'size' in values:
+            values['size'] = int(values['size'])
+
         values['is_public'] = bool(values.get('is_public', False))
         properties = values.pop('properties', {})
 
