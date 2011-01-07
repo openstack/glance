@@ -65,11 +65,11 @@ def image_destroy(_context, image_id):
 def image_get(context, image_id):
     session = get_session()
     try:
-        return session.query(models.Image
-                     ).options(joinedload(models.Image.properties)
-                     ).filter_by(deleted=_deleted(context)
-                     ).filter_by(id=image_id
-                     ).one()
+        return session.query(models.Image).\
+                       options(joinedload(models.Image.properties)).\
+                       filter_by(deleted=_deleted(context)).\
+                       filter_by(id=image_id).\
+                       one()
     except exc.NoResultFound:
         new_exc = exception.NotFound("No model for id %s" % image_id)
         raise new_exc.__class__, new_exc, sys.exc_info()[2]
@@ -77,19 +77,19 @@ def image_get(context, image_id):
 
 def image_get_all(context):
     session = get_session()
-    return session.query(models.Image
-                 ).options(joinedload(models.Image.properties)
-                 ).filter_by(deleted=_deleted(context)
-                 ).all()
+    return session.query(models.Image).\
+                   options(joinedload(models.Image.properties)).\
+                   filter_by(deleted=_deleted(context)).\
+                   all()
 
 
 def image_get_all_public(context, public):
     session = get_session()
-    return session.query(models.Image
-                 ).options(joinedload(models.Image.properties)
-                 ).filter_by(deleted=_deleted(context)
-                 ).filter_by(is_public=public
-                 ).all()
+    return session.query(models.Image).\
+                   options(joinedload(models.Image.properties)).\
+                   filter_by(deleted=_deleted(context)).\
+                   filter_by(is_public=public).\
+                   all()
 
 
 def image_get_by_str(context, str_id):

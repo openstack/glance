@@ -252,7 +252,7 @@ class Client(BaseClient):
 
         headers = util.image_meta_to_http_headers(image_meta or {})
 
-        body = image_data # TODO(sirp): more work here?
+        body = image_data
         res = self.do_request("PUT", "/images/%s" % image_id, body, headers)
         data = json.loads(res.read())
         return data['image']

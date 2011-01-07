@@ -58,18 +58,18 @@ class ModelBase(object):
         """Get all objects of this type"""
         if not session:
             session = get_session()
-        return session.query(cls
-                     ).filter_by(deleted=deleted
-                     ).all()
+        return session.query(cls).\
+                       filter_by(deleted=deleted).\
+                       all()
 
     @classmethod
     def count(cls, session=None, deleted=False):
         """Count objects of this type"""
         if not session:
             session = get_session()
-        return session.query(cls
-                     ).filter_by(deleted=deleted
-                     ).count()
+        return session.query(cls).\
+                       filter_by(deleted=deleted).\
+                       count()
 
     @classmethod
     def find(cls, obj_id, session=None, deleted=False):
@@ -77,10 +77,10 @@ class ModelBase(object):
         if not session:
             session = get_session()
         try:
-            return session.query(cls
-                         ).filter_by(id=obj_id
-                         ).filter_by(deleted=deleted
-                         ).one()
+            return session.query(cls).\
+                           filter_by(id=obj_id).\
+                           filter_by(deleted=deleted).\
+                           one()
         except exc.NoResultFound:
             new_exc = exception.NotFound("No model for id %s" % obj_id)
             raise new_exc.__class__, new_exc, sys.exc_info()[2]

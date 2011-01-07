@@ -165,7 +165,7 @@ class Controller(wsgi.Controller):
     def _reserve(self, req):
         image_meta = util.get_image_meta_from_headers(req)
         image_meta['status'] = 'queued'
-        
+
         try:
             image_meta = registry.add_image_metadata(image_meta)
             return image_meta
@@ -185,7 +185,7 @@ class Controller(wsgi.Controller):
 
         image_store = req.headers.get(
             'x-image-meta-store', FLAGS.default_store)
-        
+
         store = self.get_store_or_400(req, image_store)
 
         image_meta['status'] = 'saving'
@@ -206,10 +206,10 @@ class Controller(wsgi.Controller):
     def _kill(self, req, image_meta):
         image_meta['status'] = 'killed'
         registry.update_image_metadata(image_meta['id'], image_meta)
-    
+
     def _safe_kill(self, req, image_meta):
         """Mark image killed without raising exceptions if it fails.
-        
+
         Since _kill is meant to be called from exceptions handlers, it should
         not raise itself, rather it should just log its error.
         """
@@ -219,7 +219,7 @@ class Controller(wsgi.Controller):
             logging.error("Unable to kill image %s: %s",
                           image_meta['id'], repr(e))
 
-    def _upload_and_activate(self, req, image_meta): 
+    def _upload_and_activate(self, req, image_meta):
         try:
             location = self._upload(req, image_meta)
             self._activate(req, image_meta, location)
@@ -268,7 +268,7 @@ class Controller(wsgi.Controller):
         if req.body:
             self._upload_and_activate(req, image_meta)
         else:
-            if req.headers.has_key('x-image-meta-location'):
+            if 'x-image-meta-location' in req.headers:
                 location = req.headers['x-image-meta-location']
                 self._activate(req, image_meta, location)
 
