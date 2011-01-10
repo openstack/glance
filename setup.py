@@ -56,6 +56,6 @@ setup(
         'Programming Language :: Python :: 2.6',
         'Environment :: No Input/Output (Daemon)',
     ],
-    install_requires=[], # removed for better compat
+    install_requires=[],  # removed for better compat
     scripts=['bin/glance-api',
              'bin/glance-registry'])
