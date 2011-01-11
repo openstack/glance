@@ -33,7 +33,7 @@ FLAGS = flags.FLAGS
 
 
 class TestBadClients(unittest.TestCase):
-    
+
     """Test exceptions raised for bad clients"""
 
     def test_bad_address(self):
@@ -69,7 +69,7 @@ class TestRegistryClient(unittest.TestCase):
         images = self.client.get_images()
         self.assertEquals(len(images), 1)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
 
     def test_get_image_details(self):
@@ -95,7 +95,7 @@ class TestRegistryClient(unittest.TestCase):
         images = self.client.get_images_detailed()
         self.assertEquals(len(images), 1)
 
-        for k,v in expected.iteritems():
+        for k, v in expected.iteritems():
             self.assertEquals(v, images[0][k])
 
     def test_get_image(self):
@@ -120,7 +120,7 @@ class TestRegistryClient(unittest.TestCase):
 
         data = self.client.get_image(2)
 
-        for k,v in expected.iteritems():
+        for k, v in expected.iteritems():
             self.assertEquals(v, data[k])
 
     def test_get_image_non_existing(self):
@@ -138,7 +138,7 @@ class TestRegistryClient(unittest.TestCase):
                    'size': 19,
                    'location': "file:///tmp/glance-tests/acct/3.gz.0",
                   }
-        
+
         new_image = self.client.add_image(fixture)
 
         # Test ID auto-assigned properly
@@ -147,7 +147,7 @@ class TestRegistryClient(unittest.TestCase):
         # Test all other attributes set
         data = self.client.get_image(3)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, data[k])
 
         # Test status was updated properly
@@ -170,13 +170,13 @@ class TestRegistryClient(unittest.TestCase):
                     'location': "file:///tmp/glance-tests/2",
                     'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
-        
+
         new_image = self.client.add_image(fixture)
 
         # Test ID auto-assigned properly
         self.assertEquals(3, new_image['id'])
 
-        for k,v in expected.iteritems():
+        for k, v in expected.iteritems():
             self.assertEquals(v, new_image[k])
 
         # Test status was updated properly
@@ -224,7 +224,7 @@ class TestRegistryClient(unittest.TestCase):
         # Test all other attributes set
         data = self.client.get_image(2)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, data[k])
 
     def test_update_image_not_existing(self):
@@ -304,7 +304,7 @@ class TestClient(unittest.TestCase):
             image_data += image_chunk
 
         self.assertEquals(expected_image, image_data)
-        for k,v in expected_meta.iteritems():
+        for k, v in expected_meta.iteritems():
             self.assertEquals(v, meta[k])
 
     def test_get_image_not_existing(self):
@@ -321,7 +321,7 @@ class TestClient(unittest.TestCase):
         images = self.client.get_images()
         self.assertEquals(len(images), 1)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
 
     def test_get_image_details(self):
@@ -347,7 +347,7 @@ class TestClient(unittest.TestCase):
         images = self.client.get_images_detailed()
         self.assertEquals(len(images), 1)
 
-        for k,v in expected.iteritems():
+        for k, v in expected.iteritems():
             self.assertEquals(v, images[0][k])
 
     def test_get_image_meta(self):
@@ -372,7 +372,7 @@ class TestClient(unittest.TestCase):
 
         data = self.client.get_image_meta(2)
 
-        for k,v in expected.iteritems():
+        for k, v in expected.iteritems():
             self.assertEquals(v, data[k])
 
     def test_get_image_non_existing(self):
@@ -410,7 +410,7 @@ class TestClient(unittest.TestCase):
         # Test all other attributes set
         data = self.client.get_image_meta(3)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, data[k])
 
         # Test status was updated properly
@@ -443,7 +443,7 @@ class TestClient(unittest.TestCase):
         # Test all other attributes set
         data = self.client.get_image_meta(3)
 
-        for k,v in expected.iteritems():
+        for k, v in expected.iteritems():
             self.assertEquals(v, data[k])
 
         # Test status was updated properly
@@ -500,7 +500,7 @@ class TestClient(unittest.TestCase):
             new_image_data += image_chunk
 
         self.assertEquals(image_data_fixture, new_image_data)
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, new_meta[k])
 
     def test_add_image_with_image_data_as_file(self):
@@ -537,7 +537,7 @@ class TestClient(unittest.TestCase):
             new_image_data += image_chunk
 
         self.assertEquals(image_data_fixture, new_image_data)
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, new_meta[k])
 
     def test_add_image_with_bad_store(self):
@@ -568,7 +568,7 @@ class TestClient(unittest.TestCase):
         # Test all other attributes set
         data = self.client.get_image_meta(2)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, data[k])
 
     def test_update_image_not_existing(self):

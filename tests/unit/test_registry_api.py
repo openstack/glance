@@ -38,7 +38,7 @@ class TestImageController(unittest.TestCase):
     def test_get_root(self):
         """Tests that the root registry API returns "index",
         which is a list of public images
-        
+
         """
         fixture = {'id': 2,
                    'name': 'fake image #2'}
@@ -50,13 +50,13 @@ class TestImageController(unittest.TestCase):
         images = res_dict['images']
         self.assertEquals(len(images), 1)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
 
     def test_get_index(self):
         """Tests that the /images registry API returns list of
         public images
-        
+
         """
         fixture = {'id': 2,
                    'name': 'fake image #2'}
@@ -68,13 +68,13 @@ class TestImageController(unittest.TestCase):
         images = res_dict['images']
         self.assertEquals(len(images), 1)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
 
     def test_get_details(self):
         """Tests that the /images/detail registry API returns
         a mapping containing a list of detailed image information
-        
+
         """
         fixture = {'id': 2,
                    'name': 'fake image #2',
@@ -90,7 +90,7 @@ class TestImageController(unittest.TestCase):
         images = res_dict['images']
         self.assertEquals(len(images), 1)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
 
     def test_create_image(self):
@@ -101,7 +101,7 @@ class TestImageController(unittest.TestCase):
                   }
 
         req = webob.Request.blank('/images')
-            
+
         req.method = 'POST'
         req.body = json.dumps(dict(image=fixture))
 
@@ -111,7 +111,7 @@ class TestImageController(unittest.TestCase):
 
         res_dict = json.loads(res.body)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, res_dict['image'][k])
 
         # Test ID auto-assigned properly
@@ -130,7 +130,7 @@ class TestImageController(unittest.TestCase):
                   }
 
         req = webob.Request.blank('/images')
-            
+
         req.method = 'POST'
         req.body = json.dumps(dict(image=fixture))
 
@@ -147,7 +147,7 @@ class TestImageController(unittest.TestCase):
                   }
 
         req = webob.Request.blank('/images/2')
-            
+
         req.method = 'PUT'
         req.body = json.dumps(dict(image=fixture))
 
@@ -157,7 +157,7 @@ class TestImageController(unittest.TestCase):
 
         res_dict = json.loads(res.body)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, res_dict['image'][k])
 
     def test_update_image_not_existing(self):
@@ -171,7 +171,7 @@ class TestImageController(unittest.TestCase):
                   }
 
         req = webob.Request.blank('/images/3')
-            
+
         req.method = 'PUT'
         req.body = json.dumps(dict(image=fixture))
 
@@ -195,7 +195,7 @@ class TestImageController(unittest.TestCase):
 
         # Delete image #2
         req = webob.Request.blank('/images/2')
-            
+
         req.method = 'DELETE'
 
         res = req.get_response(server.API())
@@ -216,7 +216,7 @@ class TestImageController(unittest.TestCase):
         image"""
 
         req = webob.Request.blank('/images/3')
-            
+
         req.method = 'DELETE'
 
         # TODO(jaypipes): Port Nova's Fault infrastructure

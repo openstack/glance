@@ -44,7 +44,7 @@ def stub_out_http_backend(stubs):
     """Stubs out the httplib.HTTPRequest.getresponse to return
     faked-out data instead of grabbing actual contents of a resource
 
-    The stubbed getresponse() returns an iterator over 
+    The stubbed getresponse() returns an iterator over
     the data "I am a teapot, short and stout\n"
 
     :param stubs: Set of stubout stubs
@@ -117,6 +117,7 @@ def stub_out_swift_backend(stubs):
     """
     class FakeSwiftAuth(object):
         pass
+
     class FakeSwiftConnection(object):
         pass
 
@@ -135,8 +136,8 @@ def stub_out_swift_backend(stubs):
 
             def chunk_it():
                 for i in xrange(0, len(cls.DATA), cls.CHUNK_SIZE):
-                    yield cls.DATA[i:i+cls.CHUNK_SIZE]
-            
+                    yield cls.DATA[i:i + cls.CHUNK_SIZE]
+
             return chunk_it()
 
     fake_swift_backend = FakeSwiftBackend()
@@ -324,25 +325,25 @@ def stub_out_registry_db_image_api(stubs):
 
             values['deleted'] = False
             values['properties'] = values.get('properties', {})
-            values['created_at'] = datetime.datetime.utcnow() 
+            values['created_at'] = datetime.datetime.utcnow()
             values['updated_at'] = datetime.datetime.utcnow()
             values['deleted_at'] = None
 
             props = []
 
             if 'properties' in values.keys():
-                for k,v in values['properties'].iteritems():
+                for k, v in values['properties'].iteritems():
                     p = {}
                     p['key'] = k
                     p['value'] = v
                     p['deleted'] = False
-                    p['created_at'] = datetime.datetime.utcnow() 
+                    p['created_at'] = datetime.datetime.utcnow()
                     p['updated_at'] = datetime.datetime.utcnow()
                     p['deleted_at'] = None
                     props.append(p)
 
             values['properties'] = props
-            
+
             self.next_id += 1
             self.images.append(values)
             return values
@@ -352,12 +353,12 @@ def stub_out_registry_db_image_api(stubs):
             props = []
 
             if 'properties' in values.keys():
-                for k,v in values['properties'].iteritems():
+                for k, v in values['properties'].iteritems():
                     p = {}
                     p['key'] = k
                     p['value'] = v
                     p['deleted'] = False
-                    p['created_at'] = datetime.datetime.utcnow() 
+                    p['created_at'] = datetime.datetime.utcnow()
                     p['updated_at'] = datetime.datetime.utcnow()
                     p['deleted_at'] = None
                     props.append(p)
