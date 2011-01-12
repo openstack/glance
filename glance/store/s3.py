@@ -15,7 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-""" the s3 backend adapter """
+"""the s3 backend adapter"""
 
 from __future__ import absolute_import
 import glance.store
@@ -23,7 +23,7 @@ import boto.s3.connection
 
 
 class S3Backend(glance.store.Backend):
-    """ An implementation of the s3 adapter.  """
+    """An implementation of the s3 adapter."""
 
     EXAMPLE_URL = "s3://ACCESS_KEY:SECRET_KEY@s3_url/bucket/file.gz.0"
 
@@ -86,7 +86,7 @@ class S3Backend(glance.store.Backend):
 
     @classmethod
     def _get_bucket(cls, conn, bucket_id):
-        """ Get a bucket from an s3 connection """
+        """Get a bucket from an s3 connection"""
 
         bucket = conn.get_bucket(bucket_id)
         if not bucket:
@@ -97,7 +97,7 @@ class S3Backend(glance.store.Backend):
 
     @classmethod
     def _get_key(cls, bucket, obj):
-        """ Get a key from a bucket """
+        """Get a key from a bucket"""
 
         key = bucket.get_key(obj)
         if not key:
@@ -106,5 +106,5 @@ class S3Backend(glance.store.Backend):
 
     @classmethod
     def _parse_s3_tokens(cls, parsed_uri):
-        """ Parse tokens from the parsed_uri """
+        """Parse tokens from the parsed_uri"""
         return glance.store.parse_uri_tokens(parsed_uri, cls.EXAMPLE_URL)

@@ -17,7 +17,6 @@
 
 from __future__ import absolute_import
 import glance.store
-import swift.common.client
 
 
 class SwiftBackend(glance.store.Backend):
@@ -117,5 +116,6 @@ class SwiftBackend(glance.store.Backend):
 
 def get_connection_class(conn_class):
     if not conn_class:
+        import swift.common.client
         conn_class = swift.common.client.Connection
     return conn_class
