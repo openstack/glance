@@ -279,7 +279,7 @@ def stub_out_registry_db_image_api(stubs):
         FIXTURES = [
             {'id': 1,
                 'name': 'fake image #1',
-                'status': 'available',
+                'status': 'active',
                 'type': 'kernel',
                 'is_public': False,
                 'created_at': datetime.datetime.utcnow(),
@@ -291,7 +291,7 @@ def stub_out_registry_db_image_api(stubs):
                 'properties': []},
             {'id': 2,
                 'name': 'fake image #2',
-                'status': 'available',
+                'status': 'active',
                 'type': 'kernel',
                 'is_public': True,
                 'created_at': datetime.datetime.utcnow(),
@@ -302,7 +302,7 @@ def stub_out_registry_db_image_api(stubs):
                 'location': "file:///tmp/glance-tests/2",
                 'properties': []}]
 
-        VALID_STATUSES = ('available', 'disabled', 'pending')
+        VALID_STATUSES = ('active', 'killed', 'queued', 'saving')
 
         def __init__(self):
             self.images = FakeDatastore.FIXTURES
@@ -317,7 +317,7 @@ def stub_out_registry_db_image_api(stubs):
                                           values['id'])
 
             if 'status' not in values.keys():
-                values['status'] = 'available'
+                values['status'] = 'active'
             else:
                 if not values['status'] in self.VALID_STATUSES:
                     raise exception.Invalid("Invalid status '%s' for image" %

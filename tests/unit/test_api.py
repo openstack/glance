@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import httplib
 import json
 import unittest
 
@@ -87,7 +88,7 @@ class TestRegistryAPI(unittest.TestCase):
                    'name': 'fake image #2',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'available'
+                   'status': 'active'
                   }
         req = webob.Request.blank('/images/detail')
         res = req.get_response(rserver.API())
@@ -125,7 +126,7 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(3, res_dict['image']['id'])
 
         # Test status was updated properly
-        self.assertEquals('available', res_dict['image']['status'])
+        self.assertEquals('active', res_dict['image']['status'])
 
     def test_create_image_with_bad_status(self):
         """Tests proper exception is raised if a bad status is set"""
@@ -251,7 +252,7 @@ class TestGlanceAPI(unittest.TestCase):
         self.stubs.UnsetAll()
 
     def test_add_image_no_location_no_image_as_body(self):
-        """Tests raises BadRequest for no body and no loc header"""
+        """Tests creates a queued image for no body and no loc header"""
         fixture_headers = {'x-image-meta-store': 'file',
                             'x-image-meta-name': 'fake image #3'}
 
@@ -260,7 +261,10 @@ class TestGlanceAPI(unittest.TestCase):
         for k, v in fixture_headers.iteritems():
             req.headers[k] = v
         res = req.get_response(server.API())
-        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertEquals(res.status_int, httplib.OK)
+
+        res_body = json.loads(res.body)['image']
+        self.assertEquals('queued', res_body['status'])
 
     def test_add_image_bad_store(self):
         """Tests raises BadRequest for invalid store header"""

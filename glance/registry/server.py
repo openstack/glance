@@ -106,7 +106,7 @@ class ImageController(wsgi.Controller):
         image_data = json.loads(req.body)['image']
 
         # Ensure the image has a status set
-        image_data.setdefault('status', 'available')
+        image_data.setdefault('status', 'active')
 
         context = None
         try:
