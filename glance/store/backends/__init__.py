@@ -87,12 +87,10 @@ def get_backend_class(backend):
     from glance.store.backends.http import HTTPBackend
     from glance.store.backends.swift import SwiftBackend
 
-    BACKENDS = {
-        "file": FilesystemBackend,
-        "http": HTTPBackend,
-        "https": HTTPBackend,
-        "swift": SwiftBackend
-    }
+    BACKENDS = {"file": FilesystemBackend,
+                "http": HTTPBackend,
+                "https": HTTPBackend,
+                "swift": SwiftBackend}
 
     try:
         return BACKENDS[backend]

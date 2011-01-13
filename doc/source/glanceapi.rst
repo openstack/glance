@@ -292,3 +292,19 @@ The list of metadata headers that Glance accepts are listed below.
    be attached to the image.  However, keep in mind that the 8K limit on the
    size of all HTTP headers sent in a request will effectively limit the number
    of image properties.
+
+
+Updating an Image
+*****************
+
+Glance will view as image metadata any HTTP header that it receives in a
+`PUT` request where the header key is prefixed with the strings
+`x-image-meta-` and `x-image-meta-property-`.
+
+If an image was previously reserved, and thus is in the `queued` state, then
+image data can be added by including it as the request body.  If the image
+already as data associated with it (e.g. not in the `queued` state), then
+including a request body will result in a `409 Conflict` exception.
+
+On success, the `PUT` request will return the image metadata encoded as `HTTP`
+headers.

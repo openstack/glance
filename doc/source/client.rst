@@ -133,6 +133,10 @@ The method signature is as follows::
 The `image_meta` argument is a mapping containing various image metadata. The
 `image_data` argument is the disk image data.
 
+If the data is not yet available, but you would like to reserve a slot in
+Glance to hold the image, you can create a 'queued' by omitting the
+`image_data` parameter.
+
 The list of metadata that `image_meta` can contain are listed below.
 
  * `name`

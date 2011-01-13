@@ -114,7 +114,6 @@ class FilesystemBackend(glance.store.Backend):
 
         :retval The location that was written, with file:// scheme prepended
         """
-
         datadir = FLAGS.filesystem_store_datadir
 
         if not os.path.exists(datadir):

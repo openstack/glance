@@ -23,7 +23,7 @@ def make_swift_image():
 
     # TODO(sirp): Create a testing account, and define gflags for
     # test_swift_username and test_swift_api_key
-    USERNAME = "your user name here" # fill these out for testing
+    USERNAME = "your user name here"  # fill these out for testing
     API_KEY = "your api key here"
     #IMAGE_CHUNKS = [("filename", 123)] # filename, size in bytes
     IMAGE_CHUNKS = [("your test chunk here", 12345)]
@@ -40,8 +40,8 @@ def make_swift_image():
             "swift://%s:%s@auth.api.rackspacecloud.com/v1.0/cloudservers/%s"
         ) % (USERNAME, API_KEY, obj)
 
-        db.image_file_create(None, 
+        db.image_file_create(None,
             dict(image_id=image.id, location=location, size=size))
 
 if __name__ == "__main__":
-    make_swift_image() # NOTE: uncomment if you have a username and api_key
+    make_swift_image()  # NOTE: uncomment if you have a username and api_key
