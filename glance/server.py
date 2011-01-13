@@ -192,7 +192,7 @@ class Controller(wsgi.Controller):
         registry.update_image_metadata(image_meta['id'], image_meta)
 
         try:
-            location = store.add(image_meta['id'], req.body)
+            location = store.add(image_meta['id'], req.body_file)
             return location
         except exception.Duplicate, e:
             logging.error("Error adding image to store: %s", str(e))
