@@ -15,11 +15,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""the s3 backend adapter"""
+"""The s3 backend adapter"""
 
-from __future__ import absolute_import
 import glance.store
-import boto.s3.connection
 
 
 class S3Backend(glance.store.Backend):
@@ -39,6 +37,7 @@ class S3Backend(glance.store.Backend):
         if conn_class:
             pass
         else:
+            import boto.s3.connection
             conn_class = boto.s3.connection.S3Connection
 
         (access_key, secret_key, host, bucket, obj) = \

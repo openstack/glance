@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import httplib
 import json
 import unittest
 
@@ -45,7 +46,7 @@ class TestRegistryAPI(unittest.TestCase):
     def test_get_root(self):
         """Tests that the root registry API returns "index",
         which is a list of public images
-        
+
         """
         fixture = {'id': 2,
                    'name': 'fake image #2'}
@@ -57,13 +58,13 @@ class TestRegistryAPI(unittest.TestCase):
         images = res_dict['images']
         self.assertEquals(len(images), 1)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
 
     def test_get_index(self):
         """Tests that the /images registry API returns list of
         public images
-        
+
         """
         fixture = {'id': 2,
                    'name': 'fake image #2'}
@@ -75,19 +76,19 @@ class TestRegistryAPI(unittest.TestCase):
         images = res_dict['images']
         self.assertEquals(len(images), 1)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
 
     def test_get_details(self):
         """Tests that the /images/detail registry API returns
         a mapping containing a list of detailed image information
-        
+
         """
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'available'
+                   'status': 'active'
                   }
         req = webob.Request.blank('/images/detail')
         res = req.get_response(rserver.API())
@@ -97,7 +98,7 @@ class TestRegistryAPI(unittest.TestCase):
         images = res_dict['images']
         self.assertEquals(len(images), 1)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
 
     def test_create_image(self):
@@ -108,7 +109,7 @@ class TestRegistryAPI(unittest.TestCase):
                   }
 
         req = webob.Request.blank('/images')
-            
+
         req.method = 'POST'
         req.body = json.dumps(dict(image=fixture))
 
@@ -118,14 +119,14 @@ class TestRegistryAPI(unittest.TestCase):
 
         res_dict = json.loads(res.body)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, res_dict['image'][k])
 
         # Test ID auto-assigned properly
         self.assertEquals(3, res_dict['image']['id'])
 
         # Test status was updated properly
-        self.assertEquals('available', res_dict['image']['status'])
+        self.assertEquals('active', res_dict['image']['status'])
 
     def test_create_image_with_bad_status(self):
         """Tests proper exception is raised if a bad status is set"""
@@ -137,7 +138,7 @@ class TestRegistryAPI(unittest.TestCase):
                   }
 
         req = webob.Request.blank('/images')
-            
+
         req.method = 'POST'
         req.body = json.dumps(dict(image=fixture))
 
@@ -154,7 +155,7 @@ class TestRegistryAPI(unittest.TestCase):
                   }
 
         req = webob.Request.blank('/images/2')
-            
+
         req.method = 'PUT'
         req.body = json.dumps(dict(image=fixture))
 
@@ -164,7 +165,7 @@ class TestRegistryAPI(unittest.TestCase):
 
         res_dict = json.loads(res.body)
 
-        for k,v in fixture.iteritems():
+        for k, v in fixture.iteritems():
             self.assertEquals(v, res_dict['image'][k])
 
     def test_update_image_not_existing(self):
@@ -178,7 +179,7 @@ class TestRegistryAPI(unittest.TestCase):
                   }
 
         req = webob.Request.blank('/images/3')
-            
+
         req.method = 'PUT'
         req.body = json.dumps(dict(image=fixture))
 
@@ -202,7 +203,7 @@ class TestRegistryAPI(unittest.TestCase):
 
         # Delete image #2
         req = webob.Request.blank('/images/2')
-            
+
         req.method = 'DELETE'
 
         res = req.get_response(rserver.API())
@@ -223,7 +224,7 @@ class TestRegistryAPI(unittest.TestCase):
         image"""
 
         req = webob.Request.blank('/images/3')
-            
+
         req.method = 'DELETE'
 
         # TODO(jaypipes): Port Nova's Fault infrastructure
@@ -251,16 +252,19 @@ class TestGlanceAPI(unittest.TestCase):
         self.stubs.UnsetAll()
 
     def test_add_image_no_location_no_image_as_body(self):
-        """Tests raises BadRequest for no body and no loc header"""
+        """Tests creates a queued image for no body and no loc header"""
         fixture_headers = {'x-image-meta-store': 'file',
                             'x-image-meta-name': 'fake image #3'}
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k,v in fixture_headers.iteritems():
+        for k, v in fixture_headers.iteritems():
             req.headers[k] = v
         res = req.get_response(server.API())
-        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertEquals(res.status_int, httplib.OK)
+
+        res_body = json.loads(res.body)['image']
+        self.assertEquals('queued', res_body['status'])
 
     def test_add_image_bad_store(self):
         """Tests raises BadRequest for invalid store header"""
@@ -269,7 +273,7 @@ class TestGlanceAPI(unittest.TestCase):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k,v in fixture_headers.iteritems():
+        for k, v in fixture_headers.iteritems():
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -284,7 +288,7 @@ class TestGlanceAPI(unittest.TestCase):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k,v in fixture_headers.iteritems():
+        for k, v in fixture_headers.iteritems():
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -327,7 +331,8 @@ class TestGlanceAPI(unittest.TestCase):
         req = webob.Request.blank("/images/2")
         req.method = 'GET'
         res = req.get_response(server.API())
-        self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code, res.body)
+        self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code,
+                          res.body)
 
     def test_delete_non_exists_image(self):
         req = webob.Request.blank("/images/42")
