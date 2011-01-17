@@ -49,6 +49,7 @@ Concepts
 
    identifiers
    registries
+   statuses
 
 Using Glance
 ============
