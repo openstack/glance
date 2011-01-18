@@ -361,6 +361,7 @@ def stub_out_registry_db_image_api(stubs):
                     raise exception.Invalid("Invalid status '%s' for image" %
                                             values['status'])
 
+            values['size'] = values.get('size', 0)
             values['deleted'] = False
             values['properties'] = values.get('properties', {})
             values['created_at'] = datetime.datetime.utcnow()

@@ -391,6 +391,7 @@ class TestClient(unittest.TestCase):
        
         image_meta = self.client.add_image(fixture)
         self.assertEquals('queued', image_meta['status'])
+        self.assertEquals(0, image_meta['size'])
 
     def test_add_image_basic(self):
         """Tests that we can add image metadata and returns the new id"""
@@ -487,7 +488,7 @@ class TestClient(unittest.TestCase):
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
 
-        image_data_fixture = r"chunk0000remainder"
+        image_data_fixture = r"chunk00000remainder"
 
         new_image = self.client.add_image(fixture, image_data_fixture)
         new_image_id = new_image['id']
@@ -512,7 +513,7 @@ class TestClient(unittest.TestCase):
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
 
-        image_data_fixture = r"chunk0000remainder"
+        image_data_fixture = r"chunk00000remainder"
 
         tmp_image_filepath = '/tmp/rubbish-image'
 
@@ -540,6 +541,32 @@ class TestClient(unittest.TestCase):
         for k, v in fixture.iteritems():
             self.assertEquals(v, new_meta[k])
 
+    def test_add_image_with_image_data_as_string_and_no_size(self):
+        """Tests add image by passing image data as string w/ no size attr"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'}
+                  }
+
+        image_data_fixture = r"chunk00000remainder"
+
+        new_image = self.client.add_image(fixture, image_data_fixture)
+        new_image_id = new_image['id']
+        self.assertEquals(3, new_image_id)
+
+        new_meta, new_image_chunks = self.client.get_image(3)
+
+        new_image_data = ""
+        for image_chunk in new_image_chunks:
+            new_image_data += image_chunk
+
+        self.assertEquals(image_data_fixture, new_image_data)
+        for k, v in fixture.iteritems():
+            self.assertEquals(v, new_meta[k])
+
+        self.assertEquals(19, new_meta['size'])
+
     def test_add_image_with_bad_store(self):
         """Tests BadRequest raised when supplying bad store name in meta"""
         fixture = {'name': 'fake public image',
@@ -550,7 +577,7 @@ class TestClient(unittest.TestCase):
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
 
-        image_data_fixture = r"chunk0000remainder"
+        image_data_fixture = r"chunk00000remainder"
 
         self.assertRaises(exception.BadInputError,
                           self.client.add_image,
