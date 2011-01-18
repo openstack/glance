@@ -33,10 +33,6 @@ from glance.common import server
 
 
 FLAGS = flags.FLAGS
-flags.DEFINE_string('registry_host', '0.0.0.0',
-                    'Registry server lives at this address')
-flags.DEFINE_integer('registry_port', 9191,
-                     'Registry server listens on this port')
 
 
 def main(_args):

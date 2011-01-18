@@ -20,34 +20,45 @@
 Registry API
 """
 
+from glance.common import flags
 from glance.registry import client
+
+FLAGS = flags.FLAGS
+
+# TODO(jaypipes): Separate server flags from client flags
+#                 and allow a list of client host/port
+#                 combinations
+flags.DEFINE_string('registry_host', '0.0.0.0',
+                    'Registry server lives at this address')
+flags.DEFINE_integer('registry_port', 9191,
+                     'Registry server listens on this port')
 
 
 def get_images_list():
-    c = client.RegistryClient("0.0.0.0")
+    c = client.RegistryClient(FLAGS.registry_host, FLAGS.registry_port)
     return c.get_images()
 
 
 def get_images_detail():
-    c = client.RegistryClient("0.0.0.0")
+    c = client.RegistryClient(FLAGS.registry_host, FLAGS.registry_port)
     return c.get_images_detailed()
 
 
 def get_image_metadata(image_id):
-    c = client.RegistryClient("0.0.0.0")
+    c = client.RegistryClient(FLAGS.registry_host, FLAGS.registry_port)
     return c.get_image(image_id)
 
 
 def add_image_metadata(image_data):
-    c = client.RegistryClient("0.0.0.0")
+    c = client.RegistryClient(FLAGS.registry_host, FLAGS.registry_port)
     return c.add_image(image_data)
 
 
 def update_image_metadata(image_id, image_data):
-    c = client.RegistryClient("0.0.0.0")
+    c = client.RegistryClient(FLAGS.registry_host, FLAGS.registry_port)
     return c.update_image(image_id, image_data)
 
 
 def delete_image_metadata(image_id):
-    c = client.RegistryClient("0.0.0.0")
+    c = client.RegistryClient(FLAGS.registry_host, FLAGS.registry_port)
     return c.delete_image(image_id)
