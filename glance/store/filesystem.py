@@ -110,7 +110,7 @@ class FilesystemBackend(glance.store.Backend):
         FLAGS.filesystem_store_datadir and <ID> is the supplied image ID.
 
         :param id: The opaque image identifier
-        :param data: The image data to write
+        :param data: The image data to write, as a file-like object
 
         :retval The location that was written, with file:// scheme prepended
         """
@@ -125,8 +125,11 @@ class FilesystemBackend(glance.store.Backend):
             raise exception.Duplicate("Image file %s already exists!"
                                       % filepath)
 
-        f = open(filepath, 'wb')
-        f.write(data)
-        f.close()
+        with open(filepath, 'wb') as f:
+            while True:
+                buf = data.read(ChunkedFile.CHUNKSIZE)
+                if not buf:
+                    break
+                f.write(buf)
 
         return 'file://%s' % filepath

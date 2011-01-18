@@ -105,6 +105,44 @@ def stub_out_filesystem_backend():
     f.close()
 
 
+def stub_out_s3_backend(stubs):
+    """ Stubs out the S3 Backend with fake data and calls.
+
+    The stubbed swift backend provides back an iterator over
+    the data ""
+
+    :param stubs: Set of stubout stubs
+
+    """
+
+    class FakeSwiftAuth(object):
+        pass
+    class FakeS3Connection(object):
+        pass
+
+    class FakeS3Backend(object):
+        CHUNK_SIZE = 2
+        DATA = 'I am a teapot, short and stout\n'
+
+        @classmethod
+        def get(cls, parsed_uri, expected_size, conn_class=None):
+            S3Backend = glance.store.s3.S3Backend
+
+            # raise BackendException if URI is bad.
+            (user, key, authurl, container, obj) = \
+                S3Backend._parse_s3_tokens(parsed_uri)
+
+            def chunk_it():
+                for i in xrange(0, len(cls.DATA), cls.CHUNK_SIZE):
+                    yield cls.DATA[i:i+cls.CHUNK_SIZE]
+            
+            return chunk_it()
+
+    fake_swift_backend = FakeS3Backend()
+    stubs.Set(glance.store.s3.S3Backend, 'get',
+              fake_swift_backend.get)
+
+
 def stub_out_swift_backend(stubs):
     """Stubs out the Swift Glance backend with fake data
     and calls.

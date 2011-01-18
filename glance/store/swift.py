@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from __future__ import absolute_import
 import glance.store
 
 
@@ -114,21 +115,7 @@ class SwiftBackend(glance.store.Backend):
 
 
 def get_connection_class(conn_class):
-    if conn_class:
-        pass  # Use the provided conn_class
-    else:
-        # NOTE(sirp): A standard import statement won't work here because
-        # this file ('swift.py') is shadowing the swift module, and since
-        # the import statement searches locally before globally, we'd end
-        # up importing ourselves.
-        #
-        # NOTE(jaypipes): This can be resolved by putting this code in
-        #                 /glance/store/swift/__init__.py
-        #
-        # see http://docs.python.org/library/functions.html#__import__
-        PERFORM_ABSOLUTE_IMPORTS = 0
-        swift = __import__('swift.common.client', globals(), locals(), [],
-                            PERFORM_ABSOLUTE_IMPORTS)
-
+    if not conn_class:
+        import swift.common.client
         conn_class = swift.common.client.Connection
     return conn_class

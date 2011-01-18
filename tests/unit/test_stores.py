@@ -21,6 +21,7 @@ import stubout
 import unittest
 import urlparse
 
+from glance.store.s3 import S3Backend
 from glance.store.swift import SwiftBackend
 from glance.store import Backend, BackendException, get_from_backend
 from tests import stubs
@@ -85,6 +86,25 @@ class TestHTTPBackend(TestBackend):
 
         chunks = [c for c in fetcher]
         self.assertEqual(chunks, expected_returns)
+
+
+class TestS3Backend(TestBackend):
+    def setUp(self):
+        super(TestS3Backend, self).setUp()
+        stubs.stub_out_s3_backend(self.stubs)
+
+    def test_get(self):
+        s3_uri = "s3://user:password@localhost/bucket1/file.tar.gz"
+
+        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 
+                            'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
+        fetcher = get_from_backend(s3_uri, 
+                                   expected_size=8, 
+                                   conn_class=S3Backend)
+
+        chunks = [c for c in fetcher]
+        self.assertEqual(chunks, expected_returns)
+
 
 
 class TestSwiftBackend(TestBackend):
