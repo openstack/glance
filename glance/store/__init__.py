@@ -62,8 +62,7 @@ def get_backend_class(backend):
         "http": HTTPBackend,
         "https": HTTPBackend,
         "swift": SwiftBackend,
-        "s3": S3Backend
-    }
+        "s3": S3Backend}
 
     try:
         return BACKENDS[backend]
@@ -115,7 +114,7 @@ def parse_uri_tokens(parsed_uri, example_url):
         1) urlparse to split the tokens
         2) use RE to split on @ and /
         3) reassemble authurl
-    
+
     """
     path = parsed_uri.path.lstrip('//')
     netloc = parsed_uri.netloc
@@ -140,4 +139,3 @@ def parse_uri_tokens(parsed_uri, example_url):
     authurl = "https://%s" % '/'.join(path_parts)
 
     return user, key, authurl, container, obj
-    

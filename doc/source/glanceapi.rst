@@ -20,11 +20,11 @@ The Glance REST API
 Glance has a RESTful API that exposes both metadata about registered virtual
 machine images and the image data itself.
 
-A host that runs the `bin/glance-api` service is said to be a *Glance API
+A host that runs the ``bin/glance-api`` service is said to be a *Glance API
 Server*.
 
 Assume there is a Glance API server running at the URL
-http://glance.example.com. 
+``http://glance.example.com``. 
 
 Let's walk through how a user might request information from this server.
 
@@ -34,7 +34,7 @@ Requesting a List of Public VM Images
 We want to see a list of available virtual machine images that the Glance
 server knows about.
 
-We issue a `GET` request to http://glance.example.com/images/ to retrieve
+We issue a ``GET`` request to ``http://glance.example.com/images/`` to retrieve
 this list of available *public* images. The data is returned as a JSON-encoded
 mapping in the following format::
 
@@ -45,9 +45,9 @@ mapping in the following format::
      'size': '5368709120'}
     ...]}
 
-Notes:
+.. note::
 
- * All images returned from the above `GET` request are *public* images
+  All images returned from the above `GET` request are *public* images
 
 
 Requesting Detailed Metadata on Public VM Images
@@ -56,7 +56,7 @@ Requesting Detailed Metadata on Public VM Images
 We want to see more detailed information on available virtual machine images
 that the Glance server knows about.
 
-We issue a `GET` request to http://glance.example.com/images/detail to
+We issue a ``GET`` request to ``http://glance.example.com/images/detail`` to
 retrieve this list of available *public* images. The data is returned as a
 JSON-encoded mapping in the following format::
 
@@ -69,20 +69,23 @@ JSON-encoded mapping in the following format::
      'created_at': '2010-02-03 09:34:01',
      'updated_at': '2010-02-03 09:34:01',
      'deleted_at': '',
-     'status': 'available',
+     'status': 'active',
      'is_public': True,
      'properties': {'distro': 'Ubuntu 10.04 LTS'}},
     ...]}
 
-Notes:
+.. note::
 
- * All images returned from the above `GET` request are *public* images
- * All timestamps returned are in UTC
- * The `updated_at` timestamp is the timestamp when an image's metadata
-   was last updated, not its image data, as all image data is immutable
-   once stored in Glance
- * The `properties` field is a mapping of free-form key/value pairs that
-   have been saved with the image metadata
+  All images returned from the above `GET` request are *public* images
+
+  All timestamps returned are in UTC
+
+  The `updated_at` timestamp is the timestamp when an image's metadata
+  was last updated, not its image data, as all image data is immutable
+  once stored in Glance
+
+  The `properties` field is a mapping of free-form key/value pairs that
+  have been saved with the image metadata
 
 
 Requesting Detailed Metadata on a Specific Image
@@ -97,14 +100,14 @@ data returned includes the `uri` field for each available image. This
 for a specific image.
 
 Continuing the example from above, in order to get metadata about the
-first public image returned, we can issue a `HEAD` request to the Glance
+first public image returned, we can issue a ``HEAD`` request to the Glance
 server for the image's URI.
 
-We issue a `HEAD` request to http://glance.example.com/images/1 to
+We issue a ``HEAD`` request to ``http://glance.example.com/images/1`` to
 retrieve complete metadata for that image. The metadata is returned as a
-set of HTTP headers that begin with the prefix `x-image-meta-`. The
+set of HTTP headers that begin with the prefix ``x-image-meta-``. The
 following shows an example of the HTTP headers returned from the above
-`HEAD` request::
+``HEAD`` request::
 
   x-image-meta-uri              http://glance.example.com/images/1
   x-image-meta-name             Ubuntu 10.04 Plain 5GB
@@ -118,16 +121,18 @@ following shows an example of the HTTP headers returned from the above
   x-image-meta-is_public        True
   x-image-meta-property-distro  Ubuntu 10.04 LTS
 
-Notes:
+.. note::
 
- * All timestamps returned are in UTC
- * The `x-image-meta-updated_at` timestamp is the timestamp when an
-   image's metadata was last updated, not its image data, as all 
-   image data is immutable once stored in Glance
- * There may be multiple headers that begin with the prefix
-   `x-image-meta-property-`.  These headers are free-form key/value pairs
-   that have been saved with the image metadata. The key is the string
-   after `x-image-meta-property-` and the value is the value of the header
+  All timestamps returned are in UTC
+
+  The `x-image-meta-updated_at` timestamp is the timestamp when an
+  image's metadata was last updated, not its image data, as all 
+  image data is immutable once stored in Glance
+
+  There may be multiple headers that begin with the prefix
+  `x-image-meta-property-`.  These headers are free-form key/value pairs
+  that have been saved with the image metadata. The key is the string
+  after `x-image-meta-property-` and the value is the value of the header
 
 
 Retrieving a Virtual Machine Image
@@ -142,16 +147,16 @@ data returned includes the `uri` field for each available image. This
 for a specific image.
 
 Continuing the example from above, in order to get metadata about the
-first public image returned, we can issue a `HEAD` request to the Glance
+first public image returned, we can issue a ``HEAD`` request to the Glance
 server for the image's URI.
 
-We issue a `GET` request to http://glance.example.com/images/1 to
+We issue a ``GET`` request to ``http://glance.example.com/images/1`` to
 retrieve metadata for that image as well as the image itself encoded
 into the response body.
 
 The metadata is returned as a set of HTTP headers that begin with the
-prefix `x-image-meta-`. The following shows an example of the HTTP headers
-returned from the above `GET` request::
+prefix ``x-image-meta-``. The following shows an example of the HTTP headers
+returned from the above ``GET`` request::
 
   x-image-meta-uri              http://glance.example.com/images/1
   x-image-meta-name             Ubuntu 10.04 Plain 5GB
@@ -165,21 +170,25 @@ returned from the above `GET` request::
   x-image-meta-is_public        True
   x-image-meta-property-distro  Ubuntu 10.04 LTS
 
-Notes:
+.. note::
 
- * All timestamps returned are in UTC
- * The `x-image-meta-updated_at` timestamp is the timestamp when an
-   image's metadata was last updated, not its image data, as all 
-   image data is immutable once stored in Glance
- * There may be multiple headers that begin with the prefix
-   `x-image-meta-property-`.  These headers are free-form key/value pairs
-   that have been saved with the image metadata. The key is the string
-   after `x-image-meta-property-` and the value is the value of the header
- * The response's `Content-Length` header shall be equal to the value of
-   the `x-image-meta-size` header
- * The image data itself will be the body of the HTTP response returned
-   from the request, which will have content-type of
-   `application/octet-stream`.
+  All timestamps returned are in UTC
+
+  The `x-image-meta-updated_at` timestamp is the timestamp when an
+  image's metadata was last updated, not its image data, as all 
+  image data is immutable once stored in Glance
+
+  There may be multiple headers that begin with the prefix
+  `x-image-meta-property-`.  These headers are free-form key/value pairs
+  that have been saved with the image metadata. The key is the string
+  after `x-image-meta-property-` and the value is the value of the header
+
+  The response's `Content-Length` header shall be equal to the value of
+  the `x-image-meta-size` header
+
+  The image data itself will be the body of the HTTP response returned
+  from the request, which will have content-type of
+  `application/octet-stream`.
 
 
 Adding a New Virtual Machine Image
@@ -194,7 +203,7 @@ wish to do two things:
 
 We can do the above two activities in a single call to the Glance API.
 Assuming, like in the examples above, that a Glance API server is running
-at `glance.example.com`, we issue a `POST` request to add an image to
+at ``glance.example.com``, we issue a ``POST`` request to add an image to
 Glance::
 
   POST http://glance.example.com/images/
@@ -208,103 +217,106 @@ Adding Image Metadata in HTTP Headers
 *************************************
 
 Glance will view as image metadata any HTTP header that it receives in a
-`POST` request where the header key is prefixed with the strings
-`x-image-meta-` and `x-image-meta-property-`.
+``POST`` request where the header key is prefixed with the strings
+``x-image-meta-`` and ``x-image-meta-property-``.
 
 The list of metadata headers that Glance accepts are listed below.
 
- * `x-image-meta-name`
+* ``x-image-meta-name``
 
-   This header is required. Its value should be the name of the image.
+  This header is required. Its value should be the name of the image.
 
-   Note that the name of an image *is not unique to a Glance node*. It
-   would be an unrealistic expectation of users to know all the unique
-   names of all other user's images.
+  Note that the name of an image *is not unique to a Glance node*. It
+  would be an unrealistic expectation of users to know all the unique
+  names of all other user's images.
 
- * `x-image-meta-id`
+* ``x-image-meta-id``
 
-   This header is optional. 
-   
-   When present, Glance will use the supplied identifier for the image.
-   If the identifier already exists in that Glance node, then a
-   `409 Conflict` will be returned by Glance.
+  This header is optional. 
 
-   When this header is *not* present, Glance will generate an identifier
-   for the image and return this identifier in the response (see below)
+  When present, Glance will use the supplied identifier for the image.
+  If the identifier already exists in that Glance node, then a
+  **409 Conflict** will be returned by Glance.
 
- * `x-image-meta-store`
+  When this header is *not* present, Glance will generate an identifier
+  for the image and return this identifier in the response (see below)
 
-   This header is optional. Valid values are one of `file` or `swift`
+* ``x-image-meta-store``
 
-   When present, Glance will attempt to store the disk image data in the
-   backing store indicated by the value of the header. If the Glance node
-   does not support the backing store, Glance will return a `400 Bad Request`.
+  This header is optional. Valid values are one of ``file``, ``s3``, or
+  ``swift``
 
-   When not present, Glance will store the disk image data in the backing
-   store that is marked default. See the configuration option `default_store`
-   for more information.
+  When present, Glance will attempt to store the disk image data in the
+  backing store indicated by the value of the header. If the Glance node
+  does not support the backing store, Glance will return a **400 Bad Request**.
 
- * `x-image-meta-type`
+  When not present, Glance will store the disk image data in the backing
+  store that is marked default. See the configuration option ``default_store``
+  for more information.
 
-   This header is required. Valid values are one of `kernel`, `machine`, `raw`,
-   or `ramdisk`.
+* ``x-image-meta-type``
 
- * `x-image-meta-size`
+  This header is required. Valid values are one of ``kernel``, ``machine``,
+  ``raw``, or ``ramdisk``.
 
-   This header is optional.
+* ``x-image-meta-size``
 
-   When present, Glance assumes that the expected size of the request body
-   will be the value of this header. If the length in bytes of the request
-   body *does not match* the value of this header, Glance will return a
-   `400 Bad Request`.
+  This header is optional.
 
-   When not present, Glance will calculate the image's size based on the size
-   of the request body.
+  When present, Glance assumes that the expected size of the request body
+  will be the value of this header. If the length in bytes of the request
+  body *does not match* the value of this header, Glance will return a
+  **400 Bad Request**.
 
- * `x-image-meta-is_public`
+  When not present, Glance will calculate the image's size based on the size
+  of the request body.
 
-   This header is optional.
+* ``x-image-meta-is_public``
 
-   When present, Glance converts the value of the header to a boolean value,
-   so "on, 1, true" are all true values. When true, the image is marked as
-   a public image, meaning that any user may view its metadata and may read
-   the disk image from Glance.
+  This header is optional.
 
-   When not present, the image is assumed to be *not public* and specific to
-   a user.
+  When present, Glance converts the value of the header to a boolean value,
+  so "on, 1, true" are all true values. When true, the image is marked as
+  a public image, meaning that any user may view its metadata and may read
+  the disk image from Glance.
 
- * `x-image-meta-property-*`
+  When not present, the image is assumed to be *not public* and specific to
+  a user.
 
-   When Glance receives any HTTP header whose key begins with the string prefix
-   `x-image-meta-property-`, Glance adds the key and value to a set of custom,
-   free-form image properties stored with the image.  The key is the
-   lower-cased string following the prefix `x-image-meta-property-` with dashes
-   and punctuation replaced with underscores.
+* ``x-image-meta-property-*``
 
-   For example, if the following HTTP header were sent::
+  When Glance receives any HTTP header whose key begins with the string prefix
+  ``x-image-meta-property-``, Glance adds the key and value to a set of custom,
+  free-form image properties stored with the image.  The key is the
+  lower-cased string following the prefix ``x-image-meta-property-`` with dashes
+  and punctuation replaced with underscores.
 
-      x-image-meta-property-distro  Ubuntu 10.10
+  For example, if the following HTTP header were sent::
 
-   Then a key/value pair of "distro"/"Ubuntu 10.10" will be stored with the
-   image in Glance.
+    x-image-meta-property-distro  Ubuntu 10.10
 
-   There is no limit on the number of free-form key/value attributes that can
-   be attached to the image.  However, keep in mind that the 8K limit on the
-   size of all HTTP headers sent in a request will effectively limit the number
-   of image properties.
+  Then a key/value pair of "distro"/"Ubuntu 10.10" will be stored with the
+  image in Glance.
+
+  There is no limit on the number of free-form key/value attributes that can
+  be attached to the image.  However, keep in mind that the 8K limit on the
+  size of all HTTP headers sent in a request will effectively limit the number
+  of image properties.
 
 
 Updating an Image
 *****************
 
 Glance will view as image metadata any HTTP header that it receives in a
-`PUT` request where the header key is prefixed with the strings
-`x-image-meta-` and `x-image-meta-property-`.
+``PUT`` request where the header key is prefixed with the strings
+``x-image-meta-`` and ``x-image-meta-property-``.
 
-If an image was previously reserved, and thus is in the `queued` state, then
+If an image was previously reserved, and thus is in the ``queued`` state, then
 image data can be added by including it as the request body.  If the image
-already as data associated with it (e.g. not in the `queued` state), then
-including a request body will result in a `409 Conflict` exception.
+already as data associated with it (e.g. not in the ``queued`` state), then
+including a request body will result in a **409 Conflict** exception.
 
-On success, the `PUT` request will return the image metadata encoded as `HTTP`
+On success, the ``PUT`` request will return the image metadata encoded as HTTP
 headers.
+
+See more about image statuses here: :doc:`Image Statuses <statuses>`
