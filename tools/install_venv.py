@@ -30,7 +30,6 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 VENV = os.path.join(ROOT, '.glance-venv')
 PIP_REQUIRES = os.path.join(ROOT, 'tools', 'pip-requires')
-TWISTED_NOVA = 'http://nova.openstack.org/Twisted-10.0.0Nova.tar.gz'
 
 
 def die(message, *args):
@@ -96,11 +95,7 @@ def install_dependencies(venv=VENV):
     # Install greenlet by hand - just listing it in the requires file does not
     # get it in stalled in the right order
     venv_tool = 'tools/with_venv.sh'
-    run_command([venv_tool, 'pip', 'install', '-E', venv, 'greenlet'],
-                redirect_output=False)
     run_command([venv_tool, 'pip', 'install', '-E', venv, '-r', PIP_REQUIRES],
-                redirect_output=False)
-    run_command([venv_tool, 'pip', 'install', '-E', venv, TWISTED_NOVA],
                 redirect_output=False)
 
     # Tell the virtual env how to "import glance"
