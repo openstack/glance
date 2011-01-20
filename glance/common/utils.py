@@ -29,8 +29,6 @@ import subprocess
 import socket
 import sys
 
-from twisted.internet.threads import deferToThread
-
 from glance.common import exception
 from glance.common import flags
 from glance.common.exception import ProcessExecutionError
@@ -203,9 +201,3 @@ class LazyPluggable(object):
     def __getattr__(self, key):
         backend = self.__get_backend()
         return getattr(backend, key)
-
-
-def deferredToThread(f):
-    def g(*args, **kwargs):
-        return deferToThread(f, *args, **kwargs)
-    return g
