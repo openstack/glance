@@ -20,13 +20,13 @@ Quick Guide to Getting Started with Glance
 Glance is a server that provides the following services:
 
 * Ability to store and retrieve virtual machine images
-* Ability to store and retrieve metadata about these virtual machine image
+* Ability to store and retrieve metadata about these virtual machine images
 * FUTURE: Convert a virtual machine image from one format to another
 * FUTURE: Help caching proxies such as Varnish or Squid cache machine images
 
 Communication with Glance occurs via a REST-like HTTP interface.
 
-However, Glance includes a Client class that makes working with Glance
+However, Glance includes a :doc:`Client <client>` class that makes working with Glance
 easy and straightforward.
 
 In the Cactus release, there will be also command-line tools for
