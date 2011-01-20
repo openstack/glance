@@ -70,6 +70,8 @@ class BaseClient(object):
 
     """A base client class"""
 
+    CHUNKSIZE = 65536
+
     def __init__(self, host, port, use_ssl):
         """
         Creates a new client to some service.
@@ -103,12 +105,41 @@ class BaseClient(object):
         :param action: part of URL after root netloc
         :param body: string of data to send, or None (default)
         :param headers: mapping of key/value pairs to add as headers
+
+        :note
+
+        If the body param has a read attribute, and method is either
+        POST or PUT, this method will automatically conduct a chunked-transfer
+        encoding and use the body as a file object, transferring chunks
+        of data using the connection's send() method. This allows large
+        objects to be transferred efficiently without buffering the entire
+        body in memory.
         """
         try:
             connection_type = self.get_connection_type()
             headers = headers or {}
             c = connection_type(self.host, self.port)
-            c.request(method, action, body, headers)
+
+            # Do a simple request or a chunked request, depending
+            # on whether the body param is a file-like object and
+            # the method is PUT or POST
+            if hasattr(body, 'read') and method.lower() in ('post', 'put'):
+                # Chunk it, baby...
+                c.putrequest(method, action)
+
+                for header, value in headers.items():
+                    c.putheader(header, value)
+                c.putheader('Transfer-Encoding', 'chunked')
+                c.endheaders()
+
+                chunk = body.read(self.CHUNKSIZE)
+                while chunk:
+                    c.send('%x\r\n%s\r\n' % (len(chunk), chunk))
+                    chunk = body.read(self.CHUNKSIZE)
+                c.send('0\r\n\r\n')
+            else:
+                # Simple request...
+                c.request(method, action, body, headers)
             res = c.getresponse()
             status_code = self.get_status_code(res)
             if status_code == httplib.OK:
@@ -220,12 +251,7 @@ class Client(BaseClient):
             image_meta = {}
 
         if image_data:
-            if hasattr(image_data, 'read'):
-                # TODO(jaypipes): This is far from efficient. Implement
-                # chunked transfer encoding if size is not in image_meta
-                body = image_data.read()
-            else:
-                body = image_data
+            body = image_data
         else:
             body = None
 
