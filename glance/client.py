@@ -216,8 +216,6 @@ class Client(BaseClient):
         :retval Tuple containing (image_meta, image_blob)
         :raises exception.NotFound if image is not found
         """
-        # TODO(jaypipes): Handle other registries than Registry...
-
         res = self.do_request("GET", "/images/%s" % image_id)
 
         image = util.get_image_meta_from_headers(res)
@@ -250,19 +248,13 @@ class Client(BaseClient):
         if image_meta is None:
             image_meta = {}
 
-        if image_data:
-            body = image_data
-        else:
-            body = None
-
-        if not 'size' in image_meta.keys():
-            if body:
-                image_meta['size'] = len(body)
-
         headers = util.image_meta_to_http_headers(image_meta)
 
         if image_data:
+            body = image_data
             headers['content-type'] = 'application/octet-stream'
+        else:
+            body = None
 
         res = self.do_request("POST", "/images", body, headers)
         data = json.loads(res.read())

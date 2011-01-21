@@ -323,7 +323,6 @@ class Controller(wsgi.Controller):
                 image data.
         """
         image_meta = self._reserve(req)
-
         if req.body:
             self._upload_and_activate(req, image_meta)
         else:
