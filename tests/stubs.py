@@ -260,6 +260,22 @@ def stub_out_registry_and_store_server(stubs):
         def close(self):
             return True
 
+        def putrequest(self, method, url):
+            self.req = webob.Request.blank("/" + url.lstrip("/"))
+            self.req.method = method
+
+        def putheader(self, key, value):
+            self.req.headers[key] = value
+
+        def endheaders(self):
+            pass
+
+        def send(self, data):
+            # send() is called during chunked-transfer encoding, and
+            # data is of the form %x\r\n%s\r\n. Strip off the %x and
+            # only write the actual data in tests.
+            self.req.body += data.split("\r\n")[1]
+
         def request(self, method, url, body=None, headers={}):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
             self.req.method = method
