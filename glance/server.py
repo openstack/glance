@@ -323,7 +323,10 @@ class Controller(wsgi.Controller):
                 image data.
         """
         image_meta = self._reserve(req)
-        if req.body:
+
+        has_body = req.content_length or 'transfer-encoding' in req.headers
+
+        if has_body:
             self._upload_and_activate(req, image_meta)
         else:
             if 'x-image-meta-location' in req.headers:
