@@ -14,10 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import setup, find_packages
-from setuptools.command.sdist import sdist
 import os
 import subprocess
+
+from setuptools import setup, find_packages
+from setuptools.command.sdist import sdist
+from sphinx.setup_command import BuildDoc
 
 
 class local_BuildDoc(BuildDoc):
