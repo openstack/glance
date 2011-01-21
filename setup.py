@@ -14,10 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import setup, find_packages
-from setuptools.command.sdist import sdist
 import os
 import subprocess
+
+from setuptools import setup, find_packages
+from setuptools.command.sdist import sdist
+from sphinx.setup_command import BuildDoc
+
+
+class local_BuildDoc(BuildDoc):
+    def run(self):
+        for builder in ['html', 'man']:
+            self.builder = builder
+            self.finalize_options()
+            BuildDoc.run(self)
 
 
 class local_sdist(sdist):
@@ -38,6 +48,9 @@ class local_sdist(sdist):
 name = 'glance'
 version = '0.1.3pre'
 
+cmdclass = {'sdist': local_sdist,
+            'build_sphinx': local_BuildDoc}
+
 setup(
     name=name,
     version=version,
@@ -48,7 +61,7 @@ setup(
     url='https://launchpad.net/glance',
     packages=find_packages(exclude=['tests', 'bin']),
     test_suite='nose.collector',
-    cmdclass={'sdist': local_sdist},
+    cmdclass=cmdclass,
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',

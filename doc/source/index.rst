@@ -57,6 +57,7 @@ Using Glance
 .. toctree::
    :maxdepth: 1
 
+   gettingstarted
    glanceapi
    client
 

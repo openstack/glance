@@ -21,13 +21,13 @@ Image metadata made available through Glance can be stored in image
 `registries`. Image registries are any web service that adheres to the
 Glance REST-like API for image metadata.
 
-Glance comes with a server program ``bin/glance-registry`` that acts
+Glance comes with a server program ``glance-registry`` that acts
 as a reference implementation of a Glance Registry.
 
-Using ``bin/glance-registry``
------------------------------
+Using ``glance-registry``, the Glance Registry reference implementation
+-----------------------------------------------------------------------
 
-As mentioned above, ``bin/glance-registry`` is the reference registry
+As mentioned above, ``glance-registry`` is the reference registry
 server implementation that ships with Glance. It uses a SQL database
 to store information about an image, and publishes this information
 via an HTTP/REST-like interface.
@@ -38,7 +38,7 @@ Starting the server
 Starting the Glance registry server is trivial. Simply call the program
 from the command line, as the following example shows::
 
-  jpipes@serialcoder:~/repos/glance/trunk$ ./bin/glance-registry
+  $> glance-registry
   (5588) wsgi starting up on http://0.0.0.0:9191/
 
 Configuring the server
