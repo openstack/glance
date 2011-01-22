@@ -71,4 +71,5 @@ setup(
     ],
     install_requires=[],  # removed for better compat
     scripts=['bin/glance-api',
-             'bin/glance-registry'])
+             'bin/glance-registry',
+             'bin/glance-upload'])

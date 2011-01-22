@@ -6,13 +6,13 @@ Usage:
 
 Raw:
 
-    glance_upload.py <filename> <name>
+    glance-upload <filename> <name>
 
 Kernel-outside:
 
-    glance_upload.py --type=kernel <filename> <name>
-    glance_upload.py --type=ramdisk <filename> <name>
-    glance_upload.py --type=machine --kernel=KERNEL_ID --ramdisk=RAMDISK_ID \
+    glance-upload --type=kernel <filename> <name>
+    glance-upload --type=ramdisk <filename> <name>
+    glance-upload --type=machine --kernel=KERNEL_ID --ramdisk=RAMDISK_ID \
                      <filename> <name>
 
 """
