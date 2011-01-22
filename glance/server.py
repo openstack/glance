@@ -324,9 +324,7 @@ class Controller(wsgi.Controller):
         """
         image_meta = self._reserve(req)
 
-        has_body = req.content_length or 'transfer-encoding' in req.headers
-
-        if has_body:
+        if util.has_body(req):
             self._upload_and_activate(req, image_meta)
         else:
             if 'x-image-meta-location' in req.headers:
@@ -344,15 +342,18 @@ class Controller(wsgi.Controller):
 
         :retval Returns the updated image information as a mapping
         """
-        orig_image_meta = self.get_image_meta_or_404(req, id)
-        new_image_meta = util.get_image_meta_from_headers(req)
+        has_body = util.has_body(req)
 
-        if req.body and (orig_image_meta['status'] != 'queued'):
+        orig_image_meta = self.get_image_meta_or_404(req, id)
+        orig_status = orig_image_meta['status']
+
+        if has_body and orig_status != 'queued':
             raise HTTPConflict("Cannot upload to an unqueued image")
 
+        new_image_meta = util.get_image_meta_from_headers(req)
         image_meta = registry.update_image_metadata(id, new_image_meta)
 
-        if req.body:
+        if has_body:
             self._upload_and_activate(req, image_meta)
 
         return dict(image=image_meta)
