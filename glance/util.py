@@ -82,3 +82,12 @@ def get_image_meta_from_headers(response):
             result[field_name] = value
     result['properties'] = properties
     return result
+
+
+def has_body(req):
+    """
+    Returns whether a Webob.Request object will possess an entity body.
+
+    :param req:  Webob.Request object
+    """
+    return req.content_length or 'transfer-encoding' in req.headers
