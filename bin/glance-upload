@@ -41,7 +41,7 @@ from glance.client import Client
 
 
 def die(msg):
-    print >>sys.stderr, msg
+    print >> sys.stderr, msg
     sys.exit(1)
 
 
