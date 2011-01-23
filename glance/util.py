@@ -76,8 +76,9 @@ def get_image_meta_from_headers(response):
     for key, value in headers:
         key = str(key.lower())
         if key.startswith('x-image-meta-property-'):
-            properties[key[len('x-image-meta-property-'):]] = value
-        if key.startswith('x-image-meta-'):
+            field_name = key[len('x-image-meta-property-'):].replace('-', '_')
+            properties[field_name] = value
+        elif key.startswith('x-image-meta-'):
             field_name = key[len('x-image-meta-'):].replace('-', '_')
             result[field_name] = value
     result['properties'] = properties
