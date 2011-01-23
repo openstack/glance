@@ -71,6 +71,4 @@ then
   fi
 fi
 
-run_tests
-
-pep8 --repeat --show-pep8 --show-source bin/* glance setup.py run_tests.py
+run_tests && pep8 --repeat --show-pep8 --show-source bin/* glance setup.py run_tests.py || exit 1
