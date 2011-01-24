@@ -46,7 +46,7 @@ class local_sdist(sdist):
 
 
 name = 'glance'
-version = '0.1.3'
+version = '0.1.4'
 
 cmdclass = {'sdist': local_sdist,
             'build_sphinx': local_BuildDoc}
