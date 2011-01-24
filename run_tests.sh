@@ -6,6 +6,7 @@ function usage {
   echo ""
   echo "  -V, --virtual-env        Always use virtualenv.  Install automatically if not present"
   echo "  -N, --no-virtual-env     Don't use virtualenv.  Run tests in local environment"
+  echo "  -f, --force              Force a clean re-build of the virtual environment. Useful when dependencies have been added."
   echo "  -h, --help               Print this usage message"
   echo ""
   echo "Note: with no options specified, the script will try to run the tests in a virtual environment,"
@@ -14,20 +15,13 @@ function usage {
   exit
 }
 
-function process_options {
-  array=$1
-  elements=${#array[@]}
-  for (( x=0;x<$elements;x++)); do
-    process_option ${array[${x}]}
-  done
-}
-
 function process_option {
-  option=$1
-  case $option in
+  case "$1" in
     -h|--help) usage;;
     -V|--virtual-env) let always_venv=1; let never_venv=0;;
     -N|--no-virtual-env) let always_venv=0; let never_venv=1;;
+    -f|--force) let force=1;;
+    *) noseargs="$noseargs $1"
   esac
 }
 
@@ -35,32 +29,46 @@ venv=.glance-venv
 with_venv=tools/with_venv.sh
 always_venv=0
 never_venv=0
-options=("$@")
+force=0
+noseargs=
+wrapper=""
 
-process_options $options
+for arg in "$@"; do
+  process_option $arg
+done
 
-if [ $never_venv -eq 1 ]; then
+function run_tests {
   # Just run the test suites in current environment
-  nosetests --logging-clear-handlers
-  exit
-fi
+  ${wrapper} rm -f glance.sqlite
+  ${wrapper} $NOSETESTS 2> run_tests.err.log
+}
 
-if [ -e ${venv} ]; then
-  ${with_venv} nosetests --logging-clear-handlers
-else  
-  if [ $always_venv -eq 1 ]; then
-    # Automatically install the virtualenv
-    python tools/install_venv.py
+NOSETESTS="python run_tests.py $noseargs"
+
+if [ $never_venv -eq 0 ]
+then
+  # Remove the virtual environment if --force used
+  if [ $force -eq 1 ]; then
+    echo "Cleaning virtualenv..."
+    rm -rf ${venv}
+  fi
+  if [ -e ${venv} ]; then
+    wrapper="${with_venv}"
   else
-    echo -e "No virtual environment found...create one? (Y/n) \c"
-    read use_ve
-    if [ "x$use_ve" = "xY" ]; then
-      # Install the virtualenv and run the test suite in it
+    if [ $always_venv -eq 1 ]; then
+      # Automatically install the virtualenv
       python tools/install_venv.py
+      wrapper="${with_venv}"
     else
-      nosetests --logging-clear-handlers
-      exit
+      echo -e "No virtual environment found...create one? (Y/n) \c"
+      read use_ve
+      if [ "x$use_ve" = "xY" -o "x$use_ve" = "x" -o "x$use_ve" = "xy" ]; then
+        # Install the virtualenv and run the test suite in it
+        python tools/install_venv.py
+		    wrapper=${with_venv}
+      fi
     fi
   fi
-  ${with_venv} nosetests --logging-clear-handlers
 fi
+
+run_tests && pep8 --repeat --show-pep8 --show-source bin/* glance setup.py run_tests.py || exit 1

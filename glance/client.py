@@ -30,15 +30,6 @@ from glance import util
 from glance.common import exception
 
 #TODO(jaypipes) Allow a logger param for client classes
-#TODO(jaypipes) Raise proper errors or OpenStack API faults
-
-
-class UnsupportedProtocolError(Exception):
-    """
-    Error resulting from a client connecting to a server
-    on an unsupported protocol
-    """
-    pass
 
 
 class ClientConnectionError(Exception):
@@ -79,34 +70,31 @@ class BaseClient(object):
 
     """A base client class"""
 
-    DEFAULT_HOST = '0.0.0.0'
-    DEFAULT_PORT = 9090
-    DEFAULT_USE_SSL = False
+    CHUNKSIZE = 65536
 
-    def __init__(self, **kwargs):
+    def __init__(self, host, port, use_ssl):
         """
-        Creates a new client to some service.  All args are keyword
-        arguments.
+        Creates a new client to some service.
 
-        :param host: The host where service resides (defaults to
-                        0.0.0.0)
-        :param port: The port where service resides (defaults to 9090)
+        :param host: The host where service resides
+        :param port: The port where service resides
+        :param use_ssl: Should we use HTTPS?
         """
-        self.host = kwargs.get('host', self.DEFAULT_HOST)
-        self.port = kwargs.get('port', int(self.DEFAULT_PORT))
-        self.use_ssl = kwargs.get('use_ssl', bool(self.DEFAULT_USE_SSL))
+        self.host = host
+        self.port = port
+        self.use_ssl = use_ssl
         self.connection = None
 
     def get_connection_type(self):
         """
         Returns the proper connection type
         """
-        if not self.use_ssl:
-            return httplib.HTTPConnection
-        else:
+        if self.use_ssl:
             return httplib.HTTPSConnection
+        else:
+            return httplib.HTTPConnection
 
-    def do_request(self, method, action, body=None, headers={}):
+    def do_request(self, method, action, body=None, headers=None):
         """
         Connects to the server and issues a request.  Handles converting
         any returned HTTP error status codes to OpenStack/Glance exceptions
@@ -117,11 +105,41 @@ class BaseClient(object):
         :param action: part of URL after root netloc
         :param body: string of data to send, or None (default)
         :param headers: mapping of key/value pairs to add as headers
+
+        :note
+
+        If the body param has a read attribute, and method is either
+        POST or PUT, this method will automatically conduct a chunked-transfer
+        encoding and use the body as a file object, transferring chunks
+        of data using the connection's send() method. This allows large
+        objects to be transferred efficiently without buffering the entire
+        body in memory.
         """
         try:
             connection_type = self.get_connection_type()
+            headers = headers or {}
             c = connection_type(self.host, self.port)
-            c.request(method, action, body, headers)
+
+            # Do a simple request or a chunked request, depending
+            # on whether the body param is a file-like object and
+            # the method is PUT or POST
+            if hasattr(body, 'read') and method.lower() in ('post', 'put'):
+                # Chunk it, baby...
+                c.putrequest(method, action)
+
+                for header, value in headers.items():
+                    c.putheader(header, value)
+                c.putheader('Transfer-Encoding', 'chunked')
+                c.endheaders()
+
+                chunk = body.read(self.CHUNKSIZE)
+                while chunk:
+                    c.send('%x\r\n%s\r\n' % (len(chunk), chunk))
+                    chunk = body.read(self.CHUNKSIZE)
+                c.send('0\r\n\r\n')
+            else:
+                # Simple request...
+                c.request(method, action, body, headers)
             res = c.getresponse()
             status_code = self.get_status_code(res)
             if status_code == httplib.OK:
@@ -133,11 +151,11 @@ class BaseClient(object):
             elif status_code == httplib.NOT_FOUND:
                 raise exception.NotFound
             elif status_code == httplib.CONFLICT:
-                raise exception.Duplicate
+                raise exception.Duplicate(res.read())
             elif status_code == httplib.BAD_REQUEST:
-                raise exception.BadInputError
+                raise exception.BadInputError(res.read())
             else:
-                raise Exception("Unknown error occurred! %d" % status_code)
+                raise Exception("Unknown error occurred! %s" % res.__dict__)
 
         except (socket.error, IOError), e:
             raise ClientConnectionError("Unable to connect to "
@@ -158,19 +176,19 @@ class Client(BaseClient):
 
     """Main client class for accessing Glance resources"""
 
-    DEFAULT_HOST = '0.0.0.0'
     DEFAULT_PORT = 9292
 
-    def __init__(self, **kwargs):
+    def __init__(self, host, port=None, use_ssl=False):
         """
-        Creates a new client to a Glance service.  All args are keyword
-        arguments.
+        Creates a new client to a Glance API service.
 
-        :param host: The host where Glance resides (defaults to
-                     0.0.0.0)
+        :param host: The host where Glance resides
         :param port: The port where Glance resides (defaults to 9292)
+        :param use_ssl: Should we use HTTPS? (defaults to False)
         """
-        super(Client, self).__init__(**kwargs)
+
+        port = port or self.DEFAULT_PORT
+        super(Client, self).__init__(host, port, use_ssl)
 
     def get_images(self):
         """
@@ -198,8 +216,6 @@ class Client(BaseClient):
         :retval Tuple containing (image_meta, image_blob)
         :raises exception.NotFound if image is not found
         """
-        # TODO(jaypipes): Handle other registries than Registry...
-
         res = self.do_request("GET", "/images/%s" % image_id)
 
         image = util.get_image_meta_from_headers(res)
@@ -216,12 +232,12 @@ class Client(BaseClient):
         image = util.get_image_meta_from_headers(res)
         return image
 
-    def add_image(self, image_meta, image_data=None):
+    def add_image(self, image_meta=None, image_data=None):
         """
         Tells Glance about an image's metadata as well
         as optionally the image_data itself
 
-        :param image_meta: Mapping of information about the
+        :param image_meta: Optional Mapping of information about the
                            image
         :param image_data: Optional string of raw image data
                            or file-like object that can be
@@ -229,43 +245,35 @@ class Client(BaseClient):
 
         :retval The newly-stored image's metadata.
         """
-        if not image_data and 'location' not in image_meta.keys():
-            raise exception.Invalid("You must either specify a location "
-                                    "for the image or supply the actual "
-                                    "image data when adding an image to "
-                                    "Glance")
+        if image_meta is None:
+            image_meta = {}
+
+        headers = util.image_meta_to_http_headers(image_meta)
+
         if image_data:
-            if hasattr(image_data, 'read'):
-                # TODO(jaypipes): This is far from efficient. Implement
-                # chunked transfer encoding if size is not in image_meta
-                body = image_data.read()
-            else:
-                body = image_data
+            body = image_data
+            headers['content-type'] = 'application/octet-stream'
         else:
             body = None
 
-        if not 'size' in image_meta.keys():
-            if body:
-                image_meta['size'] = len(body)
-
-        headers = util.image_meta_to_http_headers(image_meta)
-        
-        if image_data:
-            headers['content-type'] = 'application/octet-stream'
-
         res = self.do_request("POST", "/images", body, headers)
         data = json.loads(res.read())
-        return data['image']['id']
+        return data['image']
 
-    def update_image(self, image_id, image_metadata):
+    def update_image(self, image_id, image_meta=None, image_data=None):
         """
         Updates Glance's information about an image
         """
-        if 'image' not in image_metadata.keys():
-            image_metadata = dict(image=image_metadata)
-        body = json.dumps(image_metadata)
-        self.do_request("PUT", "/images/%s" % image_id, body)
-        return True
+        if image_meta:
+            if 'image' not in image_meta:
+                image_meta = dict(image=image_meta)
+
+        headers = util.image_meta_to_http_headers(image_meta or {})
+
+        body = image_data
+        res = self.do_request("PUT", "/images/%s" % image_id, body, headers)
+        data = json.loads(res.read())
+        return data['image']
 
     def delete_image(self, image_id):
         """

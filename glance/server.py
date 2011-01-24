@@ -162,17 +162,155 @@ class Controller(wsgi.Controller):
         util.inject_image_meta_into_headers(res, image)
         return req.get_response(res)
 
+    def _reserve(self, req):
+        """
+        Adds the image metadata to the registry and assigns
+        an image identifier if one is not supplied in the request
+        headers. Sets the image's status to `queued`
+
+        :param request: The WSGI/Webob Request object
+        :param id: The opaque image identifier
+
+        :raises HTTPConflict if image already exists
+        :raises HTTPBadRequest if image metadata is not valid
+        """
+        image_meta = util.get_image_meta_from_headers(req)
+        image_meta['status'] = 'queued'
+
+        # Ensure that the size attribute is set to zero for all
+        # queued instances. The size will be set to a non-zero
+        # value during upload
+        image_meta['size'] = image_meta.get('size', 0)
+
+        try:
+            image_meta = registry.add_image_metadata(image_meta)
+            return image_meta
+        except exception.Duplicate:
+            msg = "An image with identifier %s already exists"\
+                  % image_meta['id']
+            logging.error(msg)
+            raise HTTPConflict(msg, request=req)
+        except exception.Invalid:
+            raise HTTPBadRequest()
+
+    def _upload(self, req, image_meta):
+        """
+        Uploads the payload of the request to a backend store in
+        Glance. If the `x-image-meta-store` header is set, Glance
+        will attempt to use that store, if not, Glance will use the
+        store set by the flag `default_store`.
+
+        :param request: The WSGI/Webob Request object
+        :param image_meta: Mapping of metadata about image
+
+        :raises HTTPConflict if image already exists
+        :retval The location where the image was stored
+        """
+        content_type = req.headers.get('content-type', 'notset')
+        if content_type != 'application/octet-stream':
+            raise HTTPBadRequest(
+                "Content-Type must be application/octet-stream")
+
+        image_store = req.headers.get(
+            'x-image-meta-store', FLAGS.default_store)
+
+        store = self.get_store_or_400(req, image_store)
+
+        image_meta['status'] = 'saving'
+        registry.update_image_metadata(image_meta['id'], image_meta)
+
+        try:
+            location, size = store.add(image_meta['id'], req.body_file)
+            # If size returned from store is different from size
+            # already stored in registry, update the registry with
+            # the new size of the image
+            if image_meta.get('size', 0) != size:
+                image_meta['size'] = size
+                registry.update_image_metadata(image_meta['id'], image_meta)
+            return location
+        except exception.Duplicate, e:
+            logging.error("Error adding image to store: %s", str(e))
+            raise HTTPConflict(str(e), request=req)
+
+    def _activate(self, req, image_meta, location):
+        """
+        Sets the image status to `active` and the image's location
+        attribute.
+
+        :param request: The WSGI/Webob Request object
+        :param image_meta: Mapping of metadata about image
+        :param location: Location of where Glance stored this image
+        """
+        image_meta['location'] = location
+        image_meta['status'] = 'active'
+        registry.update_image_metadata(image_meta['id'], image_meta)
+
+    def _kill(self, req, image_meta):
+        """
+        Marks the image status to `killed`
+
+        :param request: The WSGI/Webob Request object
+        :param image_meta: Mapping of metadata about image
+        """
+        image_meta['status'] = 'killed'
+        registry.update_image_metadata(image_meta['id'], image_meta)
+
+    def _safe_kill(self, req, image_meta):
+        """
+        Mark image killed without raising exceptions if it fails.
+
+        Since _kill is meant to be called from exceptions handlers, it should
+        not raise itself, rather it should just log its error.
+
+        :param request: The WSGI/Webob Request object
+        """
+        try:
+            self._kill(req, image_meta)
+        except Exception, e:
+            logging.error("Unable to kill image %s: %s",
+                          image_meta['id'], repr(e))
+
+    def _upload_and_activate(self, req, image_meta):
+        """
+        Safely uploads the image data in the request payload
+        and activates the image in the registry after a successful
+        upload.
+
+        :param request: The WSGI/Webob Request object
+        :param image_meta: Mapping of metadata about image
+        """
+        try:
+            location = self._upload(req, image_meta)
+            self._activate(req, image_meta, location)
+        except Exception, e:
+            # NOTE(sirp): _safe_kill uses httplib which, in turn, uses
+            # Eventlet's GreenSocket. Eventlet subsequently clears exceptions
+            # by calling `sys.exc_clear()`. This is why we have to `raise e`
+            # instead of `raise`
+            self._safe_kill(req, image_meta)
+            raise e
+
     def create(self, req):
         """
-        Adds a new image to Glance. The body of the request may be a
-        mime-encoded image data. Metadata about the image is sent via
-        HTTP Headers.
+        Adds a new image to Glance. Three scenarios exist when creating an
+        image:
 
-        If the metadata about the image does not include a location
-        to find the image, or if the image location is not valid,
-        the request body *must* be encoded as application/octet-stream
-        and be the image data itself, otherwise an HTTPBadRequest is
-        returned.
+        1. If the image data is available for upload, create can be passed the
+           image data as the request body and the metadata as the request
+           headers. The image will initially be 'queued', during upload it
+           will be in the 'saving' status, and then 'killed' or 'active'
+           depending on whether the upload completed successfully.
+
+        2. If the image data exists somewhere else, you can pass in the source
+           using the x-image-meta-location header
+
+        3. If the image data is not available yet, but you'd like reserve a
+           spot for it, you can omit the data and a record will be created in
+           the 'queued' state. This exists primarily to maintain backwards
+           compatibility with OpenStack/Rackspace API semantics.
+
+        The request body *must* be encoded as application/octet-stream,
+        otherwise an HTTPBadRequest is returned.
 
         Upon a successful save of the image data and metadata, a response
         containing metadata about the image is returned, including its
@@ -184,62 +322,16 @@ class Controller(wsgi.Controller):
                 and the request body is not application/octet-stream
                 image data.
         """
+        image_meta = self._reserve(req)
 
-        # Verify the request and headers before we generate a new id
-
-        image_in_body = False
-        image_store = None
-        header_keys = [k.lower() for k in req.headers.keys()]
-        if 'x-image-meta-location' not in header_keys:
-            if ('content-type' not in header_keys or
-                req.headers['content-type'] != 'application/octet-stream'):
-                raise HTTPBadRequest("Image location was not specified in "
-                                     "headers and the request body was not "
-                                     "mime-encoded as application/"
-                                     "octet-stream.", request=req)
-            else:
-                if 'x-image-meta-store' in header_keys:
-                    image_store = req.headers['x-image-meta-store']
-                image_status = 'pending'  # set to available when stored...
-                image_in_body = True
+        if util.has_body(req):
+            self._upload_and_activate(req, image_meta)
         else:
-            image_location = req.headers['x-image-meta-location']
-            image_store = get_store_from_location(image_location)
-            image_status = 'available'
+            if 'x-image-meta-location' in req.headers:
+                location = req.headers['x-image-meta-location']
+                self._activate(req, image_meta, location)
 
-        # If image is the request body, validate that the requested
-        # or default store is capable of storing the image data...
-        if not image_store:
-            image_store = FLAGS.default_store
-        if image_in_body:
-            store = self.get_store_or_400(req, image_store)
-
-        image_meta = util.get_image_meta_from_headers(req)
-
-        image_meta['status'] = image_status
-        image_meta['store'] = image_store
-        try:
-            image_meta = registry.add_image_metadata(image_meta)
-
-            if image_in_body:
-                try:
-                    location = store.add(image_meta['id'], req.body)
-                except exception.Duplicate, e:
-                    logging.error("Error adding image to store: %s", str(e))
-                    return HTTPConflict(str(e), request=req)
-                image_meta['status'] = 'available'
-                image_meta['location'] = location
-                registry.update_image_metadata(image_meta['id'], image_meta)
-
-            return dict(image=image_meta)
-
-        except exception.Duplicate:
-            msg = "An image with identifier %s already exists"\
-                  % image_meta['id']
-            logging.error(msg)
-            return HTTPConflict(msg, request=req)
-        except exception.Invalid:
-            return HTTPBadRequest()
+        return dict(image=image_meta)
 
     def update(self, req, id):
         """
@@ -248,14 +340,23 @@ class Controller(wsgi.Controller):
         :param request: The WSGI/Webob Request object
         :param id: The opaque image identifier
 
-        :retval Returns the updated image information as a mapping,
-
+        :retval Returns the updated image information as a mapping
         """
-        image = self.get_image_meta_or_404(req, id)
+        has_body = util.has_body(req)
 
-        image_data = json.loads(req.body)['image']
-        updated_image = registry.update_image_metadata(id, image_data)
-        return dict(image=updated_image)
+        orig_image_meta = self.get_image_meta_or_404(req, id)
+        orig_status = orig_image_meta['status']
+
+        if has_body and orig_status != 'queued':
+            raise HTTPConflict("Cannot upload to an unqueued image")
+
+        new_image_meta = util.get_image_meta_from_headers(req)
+        image_meta = registry.update_image_metadata(id, new_image_meta)
+
+        if has_body:
+            self._upload_and_activate(req, image_meta)
+
+        return dict(image=image_meta)
 
     def delete(self, req, id):
         """

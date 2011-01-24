@@ -21,13 +21,16 @@ import stubout
 import unittest
 import urlparse
 
+from glance.store.s3 import S3Backend
 from glance.store.swift import SwiftBackend
 from glance.store import Backend, BackendException, get_from_backend
 from tests import stubs
 
 Backend.CHUNKSIZE = 2
 
+
 class TestBackend(unittest.TestCase):
+
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
@@ -66,7 +69,7 @@ class TestHTTPBackend(TestBackend):
 
     def test_http_get(self):
         url = "http://netloc/path/to/file.tar.gz"
-        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 
+        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s',
                             'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
         fetcher = get_from_backend(url,
                                    expected_size=8)
@@ -76,13 +79,32 @@ class TestHTTPBackend(TestBackend):
 
     def test_https_get(self):
         url = "https://netloc/path/to/file.tar.gz"
-        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 
+        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s',
                             'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
         fetcher = get_from_backend(url,
                                    expected_size=8)
 
         chunks = [c for c in fetcher]
         self.assertEqual(chunks, expected_returns)
+
+
+class TestS3Backend(TestBackend):
+    def setUp(self):
+        super(TestS3Backend, self).setUp()
+        stubs.stub_out_s3_backend(self.stubs)
+
+    def test_get(self):
+        s3_uri = "s3://user:password@localhost/bucket1/file.tar.gz"
+
+        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 
+                            'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
+        fetcher = get_from_backend(s3_uri, 
+                                   expected_size=8, 
+                                   conn_class=S3Backend)
+
+        chunks = [c for c in fetcher]
+        self.assertEqual(chunks, expected_returns)
+
 
 
 class TestSwiftBackend(TestBackend):
@@ -93,8 +115,8 @@ class TestSwiftBackend(TestBackend):
 
     def test_get(self):
 
-        swift_uri = "swift://user:password@localhost/container1/file.tar.gz"
-        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 
+        swift_uri = "swift://user:pass@localhost/container1/file.tar.gz"
+        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s',
                             'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
 
         fetcher = get_from_backend(swift_uri,
@@ -109,12 +131,12 @@ class TestSwiftBackend(TestBackend):
 
         swift_url = "swift://localhost/container1/file.tar.gz"
 
-        self.assertRaises(BackendException, get_from_backend, 
+        self.assertRaises(BackendException, get_from_backend,
                           swift_url, expected_size=21)
 
     def test_url_parsing(self):
 
-        swift_uri = "swift://user:password@localhost/v1.0/container1/file.tar.gz"
+        swift_uri = "swift://user:pass@localhost/v1.0/container1/file.tar.gz"
 
         parsed_uri = urlparse.urlparse(swift_uri)
 
@@ -122,7 +144,7 @@ class TestSwiftBackend(TestBackend):
             SwiftBackend._parse_swift_tokens(parsed_uri)
 
         self.assertEqual(user, 'user')
-        self.assertEqual(key, 'password')
+        self.assertEqual(key, 'pass')
         self.assertEqual(authurl, 'https://localhost/v1.0')
         self.assertEqual(container, 'container1')
         self.assertEqual(obj, 'file.tar.gz')

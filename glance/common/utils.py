@@ -29,8 +29,6 @@ import subprocess
 import socket
 import sys
 
-from twisted.internet.threads import deferToThread
-
 from glance.common import exception
 from glance.common import flags
 from glance.common.exception import ProcessExecutionError
@@ -38,6 +36,7 @@ from glance.common.exception import ProcessExecutionError
 
 FLAGS = flags.FLAGS
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
 
 def import_class(import_str):
     """Returns a class from a string including module and class"""
@@ -48,6 +47,7 @@ def import_class(import_str):
     except (ImportError, ValueError, AttributeError):
         raise exception.NotFound('Class %s cannot be found' % class_str)
 
+
 def import_object(import_str):
     """Returns an object including a module or module and class"""
     try:
@@ -56,6 +56,7 @@ def import_object(import_str):
     except ImportError:
         cls = import_class(import_str)
         return cls()
+
 
 def fetchfile(url, target):
     logging.debug("Fetching %s" % url)
@@ -67,6 +68,7 @@ def fetchfile(url, target):
 #    c.close()
 #    fp.close()
     execute("curl --fail %s -o %s" % (url, target))
+
 
 def execute(cmd, process_input=None, addl_env=None, check_exit_code=True):
     logging.debug("Running cmd: %s", cmd)
@@ -83,7 +85,7 @@ def execute(cmd, process_input=None, addl_env=None, check_exit_code=True):
     obj.stdin.close()
     if obj.returncode:
         logging.debug("Result was %s" % (obj.returncode))
-        if check_exit_code and obj.returncode <> 0:
+        if check_exit_code and obj.returncode != 0:
             (stdout, stderr) = result
             raise ProcessExecutionError(exit_code=obj.returncode,
                                         stdout=stdout,
@@ -109,7 +111,8 @@ def default_flagfile(filename='glance.conf'):
             script_dir = os.path.dirname(inspect.stack()[-1][1])
             filename = os.path.abspath(os.path.join(script_dir, filename))
         if os.path.exists(filename):
-            sys.argv = sys.argv[:1] + ['--flagfile=%s' % filename] + sys.argv[1:]
+            sys.argv = \
+                sys.argv[:1] + ['--flagfile=%s' % filename] + sys.argv[1:]
 
 
 def debug(arg):
@@ -117,11 +120,11 @@ def debug(arg):
     return arg
 
 
-def runthis(prompt, cmd, check_exit_code = True):
+def runthis(prompt, cmd, check_exit_code=True):
     logging.debug("Running %s" % (cmd))
     exit_code = subprocess.call(cmd.split(" "))
     logging.debug(prompt % (exit_code))
-    if check_exit_code and exit_code <> 0:
+    if check_exit_code and exit_code != 0:
         raise ProcessExecutionError(exit_code=exit_code,
                                     stdout=None,
                                     stderr=None,
@@ -129,13 +132,14 @@ def runthis(prompt, cmd, check_exit_code = True):
 
 
 def generate_uid(topic, size=8):
-    return '%s-%s' % (topic, ''.join([random.choice('01234567890abcdefghijklmnopqrstuvwxyz') for x in xrange(size)]))
+    return '%s-%s' % (topic, ''.join(
+        [random.choice('01234567890abcdefghijklmnopqrstuvwxyz')
+         for x in xrange(size)]))
 
 
 def generate_mac():
     mac = [0x02, 0x16, 0x3e, random.randint(0x00, 0x7f),
-           random.randint(0x00, 0xff), random.randint(0x00, 0xff)
-           ]
+           random.randint(0x00, 0xff), random.randint(0x00, 0xff)]
     return ':'.join(map(lambda x: "%02x" % x, mac))
 
 
@@ -197,8 +201,3 @@ class LazyPluggable(object):
     def __getattr__(self, key):
         backend = self.__get_backend()
         return getattr(backend, key)
-
-def deferredToThread(f):
-    def g(*args, **kwargs):
-        return deferToThread(f, *args, **kwargs)
-    return g

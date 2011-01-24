@@ -49,6 +49,7 @@ Concepts
 
    identifiers
    registries
+   statuses
 
 Using Glance
 ============
@@ -56,6 +57,7 @@ Using Glance
 .. toctree::
    :maxdepth: 1
 
+   gettingstarted
    glanceapi
    client
 

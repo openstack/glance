@@ -58,18 +58,18 @@ class ModelBase(object):
         """Get all objects of this type"""
         if not session:
             session = get_session()
-        return session.query(cls
-                     ).filter_by(deleted=deleted
-                     ).all()
+        return session.query(cls).\
+                       filter_by(deleted=deleted).\
+                       all()
 
     @classmethod
     def count(cls, session=None, deleted=False):
         """Count objects of this type"""
         if not session:
             session = get_session()
-        return session.query(cls
-                     ).filter_by(deleted=deleted
-                     ).count()
+        return session.query(cls).\
+                       filter_by(deleted=deleted).\
+                       count()
 
     @classmethod
     def find(cls, obj_id, session=None, deleted=False):
@@ -77,10 +77,10 @@ class ModelBase(object):
         if not session:
             session = get_session()
         try:
-            return session.query(cls
-                         ).filter_by(id=obj_id
-                         ).filter_by(deleted=deleted
-                         ).one()
+            return session.query(cls).\
+                           filter_by(id=obj_id).\
+                           filter_by(deleted=deleted).\
+                           one()
         except exc.NoResultFound:
             new_exc = exception.NotFound("No model for id %s" % obj_id)
             raise new_exc.__class__, new_exc, sys.exc_info()[2]
@@ -137,11 +137,12 @@ class ModelBase(object):
     def items(self):
         return self.__dict__.items()
 
+
 class Image(BASE, ModelBase):
     """Represents an image in the datastore"""
     __tablename__ = 'images'
     __prefix__ = 'img'
-    
+
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
     type = Column(String(30))
@@ -156,13 +157,13 @@ class Image(BASE, ModelBase):
             raise exception.Invalid(
                 "Invalid image type '%s' for image." % type)
         return type
-    
+
     @validates('status')
     def validate_status(self, key, status):
-        if not status in ('available', 'pending', 'disabled'):
+        if not status in ('active', 'queued', 'killed', 'saving'):
             raise exception.Invalid("Invalid status '%s' for image." % status)
         return status
-    
+
 
 class ImageProperty(BASE, ModelBase):
     """Represents an image properties in the datastore"""
@@ -173,7 +174,7 @@ class ImageProperty(BASE, ModelBase):
     id = Column(Integer, primary_key=True)
     image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
     image = relationship(Image, backref=backref('properties'))
-    
+
     key = Column(String(255), index=True)
     value = Column(Text)
 

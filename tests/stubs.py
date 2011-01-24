@@ -44,7 +44,7 @@ def stub_out_http_backend(stubs):
     """Stubs out the httplib.HTTPRequest.getresponse to return
     faked-out data instead of grabbing actual contents of a resource
 
-    The stubbed getresponse() returns an iterator over 
+    The stubbed getresponse() returns an iterator over
     the data "I am a teapot, short and stout\n"
 
     :param stubs: Set of stubout stubs
@@ -105,6 +105,44 @@ def stub_out_filesystem_backend():
     f.close()
 
 
+def stub_out_s3_backend(stubs):
+    """ Stubs out the S3 Backend with fake data and calls.
+
+    The stubbed swift backend provides back an iterator over
+    the data ""
+
+    :param stubs: Set of stubout stubs
+
+    """
+
+    class FakeSwiftAuth(object):
+        pass
+    class FakeS3Connection(object):
+        pass
+
+    class FakeS3Backend(object):
+        CHUNK_SIZE = 2
+        DATA = 'I am a teapot, short and stout\n'
+
+        @classmethod
+        def get(cls, parsed_uri, expected_size, conn_class=None):
+            S3Backend = glance.store.s3.S3Backend
+
+            # raise BackendException if URI is bad.
+            (user, key, authurl, container, obj) = \
+                S3Backend._parse_s3_tokens(parsed_uri)
+
+            def chunk_it():
+                for i in xrange(0, len(cls.DATA), cls.CHUNK_SIZE):
+                    yield cls.DATA[i:i+cls.CHUNK_SIZE]
+            
+            return chunk_it()
+
+    fake_swift_backend = FakeS3Backend()
+    stubs.Set(glance.store.s3.S3Backend, 'get',
+              fake_swift_backend.get)
+
+
 def stub_out_swift_backend(stubs):
     """Stubs out the Swift Glance backend with fake data
     and calls.
@@ -117,6 +155,7 @@ def stub_out_swift_backend(stubs):
     """
     class FakeSwiftAuth(object):
         pass
+
     class FakeSwiftConnection(object):
         pass
 
@@ -135,8 +174,8 @@ def stub_out_swift_backend(stubs):
 
             def chunk_it():
                 for i in xrange(0, len(cls.DATA), cls.CHUNK_SIZE):
-                    yield cls.DATA[i:i+cls.CHUNK_SIZE]
-            
+                    yield cls.DATA[i:i + cls.CHUNK_SIZE]
+
             return chunk_it()
 
     fake_swift_backend = FakeSwiftBackend()
@@ -221,6 +260,22 @@ def stub_out_registry_and_store_server(stubs):
         def close(self):
             return True
 
+        def putrequest(self, method, url):
+            self.req = webob.Request.blank("/" + url.lstrip("/"))
+            self.req.method = method
+
+        def putheader(self, key, value):
+            self.req.headers[key] = value
+
+        def endheaders(self):
+            pass
+
+        def send(self, data):
+            # send() is called during chunked-transfer encoding, and
+            # data is of the form %x\r\n%s\r\n. Strip off the %x and
+            # only write the actual data in tests.
+            self.req.body += data.split("\r\n")[1]
+
         def request(self, method, url, body=None, headers={}):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
             self.req.method = method
@@ -278,7 +333,7 @@ def stub_out_registry_db_image_api(stubs):
         FIXTURES = [
             {'id': 1,
                 'name': 'fake image #1',
-                'status': 'available',
+                'status': 'active',
                 'type': 'kernel',
                 'is_public': False,
                 'created_at': datetime.datetime.utcnow(),
@@ -290,7 +345,7 @@ def stub_out_registry_db_image_api(stubs):
                 'properties': []},
             {'id': 2,
                 'name': 'fake image #2',
-                'status': 'available',
+                'status': 'active',
                 'type': 'kernel',
                 'is_public': True,
                 'created_at': datetime.datetime.utcnow(),
@@ -301,7 +356,7 @@ def stub_out_registry_db_image_api(stubs):
                 'location': "file:///tmp/glance-tests/2",
                 'properties': []}]
 
-        VALID_STATUSES = ('available', 'disabled', 'pending')
+        VALID_STATUSES = ('active', 'killed', 'queued', 'saving')
 
         def __init__(self):
             self.images = FakeDatastore.FIXTURES
@@ -316,33 +371,34 @@ def stub_out_registry_db_image_api(stubs):
                                           values['id'])
 
             if 'status' not in values.keys():
-                values['status'] = 'available'
+                values['status'] = 'active'
             else:
                 if not values['status'] in self.VALID_STATUSES:
                     raise exception.Invalid("Invalid status '%s' for image" %
                                             values['status'])
 
+            values['size'] = values.get('size', 0)
             values['deleted'] = False
             values['properties'] = values.get('properties', {})
-            values['created_at'] = datetime.datetime.utcnow() 
+            values['created_at'] = datetime.datetime.utcnow()
             values['updated_at'] = datetime.datetime.utcnow()
             values['deleted_at'] = None
 
             props = []
 
             if 'properties' in values.keys():
-                for k,v in values['properties'].iteritems():
+                for k, v in values['properties'].iteritems():
                     p = {}
                     p['key'] = k
                     p['value'] = v
                     p['deleted'] = False
-                    p['created_at'] = datetime.datetime.utcnow() 
+                    p['created_at'] = datetime.datetime.utcnow()
                     p['updated_at'] = datetime.datetime.utcnow()
                     p['deleted_at'] = None
                     props.append(p)
 
             values['properties'] = props
-            
+
             self.next_id += 1
             self.images.append(values)
             return values
@@ -352,12 +408,12 @@ def stub_out_registry_db_image_api(stubs):
             props = []
 
             if 'properties' in values.keys():
-                for k,v in values['properties'].iteritems():
+                for k, v in values['properties'].iteritems():
                     p = {}
                     p['key'] = k
                     p['value'] = v
                     p['deleted'] = False
-                    p['created_at'] = datetime.datetime.utcnow() 
+                    p['created_at'] = datetime.datetime.utcnow()
                     p['updated_at'] = datetime.datetime.utcnow()
                     p['deleted_at'] = None
                     props.append(p)

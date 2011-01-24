@@ -33,14 +33,11 @@ from glance.common import server
 
 
 FLAGS = flags.FLAGS
-flags.DEFINE_string('registry_host', '0.0.0.0',
-                    'Registry server lives at this address')
-flags.DEFINE_integer('registry_port', 9191,
-                     'Registry server listens on this port')
+
 
 def main(_args):
-    # NOTE(sirp): importing in main so that eventlet is imported AFTER daemonization
-    # see https://bugs.launchpad.net/bugs/687661
+    # NOTE(sirp): importing in main so that eventlet is imported AFTER
+    # daemonization.  See https://bugs.launchpad.net/bugs/687661
     from glance.common import wsgi
     from glance.registry.server import API
     server = wsgi.Server()

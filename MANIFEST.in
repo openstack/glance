@@ -1,5 +1,10 @@
 include LICENSE run_tests.sh ChangeLog
 include README builddeb.sh
 include MANIFEST.in pylintrc
+include tests/__init__.py
+include tests/stubs.py
+include tests/test_data.py
+include tests/utils.py
+include run_tests.py
 graft doc
 graft tools
