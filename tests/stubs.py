@@ -117,6 +117,7 @@ def stub_out_s3_backend(stubs):
 
     class FakeSwiftAuth(object):
         pass
+
     class FakeS3Connection(object):
         pass
 
@@ -134,8 +135,7 @@ def stub_out_s3_backend(stubs):
 
             def chunk_it():
                 for i in xrange(0, len(cls.DATA), cls.CHUNK_SIZE):
-                    yield cls.DATA[i:i+cls.CHUNK_SIZE]
-            
+                    yield cls.DATA[i:i + cls.CHUNK_SIZE]
             return chunk_it()
 
     fake_swift_backend = FakeS3Backend()
@@ -201,8 +201,7 @@ def stub_out_registry(stubs):
         DATA = \
             {'files': [
               {'location': 'file:///chunk0', 'size': 12345},
-              {'location': 'file:///chunk1', 'size': 1235}
-            ]}
+              {'location': 'file:///chunk1', 'size': 1235}]}
 
         @classmethod
         def lookup(cls, _parsed_uri):

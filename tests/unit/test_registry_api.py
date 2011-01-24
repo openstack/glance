@@ -80,7 +80,7 @@ class TestImageController(unittest.TestCase):
                    'name': 'fake image #2',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'active'
+                   'status': 'active',
                   }
         req = webob.Request.blank('/images/detail')
         res = req.get_response(server.API())
@@ -97,7 +97,7 @@ class TestImageController(unittest.TestCase):
         """Tests that the /images POST registry API creates the image"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel'
+                   'type': 'kernel',
                   }
 
         req = webob.Request.blank('/images')
@@ -126,7 +126,7 @@ class TestImageController(unittest.TestCase):
                    'name': 'fake public image',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'bad status'
+                   'status': 'bad status',
                   }
 
         req = webob.Request.blank('/images')
@@ -143,7 +143,7 @@ class TestImageController(unittest.TestCase):
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
-                   'type': 'ramdisk'
+                   'type': 'ramdisk',
                   }
 
         req = webob.Request.blank('/images/2')
@@ -167,7 +167,7 @@ class TestImageController(unittest.TestCase):
                    'name': 'fake public image',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'bad status'
+                   'status': 'bad status',
                   }
 
         req = webob.Request.blank('/images/3')

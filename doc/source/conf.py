@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2010 OpenStack, LLC.
+# Copyright (c) 2011 OpenStack, LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import sys
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.append([os.path.abspath('../glance'),
     os.path.abspath('..'),
-    os.path.abspath('../bin')
+    os.path.abspath('../bin'),
     ])
 
 # -- General configuration ---------------------------------------------------
@@ -117,16 +117,16 @@ pygments_style = 'sphinx'
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['glance.']
 
-# -- Options for man page output -----------------------------------------------
+# -- Options for man page output --------------------------------------------
 
-# Grouping the document tree for man pages. 
+# Grouping the document tree for man pages.
 # List of tuples 'sourcefile', 'target', u'title', u'Authors name', 'manual'
 
 man_pages = [
     ('man/glanceapi', 'glance-api', u'Glance API Server',
      [u'OpenStack'], 1),
     ('man/glanceregistry', 'glance-registry', u'Glance Registry Server',
-     [u'OpenStack'], 1)
+     [u'OpenStack'], 1),
  ]
 
 

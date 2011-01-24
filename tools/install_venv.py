@@ -30,7 +30,7 @@ PIP_REQUIRES = os.path.join(ROOT, 'tools', 'pip-requires')
 
 
 def die(message, *args):
-    print >>sys.stderr, message % args
+    print >> sys.stderr, message % args
     sys.exit(1)
 
 
