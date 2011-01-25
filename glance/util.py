@@ -21,6 +21,7 @@ A few utility routines used throughout Glance
 
 import os
 
+
 def image_meta_to_http_headers(image_meta):
     """
     Returns a set of image metadata into a dict
@@ -85,6 +86,7 @@ def get_image_meta_from_headers(response):
     result['properties'] = properties
     return result
 
+
 def parse_mailmap(mailmap='.mailmap'):
     mapping = {}
     if os.path.exists(mailmap):
@@ -96,10 +98,12 @@ def parse_mailmap(mailmap='.mailmap'):
                 mapping[alias] = canonical_email
     return mapping
 
+
 def str_dict_replace(s, mapping):
     for s1, s2 in mapping.iteritems():
         s = s.replace(s1, s2)
     return s
+
 
 def has_body(req):
     """
