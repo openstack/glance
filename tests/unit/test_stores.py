@@ -96,15 +96,14 @@ class TestS3Backend(TestBackend):
     def test_get(self):
         s3_uri = "s3://user:password@localhost/bucket1/file.tar.gz"
 
-        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 
+        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s',
                             'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
-        fetcher = get_from_backend(s3_uri, 
-                                   expected_size=8, 
+        fetcher = get_from_backend(s3_uri,
+                                   expected_size=8,
                                    conn_class=S3Backend)
 
         chunks = [c for c in fetcher]
         self.assertEqual(chunks, expected_returns)
-
 
 
 class TestSwiftBackend(TestBackend):
