@@ -118,9 +118,9 @@ pygments_style = 'sphinx'
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['glance.']
 
-# -- Options for man page output -----------------------------------------------
+# -- Options for man page output ----------------------------------------------
 
-# Grouping the document tree for man pages. 
+# Grouping the document tree for man pages.
 # List of tuples 'sourcefile', 'target', u'title', u'Authors name', 'manual'
 
 man_pages = [
