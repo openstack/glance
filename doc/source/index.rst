@@ -67,6 +67,7 @@ Developer Docs
 .. toctree::
    :maxdepth: 1
 
+   architecture
    community
 
 Outstanding Documentation Tasks
