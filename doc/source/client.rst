@@ -36,7 +36,9 @@ Requesting a List of Public VM Images
 We want to see a list of available virtual machine images that the Glance
 server knows about.
 
-Using Glance's Client, we can do this using the following code::
+Using Glance's Client, we can do this using the following code
+
+.. code-block:: python
 
   from glance.client import Client
 
@@ -51,7 +53,9 @@ Requesting Detailed Metadata on Public VM Images
 We want to see more detailed information on available virtual machine images
 that the Glance server knows about.
 
-Using Glance's Client, we can do this using the following code::
+Using Glance's Client, we can do this using the following code
+
+.. code-block:: python
 
   from glance.client import Client
 
@@ -72,7 +76,9 @@ data returned includes the `uri` field for each available image. This
 for a specific image.
 
 Continuing the example from above, in order to get metadata about the
-first public image returned, we can use the following code::
+first public image returned, we can use the following code
+
+.. code-block:: python
 
   from glance.client import Client
 
@@ -93,7 +99,9 @@ data returned includes the `uri` field for each available image. This
 for a specific image.
 
 Continuing the example from above, in order to get both the metadata about the
-first public image returned and its image data, we can use the following code::
+first public image returned and its image data, we can use the following code
+
+.. code-block:: python
 
   from glance.client import Client
 
@@ -222,7 +230,9 @@ The list of metadata that `image_meta` can contain are listed below.
   set to the value `queued`.
 
 As a complete example, the following code would add a new machine image to
-Glance::
+Glance
+
+.. code-block:: python
 
   from glance.client import Client
 
