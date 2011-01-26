@@ -388,7 +388,7 @@ class TestClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel'
                   }
-       
+
         image_meta = self.client.add_image(fixture)
         self.assertEquals('queued', image_meta['status'])
         self.assertEquals(0, image_meta['size'])
@@ -401,7 +401,7 @@ class TestClient(unittest.TestCase):
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                   }
-        
+
         new_image = self.client.add_image(fixture)
         new_image_id = new_image['id']
 
@@ -434,7 +434,7 @@ class TestClient(unittest.TestCase):
                     'location': "file:///tmp/glance-tests/2",
                     'properties': {'distro': 'Ubuntu 10.04 LTS'}
                   }
-        
+
         new_image = self.client.add_image(fixture)
         new_image_id = new_image['id']
 
