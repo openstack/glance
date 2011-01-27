@@ -33,6 +33,13 @@ IMPL = utils.LazyPluggable(FLAGS['db_backend'],
                            sqlalchemy='glance.registry.db.sqlalchemy.api')
 
 
+# attributes common to all models
+BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
+                        'deleted'])
+
+IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'type', 'status', 'size',
+                                      'is_public', 'location'])
+
 ###################
 
 
