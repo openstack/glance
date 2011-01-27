@@ -440,7 +440,7 @@ def stub_out_registry_db_image_api(stubs):
             else:
                 return images[0]
 
-        def image_get_all_public(self, _context, public):
+        def image_get_all_public(self, _context, public=True):
             return [f for f in self.images
                     if f['is_public'] == public]
 
@@ -451,7 +451,7 @@ def stub_out_registry_db_image_api(stubs):
               fake_datastore.image_update)
     stubs.Set(glance.registry.db.api, 'image_destroy',
               fake_datastore.image_destroy)
-    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_get',
+    stubs.Set(glance.registry.db.api, 'image_get',
               fake_datastore.image_get)
-    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_get_all_public',
+    stubs.Set(glance.registry.db.api, 'image_get_all_public',
               fake_datastore.image_get_all_public)

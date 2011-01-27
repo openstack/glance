@@ -59,7 +59,16 @@ def image_destroy(context, image_id):
 
 def image_get(context, image_id):
     """Get an image or raise if it does not exist."""
-    return IMPL.image_get(context, image_id)
+    session = get_session()
+    try:
+        return session.query(models.Image).\
+                       options(joinedload(models.Image.properties)).\
+                       filter_by(deleted=_deleted(context)).\
+                       filter_by(id=image_id).\
+                       one()
+    except exc.NoResultFound:
+        new_exc = exception.NotFound("No model for id %s" % image_id)
+        raise new_exc.__class__, new_exc, sys.exc_info()[2]
 
 
 def image_get_all(context):
@@ -69,12 +78,12 @@ def image_get_all(context):
 
 def image_get_all_public(context, public=True):
     """Get all public images."""
-    return IMPL.image_get_all_public(context, public=public)
-
-
-def image_get_by_str(context, str_id):
-    """Get an image by string id."""
-    return IMPL.image_get_by_str(context, str_id)
+    session = get_session()
+    return session.query(models.Image).\
+                   options(joinedload(models.Image.properties)).\
+                   filter_by(deleted=_deleted(context)).\
+                   filter_by(is_public=public).\
+                   all()
 
 
 def image_update(context, image_id, values):
@@ -150,6 +159,24 @@ def _set_properties_for_image(_context, image_ref, properties, session=None):
             image_property_create(_context, prop_values, session=session)
 
 
+def image_property_create(_context, values, session=None):
+    """Create an ImageProperty object"""
+    prop_ref = models.ImageProperty()
+    return _image_property_update(_context, prop_ref, values, session=session)
+
+
+def image_property_update(_context, prop_ref, values, session=None):
+    """Update an ImageProperty object"""
+    return _image_property_update(_context, prop_ref, values, session=session)
+
+
+def _image_property_update(_context, prop_ref, values, session=None):
+    """Used internally by image_property_create and image_property_update
+    """
+    _drop_protected_attrs(models.ImageProperty, values)
+    prop_ref.update(values)
+    prop_ref.save(session=session)
+    return prop_ref
 ###################
 
 
