@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2010 OpenStack, LLC
+# Copyright 2010-2011 OpenStack, LLC
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -161,15 +161,13 @@ class TestRegistryClient(unittest.TestCase):
                    'type': 'kernel',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
-                   'properties': {'distro': 'Ubuntu 10.04 LTS'}
-                  }
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'}}
         expected = {'name': 'fake public image',
                     'is_public': True,
                     'type': 'kernel',
                     'size': 19,
                     'location': "file:///tmp/glance-tests/2",
-                    'properties': {'distro': 'Ubuntu 10.04 LTS'}
-                  }
+                    'properties': {'distro': 'Ubuntu 10.04 LTS'}}
 
         new_image = self.client.add_image(fixture)
 
@@ -216,8 +214,7 @@ class TestRegistryClient(unittest.TestCase):
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
-                   'type': 'ramdisk'
-                  }
+                   'type': 'ramdisk'}
 
         self.assertTrue(self.client.update_image(2, fixture))
 
@@ -233,7 +230,7 @@ class TestRegistryClient(unittest.TestCase):
                    'name': 'fake public image',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'bad status'
+                   'status': 'bad status',
                   }
 
         self.assertRaises(exception.NotFound,
@@ -386,9 +383,8 @@ class TestClient(unittest.TestCase):
         """Tests client returns image as queued"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel'
+                   'type': 'kernel',
                   }
-
         image_meta = self.client.add_image(fixture)
         self.assertEquals('queued', image_meta['status'])
         self.assertEquals(0, image_meta['size'])
@@ -401,7 +397,6 @@ class TestClient(unittest.TestCase):
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                   }
-
         new_image = self.client.add_image(fixture)
         new_image_id = new_image['id']
 
@@ -425,16 +420,15 @@ class TestClient(unittest.TestCase):
                    'type': 'kernel',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
-                   'properties': {'distro': 'Ubuntu 10.04 LTS'}
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'},
                   }
         expected = {'name': 'fake public image',
                     'is_public': True,
                     'type': 'kernel',
                     'size': 19,
                     'location': "file:///tmp/glance-tests/2",
-                    'properties': {'distro': 'Ubuntu 10.04 LTS'}
+                    'properties': {'distro': 'Ubuntu 10.04 LTS'},
                   }
-
         new_image = self.client.add_image(fixture)
         new_image_id = new_image['id']
 
@@ -485,7 +479,7 @@ class TestClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'size': 19,
-                   'properties': {'distro': 'Ubuntu 10.04 LTS'}
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'},
                   }
 
         image_data_fixture = r"chunk00000remainder"
@@ -510,7 +504,7 @@ class TestClient(unittest.TestCase):
                    'is_public': True,
                    'type': 'kernel',
                    'size': 19,
-                   'properties': {'distro': 'Ubuntu 10.04 LTS'}
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'},
                   }
 
         image_data_fixture = r"chunk00000remainder"
@@ -546,7 +540,7 @@ class TestClient(unittest.TestCase):
         fixture = {'name': 'fake public image',
                    'is_public': True,
                    'type': 'kernel',
-                   'properties': {'distro': 'Ubuntu 10.04 LTS'}
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'},
                   }
 
         image_data_fixture = r"chunk00000remainder"
@@ -574,7 +568,7 @@ class TestClient(unittest.TestCase):
                    'type': 'kernel',
                    'size': 19,
                    'store': 'bad',
-                   'properties': {'distro': 'Ubuntu 10.04 LTS'}
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'},
                   }
 
         image_data_fixture = r"chunk00000remainder"
@@ -587,7 +581,7 @@ class TestClient(unittest.TestCase):
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
-                   'type': 'ramdisk'
+                   'type': 'ramdisk',
                   }
 
         self.assertTrue(self.client.update_image(2, fixture))
@@ -604,7 +598,7 @@ class TestClient(unittest.TestCase):
                    'name': 'fake public image',
                    'is_public': True,
                    'type': 'kernel',
-                   'status': 'bad status'
+                   'status': 'bad status',
                   }
 
         self.assertRaises(exception.NotFound,
