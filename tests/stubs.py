@@ -445,9 +445,9 @@ def stub_out_registry_db_image_api(stubs):
                     if f['is_public'] == public]
 
     fake_datastore = FakeDatastore()
-    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_create',
+    stubs.Set(glance.registry.db.api, 'image_create',
               fake_datastore.image_create)
-    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_update',
+    stubs.Set(glance.registry.db.api, 'image_update',
               fake_datastore.image_update)
     stubs.Set(glance.registry.db.api, 'image_destroy',
               fake_datastore.image_destroy)
