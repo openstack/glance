@@ -34,7 +34,7 @@ import glance.store
 import glance.store.filesystem
 import glance.store.http
 import glance.store.swift
-import glance.registry.db.sqlalchemy.api
+import glance.registry.db.api
 
 
 FAKE_FILESYSTEM_ROOTDIR = os.path.join('/tmp', 'glance-tests')

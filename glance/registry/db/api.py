@@ -23,7 +23,7 @@ from glance.common import exception
 from glance.common import flags
 from glance.common import utils
 
-from glance.registry.db.sqlalchemy import models
+from glance.registry.db import models
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string('db_backend', 'sqlalchemy',

@@ -18,3 +18,8 @@
 """
 DB abstraction for Nova and Glance
 """
+
+from glance.registry.db import models
+
+
+models.register_models()
