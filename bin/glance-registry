@@ -22,6 +22,7 @@
 Reference implementation server for Glance Registry
 """
 
+import optparse
 import os
 import sys
 
@@ -29,12 +30,55 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 sys.path.append(ROOT_DIR)
 
-from glance.common import flags
-from glance.common import utils
+from glance import version
+from glance.common import config
 from glance.common import server
 
 
-FLAGS = flags.FLAGS
+def create_options(parser):
+    """
+    Sets up the CLI and config-file options that may be
+    parsed and program commands.
+
+    :param parser: The option parser
+    """
+    parser.add_option('-v', '--verbose', default=False, dest="verbose",
+                      action="store_true",
+                      help="Print more verbose output")
+    parser.add_option('-H', '--host',
+                      dest="host", metavar="ADDRESS",
+                      default="0.0.0.0",
+                      help="Address of Glance API server. "
+                           "Default: %default")
+    parser.add_option('-p', '--port',
+                      dest="port", metavar="PORT", type=int,
+                      default=9191,
+                      help="Port the Glance Registry server listens on. "
+                           "Default: %default")
+    parser.add_option('--daemonize', default=False, action="store_true",
+                      help="Daemonize this process")
+    parser.add_option('--use-syslog', default=True, action="store_true",
+                      help="Output to syslog when daemonizing. "
+                           "Default: %default")
+    parser.add_option('--logfile', default=None,
+                      metavar="PATH",
+                      help="(Optional) Name of log file to output to.")
+    parser.add_option("--logdir", default=None,
+                      help="(Optional) The directory to keep log files in "
+                           "(will be prepended to --logfile)")
+    parser.add_option("--pidfile", default=None,
+                      help="(Optional) Name of pid file to output tho")
+    parser.add_option('--working-directory', '--working-dir',
+                      default=os.path.abspath(os.getcwd()),
+                      help="The working directory. Default: %default")
+    parser.add_option("--uid", type=int, default=os.getuid(),
+                      help="uid under which to run. Default: %default")
+    parser.add_option("--gid", type=int, default=os.getgid(),
+                      help="gid under which to run. Default: %default")
+    parser.add_option('--sql-connection', metavar="CONNECTION",
+                      default='sqlite:///glance.sqlite',
+                      help="A valid SQLAlchemy connection string for the "
+                           "registry database. Default: %default")
 
 
 def main(_args):
@@ -43,10 +87,13 @@ def main(_args):
     from glance.common import wsgi
     from glance.registry.server import API
     server = wsgi.Server()
-    server.start(API(), FLAGS.registry_port, host=FLAGS.registry_host)
+    server.start(API(options), int(options['port']), host=options['host'])
     server.wait()
 
 
 if __name__ == '__main__':
-    utils.default_flagfile()
-    server.serve('glance-registry', main)
+    oparser = optparse.OptionParser(version='%%prog %s'
+                                    % version.version_string())
+    create_options(oparser)
+    (options, args) = config.parse_options(oparser)
+    server.serve('glance-registry', main, options, args)

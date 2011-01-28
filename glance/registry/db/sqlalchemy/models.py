@@ -32,9 +32,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from glance.common.db.sqlalchemy.session import get_session, get_engine
 
 from glance.common import exception
-from glance.common import flags
-
-FLAGS = flags.FLAGS
 
 BASE = declarative_base()
 

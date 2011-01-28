@@ -25,29 +25,10 @@ from daemon import pidlockfile
 import logging
 import logging.handlers
 import os
+import pprint
 import signal
 import sys
 import time
-
-from glance.common import flags
-
-
-FLAGS = flags.FLAGS
-flags.DEFINE_bool('daemonize', False, 'daemonize this process')
-# NOTE(termie): right now I am defaulting to using syslog when we daemonize
-#               it may be better to do something else -shrug-
-# NOTE(Devin): I think we should let each process have its own log file
-#              and put it in /var/logs/nova/(appname).log
-#              This makes debugging much easier and cuts down on sys log
-#              clutter.
-flags.DEFINE_bool('use_syslog', True, 'output to syslog when daemonizing')
-flags.DEFINE_string('logfile', None, 'log file to output to')
-flags.DEFINE_string('logdir',  None, 'directory to keep log files in '
-                                     '(will be prepended to $logfile)')
-flags.DEFINE_string('pidfile', None, 'pid file to output to')
-flags.DEFINE_string('working_directory', './', 'working directory...')
-flags.DEFINE_integer('uid', os.getuid(), 'uid under which to run')
-flags.DEFINE_integer('gid', os.getgid(), 'gid under which to run')
 
 
 def stop(pidfile):
@@ -77,53 +58,56 @@ def stop(pidfile):
             sys.exit(1)
 
 
-def serve(name, main):
+def serve(name, main, options, args):
     """Controller for server"""
-    argv = FLAGS(sys.argv)
 
-    if not FLAGS.pidfile:
-        FLAGS.pidfile = '%s.pid' % name
-
-    logging.debug("Full set of FLAGS: \n\n\n")
-    for flag in FLAGS:
-        logging.debug("%s : %s", flag, FLAGS.get(flag, None))
+    pidfile = options['pidfile']
+    if pidfile == 'None':
+        options['pidfile'] = '%s.pid' % name
 
     action = 'start'
-    if len(argv) > 1:
-        action = argv.pop()
+    if len(args) > 1:
+        action = args.pop()
 
     if action == 'stop':
-        stop(FLAGS.pidfile)
+        stop(options['pidfile'])
         sys.exit()
     elif action == 'restart':
-        stop(FLAGS.pidfile)
+        stop(options['pidfile'])
     elif action == 'start':
         pass
     else:
-        print 'usage: %s [options] [start|stop|restart]' % argv[0]
+        print 'usage: %s [options] [start|stop|restart]' % name
         sys.exit(1)
-    daemonize(argv, name, main)
+    daemonize(args, name, main, options)
 
 
-def daemonize(args, name, main):
+def daemonize(args, name, main, options):
     """Does the work of daemonizing the process"""
     logging.getLogger('amqplib').setLevel(logging.WARN)
+    pidfile = options['pidfile']
+    logfile = options['logfile']
+    if logfile == "None":
+        logfile = None
+    logdir = options['logdir']
+    if logdir == "None":
+        logdir = None
     files_to_keep = []
-    if FLAGS.daemonize:
+    if bool(options['daemonize']):
         logger = logging.getLogger()
         formatter = logging.Formatter(
                 name + '(%(name)s): %(levelname)s %(message)s')
-        if FLAGS.use_syslog and not FLAGS.logfile:
+        if bool(options['use_syslog']) and not logfile:
             syslog = logging.handlers.SysLogHandler(address='/dev/log')
             syslog.setFormatter(formatter)
             logger.addHandler(syslog)
             files_to_keep.append(syslog.socket)
         else:
-            if not FLAGS.logfile:
-                FLAGS.logfile = '%s.log' % name
-            if FLAGS.logdir:
-                FLAGS.logfile = os.path.join(FLAGS.logdir, FLAGS.logfile)
-            logfile = logging.FileHandler(FLAGS.logfile)
+            if not logfile:
+                logfile = '%s.log' % name
+            if logdir:
+                logfile = os.path.join(logdir, logfile)
+            logfile = logging.FileHandler(logfile)
             logfile.setFormatter(formatter)
             logger.addHandler(logfile)
             files_to_keep.append(logfile.stream)
@@ -131,21 +115,21 @@ def daemonize(args, name, main):
     else:
         stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
 
-    if FLAGS.verbose:
+    if bool(options['verbose']):
         logging.getLogger().setLevel(logging.DEBUG)
     else:
         logging.getLogger().setLevel(logging.WARNING)
 
     with daemon.DaemonContext(
-            detach_process=FLAGS.daemonize,
-            working_directory=FLAGS.working_directory,
-            pidfile=pidlockfile.TimeoutPIDLockFile(FLAGS.pidfile,
+            detach_process=bool(options['daemonize']),
+            working_directory=options['working_directory'],
+            pidfile=pidlockfile.TimeoutPIDLockFile(pidfile,
                                                    acquire_timeout=1,
                                                    threaded=False),
             stdin=stdin,
             stdout=stdout,
             stderr=stderr,
-            uid=FLAGS.uid,
-            gid=FLAGS.gid,
+            uid=int(options['uid']),
+            gid=int(options['gid']),
             files_preserve=files_to_keep):
         main(args)
