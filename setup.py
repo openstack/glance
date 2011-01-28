@@ -19,15 +19,6 @@ import subprocess
 
 from setuptools import setup, find_packages
 from setuptools.command.sdist import sdist
-from sphinx.setup_command import BuildDoc
-
-
-class local_BuildDoc(BuildDoc):
-    def run(self):
-        for builder in ['html', 'man']:
-            self.builder = builder
-            self.finalize_options()
-            BuildDoc.run(self)
 
 
 class local_sdist(sdist):
@@ -44,12 +35,25 @@ class local_sdist(sdist):
                 changelog_file.write(changelog)
         sdist.run(self)
 
+cmdclass = {'sdist': local_sdist}
+
+try:
+    from sphinx.setup_command import BuildDoc
+    class local_BuildDoc(BuildDoc):
+        def run(self):
+            for builder in ['html', 'man']:
+                self.builder = builder
+                self.finalize_options()
+                BuildDoc.run(self)
+    cmdclass['build_sphinx'] = local_BuildDoc
+
+except:
+    pass
+
 
 name = 'glance'
-version = '0.1.4'
+version = '0.1.6'
 
-cmdclass = {'sdist': local_sdist,
-            'build_sphinx': local_BuildDoc}
 
 setup(
     name=name,

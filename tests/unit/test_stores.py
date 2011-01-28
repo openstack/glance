@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2010 OpenStack, LLC
+# Copyright 2010-2011 OpenStack, LLC
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -96,19 +96,17 @@ class TestS3Backend(TestBackend):
     def test_get(self):
         s3_uri = "s3://user:password@localhost/bucket1/file.tar.gz"
 
-        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s', 
+        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s',
                             'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
-        fetcher = get_from_backend(s3_uri, 
-                                   expected_size=8, 
+        fetcher = get_from_backend(s3_uri,
+                                   expected_size=8,
                                    conn_class=S3Backend)
 
         chunks = [c for c in fetcher]
         self.assertEqual(chunks, expected_returns)
 
 
-
 class TestSwiftBackend(TestBackend):
-
     def setUp(self):
         super(TestSwiftBackend, self).setUp()
         stubs.stub_out_swift_backend(self.stubs)
