@@ -19,9 +19,11 @@
 Defines interface for DB access
 """
 
+from sqlalchemy.orm import joinedload
+
 from glance.common import exception
 from glance.common import utils
-
+from glance.common.db.sqlalchemy.session import get_session
 from glance.registry.db import models
 
 
@@ -163,3 +165,14 @@ def _image_property_update(context, prop_ref, values, session=None):
     prop_ref.update(values)
     prop_ref.save(session=session)
     return prop_ref
+
+
+# pylint: disable-msg=C0111
+def _deleted(context):
+    """Calculates whether to include deleted objects based on context.
+
+    Currently just looks for a flag called deleted in the context dict.
+    """
+    if not hasattr(context, 'get'):
+        return False
+    return context.get('deleted', False)

@@ -30,7 +30,6 @@ from sqlalchemy import UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 
 from glance.common.db.sqlalchemy.session import get_session, get_engine
-
 from glance.common import exception
 
 
