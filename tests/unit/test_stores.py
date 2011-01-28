@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2010 OpenStack, LLC
+# Copyright 2010-2011 OpenStack, LLC
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -107,7 +107,6 @@ class TestS3Backend(TestBackend):
 
 
 class TestSwiftBackend(TestBackend):
-
     def setUp(self):
         super(TestSwiftBackend, self).setUp()
         stubs.stub_out_swift_backend(self.stubs)
