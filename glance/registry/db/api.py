@@ -20,18 +20,9 @@ Defines interface for DB access
 """
 
 from glance.common import exception
-from glance.common import flags
 from glance.common import utils
 
 from glance.registry.db import models
-
-FLAGS = flags.FLAGS
-flags.DEFINE_string('db_backend', 'sqlalchemy',
-                    'The backend to use for db')
-
-
-IMPL = utils.LazyPluggable(FLAGS['db_backend'],
-                           sqlalchemy='glance.registry.db.sqlalchemy.api')
 
 
 # attributes common to all models
@@ -49,17 +40,26 @@ def image_create(context, values):
     return _image_update(context, values, None)
 
 
+def image_update(context, image_id, values):
+    """Set the given properties on an image and update it.
+
+    Raises NotFound if image does not exist.
+
+    """
+    return _image_update(context, values, image_id)
+
+
 def image_destroy(context, image_id):
     """Destroy the image or raise if it does not exist."""
     session = get_session()
     with session.begin():
-        image_ref = models.Image.find(image_id, session=session)
+        image_ref = image_get(context, image_id, session=session)
         image_ref.delete(session=session)
 
 
-def image_get(context, image_id):
+def image_get(context, image_id, session=None):
     """Get an image or raise if it does not exist."""
-    session = get_session()
+    session = session or get_session()
     try:
         return session.query(models.Image).\
                        options(joinedload(models.Image.properties)).\
@@ -69,11 +69,6 @@ def image_get(context, image_id):
     except exc.NoResultFound:
         new_exc = exception.NotFound("No model for id %s" % image_id)
         raise new_exc.__class__, new_exc, sys.exc_info()[2]
-
-
-def image_get_all(context):
-    """Get all images."""
-    return IMPL.image_get_all(context)
 
 
 def image_get_all_public(context, public=True):
@@ -86,15 +81,6 @@ def image_get_all_public(context, public=True):
                    all()
 
 
-def image_update(context, image_id, values):
-    """Set the given properties on an image and update it.
-
-    Raises NotFound if image does not exist.
-
-    """
-    return _image_update(context, values, image_id)
-
-
 def _drop_protected_attrs(model_class, values):
     """Removed protected attributes from values dictionary using the models
     __protected_attributes__ field.
@@ -104,10 +90,10 @@ def _drop_protected_attrs(model_class, values):
             del values[attr]
 
 
-def _image_update(_context, values, image_id):
+def _image_update(context, values, image_id):
     """Used internally by image_create and image_update
 
-    :param _context: Request context
+    :param context: Request context
     :param values: A dict of attributes to set
     :param image_id: If None, create the image, otherwise, find and update it
     """
@@ -122,23 +108,23 @@ def _image_update(_context, values, image_id):
         properties = values.pop('properties', {})
 
         if image_id:
-            image_ref = models.Image.find(image_id, session=session)
+            image_ref = image_get(context, image_id, session=session)
         else:
             image_ref = models.Image()
 
         image_ref.update(values)
         image_ref.save(session=session)
 
-        _set_properties_for_image(_context, image_ref, properties, session)
+        _set_properties_for_image(context, image_ref, properties, session)
 
-    return image_get(_context, image_ref.id)
+    return image_get(context, image_ref.id)
 
 
-def _set_properties_for_image(_context, image_ref, properties, session=None):
+def _set_properties_for_image(context, image_ref, properties, session=None):
     """
     Create or update a set of image_properties for a given image
 
-    :param _context: Request context
+    :param context: Request context
     :param image_ref: An Image object
     :param properties: A dict of properties to set
     :param session: A SQLAlchemy session to use (if present)
@@ -153,41 +139,27 @@ def _set_properties_for_image(_context, image_ref, properties, session=None):
                        'value': value}
         if key in orig_properties:
             prop_ref = orig_properties[key]
-            image_property_update(_context, prop_ref, prop_values,
+            image_property_update(context, prop_ref, prop_values,
                                   session=session)
         else:
-            image_property_create(_context, prop_values, session=session)
+            image_property_create(context, prop_values, session=session)
 
 
-def image_property_create(_context, values, session=None):
+def image_property_create(context, values, session=None):
     """Create an ImageProperty object"""
     prop_ref = models.ImageProperty()
-    return _image_property_update(_context, prop_ref, values, session=session)
+    return _image_property_update(context, prop_ref, values, session=session)
 
 
-def image_property_update(_context, prop_ref, values, session=None):
+def image_property_update(context, prop_ref, values, session=None):
     """Update an ImageProperty object"""
-    return _image_property_update(_context, prop_ref, values, session=session)
+    return _image_property_update(context, prop_ref, values, session=session)
 
 
-def _image_property_update(_context, prop_ref, values, session=None):
+def _image_property_update(context, prop_ref, values, session=None):
     """Used internally by image_property_create and image_property_update
     """
     _drop_protected_attrs(models.ImageProperty, values)
     prop_ref.update(values)
     prop_ref.save(session=session)
     return prop_ref
-###################
-
-
-def image_file_create(context, values):
-    """Create an image file from the values dictionary."""
-    return IMPL.image_file_create(context, values)
-
-
-###################
-
-
-def image_property_create(context, values):
-    """Create an image property from the values dictionary."""
-    return IMPL.image_property_create(context, values)

@@ -142,7 +142,6 @@ class API(wsgi.Router):
     """WSGI entry point for all Registry requests."""
 
     def __init__(self):
-        # TODO(sirp): should we add back the middleware for registry?
         mapper = routes.Mapper()
         mapper.resource("image", "images", controller=ImageController(),
                        collection={'detail': 'GET'})
