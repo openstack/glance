@@ -104,7 +104,7 @@ def main(_args):
     from glance.common import wsgi
     from glance.server import API
     server = wsgi.Server()
-    server.start(API(options), int(options['port']), host=options['host'])
+    server.start(API(options), options['port'], host=options['host'])
     server.wait()
 
 

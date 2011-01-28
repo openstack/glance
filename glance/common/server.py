@@ -62,7 +62,7 @@ def serve(name, main, options, args):
     """Controller for server"""
 
     pidfile = options['pidfile']
-    if pidfile == 'None':
+    if not pidfile:
         options['pidfile'] = '%s.pid' % name
 
     action = 'start'
@@ -87,17 +87,19 @@ def daemonize(args, name, main, options):
     logging.getLogger('amqplib').setLevel(logging.WARN)
     pidfile = options['pidfile']
     logfile = options['logfile']
-    if logfile == "None":
+    if not logfile:
         logfile = None
     logdir = options['logdir']
-    if logdir == "None":
+    if not logdir:
         logdir = None
+    daemonize = options['daemonize']
+    use_syslog = options['use_syslog']
     files_to_keep = []
-    if bool(options['daemonize']):
+    if daemonize:
         logger = logging.getLogger()
         formatter = logging.Formatter(
                 name + '(%(name)s): %(levelname)s %(message)s')
-        if bool(options['use_syslog']) and not logfile:
+        if use_syslog and not logfile:
             syslog = logging.handlers.SysLogHandler(address='/dev/log')
             syslog.setFormatter(formatter)
             logger.addHandler(syslog)
@@ -115,13 +117,13 @@ def daemonize(args, name, main, options):
     else:
         stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
 
-    if bool(options['verbose']):
+    if options['verbose']:
         logging.getLogger().setLevel(logging.DEBUG)
     else:
         logging.getLogger().setLevel(logging.WARNING)
 
     with daemon.DaemonContext(
-            detach_process=bool(options['daemonize']),
+            detach_process=daemonize,
             working_directory=options['working_directory'],
             pidfile=pidlockfile.TimeoutPIDLockFile(pidfile,
                                                    acquire_timeout=1,
@@ -129,7 +131,7 @@ def daemonize(args, name, main, options):
             stdin=stdin,
             stdout=stdout,
             stderr=stderr,
-            uid=int(options['uid']),
-            gid=int(options['gid']),
+            uid=options['uid'],
+            gid=options['gid'],
             files_preserve=files_to_keep):
         main(args)

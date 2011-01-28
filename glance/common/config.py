@@ -37,4 +37,18 @@ def parse_options(parser, cli_args=None):
 
     (options, args) = parser.parse_args(cli_args)
 
-    return (dict([(k, str(v)) for k, v in vars(options).items()]), args)
+    return (vars(options), args)
+
+
+def options_to_conf(options):
+    """
+    Converts a mapping of options having typed values into
+    a mapping of configuration options having only stringified values.
+
+    This method is used to convert the return of parse_options()[0]
+    into the configuration mapping that is expected by ConfigParser
+    and paste.deploy.
+
+    :params options: Mapping of typed option key/values
+    """
+    return dict([(k, str(v)) for k, v in options.items()])
