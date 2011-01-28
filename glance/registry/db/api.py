@@ -75,13 +75,13 @@ def image_get(context, image_id, session=None):
         raise new_exc.__class__, new_exc, sys.exc_info()[2]
 
 
-def image_get_all_public(context, public=True):
+def image_get_all_public(context):
     """Get all public images."""
     session = get_session()
     return session.query(models.Image).\
                    options(joinedload(models.Image.properties)).\
                    filter_by(deleted=_deleted(context)).\
-                   filter_by(is_public=public).\
+                   filter_by(is_public=True).\
                    all()
 
 
