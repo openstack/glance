@@ -25,11 +25,8 @@ import webob
 
 from glance import client
 from glance.registry import client as rclient
-from glance.common import flags
 from glance.common import exception
 from tests import stubs
-
-FLAGS = flags.FLAGS
 
 
 class TestBadClients(unittest.TestCase):
@@ -273,13 +270,10 @@ class TestClient(unittest.TestCase):
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_filesystem_backend()
-        self.orig_filesystem_store_datadir = FLAGS.filesystem_store_datadir
-        FLAGS.filesystem_store_datadir = stubs.FAKE_FILESYSTEM_ROOTDIR
         self.client = client.Client("0.0.0.0")
 
     def tearDown(self):
         """Clear the test environment"""
-        FLAGS.filesystem_store_datadir = self.orig_filesystem_store_datadir
         stubs.clean_out_fake_filesystem_backend()
         self.stubs.UnsetAll()
 

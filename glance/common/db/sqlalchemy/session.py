@@ -23,10 +23,6 @@ Session Handling for SQLAlchemy backend
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from glance.common import flags
-
-FLAGS = flags.FLAGS
-
 _ENGINE = None
 _MAKER = None
 
@@ -34,7 +30,7 @@ _MAKER = None
 def get_engine(echo=False):
     global _ENGINE
     if not _ENGINE:
-        _ENGINE = create_engine(FLAGS.sql_connection, echo=echo)
+        _ENGINE = create_engine('sqlite://', echo=echo)
     return _ENGINE
 
 

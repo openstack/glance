@@ -22,17 +22,12 @@ Defines interface for DB access
 """
 
 from glance.common import exception
-from glance.common import flags
 from glance.common import utils
 
-
-FLAGS = flags.FLAGS
-flags.DEFINE_string('db_backend', 'sqlalchemy',
-                    'The backend to use for db')
+from glance.registry.db.sqlalchemy import api
 
 
-IMPL = utils.LazyPluggable(FLAGS['db_backend'],
-                           sqlalchemy='glance.registry.db.sqlalchemy.api')
+IMPL = api
 
 
 ###################

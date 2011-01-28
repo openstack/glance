@@ -24,7 +24,6 @@ Implementation of SQLAlchemy backend
 import sys
 from glance.common import db
 from glance.common import exception
-from glance.common import flags
 from glance.common.db.sqlalchemy.session import get_session
 from glance.registry.db.sqlalchemy import models
 from sqlalchemy.orm import exc
@@ -33,8 +32,6 @@ from sqlalchemy.orm import exc
 # TODO(sirp): add back eager loading
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql import func
-
-FLAGS = flags.FLAGS
 
 
 # NOTE(vish): disabling docstring pylint because the docstrings are
