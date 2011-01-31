@@ -21,11 +21,7 @@
 DB abstraction for Nova and Glance
 """
 
-from glance.registry.db.api import *
+from glance.registry.db import models
 
-# attributes common to all models
-BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
-                        'deleted'])
 
-IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'type', 'status', 'size',
-                                      'is_public', 'location'])
+models.register_models()
