@@ -24,7 +24,7 @@ from webob import exc
 
 from glance.common import wsgi
 from glance.common import exception
-from glance.registry import db
+from glance.registry.db import api as db_api
 
 
 class ImageController(wsgi.Controller):
@@ -43,7 +43,7 @@ class ImageController(wsgi.Controller):
             {'id': image_id, 'name': image_name}
 
         """
-        images = db.image_get_all_public(None)
+        images = db_api.image_get_all_public(None)
         image_dicts = [dict(id=i['id'],
                             name=i['name'],
                             type=i['type'],
@@ -62,14 +62,14 @@ class ImageController(wsgi.Controller):
         all image model fields.
 
         """
-        images = db.image_get_all_public(None)
+        images = db_api.image_get_all_public(None)
         image_dicts = [make_image_dict(i) for i in images]
         return dict(images=image_dicts)
 
     def show(self, req, id):
         """Return data about the given image id."""
         try:
-            image = db.image_get(None, id)
+            image = db_api.image_get(None, id)
         except exception.NotFound:
             raise exc.HTTPNotFound()
 
@@ -87,7 +87,7 @@ class ImageController(wsgi.Controller):
         """
         context = None
         try:
-            db.image_destroy(context, id)
+            db_api.image_destroy(context, id)
         except exception.NotFound:
             return exc.HTTPNotFound()
 
@@ -110,7 +110,7 @@ class ImageController(wsgi.Controller):
 
         context = None
         try:
-            image_data = db.image_create(context, image_data)
+            image_data = db_api.image_create(context, image_data)
             return dict(image=make_image_dict(image_data))
         except exception.Duplicate:
             return exc.HTTPConflict()
@@ -132,7 +132,7 @@ class ImageController(wsgi.Controller):
 
         context = None
         try:
-            updated_image = db.image_update(context, id, image_data)
+            updated_image = db_api.image_update(context, id, image_data)
             return dict(image=make_image_dict(updated_image))
         except exception.NotFound:
             return exc.HTTPNotFound()
@@ -142,7 +142,6 @@ class API(wsgi.Router):
     """WSGI entry point for all Registry requests."""
 
     def __init__(self):
-        # TODO(sirp): should we add back the middleware for registry?
         mapper = routes.Mapper()
         mapper.resource("image", "images", controller=ImageController(),
                        collection={'detail': 'GET'})
@@ -166,7 +165,7 @@ def make_image_dict(image):
     properties = dict((p['key'], p['value'])
                       for p in image['properties'] if not p['deleted'])
 
-    image_dict = _fetch_attrs(image, db.IMAGE_ATTRS)
+    image_dict = _fetch_attrs(image, db_api.IMAGE_ATTRS)
 
     image_dict['properties'] = properties
     return image_dict
