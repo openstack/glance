@@ -139,3 +139,26 @@ def parse_uri_tokens(parsed_uri, example_url):
     authurl = "https://%s" % '/'.join(path_parts)
 
     return user, key, authurl, container, obj
+
+
+def add_options(parser):
+    """
+    Adds any configuration options that each store might
+    have.
+
+    :param parser: An optparse.OptionParser object
+    :retval None
+    """
+    # TODO(jaypipes): Remove these imports...
+    from glance.store.http import HTTPBackend
+    from glance.store.s3 import S3Backend
+    from glance.store.swift import SwiftBackend
+    from glance.store.filesystem import FilesystemBackend
+
+    backend_classes = [FilesystemBackend,
+                       HTTPBackend,
+                       SwiftBackend,
+                       S3Backend]
+    for b in backend_classes:
+        if hasattr(b, 'add_options'):
+            b.add_options(parser)

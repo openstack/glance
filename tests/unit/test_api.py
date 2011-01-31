@@ -23,11 +23,8 @@ import stubout
 import webob
 
 from glance import server
-from glance.common import flags
 from glance.registry import server as rserver
 from tests import stubs
-
-FLAGS = flags.FLAGS
 
 
 class TestRegistryAPI(unittest.TestCase):
@@ -37,6 +34,7 @@ class TestRegistryAPI(unittest.TestCase):
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_filesystem_backend()
+        self.api = rserver.API({})
 
     def tearDown(self):
         """Clear the test environment"""
@@ -51,7 +49,7 @@ class TestRegistryAPI(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2'}
         req = webob.Request.blank('/')
-        res = req.get_response(rserver.API())
+        res = req.get_response(self.api)
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -69,7 +67,7 @@ class TestRegistryAPI(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2'}
         req = webob.Request.blank('/images')
-        res = req.get_response(rserver.API())
+        res = req.get_response(self.api)
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -91,7 +89,7 @@ class TestRegistryAPI(unittest.TestCase):
                    'status': 'active'}
 
         req = webob.Request.blank('/images/detail')
-        res = req.get_response(rserver.API())
+        res = req.get_response(self.api)
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -112,7 +110,7 @@ class TestRegistryAPI(unittest.TestCase):
         req.method = 'POST'
         req.body = json.dumps(dict(image=fixture))
 
-        res = req.get_response(rserver.API())
+        res = req.get_response(self.api)
 
         self.assertEquals(res.status_int, 200)
 
@@ -140,10 +138,7 @@ class TestRegistryAPI(unittest.TestCase):
         req.method = 'POST'
         req.body = json.dumps(dict(image=fixture))
 
-        # TODO(jaypipes): Port Nova's Fault infrastructure
-        # over to Glance to support exception catching into
-        # standard HTTP errors.
-        res = req.get_response(rserver.API())
+        res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
 
     def test_update_image(self):
@@ -156,7 +151,7 @@ class TestRegistryAPI(unittest.TestCase):
         req.method = 'PUT'
         req.body = json.dumps(dict(image=fixture))
 
-        res = req.get_response(rserver.API())
+        res = req.get_response(self.api)
 
         self.assertEquals(res.status_int, 200)
 
@@ -179,10 +174,7 @@ class TestRegistryAPI(unittest.TestCase):
         req.method = 'PUT'
         req.body = json.dumps(dict(image=fixture))
 
-        # TODO(jaypipes): Port Nova's Fault infrastructure
-        # over to Glance to support exception catching into
-        # standard HTTP errors.
-        res = req.get_response(rserver.API())
+        res = req.get_response(self.api)
         self.assertEquals(res.status_int,
                           webob.exc.HTTPNotFound.code)
 
@@ -191,7 +183,7 @@ class TestRegistryAPI(unittest.TestCase):
 
         # Grab the original number of images
         req = webob.Request.blank('/images')
-        res = req.get_response(rserver.API())
+        res = req.get_response(self.api)
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -202,13 +194,13 @@ class TestRegistryAPI(unittest.TestCase):
 
         req.method = 'DELETE'
 
-        res = req.get_response(rserver.API())
+        res = req.get_response(self.api)
 
         self.assertEquals(res.status_int, 200)
 
         # Verify one less image
         req = webob.Request.blank('/images')
-        res = req.get_response(rserver.API())
+        res = req.get_response(self.api)
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
 
@@ -223,10 +215,7 @@ class TestRegistryAPI(unittest.TestCase):
 
         req.method = 'DELETE'
 
-        # TODO(jaypipes): Port Nova's Fault infrastructure
-        # over to Glance to support exception catching into
-        # standard HTTP errors.
-        res = req.get_response(rserver.API())
+        res = req.get_response(self.api)
         self.assertEquals(res.status_int,
                           webob.exc.HTTPNotFound.code)
 
@@ -238,12 +227,14 @@ class TestGlanceAPI(unittest.TestCase):
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_filesystem_backend()
-        self.orig_filesystem_store_datadir = FLAGS.filesystem_store_datadir
-        FLAGS.filesystem_store_datadir = stubs.FAKE_FILESYSTEM_ROOTDIR
+        self.api = server.API({'registry_host': '0.0.0.0',
+                               'registry_port': '9191',
+                               'sql_connection': 'sqlite://',
+                               'default_store': 'file',
+                               'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR})
 
     def tearDown(self):
         """Clear the test environment"""
-        FLAGS.filesystem_store_datadir = self.orig_filesystem_store_datadir
         stubs.clean_out_fake_filesystem_backend()
         self.stubs.UnsetAll()
 
@@ -256,7 +247,7 @@ class TestGlanceAPI(unittest.TestCase):
         req.method = 'POST'
         for k, v in fixture_headers.iteritems():
             req.headers[k] = v
-        res = req.get_response(server.API())
+        res = req.get_response(self.api)
         self.assertEquals(res.status_int, httplib.OK)
 
         res_body = json.loads(res.body)['image']
@@ -274,7 +265,7 @@ class TestGlanceAPI(unittest.TestCase):
 
         req.headers['Content-Type'] = 'application/octet-stream'
         req.body = "chunk00000remainder"
-        res = req.get_response(server.API())
+        res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
 
     def test_add_image_basic_file_store(self):
@@ -289,7 +280,7 @@ class TestGlanceAPI(unittest.TestCase):
 
         req.headers['Content-Type'] = 'application/octet-stream'
         req.body = "chunk00000remainder"
-        res = req.get_response(server.API())
+        res = req.get_response(self.api)
         self.assertEquals(res.status_int, 200)
 
         res_body = json.loads(res.body)['image']
@@ -302,7 +293,7 @@ class TestGlanceAPI(unittest.TestCase):
                             'x-image-meta-name': 'fake image #2'}
         req = webob.Request.blank("/images/2")
         req.method = 'HEAD'
-        res = req.get_response(server.API())
+        res = req.get_response(self.api)
         self.assertEquals(res.status_int, 200)
 
         for key, value in expected_headers.iteritems():
@@ -310,28 +301,28 @@ class TestGlanceAPI(unittest.TestCase):
 
     def test_show_image_basic(self):
         req = webob.Request.blank("/images/2")
-        res = req.get_response(server.API())
+        res = req.get_response(self.api)
         self.assertEqual('chunk00000remainder', res.body)
 
     def test_show_non_exists_image(self):
         req = webob.Request.blank("/images/42")
-        res = req.get_response(server.API())
+        res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
 
     def test_delete_image(self):
         req = webob.Request.blank("/images/2")
         req.method = 'DELETE'
-        res = req.get_response(server.API())
+        res = req.get_response(self.api)
         self.assertEquals(res.status_int, 200)
 
         req = webob.Request.blank("/images/2")
         req.method = 'GET'
-        res = req.get_response(server.API())
+        res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code,
                           res.body)
 
     def test_delete_non_exists_image(self):
         req = webob.Request.blank("/images/42")
         req.method = 'DELETE'
-        res = req.get_response(server.API())
+        res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)

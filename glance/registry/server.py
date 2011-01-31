@@ -27,8 +27,12 @@ from glance.common import exception
 from glance.registry.db import api as db_api
 
 
-class ImageController(wsgi.Controller):
-    """Image Controller """
+class Controller(wsgi.Controller):
+    """Controller for the reference implementation registry server"""
+
+    def __init__(self, options):
+        self.options = options
+        db_api.configure_db(options)
 
     def index(self, req):
         """Return basic information for all public, non-deleted images
@@ -141,11 +145,12 @@ class ImageController(wsgi.Controller):
 class API(wsgi.Router):
     """WSGI entry point for all Registry requests."""
 
-    def __init__(self):
+    def __init__(self, options):
         mapper = routes.Mapper()
-        mapper.resource("image", "images", controller=ImageController(),
+        controller = Controller(options)
+        mapper.resource("image", "images", controller=controller,
                        collection={'detail': 'GET'})
-        mapper.connect("/", controller=ImageController(), action="index")
+        mapper.connect("/", controller=controller, action="index")
         super(API, self).__init__(mapper)
 
 

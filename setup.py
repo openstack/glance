@@ -20,6 +20,16 @@ import subprocess
 from setuptools import setup, find_packages
 from setuptools.command.sdist import sdist
 
+from glance import version
+
+
+if os.path.isdir('.bzr'):
+    with open("glance/vcsversion.py", 'w') as version_file:
+        vcs_cmd = subprocess.Popen(["bzr", "version-info", "--python"],
+                                   stdout=subprocess.PIPE)
+        vcsversion = vcs_cmd.communicate()[0]
+        version_file.write(vcsversion)
+
 
 class local_sdist(sdist):
     """Customized sdist hook - builds the ChangeLog file from VC first"""
@@ -37,6 +47,9 @@ class local_sdist(sdist):
 
 cmdclass = {'sdist': local_sdist}
 
+# If Sphinx is installed on the box running setup.py,
+# enable setup.py to build the documentation, otherwise,
+# just ignore it
 try:
     from sphinx.setup_command import BuildDoc
 
@@ -52,21 +65,19 @@ except:
     pass
 
 
-name = 'glance'
-version = '0.1.6'
-
-
 setup(
-    name=name,
-    version=version,
-    description='Glance',
+    name='glance',
+    version=version.canonical_version_string(),
+    description='The Glance project provides services for discovering, '
+                'registering, and retrieving virtual machine images',
     license='Apache License (2.0)',
-    author='OpenStack, LLC.',
-    author_email='openstack-admins@lists.launchpad.net',
-    url='https://launchpad.net/glance',
+    author='OpenStack',
+    author_email='openstack@lists.launchpad.net',
+    url='http://glance.openstack.org/',
     packages=find_packages(exclude=['tests', 'bin']),
     test_suite='nose.collector',
     cmdclass=cmdclass,
+    include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
@@ -74,7 +85,6 @@ setup(
         'Programming Language :: Python :: 2.6',
         'Environment :: No Input/Output (Daemon)',
     ],
-    install_requires=[],  # removed for better compat
     scripts=['bin/glance-api',
              'bin/glance-registry',
              'bin/glance-upload'])

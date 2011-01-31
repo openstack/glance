@@ -23,15 +23,7 @@ import os
 import urlparse
 
 from glance.common import exception
-from glance.common import flags
 import glance.store
-
-
-flags.DEFINE_string('filesystem_store_datadir', '/var/lib/glance/images/',
-                    'Location to write image data. '
-                    'Default: /var/lib/glance/images/')
-
-FLAGS = flags.FLAGS
 
 
 class ChunkedFile(object):
@@ -102,21 +94,22 @@ class FilesystemBackend(glance.store.Backend):
             raise exception.NotFound("Image file %s does not exist" % fn)
 
     @classmethod
-    def add(cls, id, data):
+    def add(cls, id, data, options):
         """
         Stores image data to disk and returns a location that the image was
         written to. By default, the backend writes the image data to a file
         `/<DATADIR>/<ID>`, where <DATADIR> is the value of
-        FLAGS.filesystem_store_datadir and <ID> is the supplied image ID.
+        options['filesystem_store_datadir'] and <ID> is the supplied image ID.
 
         :param id: The opaque image identifier
         :param data: The image data to write, as a file-like object
+        :param options: Conf mapping
 
         :retval Tuple with (location, size)
                 The location that was written, with file:// scheme prepended
                 and the size in bytes of the data written
         """
-        datadir = FLAGS.filesystem_store_datadir
+        datadir = options['filesystem_store_datadir']
 
         if not os.path.exists(datadir):
             os.makedirs(datadir)
@@ -137,3 +130,18 @@ class FilesystemBackend(glance.store.Backend):
                 f.write(buf)
 
         return ('file://%s' % filepath, bytes_written)
+
+    @classmethod
+    def add_options(cls, parser):
+        """
+        Adds specific configuration options for this store
+
+        :param parser: An optparse.OptionParser object
+        :retval None
+        """
+
+        parser.add_option('--filesystem-store-datadir', metavar="DIR",
+                          default="/var/lib/glance/images/",
+                          help="Location to write image data. This directory "
+                          "should be writeable by the user that runs the "
+                          "glance-api program. Default: %default")
