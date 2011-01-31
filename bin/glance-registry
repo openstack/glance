@@ -67,7 +67,7 @@ def create_options(parser):
                       help="(Optional) The directory to keep log files in "
                            "(will be prepended to --logfile)")
     parser.add_option("--pidfile", default=None,
-                      help="(Optional) Name of pid file to output tho")
+                      help="(Optional) Name of pid file for the server")
     parser.add_option('--working-directory', '--working-dir',
                       default=os.path.abspath(os.getcwd()),
                       help="The working directory. Default: %default")

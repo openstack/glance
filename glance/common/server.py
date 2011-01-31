@@ -45,6 +45,7 @@ def stop(pidfile):
 
     # Try killing the daemon process
     try:
+        print "Killing process from pidfile %s" % pidfile
         while 1:
             os.kill(pid, signal.SIGTERM)
             time.sleep(0.1)
@@ -66,7 +67,7 @@ def serve(name, main, options, args):
         options['pidfile'] = '%s.pid' % name
 
     action = 'start'
-    if len(args) > 1:
+    if len(args):
         action = args.pop()
 
     if action == 'stop':
