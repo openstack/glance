@@ -108,7 +108,8 @@ def main(_args):
     from glance.registry.server import API as rAPI
     server = wsgi.Server()
     server.start(API(options), options['api_port'], host=options['api_host'])
-    server.start(rAPI(options), options['registry_port'], host=options['registry_host'])
+    server.start(rAPI(options), options['registry_port'],
+                 host=options['registry_host'])
     server.wait()
 
 
