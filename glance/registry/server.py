@@ -32,6 +32,7 @@ class Controller(wsgi.Controller):
 
     def __init__(self, options):
         self.options = options
+        db_api.configure_db(options)
 
     def index(self, req):
         """Return basic information for all public, non-deleted images

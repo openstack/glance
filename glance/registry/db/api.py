@@ -21,13 +21,19 @@
 Defines interface for DB access
 """
 
+
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import sessionmaker
 
 from glance.common import exception
 from glance.common import utils
-from glance.common.db.sqlalchemy.session import get_session
 from glance.registry.db import models
 
+_ENGINE = None
+_MAKER = None
+BASE = declarative_base()
 
 # attributes common to all models
 BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
@@ -36,7 +42,44 @@ BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
 IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'type', 'status', 'size',
                                       'is_public', 'location'])
 
-###################
+
+def configure_db(options):
+    """
+    Establish the database, create an engine if needed, and
+    register the models.
+
+    :param options: Mapping of configuration options
+    """
+    global _ENGINE
+    if not _ENGINE:
+        _ENGINE = create_engine(options['sql_connection'],
+                                echo=options['verbose'])
+        register_models()
+
+
+def get_session(autocommit=True, expire_on_commit=False):
+    """Helper method to grab session"""
+    global _MAKER, _ENGINE
+    if not _MAKER:
+        assert _ENGINE
+        _MAKER = sessionmaker(bind=_ENGINE,
+                              autocommit=autocommit,
+                              expire_on_commit=expire_on_commit)
+    return _MAKER()
+
+
+def register_models():
+    """Register Models and create properties"""
+    global _ENGINE
+    assert _ENGINE
+    BASE.metadata.create_all(_ENGINE)
+
+
+def unregister_models():
+    """Unregister Models, useful clearing out data before testing"""
+    global _ENGINE
+    assert _ENGINE
+    BASE.metadata.drop_all(engine)
 
 
 def image_create(context, values):

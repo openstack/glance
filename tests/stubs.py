@@ -239,7 +239,8 @@ def stub_out_registry_and_store_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            res = self.req.get_response(rserver.API({'sql_connection': 'sqlite://'}))
+            res = self.req.get_response(rserver.API({'sql_connection': 'sqlite://',
+                                                     'verbose': True}))
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():
@@ -284,7 +285,8 @@ def stub_out_registry_and_store_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            res = self.req.get_response(server.API({'registry_host': '0.0.0.0',
+            res = self.req.get_response(server.API({'verbose': True,
+                                                    'registry_host': '0.0.0.0',
                                                     'registry_port': '9191',
                                                     'default_store': 'file',
                                                     'filesystem_store_datadir': FAKE_FILESYSTEM_ROOTDIR}))
