@@ -29,7 +29,7 @@ from sqlalchemy import ForeignKey, DateTime, Boolean, Text
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 
-from glance.common.db.sqlalchemy.session import get_session, get_engine
+import glance.registry.db.api
 from glance.common import exception
 
 BASE = declarative_base()
@@ -49,7 +49,7 @@ class ModelBase(object):
 
     def save(self, session=None):
         """Save this object"""
-        session = session or get_session()
+        session = session or glance.registry.db.api.get_session()
         session.add(self)
         session.flush()
 
@@ -125,15 +125,3 @@ class ImageProperty(BASE, ModelBase):
 
     key = Column(String(255), index=True)
     value = Column(Text)
-
-
-def register_models():
-    """Register Models and create properties"""
-    engine = get_engine()
-    BASE.metadata.create_all(engine)
-
-
-def unregister_models():
-    """Unregister Models, useful clearing out data before testing"""
-    engine = get_engine()
-    BASE.metadata.drop_all(engine)
