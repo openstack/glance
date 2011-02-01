@@ -16,3 +16,16 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+
+def add_options(parser):
+    """
+    Adds any configuration options that the db layer might have.
+
+    :param parser: An optparse.OptionParser object
+    :retval None
+    """
+    parser.add_option('--sql-connection', metavar="CONNECTION",
+                      default='sqlite:///glance.sqlite',
+                      help="A valid SQLAlchemy connection string for the "
+                           "registry database. Default: %default")
