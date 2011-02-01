@@ -71,4 +71,12 @@ then
   fi
 fi
 
-run_tests && pep8 --repeat --show-pep8 --show-source bin/* glance setup.py run_tests.py || exit 1
+# FIXME(sirp): bzr version-info is not currently pep-8. This was fixed with
+# lp701898 [1], however, until that version of bzr becomes standard, I'm just
+# excluding the vcsversion.py file
+#
+# [1] https://bugs.launchpad.net/bzr/+bug/701898
+#
+PEP8_EXCLUDE=vcsversion.py
+PEP8_OPTIONS="--exclude=$PEP8_EXCLUDE --repeat --show-pep8 --show-source"
+run_tests && pep8 $PEP8_OPTIONS bin/* glance setup.py run_tests.py || exit 1

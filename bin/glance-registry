@@ -30,6 +30,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 sys.path.append(ROOT_DIR)
 
+import glance.registry.db
 from glance import version
 from glance.common import config
 from glance.common import server
@@ -75,10 +76,7 @@ def create_options(parser):
                       help="uid under which to run. Default: %default")
     parser.add_option("--gid", type=int, default=os.getgid(),
                       help="gid under which to run. Default: %default")
-    parser.add_option('--sql-connection', metavar="CONNECTION",
-                      default='sqlite:///glance.sqlite',
-                      help="A valid SQLAlchemy connection string for the "
-                           "registry database. Default: %default")
+    glance.registry.db.add_option(parser)
 
 
 def main(_args):
