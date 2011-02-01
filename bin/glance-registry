@@ -45,6 +45,9 @@ def create_options(parser):
     parser.add_option('-v', '--verbose', default=False, dest="verbose",
                       action="store_true",
                       help="Print more verbose output")
+    parser.add_option('-d', '--debug', default=False, dest="debug",
+                      action="store_true",
+                      help="Print debugging output")
     parser.add_option('-H', '--host',
                       dest="host", metavar="ADDRESS",
                       default="0.0.0.0",
@@ -70,7 +73,7 @@ def create_options(parser):
                       default='sqlite:///glance.sqlite',
                       help="A valid SQLAlchemy connection string for the "
                            "registry database. Default: %default")
-    config.add_log_options(parser)
+    config.add_log_options('glance-registry', parser)
 
 
 def main(_args):
@@ -90,8 +93,7 @@ if __name__ == '__main__':
     (options, args) = config.parse_options(oparser)
 
     try:
-        config.setup_logging('glance-registry', options)
+        config.setup_logging(options)
+        server.serve('glance-registry', main, options, args)
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
-
-    server.serve('glance-registry', main, options, args)

@@ -25,9 +25,11 @@ import logging.config
 import logging.handlers
 import optparse
 import os
+import sys
 
 
-DEFAULT_LOG_FORMAT = "%(asctime)s (%(name)s): %(levelname)s %(message)s"
+DEFAULT_LOG_FORMAT = "%(asctime)s %(levelname)8s [%(name)s] %(message)s"
+DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 LOGGING_HANDLER_CHOICES = ['syslog', 'file', 'stream']
 
 
@@ -68,7 +70,7 @@ def options_to_conf(options):
     return dict([(k, str(v)) for k, v in options.items()])
 
 
-def add_log_options(parser):
+def add_log_options(prog_name, parser):
     """
     Given a supplied optparse.OptionParser, adds an OptionGroup that
     represents all the configuration options around logging.
@@ -92,7 +94,11 @@ def add_log_options(parser):
     group.add_option('--log-format', metavar="FORMAT",
                       default=DEFAULT_LOG_FORMAT,
                       help="Format string for log records. Default: %default")
-    group.add_option('--log-file', default=None,
+    group.add_option('--log-date-format', metavar="FORMAT",
+                      default=DEFAULT_LOG_DATE_FORMAT,
+                      help="Format string for %(asctime)s in log records. "
+                           "Default: %default")
+    group.add_option('--log-file', default="%s.log" % prog_name,
                       metavar="PATH",
                       help="(Optional) Name of log file to output to.")
     group.add_option("--log-dir", default=None,
@@ -101,11 +107,10 @@ def add_log_options(parser):
     parser.add_option_group(group)
 
 
-def setup_logging(prog_name, options):
+def setup_logging(options):
     """
     Sets up the logging options for a log with supplied name
 
-    :param prog_name: Name of the log/program
     :param options: Mapping of typed option key/values
     """
 
@@ -113,30 +118,48 @@ def setup_logging(prog_name, options):
         # Use a logging configuration file for all settings...
         if os.path.exists(options['log_config']):
             logging.config.fileConfig(options['log_config'])
+            return
         else:
             raise RuntimeError("Unable to locate specified logging "
                                "config file: %s" % options['log_config'])
-    else:
-        # Set log configuration from options...
-        logger = logging.getLogger(prog_name)
-        formatter = logging.Formatter(options['log_format'])
 
-        if options['log_handler'] == 'syslog':
-            syslog = logging.handlers.SysLogHandler(address='/dev/log')
-            syslog.setFormatter(formatter)
-            logger.addHandler(syslog)
-        else:
-            logfile = options['log_file']
-            logdir = options['log_dir']
-            if not logfile:
-                logfile = '%s.log' % prog_name
-            if logdir:
-                logfile = os.path.join(logdir, logfile)
-            logfile = logging.FileHandler(logfile)
-            logfile.setFormatter(formatter)
-            logger.addHandler(logfile)
-
-    if options['verbose']:
-        logging.getLogger(prog_name).setLevel(logging.DEBUG)
+    debug = options.get('debug', False)
+    verbose = options.get('verbose', False)
+    root_logger = logging.root
+    if debug:
+        root_logger.setLevel(logging.DEBUG)
+    elif verbose:
+        root_logger.setLevel(logging.INFO)
     else:
-        logging.getLogger(prog_name).setLevel(logging.WARNING)
+        root_logger.setLevel(logging.WARNING)
+
+    # Set log configuration from options...
+    formatter = logging.Formatter(options['log_format'],
+                                  options['log_date_format'])
+
+    if options['log_handler'] == 'syslog':
+        syslog = logging.handlers.SysLogHandler(address='/dev/log')
+        syslog.setFormatter(formatter)
+        root_logger.addHandler(syslog)
+    elif options['log_handler'] == 'file':
+        logfile = options['log_file']
+        logdir = options['log_dir']
+        if logdir:
+            logfile = os.path.join(logdir, logfile)
+        logfile = logging.FileHandler(logfile)
+        logfile.setFormatter(formatter)
+        logfile.setFormatter(formatter)
+        root_logger.addHandler(logfile)
+    else:
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(formatter)
+        root_logger.addHandler(handler)
+
+    # Log the options used when starting if we're in debug mode...
+    if debug:
+        root_logger.debug("*" * 80)
+        root_logger.debug("Options:")
+        root_logger.debug("========")
+        for key, value in sorted(options.items()):
+            root_logger.debug("%(key)-30s %(value)s" % locals())
+        root_logger.debug("*" * 80)

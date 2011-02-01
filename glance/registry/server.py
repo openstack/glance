@@ -18,13 +18,18 @@
 Parllax Image controller
 """
 
+import logging
 import json
+
 import routes
 from webob import exc
 
 from glance.common import wsgi
 from glance.common import exception
 from glance.registry.db import api as db_api
+
+
+logger = logging.getLogger('glance-registry')
 
 
 class Controller(wsgi.Controller):
