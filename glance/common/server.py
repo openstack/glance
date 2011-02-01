@@ -87,17 +87,13 @@ def daemonize(args, name, main, options):
     """Does the work of daemonizing the process"""
     logging.getLogger('amqplib').setLevel(logging.WARN)
     pidfile = options['pidfile']
-    logfile = options['logfile']
-    if not logfile:
-        logfile = None
-    logdir = options['logdir']
-    if not logdir:
-        logdir = None
+    logfile = options['log_file']
+    logdir = options['log_dir']
     daemonize = options['daemonize']
-    use_syslog = options['use_syslog']
+    use_syslog = options['log_handler'] == 'syslog'
     files_to_keep = []
     if daemonize:
-        logger = logging.getLogger()
+        logger = logging.getLogger(name)
         formatter = logging.Formatter(
                 name + '(%(name)s): %(levelname)s %(message)s')
         if use_syslog and not logfile:
@@ -105,7 +101,7 @@ def daemonize(args, name, main, options):
             syslog.setFormatter(formatter)
             logger.addHandler(syslog)
             files_to_keep.append(syslog.socket)
-        else:
+        elif options['log_handler'] == 'file':
             if not logfile:
                 logfile = '%s.log' % name
             if logdir:
@@ -117,11 +113,6 @@ def daemonize(args, name, main, options):
         stdin, stdout, stderr = None, None, None
     else:
         stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
-
-    if options['verbose']:
-        logging.getLogger().setLevel(logging.DEBUG)
-    else:
-        logging.getLogger().setLevel(logging.WARNING)
 
     with daemon.DaemonContext(
             detach_process=daemonize,

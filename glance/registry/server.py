@@ -19,6 +19,7 @@ Parllax Image controller
 """
 
 import json
+
 import routes
 from webob import exc
 

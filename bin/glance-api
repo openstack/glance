@@ -49,6 +49,9 @@ def create_options(parser):
     parser.add_option('-v', '--verbose', default=False, dest="verbose",
                       action="store_true",
                       help="Print more verbose output")
+    parser.add_option('-d', '--debug', default=False, dest="debug",
+                      action="store_true",
+                      help="Print debugging output")
     parser.add_option('-H', '--host',
                       dest="host", metavar="ADDRESS",
                       default="0.0.0.0",
@@ -61,15 +64,6 @@ def create_options(parser):
                            "Default: %default")
     parser.add_option('--daemonize', default=False, action="store_true",
                       help="Daemonize this process")
-    parser.add_option('--use-syslog', default=True, action="store_true",
-                      help="Output to syslog when daemonizing. "
-                           "Default: %default")
-    parser.add_option('--logfile', default=None,
-                      metavar="PATH",
-                      help="(Optional) Name of log file to output to.")
-    parser.add_option("--logdir", default=None,
-                      help="(Optional) The directory to keep log files in "
-                           "(will be prepended to --logfile)")
     parser.add_option("--pidfile", default=None,
                       help="(Optional) Name of pid file for the server")
     parser.add_option('--working-directory', '--working-dir',
@@ -96,6 +90,7 @@ def create_options(parser):
                       "virtual machine images to. Choices: ('%s') "
                       "Default: %%default" % "','".join(DEFAULT_STORE_CHOICES))
     glance.store.add_options(parser)
+    config.add_log_options('glance-api', parser)
 
 
 def main(_args):
@@ -113,4 +108,9 @@ if __name__ == '__main__':
                                     % version.version_string())
     create_options(oparser)
     (options, args) = config.parse_options(oparser)
-    server.serve('glance-api', main, options, args)
+
+    try:
+        config.setup_logging(options)
+        server.serve('glance-api', main, options, args)
+    except RuntimeError, e:
+        sys.exit("ERROR: %s" % e)
