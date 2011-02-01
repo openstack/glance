@@ -91,7 +91,6 @@ class Controller(wsgi.Controller):
                  'type': <TYPE>}, ...
             ]}
         """
-        logging.debug("glance.server.Controller.index")
         images = registry.get_images_list(self.options)
         return dict(images=images)
 
