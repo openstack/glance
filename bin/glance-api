@@ -22,7 +22,6 @@
 Glance API Server
 """
 
-import logging
 import optparse
 import os
 import sys
@@ -37,7 +36,6 @@ from glance.common import server
 import glance.store
 
 
-logger = logging.getLogger('glance-api')
 DEFAULT_STORE_CHOICES = ['file', 'swift', 's3']
 
 
