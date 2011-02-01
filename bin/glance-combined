@@ -35,6 +35,7 @@ sys.path.append(ROOT_DIR)
 from glance import version
 from glance.common import config
 from glance.common import server
+import glance.registry.db
 import glance.store
 
 
@@ -92,6 +93,7 @@ def create_options(parser):
                       "virtual machine images to. Choices: ('%s') "
                       "Default: %%default" % "','".join(DEFAULT_STORE_CHOICES))
     glance.store.add_options(parser)
+    glance.registry.db.add_options(parser)
     config.add_log_options('glance-combined', parser)
 
 
