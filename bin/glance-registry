@@ -76,7 +76,7 @@ def create_options(parser):
                       help="uid under which to run. Default: %default")
     parser.add_option("--gid", type=int, default=os.getgid(),
                       help="gid under which to run. Default: %default")
-    glance.registry.db.add_option(parser)
+    glance.registry.db.add_options(parser)
 
 
 def main(_args):
