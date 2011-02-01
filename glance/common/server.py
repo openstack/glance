@@ -87,14 +87,14 @@ def daemonize(args, name, main, options):
     """Does the work of daemonizing the process"""
     logging.getLogger('amqplib').setLevel(logging.WARN)
     pidfile = options['pidfile']
-    logfile = options['logfile']
+    logfile = options['log_file']
     if not logfile:
         logfile = None
-    logdir = options['logdir']
+    logdir = options['log_dir']
     if not logdir:
         logdir = None
     daemonize = options['daemonize']
-    use_syslog = options['use_syslog']
+    use_syslog = options['log_handler'] == 'syslog'
     files_to_keep = []
     if daemonize:
         logger = logging.getLogger()
@@ -105,7 +105,7 @@ def daemonize(args, name, main, options):
             syslog.setFormatter(formatter)
             logger.addHandler(syslog)
             files_to_keep.append(syslog.socket)
-        else:
+        elif options['log_handler'] == 'file':
             if not logfile:
                 logfile = '%s.log' % name
             if logdir:
