@@ -30,10 +30,10 @@ def add_options(parser):
     help_text = "The following configuration options are specific to the "\
                 "Glance image registry database."
 
-    group = optparse.OptionGroup(parser, "Registry Database Options", help_text)
+    group = optparse.OptionGroup(parser, "Registry Database Options",
+                                 help_text)
     group.add_option('--sql-connection', metavar="CONNECTION",
                      default='sqlite:///glance.sqlite',
                      help="A valid SQLAlchemy connection string for the "
                           "registry database. Default: %default")
     parser.add_option_group(group)
-
