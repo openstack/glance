@@ -129,6 +129,8 @@ man_pages = [
     ('man/glanceapi', 'glance-api', u'Glance API Server',
      [u'OpenStack'], 1),
     ('man/glanceregistry', 'glance-registry', u'Glance Registry Server',
+     [u'OpenStack'], 1),
+    ('man/glancemanage', 'glance-manage', u'Glance Management Utility',
      [u'OpenStack'], 1)
  ]
 

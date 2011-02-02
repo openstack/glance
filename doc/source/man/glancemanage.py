@@ -1,10 +1,10 @@
-===============
-glance-registry
-===============
+=============
+glance-manage
+=============
 
---------------------------------------
-Server for the Glance Registry Service
---------------------------------------
+-------------------------
+Glance Management Utility
+-------------------------
 
 :Author: glance@lists.launchpad.net
 :Date:   2010-11-16
@@ -16,13 +16,16 @@ Server for the Glance Registry Service
 SYNOPSIS
 ========
 
-  glance-registry [options]
+  glance-manage [options]
 
 DESCRIPTION
 ===========
 
-glance-registry is the reference implementation of a server daemon that serves
-image metadata based on the Glance Registry REST-like API.
+glance-manage is a utility for managing and configuring a Glance installation.
+One important use of glance-manage is to setup the database. To do this run::
+
+    glance-manage version_control
+    glance-manage upgrade
 
 OPTIONS
 =======
@@ -31,12 +34,6 @@ OPTIONS
 
   **-v, --verbose**
         Print more verbose output
-
-  **--registry_host=HOST**
-        Address of host running ``glance-registry``. Defaults to `0.0.0.0`.
-
-  **--registry_port=PORT**
-        Port that ``glance-registry`` listens on. Defaults to `9191`.
 
   **--sql_connection=CONN_STRING**
         A proper SQLAlchemy connection string as described
