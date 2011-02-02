@@ -24,8 +24,7 @@ DESCRIPTION
 glance-manage is a utility for managing and configuring a Glance installation.
 One important use of glance-manage is to setup the database. To do this run::
 
-    glance-manage version_control
-    glance-manage upgrade
+    glance-manage db_sync
 
 OPTIONS
 =======

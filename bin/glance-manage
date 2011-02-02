@@ -89,6 +89,15 @@ def do_version_control(options, args):
     glance.registry.db.migration.version_control(options)
 
 
+def do_db_sync(options, args):
+    """Place a database under migration control and upgrade"""
+    try:
+        db_version = args[1]
+    except IndexError:
+        db_version = None
+    glance.registry.db.migration.db_sync(options, version=db_version)
+
+
 def dispatch_cmd(options, args):
     """Search for do_* cmd in this module and then run it"""
     cmd = args[0]

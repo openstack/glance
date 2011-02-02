@@ -76,14 +76,37 @@ def version_control(options):
 
     :param options: options dict
     """
-    repo_path = _find_migrate_repo()
     sql_connection = options['sql_connection']
     try:
-        versioning_api.version_control(sql_connection, repo_path)
+        _version_control(options)
     except versioning_exceptions.DatabaseAlreadyControlledError, e:
         msg = ("database '%(sql_connection)s' is already under migration "
                "control" % locals())
         raise exception.DatabaseMigrationError(msg)
+
+
+def _version_control(options):
+    """Place a database under migration control
+
+    :param options: options dict
+    """
+    repo_path = _find_migrate_repo()
+    sql_connection = options['sql_connection']
+    return versioning_api.version_control(sql_connection, repo_path)
+
+
+def db_sync(options, version=None):
+    """Place a database under migration control and perform an upgrade
+
+    :param options: options dict
+    :retval version number
+    """
+    try:
+        _version_control(options)
+    except versioning_exceptions.DatabaseAlreadyControlledError, e:
+        pass
+
+    upgrade(options, version=version)
 
 
 def _find_migrate_repo():
