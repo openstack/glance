@@ -47,7 +47,45 @@ DateTime = lambda: sqlalchemy.types.DateTime(timezone=False)
 Integer = lambda: sqlalchemy.types.Integer()
 
 
-meta = MetaData()
+def from_migration_import(module_name, fromlist):
+    """Import a migration file and return the module
+
+    :param module_name: name of migration module to import from
+        (ex: 001_add_images_table)
+    :param fromlist: list of items to import (ex: define_images_table)
+    :retval: module object
+
+    This bit of ugliness warrants an explanation:
+
+        As you're writing migrations, you'll frequently want to refer to
+        tables defined in previous migrations.
+
+        In the interest of not repeating yourself, you need a way of importing
+        that table into a 'future' migration.
+
+        However, tables are bound to metadata, so what you need to import is
+        really a table factory, which you can late-bind to your current
+        metadata object.
+
+        Moreover, migrations begin with a number (001...), which means they
+        aren't valid Python identifiers. This means we can't perform a
+        'normal' import on them (the Python lexer will 'splode). Instead, we
+        need to use __import__ magic to bring the table-factory into our
+        namespace.
+
+    Example Usage:
+
+        (define_images_table,) = from_migration_import(
+            '001_add_images_table', ['define_images_table'])
+
+        images = define_images_table(meta)
+
+        # Refer to images table
+
+    """
+    module_path = 'glance.registry.db.migrate_repo.versions.%s' % module_name
+    module = __import__(module_path, globals(), locals(), fromlist, -1)
+    return [getattr(module, item) for item in fromlist]
 
 
 def create_tables(tables):

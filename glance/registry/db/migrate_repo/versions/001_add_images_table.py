@@ -15,14 +15,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from sqlalchemy.schema import (Column, Table)
+from sqlalchemy.schema import (Column, MetaData, Table)
 
 from glance.registry.db.migrate_repo.schema import (
-    Boolean, DateTime, Integer, String, Text, meta, create_tables,
-    drop_tables)
+    Boolean, DateTime, Integer, String, Text, create_tables, drop_tables)
 
 
-def define_tables():
+def define_images_table(meta):
     images = Table('images', meta,
         Column('id', Integer(), primary_key=True, nullable=False),
         Column('name', String(255)),
@@ -35,18 +34,21 @@ def define_tables():
         Column('updated_at', DateTime()),
         Column('deleted_at', DateTime()),
         Column('deleted', Boolean(), nullable=False, default=False),
-        mysql_engine='InnoDB')
+        mysql_engine='InnoDB',
+        useexisting=True)
 
-    return [images]
+    return images
 
 
 def upgrade(migrate_engine):
+    meta = MetaData()
     meta.bind = migrate_engine
-    tables = define_tables()
+    tables = [define_images_table(meta)]
     create_tables(tables)
 
 
 def downgrade(migrate_engine):
+    meta = MetaData()
     meta.bind = migrate_engine
-    tables = define_tables()
+    tables = [define_images_table(meta)]
     drop_tables(tables)
