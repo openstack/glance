@@ -43,12 +43,6 @@ def create_options(parser):
 
     :param parser: The option parser
     """
-    parser.add_option('-v', '--verbose', default=False, dest="verbose",
-                      action="store_true",
-                      help="Print more verbose output")
-    parser.add_option('-d', '--debug', default=False, dest="debug",
-                      action="store_true",
-                      help="Print debugging output")
     parser.add_option('-H', '--host',
                       dest="host", metavar="ADDRESS",
                       default="0.0.0.0",
@@ -59,22 +53,10 @@ def create_options(parser):
                       default=9191,
                       help="Port the Glance Registry server listens on. "
                            "Default: %default")
-    parser.add_option('--daemonize', default=False, action="store_true",
-                      help="Daemonize this process")
-    parser.add_option("--pidfile", default=None,
-                      help="(Optional) Name of pid file for the server")
-    parser.add_option('--working-directory', '--working-dir',
-                      default=os.path.abspath(os.getcwd()),
-                      help="The working directory. Default: %default")
-    parser.add_option("--uid", type=int, default=os.getuid(),
-                      help="uid under which to run. Default: %default")
-    parser.add_option("--gid", type=int, default=os.getgid(),
-                      help="gid under which to run. Default: %default")
-    parser.add_option('--sql-connection', metavar="CONNECTION",
-                      default='sqlite:///glance.sqlite',
-                      help="A valid SQLAlchemy connection string for the "
-                           "registry database. Default: %default")
+
     glance.registry.db.add_options(parser)
+    config.add_common_options(parser)
+    config.add_daemon_options(parser)
     config.add_log_options('glance-registry', parser)
 
 
