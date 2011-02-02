@@ -19,8 +19,14 @@
 Various conveniences used for migration scripts
 """
 
+import logging
+
 import sqlalchemy.types
 from sqlalchemy.schema import MetaData
+
+
+logger = logging.getLogger('glance.registry.db.migrate_repo.schema')
+
 
 String = lambda length: sqlalchemy.types.String(
     length=length, convert_unicode=False, assert_unicode=None,
@@ -42,3 +48,16 @@ Integer = lambda: sqlalchemy.types.Integer()
 
 
 meta = MetaData()
+
+
+def create_tables(tables):
+    for table in tables:
+        logger.info("creating table %(table)s" % locals())
+        table.create()
+
+
+def drop_tables(tables):
+    for table in tables:
+        logger.info("dropping table %(table)s" % locals())
+        table.drop()
+

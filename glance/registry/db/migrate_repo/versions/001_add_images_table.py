@@ -16,14 +16,16 @@
 #    under the License.
 
 import logging
-from sqlalchemy.schema import (Column, MetaData, Table)
+from sqlalchemy.schema import (Column, Table)
 
 from glance.registry.db.migrate_repo.schema import (Boolean,
                                                     DateTime,
                                                     Integer,
                                                     String,
                                                     Text,
-                                                    meta)
+                                                    meta,
+                                                    create_tables,
+                                                    drop_tables)
 
 
 def define_tables():
@@ -47,12 +49,10 @@ def define_tables():
 def upgrade(migrate_engine):
     meta.bind = migrate_engine
     tables = define_tables()
-    for table in tables:
-        table.create()
+    create_tables(tables)
 
 
 def downgrade(migrate_engine):
     meta.bind = migrate_engine
     tables = define_tables()
-    for table in reversed(tables):
-        table.drop()
+    drop_tables(tables)
