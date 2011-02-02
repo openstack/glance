@@ -48,14 +48,9 @@ def create_options(parser):
 
     :param parser: The option parser
     """
-    parser.add_option('-v', '--verbose', default=False, dest="verbose",
-                      action="store_true",
-                      help="Print more verbose output")
-    parser.add_option('-d', '--debug', default=False, dest="debug",
-                      action="store_true",
-                      help="Print debugging output")
-    config.add_log_options('glance-manage', parser)
     glance.registry.db.add_options(parser)
+    config.add_common_options(parser)
+    config.add_log_options('glance-manage', parser)
 
 
 def do_db_version(options, args):
