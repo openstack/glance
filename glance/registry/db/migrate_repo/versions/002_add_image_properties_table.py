@@ -15,17 +15,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
 from sqlalchemy.schema import (Column, ForeignKey, Table, UniqueConstraint)
 
-from glance.registry.db.migrate_repo.schema import (Boolean,
-                                                    DateTime,
-                                                    Integer,
-                                                    String,
-                                                    Text,
-                                                    meta,
-                                                    create_tables,
-                                                    drop_tables)
+from glance.registry.db.migrate_repo.schema import (
+    Boolean, DateTime, Integer, String, Text, meta, create_tables,
+    drop_tables)
 
 
 def define_tables():
