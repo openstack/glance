@@ -70,6 +70,51 @@ def options_to_conf(options):
     return dict([(k, str(v)) for k, v in options.items()])
 
 
+def add_common_options(parser):
+    """
+    Given a supplied optparse.OptionParser, adds an OptionGroup that
+    represents all common configuration options.
+
+    :param parser: optparse.OptionParser
+    """
+    help_text = "The following configuration options are common to "\
+                "all glance programs."
+
+    group = optparse.OptionGroup(parser, "Common Options", help_text)
+    group.add_option('-v', '--verbose', default=False, dest="verbose",
+                     action="store_true",
+                     help="Print more verbose output")
+    group.add_option('-d', '--debug', default=False, dest="debug",
+                     action="store_true",
+                     help="Print debugging output")
+    parser.add_option_group(group)
+
+
+def add_daemon_options(parser):
+    """
+    Given a supplied optparse.OptionParser, adds an OptionGroup that
+    represents all the configuration options around daemonization.
+
+    :param parser: optparse.OptionParser
+    """
+    help_text = "The following configuration options are specific to "\
+                "the daemonizing of this program."
+
+    group = optparse.OptionGroup(parser, "Daemon Options", help_text)
+    group.add_option('--daemonize', default=False, action="store_true",
+                     help="Daemonize this process")
+    group.add_option("--pidfile", default=None,
+                     help="(Optional) Name of pid file for the server")
+    group.add_option("--uid", type=int, default=os.getuid(),
+                     help="uid under which to run. Default: %default")
+    group.add_option("--gid", type=int, default=os.getgid(),
+                     help="gid under which to run. Default: %default")
+    group.add_option('--working-directory', '--working-dir',
+                     default=os.path.abspath(os.getcwd()),
+                     help="The working directory. Default: %default")
+    parser.add_option_group(group)
+
+
 def add_log_options(prog_name, parser):
     """
     Given a supplied optparse.OptionParser, adds an OptionGroup that
