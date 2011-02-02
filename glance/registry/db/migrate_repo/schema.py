@@ -20,7 +20,7 @@ Various conveniences used for migration scripts
 """
 
 import sqlalchemy.types
-
+from sqlalchemy.schema import MetaData
 
 String = lambda length: sqlalchemy.types.String(
     length=length, convert_unicode=False, assert_unicode=None,
@@ -39,3 +39,6 @@ DateTime = lambda: sqlalchemy.types.DateTime(timezone=False)
 
 
 Integer = lambda: sqlalchemy.types.Integer()
+
+
+meta = MetaData()

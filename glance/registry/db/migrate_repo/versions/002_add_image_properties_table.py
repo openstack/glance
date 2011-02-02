@@ -16,7 +16,8 @@
 #    under the License.
 
 import logging
-from sqlalchemy.schema import (Column, MetaData, Table)
+from sqlalchemy.schema import (Column, ForeignKey, MetaData, Table,
+                               UniqueConstraint)
 
 from glance.registry.db.migrate_repo.schema import (Boolean,
                                                     DateTime,
@@ -27,21 +28,19 @@ from glance.registry.db.migrate_repo.schema import (Boolean,
 
 
 def define_tables():
-    images = Table('images', meta,
+    image_properties = Table('image_properties', meta,
         Column('id', Integer(), primary_key=True, nullable=False),
-        Column('name', String(255)),
-        Column('type', String(30)),
-        Column('size', Integer()),
-        Column('status', String(30), nullable=False),
-        Column('is_public', Boolean(), nullable=False, default=False),
-        Column('location', Text()),
+        Column('image_id', Integer(), ForeignKey('images.id'), nullable=False),
+        Column('key', String(255), nullable=False, index=True),
+        Column('value', Text()),
         Column('created_at', DateTime(), nullable=False),
         Column('updated_at', DateTime()),
         Column('deleted_at', DateTime()),
         Column('deleted', Boolean(), nullable=False, default=False),
+        UniqueConstraint('image_id', 'key'),
         mysql_engine='InnoDB')
 
-    return [images]
+    return [image_properties]
 
 
 def upgrade(migrate_engine):

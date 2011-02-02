@@ -42,10 +42,11 @@ class ModelBase(object):
     __protected_attributes__ = set([
         "created_at", "updated_at", "deleted_at", "deleted"])
 
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow,
+                        nullable=False)
     updated_at = Column(DateTime, onupdate=datetime.datetime.utcnow)
     deleted_at = Column(DateTime)
-    deleted = Column(Boolean, default=False)
+    deleted = Column(Boolean, nullable=False, default=False)
 
     def save(self, session=None):
         """Save this object"""
@@ -96,8 +97,8 @@ class Image(BASE, ModelBase):
     name = Column(String(255))
     type = Column(String(30))
     size = Column(Integer)
-    status = Column(String(30))
-    is_public = Column(Boolean, default=False)
+    status = Column(String(30), nullable=False)
+    is_public = Column(Boolean, nullable=False, default=False)
     location = Column(Text)
 
     @validates('type')
@@ -123,5 +124,7 @@ class ImageProperty(BASE, ModelBase):
     image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
     image = relationship(Image, backref=backref('properties'))
 
-    key = Column(String(255), index=True)
+    # FIXME(sirp): KEY is a reserved word in SQL, might be a good idea to
+    # rename this column
+    key = Column(String(255), index=True, nullable=False)
     value = Column(Text)
