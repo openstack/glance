@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import optparse
 import os
 import urlparse
 
@@ -155,10 +156,24 @@ def add_options(parser):
     from glance.store.swift import SwiftBackend
     from glance.store.filesystem import FilesystemBackend
 
+    help_text = "The following configuration options are specific to the "\
+                "Glance image store."
+
+    DEFAULT_STORE_CHOICES = ['file', 'swift', 's3']
+    group = optparse.OptionGroup(parser, "Image Store Options", help_text)
+    group.add_option('--default-store', metavar="STORE",
+                     default="file",
+                     choices=DEFAULT_STORE_CHOICES,
+                     help="The backend store that Glance will use to store "
+                     "virtual machine images to. Choices: ('%s') "
+                     "Default: %%default" % "','".join(DEFAULT_STORE_CHOICES))
+
     backend_classes = [FilesystemBackend,
                        HTTPBackend,
                        SwiftBackend,
                        S3Backend]
-    for b in backend_classes:
-        if hasattr(b, 'add_options'):
-            b.add_options(parser)
+    for backend_class in backend_classes:
+        if hasattr(backend_class, 'add_options'):
+            backend_class.add_options(group)
+
+    parser.add_option_group(group)
