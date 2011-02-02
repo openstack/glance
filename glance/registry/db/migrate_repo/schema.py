@@ -60,4 +60,3 @@ def drop_tables(tables):
     for table in tables:
         logger.info("dropping table %(table)s" % locals())
         table.drop()
-
