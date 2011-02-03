@@ -31,16 +31,20 @@ def define_image_properties_table(meta):
 
     image_properties = Table('image_properties', meta,
         Column('id', Integer(), primary_key=True, nullable=False),
-        Column('image_id', Integer(), ForeignKey('images.id'), nullable=False),
-        Column('key', String(255), index=True, nullable=False),
+        Column('image_id', Integer(), ForeignKey('images.id'), nullable=False,
+               index=True),
+        Column('key', String(255), nullable=False),
         Column('value', Text()),
         Column('created_at', DateTime(), nullable=False),
         Column('updated_at', DateTime()),
         Column('deleted_at', DateTime()),
-        Column('deleted', Boolean(), nullable=False, default=False),
+        Column('deleted', Boolean(), nullable=False, default=False,
+               index=True),
         UniqueConstraint('image_id', 'key'),
-        mysql_engine='InnoDB',
-        useexisting=True)
+        mysql_engine='InnoDB')
+
+    Index('ix_image_properties_image_id_key', image_properties.c.image_id,
+          image_properties.c.key)
 
     return image_properties
 
