@@ -14,3 +14,4 @@ sphinx
 argparse
 mox==0.5.0
 -f http://pymox.googlecode.com/files/mox-0.5.0.tar.gz
+sqlalchemy-migrate>=0.6
