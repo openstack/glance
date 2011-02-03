@@ -331,12 +331,11 @@ def find_config_file(options, args):
     elif args:
         if os.path.exists(args[0]):
             return os.path.abspath(args[0])
-
-    config_file_dirs = ['/etc',
-                        '/etc/glance/',
-                        os.path.expanduser('~'),
+    config_file_dirs = [os.path.abspath(os.getcwd()),
                         os.path.expanduser(os.path.join('~', '.glance')),
-                        os.path.abspath(os.getcwd())]
+                        os.path.expanduser('~'),
+                        '/etc/glance/',
+                        '/etc']
 
     for d in config_file_dirs:
         if not os.path.isdir(d):
