@@ -33,7 +33,7 @@ from glance.registry.db import models
 
 _ENGINE = None
 _MAKER = None
-BASE = declarative_base()
+BASE = models.BASE
 
 # attributes common to all models
 BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
