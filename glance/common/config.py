@@ -29,6 +29,7 @@ import os
 import re
 import sys
 
+from paste import deploy
 
 DEFAULT_LOG_FORMAT = "%(asctime)s %(levelname)8s [%(name)s] %(message)s"
 DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -122,6 +123,12 @@ def add_daemon_options(parser):
                 "the daemonizing of this program."
 
     group = optparse.OptionGroup(parser, "Daemon Options", help_text)
+    group.add_option('--config-file', default=None,
+                     help="Configuration file to read when loading "
+                          "application. If missing, the first argument is "
+                          "used. If no arguments are found, then a set of "
+                          "standard directories are searched for a config "
+                          "file.")
     group.add_option('--daemonize', default=False, action="store_true",
                      help="Daemonize this process")
     group.add_option("--pidfile", default=None,
@@ -157,9 +164,6 @@ def add_log_options(prog_name, parser):
                      choices=LOGGING_HANDLER_CHOICES,
                      help="What logging handler to use? "
                            "Default: %default")
-    group.add_option('--log-format', metavar="FORMAT",
-                      default=DEFAULT_LOG_FORMAT,
-                      help="Format string for log records. Default: %default")
     group.add_option('--log-date-format', metavar="FORMAT",
                       default=DEFAULT_LOG_DATE_FORMAT,
                       help="Format string for %(asctime)s in log records. "
@@ -200,7 +204,10 @@ def setup_logging(options):
         root_logger.setLevel(logging.WARNING)
 
     # Set log configuration from options...
-    formatter = logging.Formatter(options['log_format'],
+    # Note that we use a hard-coded log format in the options
+    # because of Paste.Deploy bug #379
+    # http://trac.pythonpaste.org/pythonpaste/ticket/379
+    formatter = logging.Formatter(DEFAULT_LOG_FORMAT,
                                   options['log_date_format'])
 
     if options['log_handler'] == 'syslog':
@@ -299,3 +306,77 @@ def get_config_file_options(conf_file=None, conf_dirs=None, app_name=None):
                     results[k] = cp.get(section, k)
 
     return results
+
+
+def find_config_file(options, args):
+    """
+    Return the first config file found.
+
+    We search for the paste config file in the following order:
+    * If --config-file option is used, use that
+    * If args[0] is a file, use that
+    * Search for glance.cnf in standard directories:
+        * .
+        * ~.glance/
+        * ~
+        * /etc/glance
+        * /etc
+
+    :retval Full path to config file, or None if no config file found
+    """
+
+    if getattr(options, 'config_file', None):
+        if os.path.exists(options.config_file):
+            return os.path.abspath(options.config_file)
+    elif args:
+        if os.path.exists(args[0]):
+            return os.path.abspath(args[0])
+
+    config_file_dirs = ['/etc',
+                        '/etc/glance/',
+                        os.path.expanduser('~'),
+                        os.path.expanduser(os.path.join('~', '.glance')),
+                        os.path.abspath(os.getcwd())]
+
+    for d in config_file_dirs:
+        if not os.path.isdir(d):
+            continue
+        files = os.listdir(d)
+        for f in files:
+            if os.path.basename(f) == 'glance.cnf':
+                return f
+
+
+def load_paste_app(app_name, options, args):
+    """
+    Builds and returns a WSGI app from a paste config file.
+
+    We search for the paste config file in the following order:
+    * If --config-file option is used, use that
+    * If args[0] is a file, use that
+    * Search for glance.cnf in standard directories:
+        * .
+        * ~.glance/
+        * ~
+        * /etc/glance
+        * /etc
+
+    :param app_name: Name of the application to load
+    :param options: Set of typed options returned from parse_options()
+    :param args: Command line arguments from argv[1:]
+
+    :raises RuntimeError when config file cannot be located or application
+            cannot be loaded from config file
+    """
+    conf_file = find_config_file(options, args)
+    if not conf_file:
+        raise RuntimeError("Unable to locate any configuration file. "
+                            "Cannot load application %s" % app_name)
+    try:
+        app = deploy.loadapp("config:%s" % conf_file, name=app_name,
+                             global_conf=options_to_conf(options))
+    except (LookupError, ImportError), e:
+        raise RuntimeError("Unable to load %(app_name)s from "
+                           "configuration file %(conf_file)s."
+                           "\nGot: %(e)r" % locals())
+    return app

@@ -30,10 +30,10 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 sys.path.append(ROOT_DIR)
 
+from glance import store
 from glance import version
 from glance.common import config
-from glance.common import server
-import glance.store
+from glance.common import wsgi
 
 
 def create_options(parser):
@@ -64,20 +64,10 @@ def create_options(parser):
                       help="Port a Glance Registry server listens on. "
                            "Default: %default")
 
-    glance.store.add_options(parser)
+    store.add_options(parser)
     config.add_common_options(parser)
     config.add_daemon_options(parser)
     config.add_log_options('glance-api', parser)
-
-
-def main(_args):
-    # NOTE(sirp): importing in main so that eventlet is imported AFTER
-    # daemonization.  See https://bugs.launchpad.net/bugs/687661
-    from glance.common import wsgi
-    from glance.server import API
-    server = wsgi.Server()
-    server.start(API(options), options['port'], host=options['host'])
-    server.wait()
 
 
 if __name__ == '__main__':
@@ -89,6 +79,10 @@ if __name__ == '__main__':
 
     try:
         config.setup_logging(options)
-        server.serve('glance-api', main, options, args)
+        app = config.load_paste_app('glance-api', options, args)
+
+        server = wsgi.Server()
+        server.start(app, options['port'], options['host'])
+        server.wait()
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
