@@ -123,16 +123,16 @@ def add_daemon_options(parser):
                 "the daemonizing of this program."
 
     group = optparse.OptionGroup(parser, "Daemon Options", help_text)
-    group.add_option('--config-file', default=None,
+    group.add_option('--config', default=None,
                      help="Configuration file to read when loading "
                           "application. If missing, the first argument is "
                           "used. If no arguments are found, then a set of "
                           "standard directories are searched for a config "
                           "file.")
-    group.add_option('--daemonize', default=False, action="store_true",
-                     help="Daemonize this process")
-    group.add_option("--pidfile", default=None,
-                     help="(Optional) Name of pid file for the server")
+    group.add_option("--pid-file", default=None, metavar="PATH",
+                     help="(Optional) Name of pid file for the server. "
+                          "If not specified, the pid file will be named "
+                          "/var/run/glance/<SERVER>.pid.")
     group.add_option("--uid", type=int, default=os.getuid(),
                      help="uid under which to run. Default: %default")
     group.add_option("--gid", type=int, default=os.getgid(),
@@ -325,9 +325,9 @@ def find_config_file(options, args):
     :retval Full path to config file, or None if no config file found
     """
 
-    if getattr(options, 'config_file', None):
+    if getattr(options, 'config', None):
         if os.path.exists(options.config_file):
-            return os.path.abspath(options.config_file)
+            return os.path.abspath(getattr(options, 'config'))
     elif args:
         if os.path.exists(args[0]):
             return os.path.abspath(args[0])

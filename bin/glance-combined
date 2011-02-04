@@ -70,7 +70,6 @@ def create_options(parser):
     store.add_options(parser)
     db.add_options(parser)
     config.add_common_options(parser)
-    config.add_daemon_options(parser)
     config.add_log_options('glance-combined', parser)
 
 
