@@ -6,5 +6,6 @@ include tests/stubs.py
 include tests/test_data.py
 include tests/utils.py
 include run_tests.py
+include glance/registry/db/migrate_repo/migrate.cfg
 graft doc
 graft tools

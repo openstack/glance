@@ -31,8 +31,11 @@ import sys
 
 from paste import deploy
 
+import glance.common.exception as exception
+
 DEFAULT_LOG_FORMAT = "%(asctime)s %(levelname)8s [%(name)s] %(message)s"
 DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+DEFAULT_LOG_HANDLER = 'stream'
 LOGGING_HANDLER_CHOICES = ['syslog', 'file', 'stream']
 
 
@@ -160,7 +163,8 @@ def add_log_options(prog_name, parser):
                           "any other logging options specified. Please see "
                           "the Python logging module documentation for "
                           "details on logging configuration files.")
-    group.add_option('--log-handler', default='stream', metavar="HANDLER",
+    group.add_option('--log-handler', default=DEFAULT_LOG_HANDLER,
+                     metavar="HANDLER",
                      choices=LOGGING_HANDLER_CHOICES,
                      help="What logging handler to use? "
                            "Default: %default")
@@ -184,7 +188,7 @@ def setup_logging(options):
     :param options: Mapping of typed option key/values
     """
 
-    if options['log_config']:
+    if options.get('log_config', None):
         # Use a logging configuration file for all settings...
         if os.path.exists(options['log_config']):
             logging.config.fileConfig(options['log_config'])
@@ -207,14 +211,16 @@ def setup_logging(options):
     # Note that we use a hard-coded log format in the options
     # because of Paste.Deploy bug #379
     # http://trac.pythonpaste.org/pythonpaste/ticket/379
-    formatter = logging.Formatter(DEFAULT_LOG_FORMAT,
-                                  options['log_date_format'])
+    log_format = options.get('log_format', DEFAULT_LOG_FORMAT)
+    log_date_format = options.get('log_date_format', DEFAULT_LOG_DATE_FORMAT)
+    formatter = logging.Formatter(log_format, log_date_format)
 
-    if options['log_handler'] == 'syslog':
+    log_handler = options.get('log_handler', DEFAULT_LOG_HANDLER)
+    if log_handler == 'syslog':
         syslog = logging.handlers.SysLogHandler(address='/dev/log')
         syslog.setFormatter(formatter)
         root_logger.addHandler(syslog)
-    elif options['log_handler'] == 'file':
+    elif log_handler == 'file':
         logfile = options['log_file']
         logdir = options['log_dir']
         if logdir:
@@ -223,10 +229,13 @@ def setup_logging(options):
         logfile.setFormatter(formatter)
         logfile.setFormatter(formatter)
         root_logger.addHandler(logfile)
-    else:
+    elif log_handler == 'stream':
         handler = logging.StreamHandler(sys.stdout)
         handler.setFormatter(formatter)
         root_logger.addHandler(handler)
+    else:
+        raise exception.BadInputError(
+            "unrecognized log handler '%(log_handler)s'" % locals())
 
     # Log the options used when starting if we're in debug mode...
     if debug:

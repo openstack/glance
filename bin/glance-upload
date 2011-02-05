@@ -33,6 +33,9 @@ Kernel-outside:
                      <filename> <name>
 
 """
+
+# FIXME(sirp): This can be merged into glance-admin when that becomes
+# available
 import argparse
 import pprint
 import sys
