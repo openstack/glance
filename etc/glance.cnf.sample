@@ -1,0 +1,20 @@
+[DEFAULT]
+# Show more verbose log output (sets INFO log level output)
+# verbose = True
+
+# Show debugging output in logs (sets DEBUG log level output)
+# debug = True
+
+# Which backend store should Glance use by default is not specified
+# in a request to add a new image to Glance? Default: 'file'
+# Available choices are 'file', 'swift', and 's3'
+# default_store = file
+
+# SQLAlchemy connection string for the reference implementation
+# registry server. Any valid SQLAlchemy connection string is fine.
+# See: http://www.sqlalchemy.org/docs/05/reference/sqlalchemy/connections.html#sqlalchemy.create_engine
+# sql_connection = sqlite://glance.sqlite
+
+# The directory that the Filesystem backend store will write disk
+# images to. Default: /var/lib/glance/images
+# filesystem_store_datadir = /var/lib/glance/images

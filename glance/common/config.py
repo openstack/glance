@@ -20,11 +20,13 @@
 Routines for configuring Glance
 """
 
+import ConfigParser
 import logging
 import logging.config
 import logging.handlers
 import optparse
 import os
+import re
 import sys
 
 import glance.common.exception as exception
@@ -35,7 +37,7 @@ DEFAULT_LOG_HANDLER = 'stream'
 LOGGING_HANDLER_CHOICES = ['syslog', 'file', 'stream']
 
 
-def parse_options(parser, cli_args=None):
+def parse_options(parser, cli_args=None, defaults=None):
     """
     Returns the parsed CLI options, command to run and its arguments, merged
     with any same-named options found in a configuration file.
@@ -50,9 +52,28 @@ def parse_options(parser, cli_args=None):
     :param parser: The option parser
     :param cli_args: (Optional) Set of arguments to process. If not present,
                      sys.argv[1:] is used.
+    :param defaults: (optional) mapping of default values for options
     :retval tuple of (options, args)
     """
 
+    if defaults:
+        int_re = re.compile(r'^\d+$')
+        float_re = re.compile(r'^([+-]?(((\d+(\.)?)|(\d*\.\d+))'
+                              '([eE][+-]?\d+)?))$')
+        for key, value in defaults.items():
+            # Do our best to figure out what the actual option
+            # type is underneath...
+            if value.lower() in ('true', 'on'):
+                value = True
+            elif value.lower() in ('false', 'off'):
+                value = False
+            elif int_re.match(value):
+                value = int(value)
+            elif float_re.match(value):
+                value = float(value)
+            defaults[key] = value
+
+        parser.set_defaults(**defaults)
     (options, args) = parser.parse_args(cli_args)
 
     return (vars(options), args)
@@ -216,3 +237,71 @@ def setup_logging(options):
         for key, value in sorted(options.items()):
             root_logger.debug("%(key)-30s %(value)s" % locals())
         root_logger.debug("*" * 80)
+
+
+def get_config_file_options(conf_file=None, conf_dirs=None, app_name=None):
+    """
+    Look for configuration files in a number of standard directories and
+    return a mapping of options found in the files.
+
+    The files that are searched for are in the following order, with
+    options found in later files overriding options found in earlier
+    files::
+
+        /etc/glance.cnf
+        /etc/glance/glance.cnf
+        ~/glance.cnf
+        ~/.glance/glance.cnf
+        ./glance.cnf
+        supplied conf_file param, if any.
+
+    :param conf_file: (optional) config file to read options from. Options
+                      from this config file override all others
+    :param conf_dirs: (optional) sequence of directory paths to search for
+                      config files. Generally just used in testing
+    :param app_name: (optional) name of application we're interested in.
+                     Supplying this will ensure that only the [DEFAULT]
+                     section and the [app_name] sections of the config
+                     files will be read. If not supplied (the default), all
+                     sections are read for configuration options.
+
+    :retval Mapping of configuration options read from config files
+    """
+
+    # Note that we do this in reverse priority order because
+    # later configs overwrite the values of previously-read
+    # configuration options
+
+    fixup_path = lambda p: os.path.abspath(os.path.expanduser(p))
+    config_file_dirs = conf_dirs or \
+                           ['/etc',
+                            '/etc/glance/',
+                            fixup_path('~'),
+                            fixup_path(os.path.join('~', '.glance')),
+                            fixup_path(os.getcwd())]
+
+    config_files = []
+    results = {}
+    for cfg_dir in config_file_dirs:
+        cfg_file = os.path.join(cfg_dir, 'glance.cnf')
+        if os.path.exists(cfg_file):
+            config_files.append(cfg_file)
+
+    if conf_file:
+        config_files.append(fixup_path(conf_file))
+
+    cp = ConfigParser.ConfigParser()
+    for config_file in config_files:
+        if not cp.read(config_file):
+            msg = 'Unable to read config file: %s' % config_file
+            raise RuntimeError(msg)
+
+        results.update(cp.defaults())
+        # Add any sections we have in the configuration file, too...
+        for section in cp.sections():
+            section_option_keys = cp.options(section)
+            if not app_name or (app_name == section):
+                for k in section_option_keys:
+                    results[k] = cp.get(section, k)
+
+    return results

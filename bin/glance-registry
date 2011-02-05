@@ -74,7 +74,8 @@ if __name__ == '__main__':
     oparser = optparse.OptionParser(version='%%prog %s'
                                     % version.version_string())
     create_options(oparser)
-    (options, args) = config.parse_options(oparser)
+    conf_options = config.get_config_file_options()
+    (options, args) = config.parse_options(oparser, defaults=conf_options)
 
     try:
         config.setup_logging(options)
