@@ -1,9 +1,60 @@
-Glance Project
-==============
+======
+glance
+======
 
-Glance has to sub-projects:
+Glance is project that defines services for discovering, registering,
+retrieving and storing virtual machine images. The discovery and registration
+responsibilities are handled by the `glance-registry` component while the
+retrieval and storage responsiblities are handled by the `glance-api`
+component.
 
-  Parallax - an image registry
-  Teller - a image delivery agent
+Included in the Glance project are reference implementations of the registry
+(`glance-registry`) and delivery service (`glance-api`).
 
 
+Quick Start
+-----------
+
+You can fetch the source from tarball by running::
+
+    wget http://launchpad.net/glance/bexar/0.1.7/+download/glance-0.1.7.tar.gz
+
+
+If you'd like to run trunk, you can fetch from the bzr repo::
+
+    bzr branch lp:glance
+
+
+Install Glance by running::
+
+    python setup.py build
+    sudo python setup.py install
+
+
+Once installed, you will need to initialize the registry database::
+
+    glance-manage db_sync
+
+
+By default, `glance-registry` will use a SQLite database. If you'd like to use
+MySQL, or make other adjustments, you can modify the glance.cnf file (see
+documentation for more details).
+
+
+Now that Glance is configured, you can start the service.  The easiest way to
+do that is by using the `glance-combined` utility which runs both the
+`glance-api` and `glance-registry` services (you'll either want to run this in
+screen or use the --daemonize option)::
+
+    glance-combined
+
+
+Once both services are running, you can now use the `glance-upload` tool to
+register new images in Glance.
+
+    glance-upload --type=machine --kernel=1 --ramdisk=2 myimage.img "MyImage"
+
+
+With an image registered, you can now configure your IAAS provider to use
+Glance as its image service and begin spinning up instances from your
+newly registered images.
