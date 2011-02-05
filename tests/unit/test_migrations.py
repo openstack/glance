@@ -21,6 +21,7 @@ import unittest
 import glance.registry.db.migration as migration_api
 import glance.common.config as config
 
+
 class TestMigrations(unittest.TestCase):
     """Test sqlalchemy-migrate migrations"""
 
@@ -36,13 +37,13 @@ class TestMigrations(unittest.TestCase):
 
     def test_db_sync_downgrade_then_upgrade(self):
         migration_api.db_sync(self.options)
-        
-        latest = migration_api.db_version(self.options)
-        
-        migration_api.downgrade(self.options, latest-1)
-        cur_version = migration_api.db_version(self.options)
-        self.assertEqual(cur_version, latest-1)
 
-        migration_api.upgrade(self.options, cur_version+1)
+        latest = migration_api.db_version(self.options)
+
+        migration_api.downgrade(self.options, latest - 1)
+        cur_version = migration_api.db_version(self.options)
+        self.assertEqual(cur_version, latest - 1)
+
+        migration_api.upgrade(self.options, cur_version + 1)
         cur_version = migration_api.db_version(self.options)
         self.assertEqual(cur_version, latest)
