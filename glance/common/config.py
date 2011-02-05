@@ -264,31 +264,29 @@ def get_config_file_options(conf_file=None, conf_dirs=None, app_name=None):
     # later configs overwrite the values of previously-read
     # configuration options
 
+    fixup_path = lambda p: os.path.abspath(os.path.expanduser(p))
     config_file_dirs = conf_dirs or \
                            ['/etc',
                             '/etc/glance/',
-                            os.path.expanduser('~'),
-                            os.path.expanduser(os.path.join('~', '.glance')),
-                            os.path.abspath(os.getcwd())]
+                            fixup_path('~'),
+                            fixup_path(os.path.join('~', '.glance')),
+                            fixup_path(os.getcwd())]
 
     config_files = []
     results = {}
-    for d in config_file_dirs:
-        if not os.path.isdir(d):
-            continue
-        files = os.listdir(d)
-        for f in files:
-            if os.path.basename(f) == 'glance.cnf':
-                config_files.append(f)
+    for cfg_dir in config_file_dirs:
+        cfg_file = os.path.join(cfg_dir, 'glance.cnf')
+        if os.path.exists(cfg_file):
+            config_files.append(cfg_file)
 
     if conf_file:
-        config_files.append(os.path.abspath(conf_file))
+        config_files.append(fixup_path(conf_file))
 
     cp = ConfigParser.ConfigParser()
     for config_file in config_files:
         if not cp.read(config_file):
             msg = 'Unable to read config file: %s' % config_file
-            sys.exit(msg)
+            raise RuntimeError(msg)
 
         results.update(cp.defaults())
         # Add any sections we have in the configuration file, too...
