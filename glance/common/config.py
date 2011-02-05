@@ -280,13 +280,13 @@ def get_config_file_options(conf_file=None, conf_dirs=None, app_name=None):
     # later configs overwrite the values of previously-read
     # configuration options
 
-    fixup_path = lambda p: os.path.abspath(os.path.expanduser(p))
+    fix_path = lambda p: os.path.abspath(os.path.expanduser(p))
     config_file_dirs = conf_dirs or \
                            ['/etc',
                             '/etc/glance/',
-                            fixup_path('~'),
-                            fixup_path(os.path.join('~', '.glance')),
-                            fixup_path(os.getcwd())]
+                            fix_path('~'),
+                            fix_path(os.path.join('~', '.glance')),
+                            fix_path(os.getcwd())]
 
     config_files = []
     results = {}
@@ -296,7 +296,7 @@ def get_config_file_options(conf_file=None, conf_dirs=None, app_name=None):
             config_files.append(cfg_file)
 
     if conf_file:
-        config_files.append(fixup_path(conf_file))
+        config_files.append(fix_path(conf_file))
 
     cp = ConfigParser.ConfigParser()
     for config_file in config_files:
@@ -332,25 +332,25 @@ def find_config_file(options, args):
     :retval Full path to config file, or None if no config file found
     """
 
+    fix_path = lambda p: os.path.abspath(os.path.expanduser(p))
     if getattr(options, 'config', None):
         if os.path.exists(options.config_file):
-            return os.path.abspath(getattr(options, 'config'))
+            return fix_path(getattr(options, 'config'))
     elif args:
         if os.path.exists(args[0]):
-            return os.path.abspath(args[0])
-    config_file_dirs = [os.path.abspath(os.getcwd()),
-                        os.path.expanduser(os.path.join('~', '.glance')),
-                        os.path.expanduser('~'),
+            return fix_path(args[0])
+
+    # Handle standard directory search for glance.cnf
+    config_file_dirs = [fix_path(os.getcwd()),
+                        fix_path(os.path.join('~', '.glance')),
+                        fix_path('~'),
                         '/etc/glance/',
                         '/etc']
 
-    for d in config_file_dirs:
-        if not os.path.isdir(d):
-            continue
-        files = os.listdir(d)
-        for f in files:
-            if os.path.basename(f) == 'glance.cnf':
-                return f
+    for cfg_dir in config_file_dirs:
+        cfg_file = os.path.join(cfg_dir, 'glance.cnf')
+        if os.path.exists(cfg_file):
+            return cfg_file
 
 
 def load_paste_app(app_name, options, args):
