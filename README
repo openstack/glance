@@ -12,11 +12,6 @@ component.
 Quick Start
 -----------
 
-You can fetch the source from tarball by running::
-
-    wget http://launchpad.net/glance/bexar/0.1.7/+download/glance-0.1.7.tar.gz
-
-
 If you'd like to run trunk, you can fetch from the bzr repo::
 
     bzr branch lp:glance
@@ -28,20 +23,14 @@ Install Glance by running::
     sudo python setup.py install
 
 
-Once installed, you will need to initialize the registry database::
-
-    glance-manage db_sync
-
-
 By default, `glance-registry` will use a SQLite database. If you'd like to use
 MySQL, or make other adjustments, you can modify the glance.cnf file (see
 documentation for more details).
 
 
-Now that Glance is configured, you can start the service.  The easiest way to
+Now that Glance is installed, you can start the service.  The easiest way to
 do that is by using the `glance-combined` utility which runs both the
-`glance-api` and `glance-registry` services (you'll either want to run this in
-screen or use the --daemonize option)::
+`glance-api` and `glance-registry` services::
 
     glance-combined
 
