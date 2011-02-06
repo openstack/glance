@@ -29,8 +29,11 @@ import os
 import re
 import sys
 
+<<<<<<< TREE
 from paste import deploy
 
+=======
+>>>>>>> MERGE-SOURCE
 import glance.common.exception as exception
 
 DEFAULT_LOG_FORMAT = "%(asctime)s %(levelname)8s [%(name)s] %(message)s"
@@ -208,9 +211,12 @@ def setup_logging(options):
         root_logger.setLevel(logging.WARNING)
 
     # Set log configuration from options...
+<<<<<<< TREE
     # Note that we use a hard-coded log format in the options
     # because of Paste.Deploy bug #379
     # http://trac.pythonpaste.org/pythonpaste/ticket/379
+=======
+>>>>>>> MERGE-SOURCE
     log_format = options.get('log_format', DEFAULT_LOG_FORMAT)
     log_date_format = options.get('log_date_format', DEFAULT_LOG_DATE_FORMAT)
     formatter = logging.Formatter(log_format, log_date_format)
@@ -280,13 +286,23 @@ def get_config_file_options(conf_file=None, conf_dirs=None, app_name=None):
     # later configs overwrite the values of previously-read
     # configuration options
 
+<<<<<<< TREE
     fix_path = lambda p: os.path.abspath(os.path.expanduser(p))
+=======
+    fixup_path = lambda p: os.path.abspath(os.path.expanduser(p))
+>>>>>>> MERGE-SOURCE
     config_file_dirs = conf_dirs or \
                            ['/etc',
                             '/etc/glance/',
+<<<<<<< TREE
                             fix_path('~'),
                             fix_path(os.path.join('~', '.glance')),
                             fix_path(os.getcwd())]
+=======
+                            fixup_path('~'),
+                            fixup_path(os.path.join('~', '.glance')),
+                            fixup_path(os.getcwd())]
+>>>>>>> MERGE-SOURCE
 
     config_files = []
     results = {}
@@ -296,7 +312,11 @@ def get_config_file_options(conf_file=None, conf_dirs=None, app_name=None):
             config_files.append(cfg_file)
 
     if conf_file:
+<<<<<<< TREE
         config_files.append(fix_path(conf_file))
+=======
+        config_files.append(fixup_path(conf_file))
+>>>>>>> MERGE-SOURCE
 
     cp = ConfigParser.ConfigParser()
     for config_file in config_files:
@@ -313,6 +333,7 @@ def get_config_file_options(conf_file=None, conf_dirs=None, app_name=None):
                     results[k] = cp.get(section, k)
 
     return results
+<<<<<<< TREE
 
 
 def find_config_file(options, args):
@@ -386,3 +407,5 @@ def load_paste_app(app_name, options, args):
                            "configuration file %(conf_file)s."
                            "\nGot: %(e)r" % locals())
     return app
+=======
+>>>>>>> MERGE-SOURCE
