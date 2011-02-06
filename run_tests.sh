@@ -79,4 +79,5 @@ fi
 #
 PEP8_EXCLUDE=vcsversion.py
 PEP8_OPTIONS="--exclude=$PEP8_EXCLUDE --repeat --show-pep8 --show-source"
-run_tests && pep8 $PEP8_OPTIONS bin/* glance setup.py run_tests.py || exit 1
+PEP8_INCLUDE="bin/* glance tests tools setup.py run_tests.py"
+run_tests && pep8 $PEP8_OPTIONS $PEP8_INCLUDE || exit 1
