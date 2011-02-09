@@ -30,7 +30,6 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 sys.path.append(ROOT_DIR)
 
-from glance import store
 from glance import version
 from glance.common import config
 from glance.common import wsgi

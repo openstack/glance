@@ -33,7 +33,6 @@ sys.path.append(ROOT_DIR)
 from glance import version
 from glance.common import config
 from glance.common import wsgi
-import glance.registry.db
 
 
 def create_options(parser):
