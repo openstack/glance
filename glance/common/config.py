@@ -39,7 +39,7 @@ DEFAULT_LOG_HANDLER = 'stream'
 LOGGING_HANDLER_CHOICES = ['syslog', 'file', 'stream']
 
 
-def parse_options(parser, cli_args=None, defaults=None):
+def parse_options(parser, cli_args=None):
     """
     Returns the parsed CLI options, command to run and its arguments, merged
     with any same-named options found in a configuration file.
@@ -54,45 +54,12 @@ def parse_options(parser, cli_args=None, defaults=None):
     :param parser: The option parser
     :param cli_args: (Optional) Set of arguments to process. If not present,
                      sys.argv[1:] is used.
-    :param defaults: (optional) mapping of default values for options
     :retval tuple of (options, args)
     """
 
-    if defaults:
-        int_re = re.compile(r'^\d+$')
-        float_re = re.compile(r'^([+-]?(((\d+(\.)?)|(\d*\.\d+))'
-                              '([eE][+-]?\d+)?))$')
-        for key, value in defaults.items():
-            # Do our best to figure out what the actual option
-            # type is underneath...
-            if value.lower() in ('true', 'on'):
-                value = True
-            elif value.lower() in ('false', 'off'):
-                value = False
-            elif int_re.match(value):
-                value = int(value)
-            elif float_re.match(value):
-                value = float(value)
-            defaults[key] = value
-
-        parser.set_defaults(**defaults)
     (options, args) = parser.parse_args(cli_args)
 
     return (vars(options), args)
-
-
-def options_to_conf(options):
-    """
-    Converts a mapping of options having typed values into
-    a mapping of configuration options having only stringified values.
-
-    This method is used to convert the return of parse_options()[0]
-    into the configuration mapping that is expected by ConfigParser
-    and paste.deploy.
-
-    :params options: Mapping of typed option key/values
-    """
-    return dict([(k, str(v)) for k, v in options.items()])
 
 
 def add_common_options(parser):

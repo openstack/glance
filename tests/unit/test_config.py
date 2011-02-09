@@ -63,12 +63,3 @@ class TestConfig(unittest.TestCase):
         config.add_common_options(parser)
         self.assertRaises(SystemExit, config.parse_options,
                           parser, ['--unknown'])
-
-    def test_options_to_conf(self):
-        parser = optparse.OptionParser()
-        config.add_common_options(parser)
-        parsed_options, args = config.parse_options(parser)
-        conf_options = config.options_to_conf(parsed_options)
-
-        expected_options = {'verbose': 'False', 'debug': 'False'}
-        self.assertEquals(expected_options, conf_options)
