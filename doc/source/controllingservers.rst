@@ -43,36 +43,51 @@ use when configuring the server application.
   configuration files that you can copy to a standard configuation directory and
   adapt for your own uses.
 
+If you do `not` specifiy a configuration file on the command line, Glance will
+do its best to locate a ``glance.cnf`` configuration file in one of the
+following directories, stopping at the first config file it finds:
+
+* .
+
+* ~/.glance
+
+* ~/
+
+* /etc/glance/
+
+* /etc
+
+If no configuration file is found, you will see any error, like so::
+
+  $> glance-api
+  ERROR: Unable to locate any configuration file. Cannot load application glance-api
+
 Here is an example showing how you can manually start the ``glance-api`` server
 in a shell.::
 
   $> sudo glance-api etc/glance.cnf.sample --debug
-  2011-02-04 17:12:28    DEBUG [root] ********************************************************************************
-  2011-02-04 17:12:28    DEBUG [root] Options:
-  2011-02-04 17:12:28    DEBUG [root] ========
-  2011-02-04 17:12:28    DEBUG [root] debug                          True
-  2011-02-04 17:12:28    DEBUG [root] default_store                  file
-  2011-02-04 17:12:28    DEBUG [root] filesystem_store_datadir       /var/lib/glance/images/
-  2011-02-04 17:12:28    DEBUG [root] host                           0.0.0.0
-  2011-02-04 17:12:28    DEBUG [root] log_config                     None
-  2011-02-04 17:12:28    DEBUG [root] log_date_format                %Y-%m-%d %H:%M:%S
-  2011-02-04 17:12:28    DEBUG [root] log_dir                        None
-  2011-02-04 17:12:28    DEBUG [root] log_file                       glance-api.log
-  2011-02-04 17:12:28    DEBUG [root] log_handler                    stream
-  2011-02-04 17:12:28    DEBUG [root] port                           9292
-  2011-02-04 17:12:28    DEBUG [root] registry_host                  0.0.0.0
-  2011-02-04 17:12:28    DEBUG [root] registry_port                  9191
-  2011-02-04 17:12:28    DEBUG [root] verbose                        False
-  2011-02-04 17:12:28    DEBUG [root] ********************************************************************************
-  2011-02-04 17:12:28    DEBUG [routes.middleware] Initialized with method overriding = True, and path info altering = True
-  (16940) wsgi starting up on http://0.0.0.0:9292/
+  2011-02-09 14:58:29    DEBUG [glance-api] ********************************************************************************
+  2011-02-09 14:58:29    DEBUG [glance-api] Configuration options gathered from config file:
+  2011-02-09 14:58:29    DEBUG [glance-api] /home/jpipes/repos/glance/trunk/etc/glance.cnf.sample
+  2011-02-09 14:58:29    DEBUG [glance-api] ================================================
+  2011-02-09 14:58:29    DEBUG [glance-api] bind_host                      0.0.0.0
+  2011-02-09 14:58:29    DEBUG [glance-api] bind_port                      9292
+  2011-02-09 14:58:29    DEBUG [glance-api] debug                          True
+  2011-02-09 14:58:29    DEBUG [glance-api] default_store                  file
+  2011-02-09 14:58:29    DEBUG [glance-api] filesystem_store_datadir       /var/lib/glance/images/
+  2011-02-09 14:58:29    DEBUG [glance-api] registry_host                  0.0.0.0
+  2011-02-09 14:58:29    DEBUG [glance-api] registry_port                  9191
+  2011-02-09 14:58:29    DEBUG [glance-api] verbose                        False
+  2011-02-09 14:58:29    DEBUG [glance-api] ********************************************************************************
+  2011-02-09 14:58:29    DEBUG [routes.middleware] Initialized with method overriding = True, and path info altering = True
+  (16333) wsgi starting up on http://0.0.0.0:9292/
 
 Simply supply the configuration file as the first argument
-(``etc/glance.cnf.sample`` in the above example) and then any options you
-want to use (``--debug`` was used above to show some of the debugging
+(``etc/glance.cnf.sample`` in the above example) and then any common options
+you want to use (``--debug`` was used above to show some of the debugging
 output that the server shows when starting up. Call the server program
 with ``--help`` to see all available options you can specify on the
-command line.
+command line.)
 
 For more information on configuring the server via the ``paste.deploy``
 configuration files, see the section entitled
@@ -136,7 +151,7 @@ use the ``glance-control`` program to stop it. Simply do the following::
 
 as this example shows::
 
-  jpipes@serialcoder:~$ sudo glance-control registry stop
+  $> sudo glance-control registry stop
   Stopping glance-registry  pid: 17602  signal: 15
 
 Restarting a server
@@ -145,6 +160,6 @@ Restarting a server
 You can restart a server with the ``glance-control`` program, as demonstrated
 here::
 
-  $> sudo ./bin/glance-control registry restart etc/glance.cnf.sample
+  $> sudo glance-control registry restart etc/glance.cnf.sample
   Stopping glance-registry  pid: 17611  signal: 15
-  Starting glance-registry with /home/jpipes/repos/glance/use-paste-deploy/etc/glance.cnf.sample
+  Starting glance-registry with /home/jpipes/repos/glance/trunk/etc/glance.cnf.sample

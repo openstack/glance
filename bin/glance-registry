@@ -43,18 +43,6 @@ def create_options(parser):
 
     :param parser: The option parser
     """
-    parser.add_option('-H', '--host',
-                      dest="host", metavar="ADDRESS",
-                      default="0.0.0.0",
-                      help="Address of Glance API server. "
-                           "Default: %default")
-    parser.add_option('-p', '--port',
-                      dest="port", metavar="PORT", type=int,
-                      default=9191,
-                      help="Port the Glance Registry server listens on. "
-                           "Default: %default")
-
-    glance.registry.db.add_options(parser)
     config.add_common_options(parser)
     config.add_log_options('glance-registry', parser)
 
@@ -63,15 +51,14 @@ if __name__ == '__main__':
     oparser = optparse.OptionParser(version='%%prog %s'
                                     % version.version_string())
     create_options(oparser)
-    conf_options = config.get_config_file_options()
-    (options, args) = config.parse_options(oparser, defaults=conf_options)
+    (options, args) = config.parse_options(oparser)
 
     try:
         config.setup_logging(options)
-        app = config.load_paste_app('glance-registry', options, args)
+        conf, app = config.load_paste_app('glance-registry', options, args)
 
         server = wsgi.Server()
-        server.start(app, options['port'], options['host'])
+        server.start(app, int(conf['bind_port']), conf['bind_host'])
         server.wait()
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)

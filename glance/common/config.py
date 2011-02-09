@@ -237,20 +237,11 @@ def setup_logging(options):
         raise exception.BadInputError(
             "unrecognized log handler '%(log_handler)s'" % locals())
 
-    # Log the options used when starting if we're in debug mode...
-    if debug:
-        root_logger.debug("*" * 80)
-        root_logger.debug("Options:")
-        root_logger.debug("========")
-        for key, value in sorted(options.items()):
-            root_logger.debug("%(key)-30s %(value)s" % locals())
-        root_logger.debug("*" * 80)
-
 
 def get_config_file_options(conf_file=None, conf_dirs=None, app_name=None):
     """
     Look for configuration files in a number of standard directories and
-    return a mapping of options found in the files.
+    return a mapping of configuration options found in the files.
 
     The files that are searched for are in the following order, with
     options found in later files overriding options found in earlier
@@ -305,12 +296,6 @@ def get_config_file_options(conf_file=None, conf_dirs=None, app_name=None):
             raise RuntimeError(msg)
 
         results.update(cp.defaults())
-        # Add any sections we have in the configuration file, too...
-        for section in cp.sections():
-            section_option_keys = cp.options(section)
-            if not app_name or (app_name == section):
-                for k in section_option_keys:
-                    results[k] = cp.get(section, k)
 
     return results
 
@@ -379,10 +364,26 @@ def load_paste_app(app_name, options, args):
         raise RuntimeError("Unable to locate any configuration file. "
                             "Cannot load application %s" % app_name)
     try:
-        app = deploy.loadapp("config:%s" % conf_file, name=app_name,
-                             global_conf=options_to_conf(options))
+        conf = deploy.appconfig("config:%s" % conf_file, name=app_name)
+        # We only update the conf dict for the verbose and debug
+        # flags. Everything else must be set up in the conf file...
+        conf['verbose'] = options['verbose']
+        conf['debug'] = options['debug']
+
+        # Log the options used when starting if we're in debug mode...
+        if conf['debug']:
+            logger = logging.getLogger(app_name)
+            logger.debug("*" * 80)
+            logger.debug("Configuration options gathered from config file:")
+            logger.debug(conf_file)
+            logger.debug("================================================")
+            items = dict([(k, v) for k, v in conf.items() if k not in ('__file__', 'here')])
+            for key, value in sorted(items.items()):
+                logger.debug("%(key)-30s %(value)s" % locals())
+            logger.debug("*" * 80)
+        app = deploy.loadapp("config:%s" % conf_file, name=app_name)
     except (LookupError, ImportError), e:
         raise RuntimeError("Unable to load %(app_name)s from "
                            "configuration file %(conf_file)s."
                            "\nGot: %(e)r" % locals())
-    return app
+    return conf, app

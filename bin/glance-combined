@@ -46,29 +46,6 @@ def create_options(parser):
 
     :param parser: The option parser
     """
-    parser.add_option('--api-host',
-                      dest="api_host", metavar="ADDRESS",
-                      default="0.0.0.0",
-                      help="Address of Glance API server. "
-                           "Default: %default")
-    parser.add_option('--api-port',
-                      dest="api_port", metavar="PORT", type=int,
-                      default=9292,
-                      help="Port the Glance API server listens on. "
-                           "Default: %default")
-    parser.add_option('--registry-host',
-                      dest="registry_host", metavar="ADDRESS",
-                      default="0.0.0.0",
-                      help="Address of a Glance Registry server. "
-                           "Default: %default")
-    parser.add_option('--registry-port',
-                      dest="registry_port", metavar="PORT", type=int,
-                      default=9191,
-                      help="Port a Glance Registry server listens on. "
-                           "Default: %default")
-
-    store.add_options(parser)
-    db.add_options(parser)
     config.add_common_options(parser)
     config.add_log_options('glance-combined', parser)
 
@@ -77,17 +54,16 @@ if __name__ == '__main__':
     oparser = optparse.OptionParser(version='%%prog %s'
                                     % version.version_string())
     create_options(oparser)
-    conf_options = config.get_config_file_options()
-    (options, args) = config.parse_options(oparser, defaults=conf_options)
+    (options, args) = config.parse_options(oparser)
 
     try:
         config.setup_logging(options)
 
         server = wsgi.Server()
-        app = config.load_paste_app('glance-api', options, args)
-        server.start(app, options['api_port'], options['api_host'])
-        app = config.load_paste_app('glance-registry', options, args)
-        server.start(app, options['registry_port'], options['registry_host'])
+        conf, app = config.load_paste_app('glance-api', options, args)
+        server.start(app, int(conf['bind_port']), conf['bind_host'])
+        conf, app = config.load_paste_app('glance-registry', options, args)
+        server.start(app, int(conf['bind_port']), conf['bind_host'])
         server.wait()
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
