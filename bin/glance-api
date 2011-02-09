@@ -35,8 +35,6 @@ from glance import version
 from glance.common import config
 from glance.common import wsgi
 
-import pprint
-
 
 def create_options(parser):
     """
