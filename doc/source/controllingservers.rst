@@ -44,7 +44,7 @@ use when configuring the server application.
   adapt for your own uses.
 
 If you do `not` specifiy a configuration file on the command line, Glance will
-do its best to locate a ``glance.cnf`` configuration file in one of the
+do its best to locate a ``glance.conf`` configuration file in one of the
 following directories, stopping at the first config file it finds:
 
 * .
@@ -65,10 +65,10 @@ If no configuration file is found, you will see any error, like so::
 Here is an example showing how you can manually start the ``glance-api`` server
 in a shell.::
 
-  $> sudo glance-api etc/glance.cnf.sample --debug
+  $> sudo glance-api etc/glance.conf.sample --debug
   2011-02-09 14:58:29    DEBUG [glance-api] ********************************************************************************
   2011-02-09 14:58:29    DEBUG [glance-api] Configuration options gathered from config file:
-  2011-02-09 14:58:29    DEBUG [glance-api] /home/jpipes/repos/glance/trunk/etc/glance.cnf.sample
+  2011-02-09 14:58:29    DEBUG [glance-api] /home/jpipes/repos/glance/trunk/etc/glance.conf.sample
   2011-02-09 14:58:29    DEBUG [glance-api] ================================================
   2011-02-09 14:58:29    DEBUG [glance-api] bind_host                      0.0.0.0
   2011-02-09 14:58:29    DEBUG [glance-api] bind_port                      9292
@@ -83,7 +83,7 @@ in a shell.::
   (16333) wsgi starting up on http://0.0.0.0:9292/
 
 Simply supply the configuration file as the first argument
-(``etc/glance.cnf.sample`` in the above example) and then any common options
+(``etc/glance.conf.sample`` in the above example) and then any common options
 you want to use (``--debug`` was used above to show some of the debugging
 output that the server shows when starting up. Call the server program
 with ``--help`` to see all available options you can specify on the
@@ -125,8 +125,8 @@ in the following way::
 Here is an example that shows how to start the ``glance-registry`` server
 with the ``glance-control`` wrapper script. ::
 
-  $> sudo glance-control registry start etc/glance.cnf.sample
-  Starting glance-registry with /home/jpipes/repos/glance/trunk/etc/glance.cnf.sample
+  $> sudo glance-control registry start etc/glance.conf.sample
+  Starting glance-registry with /home/jpipes/repos/glance/trunk/etc/glance.conf.sample
  
 The same ``paste.deploy`` configuration files are used by ``glance-control``
 to start the Glance server programs, and you can specify (as the example above
@@ -160,6 +160,6 @@ Restarting a server
 You can restart a server with the ``glance-control`` program, as demonstrated
 here::
 
-  $> sudo glance-control registry restart etc/glance.cnf.sample
+  $> sudo glance-control registry restart etc/glance.conf.sample
   Stopping glance-registry  pid: 17611  signal: 15
-  Starting glance-registry with /home/jpipes/repos/glance/trunk/etc/glance.cnf.sample
+  Starting glance-registry with /home/jpipes/repos/glance/trunk/etc/glance.conf.sample

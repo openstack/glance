@@ -87,6 +87,7 @@ setup(
     ],
     scripts=['bin/glance-api',
              'bin/glance-combined',
+             'bin/glance-control',
              'bin/glance-manage',
              'bin/glance-registry',
              'bin/glance-upload'])

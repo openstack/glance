@@ -238,68 +238,6 @@ def setup_logging(options):
             "unrecognized log handler '%(log_handler)s'" % locals())
 
 
-def get_config_file_options(conf_file=None, conf_dirs=None, app_name=None):
-    """
-    Look for configuration files in a number of standard directories and
-    return a mapping of configuration options found in the files.
-
-    The files that are searched for are in the following order, with
-    options found in later files overriding options found in earlier
-    files::
-
-        /etc/glance.cnf
-        /etc/glance/glance.cnf
-        ~/glance.cnf
-        ~/.glance/glance.cnf
-        ./glance.cnf
-        supplied conf_file param, if any.
-
-    :param conf_file: (optional) config file to read options from. Options
-                      from this config file override all others
-    :param conf_dirs: (optional) sequence of directory paths to search for
-                      config files. Generally just used in testing
-    :param app_name: (optional) name of application we're interested in.
-                     Supplying this will ensure that only the [DEFAULT]
-                     section and the [app_name] sections of the config
-                     files will be read. If not supplied (the default), all
-                     sections are read for configuration options.
-
-    :retval Mapping of configuration options read from config files
-    """
-
-    # Note that we do this in reverse priority order because
-    # later configs overwrite the values of previously-read
-    # configuration options
-
-    fix_path = lambda p: os.path.abspath(os.path.expanduser(p))
-    config_file_dirs = conf_dirs or \
-                           ['/etc',
-                            '/etc/glance/',
-                            fix_path('~'),
-                            fix_path(os.path.join('~', '.glance')),
-                            fix_path(os.getcwd())]
-
-    config_files = []
-    results = {}
-    for cfg_dir in config_file_dirs:
-        cfg_file = os.path.join(cfg_dir, 'glance.cnf')
-        if os.path.exists(cfg_file):
-            config_files.append(cfg_file)
-
-    if conf_file:
-        config_files.append(fix_path(conf_file))
-
-    cp = ConfigParser.ConfigParser()
-    for config_file in config_files:
-        if not cp.read(config_file):
-            msg = 'Unable to read config file: %s' % config_file
-            raise RuntimeError(msg)
-
-        results.update(cp.defaults())
-
-    return results
-
-
 def find_config_file(options, args):
     """
     Return the first config file found.
@@ -307,7 +245,7 @@ def find_config_file(options, args):
     We search for the paste config file in the following order:
     * If --config-file option is used, use that
     * If args[0] is a file, use that
-    * Search for glance.cnf in standard directories:
+    * Search for glance.conf in standard directories:
         * .
         * ~.glance/
         * ~
@@ -325,7 +263,7 @@ def find_config_file(options, args):
         if os.path.exists(args[0]):
             return fix_path(args[0])
 
-    # Handle standard directory search for glance.cnf
+    # Handle standard directory search for glance.conf
     config_file_dirs = [fix_path(os.getcwd()),
                         fix_path(os.path.join('~', '.glance')),
                         fix_path('~'),
@@ -333,7 +271,7 @@ def find_config_file(options, args):
                         '/etc']
 
     for cfg_dir in config_file_dirs:
-        cfg_file = os.path.join(cfg_dir, 'glance.cnf')
+        cfg_file = os.path.join(cfg_dir, 'glance.conf')
         if os.path.exists(cfg_file):
             return cfg_file
 
@@ -345,7 +283,7 @@ def load_paste_app(app_name, options, args):
     We search for the paste config file in the following order:
     * If --config-file option is used, use that
     * If args[0] is a file, use that
-    * Search for glance.cnf in standard directories:
+    * Search for glance.conf in standard directories:
         * .
         * ~.glance/
         * ~
@@ -377,7 +315,8 @@ def load_paste_app(app_name, options, args):
             logger.debug("Configuration options gathered from config file:")
             logger.debug(conf_file)
             logger.debug("================================================")
-            items = dict([(k, v) for k, v in conf.items() if k not in ('__file__', 'here')])
+            items = dict([(k, v) for k, v in conf.items()
+                          if k not in ('__file__', 'here')])
             for key, value in sorted(items.items()):
                 logger.debug("%(key)-30s %(value)s" % locals())
             logger.debug("*" * 80)
