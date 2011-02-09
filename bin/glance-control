@@ -165,8 +165,7 @@ if __name__ == '__main__':
     oparser = optparse.OptionParser(usage=USAGE, version='%%prog %s'
                                     % version.version_string())
     config.add_common_options(oparser)
-    conf_options = config.get_config_file_options()
-    (options, args) = config.parse_options(oparser, defaults=conf_options)
+    (options, args) = config.parse_options(oparser)
 
     if len(args) < 2:
         oparser.print_usage()
