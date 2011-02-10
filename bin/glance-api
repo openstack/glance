@@ -32,8 +32,7 @@ sys.path.append(ROOT_DIR)
 
 from glance import version
 from glance.common import config
-from glance.common import server
-import glance.store
+from glance.common import wsgi
 
 
 def create_options(parser):
@@ -43,52 +42,22 @@ def create_options(parser):
 
     :param parser: The option parser
     """
-    parser.add_option('-H', '--host',
-                      dest="host", metavar="ADDRESS",
-                      default="0.0.0.0",
-                      help="Address of Glance API server. "
-                           "Default: %default")
-    parser.add_option('-p', '--port',
-                      dest="port", metavar="PORT", type=int,
-                      default=9292,
-                      help="Port the Glance API server listens on. "
-                           "Default: %default")
-    parser.add_option('--registry-host',
-                      dest="registry_host", metavar="ADDRESS",
-                      default="0.0.0.0",
-                      help="Address of a Glance Registry server. "
-                           "Default: %default")
-    parser.add_option('--registry-port',
-                      dest="registry_port", metavar="PORT", type=int,
-                      default=9191,
-                      help="Port a Glance Registry server listens on. "
-                           "Default: %default")
-
-    glance.store.add_options(parser)
     config.add_common_options(parser)
-    config.add_daemon_options(parser)
     config.add_log_options('glance-api', parser)
-
-
-def main(_args):
-    # NOTE(sirp): importing in main so that eventlet is imported AFTER
-    # daemonization.  See https://bugs.launchpad.net/bugs/687661
-    from glance.common import wsgi
-    from glance.server import API
-    server = wsgi.Server()
-    server.start(API(options), options['port'], host=options['host'])
-    server.wait()
 
 
 if __name__ == '__main__':
     oparser = optparse.OptionParser(version='%%prog %s'
                                     % version.version_string())
     create_options(oparser)
-    conf_options = config.get_config_file_options()
-    (options, args) = config.parse_options(oparser, defaults=conf_options)
+    (options, args) = config.parse_options(oparser)
 
     try:
         config.setup_logging(options)
-        server.serve('glance-api', main, options, args)
+        conf, app = config.load_paste_app('glance-api', options, args)
+
+        server = wsgi.Server()
+        server.start(app, int(conf['bind_port']), conf['bind_host'])
+        server.wait()
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)

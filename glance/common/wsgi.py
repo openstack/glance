@@ -35,9 +35,6 @@ import webob.dec
 import webob.exc
 
 
-logging.getLogger("routes.middleware").addHandler(logging.StreamHandler())
-
-
 def run_server(application, port):
     """Run a WSGI server with the given application."""
     sock = eventlet.listen(('0.0.0.0', port))
@@ -67,48 +64,7 @@ class Server(object):
         eventlet.wsgi.server(socket, application, custom_pool=self.pool)
 
 
-class Application(object):
-# TODO(gundlach): I think we should toss this class, now that it has no
-# purpose.
-    """Base WSGI application wrapper. Subclasses need to implement __call__."""
-
-    def __call__(self, environ, start_response):
-        r"""Subclasses will probably want to implement __call__ like this:
-
-        @webob.dec.wsgify
-        def __call__(self, req):
-          # Any of the following objects work as responses:
-
-          # Option 1: simple string
-          res = 'message\n'
-
-          # Option 2: a nicely formatted HTTP exception page
-          res = exc.HTTPForbidden(detail='Nice try')
-
-          # Option 3: a webob Response object (in case you need to play with
-          # headers, or you want to be treated like an iterable, or or or)
-          res = Response();
-          res.app_iter = open('somefile')
-
-          # Option 4: any wsgi app to be run next
-          res = self.application
-
-          # Option 5: you can get a Response object for a wsgi app, too, to
-          # play with headers etc
-          res = req.get_response(self.application)
-
-          # You can then just return your response...
-          return res
-          # ... or set req.response and return None.
-          req.response = res
-
-        See the end of http://pythonpaste.org/webob/modules/dec.html
-        for more info.
-        """
-        raise NotImplementedError("You must implement __call__")
-
-
-class Middleware(Application):
+class Middleware(object):
     """
     Base WSGI middleware wrapper. These classes require an application to be
     initialized that will be called next.  By default the middleware will
@@ -116,18 +72,38 @@ class Middleware(Application):
     behavior.
     """
 
-    def __init__(self, application):  # pylint: disable-msg=W0231
+    def __init__(self, application):
         self.application = application
 
+    def process_request(self, req):
+        """
+        Called on each request.
+
+        If this returns None, the next application down the stack will be
+        executed. If it returns a response then that response will be returned
+        and execution will stop here.
+
+        """
+        return None
+
+    def process_response(self, response):
+        """Do whatever you'd like to the response."""
+        return response
+
     @webob.dec.wsgify
-    def __call__(self, req):  # pylint: disable-msg=W0221
-        """Override to implement middleware behavior."""
-        return self.application
+    def __call__(self, req):
+        response = self.process_request(req)
+        if response:
+            return response
+        response = req.get_response(self.application)
+        return self.process_response(response)
 
 
 class Debug(Middleware):
-    """Helper class that can be inserted into any WSGI application chain
-    to get information about the request and response."""
+    """
+    Helper class that can be inserted into any WSGI application chain
+    to get information about the request and response.
+    """
 
     @webob.dec.wsgify
     def __call__(self, req):

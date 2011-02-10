@@ -76,48 +76,6 @@ Glance Registry Servers
 
 Glance registry servers are servers that conform to the Glance Registry API.
 Glance ships with a reference implementation of a registry server that
-complies with this API (``bin/glance-registry``).
+complies with this API (``glance-registry``).
 
-
-Starting Up Glance's Servers
-----------------------------
-
-To get started using Glance, you must first start the Glance API server. 
-After installing Glance, starting up the Glance API server is easy. Simply
-start the ``glance-api`` program, like so::
-
-  $> glance-api
-
-Configuring the Glance API server
-*********************************
-
-There are a few options that can be supplied to the API server when
-starting it up:
-
-* ``verbose``
-
-  Show more verbose/debugging output
-
-* ``api_host``
-
-  Address of the host the registry runs on. Defaults to 0.0.0.0.
-
-* ``api_port``
-
-  Port the registry server listens on. Defaults to 9292.
-
-* ``default_store``
-
-  The store that the Glance API server will use by default to store
-  images that are added to it. The default value is `filesystem`, and
-  possible choices are: `filesystem`, `swift`, and `s3`.
-
-* ``filesystem_store_datadir``
-
-  Directory where the filesystem store can write images to. This directory
-  must be writeable by the user that runs ``glance-api``
-
-.. todo::
-
-Link to docs on the different stores when the documentation on Glance
-stores is complete.
+For more details on Glance's architecture see :doc:`here <architecture>`

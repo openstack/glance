@@ -175,3 +175,13 @@ def make_image_dict(image):
 
     image_dict['properties'] = properties
     return image_dict
+
+
+def app_factory(global_conf, **local_conf):
+    """
+    paste.deploy app factory for creating Glance reference implementation
+    registry server apps
+    """
+    conf = global_conf.copy()
+    conf.update(local_conf)
+    return API(conf)

@@ -439,3 +439,10 @@ class API(wsgi.Router):
         mapper.connect("/images/{id}", controller=controller, action="meta",
                        conditions=dict(method=["HEAD"]))
         super(API, self).__init__(mapper)
+
+
+def app_factory(global_conf, **local_conf):
+    """paste.deploy app factory for creating Glance API server apps"""
+    conf = global_conf.copy()
+    conf.update(local_conf)
+    return API(conf)
