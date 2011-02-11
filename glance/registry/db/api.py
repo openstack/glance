@@ -27,6 +27,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import sessionmaker
 
+from glance.common import config
 from glance.common import exception
 from glance.common import utils
 from glance.registry.db import models
@@ -52,8 +53,14 @@ def configure_db(options):
     """
     global _ENGINE
     if not _ENGINE:
+        verbose = config.get_option(
+            options, 'verbose', type='bool', default=False)
+        timeout = config.get_option(
+            options, 'sql_idle_timeout', type='int', default=3600)
         _ENGINE = create_engine(options['sql_connection'],
-                                echo=options['verbose'])
+                                echo=verbose,
+                                echo_pool=verbose,
+                                pool_recycle=timeout)
         register_models()
 
 
