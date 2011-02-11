@@ -293,3 +293,24 @@ def load_paste_app(app_name, options, args):
                            "configuration file %(conf_file)s."
                            "\nGot: %(e)r" % locals())
     return conf, app
+
+
+def get_option(options, option, **kwargs):
+    if option in options:
+        value = options[option]
+        type_ = kwargs.get('type', 'str')
+        if type_ == 'bool':
+            if hasattr(value, 'lower'):
+                return value.lower() == 'true'
+            else:
+                return value
+        elif type_ == 'int':
+            return int(value)
+        elif type_ == 'float':
+            return float(value)
+        else:
+            return value
+    elif 'default' in kwargs:
+        return kwargs['default']
+    else:
+        raise KeyError("option '%s' not found" % option)
