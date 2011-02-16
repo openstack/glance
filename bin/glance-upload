@@ -53,7 +53,9 @@ def parse_args():
     parser.add_argument('filename', help='file to upload into Glance')
     parser.add_argument('name', help='name of image')
     parser.add_argument('--host', metavar='HOST', default='127.0.0.1',
-                        help='Location of Glance Server (default: 127.0.0.1)')
+                        help='Location of Glance Server (default: %default)')
+    parser.add_argument('--port', metavar='PORT', type=int, default=9292,
+                        help='Port of Glance Server (default: %default)')
     parser.add_argument('--type', metavar='TYPE', default='raw',
                         help='Type of Image [kernel, ramdisk, machine, raw] '
                              '(default: raw)')
@@ -77,7 +79,7 @@ def main():
         else:
             die("kernel and ramdisk required for machine image")
 
-    client = Client(args.host, 9292)
+    client = Client(args.host, args.port)
     with open(args.filename) as f:
         new_meta = client.add_image(meta, f)
 
