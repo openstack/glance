@@ -24,7 +24,6 @@ Thanks for some of the code, Swifties ;)
 from __future__ import with_statement
 
 import errno
-import glob
 import os
 import optparse
 import resource
@@ -54,11 +53,14 @@ And command is one of:
 And CONFPATH is the optional configuration file to use."""
 
 
-def pid_files(server):
-    if os.path.exists('/var/run/glance/%s.pid' % server):
-        pid_files = ['/var/run/glance/%s.pid' % server]
+def pid_files(server, options):
+    pid_files = []
+    if options['pid_file']:
+        if os.path.exists(os.path.abspath(options['pid_file'])):
+            pid_files = [os.path.abspath(options['pid_file'])]
     else:
-        pid_files = glob.glob('/var/run/glance/%s/*.pid' % server)
+        if os.path.exists('/var/run/glance/%s.pid' % server):
+            pid_files = ['/var/run/glance/%s.pid' % server]
     for pid_file in pid_files:
         pid = int(open(pid_file).read().strip())
         yield pid_file, pid
@@ -67,7 +69,7 @@ def pid_files(server):
 def do_start(server, options, args):
     server_type = '-'.join(server.split('-')[:-1])
 
-    for pid_file, pid in pid_files(server):
+    for pid_file, pid in pid_files(server, options):
         if os.path.exists('/proc/%s' % pid):
             print "%s appears to already be running: %s" % (server, pid_file)
             return
@@ -119,7 +121,10 @@ def do_start(server, options, args):
         else:
             write_pid_file(pid_file, pid)
 
-    pid_file = '/var/run/glance/%s.pid' % server
+    if not options['pid_file']:
+        pid_file = '/var/run/glance/%s.pid' % server
+    else:
+        pid_file = os.path.abspath(options['pid_file'])
     conf_file = config.find_config_file(options, args)
     if not conf_file:
         sys.exit("Could not find any configuration file to use!")
@@ -137,7 +142,7 @@ def do_stop(server, options, args, graceful=False):
         sig = signal.SIGTERM
 
     did_anything = False
-    pfiles = pid_files(server)
+    pfiles = pid_files(server, options)
     for pid_file, pid in pfiles:
         did_anything = True
         try:
@@ -164,6 +169,9 @@ def do_stop(server, options, args, graceful=False):
 if __name__ == '__main__':
     oparser = optparse.OptionParser(usage=USAGE, version='%%prog %s'
                                     % version.version_string())
+    oparser.add_option('--pid-file', default=None, metavar="PATH",
+                       help="File to use as pid file. Default: "
+                       "/var/run/glance/$server.pid")
     config.add_common_options(oparser)
     (options, args) = config.parse_options(oparser)
 
