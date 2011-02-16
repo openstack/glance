@@ -288,6 +288,14 @@ class TestGlanceAPI(unittest.TestCase):
         self.assertEquals(res_body['location'],
                           'file:///tmp/glance-tests/3')
 
+        # Test that the Location: header is set to the URI to
+        # edit the newly-created image, as required by APP.
+        # See LP Bug #719825
+        self.assertTrue('location' in res.headers,
+                        "'location' not in response headers.\n"
+                        "res.headerlist = %r" % res.headerlist)
+        self.assertTrue('/images/3' in res.headers['location'])
+
     def test_image_meta(self):
         """Test for HEAD /images/<ID>"""
         expected_headers = {'x-image-meta-id': 2,
