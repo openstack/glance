@@ -19,7 +19,6 @@ import os
 import shutil
 import signal
 import subprocess
-import sys
 import tempfile
 import time
 import unittest
@@ -63,7 +62,7 @@ class TestMiscellaneous(unittest.TestCase):
                     pass  # Ignore if the process group is dead
                 os.unlink(pid_file)
 
-    def test_bug_704854(self):
+    def test_exception_not_eaten_from_registry_to_api(self):
         """
         A test for LP bug #704854 -- Exception thrown by registry
         server is consumed by API server.
@@ -119,7 +118,6 @@ sql_idle_timeout = 3600
                 venv = "tools/with_venv.sh "
 
             # Start up the API and default registry server
-            spawned_pids = []
             cmd = venv + "./bin/glance-control api start "\
                          "%s --pid-file=glance-api.pid" % conf_file
             out, err = execute(cmd)
