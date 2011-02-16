@@ -58,7 +58,7 @@ def parse_args():
                         help='Port of Glance Server (default: %default)')
     parser.add_argument('--type', metavar='TYPE', default='raw',
                         help='Type of Image [kernel, ramdisk, machine, raw] '
-                             '(default: raw)')
+                             '(default: %default)')
     parser.add_argument('--kernel', metavar='KERNEL',
                         help='ID of kernel associated with this machine image')
     parser.add_argument('--ramdisk', metavar='RAMDISK',
