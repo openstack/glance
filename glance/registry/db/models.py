@@ -103,7 +103,7 @@ class Image(BASE, ModelBase):
 
     @validates('type')
     def validate_type(self, key, type):
-        if not type in ('machine', 'kernel', 'ramdisk', 'raw'):
+        if not type in ('machine', 'kernel', 'ramdisk', 'raw', 'vhd'):
             raise exception.Invalid(
                 "Invalid image type '%s' for image." % type)
         return type
