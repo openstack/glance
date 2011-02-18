@@ -341,7 +341,13 @@ class Controller(wsgi.Controller):
                 location = req.headers['x-image-meta-location']
                 self._activate(req, image_meta, location)
 
-        return dict(image=image_meta)
+        # APP states we should return a Location: header with the edit
+        # URI of the resource newly-created.
+        res = Response(request=req, body=json.dumps(dict(image=image_meta)),
+                       content_type="text/plain")
+        res.headers.add('Location', "/images/%s" % image_meta['id'])
+
+        return req.get_response(res)
 
     def update(self, req, id):
         """
