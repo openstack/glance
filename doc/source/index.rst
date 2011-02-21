@@ -58,6 +58,9 @@ Using Glance
    :maxdepth: 1
 
    gettingstarted
+   installing
+   controllingservers
+   configuring
    glanceapi
    client
 

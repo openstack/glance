@@ -75,6 +75,14 @@ class BadInputError(Exception):
     pass
 
 
+class MissingArgumentError(Error):
+    pass
+
+
+class DatabaseMigrationError(Error):
+    pass
+
+
 def wrap_exception(f):
     def _wrap(*args, **kw):
         try:

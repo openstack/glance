@@ -16,6 +16,28 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+"""
+Routines for configuring Glance
+"""
+
+import ConfigParser
+import logging
+import logging.config
+import logging.handlers
+import optparse
+import os
+import re
+import sys
+
+from paste import deploy
+
+import glance.common.exception as exception
+
+DEFAULT_LOG_FORMAT = "%(asctime)s %(levelname)8s [%(name)s] %(message)s"
+DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+DEFAULT_LOG_HANDLER = 'stream'
+LOGGING_HANDLER_CHOICES = ['syslog', 'file', 'stream']
+
 
 def parse_options(parser, cli_args=None):
     """
@@ -40,15 +62,255 @@ def parse_options(parser, cli_args=None):
     return (vars(options), args)
 
 
-def options_to_conf(options):
+def add_common_options(parser):
     """
-    Converts a mapping of options having typed values into
-    a mapping of configuration options having only stringified values.
+    Given a supplied optparse.OptionParser, adds an OptionGroup that
+    represents all common configuration options.
 
-    This method is used to convert the return of parse_options()[0]
-    into the configuration mapping that is expected by ConfigParser
-    and paste.deploy.
-
-    :params options: Mapping of typed option key/values
+    :param parser: optparse.OptionParser
     """
-    return dict([(k, str(v)) for k, v in options.items()])
+    help_text = "The following configuration options are common to "\
+                "all glance programs."
+
+    group = optparse.OptionGroup(parser, "Common Options", help_text)
+    group.add_option('-v', '--verbose', default=False, dest="verbose",
+                     action="store_true",
+                     help="Print more verbose output")
+    group.add_option('-d', '--debug', default=False, dest="debug",
+                     action="store_true",
+                     help="Print debugging output")
+    parser.add_option_group(group)
+
+
+def add_daemon_options(parser):
+    """
+    Given a supplied optparse.OptionParser, adds an OptionGroup that
+    represents all the configuration options around daemonization.
+
+    :param parser: optparse.OptionParser
+    """
+    help_text = "The following configuration options are specific to "\
+                "the daemonizing of this program."
+
+    group = optparse.OptionGroup(parser, "Daemon Options", help_text)
+    group.add_option('--config', default=None,
+                     help="Configuration file to read when loading "
+                          "application. If missing, the first argument is "
+                          "used. If no arguments are found, then a set of "
+                          "standard directories are searched for a config "
+                          "file.")
+    group.add_option("--pid-file", default=None, metavar="PATH",
+                     help="(Optional) Name of pid file for the server. "
+                          "If not specified, the pid file will be named "
+                          "/var/run/glance/<SERVER>.pid.")
+    group.add_option("--uid", type=int, default=os.getuid(),
+                     help="uid under which to run. Default: %default")
+    group.add_option("--gid", type=int, default=os.getgid(),
+                     help="gid under which to run. Default: %default")
+    group.add_option('--working-directory', '--working-dir',
+                     default=os.path.abspath(os.getcwd()),
+                     help="The working directory. Default: %default")
+    parser.add_option_group(group)
+
+
+def add_log_options(prog_name, parser):
+    """
+    Given a supplied optparse.OptionParser, adds an OptionGroup that
+    represents all the configuration options around logging.
+
+    :param parser: optparse.OptionParser
+    """
+    help_text = "The following configuration options are specific to logging "\
+                "functionality for this program."
+
+    group = optparse.OptionGroup(parser, "Logging Options", help_text)
+    group.add_option('--log-config', default=None, metavar="PATH",
+                     help="If this option is specified, the logging "
+                          "configuration file specified is used and overrides "
+                          "any other logging options specified. Please see "
+                          "the Python logging module documentation for "
+                          "details on logging configuration files.")
+    group.add_option('--log-handler', default=DEFAULT_LOG_HANDLER,
+                     metavar="HANDLER",
+                     choices=LOGGING_HANDLER_CHOICES,
+                     help="What logging handler to use? "
+                           "Default: %default")
+    group.add_option('--log-date-format', metavar="FORMAT",
+                      default=DEFAULT_LOG_DATE_FORMAT,
+                      help="Format string for %(asctime)s in log records. "
+                           "Default: %default")
+    group.add_option('--log-file', default="%s.log" % prog_name,
+                      metavar="PATH",
+                      help="(Optional) Name of log file to output to.")
+    group.add_option("--log-dir", default=None,
+                      help="(Optional) The directory to keep log files in "
+                           "(will be prepended to --logfile)")
+    parser.add_option_group(group)
+
+
+def setup_logging(options):
+    """
+    Sets up the logging options for a log with supplied name
+
+    :param options: Mapping of typed option key/values
+    """
+
+    if options.get('log_config', None):
+        # Use a logging configuration file for all settings...
+        if os.path.exists(options['log_config']):
+            logging.config.fileConfig(options['log_config'])
+            return
+        else:
+            raise RuntimeError("Unable to locate specified logging "
+                               "config file: %s" % options['log_config'])
+
+    debug = options.get('debug', False)
+    verbose = options.get('verbose', False)
+    root_logger = logging.root
+    if debug:
+        root_logger.setLevel(logging.DEBUG)
+    elif verbose:
+        root_logger.setLevel(logging.INFO)
+    else:
+        root_logger.setLevel(logging.WARNING)
+
+    # Set log configuration from options...
+    # Note that we use a hard-coded log format in the options
+    # because of Paste.Deploy bug #379
+    # http://trac.pythonpaste.org/pythonpaste/ticket/379
+    log_format = options.get('log_format', DEFAULT_LOG_FORMAT)
+    log_date_format = options.get('log_date_format', DEFAULT_LOG_DATE_FORMAT)
+    formatter = logging.Formatter(log_format, log_date_format)
+
+    log_handler = options.get('log_handler', DEFAULT_LOG_HANDLER)
+    if log_handler == 'syslog':
+        syslog = logging.handlers.SysLogHandler(address='/dev/log')
+        syslog.setFormatter(formatter)
+        root_logger.addHandler(syslog)
+    elif log_handler == 'file':
+        logfile = options['log_file']
+        logdir = options['log_dir']
+        if logdir:
+            logfile = os.path.join(logdir, logfile)
+        logfile = logging.FileHandler(logfile)
+        logfile.setFormatter(formatter)
+        logfile.setFormatter(formatter)
+        root_logger.addHandler(logfile)
+    elif log_handler == 'stream':
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(formatter)
+        root_logger.addHandler(handler)
+    else:
+        raise exception.BadInputError(
+            "unrecognized log handler '%(log_handler)s'" % locals())
+
+
+def find_config_file(options, args):
+    """
+    Return the first config file found.
+
+    We search for the paste config file in the following order:
+    * If --config-file option is used, use that
+    * If args[0] is a file, use that
+    * Search for glance.conf in standard directories:
+        * .
+        * ~.glance/
+        * ~
+        * /etc/glance
+        * /etc
+
+    :retval Full path to config file, or None if no config file found
+    """
+
+    fix_path = lambda p: os.path.abspath(os.path.expanduser(p))
+    if getattr(options, 'config', None):
+        if os.path.exists(options.config_file):
+            return fix_path(getattr(options, 'config'))
+    elif args:
+        if os.path.exists(args[0]):
+            return fix_path(args[0])
+
+    # Handle standard directory search for glance.conf
+    config_file_dirs = [fix_path(os.getcwd()),
+                        fix_path(os.path.join('~', '.glance')),
+                        fix_path('~'),
+                        '/etc/glance/',
+                        '/etc']
+
+    for cfg_dir in config_file_dirs:
+        cfg_file = os.path.join(cfg_dir, 'glance.conf')
+        if os.path.exists(cfg_file):
+            return cfg_file
+
+
+def load_paste_app(app_name, options, args):
+    """
+    Builds and returns a WSGI app from a paste config file.
+
+    We search for the paste config file in the following order:
+    * If --config-file option is used, use that
+    * If args[0] is a file, use that
+    * Search for glance.conf in standard directories:
+        * .
+        * ~.glance/
+        * ~
+        * /etc/glance
+        * /etc
+
+    :param app_name: Name of the application to load
+    :param options: Set of typed options returned from parse_options()
+    :param args: Command line arguments from argv[1:]
+
+    :raises RuntimeError when config file cannot be located or application
+            cannot be loaded from config file
+    """
+    conf_file = find_config_file(options, args)
+    if not conf_file:
+        raise RuntimeError("Unable to locate any configuration file. "
+                            "Cannot load application %s" % app_name)
+    try:
+        conf = deploy.appconfig("config:%s" % conf_file, name=app_name)
+        # We only update the conf dict for the verbose and debug
+        # flags. Everything else must be set up in the conf file...
+        conf['verbose'] = options['verbose']
+        conf['debug'] = options['debug']
+
+        # Log the options used when starting if we're in debug mode...
+        if conf['debug']:
+            logger = logging.getLogger(app_name)
+            logger.debug("*" * 80)
+            logger.debug("Configuration options gathered from config file:")
+            logger.debug(conf_file)
+            logger.debug("================================================")
+            items = dict([(k, v) for k, v in conf.items()
+                          if k not in ('__file__', 'here')])
+            for key, value in sorted(items.items()):
+                logger.debug("%(key)-30s %(value)s" % locals())
+            logger.debug("*" * 80)
+        app = deploy.loadapp("config:%s" % conf_file, name=app_name)
+    except (LookupError, ImportError), e:
+        raise RuntimeError("Unable to load %(app_name)s from "
+                           "configuration file %(conf_file)s."
+                           "\nGot: %(e)r" % locals())
+    return conf, app
+
+
+def get_option(options, option, **kwargs):
+    if option in options:
+        value = options[option]
+        type_ = kwargs.get('type', 'str')
+        if type_ == 'bool':
+            if hasattr(value, 'lower'):
+                return value.lower() == 'true'
+            else:
+                return value
+        elif type_ == 'int':
+            return int(value)
+        elif type_ == 'float':
+            return float(value)
+        else:
+            return value
+    elif 'default' in kwargs:
+        return kwargs['default']
+    else:
+        raise KeyError("option '%s' not found" % option)

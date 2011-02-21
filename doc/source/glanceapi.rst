@@ -24,7 +24,7 @@ A host that runs the ``bin/glance-api`` service is said to be a *Glance API
 Server*.
 
 Assume there is a Glance API server running at the URL
-``http://glance.example.com``. 
+``http://glance.example.com``.
 
 Let's walk through how a user might request information from this server.
 
@@ -116,7 +116,7 @@ following shows an example of the HTTP headers returned from the above
   x-image-meta-store            swift
   x-image-meta-created_at       2010-02-03 09:34:01
   x-image-meta-updated_at       2010-02-03 09:34:01
-  x-image-meta-deleted_at       
+  x-image-meta-deleted_at
   x-image-meta-status           available
   x-image-meta-is_public        True
   x-image-meta-property-distro  Ubuntu 10.04 LTS
@@ -126,7 +126,7 @@ following shows an example of the HTTP headers returned from the above
   All timestamps returned are in UTC
 
   The `x-image-meta-updated_at` timestamp is the timestamp when an
-  image's metadata was last updated, not its image data, as all 
+  image's metadata was last updated, not its image data, as all
   image data is immutable once stored in Glance
 
   There may be multiple headers that begin with the prefix
@@ -165,7 +165,7 @@ returned from the above ``GET`` request::
   x-image-meta-store            swift
   x-image-meta-created_at       2010-02-03 09:34:01
   x-image-meta-updated_at       2010-02-03 09:34:01
-  x-image-meta-deleted_at       
+  x-image-meta-deleted_at
   x-image-meta-status           available
   x-image-meta-is_public        True
   x-image-meta-property-distro  Ubuntu 10.04 LTS
@@ -175,7 +175,7 @@ returned from the above ``GET`` request::
   All timestamps returned are in UTC
 
   The `x-image-meta-updated_at` timestamp is the timestamp when an
-  image's metadata was last updated, not its image data, as all 
+  image's metadata was last updated, not its image data, as all
   image data is immutable once stored in Glance
 
   There may be multiple headers that begin with the prefix
@@ -232,7 +232,7 @@ The list of metadata headers that Glance accepts are listed below.
 
 * ``x-image-meta-id``
 
-  This header is optional. 
+  This header is optional.
 
   When present, Glance will use the supplied identifier for the image.
   If the identifier already exists in that Glance node, then a

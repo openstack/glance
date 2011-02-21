@@ -227,11 +227,12 @@ class TestGlanceAPI(unittest.TestCase):
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_filesystem_backend()
-        self.api = server.API({'registry_host': '0.0.0.0',
-                               'registry_port': '9191',
-                               'sql_connection': 'sqlite://',
-                               'default_store': 'file',
-                               'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR})
+        options = {'registry_host': '0.0.0.0',
+                   'registry_port': '9191',
+                   'sql_connection': 'sqlite://',
+                   'default_store': 'file',
+                   'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
+        self.api = server.API(options)
 
     def tearDown(self):
         """Clear the test environment"""
@@ -286,6 +287,14 @@ class TestGlanceAPI(unittest.TestCase):
         res_body = json.loads(res.body)['image']
         self.assertEquals(res_body['location'],
                           'file:///tmp/glance-tests/3')
+
+        # Test that the Location: header is set to the URI to
+        # edit the newly-created image, as required by APP.
+        # See LP Bug #719825
+        self.assertTrue('location' in res.headers,
+                        "'location' not in response headers.\n"
+                        "res.headerlist = %r" % res.headerlist)
+        self.assertTrue('/images/3' in res.headers['location'])
 
     def test_image_meta(self):
         """Test for HEAD /images/<ID>"""

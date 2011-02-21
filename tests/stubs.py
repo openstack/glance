@@ -34,10 +34,11 @@ import glance.store
 import glance.store.filesystem
 import glance.store.http
 import glance.store.swift
-import glance.registry.db.sqlalchemy.api
+import glance.registry.db.api
 
 
 FAKE_FILESYSTEM_ROOTDIR = os.path.join('/tmp', 'glance-tests')
+VERBOSE = False
 
 
 def stub_out_http_backend(stubs):
@@ -239,7 +240,8 @@ def stub_out_registry_and_store_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            res = self.req.get_response(rserver.API({'sql_connection': 'sqlite://'}))
+            options = {'sql_connection': 'sqlite://', 'verbose': VERBOSE}
+            res = self.req.get_response(rserver.API(options))
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():
@@ -284,10 +286,12 @@ def stub_out_registry_and_store_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            res = self.req.get_response(server.API({'registry_host': '0.0.0.0',
-                                                    'registry_port': '9191',
-                                                    'default_store': 'file',
-                                                    'filesystem_store_datadir': FAKE_FILESYSTEM_ROOTDIR}))
+            options = {'verbose': VERBOSE,
+                       'registry_host': '0.0.0.0',
+                       'registry_port': '9191',
+                       'default_store': 'file',
+                       'filesystem_store_datadir': FAKE_FILESYSTEM_ROOTDIR}
+            res = self.req.get_response(server.API(options))
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():
@@ -441,18 +445,18 @@ def stub_out_registry_db_image_api(stubs):
             else:
                 return images[0]
 
-        def image_get_all_public(self, _context, public):
+        def image_get_all_public(self, _context, public=True):
             return [f for f in self.images
                     if f['is_public'] == public]
 
     fake_datastore = FakeDatastore()
-    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_create',
+    stubs.Set(glance.registry.db.api, 'image_create',
               fake_datastore.image_create)
-    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_update',
+    stubs.Set(glance.registry.db.api, 'image_update',
               fake_datastore.image_update)
-    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_destroy',
+    stubs.Set(glance.registry.db.api, 'image_destroy',
               fake_datastore.image_destroy)
-    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_get',
+    stubs.Set(glance.registry.db.api, 'image_get',
               fake_datastore.image_get)
-    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_get_all_public',
+    stubs.Set(glance.registry.db.api, 'image_get_all_public',
               fake_datastore.image_get_all_public)

@@ -2,3 +2,8 @@
 glance.egg-info
 glance.sqlite
 *.glance-venv
+dist/
+ChangeLog
+*.pid
+*.log
+glance/vcsversion.py

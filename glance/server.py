@@ -46,7 +46,7 @@ from glance.store import (get_from_backend,
                           get_backend_class,
                           UnsupportedBackend)
 from glance import registry
-from glance import util
+from glance import utils
 
 
 class Controller(wsgi.Controller):
@@ -130,7 +130,7 @@ class Controller(wsgi.Controller):
         image = self.get_image_meta_or_404(req, id)
 
         res = Response(request=req)
-        util.inject_image_meta_into_headers(res, image)
+        utils.inject_image_meta_into_headers(res, image)
 
         return req.get_response(res)
 
@@ -158,7 +158,7 @@ class Controller(wsgi.Controller):
 
         res = Response(app_iter=image_iterator(),
                        content_type="text/plain")
-        util.inject_image_meta_into_headers(res, image)
+        utils.inject_image_meta_into_headers(res, image)
         return req.get_response(res)
 
     def _reserve(self, req):
@@ -173,7 +173,7 @@ class Controller(wsgi.Controller):
         :raises HTTPConflict if image already exists
         :raises HTTPBadRequest if image metadata is not valid
         """
-        image_meta = util.get_image_meta_from_headers(req)
+        image_meta = utils.get_image_meta_from_headers(req)
         image_meta['status'] = 'queued'
 
         # Ensure that the size attribute is set to zero for all
@@ -334,14 +334,20 @@ class Controller(wsgi.Controller):
         """
         image_meta = self._reserve(req)
 
-        if util.has_body(req):
+        if utils.has_body(req):
             self._upload_and_activate(req, image_meta)
         else:
             if 'x-image-meta-location' in req.headers:
                 location = req.headers['x-image-meta-location']
                 self._activate(req, image_meta, location)
 
-        return dict(image=image_meta)
+        # APP states we should return a Location: header with the edit
+        # URI of the resource newly-created.
+        res = Response(request=req, body=json.dumps(dict(image=image_meta)),
+                       content_type="text/plain")
+        res.headers.add('Location', "/images/%s" % image_meta['id'])
+
+        return req.get_response(res)
 
     def update(self, req, id):
         """
@@ -352,7 +358,7 @@ class Controller(wsgi.Controller):
 
         :retval Returns the updated image information as a mapping
         """
-        has_body = util.has_body(req)
+        has_body = utils.has_body(req)
 
         orig_image_meta = self.get_image_meta_or_404(req, id)
         orig_status = orig_image_meta['status']
@@ -360,7 +366,7 @@ class Controller(wsgi.Controller):
         if has_body and orig_status != 'queued':
             raise HTTPConflict("Cannot upload to an unqueued image")
 
-        new_image_meta = util.get_image_meta_from_headers(req)
+        new_image_meta = utils.get_image_meta_from_headers(req)
         image_meta = registry.update_image_metadata(self.options,
                                                     id,
                                                     new_image_meta)
@@ -439,3 +445,10 @@ class API(wsgi.Router):
         mapper.connect("/images/{id}", controller=controller, action="meta",
                        conditions=dict(method=["HEAD"]))
         super(API, self).__init__(mapper)
+
+
+def app_factory(global_conf, **local_conf):
+    """paste.deploy app factory for creating Glance API server apps"""
+    conf = global_conf.copy()
+    conf.update(local_conf)
+    return API(conf)

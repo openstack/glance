@@ -29,74 +29,28 @@ from sqlalchemy import ForeignKey, DateTime, Boolean, Text
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 
-from glance.common.db.sqlalchemy.session import get_session, get_engine
-
+import glance.registry.db.api
 from glance.common import exception
 
 BASE = declarative_base()
 
 
-#TODO(sirp): ModelBase should be moved out so Glance and Nova can share it
 class ModelBase(object):
     """Base class for Nova and Glance Models"""
     __table_args__ = {'mysql_engine': 'InnoDB'}
     __table_initialized__ = False
-    __prefix__ = 'none'
     __protected_attributes__ = set([
         "created_at", "updated_at", "deleted_at", "deleted"])
 
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow,
+                        nullable=False)
     updated_at = Column(DateTime, onupdate=datetime.datetime.utcnow)
     deleted_at = Column(DateTime)
-    deleted = Column(Boolean, default=False)
-
-    @classmethod
-    def all(cls, session=None, deleted=False):
-        """Get all objects of this type"""
-        if not session:
-            session = get_session()
-        return session.query(cls).\
-                       filter_by(deleted=deleted).\
-                       all()
-
-    @classmethod
-    def count(cls, session=None, deleted=False):
-        """Count objects of this type"""
-        if not session:
-            session = get_session()
-        return session.query(cls).\
-                       filter_by(deleted=deleted).\
-                       count()
-
-    @classmethod
-    def find(cls, obj_id, session=None, deleted=False):
-        """Find object by id"""
-        if not session:
-            session = get_session()
-        try:
-            return session.query(cls).\
-                           filter_by(id=obj_id).\
-                           filter_by(deleted=deleted).\
-                           one()
-        except exc.NoResultFound:
-            new_exc = exception.NotFound("No model for id %s" % obj_id)
-            raise new_exc.__class__, new_exc, sys.exc_info()[2]
-
-    @classmethod
-    def find_by_str(cls, str_id, session=None, deleted=False):
-        """Find object by str_id"""
-        int_id = int(str_id.rpartition('-')[2])
-        return cls.find(int_id, session=session, deleted=deleted)
-
-    @property
-    def str_id(self):
-        """Get string id of object (generally prefix + '-' + id)"""
-        return "%s-%s" % (self.__prefix__, self.id)
+    deleted = Column(Boolean, nullable=False, default=False)
 
     def save(self, session=None):
         """Save this object"""
-        if not session:
-            session = get_session()
+        session = session or glance.registry.db.api.get_session()
         session.add(self)
         session.flush()
 
@@ -138,19 +92,18 @@ class ModelBase(object):
 class Image(BASE, ModelBase):
     """Represents an image in the datastore"""
     __tablename__ = 'images'
-    __prefix__ = 'img'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
     type = Column(String(30))
     size = Column(Integer)
-    status = Column(String(30))
-    is_public = Column(Boolean, default=False)
+    status = Column(String(30), nullable=False)
+    is_public = Column(Boolean, nullable=False, default=False)
     location = Column(Text)
 
     @validates('type')
     def validate_type(self, key, type):
-        if not type in ('machine', 'kernel', 'ramdisk', 'raw'):
+        if not type in ('machine', 'kernel', 'ramdisk', 'raw', 'vhd'):
             raise exception.Invalid(
                 "Invalid image type '%s' for image." % type)
         return type
@@ -165,24 +118,13 @@ class Image(BASE, ModelBase):
 class ImageProperty(BASE, ModelBase):
     """Represents an image properties in the datastore"""
     __tablename__ = 'image_properties'
-    __prefix__ = 'img-prop'
     __table_args__ = (UniqueConstraint('image_id', 'key'), {})
 
     id = Column(Integer, primary_key=True)
     image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
     image = relationship(Image, backref=backref('properties'))
 
-    key = Column(String(255), index=True)
+    # FIXME(sirp): KEY is a reserved word in SQL, might be a good idea to
+    # rename this column
+    key = Column(String(255), index=True, nullable=False)
     value = Column(Text)
-
-
-def register_models():
-    """Register Models and create properties"""
-    engine = get_engine()
-    BASE.metadata.create_all(engine)
-
-
-def unregister_models():
-    """Unregister Models, useful clearing out data before testing"""
-    engine = get_engine()
-    BASE.metadata.drop_all(engine)
