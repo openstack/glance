@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2010 OpenStack, LLC
+# Copyright 2010-2011 OpenStack, LLC
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -26,7 +26,7 @@ import urlparse
 import socket
 import sys
 
-from glance import util
+from glance import utils
 from glance.common import exception
 
 #TODO(jaypipes) Allow a logger param for client classes
@@ -218,7 +218,7 @@ class Client(BaseClient):
         """
         res = self.do_request("GET", "/images/%s" % image_id)
 
-        image = util.get_image_meta_from_headers(res)
+        image = utils.get_image_meta_from_headers(res)
         return image, ImageBodyIterator(res)
 
     def get_image_meta(self, image_id):
@@ -229,7 +229,7 @@ class Client(BaseClient):
         """
         res = self.do_request("HEAD", "/images/%s" % image_id)
 
-        image = util.get_image_meta_from_headers(res)
+        image = utils.get_image_meta_from_headers(res)
         return image
 
     def add_image(self, image_meta=None, image_data=None):
@@ -248,7 +248,7 @@ class Client(BaseClient):
         if image_meta is None:
             image_meta = {}
 
-        headers = util.image_meta_to_http_headers(image_meta)
+        headers = utils.image_meta_to_http_headers(image_meta)
 
         if image_data:
             body = image_data
@@ -268,7 +268,7 @@ class Client(BaseClient):
             if 'image' not in image_meta:
                 image_meta = dict(image=image_meta)
 
-        headers = util.image_meta_to_http_headers(image_meta or {})
+        headers = utils.image_meta_to_http_headers(image_meta or {})
 
         body = image_data
         res = self.do_request("PUT", "/images/%s" % image_id, body, headers)

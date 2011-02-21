@@ -30,11 +30,9 @@ import socket
 import sys
 
 from glance.common import exception
-from glance.common import flags
 from glance.common.exception import ProcessExecutionError
 
 
-FLAGS = flags.FLAGS
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
@@ -145,21 +143,6 @@ def generate_mac():
 
 def last_octet(address):
     return int(address.split(".")[-1])
-
-
-def get_my_ip():
-    """Returns the actual ip of the local machine."""
-    if getattr(FLAGS, 'fake_tests', None):
-        return '127.0.0.1'
-    try:
-        csock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        csock.connect(('www.google.com', 80))
-        (addr, port) = csock.getsockname()
-        csock.close()
-        return addr
-    except socket.gaierror as ex:
-        logging.warn("Couldn't get IP, using 127.0.0.1 %s", ex)
-        return "127.0.0.1"
 
 
 def isotime(at=None):

@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2010 United States Government as represented by the
-# Administrator of the National Aeronautics and Space Administration.
 # Copyright 2011 OpenStack LLC.
 # All Rights Reserved.
 #
@@ -19,7 +17,11 @@
 #    under the License.
 
 """
-Reference implementation server for Glance Registry
+Glance API Server and reference registry server implementation
+combined in a single program.
+
+WARNING: This is mostly just for testing. We do not recommend running
+this server in production!
 """
 
 import optparse
@@ -43,7 +45,7 @@ def create_options(parser):
     :param parser: The option parser
     """
     config.add_common_options(parser)
-    config.add_log_options('glance-registry', parser)
+    config.add_log_options('glance-combined', parser)
 
 
 if __name__ == '__main__':
@@ -54,9 +56,11 @@ if __name__ == '__main__':
 
     try:
         config.setup_logging(options)
-        conf, app = config.load_paste_app('glance-registry', options, args)
 
         server = wsgi.Server()
+        conf, app = config.load_paste_app('glance-api', options, args)
+        server.start(app, int(conf['bind_port']), conf['bind_host'])
+        conf, app = config.load_paste_app('glance-registry', options, args)
         server.start(app, int(conf['bind_port']), conf['bind_host'])
         server.wait()
     except RuntimeError, e:

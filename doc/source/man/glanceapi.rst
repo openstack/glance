@@ -48,7 +48,7 @@ OPTIONS
         running ``glance-api``
 
 FILES
-========
+=====
 
 None
 

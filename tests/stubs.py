@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2010 OpenStack, LLC
+# Copyright 2010-2011 OpenStack, LLC
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -34,10 +34,11 @@ import glance.store
 import glance.store.filesystem
 import glance.store.http
 import glance.store.swift
-import glance.registry.db.sqlalchemy.api
+import glance.registry.db.api
 
 
 FAKE_FILESYSTEM_ROOTDIR = os.path.join('/tmp', 'glance-tests')
+VERBOSE = False
 
 
 def stub_out_http_backend(stubs):
@@ -117,6 +118,7 @@ def stub_out_s3_backend(stubs):
 
     class FakeSwiftAuth(object):
         pass
+
     class FakeS3Connection(object):
         pass
 
@@ -134,8 +136,7 @@ def stub_out_s3_backend(stubs):
 
             def chunk_it():
                 for i in xrange(0, len(cls.DATA), cls.CHUNK_SIZE):
-                    yield cls.DATA[i:i+cls.CHUNK_SIZE]
-            
+                    yield cls.DATA[i:i + cls.CHUNK_SIZE]
             return chunk_it()
 
     fake_swift_backend = FakeS3Backend()
@@ -201,8 +202,7 @@ def stub_out_registry(stubs):
         DATA = \
             {'files': [
               {'location': 'file:///chunk0', 'size': 12345},
-              {'location': 'file:///chunk1', 'size': 1235}
-            ]}
+              {'location': 'file:///chunk1', 'size': 1235}]}
 
         @classmethod
         def lookup(cls, _parsed_uri):
@@ -240,7 +240,8 @@ def stub_out_registry_and_store_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            res = self.req.get_response(rserver.API())
+            options = {'sql_connection': 'sqlite://', 'verbose': VERBOSE}
+            res = self.req.get_response(rserver.API(options))
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():
@@ -285,7 +286,12 @@ def stub_out_registry_and_store_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            res = self.req.get_response(server.API())
+            options = {'verbose': VERBOSE,
+                       'registry_host': '0.0.0.0',
+                       'registry_port': '9191',
+                       'default_store': 'file',
+                       'filesystem_store_datadir': FAKE_FILESYSTEM_ROOTDIR}
+            res = self.req.get_response(server.API(options))
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():
@@ -439,18 +445,18 @@ def stub_out_registry_db_image_api(stubs):
             else:
                 return images[0]
 
-        def image_get_all_public(self, _context, public):
+        def image_get_all_public(self, _context, public=True):
             return [f for f in self.images
                     if f['is_public'] == public]
 
     fake_datastore = FakeDatastore()
-    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_create',
+    stubs.Set(glance.registry.db.api, 'image_create',
               fake_datastore.image_create)
-    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_update',
+    stubs.Set(glance.registry.db.api, 'image_update',
               fake_datastore.image_update)
-    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_destroy',
+    stubs.Set(glance.registry.db.api, 'image_destroy',
               fake_datastore.image_destroy)
-    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_get',
+    stubs.Set(glance.registry.db.api, 'image_get',
               fake_datastore.image_get)
-    stubs.Set(glance.registry.db.sqlalchemy.api, 'image_get_all_public',
+    stubs.Set(glance.registry.db.api, 'image_get_all_public',
               fake_datastore.image_get_all_public)

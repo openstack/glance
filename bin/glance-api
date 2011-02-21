@@ -3,24 +3,26 @@
 
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
+# Copyright 2011 OpenStack LLC.
 # All Rights Reserved.
 #
-#    Licensed under the Apache License, Version 2.0 (the "License");
-#    you may not use this file except in compliance with the License.
-#    You may obtain a copy of the License at
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
 #
-#        http://www.apache.org/licenses/LICENSE-2.0
+#         http://www.apache.org/licenses/LICENSE-2.0
 #
 #    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS,
-#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    See the License for the specific language governing permissions and
-#    limitations under the License.
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
 
 """
 Glance API Server
 """
 
+import optparse
 import os
 import sys
 
@@ -28,26 +30,34 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 sys.path.append(ROOT_DIR)
 
-from glance.common import flags
-from glance.common import utils
-from glance.common import server
+from glance import version
+from glance.common import config
+from glance.common import wsgi
 
 
-FLAGS = flags.FLAGS
-flags.DEFINE_string('api_host', '0.0.0.0', 'API server lives at this address')
-flags.DEFINE_integer('api_port', 9292, 'API server listens on this port')
+def create_options(parser):
+    """
+    Sets up the CLI and config-file options that may be
+    parsed and program commands.
 
-
-def main(_args):
-    # NOTE(sirp): importing in main so that eventlet is imported AFTER
-    # daemonization.  See https://bugs.launchpad.net/bugs/687661
-    from glance.common import wsgi
-    from glance.server import API
-    server = wsgi.Server()
-    server.start(API(), FLAGS.api_port, host=FLAGS.api_host)
-    server.wait()
+    :param parser: The option parser
+    """
+    config.add_common_options(parser)
+    config.add_log_options('glance-api', parser)
 
 
 if __name__ == '__main__':
-    utils.default_flagfile()
-    server.serve('glance-api', main)
+    oparser = optparse.OptionParser(version='%%prog %s'
+                                    % version.version_string())
+    create_options(oparser)
+    (options, args) = config.parse_options(oparser)
+
+    try:
+        config.setup_logging(options)
+        conf, app = config.load_paste_app('glance-api', options, args)
+
+        server = wsgi.Server()
+        server.start(app, int(conf['bind_port']), conf['bind_host'])
+        server.wait()
+    except RuntimeError, e:
+        sys.exit("ERROR: %s" % e)

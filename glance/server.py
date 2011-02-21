@@ -39,7 +39,6 @@ from webob.exc import (HTTPNotFound,
                        HTTPBadRequest)
 
 from glance.common import exception
-from glance.common import flags
 from glance.common import wsgi
 from glance.store import (get_from_backend,
                           delete_from_backend,
@@ -47,10 +46,7 @@ from glance.store import (get_from_backend,
                           get_backend_class,
                           UnsupportedBackend)
 from glance import registry
-from glance import util
-
-
-FLAGS = flags.FLAGS
+from glance import utils
 
 
 class Controller(wsgi.Controller):
@@ -73,6 +69,9 @@ class Controller(wsgi.Controller):
         DELETE /images/<ID> -- Delete the image with id <ID>
     """
 
+    def __init__(self, options):
+        self.options = options
+
     def index(self, req):
         """
         Returns the following information for all public, available images:
@@ -92,7 +91,7 @@ class Controller(wsgi.Controller):
                  'type': <TYPE>}, ...
             ]}
         """
-        images = registry.get_images_list()
+        images = registry.get_images_list(self.options)
         return dict(images=images)
 
     def detail(self, req):
@@ -115,7 +114,7 @@ class Controller(wsgi.Controller):
                  'properties': {'distro': 'Ubuntu 10.04 LTS', ...}}, ...
             ]}
         """
-        images = registry.get_images_detail()
+        images = registry.get_images_detail(self.options)
         return dict(images=images)
 
     def meta(self, req, id):
@@ -131,7 +130,7 @@ class Controller(wsgi.Controller):
         image = self.get_image_meta_or_404(req, id)
 
         res = Response(request=req)
-        util.inject_image_meta_into_headers(res, image)
+        utils.inject_image_meta_into_headers(res, image)
 
         return req.get_response(res)
 
@@ -159,7 +158,7 @@ class Controller(wsgi.Controller):
 
         res = Response(app_iter=image_iterator(),
                        content_type="text/plain")
-        util.inject_image_meta_into_headers(res, image)
+        utils.inject_image_meta_into_headers(res, image)
         return req.get_response(res)
 
     def _reserve(self, req):
@@ -174,7 +173,7 @@ class Controller(wsgi.Controller):
         :raises HTTPConflict if image already exists
         :raises HTTPBadRequest if image metadata is not valid
         """
-        image_meta = util.get_image_meta_from_headers(req)
+        image_meta = utils.get_image_meta_from_headers(req)
         image_meta['status'] = 'queued'
 
         # Ensure that the size attribute is set to zero for all
@@ -183,7 +182,8 @@ class Controller(wsgi.Controller):
         image_meta['size'] = image_meta.get('size', 0)
 
         try:
-            image_meta = registry.add_image_metadata(image_meta)
+            image_meta = registry.add_image_metadata(self.options,
+                                                     image_meta)
             return image_meta
         except exception.Duplicate:
             msg = "An image with identifier %s already exists"\
@@ -212,21 +212,27 @@ class Controller(wsgi.Controller):
                 "Content-Type must be application/octet-stream")
 
         image_store = req.headers.get(
-            'x-image-meta-store', FLAGS.default_store)
+            'x-image-meta-store', self.options['default_store'])
 
         store = self.get_store_or_400(req, image_store)
 
         image_meta['status'] = 'saving'
-        registry.update_image_metadata(image_meta['id'], image_meta)
+        registry.update_image_metadata(self.options,
+                                       image_meta['id'],
+                                       image_meta)
 
         try:
-            location, size = store.add(image_meta['id'], req.body_file)
+            location, size = store.add(image_meta['id'],
+                                       req.body_file,
+                                       self.options)
             # If size returned from store is different from size
             # already stored in registry, update the registry with
             # the new size of the image
             if image_meta.get('size', 0) != size:
                 image_meta['size'] = size
-                registry.update_image_metadata(image_meta['id'], image_meta)
+                registry.update_image_metadata(self.options,
+                                               image_meta['id'],
+                                               image_meta)
             return location
         except exception.Duplicate, e:
             logging.error("Error adding image to store: %s", str(e))
@@ -243,7 +249,9 @@ class Controller(wsgi.Controller):
         """
         image_meta['location'] = location
         image_meta['status'] = 'active'
-        registry.update_image_metadata(image_meta['id'], image_meta)
+        registry.update_image_metadata(self.options,
+                                       image_meta['id'],
+                                       image_meta)
 
     def _kill(self, req, image_meta):
         """
@@ -253,7 +261,9 @@ class Controller(wsgi.Controller):
         :param image_meta: Mapping of metadata about image
         """
         image_meta['status'] = 'killed'
-        registry.update_image_metadata(image_meta['id'], image_meta)
+        registry.update_image_metadata(self.options,
+                                       image_meta['id'],
+                                       image_meta)
 
     def _safe_kill(self, req, image_meta):
         """
@@ -324,14 +334,20 @@ class Controller(wsgi.Controller):
         """
         image_meta = self._reserve(req)
 
-        if util.has_body(req):
+        if utils.has_body(req):
             self._upload_and_activate(req, image_meta)
         else:
             if 'x-image-meta-location' in req.headers:
                 location = req.headers['x-image-meta-location']
                 self._activate(req, image_meta, location)
 
-        return dict(image=image_meta)
+        # APP states we should return a Location: header with the edit
+        # URI of the resource newly-created.
+        res = Response(request=req, body=json.dumps(dict(image=image_meta)),
+                       content_type="text/plain")
+        res.headers.add('Location', "/images/%s" % image_meta['id'])
+
+        return req.get_response(res)
 
     def update(self, req, id):
         """
@@ -342,7 +358,7 @@ class Controller(wsgi.Controller):
 
         :retval Returns the updated image information as a mapping
         """
-        has_body = util.has_body(req)
+        has_body = utils.has_body(req)
 
         orig_image_meta = self.get_image_meta_or_404(req, id)
         orig_status = orig_image_meta['status']
@@ -350,8 +366,10 @@ class Controller(wsgi.Controller):
         if has_body and orig_status != 'queued':
             raise HTTPConflict("Cannot upload to an unqueued image")
 
-        new_image_meta = util.get_image_meta_from_headers(req)
-        image_meta = registry.update_image_metadata(id, new_image_meta)
+        new_image_meta = utils.get_image_meta_from_headers(req)
+        image_meta = registry.update_image_metadata(self.options,
+                                                    id,
+                                                    new_image_meta)
 
         if has_body:
             self._upload_and_activate(req, image_meta)
@@ -374,7 +392,7 @@ class Controller(wsgi.Controller):
 
         delete_from_backend(image['location'])
 
-        registry.delete_image_metadata(id)
+        registry.delete_image_metadata(self.options, id)
 
     def get_image_meta_or_404(self, request, id):
         """
@@ -387,7 +405,7 @@ class Controller(wsgi.Controller):
         :raises HTTPNotFound if image does not exist
         """
         try:
-            return registry.get_image_metadata(id)
+            return registry.get_image_metadata(self.options, id)
         except exception.NotFound:
             raise HTTPNotFound(body='Image not found',
                                request=request,
@@ -417,11 +435,20 @@ class API(wsgi.Router):
 
     """WSGI entry point for all Glance API requests."""
 
-    def __init__(self):
+    def __init__(self, options):
+        self.options = options
         mapper = routes.Mapper()
-        mapper.resource("image", "images", controller=Controller(),
+        controller = Controller(options)
+        mapper.resource("image", "images", controller=controller,
                        collection={'detail': 'GET'})
-        mapper.connect("/", controller=Controller(), action="index")
-        mapper.connect("/images/{id}", controller=Controller(), action="meta",
+        mapper.connect("/", controller=controller, action="index")
+        mapper.connect("/images/{id}", controller=controller, action="meta",
                        conditions=dict(method=["HEAD"]))
         super(API, self).__init__(mapper)
+
+
+def app_factory(global_conf, **local_conf):
+    """paste.deploy app factory for creating Glance API server apps"""
+    conf = global_conf.copy()
+    conf.update(local_conf)
+    return API(conf)

@@ -58,6 +58,9 @@ Using Glance
    :maxdepth: 1
 
    gettingstarted
+   installing
+   controllingservers
+   configuring
    glanceapi
    client
 
@@ -67,6 +70,7 @@ Developer Docs
 .. toctree::
    :maxdepth: 1
 
+   architecture
    community
 
 Outstanding Documentation Tasks
