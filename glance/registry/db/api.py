@@ -144,6 +144,30 @@ def _drop_protected_attrs(model_class, values):
             del values[attr]
 
 
+def validate_image(values):
+    """
+    Validates the incoming data and raises a Invalid exception
+    if anything is out of order.
+
+    :param values: Mapping of image metadata to check
+    """
+
+    type = values.get('type', None)
+    if not type:
+        msg = "Image type is required."
+        raise exception.Invalid(msg)
+    if type not in ('machine', 'kernel', 'ramdisk', 'raw', 'vhd'):
+        msg = "Invalid image type '%s' for image." % type
+        raise exception.Invalid(msg)
+    status = values.get('status', None)
+    if not status:
+        msg = "Image status is required."
+        raise exception.Invalid(msg)
+    if status not in ('active', 'queued', 'killed', 'saving'):
+        msg = "Invalid image status '%s' for image." % status
+        raise exception.Invalid(msg)
+
+
 def _image_update(context, values, image_id):
     """Used internally by image_create and image_update
 
@@ -151,6 +175,12 @@ def _image_update(context, values, image_id):
     :param values: A dict of attributes to set
     :param image_id: If None, create the image, otherwise, find and update it
     """
+
+    # Validate the attributes before we go any further. From my investigation,
+    # the @validates decorator does not validate on new records, only on
+    # existing records, which is, well, idiotic.
+    validate_image(values)
+
     session = get_session()
     with session.begin():
         _drop_protected_attrs(models.Image, values)

@@ -25,22 +25,26 @@ import unittest
 
 
 def execute(cmd):
+    env = os.environ.copy()
+    # Make sure that we use the programs in the
+    # current source directory's bin/ directory.
+    env['PATH'] = os.path.join(os.getcwd(), 'bin') + ':' + env['PATH']
     process = subprocess.Popen(cmd,
                                shell=True,
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
-                               env=os.environ.copy())
+                               env=env)
     result = process.communicate()
     (out, err) = result
+    exitcode = process.returncode
     if process.returncode != 0:
-        exitcode = process.returncode
         msg = "Command %(cmd)s did not succeed. Returned an exit "\
               "code of %(exitcode)d."\
               "\n\nSTDOUT: %(out)s"\
               "\n\nSTDERR: %(err)s" % locals()
         raise RuntimeError(msg)
-    return out, err
+    return exitcode, out, err
 
 
 class TestMiscellaneous(unittest.TestCase):
@@ -120,22 +124,30 @@ sql_idle_timeout = 3600
             # Start up the API and default registry server
             cmd = venv + "./bin/glance-control api start "\
                          "%s --pid-file=glance-api.pid" % conf_file
-            out, err = execute(cmd)
+            exitcode, out, err = execute(cmd)
+
+            self.assertEquals(0, exitcode)
+            self.assertTrue("Starting glance-api with" in out)
 
             cmd = venv + "./bin/glance-control registry start "\
                          "%s --pid-file=glance-registry.pid" % conf_file
-            out, err = execute(cmd)
+            exitcode, out, err = execute(cmd)
+
+            self.assertEquals(0, exitcode)
+            self.assertTrue("Starting glance-registry with" in out)
 
             time.sleep(2)  # Gotta give some time for spin up...
 
             cmd = "curl -g http://0.0.0.0:%d/images" % api_port
 
-            out, err = execute(cmd)
+            exitcode, out, err = execute(cmd)
 
+            self.assertEquals(0, exitcode)
             self.assertEquals('{"images": []}', out.strip())
 
-            cmd = "curl -X POST -dinvalid http://0.0.0.0:%d/images" % api_port
-            out, err = execute(cmd)
+            cmd = "curl -X POST -H 'Content-Type: application/octet-stream' "\
+                  "-dinvalid http://0.0.0.0:%d/images" % api_port
+            ignored, out, err = execute(cmd)
 
             self.assertTrue('Image type is required' in out,
                             "Could not find 'Image type is required' "
@@ -149,7 +161,7 @@ sql_idle_timeout = 3600
             # the exception text...
             hit_exception = False
             try:
-                out, err = execute(cmd)
+                ignored, out, err = execute(cmd)
             except RuntimeError, e:
                 hit_exception = True
                 self.assertTrue('Invalid image type' in str(e))
@@ -158,7 +170,7 @@ sql_idle_timeout = 3600
             # Spin down the API and default registry server
             cmd = "./bin/glance-control api stop "\
                   "%s --pid-file=glance-api.pid" % conf_file
-            out, err = execute(cmd)
+            ignored, out, err = execute(cmd)
             cmd = "./bin/glance-control registry stop "\
                   "%s --pid-file=glance-registry.pid" % conf_file
-            out, err = execute(cmd)
+            ignored, out, err = execute(cmd)
