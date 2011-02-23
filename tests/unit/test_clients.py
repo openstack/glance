@@ -66,7 +66,7 @@ class TestRegistryClient(unittest.TestCase):
         images = self.client.get_images()
         self.assertEquals(len(images), 1)
 
-        for k, v in fixture.iteritems():
+        for k, v in fixture.items():
             self.assertEquals(v, images[0][k])
 
     def test_get_image_details(self):
@@ -74,16 +74,8 @@ class TestRegistryClient(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'type': 'kernel',
-                   'status': 'active',
-                   'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
-                   'properties': {}}
-
-        expected = {'id': 2,
-                   'name': 'fake image #2',
-                   'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'status': 'active',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
@@ -92,33 +84,28 @@ class TestRegistryClient(unittest.TestCase):
         images = self.client.get_images_detailed()
         self.assertEquals(len(images), 1)
 
-        for k, v in expected.iteritems():
+        for k, v in fixture.items():
             self.assertEquals(v, images[0][k])
 
     def test_get_image(self):
         """Tests that the detailed info about an image returned"""
-        fixture = {'id': 2,
-                   'name': 'fake image #2',
-                   'is_public': True,
-                   'type': 'kernel',
+        fixture = {'id': 1,
+                   'name': 'fake image #1',
+                   'is_public': False,
+                   'disk_format': 'ami',
+                   'container_format': 'ami',
                    'status': 'active',
-                   'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
-                   'properties': {}}
+                   'size': 13,
+                   'location': "swift://user:passwd@acct/container/obj.tar.0",
+                   'properties': {'type': 'kernel'}}
 
-        expected = {'id': 2,
-                   'name': 'fake image #2',
-                   'is_public': True,
-                   'type': 'kernel',
-                   'status': 'active',
-                   'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
-                   'properties': {}}
+        data = self.client.get_image(1)
 
-        data = self.client.get_image(2)
-
-        for k, v in expected.iteritems():
-            self.assertEquals(v, data[k])
+        for k, v in fixture.items():
+            el = data[k]
+            self.assertEquals(v, data[k],
+                              "Failed v != data[k] where v = %(v)s and "
+                              "k = %(k)s and data[k] = %(el)s" % locals())
 
     def test_get_image_non_existing(self):
         """Tests that NotFound is raised when getting a non-existing image"""
@@ -131,7 +118,8 @@ class TestRegistryClient(unittest.TestCase):
         """Tests that we can add image metadata and returns the new id"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vmdk',
+                   'container_format': 'ovf',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/acct/3.gz.0",
                   }
@@ -144,7 +132,7 @@ class TestRegistryClient(unittest.TestCase):
         # Test all other attributes set
         data = self.client.get_image(3)
 
-        for k, v in fixture.iteritems():
+        for k, v in fixture.items():
             self.assertEquals(v, data[k])
 
         # Test status was updated properly
@@ -155,23 +143,18 @@ class TestRegistryClient(unittest.TestCase):
         """Tests that we can add image metadata with properties"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vmdk',
+                   'container_format': 'ovf',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}}
-        expected = {'name': 'fake public image',
-                    'is_public': True,
-                    'type': 'kernel',
-                    'size': 19,
-                    'location': "file:///tmp/glance-tests/2",
-                    'properties': {'distro': 'Ubuntu 10.04 LTS'}}
 
         new_image = self.client.add_image(fixture)
 
         # Test ID auto-assigned properly
         self.assertEquals(3, new_image['id'])
 
-        for k, v in expected.iteritems():
+        for k, v in fixture.items():
             self.assertEquals(v, new_image[k])
 
         # Test status was updated properly
@@ -183,7 +166,8 @@ class TestRegistryClient(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vmdk',
+                   'container_format': 'ovf',
                    'status': 'bad status',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
@@ -198,7 +182,8 @@ class TestRegistryClient(unittest.TestCase):
         fixture = {'id': 3,
                    'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vmdk',
+                   'container_format': 'ovf',
                    'status': 'bad status',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
@@ -211,14 +196,14 @@ class TestRegistryClient(unittest.TestCase):
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
-                   'type': 'ramdisk'}
+                   'disk_format': 'vmdk'}
 
         self.assertTrue(self.client.update_image(2, fixture))
 
         # Test all other attributes set
         data = self.client.get_image(2)
 
-        for k, v in fixture.iteritems():
+        for k, v in fixture.items():
             self.assertEquals(v, data[k])
 
     def test_update_image_not_existing(self):
@@ -226,7 +211,8 @@ class TestRegistryClient(unittest.TestCase):
         fixture = {'id': 3,
                    'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vmdk',
+                   'container_format': 'ovf',
                    'status': 'bad status',
                   }
 
@@ -283,7 +269,8 @@ class TestClient(unittest.TestCase):
         expected_meta = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'status': 'active',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
@@ -295,7 +282,7 @@ class TestClient(unittest.TestCase):
             image_data += image_chunk
 
         self.assertEquals(expected_image, image_data)
-        for k, v in expected_meta.iteritems():
+        for k, v in expected_meta.items():
             self.assertEquals(v, meta[k])
 
     def test_get_image_not_existing(self):
@@ -312,7 +299,7 @@ class TestClient(unittest.TestCase):
         images = self.client.get_images()
         self.assertEquals(len(images), 1)
 
-        for k, v in fixture.iteritems():
+        for k, v in fixture.items():
             self.assertEquals(v, images[0][k])
 
     def test_get_image_details(self):
@@ -320,7 +307,8 @@ class TestClient(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'status': 'active',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
@@ -329,7 +317,8 @@ class TestClient(unittest.TestCase):
         expected = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'status': 'active',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
@@ -338,7 +327,7 @@ class TestClient(unittest.TestCase):
         images = self.client.get_images_detailed()
         self.assertEquals(len(images), 1)
 
-        for k, v in expected.iteritems():
+        for k, v in expected.items():
             self.assertEquals(v, images[0][k])
 
     def test_get_image_meta(self):
@@ -346,16 +335,8 @@ class TestClient(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'type': 'kernel',
-                   'status': 'active',
-                   'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
-                   'properties': {}}
-
-        expected = {'id': 2,
-                   'name': 'fake image #2',
-                   'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'status': 'active',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
@@ -363,7 +344,7 @@ class TestClient(unittest.TestCase):
 
         data = self.client.get_image_meta(2)
 
-        for k, v in expected.iteritems():
+        for k, v in fixture.items():
             self.assertEquals(v, data[k])
 
     def test_get_image_non_existing(self):
@@ -377,7 +358,8 @@ class TestClient(unittest.TestCase):
         """Tests client returns image as queued"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                   }
         image_meta = self.client.add_image(fixture)
         self.assertEquals('queued', image_meta['status'])
@@ -387,7 +369,8 @@ class TestClient(unittest.TestCase):
         """Tests that we can add image metadata and returns the new id"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                   }
@@ -400,7 +383,7 @@ class TestClient(unittest.TestCase):
         # Test all other attributes set
         data = self.client.get_image_meta(3)
 
-        for k, v in fixture.iteritems():
+        for k, v in fixture.items():
             self.assertEquals(v, data[k])
 
         # Test status was updated properly
@@ -411,17 +394,11 @@ class TestClient(unittest.TestCase):
         """Tests that we can add image metadata with properties"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {'distro': 'Ubuntu 10.04 LTS'},
-                  }
-        expected = {'name': 'fake public image',
-                    'is_public': True,
-                    'type': 'kernel',
-                    'size': 19,
-                    'location': "file:///tmp/glance-tests/2",
-                    'properties': {'distro': 'Ubuntu 10.04 LTS'},
                   }
         new_image = self.client.add_image(fixture)
         new_image_id = new_image['id']
@@ -432,7 +409,7 @@ class TestClient(unittest.TestCase):
         # Test all other attributes set
         data = self.client.get_image_meta(3)
 
-        for k, v in expected.iteritems():
+        for k, v in fixture.items():
             self.assertEquals(v, data[k])
 
         # Test status was updated properly
@@ -444,7 +421,8 @@ class TestClient(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'status': 'bad status',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
@@ -458,7 +436,8 @@ class TestClient(unittest.TestCase):
         """Tests a bad status is set to a proper one by server"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'status': 'bad status',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
@@ -471,7 +450,8 @@ class TestClient(unittest.TestCase):
         """Tests can add image by passing image data as string"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'size': 19,
                    'properties': {'distro': 'Ubuntu 10.04 LTS'},
                   }
@@ -489,14 +469,15 @@ class TestClient(unittest.TestCase):
             new_image_data += image_chunk
 
         self.assertEquals(image_data_fixture, new_image_data)
-        for k, v in fixture.iteritems():
+        for k, v in fixture.items():
             self.assertEquals(v, new_meta[k])
 
     def test_add_image_with_image_data_as_file(self):
         """Tests can add image by passing image data as file"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'size': 19,
                    'properties': {'distro': 'Ubuntu 10.04 LTS'},
                   }
@@ -526,14 +507,15 @@ class TestClient(unittest.TestCase):
             new_image_data += image_chunk
 
         self.assertEquals(image_data_fixture, new_image_data)
-        for k, v in fixture.iteritems():
+        for k, v in fixture.items():
             self.assertEquals(v, new_meta[k])
 
     def test_add_image_with_image_data_as_string_and_no_size(self):
         """Tests add image by passing image data as string w/ no size attr"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'properties': {'distro': 'Ubuntu 10.04 LTS'},
                   }
 
@@ -550,7 +532,7 @@ class TestClient(unittest.TestCase):
             new_image_data += image_chunk
 
         self.assertEquals(image_data_fixture, new_image_data)
-        for k, v in fixture.iteritems():
+        for k, v in fixture.items():
             self.assertEquals(v, new_meta[k])
 
         self.assertEquals(19, new_meta['size'])
@@ -559,7 +541,8 @@ class TestClient(unittest.TestCase):
         """Tests BadRequest raised when supplying bad store name in meta"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'size': 19,
                    'store': 'bad',
                    'properties': {'distro': 'Ubuntu 10.04 LTS'},
@@ -575,15 +558,14 @@ class TestClient(unittest.TestCase):
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
-                   'type': 'ramdisk',
-                  }
+                   'disk_format': 'vmdk'}
 
         self.assertTrue(self.client.update_image(2, fixture))
 
         # Test all other attributes set
         data = self.client.get_image_meta(2)
 
-        for k, v in fixture.iteritems():
+        for k, v in fixture.items():
             self.assertEquals(v, data[k])
 
     def test_update_image_not_existing(self):
@@ -591,7 +573,8 @@ class TestClient(unittest.TestCase):
         fixture = {'id': 3,
                    'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'status': 'bad status',
                   }
 
