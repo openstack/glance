@@ -49,6 +49,9 @@ from glance import registry
 from glance import utils
 
 
+logger = logging.getLogger('glance.server')
+
+
 class Controller(wsgi.Controller):
 
     """
@@ -188,10 +191,13 @@ class Controller(wsgi.Controller):
         except exception.Duplicate:
             msg = "An image with identifier %s already exists"\
                   % image_meta['id']
-            logging.error(msg)
-            raise HTTPConflict(msg, request=req)
-        except exception.Invalid:
-            raise HTTPBadRequest()
+            logger.error(msg)
+            raise HTTPConflict(msg, request=req, content_type="text/plain")
+        except exception.Invalid, e:
+            msg = ("Failed to reserve image. Got error: %(e)s" % locals())
+            for line in msg.split('\n'):
+                logger.error(line)
+            raise HTTPBadRequest(msg, request=req, content_type="text/plain")
 
     def _upload(self, req, image_meta):
         """
@@ -211,17 +217,22 @@ class Controller(wsgi.Controller):
             raise HTTPBadRequest(
                 "Content-Type must be application/octet-stream")
 
-        image_store = req.headers.get(
+        store_name = req.headers.get(
             'x-image-meta-store', self.options['default_store'])
 
-        store = self.get_store_or_400(req, image_store)
+        store = self.get_store_or_400(req, store_name)
 
         image_meta['status'] = 'saving'
+        image_id = image_meta['id']
+        logger.debug("Updating image metadata for image %s"
+                     % image_id)
         registry.update_image_metadata(self.options,
                                        image_meta['id'],
                                        image_meta)
 
         try:
+            logger.debug("Uploading image data for image %(image_id)s "
+                         "to %(store_name)s store" % locals())
             location, size = store.add(image_meta['id'],
                                        req.body_file,
                                        self.options)
@@ -230,12 +241,14 @@ class Controller(wsgi.Controller):
             # the new size of the image
             if image_meta.get('size', 0) != size:
                 image_meta['size'] = size
+                logger.debug("Updating image metadata for image %s"
+                             % image_id)
                 registry.update_image_metadata(self.options,
                                                image_meta['id'],
                                                image_meta)
             return location
         except exception.Duplicate, e:
-            logging.error("Error adding image to store: %s", str(e))
+            logger.error("Error adding image to store: %s", str(e))
             raise HTTPConflict(str(e), request=req)
 
     def _activate(self, req, image_meta, location):
@@ -277,7 +290,7 @@ class Controller(wsgi.Controller):
         try:
             self._kill(req, image_meta)
         except Exception, e:
-            logging.error("Unable to kill image %s: %s",
+            logger.error("Unable to kill image %s: %s",
                           image_meta['id'], repr(e))
 
     def _upload_and_activate(self, req, image_meta):
@@ -367,14 +380,21 @@ class Controller(wsgi.Controller):
             raise HTTPConflict("Cannot upload to an unqueued image")
 
         new_image_meta = utils.get_image_meta_from_headers(req)
-        image_meta = registry.update_image_metadata(self.options,
-                                                    id,
-                                                    new_image_meta)
+        try:
+            image_meta = registry.update_image_metadata(self.options,
+                                                        id,
+                                                        new_image_meta)
 
-        if has_body:
-            self._upload_and_activate(req, image_meta)
+            if has_body:
+                self._upload_and_activate(req, image_meta)
 
-        return dict(image=image_meta)
+            return dict(image=image_meta)
+        except exception.Invalid, e:
+            msg = ("Failed to update image metadata. Got error: %(e)s"
+                   % locals())
+            for line in msg.split('\n'):
+                logger.error(line)
+            raise HTTPBadRequest(msg, request=req, content_type="text/plain")
 
     def delete(self, req, id):
         """
@@ -407,8 +427,9 @@ class Controller(wsgi.Controller):
         try:
             return registry.get_image_metadata(self.options, id)
         except exception.NotFound:
-            raise HTTPNotFound(body='Image not found',
-                               request=request,
+            msg = "Image with identifier %s not found" % id
+            logger.debug(msg)
+            raise HTTPNotFound(msg, request=request,
                                content_type='text/plain')
 
     def get_store_or_400(self, request, store_name):
@@ -424,10 +445,10 @@ class Controller(wsgi.Controller):
         try:
             return get_backend_class(store_name)
         except UnsupportedBackend:
-            raise HTTPBadRequest(body='Requested store %s not available '
-                                 'for storage on this Glance node'
-                                 % store_name,
-                                 request=request,
+            msg = ("Requested store %s not available on this Glance server"
+                   % store_name)
+            logger.error(msg)
+            raise HTTPBadRequest(msg, request=request,
                                  content_type='text/plain')
 
 

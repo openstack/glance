@@ -101,19 +101,6 @@ class Image(BASE, ModelBase):
     is_public = Column(Boolean, nullable=False, default=False)
     location = Column(Text)
 
-    @validates('type')
-    def validate_type(self, key, type):
-        if not type in ('machine', 'kernel', 'ramdisk', 'raw', 'vhd'):
-            raise exception.Invalid(
-                "Invalid image type '%s' for image." % type)
-        return type
-
-    @validates('status')
-    def validate_status(self, key, status):
-        if not status in ('active', 'queued', 'killed', 'saving'):
-            raise exception.Invalid("Invalid status '%s' for image." % status)
-        return status
-
 
 class ImageProperty(BASE, ModelBase):
     """Represents an image properties in the datastore"""

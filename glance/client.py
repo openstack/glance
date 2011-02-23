@@ -153,7 +153,7 @@ class BaseClient(object):
             elif status_code == httplib.CONFLICT:
                 raise exception.Duplicate(res.read())
             elif status_code == httplib.BAD_REQUEST:
-                raise exception.BadInputError(res.read())
+                raise exception.Invalid(res.read())
             else:
                 raise Exception("Unknown error occurred! %s" % res.__dict__)
 
