@@ -217,10 +217,10 @@ class Controller(wsgi.Controller):
             raise HTTPBadRequest(
                 "Content-Type must be application/octet-stream")
 
-        image_store = req.headers.get(
+        store_name = req.headers.get(
             'x-image-meta-store', self.options['default_store'])
 
-        store = self.get_store_or_400(req, image_store)
+        store = self.get_store_or_400(req, store_name)
 
         image_meta['status'] = 'saving'
         image_id = image_meta['id']
@@ -232,9 +232,7 @@ class Controller(wsgi.Controller):
 
         try:
             logger.debug("Uploading image data for image %(image_id)s "
-                         "to %(store_name)s store"
-                         % {'image_id': image_id,
-                            'store_name': image_store})
+                         "to %(store_name)s store" % locals())
             location, size = store.add(image_meta['id'],
                                        req.body_file,
                                        self.options)

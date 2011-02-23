@@ -92,7 +92,7 @@ class TestMiscellaneous(unittest.TestCase):
 
         # A config file to use just for this test...we don't want
         # to trample on currently-running Glance servers, now do we?
-        with tempfile.NamedTemporaryFile() as f:
+        with tempfile.NamedTemporaryFile() as conf_file:
             conf_contents = """[DEFAULT]
 verbose = True
 debug = True
@@ -113,9 +113,9 @@ bind_port = %(reg_port)s
 sql_connection = sqlite://
 sql_idle_timeout = 3600
 """ % locals()
-            f.write(conf_contents)
-            f.flush()
-            conf_file = f.name
+            conf_file.write(conf_contents)
+            conf_file.flush()
+            conf_file_name = conf_file.name
 
             venv = ""
             if 'VIRTUAL_ENV' in os.environ:
@@ -123,14 +123,14 @@ sql_idle_timeout = 3600
 
             # Start up the API and default registry server
             cmd = venv + "./bin/glance-control api start "\
-                         "%s --pid-file=glance-api.pid" % conf_file
+                         "%s --pid-file=glance-api.pid" % conf_file_name
             exitcode, out, err = execute(cmd)
 
             self.assertEquals(0, exitcode)
             self.assertTrue("Starting glance-api with" in out)
 
             cmd = venv + "./bin/glance-control registry start "\
-                         "%s --pid-file=glance-registry.pid" % conf_file
+                         "%s --pid-file=glance-registry.pid" % conf_file_name
             exitcode, out, err = execute(cmd)
 
             self.assertEquals(0, exitcode)
@@ -154,7 +154,7 @@ sql_idle_timeout = 3600
                             "in output: %s" % out)
 
             cmd = "./bin/glance-upload --port=%(api_port)d "\
-                  "--type=invalid %(conf_file)s 'my image'" % locals()
+                  "--type=invalid %(conf_file_name)s 'my image'" % locals()
 
             # Normally, we would simply self.assertRaises() here, but
             # we also want to check that the Invalid image type is in
@@ -169,8 +169,8 @@ sql_idle_timeout = 3600
 
             # Spin down the API and default registry server
             cmd = "./bin/glance-control api stop "\
-                  "%s --pid-file=glance-api.pid" % conf_file
+                  "%s --pid-file=glance-api.pid" % conf_file_name
             ignored, out, err = execute(cmd)
             cmd = "./bin/glance-control registry stop "\
-                  "%s --pid-file=glance-registry.pid" % conf_file
+                  "%s --pid-file=glance-registry.pid" % conf_file_name
             ignored, out, err = execute(cmd)
