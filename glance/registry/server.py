@@ -19,6 +19,7 @@ Parllax Image controller
 """
 
 import json
+import logging
 
 import routes
 from webob import exc
@@ -26,6 +27,9 @@ from webob import exc
 from glance.common import wsgi
 from glance.common import exception
 from glance.registry.db import api as db_api
+
+
+logger = logging.getLogger('glance.registry.server')
 
 
 class Controller(wsgi.Controller):
@@ -118,9 +122,13 @@ class Controller(wsgi.Controller):
             image_data = db_api.image_create(context, image_data)
             return dict(image=make_image_dict(image_data))
         except exception.Duplicate:
-            return exc.HTTPConflict()
-        except exception.Invalid:
-            return exc.HTTPBadRequest()
+            msg = ("Image with identifier %s already exists!" % id)
+            logger.error(msg)
+            return exc.HTTPConflict(msg)
+        except exception.Invalid, e:
+            msg = ("Failed to add image metadata. Got error: %(e)s" % locals())
+            logger.error(msg)
+            return exc.HTTPBadRequest(msg)
 
     def update(self, req, id):
         """Updates an existing image with the registry.
@@ -140,7 +148,9 @@ class Controller(wsgi.Controller):
             updated_image = db_api.image_update(context, id, image_data)
             return dict(image=make_image_dict(updated_image))
         except exception.NotFound:
-            return exc.HTTPNotFound()
+            raise exc.HTTPNotFound(body='Image not found',
+                               request=req,
+                               content_type='text/plain')
 
 
 class API(wsgi.Router):

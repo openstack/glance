@@ -204,7 +204,7 @@ class TestRegistryClient(unittest.TestCase):
                    'location': "file:///tmp/glance-tests/2",
                   }
 
-        self.assertRaises(exception.BadInputError,
+        self.assertRaises(exception.Invalid,
                           self.client.add_image,
                           fixture)
 
@@ -567,7 +567,7 @@ class TestClient(unittest.TestCase):
 
         image_data_fixture = r"chunk00000remainder"
 
-        self.assertRaises(exception.BadInputError,
+        self.assertRaises(exception.Invalid,
                           self.client.add_image,
                           fixture,
                           image_data_fixture)
