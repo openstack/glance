@@ -164,7 +164,9 @@ sql_idle_timeout = 3600
                 ignored, out, err = execute(cmd)
             except RuntimeError, e:
                 hit_exception = True
-                self.assertTrue('Invalid image type' in str(e))
+                self.assertTrue('Invalid image type' in str(e),
+                                "Could not find 'Invalid image type' in "
+                                "result from glance-upload:\n%(e)s" % locals())
             self.assertTrue(hit_exception)
 
             # Spin down the API and default registry server
