@@ -40,7 +40,8 @@ BASE = models.BASE
 BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
                         'deleted'])
 
-IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'type', 'status', 'size',
+IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size',
+                                      'disk_format', 'container_format',
                                       'is_public', 'location'])
 
 
@@ -152,19 +153,22 @@ def validate_image(values):
     :param values: Mapping of image metadata to check
     """
 
-    type = values.get('type', None)
-    if not type:
-        msg = "Image type is required."
-        raise exception.Invalid(msg)
-    if type not in ('machine', 'kernel', 'ramdisk', 'raw', 'vhd'):
-        msg = "Invalid image type '%s' for image." % type
-        raise exception.Invalid(msg)
-    status = values.get('status', None)
+    status = values.get('status')
     if not status:
         msg = "Image status is required."
         raise exception.Invalid(msg)
     if status not in ('active', 'queued', 'killed', 'saving'):
         msg = "Invalid image status '%s' for image." % status
+        raise exception.Invalid(msg)
+
+    disk_format = values.get('disk_format')
+    if not disk_format in ('vmdk', 'ami', 'raw', 'vhd'):
+        msg = "Invalid disk format '%s' for image." % disk_format
+        raise exception.Invalid(msg)
+
+    container_format = values.get('container_format')
+    if not container_format in ('ami', 'ovf'):
+        msg = "Invalid container format '%s' for image." % container_format
         raise exception.Invalid(msg)
 
 

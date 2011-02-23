@@ -27,6 +27,8 @@ class TestMigrations(unittest.TestCase):
 
     def setUp(self):
         self.db_path = "glance_test_migration.sqlite"
+        if os.path.exists(self.db_path):
+            os.unlink(self.db_path)
         self.options = dict(sql_connection="sqlite:///%s" % self.db_path,
                             verbose=False)
         config.setup_logging(self.options)

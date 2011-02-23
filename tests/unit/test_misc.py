@@ -149,8 +149,8 @@ sql_idle_timeout = 3600
                   "-dinvalid http://0.0.0.0:%d/images" % api_port
             ignored, out, err = execute(cmd)
 
-            self.assertTrue('Image type is required' in out,
-                            "Could not find 'Image type is required' "
+            self.assertTrue('Invalid disk format' in out,
+                            "Could not find 'Invalid disk format' "
                             "in output: %s" % out)
 
             cmd = "./bin/glance-upload --port=%(api_port)d "\
@@ -164,7 +164,7 @@ sql_idle_timeout = 3600
                 ignored, out, err = execute(cmd)
             except RuntimeError, e:
                 hit_exception = True
-                self.assertTrue('Invalid image type' in str(e))
+                self.assertTrue('Invalid disk format' in str(e))
             self.assertTrue(hit_exception)
 
             # Spin down the API and default registry server

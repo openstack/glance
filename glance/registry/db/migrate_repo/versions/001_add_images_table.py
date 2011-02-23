@@ -36,7 +36,8 @@ def define_images_table(meta):
         Column('deleted_at', DateTime()),
         Column('deleted', Boolean(), nullable=False, default=False,
                index=True),
-        mysql_engine='InnoDB')
+        mysql_engine='InnoDB',
+        useexisting=True)
 
     return images
 
