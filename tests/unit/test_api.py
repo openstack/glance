@@ -243,6 +243,66 @@ class TestGlanceAPI(unittest.TestCase):
         stubs.clean_out_fake_filesystem_backend()
         self.stubs.UnsetAll()
 
+    def test_missing_disk_format(self):
+        fixture_headers = {'x-image-meta-store': 'bad',
+                   'x-image-meta-name': 'bogus',
+                   'x-image-meta-location': 'http://example.com/image.tar.gz'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertTrue('Image disk format is required' in res.body)
+
+    def test_bad_disk_format(self):
+        fixture_headers = {'x-image-meta-store': 'bad',
+                   'x-image-meta-name': 'bogus',
+                   'x-image-meta-location': 'http://example.com/image.tar.gz',
+                   'x-image-meta-disk-format': 'invalid'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertTrue('Invalid disk format' in res.body)
+
+    def test_missing_container_format(self):
+        fixture_headers = {'x-image-meta-store': 'bad',
+                   'x-image-meta-name': 'bogus',
+                   'x-image-meta-location': 'http://example.com/image.tar.gz',
+                   'x-image-meta-disk-format': 'vhd'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertTrue('Image container format is required' in res.body)
+
+    def test_bad_container_format(self):
+        fixture_headers = {'x-image-meta-store': 'bad',
+                   'x-image-meta-name': 'bogus',
+                   'x-image-meta-location': 'http://example.com/image.tar.gz',
+                   'x-image-meta-disk-format': 'vhd',
+                   'x-image-meta-container-format': 'invalid'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertTrue('Invalid container format' in res.body)
+
     def test_add_image_no_location_no_image_as_body(self):
         """Tests creates a queued image for no body and no loc header"""
         fixture_headers = {'x-image-meta-store': 'file',
