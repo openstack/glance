@@ -163,11 +163,17 @@ def validate_image(values, new=True):
         raise exception.Invalid(msg)
 
     disk_format = values.get('disk_format')
+    if not disk_format and new:
+        msg = "Image disk format is required."
+        raise exception.Invalid(msg)
     if disk_format and disk_format not in ('vmdk', 'ami', 'raw', 'vhd'):
         msg = "Invalid disk format '%s' for image." % disk_format
         raise exception.Invalid(msg)
 
     container_format = values.get('container_format')
+    if not container_format and new:
+        msg = "Image container format is required."
+        raise exception.Invalid(msg)
     if container_format and container_format not in ('ami', 'ovf'):
         msg = "Invalid container format '%s' for image." % container_format
         raise exception.Invalid(msg)
