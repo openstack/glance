@@ -55,7 +55,6 @@ class Controller(wsgi.Controller):
         images = db_api.image_get_all_public(None)
         image_dicts = [dict(id=i['id'],
                             name=i['name'],
-                            type=i['type'],
                             size=i['size']) for i in images]
         return dict(images=image_dicts)
 

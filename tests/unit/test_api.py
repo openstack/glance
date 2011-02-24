@@ -85,7 +85,8 @@ class TestRegistryAPI(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'status': 'active'}
 
         req = webob.Request.blank('/images/detail')
@@ -103,7 +104,8 @@ class TestRegistryAPI(unittest.TestCase):
         """Tests that the /images POST registry API creates the image"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel'}
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf'}
 
         req = webob.Request.blank('/images')
 
@@ -130,7 +132,8 @@ class TestRegistryAPI(unittest.TestCase):
         fixture = {'id': 3,
                    'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'status': 'bad status'}
 
         req = webob.Request.blank('/images')
@@ -144,7 +147,7 @@ class TestRegistryAPI(unittest.TestCase):
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
-                   'type': 'ramdisk'}
+                   'disk_format': 'raw'}
 
         req = webob.Request.blank('/images/2')
 
@@ -166,7 +169,8 @@ class TestRegistryAPI(unittest.TestCase):
         fixture = {'id': 3,
                    'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'status': 'bad status'}
 
         req = webob.Request.blank('/images/3')
@@ -242,7 +246,9 @@ class TestGlanceAPI(unittest.TestCase):
     def test_add_image_no_location_no_image_as_body(self):
         """Tests creates a queued image for no body and no loc header"""
         fixture_headers = {'x-image-meta-store': 'file',
-                            'x-image-meta-name': 'fake image #3'}
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
@@ -270,8 +276,10 @@ class TestGlanceAPI(unittest.TestCase):
         self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
 
     def test_add_image_basic_file_store(self):
-        """Tests raises BadRequest for invalid store header"""
+        """Tests to add a basic image in the file store"""
         fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
                            'x-image-meta-name': 'fake image #3'}
 
         req = webob.Request.blank("/images")
