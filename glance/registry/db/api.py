@@ -145,29 +145,30 @@ def _drop_protected_attrs(model_class, values):
             del values[attr]
 
 
-def validate_image(values):
+def validate_image(values, new=True):
     """
     Validates the incoming data and raises a Invalid exception
     if anything is out of order.
 
     :param values: Mapping of image metadata to check
+    :param new: Is this a new record?
     """
 
     status = values.get('status')
-    if not status:
+    if not status and new:
         msg = "Image status is required."
         raise exception.Invalid(msg)
-    if status not in ('active', 'queued', 'killed', 'saving'):
+    if status and status not in ('active', 'queued', 'killed', 'saving'):
         msg = "Invalid image status '%s' for image." % status
         raise exception.Invalid(msg)
 
     disk_format = values.get('disk_format')
-    if not disk_format in ('vmdk', 'ami', 'raw', 'vhd'):
+    if disk_format and disk_format not in ('vmdk', 'ami', 'raw', 'vhd'):
         msg = "Invalid disk format '%s' for image." % disk_format
         raise exception.Invalid(msg)
 
     container_format = values.get('container_format')
-    if not container_format in ('ami', 'ovf'):
+    if container_format and container_format not in ('ami', 'ovf'):
         msg = "Invalid container format '%s' for image." % container_format
         raise exception.Invalid(msg)
 
@@ -183,7 +184,7 @@ def _image_update(context, values, image_id):
     # Validate the attributes before we go any further. From my investigation,
     # the @validates decorator does not validate on new records, only on
     # existing records, which is, well, idiotic.
-    validate_image(values)
+    validate_image(values, image_id is None)
 
     session = get_session()
     with session.begin():
