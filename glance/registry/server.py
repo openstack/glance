@@ -111,6 +111,7 @@ class Controller(wsgi.Controller):
                 in the 'id' field
 
         """
+        logger.debug("Got req.body: %r", req.body)
         image_data = json.loads(req.body)['image']
 
         # Ensure the image has a status set
@@ -140,10 +141,12 @@ class Controller(wsgi.Controller):
         :retval Returns the updated image information as a mapping,
 
         """
+        logger.debug("Got req.body: %r", req.body)
         image_data = json.loads(req.body)['image']
 
         context = None
         try:
+            logger.debug("Updating image %(id)s with metadata: %(image_data)r" % locals())
             updated_image = db_api.image_update(context, id, image_data)
             return dict(image=make_image_dict(updated_image))
         except exception.NotFound:

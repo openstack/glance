@@ -35,7 +35,8 @@ def image_meta_to_http_headers(image_meta):
                 headers["x-image-meta-property-%s"
                         % pk.lower()] = pv
 
-        headers["x-image-meta-%s" % k.lower()] = v
+        else:
+            headers["x-image-meta-%s" % k.lower()] = v
     return headers
 
 

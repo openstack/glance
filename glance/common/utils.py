@@ -36,6 +36,21 @@ from glance.common.exception import ProcessExecutionError
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
+def bool_from_string(subject):
+    """
+    Interpret a string as a boolean. 
+    
+    Any string value in:
+        ('True', 'true', 'On', 'on', '1')
+    is interpreted as a boolean True.
+
+    Useful for JSON-decoded stuff and config file parsing
+    """
+    if subject.strip().lower() in ('true', 'on', '1'):
+        return True
+    return False
+
+
 def import_class(import_str):
     """Returns a class from a string including module and class"""
     mod_str, _sep, class_str = import_str.rpartition('.')

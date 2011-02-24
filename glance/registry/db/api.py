@@ -24,6 +24,7 @@ Defines interface for DB access
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import exc
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import sessionmaker
 
@@ -122,8 +123,7 @@ def image_get(context, image_id, session=None):
                        filter_by(id=image_id).\
                        one()
     except exc.NoResultFound:
-        new_exc = exception.NotFound("No model for id %s" % image_id)
-        raise new_exc.__class__, new_exc, sys.exc_info()[2]
+        raise exception.NotFound("No image found with ID %s" % image_id)
 
 
 def image_get_all_public(context):
@@ -193,7 +193,13 @@ def _image_update(context, values, image_id):
         if 'size' in values:
             values['size'] = int(values['size'])
 
-        values['is_public'] = bool(values.get('is_public', False))
+        if image_id is None:
+            # Only set is_public to False is missing in new image
+            # creation. On update, we don't set to False if the
+            # is_public key is missing from the supplied keys to
+            # update, since only fields to update are supplied.
+            values['is_public'] = bool(values.get('is_public', False))
+
         properties = values.pop('properties', {})
 
         if image_id:
