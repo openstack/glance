@@ -80,16 +80,14 @@ def parse_args():
 
 def main():
     args = parse_args()
-    meta = {'name': args.name, 'type': args.type, 'is_public': True}
+    meta = {'name': args.name, 'type': args.type, 'is_public': True,
+            'properties': {}}
 
-    # FIXME(sirp): remove kernel_id requirement when nova removes
-    # `null_kernel` concept
-    if args.kernel and args.ramdisk:
-        meta['properties'] = {'kernel_id': args.kernel,
-                              'ramdisk_id': args.ramdisk}
-    else:
-        die("kernel and ramdisk required (use 'nokernel' and 'noramdisk' "
-            "to omit)")
+    if args.kernel:
+        meta['properties']['kernel_id'] = args.kernel
+
+    if args.ramdisk:
+        meta['properties']['ramdisk_id'] = args.ramdisk
 
     client = Client(args.host, args.port)
     with open(args.filename) as f:
