@@ -153,8 +153,14 @@ sql_idle_timeout = 3600
                             "Could not find 'Image type is required' "
                             "in output: %s" % out)
 
+            # FIXME(sirp): Nova currently requires a `null_kernel` to be
+            # specified using the string 'nokernel'. This is slated to be
+            # removed shortly (within days of 2011-02-24). Once this is done,
+            # we can remove the required --kernel and --ramdisk options here.
             cmd = "./bin/glance-upload --port=%(api_port)d "\
-                  "--type=invalid %(conf_file_name)s 'my image'" % locals()
+                  "--kernel=nokernel --ramdisk=noramdisk "\
+                  "--type=invalid %(conf_file_name)s "\
+                  "'my image'" % locals()
 
             # Normally, we would simply self.assertRaises() here, but
             # we also want to check that the Invalid image type is in
