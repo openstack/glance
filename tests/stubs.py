@@ -408,6 +408,10 @@ def stub_out_registry_db_image_api(stubs):
 
         def image_update(self, _context, image_id, values):
 
+            image = self.image_get(_context, image_id)
+            copy_image = image.copy()
+            copy_image.update(values)
+            glance.registry.db.api.validate_image(copy_image)
             props = []
 
             if 'properties' in values.keys():
@@ -423,7 +427,6 @@ def stub_out_registry_db_image_api(stubs):
 
             values['properties'] = props
 
-            image = self.image_get(_context, image_id)
             image.update(values)
             return image
 

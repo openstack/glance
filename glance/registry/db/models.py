@@ -88,6 +88,9 @@ class ModelBase(object):
     def items(self):
         return self.__dict__.items()
 
+    def to_dict(self):
+        return self.__dict__.copy()
+
 
 class Image(BASE, ModelBase):
     """Represents an image in the datastore"""

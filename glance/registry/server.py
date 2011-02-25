@@ -146,6 +146,11 @@ class Controller(wsgi.Controller):
         try:
             updated_image = db_api.image_update(context, id, image_data)
             return dict(image=make_image_dict(updated_image))
+        except exception.Invalid, e:
+            msg = ("Failed to update image metadata. "
+                   "Got error: %(e)s" % locals())
+            logger.error(msg)
+            return exc.HTTPBadRequest(msg)
         except exception.NotFound:
             raise exc.HTTPNotFound(body='Image not found',
                                request=req,

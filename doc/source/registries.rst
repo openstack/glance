@@ -24,44 +24,9 @@ Glance REST-like API for image metadata.
 Glance comes with a server program ``glance-registry`` that acts
 as a reference implementation of a Glance Registry.
 
-Using ``glance-registry``, the Glance Registry reference implementation
------------------------------------------------------------------------
-
-As mentioned above, ``glance-registry`` is the reference registry
-server implementation that ships with Glance. It uses a SQL database
-to store information about an image, and publishes this information
-via an HTTP/REST-like interface.
-
-Starting the server
-*******************
-
-Starting the Glance registry server is trivial. Simply call the program
-from the command line, as the following example shows::
-
-  $> glance-registry
-  (5588) wsgi starting up on http://0.0.0.0:9191/
-
-Configuring the server
-**********************
-
-There are a few options that can be supplied to the registry server when
-starting it up:
-
-* ``verbose``
-
-  Show more verbose/debugging output
-
-* ``sql_connection``
-
-  A proper SQLAlchemy connection string as described `here <http://www.sqlalchemy.org/docs/05/reference/sqlalchemy/connections.html?highlight=engine#sqlalchemy.create_engine>`_
-
-* ``registry_host``
-
-  Address of the host the registry runs on. Defaults to 0.0.0.0.
-
-* ``registry_port``
-
-  Port the registry server listens on. Defaults to 9191.
+Please see the document :doc:`on Controlling Servers <controllingservers>`
+for more information on starting up the Glance registry server that ships
+with Glance.
 
 Glance Registry API
 -------------------
@@ -80,6 +45,38 @@ The following is a brief description of the Glance API::
   POST    /images         Register metadata about a new image
   PUT     /images/<ID>    Update metadata about an existing image
   DELETE  /images/<ID>    Remove an image's metadata from the registry
+
+``POST /images``
+----------------
+
+The body of the request will be a JSON-encoded set of data about
+the image to add to the registry. It will be in the following format::
+
+  {'image':
+    {'id': <ID>|None,
+     'name': <NAME>,
+     'status': <STATUS>,
+     'disk_format': <DISK_FORMAT>,
+     'container_format': <CONTAINER_FORMAT>,
+     'properties': [ ... ]
+    }
+  }
+
+The request shall validate the following conditions and return a
+``400 Bad request`` when any of the conditions are not met:
+
+* ``status`` must be non-empty, and must be one of **active**, **saving**,
+  **queued**, or **killed**
+
+* ``disk_format`` must be non-empty, and must be one of **ari**, **aki**,
+  **ami**, **raw**, **vhd**, **vdi**, **qcow2**, or **vmdk**
+
+* ``container_format`` must be non-empty, and must be on of **ari**,
+  **aki**, **ami**, **bare**, or **ovf**
+
+* If ``disk_format`` *or* ``container_format`` is **ari**, **aki**,
+  **ami**, then *both* ``disk_format`` and ``container_format`` must be
+  the same.
 
 Examples
 ********
