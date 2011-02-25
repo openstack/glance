@@ -154,7 +154,8 @@ sql_idle_timeout = 3600
                             "in output: %s" % out)
 
             cmd = "./bin/glance-upload --port=%(api_port)d "\
-                  "--type=invalid %(conf_file_name)s 'my image'" % locals()
+                  "--type=invalid %(conf_file_name)s "\
+                  "'my image'" % locals()
 
             # Normally, we would simply self.assertRaises() here, but
             # we also want to check that the Invalid image type is in
