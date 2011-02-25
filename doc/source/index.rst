@@ -50,6 +50,7 @@ Concepts
    identifiers
    registries
    statuses
+   formats
 
 Using Glance
 ============
@@ -61,7 +62,7 @@ Using Glance
    installing
    controllingservers
    configuring
-   glanceadmin
+   glance
    glanceapi
    client
 

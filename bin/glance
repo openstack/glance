@@ -82,14 +82,8 @@ def print_image_formatted(client, image):
     print "Disk format: %s" % image['disk_format']
     print "Container format: %s" % image['container_format']
     if len(image['properties']) > 0:
-        print "Custom properties:",
-        cur_prop = 1
         for k, v in image['properties'].items():
-            if cur_prop == 1:
-                print "%s=%s" % (k, v)
-            else:
-                print (' ' * 12) + "%s=%s" % (k, v)
-            cur_prop += 1
+            print "Property '%s': %s" % (k, v)
 
 
 def image_add(options, args):
@@ -192,12 +186,12 @@ EXAMPLES
 
     if not options.dry_run:
         try:
-            new_image_meta = c.add_image(image_meta, image_data)
-            new_image_id = new_image_meta['id']
-            print "Added new image with ID: %s" % new_image_id
+            image_meta = c.add_image(image_meta, image_data)
+            image_id = image_meta['id']
+            print "Added new image with ID: %s" % image_id
             if options.verbose:
                 print "Returned the following metadata for the new image:"
-                for k, v in sorted(new_image_meta.items()):
+                for k, v in sorted(image_meta.items()):
                     print " %(k)30s => %(v)s" % locals()
         except client.ClientConnectionError, e:
             host = options.host
@@ -267,18 +261,29 @@ to spell field names correctly. :)"""
             print 'Found non-modifiable field %s. Removing.' % field
             fields.pop(field)
 
-    base_image_fields = ['disk_format', 'container_format', 'is_public',
+    base_image_fields = ['disk_format', 'container_format',
                          'location']
     for field in base_image_fields:
         fvalue = fields.pop(field, None)
         if fvalue:
             image_meta[field] = fvalue
 
+    # Have to handle "boolean" values specially...
+    if 'is_public' in fields:
+        image_meta['is_public'] = utils.int_from_bool_as_string(
+            fields.pop('is_public'))
+
     # Add custom attributes, which are all the arguments remaining
     image_meta['properties'] = fields
 
     try:
-        c.update_image(image_id, image_meta=image_meta)
+        image_meta = c.update_image(image_id, image_meta=image_meta)
+        print "Updated image %s" % image_id
+
+        if options.verbose:
+            print "Updated image metadata for image %s:" % image_id
+            print_image_formatted(c, image_meta)
+
         return SUCCESS
     except exception.NotFound:
         print "No image with ID %s was found" % image_id
@@ -298,8 +303,13 @@ Deletes an image from Glance"""
         print "as the first argument"
         return FAILURE
 
-    c.delete_image(image_id)
-    return SUCCESS
+    try:
+        c.delete_image(image_id)
+        print "Deleted image %s" % image_id
+        return SUCCESS
+    except exception.NotFound:
+        print "No image with ID %s was found" % image_id
+        return FAILURE
 
 
 def image_show(options, args):
@@ -339,14 +349,18 @@ a Glance server knows about"""
             return SUCCESS
 
         print "Found %d public images..." % len(images)
-        print "%-32s %-30s %-14s" % (("ID"),
+        print "%-16s %-30s %-20s %-20s %-14s" % (("ID"),
                                            ("Name"),
+                                           ("Disk Format"),
+                                           ("Container Format"),
                                            ("Size"))
-        print ('-' * 32) + " " + ('-' * 30) + " "\
-              + ('-' * 14)
+        print ('-' * 16) + " " + ('-' * 30) + " "\
+              + ('-' * 20) + " " + ('-' * 20) + " " + ('-' * 14)
         for image in images:
-            print "%-32s %-30s %14d" % (image['id'],
+            print "%-16s %-30s %-20s %-20s %14d" % (image['id'],
                                               image['name'],
+                                              image['disk_format'],
+                                              image['container_format'],
                                               int(image['size']))
         return SUCCESS
     except Exception, e:

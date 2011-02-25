@@ -39,6 +39,7 @@ import glance.registry.db.api
 
 FAKE_FILESYSTEM_ROOTDIR = os.path.join('/tmp', 'glance-tests')
 VERBOSE = False
+DEBUG = False
 
 
 def stub_out_http_backend(stubs):
@@ -240,7 +241,8 @@ def stub_out_registry_and_store_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            options = {'sql_connection': 'sqlite://', 'verbose': VERBOSE}
+            options = {'sql_connection': 'sqlite://', 'verbose': VERBOSE,
+                       'debug': DEBUG}
             res = self.req.get_response(rserver.API(options))
 
             # httplib.Response has a read() method...fake it out
@@ -287,6 +289,7 @@ def stub_out_registry_and_store_server(stubs):
 
         def getresponse(self):
             options = {'verbose': VERBOSE,
+                       'debug': DEBUG,
                        'registry_host': '0.0.0.0',
                        'registry_port': '9191',
                        'default_store': 'file',
@@ -408,6 +411,10 @@ def stub_out_registry_db_image_api(stubs):
 
         def image_update(self, _context, image_id, values):
 
+            image = self.image_get(_context, image_id)
+            copy_image = image.copy()
+            copy_image.update(values)
+            glance.registry.db.api.validate_image(copy_image)
             props = []
 
             if 'properties' in values.keys():
@@ -423,7 +430,6 @@ def stub_out_registry_db_image_api(stubs):
 
             values['properties'] = props
 
-            image = self.image_get(_context, image_id)
             image.update(values)
             return image
 

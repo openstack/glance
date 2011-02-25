@@ -87,8 +87,9 @@ def delete_image_metadata(options, image_id):
 
 
 def _debug_print_metadata(image_meta):
-    properties = image_meta.pop('properties', None)
-    for key, value in sorted(image_meta.items()):
+    data = image_meta.copy()
+    properties = data.pop('properties', None)
+    for key, value in sorted(data.items()):
         logger.debug(" %(key)20s: %(value)s" % locals())
     if properties:
         logger.debug(" %d custom properties...",

@@ -45,6 +45,10 @@ IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size',
                                       'disk_format', 'container_format',
                                       'is_public', 'location'])
 
+CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
+DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi']
+STATUSES = ['active', 'saving', 'queued', 'killed']
+
 
 def configure_db(options):
     """
@@ -155,22 +159,39 @@ def validate_image(values, new=True):
     """
 
     status = values.get('status')
-    if not status and new:
+    disk_format = values.get('disk_format')
+    container_format = values.get('container_format')
+
+    if not status:
         msg = "Image status is required."
         raise exception.Invalid(msg)
-    if status and status not in ('active', 'queued', 'killed', 'saving'):
+    if not disk_format:
+        msg = "Image disk format is required."
+        raise exception.Invalid(msg)
+    if not container_format:
+        msg = "Image container format is required."
+        raise exception.Invalid(msg)
+
+    if status not in STATUSES:
         msg = "Invalid image status '%s' for image." % status
         raise exception.Invalid(msg)
 
-    disk_format = values.get('disk_format')
-    if disk_format and disk_format not in ('vmdk', 'ami', 'raw', 'vhd'):
+    if disk_format not in DISK_FORMATS:
         msg = "Invalid disk format '%s' for image." % disk_format
         raise exception.Invalid(msg)
 
-    container_format = values.get('container_format')
-    if container_format and container_format not in ('ami', 'ovf'):
+    if container_format not in CONTAINER_FORMATS:
         msg = "Invalid container format '%s' for image." % container_format
         raise exception.Invalid(msg)
+
+    if disk_format in ('aki', 'ari', 'ami') or\
+            container_format in ('aki', 'ari', 'ami'):
+        if container_format != disk_format:
+            msg = ("Invalid mix of disk and container formats. "
+                   "When setting a disk or container format to "
+                   "one of 'ami', 'ari', or 'ami', the container "
+                   "and disk formats must match.")
+            raise exception.Invalid(msg)
 
 
 def _image_update(context, values, image_id):
@@ -181,33 +202,29 @@ def _image_update(context, values, image_id):
     :param image_id: If None, create the image, otherwise, find and update it
     """
 
-    # Validate the attributes before we go any further. From my investigation,
-    # the @validates decorator does not validate on new records, only on
-    # existing records, which is, well, idiotic.
-    validate_image(values, image_id is None)
-
     session = get_session()
     with session.begin():
-        _drop_protected_attrs(models.Image, values)
-
-        if 'size' in values:
-            values['size'] = int(values['size'])
-
-        if image_id is None:
-            # Only set is_public to False is missing in new image
-            # creation. On update, we don't set to False if the
-            # is_public key is missing from the supplied keys to
-            # update, since only fields to update are supplied.
-            values['is_public'] = bool(values.get('is_public', False))
 
         properties = values.pop('properties', {})
 
         if image_id:
             image_ref = image_get(context, image_id, session=session)
         else:
+            if 'size' in values:
+                values['size'] = int(values['size'])
+
+            values['is_public'] = bool(values.get('is_public', False))
             image_ref = models.Image()
 
+        _drop_protected_attrs(models.Image, values)
         image_ref.update(values)
+
+        # Validate the attributes before we go any further. From my
+        # investigation, the @validates decorator does not validate
+        # on new records, only on existing records, which is, well,
+        # idiotic.
+        validate_image(image_ref.to_dict())
+
         image_ref.save(session=session)
 
         _set_properties_for_image(context, image_ref, properties, session)

@@ -14,14 +14,13 @@
       License for the specific language governing permissions and limitations
       under the License.
 
-Using the Glance Admin Tool
-===========================
+Using the Glance CLI Tool
+=========================
 
-Glance ships with a command-line tool for administering Glance called
-``glance-admin``. It has a fairly simple but powerful interface of the
-form::
+Glance ships with a command-line tool for quering and managing Glance
+It has a fairly simple but powerful interface of the form::
 
-  Usage: glance-admin <command> [options] [args]
+  Usage: glance <command> [options] [args]
 
 Where ``<command>`` is one of the following:
 
@@ -57,18 +56,18 @@ Where ``<command>`` is one of the following:
 
   Destroys *all* images and their associated metadata
 
-This document describes how to use the ``glance-admin`` tool for each of
+This document describes how to use the ``glance`` tool for each of
 the above commands.
 
 The ``help`` command
 --------------------
 
 Issuing the ``help`` command with a ``<COMMAND>`` argument shows detailed help
-about a specific command. Running ``glance-admin`` without any arguments shows
+about a specific command. Running ``glance`` without any arguments shows
 a brief help message, like so::
 
-  $> glance-admin
-  Usage: glance-admin <command> [options] [args]
+  $> glance
+  Usage: glance <command> [options] [args]
 
   Commands:
 
@@ -95,7 +94,7 @@ a brief help message, like so::
     -h, --help            show this help message and exit
     -v, --verbose         Print more verbose output
     -H ADDRESS, --host=ADDRESS
-                          Address of Glance API host. Default: 0.0.0.0
+                          Address of Glance API host. Default: example.com
     -p PORT, --port=PORT  Port the Glance API host listens on. Default: 9292
     --dry-run             Don't actually execute the command, just print output
                           showing what WOULD happen.
@@ -103,9 +102,9 @@ a brief help message, like so::
 With a ``<COMMAND>`` argument, more information on the command is shown,
 like so::
 
-  $> glance-admin help update
+  $> glance help update
 
-  glance-admin update [options] <ID> <field1=value1 field2=value2 ...>
+  glance update [options] <ID> <field1=value1 field2=value2 ...>
 
   Updates an image's metadata in Glance. Specify metadata fields as arguments.
 
@@ -141,7 +140,7 @@ Store virtual machine image data and metadata
 When adding an actual virtual machine image to Glance, you use the ``add``
 command. You will pass metadata about the VM image on the command line, and
 you will use a standard shell redirect to stream the image data file to
-``glance-admin``.
+``glance``.
 
 Let's walk through a simple example. Suppose we have an image stored on our
 local filesystem that we wish to "upload" to Glance. This image is stored
@@ -152,18 +151,18 @@ that the image should be public -- anyone should be able to fetch it.
 
 Here is how we'd upload this image to Glance::
 
-  $> glance-admin add name="My Image" is_public=true < /tmp/images/myimage.tar.gz
+  $> glance add name="My Image" is_public=true < /tmp/images/myimage.tar.gz
 
 If Glance was able to successfully upload and store your VM image data and
 metadata attributes, you would see something like this::
 
-  $> glance-admin add name="My Image" is_public=true < /tmp/images/myimage.tar.gz
+  $> glance add name="My Image" is_public=true < /tmp/images/myimage.tar.gz
   Added new image with ID: 2
 
 You can use the ``--verbose`` (or ``-v``) command-line option to print some more
 information about the metadata that was saved with the image::
 
-  $> glance-admin --verbose add name="My Image" is_public=true < /tmp/images/myimage.tar.gz
+  $> glance --verbose add name="My Image" is_public=true < /tmp/images/myimage.tar.gz
   Added new image with ID: 4
   Returned the following metadata for the new image:
                  container_format => ovf
@@ -184,7 +183,7 @@ information about the metadata that was saved with the image::
 If you are unsure about what will be added, you can use the ``--dry-run``
 command-line option, which will simply show you what *would* have happened::
 
-  $> glance-admin --dry-run add name="Foo" distro="Ubuntu" is_publi=True < /tmp/images/myimage.tar.gz
+  $> glance --dry-run add name="Foo" distro="Ubuntu" is_publi=True < /tmp/images/myimage.tar.gz
   Dry run. We would have done the following:
   Add new image with metadata:
                  container_format => ovf
@@ -194,7 +193,7 @@ command-line option, which will simply show you what *would* have happened::
                        properties => {'is_publi': 'True', 'distro': 'Ubuntu'}
 
 This is useful for detecting problems and for seeing what the default field
-values supplied by ``glance-admin`` are.  For instance, there was a typo in
+values supplied by ``glance`` are.  For instance, there was a typo in
 the command above (the ``is_public`` field was incorrectly spelled ``is_publi``
 which resulted in the image having an ``is_publi`` custom property added to
 the image and the *real* ``is_public`` field value being `False` (the default)
@@ -217,7 +216,7 @@ Let's assume that there is a virtual machine image located at the URL
 ``http://example.com/images/myimage.tar.gz``. We can register this image with
 Glance using the following::
 
-  $> glance-admin --verbose add name="Some web image" location="http://example.com/images/myimage.tar.gz"
+  $> glance --verbose add name="Some web image" location="http://example.com/images/myimage.tar.gz"
   Added new image with ID: 1
   Returned the following metadata for the new image:
                  container_format => ovf
@@ -235,7 +234,6 @@ Glance using the following::
                        updated_at => None
   Completed in 0.0356 sec.
 
-
 The ``update`` command
 ----------------------
 
@@ -247,24 +245,121 @@ it to Glance.
 The ``update`` command allows you to update the metadata fields of a stored
 image. You use this command like so::
 
-  glance-admin update <ID> [field1=value1 field2=value2 ...]
+  glance update <ID> [field1=value1 field2=value2 ...]
 
-Let's say we have an image with identifier 4 that we wish to change the is_public
-attribute of the image from True to False. The following would accomplish this::
+Let's say we have an image with identifier 5 that we wish to change the is_public
+attribute of the image from False to True. The following would accomplish this::
 
+  $> glance update 5 is_public=true
+  Updated image 5
 
+Using the ``--verbose`` flag will show you all the updated data about the image::
+
+  $> glance --verbose update 5 is_public=true
+  Updated image 5
+  Updated image metadata for image 5:
+  URI: http://example.com/images/5
+  Id: 5
+  Public? Yes
+  Name: My Image
+  Size: 58520278
+  Location: file:///tmp/images/5
+  Disk format: raw
+  Container format: ovf
+  Completed in 0.0596 sec.
 
 The ``delete`` command
 ----------------------
 
+You can delete an image by using the ``delete`` command, shown below::
+
+  $> glance --verbose delete 5
+  Deleted image 5
+
 The ``index`` command
 ---------------------
+
+The ``index`` command displays brief information about the *public* images
+available in Glance, as shown below::
+
+  $> glance index
+  Found 4 public images...
+  ID               Name                           Disk Format          Container Format     Size          
+  ---------------- ------------------------------ -------------------- -------------------- --------------
+  1                Ubuntu 10.10                   vhd                  ovf                        58520278
+  2                Ubuntu 10.04                   ami                  ami                        58520278
+  3                Fedora 9                       vdi                  bare                           3040
+  4                Vanilla Linux 2.6.22           qcow2                bare                              0
 
 The ``details`` command
 -----------------------
 
+The ``details`` command displays detailed information about the *public* images
+available in Glance, as shown below::
+
+  $> glance details
+  Found 4 public images...
+  ================================================================================
+  URI: http://example.com/images/1
+  Id: 1
+  Public? Yes
+  Name: Ubuntu 10.10
+  Size: 58520278
+  Location: file:///tmp/images/1
+  Disk format: vhd
+  Container format: ovf
+  Property 'distro_version': 10.10
+  Property 'distro': Ubuntu
+  ================================================================================
+  URI: http://example.com/images/2
+  Id: 2
+  Public? Yes
+  Name: Ubuntu 10.04
+  Size: 58520278
+  Location: file:///tmp/images/2
+  Disk format: ami
+  Container format: ami
+  Property 'distro_version': 10.04
+  Property 'distro': Ubuntu
+  ================================================================================
+  URI: http://example.com/images/3
+  Id: 3
+  Public? Yes
+  Name: Fedora 9
+  Size: 3040
+  Location: file:///tmp/images/3
+  Disk format: vdi
+  Container format: bare
+  Property 'distro_version': 9
+  Property 'distro': Fedora
+  ================================================================================
+  URI: http://example.com/images/4
+  Id: 4
+  Public? Yes
+  Name: Vanilla Linux 2.6.22
+  Size: 0
+  Location: http://example.com/images/vanilla.tar.gz
+  Disk format: qcow2
+  Container format: bare
+  ================================================================================
+
 The ``show`` command
 --------------------
+
+The ``show`` command displays detailed information about a specific image, specified
+with ``<ID>``, as shown below::
+
+  $> glance show 3
+  URI: http://example.com/images/3
+  Id: 3
+  Public? Yes
+  Name: Fedora 9
+  Size: 3040
+  Location: file:///tmp/images/3
+  Disk format: vdi
+  Container format: bare
+  Property 'distro_version': 9
+  Property 'distro': Fedora
 
 The ``clear`` command
 ---------------------
@@ -273,7 +368,7 @@ The ``clear`` command is an administrative command that deletes **ALL** images
 and all image metadata. Passing the ``--verbose`` command will print brief
 information about all the images that were deleted, as shown below::
 
-  $> glance-admin --verbose clear
+  $> glance --verbose clear
   Deleting image 1 "Some web image" ... done
   Deleting image 2 "Some other web image" ... done
   Completed in 0.0328 sec.

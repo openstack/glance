@@ -89,6 +89,8 @@ class Controller(wsgi.Controller):
             {'images': [
                 {'id': <ID>,
                  'name': <NAME>,
+                 'disk_format': <DISK_FORMAT>,
+                 'container_format': <DISK_FORMAT>,
                  'size': <SIZE>}, ...
             ]}
         """
@@ -383,7 +385,6 @@ class Controller(wsgi.Controller):
             image_meta = registry.update_image_metadata(self.options,
                                                         id,
                                                         new_image_meta)
-
             if has_body:
                 self._upload_and_activate(req, image_meta)
 
