@@ -19,19 +19,29 @@
 """
 Upload an image into Glance
 
-Usage:
+Usage
+=====
 
-Raw:
+    Machine - Kernel outside of the image
+    -------------------------------------
 
-    glance-upload <filename> <name>
+        glance-upload --type=kernel <filename> <name>
+        glance-upload --type=ramdisk <filename> <name>
+        glance-upload --type=machine --kernel=KERNEL_ID --ramdisk=RAMDISK_ID \
+                         <filename> <name>
 
-Kernel-outside:
+    Raw - Kernel inside, raw image data
+    -----------------------------------
 
-    glance-upload --type=kernel <filename> <name>
-    glance-upload --type=ramdisk <filename> <name>
-    glance-upload --type=machine --kernel=KERNEL_ID --ramdisk=RAMDISK_ID \
-                     <filename> <name>
+        glance-upload --type=raw --kernel=nokernel --ramdisk=noramdisk \
+                         <filename> <name>
 
+
+    VHD - Kernel inside, data encoded with VHD format
+    -------------------------------------------------
+
+        glance-upload --type=vhd --kernel=nokernel --ramdisk=noramdisk \
+                         <filename> <name>
 """
 
 # FIXME(sirp): This can be merged into glance-admin when that becomes
@@ -70,14 +80,14 @@ def parse_args():
 
 def main():
     args = parse_args()
-    meta = {'name': args.name, 'type': args.type, 'is_public': True}
+    meta = {'name': args.name, 'type': args.type, 'is_public': True,
+            'properties': {}}
 
-    if args.type == 'machine':
-        if args.kernel and args.ramdisk:
-            meta['properties'] = {'kernel_id': args.kernel,
-                                  'ramdisk_id': args.ramdisk}
-        else:
-            die("kernel and ramdisk required for machine image")
+    if args.kernel:
+        meta['properties']['kernel_id'] = args.kernel
+
+    if args.ramdisk:
+        meta['properties']['ramdisk_id'] = args.ramdisk
 
     client = Client(args.host, args.port)
     with open(args.filename) as f:
