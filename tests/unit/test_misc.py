@@ -145,14 +145,6 @@ sql_idle_timeout = 3600
             self.assertEquals(0, exitcode)
             self.assertEquals('{"images": []}', out.strip())
 
-            cmd = "curl -X POST -H 'Content-Type: application/octet-stream' "\
-                  "-dinvalid http://0.0.0.0:%d/images" % api_port
-            ignored, out, err = execute(cmd)
-
-            self.assertTrue('Image type is required' in out,
-                            "Could not find 'Image type is required' "
-                            "in output: %s" % out)
-
             cmd = "./bin/glance-upload --port=%(api_port)d "\
                   "--type=invalid %(conf_file_name)s 'my image'" % locals()
 
