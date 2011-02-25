@@ -149,13 +149,12 @@ def _drop_protected_attrs(model_class, values):
             del values[attr]
 
 
-def validate_image(values, new=True):
+def validate_image(values):
     """
     Validates the incoming data and raises a Invalid exception
     if anything is out of order.
 
     :param values: Mapping of image metadata to check
-    :param new: Is this a new record?
     """
 
     status = values.get('status')

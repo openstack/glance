@@ -113,7 +113,6 @@ class Controller(wsgi.Controller):
                 in the 'id' field
 
         """
-        logger.debug("Got req.body: %r", req.body)
         image_data = json.loads(req.body)['image']
 
         # Ensure the image has a status set
@@ -143,7 +142,6 @@ class Controller(wsgi.Controller):
         :retval Returns the updated image information as a mapping,
 
         """
-        logger.debug("Got req.body: %r", req.body)
         image_data = json.loads(req.body)['image']
 
         context = None
