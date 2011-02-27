@@ -184,35 +184,6 @@ def stub_out_swift_backend(stubs):
               fake_swift_backend.get)
 
 
-def stub_out_registry(stubs):
-    """Stubs out the Registry registry with fake data returns.
-
-    The stubbed Registry always returns the following fixture::
-
-        {'files': [
-          {'location': 'file:///chunk0', 'size': 12345},
-          {'location': 'file:///chunk1', 'size': 1235}
-        ]}
-
-    :param stubs: Set of stubout stubs
-
-    """
-    class FakeRegistry(object):
-
-        DATA = \
-            {'files': [
-              {'location': 'file:///chunk0', 'size': 12345},
-              {'location': 'file:///chunk1', 'size': 1235}]}
-
-        @classmethod
-        def lookup(cls, _parsed_uri):
-            return cls.DATA
-
-    fake_registry_registry = FakeRegistry()
-    stubs.Set(glance.store.registries.Registry, 'lookup',
-              fake_registry_registry.lookup)
-
-
 def stub_out_registry_and_store_server(stubs):
     """
     Mocks calls to 127.0.0.1 on 9191 and 9292 for testing so
