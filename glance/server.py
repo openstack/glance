@@ -31,6 +31,7 @@ Configuration Options
 
 import json
 import logging
+import sys
 
 import routes
 from webob import Response
@@ -305,13 +306,18 @@ class Controller(wsgi.Controller):
         try:
             location = self._upload(req, image_meta)
             self._activate(req, image_meta, location)
-        except Exception, e:
+        except:  # unqualified b/c we're re-raising it
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self._safe_kill(req, image_meta)
             # NOTE(sirp): _safe_kill uses httplib which, in turn, uses
             # Eventlet's GreenSocket. Eventlet subsequently clears exceptions
-            # by calling `sys.exc_clear()`. This is why we have to `raise e`
-            # instead of `raise`
-            self._safe_kill(req, image_meta)
-            raise e
+            # by calling `sys.exc_clear()`.
+            #
+            # This is why we can't use a raise with no arguments here: our
+            # exception context was destroyed by Eventlet. To work around
+            # this, we need to 'memorize' the exception context, and then
+            # re-raise using 3-arg form after Eventlet has run
+            raise exc_type, exc_value, exc_traceback
 
     def create(self, req):
         """
