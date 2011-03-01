@@ -153,10 +153,8 @@ def validate_image(values):
     """
 
     image_type = values.get('type', None)
-    if not image_type:
-        msg = "Image type is required."
-        raise exception.Invalid(msg)
-    if image_type not in ('machine', 'kernel', 'ramdisk', 'raw', 'vhd'):
+    if image_type and image_type not in (
+        'machine', 'kernel', 'ramdisk', 'raw', 'vhd'):
         msg = "Invalid image type '%s' for image." % image_type
         raise exception.Invalid(msg)
     status = values.get('status', None)
