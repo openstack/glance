@@ -42,7 +42,7 @@ except ImportError:
 FIVE_KB = (5 * 1024)
 SWIFT_OPTIONS = {'verbose': True,
                  'debug': True,
-                 'swift_store_user': 'glance',
+                 'swift_store_user': 'user',
                  'swift_store_key': 'key',
                  'swift_store_auth_address': 'localhost:8080',
                  'swift_store_container': 'glance'}
@@ -53,11 +53,21 @@ SWIFT_OPTIONS = {'verbose': True,
 # thoroughly
 def stub_out_swift_common_client(stubs):
 
+    fixture_containers = ['glance']
     fixture_headers = {'glance/2':
                 {'content-length': FIVE_KB,
                  'etag': 'c2e5db72bd7fd153f53ede5da5a06de3'}}
     fixture_objects = {'glance/2':
                        StringIO.StringIO("*" * FIVE_KB)}
+
+    def fake_head_container(url, token, container, **kwargs):
+        if container not in fixture_containers:
+            msg = "No container %s found" % container
+            raise swift.common.client.ClientException(msg,
+                        http_status=httplib.NOT_FOUND)
+
+    def fake_put_container(url, token, container, **kwargs):
+        fixture_containers.append(container)
 
     def fake_put_object(url, token, container, name, contents, **kwargs):
         # PUT returns the ETag header for the newly-added object
@@ -122,6 +132,10 @@ def stub_out_swift_common_client(stubs):
     def fake_get_auth(self):
         return None, None
 
+    stubs.Set(swift.common.client,
+              'head_container', fake_head_container)
+    stubs.Set(swift.common.client,
+              'put_container', fake_put_container)
     stubs.Set(swift.common.client,
               'put_object', fake_put_object)
     stubs.Set(swift.common.client,
@@ -212,8 +226,65 @@ class TestSwiftBackend(unittest.TestCase):
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_swift_size, size)
 
-        url_pieces = urlparse.urlparse(
-            "swift://user:key@auth_address/glance/42")
+        url_pieces = urlparse.urlparse(expected_location)
+        new_image_swift = SwiftBackend.get(url_pieces)
+        new_image_contents = new_image_swift.getvalue()
+        new_image_swift_size = new_image_swift.len
+
+        self.assertEquals(expected_swift_contents, new_image_contents)
+        self.assertEquals(expected_swift_size, new_image_swift_size)
+
+    def test_add_no_container_no_create(self):
+        """
+        Tests that adding an image with a non-existing container
+        raises an appropriate exception
+        """
+        if not SWIFT_INSTALLED:
+            return
+        options = SWIFT_OPTIONS.copy()
+        options['swift_store_create_container_on_put'] = 'False'
+        options['swift_store_container'] = 'noexist'
+        image_swift = StringIO.StringIO("nevergonnamakeit")
+
+        # We check the exception text to ensure the container
+        # missing text is found in it, otherwise, we would have
+        # simply used self.assertRaises here
+        exception_caught = False
+        try:
+            SwiftBackend.add(3, image_swift, options)
+        except glance.store.BackendException, e:
+            exception_caught = True
+            self.assertTrue("container noexist does not exist "
+                            "in Swift" in str(e))
+        self.assertTrue(exception_caught)
+
+    def test_add_no_container_and_create(self):
+        """
+        Tests that adding an image with a non-existing container
+        creates the container automatically if flag is set
+        """
+        if not SWIFT_INSTALLED:
+            return
+        options = SWIFT_OPTIONS.copy()
+        options['swift_store_create_container_on_put'] = 'True'
+        options['swift_store_container'] = 'noexist'
+        expected_image_id = 42
+        expected_swift_size = 1024 * 5  # 5K
+        expected_swift_contents = "*" * expected_swift_size
+        expected_location = "swift://%s:%s@%s/%s/%s" % (
+            options['swift_store_user'],
+            options['swift_store_key'],
+            options['swift_store_auth_address'],
+            options['swift_store_container'],
+            expected_image_id)
+        image_swift = StringIO.StringIO(expected_swift_contents)
+
+        location, size = SwiftBackend.add(42, image_swift, options)
+
+        self.assertEquals(expected_location, location)
+        self.assertEquals(expected_swift_size, size)
+
+        url_pieces = urlparse.urlparse(expected_location)
         new_image_swift = SwiftBackend.get(url_pieces)
         new_image_contents = new_image_swift.getvalue()
         new_image_swift_size = new_image_swift.len
@@ -228,6 +299,7 @@ class TestSwiftBackend(unittest.TestCase):
         """
         if not SWIFT_INSTALLED:
             return
+
         image_swift = StringIO.StringIO("nevergonnamakeit")
         self.assertRaises(exception.Duplicate,
                           SwiftBackend.add,

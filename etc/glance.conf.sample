@@ -51,6 +51,9 @@ swift_store_account = glance
 # for storing images in Swift
 swift_store_container = glance
 
+# Do we create the container if it does not exist?
+swift_store_create_container_on_put = False
+
 [app:glance-registry]
 paste.app_factory = glance.registry.server:app_factory
 

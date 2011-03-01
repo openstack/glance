@@ -148,7 +148,30 @@ class SwiftBackend(glance.store.Backend):
                      "key=%(key)s)")
 
         try:
-            obj_etag = swift_conn.put_object(container, id, data)
+            swift_conn.head_container(container)
+        except Exception, e:
+            if e.http_status == httplib.NOT_FOUND:
+                add_container = config.get_option(options,
+                                    'swift_store_create_container_on_put',
+                                    type='bool', default=False)
+                if add_container:
+                    try:
+                        swift_conn.put_container(container)
+                    except Exception, e:
+                        msg = ("Failed to add container to Swift.\n"
+                               "Got error from Swift: %(e)s" % locals())
+                        raise glance.store.BackendException(msg)
+                else:
+                    msg = ("The container %(container)s does not exist in "
+                           "Swift. Please set the "
+                           "swift_store_create_container_on_put option"
+                           "to add container to Swift automatically."
+                           % locals())
+                    raise glance.store.BackendException(msg)
+
+        obj_name = str(id)
+        try:
+            obj_etag = swift_conn.put_object(container, obj_name, data)
 
             # NOTE: We return the user and key here! Have to because
             # location is used by the API server to return the actual
@@ -156,12 +179,12 @@ class SwiftBackend(glance.store.Backend):
             # the location attribute from GET /images/<ID> and
             # GET /images/details
             location = "swift://%(user)s:%(key)s@%(auth_address)s/"\
-                       "%(container)s/%(id)s" % locals()
+                       "%(container)s/%(obj_name)s" % locals()
 
             # We do a HEAD on the newly-added image to determine the size
             # of the image. A bit slow, but better than taking the word
             # of the user adding the image with size attribute in the metadata
-            resp_headers = swift_conn.head_object(container, id)
+            resp_headers = swift_conn.head_object(container, obj_name)
             size = 0
             # header keys are lowercased by Swift
             if 'content-length' in resp_headers:
@@ -175,7 +198,7 @@ class SwiftBackend(glance.store.Backend):
                 location = "swift://%s:%s@%s/%s/%s" % (user, key, auth_address,
                                                     container, id)
                 raise exception.Duplicate("Swift already has an image at "
-                                         "location %(location)s" % locals())
+                                          "location %(location)s" % locals())
             msg = ("Failed to add object to Swift.\n"
                    "Got error from Swift: %(e)s" % locals())
             raise glance.store.BackendException(msg)
