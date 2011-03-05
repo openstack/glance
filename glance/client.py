@@ -264,13 +264,17 @@ class Client(BaseClient):
         """
         Updates Glance's information about an image
         """
-        if image_meta:
-            if 'image' not in image_meta:
-                image_meta = dict(image=image_meta)
+        if image_meta is None:
+            image_meta = {}
 
-        headers = utils.image_meta_to_http_headers(image_meta or {})
+        headers = utils.image_meta_to_http_headers(image_meta)
 
-        body = image_data
+        if image_data:
+            body = image_data
+            headers['content-type'] = 'application/octet-stream'
+        else:
+            body = None
+
         res = self.do_request("PUT", "/images/%s" % image_id, body, headers)
         data = json.loads(res.read())
         return data['image']
