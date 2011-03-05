@@ -161,6 +161,7 @@ def validate_image(values):
     disk_format = values.get('disk_format')
     container_format = values.get('container_format')
 
+    status = values.get('status', None)
     if not status:
         msg = "Image status is required."
         raise exception.Invalid(msg)
