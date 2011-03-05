@@ -298,7 +298,7 @@ class TestGlanceAPI(unittest.TestCase):
 
     def test_image_meta(self):
         """Test for HEAD /images/<ID>"""
-        expected_headers = {'x-image-meta-id': 2,
+        expected_headers = {'x-image-meta-id': '2',
                             'x-image-meta-name': 'fake image #2'}
         req = webob.Request.blank("/images/2")
         req.method = 'HEAD'
