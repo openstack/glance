@@ -25,19 +25,11 @@ import unittest
 import urlparse
 
 import stubout
+import swift.common.client
 
 from glance.common import exception
-import glance.store.swift
-
-SwiftBackend = glance.store.swift.SwiftBackend
-
-SWIFT_INSTALLED = False
-
-try:
-    import swift.common.client
-    SWIFT_INSTALLED = True
-except ImportError:
-    print "Skipping Swift store tests since Swift is not installed."
+from glance.store import BackendException
+from glance.store.swift import SwiftBackend
 
 FIVE_KB = (5 * 1024)
 SWIFT_OPTIONS = {'verbose': True,
@@ -123,13 +115,10 @@ def stub_out_swift_common_client(stubs):
             del fixture_headers[fixture_key]
             del fixture_objects[fixture_key]
 
-    def fake_get_connection_class(*args):
-        return swift.common.client.Connection
-
-    def fake_http_connection(self):
+    def fake_http_connection(*args, **kwargs):
         return None
 
-    def fake_get_auth(self):
+    def fake_get_auth(*args, **kwargs):
         return None, None
 
     stubs.Set(swift.common.client,
@@ -144,12 +133,10 @@ def stub_out_swift_common_client(stubs):
               'head_object', fake_head_object)
     stubs.Set(swift.common.client,
               'get_object', fake_get_object)
-    stubs.Set(swift.common.client.Connection,
+    stubs.Set(swift.common.client,
               'get_auth', fake_get_auth)
-    stubs.Set(swift.common.client.Connection,
+    stubs.Set(swift.common.client,
               'http_connection', fake_http_connection)
-    stubs.Set(glance.store.swift,
-              'get_connection_class', fake_get_connection_class)
 
 
 class TestSwiftBackend(unittest.TestCase):
@@ -157,8 +144,7 @@ class TestSwiftBackend(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
-        if SWIFT_INSTALLED:
-            stub_out_swift_common_client(self.stubs)
+        stub_out_swift_common_client(self.stubs)
 
     def tearDown(self):
         """Clear the test environment"""
@@ -166,8 +152,6 @@ class TestSwiftBackend(unittest.TestCase):
 
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
-        if not SWIFT_INSTALLED:
-            return
         url_pieces = urlparse.urlparse(
             "swift://user:key@auth_address/glance/2")
         image_swift = SwiftBackend.get(url_pieces)
@@ -184,11 +168,9 @@ class TestSwiftBackend(unittest.TestCase):
         Test retrieval of an image with wrong expected_size param
         raises an exception
         """
-        if not SWIFT_INSTALLED:
-            return
         url_pieces = urlparse.urlparse(
             "swift://user:key@auth_address/glance/2")
-        self.assertRaises(glance.store.BackendException,
+        self.assertRaises(BackendException,
                           SwiftBackend.get,
                           url_pieces,
                           {'expected_size': 42})
@@ -198,8 +180,6 @@ class TestSwiftBackend(unittest.TestCase):
         Test that trying to retrieve a swift that doesn't exist
         raises an error
         """
-        if not SWIFT_INSTALLED:
-            return
         url_pieces = urlparse.urlparse(
             "swift://user:key@auth_address/noexist")
         self.assertRaises(exception.NotFound,
@@ -208,8 +188,6 @@ class TestSwiftBackend(unittest.TestCase):
 
     def test_add(self):
         """Test that we can add an image via the swift backend"""
-        if not SWIFT_INSTALLED:
-            return
         expected_image_id = 42
         expected_swift_size = 1024 * 5  # 5K
         expected_swift_contents = "*" * expected_swift_size
@@ -239,8 +217,6 @@ class TestSwiftBackend(unittest.TestCase):
         Tests that adding an image with a non-existing container
         raises an appropriate exception
         """
-        if not SWIFT_INSTALLED:
-            return
         options = SWIFT_OPTIONS.copy()
         options['swift_store_create_container_on_put'] = 'False'
         options['swift_store_container'] = 'noexist'
@@ -252,7 +228,7 @@ class TestSwiftBackend(unittest.TestCase):
         exception_caught = False
         try:
             SwiftBackend.add(3, image_swift, options)
-        except glance.store.BackendException, e:
+        except BackendException, e:
             exception_caught = True
             self.assertTrue("container noexist does not exist "
                             "in Swift" in str(e))
@@ -263,8 +239,6 @@ class TestSwiftBackend(unittest.TestCase):
         Tests that adding an image with a non-existing container
         creates the container automatically if flag is set
         """
-        if not SWIFT_INSTALLED:
-            return
         options = SWIFT_OPTIONS.copy()
         options['swift_store_create_container_on_put'] = 'True'
         options['swift_store_container'] = 'noexist'
@@ -297,9 +271,6 @@ class TestSwiftBackend(unittest.TestCase):
         Tests that adding an image with an existing identifier
         raises an appropriate exception
         """
-        if not SWIFT_INSTALLED:
-            return
-
         image_swift = StringIO.StringIO("nevergonnamakeit")
         self.assertRaises(exception.Duplicate,
                           SwiftBackend.add,
@@ -309,8 +280,6 @@ class TestSwiftBackend(unittest.TestCase):
         """
         Test we can delete an existing image in the swift store
         """
-        if not SWIFT_INSTALLED:
-            return
         url_pieces = urlparse.urlparse(
             "swift://user:key@auth_address/glance/2")
 
@@ -325,8 +294,6 @@ class TestSwiftBackend(unittest.TestCase):
         Test that trying to delete a swift that doesn't exist
         raises an error
         """
-        if not SWIFT_INSTALLED:
-            return
         url_pieces = urlparse.urlparse("swift://user:key@auth_address/noexist")
         self.assertRaises(exception.NotFound,
                           SwiftBackend.delete,

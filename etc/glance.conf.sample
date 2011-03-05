@@ -34,7 +34,9 @@ filesystem_store_datadir=/var/lib/glance/images/
 # ============ Swift Store Options =============================
 
 # Address where the Swift authentication service lives
-swift_store_auth_address = 127.0.0.1:8080
+# The auth address should be in the form:
+#   <DOMAIN>[:<PORT>]/<VERSION>/<ACCOUNT>
+swift_store_auth_address = 127.0.0.1:8080/v1.0/glance-account
 
 # User to authenticate against the Swift authentication service
 swift_store_user = jdoe
@@ -42,10 +44,6 @@ swift_store_user = jdoe
 # Auth key for the user authenticating against the
 # Swift authentication service
 swift_store_key = a86850deb2742ec3cb41518e26aa2d89
-
-# Account to use for the user:key Swift auth combination
-# for storing images in Swift
-swift_store_account = glance
 
 # Container within the account that the account should use
 # for storing images in Swift

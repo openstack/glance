@@ -17,9 +17,13 @@
 
 """Storage backend for SWIFT"""
 
+from __future__ import absolute_import
+
 import httplib
 import logging
 import urllib
+
+from swift.common.client import Connection, ClientException
 
 from glance.common import config
 from glance.common import exception
@@ -54,18 +58,13 @@ class SwiftBackend(glance.store.Backend):
         # TODO(sirp): snet=False for now, however, if the instance of
         # swift we're talking to is within our same region, we should set
         # snet=True
-        connection_class = get_connection_class(conn_class)
-
-        swift_conn = connection_class(
+        swift_conn = Connection(
             authurl=authurl, user=user, key=key, snet=False)
 
         try:
             (resp_headers, resp_body) = swift_conn.get_object(
                 container=container, obj=obj, resp_chunk_size=cls.CHUNKSIZE)
-
-        # TODO(jaypipes) use real exceptions when remove all the cruft
-        # around importing Swift stuff...
-        except Exception, e:
+        except ClientException, e:
             if e.http_status == httplib.NOT_FOUND:
                 location = "swift://%s:%s@%s/%s/%s" % (user, key, authurl,
                                                     container, obj)
@@ -139,35 +138,14 @@ class SwiftBackend(glance.store.Backend):
                    "options.")
             raise glance.store.BackendException(msg)
 
-        connection_class = get_connection_class(conn_class)
-        swift_conn = connection_class(authurl=full_auth_address, user=user,
+        swift_conn = Connection(authurl=full_auth_address, user=user,
                                       key=key, snet=False)
 
         logger.debug("Adding image object to Swift using "
                      "(auth_address=%(auth_address)s, user=%(user)s, "
-                     "key=%(key)s)")
+                     "key=%(key)s)" % locals())
 
-        try:
-            swift_conn.head_container(container)
-        except Exception, e:
-            if e.http_status == httplib.NOT_FOUND:
-                add_container = config.get_option(options,
-                                    'swift_store_create_container_on_put',
-                                    type='bool', default=False)
-                if add_container:
-                    try:
-                        swift_conn.put_container(container)
-                    except Exception, e:
-                        msg = ("Failed to add container to Swift.\n"
-                               "Got error from Swift: %(e)s" % locals())
-                        raise glance.store.BackendException(msg)
-                else:
-                    msg = ("The container %(container)s does not exist in "
-                           "Swift. Please set the "
-                           "swift_store_create_container_on_put option"
-                           "to add container to Swift automatically."
-                           % locals())
-                    raise glance.store.BackendException(msg)
+        create_container_if_missing(container, swift_conn, options)
 
         obj_name = str(id)
         try:
@@ -190,10 +168,7 @@ class SwiftBackend(glance.store.Backend):
             if 'content-length' in resp_headers:
                 size = int(resp_headers['content-length'])
             return (location, size)
-
-        # TODO(jaypipes) use real exceptions when remove all the cruft
-        # around importing Swift stuff...
-        except Exception, e:
+        except ClientException, e:
             if e.http_status == httplib.CONFLICT:
                 location = "swift://%s:%s@%s/%s/%s" % (user, key, auth_address,
                                                     container, id)
@@ -214,17 +189,12 @@ class SwiftBackend(glance.store.Backend):
         # TODO(sirp): snet=False for now, however, if the instance of
         # swift we're talking to is within our same region, we should set
         # snet=True
-        connection_class = get_connection_class(conn_class)
-
-        swift_conn = connection_class(
+        swift_conn = Connection(
             authurl=authurl, user=user, key=key, snet=False)
 
         try:
             swift_conn.delete_object(container, obj)
-
-        # TODO(jaypipes) use real exceptions when remove all the cruft
-        # around importing Swift stuff...
-        except Exception, e:
+        except ClientException, e:
             if e.http_status == httplib.NOT_FOUND:
                 location = "swift://%s:%s@%s/%s/%s" % (user, key, authurl,
                                                     container, obj)
@@ -266,8 +236,33 @@ class SwiftBackend(glance.store.Backend):
         return user, key, authurl, container, obj
 
 
-def get_connection_class(conn_class):
-    if not conn_class:
-        import swift.common.client
-        conn_class = swift.common.client.Connection
-    return conn_class
+def create_container_if_missing(container, swift_conn, options):
+    """
+    Creates a missing container in Swift if the
+    ``swift_store_create_container_on_put`` option is set.
+
+    :param container: Name of container to create
+    :param swift_conn: Connection to Swift
+    :param options: Option mapping
+    """
+    try:
+        swift_conn.head_container(container)
+    except ClientException, e:
+        if e.http_status == httplib.NOT_FOUND:
+            add_container = config.get_option(options,
+                                'swift_store_create_container_on_put',
+                                type='bool', default=False)
+            if add_container:
+                try:
+                    swift_conn.put_container(container)
+                except ClientException, e:
+                    msg = ("Failed to add container to Swift.\n"
+                           "Got error from Swift: %(e)s" % locals())
+                    raise glance.store.BackendException(msg)
+            else:
+                msg = ("The container %(container)s does not exist in "
+                       "Swift. Please set the "
+                       "swift_store_create_container_on_put option"
+                       "to add container to Swift automatically."
+                       % locals())
+                raise glance.store.BackendException(msg)

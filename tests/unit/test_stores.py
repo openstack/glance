@@ -22,7 +22,6 @@ import unittest
 import urlparse
 
 from glance.store.s3 import S3Backend
-from glance.store.swift import SwiftBackend
 from glance.store import Backend, BackendException, get_from_backend
 from tests import stubs
 
