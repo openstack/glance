@@ -17,7 +17,7 @@
 Disk and Container Formats
 ==========================
 
-When adding an image to Glance, you are required to specify what the virtual
+When adding an image to Glance, you are may specify what the virtual
 machine image's *disk format* and *container format* are.
 
 This document explains exactly what these formats are.

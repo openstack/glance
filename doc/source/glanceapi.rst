@@ -260,14 +260,14 @@ The list of metadata headers that Glance accepts are listed below.
 
 * ``x-image-meta-disk-format``
 
-  This header is required. Valid values are one of ``aki``, ``ari``, ``ami``,
+  This header is optional. Valid values are one of ``aki``, ``ari``, ``ami``,
   ``raw``, ``vhd``, ``vdi``, ``qcow2``, or ``vmdk``.
 
   For more information, see :doc:`About Disk and Container Formats <formats>`
 
 * ``x-image-meta-container-format``
 
-  This header is required. Valid values are one of ``aki``, ``ari``, ``ami``,
+  This header is optional. Valid values are one of ``aki``, ``ari``, ``ami``,
   ``bare``, or ``ovf``.
 
   For more information, see :doc:`About Disk and Container Formats <formats>`

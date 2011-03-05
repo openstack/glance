@@ -165,22 +165,16 @@ def validate_image(values):
     if not status:
         msg = "Image status is required."
         raise exception.Invalid(msg)
-    if not disk_format:
-        msg = "Image disk format is required."
-        raise exception.Invalid(msg)
-    if not container_format:
-        msg = "Image container format is required."
-        raise exception.Invalid(msg)
 
     if status not in STATUSES:
         msg = "Invalid image status '%s' for image." % status
         raise exception.Invalid(msg)
 
-    if disk_format not in DISK_FORMATS:
+    if disk_format and disk_format not in DISK_FORMATS:
         msg = "Invalid disk format '%s' for image." % disk_format
         raise exception.Invalid(msg)
 
-    if container_format not in CONTAINER_FORMATS:
+    if container_format and container_format not in CONTAINER_FORMATS:
         msg = "Invalid container format '%s' for image." % container_format
         raise exception.Invalid(msg)
 
@@ -205,6 +199,14 @@ def _image_update(context, values, image_id):
     session = get_session()
     with session.begin():
 
+        # Remove the properties passed in the values mapping. We
+        # handle properties separately from base image attributes,
+        # and leaving properties in the values mapping will cause
+        # a SQLAlchemy model error because SQLAlchemy expects the
+        # properties attribute of an Image model to be a list and
+        # not a dict.
+        properties = values.pop('properties', {})
+
         if image_id:
             image_ref = image_get(context, image_id, session=session)
         else:
@@ -212,7 +214,6 @@ def _image_update(context, values, image_id):
                 values['size'] = int(values['size'])
 
             values['is_public'] = bool(values.get('is_public', False))
-            properties = values.pop('properties', {})
             image_ref = models.Image()
 
         _drop_protected_attrs(models.Image, values)

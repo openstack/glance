@@ -146,29 +146,14 @@ sql_idle_timeout = 3600
             self.assertEquals('{"images": []}', out.strip())
 
             cmd = "curl -X POST -H 'Content-Type: application/octet-stream' "\
-                  "-dinvalid http://0.0.0.0:%d/images" % api_port
+                  "-H 'X-Image-Meta-Name: ImageName' "\
+                  "-H 'X-Image-Meta-Disk-Format: Invalid' "\
+                  "http://0.0.0.0:%d/images" % api_port
             ignored, out, err = execute(cmd)
 
-            self.assertTrue('Image disk format is required' in out,
-                            "Could not find 'Image disk format is required' "
+            self.assertTrue('Invalid disk format' in out,
+                            "Could not find 'Invalid disk format' "
                             "in output: %s" % out)
-
-            cmd = "./bin/glance-upload --port=%(api_port)d "\
-                  "--type=invalid %(conf_file_name)s "\
-                  "'my image'" % locals()
-
-            # Normally, we would simply self.assertRaises() here, but
-            # we also want to check that the Invalid image type is in
-            # the exception text...
-            hit_exception = False
-            try:
-                ignored, out, err = execute(cmd)
-            except RuntimeError, e:
-                hit_exception = True
-                self.assertTrue('Image disk format is required' in str(e),
-                                "Could not find 'Image disk format is "
-                                "required' in output: %s" % out)
-            self.assertTrue(hit_exception)
 
             # Spin down the API and default registry server
             cmd = "./bin/glance-control api stop "\

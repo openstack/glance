@@ -154,8 +154,10 @@ class BaseClient(object):
                 raise exception.Duplicate(res.read())
             elif status_code == httplib.BAD_REQUEST:
                 raise exception.Invalid(res.read())
+            elif status_code == httplib.INTERNAL_SERVER_ERROR:
+                raise Exception("Internal Server error: %s" % res.read())
             else:
-                raise Exception("Unknown error occurred! %s" % res.__dict__)
+                raise Exception("Unknown error occurred! %s" % res.read())
 
         except (socket.error, IOError), e:
             raise ClientConnectionError("Unable to connect to "
