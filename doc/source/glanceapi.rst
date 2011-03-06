@@ -41,7 +41,8 @@ mapping in the following format::
   {'images': [
     {'uri': 'http://glance.example.com/images/1',
      'name': 'Ubuntu 10.04 Plain',
-     'type': 'kernel',
+     'disk_format': 'vhd',
+     'container_format': 'ovf',
      'size': '5368709120'}
     ...]}
 
@@ -63,9 +64,10 @@ JSON-encoded mapping in the following format::
   {'images': [
     {'uri': 'http://glance.example.com/images/1',
      'name': 'Ubuntu 10.04 Plain 5GB',
-     'type': 'kernel',
+     'disk_format': 'vhd',
+     'container_format': 'ovf',
      'size': '5368709120',
-     'store': 'swift',
+     'location': 'swift://account:key/container/image.tar.gz.0',
      'created_at': '2010-02-03 09:34:01',
      'updated_at': '2010-02-03 09:34:01',
      'deleted_at': '',
@@ -111,14 +113,15 @@ following shows an example of the HTTP headers returned from the above
 
   x-image-meta-uri              http://glance.example.com/images/1
   x-image-meta-name             Ubuntu 10.04 Plain 5GB
-  x-image-meta-type             kernel
+  x-image-meta-disk-format      vhd
+  x-image-meta-container-format ovf
   x-image-meta-size             5368709120
-  x-image-meta-store            swift
+  x-image-meta-location         swift://account:key/container/image.tar.gz.0
   x-image-meta-created_at       2010-02-03 09:34:01
   x-image-meta-updated_at       2010-02-03 09:34:01
   x-image-meta-deleted_at
   x-image-meta-status           available
-  x-image-meta-is_public        True
+  x-image-meta-is-public        True
   x-image-meta-property-distro  Ubuntu 10.04 LTS
 
 .. note::
@@ -160,14 +163,15 @@ returned from the above ``GET`` request::
 
   x-image-meta-uri              http://glance.example.com/images/1
   x-image-meta-name             Ubuntu 10.04 Plain 5GB
-  x-image-meta-type             kernel
+  x-image-meta-disk-format      vhd
+  x-image-meta-container-format ovf
   x-image-meta-size             5368709120
-  x-image-meta-store            swift
+  x-image-meta-location         swift://account:key/container/image.tar.gz.0
   x-image-meta-created_at       2010-02-03 09:34:01
   x-image-meta-updated_at       2010-02-03 09:34:01
   x-image-meta-deleted_at
   x-image-meta-status           available
-  x-image-meta-is_public        True
+  x-image-meta-is-public        True
   x-image-meta-property-distro  Ubuntu 10.04 LTS
 
 .. note::
@@ -254,10 +258,19 @@ The list of metadata headers that Glance accepts are listed below.
   store that is marked default. See the configuration option ``default_store``
   for more information.
 
-* ``x-image-meta-type``
+* ``x-image-meta-disk-format``
 
-  This header is required. Valid values are one of ``kernel``, ``machine``,
-  ``raw``, or ``ramdisk``.
+  This header is optional. Valid values are one of ``aki``, ``ari``, ``ami``,
+  ``raw``, ``vhd``, ``vdi``, ``qcow2``, or ``vmdk``.
+
+  For more information, see :doc:`About Disk and Container Formats <formats>`
+
+* ``x-image-meta-container-format``
+
+  This header is optional. Valid values are one of ``aki``, ``ari``, ``ami``,
+  ``bare``, or ``ovf``.
+
+  For more information, see :doc:`About Disk and Container Formats <formats>`
 
 * ``x-image-meta-size``
 
@@ -271,7 +284,7 @@ The list of metadata headers that Glance accepts are listed below.
   When not present, Glance will calculate the image's size based on the size
   of the request body.
 
-* ``x-image-meta-is_public``
+* ``x-image-meta-is-public``
 
   This header is optional.
 
