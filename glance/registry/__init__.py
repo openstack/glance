@@ -29,8 +29,7 @@ logger = logging.getLogger('glance.registry')
 def get_registry_client(options):
     host = options['registry_host']
     port = int(options['registry_port'])
-    return client.RegistryClient(options['registry_host'],
-                                 int(options['registry_port']))
+    return client.RegistryClient(host, port)
 
 
 def get_images_list(options):
