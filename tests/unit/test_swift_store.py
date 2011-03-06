@@ -29,7 +29,7 @@ import swift.common.client
 
 from glance.common import exception
 from glance.store import BackendException
-from glance.store.swift import SwiftBackend
+from glance.store.swift import SwiftBackend, format_swift_location
 
 FIVE_KB = (5 * 1024)
 SWIFT_OPTIONS = {'verbose': True,
@@ -191,7 +191,7 @@ class TestSwiftBackend(unittest.TestCase):
         expected_image_id = 42
         expected_swift_size = 1024 * 5  # 5K
         expected_swift_contents = "*" * expected_swift_size
-        expected_location = "swift://%s:%s@%s/%s/%s" % (
+        expected_location = format_swift_location(
             SWIFT_OPTIONS['swift_store_user'],
             SWIFT_OPTIONS['swift_store_key'],
             SWIFT_OPTIONS['swift_store_auth_address'],
@@ -245,7 +245,7 @@ class TestSwiftBackend(unittest.TestCase):
         expected_image_id = 42
         expected_swift_size = 1024 * 5  # 5K
         expected_swift_contents = "*" * expected_swift_size
-        expected_location = "swift://%s:%s@%s/%s/%s" % (
+        expected_location = format_swift_location(
             options['swift_store_user'],
             options['swift_store_key'],
             options['swift_store_auth_address'],
