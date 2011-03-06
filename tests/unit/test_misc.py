@@ -23,6 +23,8 @@ import tempfile
 import time
 import unittest
 
+from glance import utils
+
 
 def execute(cmd):
     env = os.environ.copy()
@@ -65,6 +67,46 @@ class TestMiscellaneous(unittest.TestCase):
                 except:
                     pass  # Ignore if the process group is dead
                 os.unlink(pid_file)
+
+    def test_headers_are_unicode(self):
+        """
+        Verifies that the headers returned by conversion code are unicode.
+
+        Headers are passed via http in non-testing mode, which automatically
+        converts them to unicode. Verifying that the method does the
+        conversion proves that we aren't passing data that works in tests
+        but will fail in production.
+        """
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'}}
+        headers = utils.image_meta_to_http_headers(fixture)
+        for k, v in headers.iteritems():
+            self.assert_(isinstance(v, unicode), "%s is not unicode" % v)
+
+    def test_data_passed_properly_through_headers(self):
+        """
+        Verifies that data is the same after being passed through headers
+        """
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'type': 'kernel',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'}}
+        headers = utils.image_meta_to_http_headers(fixture)
+
+        class FakeResponse():
+            pass
+
+        response = FakeResponse()
+        response.headers = headers
+        result = utils.get_image_meta_from_headers(response)
+        for k, v in fixture.iteritems():
+            self.assertEqual(v, result[k])
 
     def test_exception_not_eaten_from_registry_to_api(self):
         """
@@ -146,29 +188,14 @@ sql_idle_timeout = 3600
             self.assertEquals('{"images": []}', out.strip())
 
             cmd = "curl -X POST -H 'Content-Type: application/octet-stream' "\
-                  "-dinvalid http://0.0.0.0:%d/images" % api_port
+                  "-H 'X-Image-Meta-Name: ImageName' "\
+                  "-H 'X-Image-Meta-Disk-Format: Invalid' "\
+                  "http://0.0.0.0:%d/images" % api_port
             ignored, out, err = execute(cmd)
 
-            self.assertTrue('Image disk format is required' in out,
-                            "Could not find 'Image disk format is required' "
+            self.assertTrue('Invalid disk format' in out,
+                            "Could not find 'Invalid disk format' "
                             "in output: %s" % out)
-
-            cmd = "./bin/glance-upload --port=%(api_port)d "\
-                  "--type=invalid %(conf_file_name)s "\
-                  "'my image'" % locals()
-
-            # Normally, we would simply self.assertRaises() here, but
-            # we also want to check that the Invalid image type is in
-            # the exception text...
-            hit_exception = False
-            try:
-                ignored, out, err = execute(cmd)
-            except RuntimeError, e:
-                hit_exception = True
-                self.assertTrue('Image disk format is required' in str(e),
-                                "Could not find 'Image disk format is "
-                                "required' in output: %s" % out)
-            self.assertTrue(hit_exception)
 
             # Spin down the API and default registry server
             cmd = "./bin/glance-control api stop "\

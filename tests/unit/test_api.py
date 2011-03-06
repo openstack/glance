@@ -350,20 +350,6 @@ class TestGlanceAPI(unittest.TestCase):
         stubs.clean_out_fake_filesystem_backend()
         self.stubs.UnsetAll()
 
-    def test_missing_disk_format(self):
-        fixture_headers = {'x-image-meta-store': 'bad',
-                   'x-image-meta-name': 'bogus',
-                   'x-image-meta-location': 'http://example.com/image.tar.gz'}
-
-        req = webob.Request.blank("/images")
-        req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
-            req.headers[k] = v
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
-        self.assertTrue('Image disk format is required' in res.body)
-
     def test_bad_disk_format(self):
         fixture_headers = {'x-image-meta-store': 'bad',
                    'x-image-meta-name': 'bogus',
@@ -379,21 +365,6 @@ class TestGlanceAPI(unittest.TestCase):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
         self.assertTrue('Invalid disk format' in res.body, res.body)
-
-    def test_missing_container_format(self):
-        fixture_headers = {'x-image-meta-store': 'bad',
-                   'x-image-meta-name': 'bogus',
-                   'x-image-meta-location': 'http://example.com/image.tar.gz',
-                   'x-image-meta-disk-format': 'vhd'}
-
-        req = webob.Request.blank("/images")
-        req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
-            req.headers[k] = v
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
-        self.assertTrue('Image container format is required' in res.body)
 
     def test_bad_container_format(self):
         fixture_headers = {'x-image-meta-store': 'bad',
@@ -474,7 +445,7 @@ class TestGlanceAPI(unittest.TestCase):
 
     def test_image_meta(self):
         """Test for HEAD /images/<ID>"""
-        expected_headers = {'x-image-meta-id': 2,
+        expected_headers = {'x-image-meta-id': '2',
                             'x-image-meta-name': 'fake image #2'}
         req = webob.Request.blank("/images/2")
         req.method = 'HEAD'

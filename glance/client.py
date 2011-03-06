@@ -154,8 +154,10 @@ class BaseClient(object):
                 raise exception.Duplicate(res.read())
             elif status_code == httplib.BAD_REQUEST:
                 raise exception.Invalid(res.read())
+            elif status_code == httplib.INTERNAL_SERVER_ERROR:
+                raise Exception("Internal Server error: %s" % res.read())
             else:
-                raise Exception("Unknown error occurred! %s" % res.__dict__)
+                raise Exception("Unknown error occurred! %s" % res.read())
 
         except (socket.error, IOError), e:
             raise ClientConnectionError("Unable to connect to "
@@ -262,10 +264,17 @@ class Client(BaseClient):
         """
         Updates Glance's information about an image
         """
+        if image_meta is None:
+            image_meta = {}
 
-        headers = utils.image_meta_to_http_headers(image_meta or {})
+        headers = utils.image_meta_to_http_headers(image_meta)
 
-        body = image_data
+        if image_data:
+            body = image_data
+            headers['content-type'] = 'application/octet-stream'
+        else:
+            body = None
+
         res = self.do_request("PUT", "/images/%s" % image_id, body, headers)
         data = json.loads(res.read())
         return data['image']
