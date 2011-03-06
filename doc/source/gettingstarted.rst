@@ -78,4 +78,6 @@ Glance registry servers are servers that conform to the Glance Registry API.
 Glance ships with a reference implementation of a registry server that
 complies with this API (``glance-registry``).
 
-For more details on Glance's architecture see :doc:`here <architecture>`
+For more details on Glance's architecture see :doc:`here <architecture>`. For
+more information on what a Glance registry server is, see
+:doc:`here <registries>`.

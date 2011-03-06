@@ -83,7 +83,6 @@ class Controller(wsgi.Controller):
             * id -- The opaque image identifier
             * name -- The name of the image
             * size -- Size of image data in bytes
-            * type -- One of 'kernel', 'ramdisk', 'raw', or 'machine'
 
         :param request: The WSGI/Webob Request object
         :retval The response body is a mapping of the following form::
@@ -91,8 +90,7 @@ class Controller(wsgi.Controller):
             {'images': [
                 {'id': <ID>,
                  'name': <NAME>,
-                 'size': <SIZE>,
-                 'type': <TYPE>}, ...
+                 'size': <SIZE>}, ...
             ]}
         """
         images = registry.get_images_list(self.options)
@@ -109,7 +107,8 @@ class Controller(wsgi.Controller):
                 {'id': <ID>,
                  'name': <NAME>,
                  'size': <SIZE>,
-                 'type': <TYPE>,
+                 'disk_format': <DISK_FORMAT>,
+                 'container_format': <CONTAINER_FORMAT>,
                  'store': <STORE>,
                  'status': <STATUS>,
                  'created_at': <TIMESTAMP>,

@@ -88,6 +88,9 @@ class ModelBase(object):
     def items(self):
         return self.__dict__.items()
 
+    def to_dict(self):
+        return self.__dict__.copy()
+
 
 class Image(BASE, ModelBase):
     """Represents an image in the datastore"""
@@ -95,7 +98,8 @@ class Image(BASE, ModelBase):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
-    type = Column(String(30))
+    disk_format = Column(String(20))
+    container_format = Column(String(20))
     size = Column(Integer)
     status = Column(String(30), nullable=False)
     is_public = Column(Boolean, nullable=False, default=False)

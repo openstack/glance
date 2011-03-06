@@ -340,7 +340,8 @@ def stub_out_registry_db_image_api(stubs):
             {'id': 1,
                 'name': 'fake image #1',
                 'status': 'active',
-                'type': 'kernel',
+                'disk_format': 'ami',
+                'container_format': 'ami',
                 'is_public': False,
                 'created_at': datetime.datetime.utcnow(),
                 'updated_at': datetime.datetime.utcnow(),
@@ -348,11 +349,14 @@ def stub_out_registry_db_image_api(stubs):
                 'deleted': False,
                 'size': 13,
                 'location': "swift://user:passwd@acct/container/obj.tar.0",
-                'properties': []},
+             'properties': [{'key': 'type',
+                             'value': 'kernel',
+                             'deleted': False}]},
             {'id': 2,
                 'name': 'fake image #2',
                 'status': 'active',
-                'type': 'kernel',
+                'disk_format': 'vhd',
+                'container_format': 'ovf',
                 'is_public': True,
                 'created_at': datetime.datetime.utcnow(),
                 'updated_at': datetime.datetime.utcnow(),
@@ -361,8 +365,6 @@ def stub_out_registry_db_image_api(stubs):
                 'size': 19,
                 'location': "file:///tmp/glance-tests/2",
                 'properties': []}]
-
-        VALID_STATUSES = ('active', 'killed', 'queued', 'saving')
 
         def __init__(self):
             self.images = FakeDatastore.FIXTURES
@@ -376,12 +378,7 @@ def stub_out_registry_db_image_api(stubs):
                 raise exception.Duplicate("Duplicate image id: %s" %
                                           values['id'])
 
-            if 'status' not in values.keys():
-                values['status'] = 'active'
-            else:
-                if not values['status'] in self.VALID_STATUSES:
-                    raise exception.Invalid("Invalid status '%s' for image" %
-                                            values['status'])
+            glance.registry.db.api.validate_image(values)
 
             values['size'] = values.get('size', 0)
             values['deleted'] = False
@@ -393,7 +390,7 @@ def stub_out_registry_db_image_api(stubs):
             props = []
 
             if 'properties' in values.keys():
-                for k, v in values['properties'].iteritems():
+                for k, v in values['properties'].items():
                     p = {}
                     p['key'] = k
                     p['value'] = v
@@ -411,10 +408,14 @@ def stub_out_registry_db_image_api(stubs):
 
         def image_update(self, _context, image_id, values):
 
+            image = self.image_get(_context, image_id)
+            copy_image = image.copy()
+            copy_image.update(values)
+            glance.registry.db.api.validate_image(copy_image)
             props = []
 
             if 'properties' in values.keys():
-                for k, v in values['properties'].iteritems():
+                for k, v in values['properties'].items():
                     p = {}
                     p['key'] = k
                     p['value'] = v
@@ -426,7 +427,6 @@ def stub_out_registry_db_image_api(stubs):
 
             values['properties'] = props
 
-            image = self.image_get(_context, image_id)
             image.update(values)
             return image
 
@@ -439,9 +439,8 @@ def stub_out_registry_db_image_api(stubs):
             images = [i for i in self.images if str(i['id']) == str(image_id)]
 
             if len(images) != 1 or images[0]['deleted']:
-                new_exc = exception.NotFound("No model for id %s %s" %
-                                             (image_id, str(self.images)))
-                raise new_exc.__class__, new_exc, sys.exc_info()[2]
+                raise exception.NotFound("No model for id %s %s" %
+                                         (image_id, str(self.images)))
             else:
                 return images[0]
 

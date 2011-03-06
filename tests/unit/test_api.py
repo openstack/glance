@@ -85,7 +85,8 @@ class TestRegistryAPI(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'status': 'active'}
 
         req = webob.Request.blank('/images/detail')
@@ -103,7 +104,8 @@ class TestRegistryAPI(unittest.TestCase):
         """Tests that the /images POST registry API creates the image"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel'}
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf'}
 
         req = webob.Request.blank('/images')
 
@@ -125,12 +127,64 @@ class TestRegistryAPI(unittest.TestCase):
         # Test status was updated properly
         self.assertEquals('active', res_dict['image']['status'])
 
+    def test_create_image_with_bad_container_format(self):
+        """Tests proper exception is raised if a bad disk_format is set"""
+        fixture = {'id': 3,
+                   'name': 'fake public image',
+                   'is_public': True,
+                   'disk_format': 'vhd',
+                   'container_format': 'invalid'}
+
+        req = webob.Request.blank('/images')
+
+        req.method = 'POST'
+        req.body = json.dumps(dict(image=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertTrue('Invalid container format' in res.body)
+
+    def test_create_image_with_bad_disk_format(self):
+        """Tests proper exception is raised if a bad disk_format is set"""
+        fixture = {'id': 3,
+                   'name': 'fake public image',
+                   'is_public': True,
+                   'disk_format': 'invalid',
+                   'container_format': 'ovf'}
+
+        req = webob.Request.blank('/images')
+
+        req.method = 'POST'
+        req.body = json.dumps(dict(image=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertTrue('Invalid disk format' in res.body)
+
+    def test_create_image_with_mismatched_formats(self):
+        """Tests that exception raised for bad matching disk and container
+        formats"""
+        fixture = {'name': 'fake public image #3',
+                   'container_format': 'aki',
+                   'disk_format': 'ari'}
+
+        req = webob.Request.blank('/images')
+
+        req.method = 'POST'
+        req.body = json.dumps(dict(image=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertTrue('Invalid mix of disk and container formats'
+                        in res.body)
+
     def test_create_image_with_bad_status(self):
         """Tests proper exception is raised if a bad status is set"""
         fixture = {'id': 3,
                    'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
                    'status': 'bad status'}
 
         req = webob.Request.blank('/images')
@@ -140,11 +194,12 @@ class TestRegistryAPI(unittest.TestCase):
 
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertTrue('Invalid image status' in res.body)
 
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
-                   'type': 'ramdisk'}
+                   'disk_format': 'raw'}
 
         req = webob.Request.blank('/images/2')
 
@@ -163,11 +218,7 @@ class TestRegistryAPI(unittest.TestCase):
     def test_update_image_not_existing(self):
         """Tests proper exception is raised if attempt to update non-existing
         image"""
-        fixture = {'id': 3,
-                   'name': 'fake public image',
-                   'is_public': True,
-                   'type': 'kernel',
-                   'status': 'bad status'}
+        fixture = {'status': 'killed'}
 
         req = webob.Request.blank('/images/3')
 
@@ -177,6 +228,60 @@ class TestRegistryAPI(unittest.TestCase):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int,
                           webob.exc.HTTPNotFound.code)
+
+    def test_update_image_with_bad_status(self):
+        """Tests that exception raised trying to set a bad status"""
+        fixture = {'status': 'invalid'}
+
+        req = webob.Request.blank('/images/2')
+
+        req.method = 'PUT'
+        req.body = json.dumps(dict(image=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertTrue('Invalid image status' in res.body)
+
+    def test_update_image_with_bad_disk_format(self):
+        """Tests that exception raised trying to set a bad disk_format"""
+        fixture = {'disk_format': 'invalid'}
+
+        req = webob.Request.blank('/images/2')
+
+        req.method = 'PUT'
+        req.body = json.dumps(dict(image=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertTrue('Invalid disk format' in res.body)
+
+    def test_update_image_with_bad_container_format(self):
+        """Tests that exception raised trying to set a bad container_format"""
+        fixture = {'container_format': 'invalid'}
+
+        req = webob.Request.blank('/images/2')
+
+        req.method = 'PUT'
+        req.body = json.dumps(dict(image=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertTrue('Invalid container format' in res.body)
+
+    def test_update_image_with_mismatched_formats(self):
+        """Tests that exception raised for bad matching disk and container
+        formats"""
+        fixture = {'container_format': 'ari'}
+
+        req = webob.Request.blank('/images/2')  # Image 2 has disk format 'vhd'
+
+        req.method = 'PUT'
+        req.body = json.dumps(dict(image=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertTrue('Invalid mix of disk and container formats'
+                        in res.body)
 
     def test_delete_image(self):
         """Tests that the /images DELETE registry API deletes the image"""
@@ -239,10 +344,44 @@ class TestGlanceAPI(unittest.TestCase):
         stubs.clean_out_fake_filesystem_backend()
         self.stubs.UnsetAll()
 
+    def test_bad_disk_format(self):
+        fixture_headers = {'x-image-meta-store': 'bad',
+                   'x-image-meta-name': 'bogus',
+                   'x-image-meta-location': 'http://example.com/image.tar.gz',
+                   'x-image-meta-disk-format': 'invalid',
+                   'x-image-meta-container-format': 'ami'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertTrue('Invalid disk format' in res.body, res.body)
+
+    def test_bad_container_format(self):
+        fixture_headers = {'x-image-meta-store': 'bad',
+                   'x-image-meta-name': 'bogus',
+                   'x-image-meta-location': 'http://example.com/image.tar.gz',
+                   'x-image-meta-disk-format': 'vhd',
+                   'x-image-meta-container-format': 'invalid'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertTrue('Invalid container format' in res.body)
+
     def test_add_image_no_location_no_image_as_body(self):
         """Tests creates a queued image for no body and no loc header"""
         fixture_headers = {'x-image-meta-store': 'file',
-                            'x-image-meta-name': 'fake image #3'}
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
@@ -270,8 +409,10 @@ class TestGlanceAPI(unittest.TestCase):
         self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
 
     def test_add_image_basic_file_store(self):
-        """Tests raises BadRequest for invalid store header"""
+        """Tests to add a basic image in the file store"""
         fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
                            'x-image-meta-name': 'fake image #3'}
 
         req = webob.Request.blank("/images")

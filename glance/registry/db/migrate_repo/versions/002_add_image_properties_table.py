@@ -41,7 +41,8 @@ def define_image_properties_table(meta):
         Column('deleted', Boolean(), nullable=False, default=False,
                index=True),
         UniqueConstraint('image_id', 'key'),
-        mysql_engine='InnoDB')
+        mysql_engine='InnoDB',
+        useexisting=True)
 
     Index('ix_image_properties_image_id_key', image_properties.c.image_id,
           image_properties.c.key)

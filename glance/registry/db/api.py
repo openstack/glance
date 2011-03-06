@@ -40,8 +40,13 @@ BASE = models.BASE
 BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
                         'deleted'])
 
-IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'type', 'status', 'size',
+IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size',
+                                      'disk_format', 'container_format',
                                       'is_public', 'location'])
+
+CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
+DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi']
+STATUSES = ['active', 'saving', 'queued', 'killed']
 
 
 def configure_db(options):
@@ -152,18 +157,35 @@ def validate_image(values):
     :param values: Mapping of image metadata to check
     """
 
-    image_type = values.get('type', None)
-    if image_type and image_type not in (
-        'machine', 'kernel', 'ramdisk', 'raw', 'vhd'):
-        msg = "Invalid image type '%s' for image." % image_type
-        raise exception.Invalid(msg)
+    status = values.get('status')
+    disk_format = values.get('disk_format')
+    container_format = values.get('container_format')
+
     status = values.get('status', None)
     if not status:
         msg = "Image status is required."
         raise exception.Invalid(msg)
-    if status not in ('active', 'queued', 'killed', 'saving'):
+
+    if status not in STATUSES:
         msg = "Invalid image status '%s' for image." % status
         raise exception.Invalid(msg)
+
+    if disk_format and disk_format not in DISK_FORMATS:
+        msg = "Invalid disk format '%s' for image." % disk_format
+        raise exception.Invalid(msg)
+
+    if container_format and container_format not in CONTAINER_FORMATS:
+        msg = "Invalid container format '%s' for image." % container_format
+        raise exception.Invalid(msg)
+
+    if disk_format in ('aki', 'ari', 'ami') or\
+            container_format in ('aki', 'ari', 'ami'):
+        if container_format != disk_format:
+            msg = ("Invalid mix of disk and container formats. "
+                   "When setting a disk or container format to "
+                   "one of 'ami', 'ari', or 'ami', the container "
+                   "and disk formats must match.")
+            raise exception.Invalid(msg)
 
 
 def _image_update(context, values, image_id):
@@ -174,27 +196,35 @@ def _image_update(context, values, image_id):
     :param image_id: If None, create the image, otherwise, find and update it
     """
 
-    # Validate the attributes before we go any further. From my investigation,
-    # the @validates decorator does not validate on new records, only on
-    # existing records, which is, well, idiotic.
-    validate_image(values)
-
     session = get_session()
     with session.begin():
-        _drop_protected_attrs(models.Image, values)
 
-        if 'size' in values:
-            values['size'] = int(values['size'])
-
-        values['is_public'] = bool(values.get('is_public', False))
+        # Remove the properties passed in the values mapping. We
+        # handle properties separately from base image attributes,
+        # and leaving properties in the values mapping will cause
+        # a SQLAlchemy model error because SQLAlchemy expects the
+        # properties attribute of an Image model to be a list and
+        # not a dict.
         properties = values.pop('properties', {})
 
         if image_id:
             image_ref = image_get(context, image_id, session=session)
         else:
+            if 'size' in values:
+                values['size'] = int(values['size'])
+
+            values['is_public'] = bool(values.get('is_public', False))
             image_ref = models.Image()
 
+        _drop_protected_attrs(models.Image, values)
         image_ref.update(values)
+
+        # Validate the attributes before we go any further. From my
+        # investigation, the @validates decorator does not validate
+        # on new records, only on existing records, which is, well,
+        # idiotic.
+        validate_image(image_ref.to_dict())
+
         image_ref.save(session=session)
 
         _set_properties_for_image(context, image_ref, properties, session)

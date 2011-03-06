@@ -60,6 +60,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
 from glance.client import Client
+from glance.registry.db.api import DISK_FORMATS, CONTAINER_FORMATS
 
 
 def die(msg):
@@ -78,6 +79,14 @@ def parse_args():
     parser.add_argument('--type', metavar='TYPE', default='raw',
                         help='Type of Image [kernel, ramdisk, machine, raw] '
                              '(default: %default)')
+    parser.add_argument('--disk-format', metavar='DISK_FORMAT', default=None,
+                        choices=DISK_FORMATS,
+                        help='Disk format of Image [%s] '
+                             '(default: %%default)' % ','.join(DISK_FORMATS))
+    parser.add_argument('--container-format', metavar='CONTAINER_FORMAT',
+                        default=None, choices=CONTAINER_FORMATS,
+                        help='Disk format of Image [%s] '
+                        '(default: %%default)' % ','.join(CONTAINER_FORMATS))
     parser.add_argument('--kernel', metavar='KERNEL',
                         help='ID of kernel associated with this machine image')
     parser.add_argument('--ramdisk', metavar='RAMDISK',
@@ -89,7 +98,8 @@ def parse_args():
 
 def main():
     args = parse_args()
-    meta = {'name': args.name, 'type': args.type, 'is_public': True,
+    meta = {'name': args.name,
+            'is_public': True,
             'properties': {}}
 
     if args.kernel:
@@ -98,9 +108,22 @@ def main():
     if args.ramdisk:
         meta['properties']['ramdisk_id'] = args.ramdisk
 
+    if args.type:
+        meta['properties']['type'] = args.type
+
+    if args.disk_format:
+        meta['disk_format'] = args.disk_format
+
+    if args.container_format:
+        meta['container_format'] = args.container_format
+
     client = Client(args.host, args.port)
     with open(args.filename) as f:
-        new_meta = client.add_image(meta, f)
+        try:
+            new_meta = client.add_image(meta, f)
+        except Exception, e:
+            print "Failed to add new image. Got error: ", str(e)
+            return 1
 
     print 'Stored image. Got identifier: %s' % pprint.pformat(new_meta)
 

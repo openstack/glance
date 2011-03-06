@@ -55,7 +55,6 @@ class Controller(wsgi.Controller):
         images = db_api.image_get_all_public(None)
         image_dicts = [dict(id=i['id'],
                             name=i['name'],
-                            type=i['type'],
                             size=i['size']) for i in images]
         return dict(images=image_dicts)
 
@@ -147,6 +146,11 @@ class Controller(wsgi.Controller):
         try:
             updated_image = db_api.image_update(context, id, image_data)
             return dict(image=make_image_dict(updated_image))
+        except exception.Invalid, e:
+            msg = ("Failed to update image metadata. "
+                   "Got error: %(e)s" % locals())
+            logger.error(msg)
+            return exc.HTTPBadRequest(msg)
         except exception.NotFound:
             raise exc.HTTPNotFound(body='Image not found',
                                request=req,
