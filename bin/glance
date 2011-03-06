@@ -75,7 +75,7 @@ def print_image_formatted(client, image):
                                       client.host,
                                       image['id'])
     print "Id: %s" % image['id']
-    print "Public? " + (image['is_public'] and "Yes" or "No")
+    print "Public: " + (image['is_public'] and "Yes" or "No")
     print "Name: %s" % image['name']
     print "Size: %d" % int(image['size'])
     print "Location: %s" % image['location']
@@ -276,18 +276,29 @@ to spell field names correctly. :)"""
     # Add custom attributes, which are all the arguments remaining
     image_meta['properties'] = fields
 
-    try:
-        image_meta = c.update_image(image_id, image_meta=image_meta)
-        print "Updated image %s" % image_id
+    if not options.dry_run:
+        try:
+            image_meta = c.update_image(image_id, image_meta=image_meta)
+            print "Updated image %s" % image_id
 
-        if options.verbose:
-            print "Updated image metadata for image %s:" % image_id
-            print_image_formatted(c, image_meta)
-
-        return SUCCESS
-    except exception.NotFound:
-        print "No image with ID %s was found" % image_id
-        return FAILURE
+            if options.verbose:
+                print "Updated image metadata for image %s:" % image_id
+                print_image_formatted(c, image_meta)
+        except exception.NotFound:
+            print "No image with ID %s was found" % image_id
+            return FAILURE
+        except Exception, e:
+            print "Failed to update image. Got error:"
+            pieces = str(e).split('\n')
+            for piece in pieces:
+                print piece
+            return FAILURE
+    else:
+        print "Dry run. We would have done the following:"
+        print "Update existing image with metadata:"
+        for k, v in sorted(image_meta.items()):
+            print " %(k)30s => %(v)s" % locals()
+    return SUCCESS
 
 
 def image_delete(options, args):
@@ -330,9 +341,15 @@ Shows image metadata for an image in Glance"""
         image = c.get_image_meta(image_id)
         print_image_formatted(c, image)
         return SUCCESS
+    except exception.NotFound:
+        print "No image with ID %s was found" % image_id
+        return FAILURE
     except Exception, e:
-        print e
-        return e
+        print "Failed to show image. Got error:"
+        pieces = str(e).split('\n')
+        for piece in pieces:
+            print piece
+        return FAILURE
 
 
 def images_index(options, args):
@@ -364,8 +381,11 @@ a Glance server knows about"""
                                               int(image['size']))
         return SUCCESS
     except Exception, e:
-        print e
-        return e
+        print "Failed to show index. Got error:"
+        pieces = str(e).split('\n')
+        for piece in pieces:
+            print piece
+        return FAILURE
 
 
 def images_detailed(options, args):
@@ -393,8 +413,11 @@ a Glance server knows about"""
 
         return SUCCESS
     except Exception, e:
-        print e
-        return e
+        print "Failed to show details. Got error:"
+        pieces = str(e).split('\n')
+        for piece in pieces:
+            print piece
+        return FAILURE
 
 
 def images_clear(options, args):
@@ -424,12 +447,8 @@ def get_client(options):
     specified by the --host and --port options
     supplied to the CLI
     """
-    try:
-        return client.Client(host=options.host,
-                             port=options.port)
-    except Exception, e:
-        print e
-        sys.exit(1)
+    return client.Client(host=options.host,
+                         port=options.port)
 
 
 def create_options(parser):
