@@ -28,7 +28,6 @@ from glance.common import config
 from glance.common import exception
 import glance.store
 
-DEFAULT_SWIFT_ACCOUNT = 'glance'
 DEFAULT_SWIFT_CONTAINER = 'glance'
 
 logger = logging.getLogger('glance.store.swift')
@@ -100,8 +99,6 @@ class SwiftBackend(glance.store.Backend):
                 The location that was written,
                 and the size in bytes of the data written
         """
-        account = options.get('swift_store_account',
-                              DEFAULT_SWIFT_ACCOUNT)
         container = options.get('swift_store_container',
                                 DEFAULT_SWIFT_CONTAINER)
         auth_address = options.get('swift_store_auth_address')
