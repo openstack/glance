@@ -260,7 +260,7 @@ class Controller(wsgi.Controller):
             logger.debug("Updating image %(image_id)s data. "
                          "Checksum set to %(checksum)s, size set "
                          "to %(size)d" % locals())
-            m = registry.update_image_metadata(self.options, image_id,
+            registry.update_image_metadata(self.options, image_id,
                                            {'checksum': checksum,
                                             'size': size})
 

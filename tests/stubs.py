@@ -220,7 +220,6 @@ def stub_out_registry_and_store_server(stubs):
                        'registry_host': '0.0.0.0',
                        'registry_port': '9191',
                        'default_store': 'file',
-                       'checksum': True,
                        'filesystem_store_datadir': FAKE_FILESYSTEM_ROOTDIR}
             res = self.req.get_response(server.API(options))
 

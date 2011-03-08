@@ -90,6 +90,8 @@ JSON-encoded mapping in the following format::
   The `properties` field is a mapping of free-form key/value pairs that
   have been saved with the image metadata
 
+  The `checksum` field is an MD5 checksum of the image file data
+
 
 Requesting Detailed Metadata on a Specific Image
 ------------------------------------------------
@@ -295,7 +297,8 @@ The list of metadata headers that Glance accepts are listed below.
 
 * ``x-image-meta-checksum``
 
-  This header is optional.
+  This header is optional. When present it shall be the expected **MD5**
+  checksum of the image file data.
 
   When present, Glance will verify the checksum generated from the backend
   store when storing your image against this value and return a 
