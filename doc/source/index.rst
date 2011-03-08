@@ -50,6 +50,7 @@ Concepts
    identifiers
    registries
    statuses
+   formats
 
 Using Glance
 ============

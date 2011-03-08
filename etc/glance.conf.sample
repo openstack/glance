@@ -8,10 +8,6 @@ debug = False
 [app:glance-api]
 paste.app_factory = glance.server:app_factory
 
-# Directory that the Filesystem backend store
-# writes image data to
-filesystem_store_datadir=/var/lib/glance/images/
-
 # Which backend store should Glance use by default is not specified
 # in a request to add a new image to Glance? Default: 'file'
 # Available choices are 'file', 'swift', and 's3'
@@ -28,6 +24,33 @@ registry_host = 0.0.0.0
 
 # Port the registry server is listening on
 registry_port = 9191
+
+# ============ Filesystem Store Options ========================
+
+# Directory that the Filesystem backend store
+# writes image data to
+filesystem_store_datadir=/var/lib/glance/images/
+
+# ============ Swift Store Options =============================
+
+# Address where the Swift authentication service lives
+# The auth address should be in the form:
+#   <DOMAIN>[:<PORT>]/<VERSION>/<ACCOUNT>
+swift_store_auth_address = 127.0.0.1:8080/v1.0/glance-account
+
+# User to authenticate against the Swift authentication service
+swift_store_user = jdoe
+
+# Auth key for the user authenticating against the
+# Swift authentication service
+swift_store_key = a86850deb2742ec3cb41518e26aa2d89
+
+# Container within the account that the account should use
+# for storing images in Swift
+swift_store_container = glance
+
+# Do we create the container if it does not exist?
+swift_store_create_container_on_put = False
 
 [app:glance-registry]
 paste.app_factory = glance.registry.server:app_factory

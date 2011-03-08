@@ -19,11 +19,14 @@
 A simple filesystem-backed store
 """
 
+import logging
 import os
 import urlparse
 
 from glance.common import exception
 import glance.store
+
+logger = logging.getLogger('glance.store.filesystem')
 
 
 class ChunkedFile(object):
@@ -60,8 +63,7 @@ class ChunkedFile(object):
 
 class FilesystemBackend(glance.store.Backend):
     @classmethod
-    def get(cls, parsed_uri, opener=lambda p: open(p, "rb"),
-            expected_size=None):
+    def get(cls, parsed_uri, expected_size=None, options=None):
         """ Filesystem-based backend
 
         file:///path/to/file.tar.gz.0
@@ -71,6 +73,8 @@ class FilesystemBackend(glance.store.Backend):
         if not os.path.exists(filepath):
             raise exception.NotFound("Image file %s not found" % filepath)
         else:
+            logger.debug("Found image at %s. Returning in ChunkedFile.",
+                         filepath)
             return ChunkedFile(filepath)
 
     @classmethod
@@ -87,6 +91,7 @@ class FilesystemBackend(glance.store.Backend):
         fn = parsed_uri.path
         if os.path.exists(fn):
             try:
+                logger.debug("Deleting image at %s", fn)
                 os.unlink(fn)
             except OSError:
                 raise exception.NotAuthorized("You cannot delete file %s" % fn)
@@ -112,6 +117,8 @@ class FilesystemBackend(glance.store.Backend):
         datadir = options['filesystem_store_datadir']
 
         if not os.path.exists(datadir):
+            logger.info("Directory to write image files does not exist "
+                        "(%s). Creating.", datadir)
             os.makedirs(datadir)
 
         filepath = os.path.join(datadir, str(id))
@@ -129,6 +136,8 @@ class FilesystemBackend(glance.store.Backend):
                 bytes_written += len(buf)
                 f.write(buf)
 
+        logger.debug("Wrote %(bytes_written)d bytes to %(filepath)s"
+                     % locals())
         return ('file://%s' % filepath, bytes_written)
 
     @classmethod
