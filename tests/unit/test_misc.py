@@ -129,6 +129,9 @@ class TestMiscellaneous(unittest.TestCase):
         api_port = 32001
         reg_port = 32000
         image_dir = "/tmp/test.images.%d" % api_port
+        sql_connection = "sqlite:///"
+        if os.environ.has_key('GLANCE_SQL_CONNECTION'):
+            sql_connection = os.environ['GLANCE_SQL_CONNECTION']
         if os.path.exists(image_dir):
             shutil.rmtree(image_dir)
 
@@ -152,7 +155,7 @@ registry_port = %(reg_port)s
 paste.app_factory = glance.registry.server:app_factory
 bind_host = 0.0.0.0
 bind_port = %(reg_port)s
-sql_connection = sqlite://
+sql_connection = %(sql_connection)s
 sql_idle_timeout = 3600
 """ % locals()
             conf_file.write(conf_contents)

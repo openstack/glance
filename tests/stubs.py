@@ -170,7 +170,10 @@ def stub_out_registry_and_store_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            options = {'sql_connection': 'sqlite://', 'verbose': VERBOSE}
+            sql_connection = "sqlite:///"
+            if os.environ.has_key('GLANCE_SQL_CONNECTION'):
+                sql_connection = os.environ['GLANCE_SQL_CONNECTION']
+            options = {'sql_connection': sql_connection, 'verbose': VERBOSE}
             res = self.req.get_response(rserver.API(options))
 
             # httplib.Response has a read() method...fake it out
