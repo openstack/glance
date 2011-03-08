@@ -129,9 +129,7 @@ class TestMiscellaneous(unittest.TestCase):
         api_port = 32001
         reg_port = 32000
         image_dir = "/tmp/test.images.%d" % api_port
-        sql_connection = "sqlite:///"
-        if os.environ.has_key('GLANCE_SQL_CONNECTION'):
-            sql_connection = os.environ['GLANCE_SQL_CONNECTION']
+        sql_connection = os.environ.get('GLANCE_SQL_CONNECTION', "sqlite:///")
         if os.path.exists(image_dir):
             shutil.rmtree(image_dir)
 
