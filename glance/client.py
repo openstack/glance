@@ -142,7 +142,10 @@ class BaseClient(object):
                 c.request(method, action, body, headers)
             res = c.getresponse()
             status_code = self.get_status_code(res)
-            if status_code == httplib.OK:
+            if status_code in (httplib.OK,
+                               httplib.CREATED,
+                               httplib.ACCEPTED,
+                               httplib.NO_CONTENT):
                 return res
             elif status_code == httplib.UNAUTHORIZED:
                 raise exception.NotAuthorized

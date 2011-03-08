@@ -18,6 +18,7 @@
 """Tests the filesystem backend store"""
 
 import StringIO
+import hashlib
 import unittest
 import urlparse
 
@@ -26,6 +27,11 @@ import stubout
 from glance.common import exception
 from glance.store.filesystem import FilesystemBackend, ChunkedFile
 from tests import stubs
+
+FILESYSTEM_OPTIONS = {
+    'verbose': True,
+    'debug': True,
+    'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
 
 
 class TestFilesystemBackend(unittest.TestCase):
@@ -75,17 +81,17 @@ class TestFilesystemBackend(unittest.TestCase):
         expected_image_id = 42
         expected_file_size = 1024 * 5  # 5K
         expected_file_contents = "*" * expected_file_size
+        expected_checksum = hashlib.md5(expected_file_contents).hexdigest()
         expected_location = "file://%s/%s" % (stubs.FAKE_FILESYSTEM_ROOTDIR,
                                               expected_image_id)
         image_file = StringIO.StringIO(expected_file_contents)
-        options = {'verbose': True,
-                   'debug': True,
-                   'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
 
-        location, size = FilesystemBackend.add(42, image_file, options)
+        location, size, checksum = FilesystemBackend.add(42, image_file,
+                                                         FILESYSTEM_OPTIONS)
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_file_size, size)
+        self.assertEquals(expected_checksum, checksum)
 
         url_pieces = urlparse.urlparse("file:///tmp/glance-tests/42")
         new_image_file = FilesystemBackend.get(url_pieces)
@@ -110,7 +116,7 @@ class TestFilesystemBackend(unittest.TestCase):
                    'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
         self.assertRaises(exception.Duplicate,
                           FilesystemBackend.add,
-                          2, image_file, options)
+                          2, image_file, FILESYSTEM_OPTIONS)
 
     def test_delete(self):
         """

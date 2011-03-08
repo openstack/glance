@@ -19,6 +19,7 @@
 A simple filesystem-backed store
 """
 
+import hashlib
 import logging
 import os
 import urlparse
@@ -110,9 +111,10 @@ class FilesystemBackend(glance.store.Backend):
         :param data: The image data to write, as a file-like object
         :param options: Conf mapping
 
-        :retval Tuple with (location, size)
-                The location that was written, with file:// scheme prepended
-                and the size in bytes of the data written
+        :retval Tuple with (location, size, checksum)
+                The location that was written, with file:// scheme prepended,
+                the size in bytes of the data written, and the checksum of
+                the image added.
         """
         datadir = options['filesystem_store_datadir']
 
@@ -127,6 +129,7 @@ class FilesystemBackend(glance.store.Backend):
             raise exception.Duplicate("Image file %s already exists!"
                                       % filepath)
 
+        checksum = hashlib.md5()
         bytes_written = 0
         with open(filepath, 'wb') as f:
             while True:
@@ -134,23 +137,11 @@ class FilesystemBackend(glance.store.Backend):
                 if not buf:
                     break
                 bytes_written += len(buf)
+                checksum.update(buf)
                 f.write(buf)
 
-        logger.debug("Wrote %(bytes_written)d bytes to %(filepath)s"
-                     % locals())
-        return ('file://%s' % filepath, bytes_written)
+        checksum_hex = checksum.hexdigest()
 
-    @classmethod
-    def add_options(cls, parser):
-        """
-        Adds specific configuration options for this store
-
-        :param parser: An optparse.OptionParser object
-        :retval None
-        """
-
-        parser.add_option('--filesystem-store-datadir', metavar="DIR",
-                          default="/var/lib/glance/images/",
-                          help="Location to write image data. This directory "
-                          "should be writeable by the user that runs the "
-                          "glance-api program. Default: %default")
+        logger.debug("Wrote %(bytes_written)d bytes to %(filepath)s with "
+                     "checksum %(checksum_hex)s" % locals())
+        return ('file://%s' % filepath, bytes_written, checksum_hex)

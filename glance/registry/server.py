@@ -31,6 +31,8 @@ from glance.registry.db import api as db_api
 
 logger = logging.getLogger('glance.registry.server')
 
+DISPLAY_FIELDS_IN_INDEX = ['id', 'name', 'size', 'checksum']
+
 
 class Controller(wsgi.Controller):
     """Controller for the reference implementation registry server"""
@@ -49,14 +51,22 @@ class Controller(wsgi.Controller):
 
         Where image_list is a sequence of mappings::
 
-            {'id': image_id, 'name': image_name}
+            {
+            'id': <ID>,
+            'name': <NAME>,
+            'size': <SIZE>,
+            'checksum': <CHECKSUM>
+            }
 
         """
         images = db_api.image_get_all_public(None)
-        image_dicts = [dict(id=i['id'],
-                            name=i['name'],
-                            size=i['size']) for i in images]
-        return dict(images=image_dicts)
+        results = []
+        for image in images:
+            result = {}
+            for field in DISPLAY_FIELDS_IN_INDEX:
+                result[field] = image[field]
+            results.append(result)
+        return dict(images=results)
 
     def detail(self, req):
         """Return detailed information for all public, non-deleted images
