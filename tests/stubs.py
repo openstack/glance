@@ -170,7 +170,8 @@ def stub_out_registry_and_store_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            sql_connection = os.environ.get('GLANCE_SQL_CONNECTION', "sqlite:///")
+            sql_connection = os.environ.get('GLANCE_SQL_CONNECTION',
+                                            "sqlite:///")
             options = {'sql_connection': sql_connection, 'verbose': VERBOSE}
             res = self.req.get_response(rserver.API(options))
 

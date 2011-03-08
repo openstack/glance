@@ -29,7 +29,7 @@ class TestMigrations(unittest.TestCase):
         self.db_path = "glance_test_migration.sqlite"
         if os.path.exists(self.db_path):
             os.unlink(self.db_path)
-        sql_connection = os.environ.get('GLANCE_SQL_CONNECTION',
+        sql_connection = os.environ.get('GLANCE_MIGRATION_CONNECTION',
                                         "sqlite:///%s" % self.db_path)
 
         self.options = dict(sql_connection=sql_connection,
