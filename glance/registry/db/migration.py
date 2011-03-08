@@ -29,6 +29,9 @@ except ImportError:
 from glance.common import exception
 
 
+logger = logging.getLogger('glance.registry.db.migration')
+
+
 def db_version(options):
     """Return the database's current migration number
 
@@ -56,8 +59,8 @@ def upgrade(options, version=None):
     repo_path = _find_migrate_repo()
     sql_connection = options['sql_connection']
     version_str = version or 'latest'
-    logging.info("Upgrading %(sql_connection)s to version %(version_str)s" %
-                  locals())
+    logger.info("Upgrading %(sql_connection)s to version %(version_str)s" %
+                locals())
     return versioning_api.upgrade(sql_connection, repo_path, version)
 
 
@@ -71,8 +74,8 @@ def downgrade(options, version):
     db_version(options)  # Ensure db is under migration control
     repo_path = _find_migrate_repo()
     sql_connection = options['sql_connection']
-    logging.info("Downgrading %(sql_connection)s to version %(version)s" %
-                  locals())
+    logger.info("Downgrading %(sql_connection)s to version %(version)s" %
+                locals())
     return versioning_api.downgrade(sql_connection, repo_path, version)
 
 
