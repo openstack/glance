@@ -154,7 +154,8 @@ class Controller(wsgi.Controller):
 
         def image_iterator():
             chunks = get_from_backend(image['location'],
-                                      expected_size=image['size'])
+                                      expected_size=image['size'],
+                                      options=self.options)
 
             for chunk in chunks:
                 yield chunk

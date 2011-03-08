@@ -33,7 +33,6 @@ from glance import server
 import glance.store
 import glance.store.filesystem
 import glance.store.http
-import glance.store.swift
 import glance.registry.db.api
 
 
@@ -109,7 +108,7 @@ def stub_out_filesystem_backend():
 def stub_out_s3_backend(stubs):
     """ Stubs out the S3 Backend with fake data and calls.
 
-    The stubbed swift backend provides back an iterator over
+    The stubbed s3 backend provides back an iterator over
     the data ""
 
     :param stubs: Set of stubout stubs
@@ -139,78 +138,9 @@ def stub_out_s3_backend(stubs):
                     yield cls.DATA[i:i + cls.CHUNK_SIZE]
             return chunk_it()
 
-    fake_swift_backend = FakeS3Backend()
+    fake_s3_backend = FakeS3Backend()
     stubs.Set(glance.store.s3.S3Backend, 'get',
-              fake_swift_backend.get)
-
-
-def stub_out_swift_backend(stubs):
-    """Stubs out the Swift Glance backend with fake data
-    and calls.
-
-    The stubbed swift backend provides back an iterator over
-    the data "I am a teapot, short and stout\n"
-
-    :param stubs: Set of stubout stubs
-
-    """
-    class FakeSwiftAuth(object):
-        pass
-
-    class FakeSwiftConnection(object):
-        pass
-
-    class FakeSwiftBackend(object):
-
-        CHUNK_SIZE = 2
-        DATA = 'I am a teapot, short and stout\n'
-
-        @classmethod
-        def get(cls, parsed_uri, expected_size, conn_class=None):
-            SwiftBackend = glance.store.swift.SwiftBackend
-
-            # raise BackendException if URI is bad.
-            (user, key, authurl, container, obj) = \
-                SwiftBackend._parse_swift_tokens(parsed_uri)
-
-            def chunk_it():
-                for i in xrange(0, len(cls.DATA), cls.CHUNK_SIZE):
-                    yield cls.DATA[i:i + cls.CHUNK_SIZE]
-
-            return chunk_it()
-
-    fake_swift_backend = FakeSwiftBackend()
-    stubs.Set(glance.store.swift.SwiftBackend, 'get',
-              fake_swift_backend.get)
-
-
-def stub_out_registry(stubs):
-    """Stubs out the Registry registry with fake data returns.
-
-    The stubbed Registry always returns the following fixture::
-
-        {'files': [
-          {'location': 'file:///chunk0', 'size': 12345},
-          {'location': 'file:///chunk1', 'size': 1235}
-        ]}
-
-    :param stubs: Set of stubout stubs
-
-    """
-    class FakeRegistry(object):
-
-        DATA = \
-            {'files': [
-              {'location': 'file:///chunk0', 'size': 12345},
-              {'location': 'file:///chunk1', 'size': 1235}]}
-
-        @classmethod
-        def lookup(cls, _parsed_uri):
-            return cls.DATA
-
-    fake_registry_registry = FakeRegistry()
-    stubs.Set(glance.store.registries.Registry, 'lookup',
-              fake_registry_registry.lookup)
+              fake_s3_backend.get)
 
 
 def stub_out_registry_and_store_server(stubs):
