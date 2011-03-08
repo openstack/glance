@@ -47,7 +47,7 @@ def create_options(parser):
     :param parser: The option parser
     """
     config.add_common_options(parser)
-    config.add_log_options('glance-api', parser)
+    config.add_log_options(parser)
 
 
 if __name__ == '__main__':
@@ -57,7 +57,6 @@ if __name__ == '__main__':
     (options, args) = config.parse_options(oparser)
 
     try:
-        config.setup_logging(options)
         conf, app = config.load_paste_app('glance-api', options, args)
 
         server = wsgi.Server()

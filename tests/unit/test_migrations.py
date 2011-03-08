@@ -31,7 +31,7 @@ class TestMigrations(unittest.TestCase):
             os.unlink(self.db_path)
         self.options = dict(sql_connection="sqlite:///%s" % self.db_path,
                             verbose=False)
-        config.setup_logging(self.options)
+        config.setup_logging(self.options, {})
 
     def tearDown(self):
         if os.path.exists(self.db_path):

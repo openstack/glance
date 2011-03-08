@@ -204,3 +204,148 @@ sql_idle_timeout = 3600
             cmd = "./bin/glance-control registry stop "\
                   "%s --pid-file=glance-registry.pid" % conf_file_name
             ignored, out, err = execute(cmd)
+
+
+# TODO(jaypipes): Move this to separate test file once
+# LP Bug#731304 moves execute() out to a common file, etc
+class TestLogging(unittest.TestCase):
+
+    """Tests that logging can be configured correctly"""
+
+    def setUp(self):
+        self.logfiles = []
+
+    def tearDown(self):
+        self._cleanup_test_servers()
+        self._cleanup_log_files()
+
+    def _cleanup_test_servers(self):
+        # Clean up any leftover test servers...
+        pid_files = ('glance-api.pid', 'glance-registry.pid')
+        for pid_file in pid_files:
+            if os.path.exists(pid_file):
+                pid = int(open(pid_file).read().strip())
+                try:
+                    os.killpg(pid, signal.SIGTERM)
+                except:
+                    pass  # Ignore if the process group is dead
+                os.unlink(pid_file)
+
+    def _cleanup_log_files(self):
+        for f in self.logfiles:
+            if os.path.exists(f):
+                os.unlink(f)
+
+    def test_logfile(self):
+        """
+        A test that logging can be configured properly from the
+        glance.conf file with the log_file option.
+
+        We start both servers daemonized with a temporary config
+        file that has some logging options in it.
+
+        We then use curl to issue a few requests and verify that each server's
+        logging statements were logged to the one log file
+        """
+        logfile = "/tmp/test_logfile.log"
+        self.logfiles.append(logfile)
+
+        if os.path.exists(logfile):
+            os.unlink(logfile)
+
+        self._cleanup_test_servers()
+
+        # Port numbers hopefully not used by anything...
+        api_port = 32001
+        reg_port = 32000
+        image_dir = "/tmp/test.images.%d" % api_port
+        if os.path.exists(image_dir):
+            shutil.rmtree(image_dir)
+
+        # A config file to use just for this test...we don't want
+        # to trample on currently-running Glance servers, now do we?
+        with tempfile.NamedTemporaryFile() as conf_file:
+            conf_contents = """[DEFAULT]
+verbose = True
+debug = True
+log_file = %(logfile)s
+
+[app:glance-api]
+paste.app_factory = glance.server:app_factory
+filesystem_store_datadir=%(image_dir)s
+default_store = file
+bind_host = 0.0.0.0
+bind_port = %(api_port)s
+registry_host = 0.0.0.0
+registry_port = %(reg_port)s
+
+[app:glance-registry]
+paste.app_factory = glance.registry.server:app_factory
+bind_host = 0.0.0.0
+bind_port = %(reg_port)s
+sql_connection = sqlite://
+sql_idle_timeout = 3600
+""" % locals()
+            conf_file.write(conf_contents)
+            conf_file.flush()
+            conf_file_name = conf_file.name
+
+            venv = ""
+            if 'VIRTUAL_ENV' in os.environ:
+                venv = "tools/with_venv.sh "
+
+            # Start up the API and default registry server
+            cmd = venv + "./bin/glance-control api start "\
+                         "%s --pid-file=glance-api.pid" % conf_file_name
+            exitcode, out, err = execute(cmd)
+
+            self.assertEquals(0, exitcode)
+            self.assertTrue("Starting glance-api with" in out)
+
+            cmd = venv + "./bin/glance-control registry start "\
+                         "%s --pid-file=glance-registry.pid" % conf_file_name
+            exitcode, out, err = execute(cmd)
+
+            self.assertEquals(0, exitcode)
+            self.assertTrue("Starting glance-registry with" in out)
+
+            time.sleep(2)  # Gotta give some time for spin up...
+
+            cmd = "curl -X POST -H 'Content-Type: application/octet-stream' "\
+                  "-H 'X-Image-Meta-Name: ImageName' "\
+                  "-H 'X-Image-Meta-Disk-Format: Invalid' "\
+                  "http://0.0.0.0:%d/images" % api_port
+            ignored, out, err = execute(cmd)
+
+            self.assertTrue('Invalid disk format' in out,
+                            "Could not find 'Invalid disk format' "
+                            "in output: %s" % out)
+
+            self.assertTrue(os.path.exists(logfile),
+                            "Logfile %s does not exist!" % logfile)
+
+            logfile_contents = open(logfile, 'rb').read()
+
+            # Check that BOTH the glance API and registry server
+            # modules are logged to the file.
+            self.assertTrue('[glance.server]' in logfile_contents,
+                            "Could not find '[glance.server]' "
+                            "in logfile: %s" % logfile_contents)
+            self.assertTrue('[glance.registry.server]' in logfile_contents,
+                            "Could not find '[glance.registry.server]' "
+                            "in logfile: %s" % logfile_contents)
+
+            # Test that the error we caused above is in the log
+            self.assertTrue('Invalid disk format' in logfile_contents,
+                            "Could not find 'Invalid disk format' "
+                            "in logfile: %s" % logfile_contents)
+
+            # Check the log file for the log of the above error
+
+            # Spin down the API and default registry server
+            cmd = "./bin/glance-control api stop "\
+                  "%s --pid-file=glance-api.pid" % conf_file_name
+            ignored, out, err = execute(cmd)
+            cmd = "./bin/glance-control registry stop "\
+                  "%s --pid-file=glance-registry.pid" % conf_file_name
+            ignored, out, err = execute(cmd)
