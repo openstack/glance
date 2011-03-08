@@ -28,18 +28,16 @@ class TestMigrations(unittest.TestCase):
 
     def setUp(self):
         self.db_path = "glance_test_migration.sqlite"
-        sql_connection = os.environ.get('GLANCE_MIGRATION_CONNECTION',
+        sql_connection = os.environ.get('GLANCE_SQL_CONNECTION',
                                         "sqlite:///%s" % self.db_path)
 
         self.options = dict(sql_connection=sql_connection,
                             verbose=False)
 
-        api.configure_db(self.options)
-        api.unregister_models()
-
         config.setup_logging(self.options)
 
     def tearDown(self):
+        api.configure_db(self.options)
         api.unregister_models()
 
     def test_db_sync_downgrade_then_upgrade(self):
