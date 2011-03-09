@@ -73,7 +73,7 @@ Debian/Ubuntu
 
 1. Install Bazaar and build dependencies::
 
-   $> sudo apt-get install bzr python-eventlet python-routes python-greenlet
+   $> sudo apt-get install bzr python-eventlet python-routes python-greenlet swift
    $> sudo apt-get install python-argparse python-sqlalchemy python-wsgiref python-pastedeploy
 
 .. note::

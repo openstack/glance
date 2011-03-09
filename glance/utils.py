@@ -32,10 +32,14 @@ def image_meta_to_http_headers(image_meta):
     for k, v in image_meta.items():
         if k == 'properties':
             for pk, pv in v.items():
+                if pv is None:
+                    pv = ''
                 headers["x-image-meta-property-%s"
                         % pk.lower()] = unicode(pv)
         else:
             headers["x-image-meta-%s" % k.lower()] = unicode(v)
+        if v is None:
+            v = ''
     return headers
 
 
@@ -77,10 +81,10 @@ def get_image_meta_from_headers(response):
         key = str(key.lower())
         if key.startswith('x-image-meta-property-'):
             field_name = key[len('x-image-meta-property-'):].replace('-', '_')
-            properties[field_name] = value
+            properties[field_name] = value or None
         elif key.startswith('x-image-meta-'):
             field_name = key[len('x-image-meta-'):].replace('-', '_')
-            result[field_name] = value
+            result[field_name] = value or None
     result['properties'] = properties
     if 'id' in result:
         result['id'] = int(result['id'])
@@ -88,6 +92,8 @@ def get_image_meta_from_headers(response):
         result['size'] = int(result['size'])
     if 'is_public' in result:
         result['is_public'] = (result['is_public'] == 'True')
+    if 'deleted' in result:
+        result['deleted'] = (result['deleted'] == 'True')
     return result
 
 
