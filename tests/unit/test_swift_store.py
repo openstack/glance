@@ -25,7 +25,13 @@ import unittest
 import urlparse
 
 import stubout
-import swift.common.client
+
+# NOTE(sirp): Avoid swift unit-tests if module is not present
+try:
+    import swift.common.client
+    SWIFT_INSTALLED = True
+except ImportError:
+    SWIFT_INSTALLED = False
 
 from glance.common import exception
 from glance.store import BackendException
@@ -138,163 +144,164 @@ def stub_out_swift_common_client(stubs):
     stubs.Set(swift.common.client,
               'http_connection', fake_http_connection)
 
+if SWIFT_INSTALLED:
+    class TestSwiftBackend(unittest.TestCase):
 
-class TestSwiftBackend(unittest.TestCase):
+        def setUp(self):
+            """Establish a clean test environment"""
+            self.stubs = stubout.StubOutForTesting()
+            stub_out_swift_common_client(self.stubs)
 
-    def setUp(self):
-        """Establish a clean test environment"""
-        self.stubs = stubout.StubOutForTesting()
-        stub_out_swift_common_client(self.stubs)
+        def tearDown(self):
+            """Clear the test environment"""
+            self.stubs.UnsetAll()
 
-    def tearDown(self):
-        """Clear the test environment"""
-        self.stubs.UnsetAll()
+        def test_get(self):
+            """Test a "normal" retrieval of an image in chunks"""
+            url_pieces = urlparse.urlparse(
+                "swift://user:key@auth_address/glance/2")
+            image_swift = SwiftBackend.get(url_pieces)
 
-    def test_get(self):
-        """Test a "normal" retrieval of an image in chunks"""
-        url_pieces = urlparse.urlparse(
-            "swift://user:key@auth_address/glance/2")
-        image_swift = SwiftBackend.get(url_pieces)
+            expected_data = "*" * FIVE_KB
+            data = ""
 
-        expected_data = "*" * FIVE_KB
-        data = ""
+            for chunk in image_swift:
+                data += chunk
+            self.assertEqual(expected_data, data)
 
-        for chunk in image_swift:
-            data += chunk
-        self.assertEqual(expected_data, data)
+        def test_get_mismatched_expected_size(self):
+            """
+            Test retrieval of an image with wrong expected_size param
+            raises an exception
+            """
+            url_pieces = urlparse.urlparse(
+                "swift://user:key@auth_address/glance/2")
+            self.assertRaises(BackendException,
+                              SwiftBackend.get,
+                              url_pieces,
+                              {'expected_size': 42})
 
-    def test_get_mismatched_expected_size(self):
-        """
-        Test retrieval of an image with wrong expected_size param
-        raises an exception
-        """
-        url_pieces = urlparse.urlparse(
-            "swift://user:key@auth_address/glance/2")
-        self.assertRaises(BackendException,
-                          SwiftBackend.get,
-                          url_pieces,
-                          {'expected_size': 42})
+        def test_get_non_existing(self):
+            """
+            Test that trying to retrieve a swift that doesn't exist
+            raises an error
+            """
+            url_pieces = urlparse.urlparse(
+                "swift://user:key@auth_address/noexist")
+            self.assertRaises(exception.NotFound,
+                              SwiftBackend.get,
+                              url_pieces)
 
-    def test_get_non_existing(self):
-        """
-        Test that trying to retrieve a swift that doesn't exist
-        raises an error
-        """
-        url_pieces = urlparse.urlparse(
-            "swift://user:key@auth_address/noexist")
-        self.assertRaises(exception.NotFound,
-                          SwiftBackend.get,
-                          url_pieces)
+        def test_add(self):
+            """Test that we can add an image via the swift backend"""
+            expected_image_id = 42
+            expected_swift_size = 1024 * 5  # 5K
+            expected_swift_contents = "*" * expected_swift_size
+            expected_location = format_swift_location(
+                SWIFT_OPTIONS['swift_store_user'],
+                SWIFT_OPTIONS['swift_store_key'],
+                SWIFT_OPTIONS['swift_store_auth_address'],
+                SWIFT_OPTIONS['swift_store_container'],
+                expected_image_id)
+            image_swift = StringIO.StringIO(expected_swift_contents)
 
-    def test_add(self):
-        """Test that we can add an image via the swift backend"""
-        expected_image_id = 42
-        expected_swift_size = 1024 * 5  # 5K
-        expected_swift_contents = "*" * expected_swift_size
-        expected_location = format_swift_location(
-            SWIFT_OPTIONS['swift_store_user'],
-            SWIFT_OPTIONS['swift_store_key'],
-            SWIFT_OPTIONS['swift_store_auth_address'],
-            SWIFT_OPTIONS['swift_store_container'],
-            expected_image_id)
-        image_swift = StringIO.StringIO(expected_swift_contents)
+            location, size = SwiftBackend.add(42, image_swift, SWIFT_OPTIONS)
 
-        location, size = SwiftBackend.add(42, image_swift, SWIFT_OPTIONS)
+            self.assertEquals(expected_location, location)
+            self.assertEquals(expected_swift_size, size)
 
-        self.assertEquals(expected_location, location)
-        self.assertEquals(expected_swift_size, size)
+            url_pieces = urlparse.urlparse(expected_location)
+            new_image_swift = SwiftBackend.get(url_pieces)
+            new_image_contents = new_image_swift.getvalue()
+            new_image_swift_size = new_image_swift.len
 
-        url_pieces = urlparse.urlparse(expected_location)
-        new_image_swift = SwiftBackend.get(url_pieces)
-        new_image_contents = new_image_swift.getvalue()
-        new_image_swift_size = new_image_swift.len
+            self.assertEquals(expected_swift_contents, new_image_contents)
+            self.assertEquals(expected_swift_size, new_image_swift_size)
 
-        self.assertEquals(expected_swift_contents, new_image_contents)
-        self.assertEquals(expected_swift_size, new_image_swift_size)
+        def test_add_no_container_no_create(self):
+            """
+            Tests that adding an image with a non-existing container
+            raises an appropriate exception
+            """
+            options = SWIFT_OPTIONS.copy()
+            options['swift_store_create_container_on_put'] = 'False'
+            options['swift_store_container'] = 'noexist'
+            image_swift = StringIO.StringIO("nevergonnamakeit")
 
-    def test_add_no_container_no_create(self):
-        """
-        Tests that adding an image with a non-existing container
-        raises an appropriate exception
-        """
-        options = SWIFT_OPTIONS.copy()
-        options['swift_store_create_container_on_put'] = 'False'
-        options['swift_store_container'] = 'noexist'
-        image_swift = StringIO.StringIO("nevergonnamakeit")
+            # We check the exception text to ensure the container
+            # missing text is found in it, otherwise, we would have
+            # simply used self.assertRaises here
+            exception_caught = False
+            try:
+                SwiftBackend.add(3, image_swift, options)
+            except BackendException, e:
+                exception_caught = True
+                self.assertTrue("container noexist does not exist "
+                                "in Swift" in str(e))
+            self.assertTrue(exception_caught)
 
-        # We check the exception text to ensure the container
-        # missing text is found in it, otherwise, we would have
-        # simply used self.assertRaises here
-        exception_caught = False
-        try:
-            SwiftBackend.add(3, image_swift, options)
-        except BackendException, e:
-            exception_caught = True
-            self.assertTrue("container noexist does not exist "
-                            "in Swift" in str(e))
-        self.assertTrue(exception_caught)
+        def test_add_no_container_and_create(self):
+            """
+            Tests that adding an image with a non-existing container
+            creates the container automatically if flag is set
+            """
+            options = SWIFT_OPTIONS.copy()
+            options['swift_store_create_container_on_put'] = 'True'
+            options['swift_store_container'] = 'noexist'
+            expected_image_id = 42
+            expected_swift_size = 1024 * 5  # 5K
+            expected_swift_contents = "*" * expected_swift_size
+            expected_location = format_swift_location(
+                options['swift_store_user'],
+                options['swift_store_key'],
+                options['swift_store_auth_address'],
+                options['swift_store_container'],
+                expected_image_id)
+            image_swift = StringIO.StringIO(expected_swift_contents)
 
-    def test_add_no_container_and_create(self):
-        """
-        Tests that adding an image with a non-existing container
-        creates the container automatically if flag is set
-        """
-        options = SWIFT_OPTIONS.copy()
-        options['swift_store_create_container_on_put'] = 'True'
-        options['swift_store_container'] = 'noexist'
-        expected_image_id = 42
-        expected_swift_size = 1024 * 5  # 5K
-        expected_swift_contents = "*" * expected_swift_size
-        expected_location = format_swift_location(
-            options['swift_store_user'],
-            options['swift_store_key'],
-            options['swift_store_auth_address'],
-            options['swift_store_container'],
-            expected_image_id)
-        image_swift = StringIO.StringIO(expected_swift_contents)
+            location, size = SwiftBackend.add(42, image_swift, options)
 
-        location, size = SwiftBackend.add(42, image_swift, options)
+            self.assertEquals(expected_location, location)
+            self.assertEquals(expected_swift_size, size)
 
-        self.assertEquals(expected_location, location)
-        self.assertEquals(expected_swift_size, size)
+            url_pieces = urlparse.urlparse(expected_location)
+            new_image_swift = SwiftBackend.get(url_pieces)
+            new_image_contents = new_image_swift.getvalue()
+            new_image_swift_size = new_image_swift.len
 
-        url_pieces = urlparse.urlparse(expected_location)
-        new_image_swift = SwiftBackend.get(url_pieces)
-        new_image_contents = new_image_swift.getvalue()
-        new_image_swift_size = new_image_swift.len
+            self.assertEquals(expected_swift_contents, new_image_contents)
+            self.assertEquals(expected_swift_size, new_image_swift_size)
 
-        self.assertEquals(expected_swift_contents, new_image_contents)
-        self.assertEquals(expected_swift_size, new_image_swift_size)
+        def test_add_already_existing(self):
+            """
+            Tests that adding an image with an existing identifier
+            raises an appropriate exception
+            """
+            image_swift = StringIO.StringIO("nevergonnamakeit")
+            self.assertRaises(exception.Duplicate,
+                              SwiftBackend.add,
+                              2, image_swift, SWIFT_OPTIONS)
 
-    def test_add_already_existing(self):
-        """
-        Tests that adding an image with an existing identifier
-        raises an appropriate exception
-        """
-        image_swift = StringIO.StringIO("nevergonnamakeit")
-        self.assertRaises(exception.Duplicate,
-                          SwiftBackend.add,
-                          2, image_swift, SWIFT_OPTIONS)
+        def test_delete(self):
+            """
+            Test we can delete an existing image in the swift store
+            """
+            url_pieces = urlparse.urlparse(
+                "swift://user:key@auth_address/glance/2")
 
-    def test_delete(self):
-        """
-        Test we can delete an existing image in the swift store
-        """
-        url_pieces = urlparse.urlparse(
-            "swift://user:key@auth_address/glance/2")
+            SwiftBackend.delete(url_pieces)
 
-        SwiftBackend.delete(url_pieces)
+            self.assertRaises(exception.NotFound,
+                              SwiftBackend.get,
+                              url_pieces)
 
-        self.assertRaises(exception.NotFound,
-                          SwiftBackend.get,
-                          url_pieces)
-
-    def test_delete_non_existing(self):
-        """
-        Test that trying to delete a swift that doesn't exist
-        raises an error
-        """
-        url_pieces = urlparse.urlparse("swift://user:key@auth_address/noexist")
-        self.assertRaises(exception.NotFound,
-                          SwiftBackend.delete,
-                          url_pieces)
+        def test_delete_non_existing(self):
+            """
+            Test that trying to delete a swift that doesn't exist
+            raises an error
+            """
+            url_pieces = urlparse.urlparse(
+                "swift://user:key@auth_address/noexist")
+            self.assertRaises(exception.NotFound,
+                              SwiftBackend.delete,
+                              url_pieces)
