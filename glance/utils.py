@@ -30,15 +30,16 @@ def image_meta_to_http_headers(image_meta):
     """
     headers = {}
     for k, v in image_meta.items():
+        if v is None:
+            v = ''
         if k == 'properties':
             for pk, pv in v.items():
                 if pv is None:
                     pv = ''
                 headers["x-image-meta-property-%s"
                         % pk.lower()] = unicode(pv)
-        if v is None:
-            v = ''
-        headers["x-image-meta-%s" % k.lower()] = unicode(v)
+        else:
+            headers["x-image-meta-%s" % k.lower()] = unicode(v)
     return headers
 
 

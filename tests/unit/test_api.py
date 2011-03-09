@@ -26,6 +26,9 @@ from glance import server
 from glance.registry import server as rserver
 from tests import stubs
 
+VERBOSE = False
+DEBUG = False
+
 
 class TestRegistryAPI(unittest.TestCase):
     def setUp(self):
@@ -34,7 +37,8 @@ class TestRegistryAPI(unittest.TestCase):
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_filesystem_backend()
-        self.api = rserver.API({})
+        self.api = rserver.API({'verbose': VERBOSE,
+                                'debug': DEBUG})
 
     def tearDown(self):
         """Clear the test environment"""
@@ -332,7 +336,9 @@ class TestGlanceAPI(unittest.TestCase):
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_filesystem_backend()
-        options = {'registry_host': '0.0.0.0',
+        options = {'verbose': VERBOSE,
+                   'debug': DEBUG,
+                   'registry_host': '0.0.0.0',
                    'registry_port': '9191',
                    'sql_connection': 'sqlite://',
                    'default_store': 'file',

@@ -55,6 +55,8 @@ class Controller(wsgi.Controller):
         images = db_api.image_get_all_public(None)
         image_dicts = [dict(id=i['id'],
                             name=i['name'],
+                            disk_format=i['disk_format'],
+                            container_format=i['container_format'],
                             size=i['size']) for i in images]
         return dict(images=image_dicts)
 
@@ -144,6 +146,8 @@ class Controller(wsgi.Controller):
 
         context = None
         try:
+            logger.debug("Updating image %(id)s with metadata: %(image_data)r"
+                         % locals())
             updated_image = db_api.image_update(context, id, image_data)
             return dict(image=make_image_dict(updated_image))
         except exception.Invalid, e:
