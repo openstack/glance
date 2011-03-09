@@ -138,6 +138,7 @@ def stub_out_swift_common_client(stubs):
     stubs.Set(swift.common.client,
               'http_connection', fake_http_connection)
 
+
 class TestSwiftBackend(unittest.TestCase):
 
     def setUp(self):
