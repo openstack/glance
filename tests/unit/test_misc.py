@@ -340,8 +340,6 @@ sql_idle_timeout = 3600
                             "Could not find 'Invalid disk format' "
                             "in logfile: %s" % logfile_contents)
 
-            # Check the log file for the log of the above error
-
             # Spin down the API and default registry server
             cmd = "./bin/glance-control api stop "\
                   "%s --pid-file=glance-api.pid" % conf_file_name
