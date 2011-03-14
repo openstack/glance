@@ -38,6 +38,7 @@ import glance.registry.db.api
 
 FAKE_FILESYSTEM_ROOTDIR = os.path.join('/tmp', 'glance-tests')
 VERBOSE = False
+DEBUG = False
 
 
 def stub_out_http_backend(stubs):
@@ -172,7 +173,8 @@ def stub_out_registry_and_store_server(stubs):
         def getresponse(self):
             sql_connection = os.environ.get('GLANCE_SQL_CONNECTION',
                                             "sqlite://")
-            options = {'sql_connection': sql_connection, 'verbose': VERBOSE}
+            options = {'sql_connection': sql_connection, 'verbose': VERBOSE,
+                       'debug': DEBUG}
             res = self.req.get_response(rserver.API(options))
 
             # httplib.Response has a read() method...fake it out
@@ -219,6 +221,7 @@ def stub_out_registry_and_store_server(stubs):
 
         def getresponse(self):
             options = {'verbose': VERBOSE,
+                       'debug': DEBUG,
                        'registry_host': '0.0.0.0',
                        'registry_port': '9191',
                        'default_store': 'file',
