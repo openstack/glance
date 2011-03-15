@@ -92,7 +92,7 @@ def unregister_models():
     """Unregister Models, useful clearing out data before testing"""
     global _ENGINE
     assert _ENGINE
-    BASE.metadata.drop_all(engine)
+    BASE.metadata.drop_all(_ENGINE)
 
 
 def image_create(context, values):

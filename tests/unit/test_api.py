@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
 import httplib
 import json
 import unittest
@@ -336,11 +337,12 @@ class TestGlanceAPI(unittest.TestCase):
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_filesystem_backend()
+        sql_connection = os.environ.get('GLANCE_SQL_CONNECTION', "sqlite://")
         options = {'verbose': VERBOSE,
                    'debug': DEBUG,
                    'registry_host': '0.0.0.0',
                    'registry_port': '9191',
-                   'sql_connection': 'sqlite://',
+                   'sql_connection': sql_connection,
                    'default_store': 'file',
                    'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
         self.api = server.API(options)
