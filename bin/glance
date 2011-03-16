@@ -1,0 +1,572 @@
+#!/usr/bin/env python
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+
+# Copyright 2011 OpenStack, LLC
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+"""
+This is the administration program for Glance. It is simply a command-line
+interface for adding, modifying, and retrieving information about the images
+stored in one or more Glance nodes.
+"""
+
+import optparse
+import os
+import re
+import sys
+import time
+
+# If ../glance/__init__.py exists, add ../ to Python search path, so that
+# it will override what happens to be installed in /usr/(local/)lib/python...
+possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
+                                   os.pardir,
+                                   os.pardir))
+if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
+    sys.path.insert(0, possible_topdir)
+
+from glance import client
+from glance import version
+from glance.common import exception
+from glance.common import utils
+
+SUCCESS = 0
+FAILURE = 1
+
+
+def get_image_fields_from_args(args):
+    """
+    Validate the set of arguments passed as field name/value pairs
+    and return them as a mapping.
+    """
+    fields = {}
+    for arg in args:
+        pieces = arg.strip(',').split('=')
+        if len(pieces) != 2:
+            msg = ("Arguments should be in the form of field=value. "
+                   "You specified %s." % arg)
+            raise RuntimeError(msg)
+        fields[pieces[0]] = pieces[1]
+
+    fields = dict([(k.lower().replace('-', '_'), v)
+                   for k, v in fields.items()])
+    return fields
+
+
+def print_image_formatted(client, image):
+    """
+    Formatted print of image metadata.
+
+    :param client: The Glance client object
+    :param image: The image metadata
+    """
+    print "URI: %s://%s/images/%s" % (client.use_ssl and "https" or "http",
+                                      client.host,
+                                      image['id'])
+    print "Id: %s" % image['id']
+    print "Public: " + (image['is_public'] and "Yes" or "No")
+    print "Name: %s" % image['name']
+    print "Size: %d" % int(image['size'])
+    print "Location: %s" % image['location']
+    print "Disk format: %s" % image['disk_format']
+    print "Container format: %s" % image['container_format']
+    if len(image['properties']) > 0:
+        for k, v in image['properties'].items():
+            print "Property '%s': %s" % (k, v)
+
+
+def image_add(options, args):
+    """
+%(prog)s add [options] <field1=value1 field2=value2 ...> [ < /path/to/image ]
+
+Adds a new image to Glance. Specify metadata fields as arguments.
+
+SPECIFYING IMAGE METADATA
+===============================================================================
+
+All field/value pairs are converted into a mapping that is passed
+to Glance that represents the metadata for an image.
+
+Field names of note:
+
+id                  Optional. If not specified, an image identifier will be
+                    automatically assigned.
+name                Required. A name for the image.
+size                Optional. Should be size in bytes of the image if
+                    specified.
+is_public           Optional. If specified, interpreted as a boolean value
+                    and sets or unsets the image's availability to the public.
+                    The default value is False.
+disk_format         Optional. Possible values are 'vhd','vmdk','raw', 'qcow2',
+                    and 'ami'. Default value is 'raw'.
+container_format    Optional. Possible values are 'ovf' and 'ami'.
+                    Default value is 'ovf'.
+location            Optional. When specified, should be a readable location
+                    in the form of a URI: $STORE://LOCATION. For example, if
+                    the image data is stored in a file on the local
+                    filesystem at /usr/share/images/some.image.tar.gz
+                    you would specify:
+                    location=file:///usr/share/images/some.image.tar.gz
+
+Any other field names are considered to be custom properties so be careful
+to spell field names correctly. :)
+
+STREAMING IMAGE DATA
+===============================================================================
+
+If the location field is not specified, you can stream an image file on
+the command line using standard redirection. For example:
+
+%(prog)s add name="Ubuntu 10.04 LTS 5GB" < /tmp/images/myimage.tar.gz
+
+EXAMPLES
+===============================================================================
+
+%(prog)s add name="My Image" disk_format=raw container_format=ovf \\
+    location=http://images.ubuntu.org/images/lucid-10.04-i686.iso \\
+    distro="Ubuntu 10.04 LTS"
+
+%(prog)s add name="My Image" distro="Ubuntu 10.04 LTS" < /tmp/myimage.iso"""
+    c = get_client(options)
+
+    try:
+        fields = get_image_fields_from_args(args)
+    except RuntimeError, e:
+        print e
+        return FAILURE
+
+    if 'name' not in fields.keys():
+        print "Please specify a name for the image using name=VALUE"
+        return FAILURE
+
+    image_meta = {'name': fields.pop('name'),
+                  'is_public': utils.bool_from_string(
+                      fields.pop('is_public', False)),
+                  'disk_format': fields.pop('disk_format', 'raw'),
+                  'container_format': fields.pop('container_format', 'ovf')}
+
+    # Strip any args that are not supported
+    unsupported_fields = ['status']
+    for field in unsupported_fields:
+        if field in fields.keys():
+            print 'Found non-settable field %s. Removing.' % field
+            fields.pop(field)
+
+    if 'location' in fields.keys():
+        image_meta['location'] = fields.pop('location')
+
+    # We need either a location or image data/stream to add...
+    image_location = image_meta.get('location')
+    image_data = None
+    if not image_location:
+        # Grab the image data stream from stdin or redirect,
+        # otherwise error out
+        image_data = sys.stdin
+    else:
+        # Ensure no image data has been given
+        if not sys.stdin.isatty():
+            print "Either supply a location=LOCATION argument or supply image "
+            print "data via a redirect. You have supplied BOTH image data "
+            print "AND a location."
+            return FAILURE
+
+    # Add custom attributes, which are all the arguments remaining
+    image_meta['properties'] = fields
+
+    if not options.dry_run:
+        try:
+            image_meta = c.add_image(image_meta, image_data)
+            image_id = image_meta['id']
+            print "Added new image with ID: %s" % image_id
+            if options.verbose:
+                print "Returned the following metadata for the new image:"
+                for k, v in sorted(image_meta.items()):
+                    print " %(k)30s => %(v)s" % locals()
+        except client.ClientConnectionError, e:
+            host = options.host
+            port = options.port
+            print ("Failed to connect to the Glance API server "
+                   "%(host)s:%(port)d. Is the server running?" % locals())
+            if options.verbose:
+                pieces = str(e).split('\n')
+                for piece in pieces:
+                    print piece
+            return FAILURE
+        except Exception, e:
+            print "Failed to add image. Got error:"
+            pieces = str(e).split('\n')
+            for piece in pieces:
+                print piece
+            return FAILURE
+    else:
+        print "Dry run. We would have done the following:"
+        print "Add new image with metadata:"
+        for k, v in sorted(image_meta.items()):
+            print " %(k)30s => %(v)s" % locals()
+
+    return SUCCESS
+
+
+def image_update(options, args):
+    """
+%(prog)s update [options] <ID> <field1=value1 field2=value2 ...>
+
+Updates an image's metadata in Glance. Specify metadata fields as arguments.
+
+All field/value pairs are converted into a mapping that is passed
+to Glance that represents the metadata for an image.
+
+Field names that can be specified:
+
+name                A name for the image.
+is_public           If specified, interpreted as a boolean value
+                    and sets or unsets the image's availability to the public.
+disk_format         Format of the disk image
+container_format    Format of the container
+
+All other field names are considered to be custom properties so be careful
+to spell field names correctly. :)"""
+    c = get_client(options)
+    try:
+        image_id = args.pop(0)
+    except IndexError:
+        print "Please specify the ID of the image you wish to update "
+        print "as the first argument"
+        return FAILURE
+
+    try:
+        fields = get_image_fields_from_args(args)
+    except RuntimeError, e:
+        print e
+        return FAILURE
+
+    image_meta = {}
+
+    # Strip any args that are not supported
+    nonmodifiable_fields = ['created_on', 'deleted_on', 'deleted',
+                          'updated_on', 'size', 'status']
+    for field in nonmodifiable_fields:
+        if field in fields.keys():
+            print 'Found non-modifiable field %s. Removing.' % field
+            fields.pop(field)
+
+    base_image_fields = ['disk_format', 'container_format',
+                         'location']
+    for field in base_image_fields:
+        fvalue = fields.pop(field, None)
+        if fvalue:
+            image_meta[field] = fvalue
+
+    # Have to handle "boolean" values specially...
+    if 'is_public' in fields:
+        image_meta['is_public'] = utils.int_from_bool_as_string(
+            fields.pop('is_public'))
+
+    # Add custom attributes, which are all the arguments remaining
+    image_meta['properties'] = fields
+
+    if not options.dry_run:
+        try:
+            image_meta = c.update_image(image_id, image_meta=image_meta)
+            print "Updated image %s" % image_id
+
+            if options.verbose:
+                print "Updated image metadata for image %s:" % image_id
+                print_image_formatted(c, image_meta)
+        except exception.NotFound:
+            print "No image with ID %s was found" % image_id
+            return FAILURE
+        except Exception, e:
+            print "Failed to update image. Got error:"
+            pieces = str(e).split('\n')
+            for piece in pieces:
+                print piece
+            return FAILURE
+    else:
+        print "Dry run. We would have done the following:"
+        print "Update existing image with metadata:"
+        for k, v in sorted(image_meta.items()):
+            print " %(k)30s => %(v)s" % locals()
+    return SUCCESS
+
+
+def image_delete(options, args):
+    """
+%(prog)s delete [options] <ID>
+
+Deletes an image from Glance"""
+    c = get_client(options)
+    try:
+        image_id = args.pop()
+    except IndexError:
+        print "Please specify the ID of the image you wish to delete "
+        print "as the first argument"
+        return FAILURE
+
+    try:
+        c.delete_image(image_id)
+        print "Deleted image %s" % image_id
+        return SUCCESS
+    except exception.NotFound:
+        print "No image with ID %s was found" % image_id
+        return FAILURE
+
+
+def image_show(options, args):
+    """
+%(prog)s show [options] <ID>
+
+Shows image metadata for an image in Glance"""
+    c = get_client(options)
+    try:
+        if len(args) > 0:
+            image_id = args[0]
+        else:
+            print "Please specify the image identifier as the "
+            print "first argument. Example: "
+            print "$> glance-admin show 12345"
+            return FAILURE
+
+        image = c.get_image_meta(image_id)
+        print_image_formatted(c, image)
+        return SUCCESS
+    except exception.NotFound:
+        print "No image with ID %s was found" % image_id
+        return FAILURE
+    except Exception, e:
+        print "Failed to show image. Got error:"
+        pieces = str(e).split('\n')
+        for piece in pieces:
+            print piece
+        return FAILURE
+
+
+def images_index(options, args):
+    """
+%(prog)s index [options]
+
+Returns basic information for all public images
+a Glance server knows about"""
+    c = get_client(options)
+    try:
+        images = c.get_images()
+        if len(images) == 0:
+            print "No public images found."
+            return SUCCESS
+
+        print "Found %d public images..." % len(images)
+        print "%-16s %-30s %-20s %-20s %-14s" % (("ID"),
+                                           ("Name"),
+                                           ("Disk Format"),
+                                           ("Container Format"),
+                                           ("Size"))
+        print ('-' * 16) + " " + ('-' * 30) + " "\
+              + ('-' * 20) + " " + ('-' * 20) + " " + ('-' * 14)
+        for image in images:
+            print "%-16s %-30s %-20s %-20s %14d" % (image['id'],
+                                              image['name'],
+                                              image['disk_format'],
+                                              image['container_format'],
+                                              int(image['size']))
+        return SUCCESS
+    except Exception, e:
+        print "Failed to show index. Got error:"
+        pieces = str(e).split('\n')
+        for piece in pieces:
+            print piece
+        return FAILURE
+
+
+def images_detailed(options, args):
+    """
+%(prog)s details [options]
+
+Returns detailed information for all public images
+a Glance server knows about"""
+    c = get_client(options)
+    try:
+        images = c.get_images_detailed()
+        if len(images) == 0:
+            print "No public images found."
+            return SUCCESS
+
+        num_images = len(images)
+        print "Found %d public images..." % num_images
+        cur_image = 1
+        for image in images:
+            print "=" * 80
+            print_image_formatted(c, image)
+            if cur_image == num_images:
+                print "=" * 80
+            cur_image += 1
+
+        return SUCCESS
+    except Exception, e:
+        print "Failed to show details. Got error:"
+        pieces = str(e).split('\n')
+        for piece in pieces:
+            print piece
+        return FAILURE
+
+
+def images_clear(options, args):
+    """
+%(prog)s clear [options]
+
+Deletes all images from a Glance server"""
+    c = get_client(options)
+    images = c.get_images()
+    for image in images:
+        if options.verbose:
+            print 'Deleting image %s "%s" ...' % (image['id'], image['name']),
+        try:
+            c.delete_image(image['id'])
+            if options.verbose:
+                print 'done'
+        except Exception, e:
+            print 'Failed to delete image %s' % image['id']
+            print e
+            return FAILURE
+    return SUCCESS
+
+
+def get_client(options):
+    """
+    Returns a new client object to a Glance server
+    specified by the --host and --port options
+    supplied to the CLI
+    """
+    return client.Client(host=options.host,
+                         port=options.port)
+
+
+def create_options(parser):
+    """
+    Sets up the CLI and config-file options that may be
+    parsed and program commands.
+
+    :param parser: The option parser
+    """
+    parser.add_option('-v', '--verbose', default=False, action="store_true",
+                      help="Print more verbose output")
+    parser.add_option('-H', '--host', metavar="ADDRESS", default="0.0.0.0",
+                      help="Address of Glance API host. "
+                           "Default: %default")
+    parser.add_option('-p', '--port', dest="port", metavar="PORT",
+                      type=int, default=9292,
+                      help="Port the Glance API host listens on. "
+                           "Default: %default")
+    parser.add_option('--dry-run', default=False, action="store_true",
+                      help="Don't actually execute the command, just print "
+                           "output showing what WOULD happen.")
+
+
+def parse_options(parser, cli_args):
+    """
+    Returns the parsed CLI options, command to run and its arguments, merged
+    with any same-named options found in a configuration file
+
+    :param parser: The option parser
+    """
+    COMMANDS = {'help': print_help,
+                'add': image_add,
+                'update': image_update,
+                'delete': image_delete,
+                'index': images_index,
+                'details': images_detailed,
+                'show': image_show,
+                'clear': images_clear}
+
+    if not cli_args:
+        cli_args.append('-h')  # Show options in usage output...
+
+    (options, args) = parser.parse_args(cli_args)
+
+    if not args:
+        parser.print_usage()
+        sys.exit(0)
+    else:
+        command_name = args.pop(0)
+        if command_name not in COMMANDS.keys():
+            sys.exit("Unknown command: %s" % command_name)
+    command = COMMANDS[command_name]
+
+    return (options, command, args)
+
+
+def print_help(options, args):
+    """
+    Print help specific to a command
+    """
+    COMMANDS = {'add': image_add,
+                'update': image_update,
+                'delete': image_delete,
+                'index': images_index,
+                'details': images_detailed,
+                'show': image_show,
+                'clear': images_clear}
+
+    if len(args) != 1:
+        sys.exit("Please specify a command")
+
+    command = args.pop()
+    if command not in COMMANDS.keys():
+        parser.print_usage()
+        if args:
+            sys.exit("Unknown command: %s" % command)
+
+    print COMMANDS[command].__doc__ % {'prog': os.path.basename(sys.argv[0])}
+
+
+if __name__ == '__main__':
+    usage = """
+%prog <command> [options] [args]
+
+Commands:
+
+    help <command>  Output help for one of the commands below
+
+    add             Adds a new image to Glance
+
+    update          Updates an image's metadata in Glance
+
+    delete          Deletes an image from Glance
+
+    index           Return brief information about images in Glance
+
+    details         Return detailed information about images in
+                    Glance
+
+    show            Show detailed information about an image in
+                    Glance
+
+    clear           Removes all images and metadata from Glance
+
+"""
+
+    oparser = optparse.OptionParser(version='%%prog %s'
+                                    % version.version_string(),
+                                    usage=usage.strip())
+    create_options(oparser)
+    (options, command, args) = parse_options(oparser, sys.argv[1:])
+
+    try:
+        start_time = time.time()
+        result = command(options, args)
+        end_time = time.time()
+        if options.verbose:
+            print "Completed in %-0.4f sec." % (end_time - start_time)
+        sys.exit(result)
+    except (RuntimeError, NotImplementedError), e:
+        print "ERROR: ", e

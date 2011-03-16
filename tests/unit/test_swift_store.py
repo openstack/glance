@@ -294,7 +294,8 @@ class TestSwiftBackend(unittest.TestCase):
         Test that trying to delete a swift that doesn't exist
         raises an error
         """
-        url_pieces = urlparse.urlparse("swift://user:key@auth_address/noexist")
+        url_pieces = urlparse.urlparse(
+            "swift://user:key@auth_address/noexist")
         self.assertRaises(exception.NotFound,
                           SwiftBackend.delete,
                           url_pieces)

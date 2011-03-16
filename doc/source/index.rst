@@ -62,6 +62,7 @@ Using Glance
    installing
    controllingservers
    configuring
+   glance
    glanceapi
    client
 
