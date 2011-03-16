@@ -245,7 +245,7 @@ class GlanceTestResult(result.TextTestResult):
                     self.colorizer.write("ERROR", 'red')
                     self.stream.writeln()
                 elif self.dots:
-                    stream.wirte('E')
+                    stream.write('E')
     
     def startTest(self, test):
         unittest.TestResult.startTest(self, test)
