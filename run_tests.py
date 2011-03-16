@@ -237,14 +237,14 @@ class GlanceTestResult(result.TextTestResult):
                     elif self.dots:
                         stream.write(label[:1])
                 return
-            self.errors.append((test, exc_info))
-            test.passed = False
-            if stream is not None:
-                if self.showAll:
-                    self.colorizer.write("ERROR", 'red')
-                    self.stream.writeln()
-                elif self.dots:
-                    stream.write('E')
+        self.errors.append((test, exc_info))
+        test.passed = False
+        if stream is not None:
+            if self.showAll:
+                self.colorizer.write("ERROR", 'red')
+                self.stream.writeln()
+            elif self.dots:
+                stream.write('E')
 
     def startTest(self, test):
         unittest.TestResult.startTest(self, test)
