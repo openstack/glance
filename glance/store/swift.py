@@ -215,7 +215,16 @@ def parse_swift_tokens(parsed_uri):
             # see lp659445 and Python issue7904
             creds, path = path.split('@')
 
-        user, key = creds.split(':')
+        cred_parts = creds.split(':')
+
+        # User can be account:user, in which case cred_parts[0:2] will be
+        # the account and user. Combine them into a single username of
+        # account:user
+        if len(cred_parts) == 3:
+            user = ':'.join(cred_parts[0:2])
+        else:
+            user = cred_parts[0]
+        key = cred_parts[-1]
         path_parts = path.split('/')
         obj = path_parts.pop()
         container = path_parts.pop()

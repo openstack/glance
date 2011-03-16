@@ -29,7 +29,9 @@ import swift.common.client
 
 from glance.common import exception
 from glance.store import BackendException
-from glance.store.swift import SwiftBackend, format_swift_location
+from glance.store.swift import (SwiftBackend,
+                                format_swift_location,
+                                parse_swift_tokens)
 
 FIVE_KB = (5 * 1024)
 SWIFT_OPTIONS = {'verbose': True,
@@ -149,6 +151,41 @@ class TestSwiftBackend(unittest.TestCase):
     def tearDown(self):
         """Clear the test environment"""
         self.stubs.UnsetAll()
+
+    def test_parse_swift_tokens(self):
+        """
+        Test that the parse_swift_tokens function returns
+        user, key, authurl, container, and objname properly
+        """
+        uri = "swift://user:key@localhost/v1.0/container/objname"
+        url_pieces = urlparse.urlparse(uri)
+        user, key, authurl, container, objname =\
+                parse_swift_tokens(url_pieces)
+        self.assertEqual("user", user)
+        self.assertEqual("key", key)
+        self.assertEqual("https://localhost/v1.0", authurl)
+        self.assertEqual("container", container)
+        self.assertEqual("objname", objname)
+
+        uri = "swift://user:key@localhost:9090/v1.0/container/objname"
+        url_pieces = urlparse.urlparse(uri)
+        user, key, authurl, container, objname =\
+                parse_swift_tokens(url_pieces)
+        self.assertEqual("user", user)
+        self.assertEqual("key", key)
+        self.assertEqual("https://localhost:9090/v1.0", authurl)
+        self.assertEqual("container", container)
+        self.assertEqual("objname", objname)
+
+        uri = "swift://account:user:key@localhost:9090/v1.0/container/objname"
+        url_pieces = urlparse.urlparse(uri)
+        user, key, authurl, container, objname =\
+                parse_swift_tokens(url_pieces)
+        self.assertEqual("account:user", user)
+        self.assertEqual("key", key)
+        self.assertEqual("https://localhost:9090/v1.0", authurl)
+        self.assertEqual("container", container)
+        self.assertEqual("objname", objname)
 
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
