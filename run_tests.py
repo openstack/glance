@@ -129,8 +129,7 @@ class _Win32Colorizer(object):
             'yellow': red | green | bold,
             'magenta': red | blue | bold,
             'cyan': green | blue | bold,
-            'white': red | green | blue | bold
-            }
+            'white': red | green | blue | bold}
 
     def supported(cls, stream=sys.stdout):
         try:
@@ -246,7 +245,7 @@ class GlanceTestResult(result.TextTestResult):
                     self.stream.writeln()
                 elif self.dots:
                     stream.write('E')
-    
+
     def startTest(self, test):
         unittest.TestResult.startTest(self, test)
         current_case = test.test.__class__.__name__
