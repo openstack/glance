@@ -33,8 +33,7 @@ class TestMigrations(unittest.TestCase):
 
         self.options = dict(sql_connection=sql_connection,
                             verbose=False)
-
-        config.setup_logging(self.options)
+        config.setup_logging(self.options, {})
 
     def tearDown(self):
         api.configure_db(self.options)

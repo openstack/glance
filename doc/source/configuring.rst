@@ -18,3 +18,49 @@ Configuring Glance
 ==================
 
 .. todo:: Complete details of configuration with paste.deploy config files
+
+Configuring Logging in Glance
+-----------------------------
+
+There are a number of configuration options in Glance that control how Glance
+servers log messages. The configuration options are specified in the
+``glance.conf`` config file.
+
+* ``--log-config=PATH``
+
+Optional. Default: ``None``
+
+Specified on the command line only.
+
+Takes a path to a configuration file to use for configuring logging.
+
+* ``--log-format``
+
+*Because of a bug in the PasteDeploy package, this option is only available
+on the command line.*
+
+Optional. Default: ``%(asctime)s %(levelname)8s [%(name)s] %(message)s``
+
+The format of the log records. See the
+`logging module <http://docs.python.org/library/logging.html>`_ documentation for
+more information on setting this format string.
+
+* ``log_file`` (``--log-file`` when specified on the command line)
+
+The filepath of the file to use for logging messages from Glance's servers. If
+missing, the default is to output messages to ``stdout``, so if you are running
+Glance servers in a daemon mode (using ``glance-control``) you should make
+sure that the ``log_file`` option is set appropriately.
+
+* ``log_dir`` (``--log-dir`` when specified on the command line)
+
+The filepath of the directory to use for log files. If not specified (the default)
+the ``log_file`` is used as an absolute filepath.
+
+* ``log_date_format`` (``--log-date-format`` when specified from the command line)
+
+The format string for timestamps in the log output.
+
+Defaults to ``%Y-%m-%d %H:%M:%S``. See the
+`logging module <http://docs.python.org/library/logging.html>`_ documentation for
+more information on setting this format string.
