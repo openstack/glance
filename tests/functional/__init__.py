@@ -184,13 +184,12 @@ sql_idle_timeout = 3600
         """
         now = datetime.datetime.now()
         timeout_time = now + datetime.timedelta(seconds=timeout)
-        tries = 1
         while (timeout_time > now):
             if self.ping_server(self.api_port) and\
                self.ping_server(self.registry_port):
                 return
-            tries += 1
-            time.sleep(0.1)
+            now = datetime.datetime.now()
+            time.sleep(0.05)
         self.assertFalse(True, "Failed to start servers.")
 
     def stop_servers(self):
