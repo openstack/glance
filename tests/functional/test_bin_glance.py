@@ -88,3 +88,65 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual('No public images found.', out.strip())
 
         self.stop_servers()
+
+    def test_add_list_update_list(self):
+        """
+        Test for LP Bug #736295
+        We test the following:
+
+            0. Verify no public images in index
+            1. Add a NON-public image
+            2. Check that image does not appear in index
+            3. Update the image to be public
+            4. Check that image now appears in index
+        """
+
+        self.cleanup()
+        api_port, reg_port, conf_file = self.start_servers()
+
+        # 0. Verify no public images
+        cmd = "bin/glance --port=%d index" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('No public images found.', out.strip())
+
+        # 1. Add public image
+        cmd = "bin/glance --port=%d add name=MyImage" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('Added new image with ID: 1', out.strip())
+
+        # 2. Verify image added as public image
+        cmd = "bin/glance --port=%d index" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('No public images found.', out.strip())
+
+        # 3. Update the image to make it public
+        cmd = "bin/glance --port=%d update 1 is_public=True" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('Updated image 1', out.strip())
+
+        # 4. Verify image 1 in list of public images
+        cmd = "bin/glance --port=%d index" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        lines = out.split("\n")
+        first_line = lines[0]
+        self.assertEqual('Found 1 public images...', first_line)
+
+        image_data_line = lines[3]
+        self.assertTrue('MyImage' in image_data_line)
+
+        self.stop_servers()
