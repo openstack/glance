@@ -35,6 +35,17 @@ import webob.dec
 import webob.exc
 
 
+class WritableLogger(object):
+    """A thin wrapper that responds to `write` and logs."""
+
+    def __init__(self, logger, level=logging.DEBUG):
+        self.logger = logger
+        self.level = level
+
+    def write(self, msg):
+        self.logger.log(self.level, msg.strip("\n"))
+
+
 def run_server(application, port):
     """Run a WSGI server with the given application."""
     sock = eventlet.listen(('0.0.0.0', port))
@@ -61,7 +72,9 @@ class Server(object):
 
     def _run(self, application, socket):
         """Start a WSGI server in a new green thread."""
-        eventlet.wsgi.server(socket, application, custom_pool=self.pool)
+        logger = logging.getLogger('eventlet.wsgi.server')
+        eventlet.wsgi.server(socket, application, custom_pool=self.pool,
+                             log=WritableLogger(logger))
 
 
 class Middleware(object):
