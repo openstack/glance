@@ -29,10 +29,10 @@ documentation for more details).
 
 
 Now that Glance is installed, you can start the service.  The easiest way to
-do that is by using the `glance-combined` utility which runs both the
+do that is by using the `glance-control` utility which runs both the
 `glance-api` and `glance-registry` services::
 
-    glance-combined
+    glance-control all start
 
 
 Once both services are running, you can now use the `glance-upload` tool to
