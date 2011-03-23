@@ -35,8 +35,6 @@ import glance.common.exception as exception
 
 DEFAULT_LOG_FORMAT = "%(asctime)s %(levelname)8s [%(name)s] %(message)s"
 DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
-DEFAULT_LOG_HANDLER = 'stream'
-LOGGING_HANDLER_CHOICES = ['syslog', 'file', 'stream']
 
 
 def parse_options(parser, cli_args=None):
@@ -82,38 +80,7 @@ def add_common_options(parser):
     parser.add_option_group(group)
 
 
-def add_daemon_options(parser):
-    """
-    Given a supplied optparse.OptionParser, adds an OptionGroup that
-    represents all the configuration options around daemonization.
-
-    :param parser: optparse.OptionParser
-    """
-    help_text = "The following configuration options are specific to "\
-                "the daemonizing of this program."
-
-    group = optparse.OptionGroup(parser, "Daemon Options", help_text)
-    group.add_option('--config', default=None,
-                     help="Configuration file to read when loading "
-                          "application. If missing, the first argument is "
-                          "used. If no arguments are found, then a set of "
-                          "standard directories are searched for a config "
-                          "file.")
-    group.add_option("--pid-file", default=None, metavar="PATH",
-                     help="(Optional) Name of pid file for the server. "
-                          "If not specified, the pid file will be named "
-                          "/var/run/glance/<SERVER>.pid.")
-    group.add_option("--uid", type=int, default=os.getuid(),
-                     help="uid under which to run. Default: %default")
-    group.add_option("--gid", type=int, default=os.getgid(),
-                     help="gid under which to run. Default: %default")
-    group.add_option('--working-directory', '--working-dir',
-                     default=os.path.abspath(os.getcwd()),
-                     help="The working directory. Default: %default")
-    parser.add_option_group(group)
-
-
-def add_log_options(prog_name, parser):
+def add_log_options(parser):
     """
     Given a supplied optparse.OptionParser, adds an OptionGroup that
     represents all the configuration options around logging.
@@ -130,29 +97,25 @@ def add_log_options(prog_name, parser):
                           "any other logging options specified. Please see "
                           "the Python logging module documentation for "
                           "details on logging configuration files.")
-    group.add_option('--log-handler', default=DEFAULT_LOG_HANDLER,
-                     metavar="HANDLER",
-                     choices=LOGGING_HANDLER_CHOICES,
-                     help="What logging handler to use? "
-                           "Default: %default")
     group.add_option('--log-date-format', metavar="FORMAT",
                       default=DEFAULT_LOG_DATE_FORMAT,
                       help="Format string for %(asctime)s in log records. "
                            "Default: %default")
-    group.add_option('--log-file', default="%s.log" % prog_name,
-                      metavar="PATH",
-                      help="(Optional) Name of log file to output to.")
+    group.add_option('--log-file', default=None, metavar="PATH",
+                      help="(Optional) Name of log file to output to. "
+                           "If not set, logging will go to stdout.")
     group.add_option("--log-dir", default=None,
                       help="(Optional) The directory to keep log files in "
                            "(will be prepended to --logfile)")
     parser.add_option_group(group)
 
 
-def setup_logging(options):
+def setup_logging(options, conf):
     """
     Sets up the logging options for a log with supplied name
 
     :param options: Mapping of typed option key/values
+    :param conf: Mapping of untyped key/values from config file
     """
 
     if options.get('log_config', None):
@@ -182,27 +145,24 @@ def setup_logging(options):
     log_date_format = options.get('log_date_format', DEFAULT_LOG_DATE_FORMAT)
     formatter = logging.Formatter(log_format, log_date_format)
 
-    log_handler = options.get('log_handler', DEFAULT_LOG_HANDLER)
-    if log_handler == 'syslog':
-        syslog = logging.handlers.SysLogHandler(address='/dev/log')
-        syslog.setFormatter(formatter)
-        root_logger.addHandler(syslog)
-    elif log_handler == 'file':
-        logfile = options['log_file']
-        logdir = options['log_dir']
+    logfile = options.get('log_file')
+    if not logfile:
+        logfile = conf.get('log_file')
+
+    if logfile:
+        logdir = options.get('log_dir')
+        if not logdir:
+            logdir = conf.get('log_dir')
         if logdir:
             logfile = os.path.join(logdir, logfile)
         logfile = logging.FileHandler(logfile)
         logfile.setFormatter(formatter)
         logfile.setFormatter(formatter)
         root_logger.addHandler(logfile)
-    elif log_handler == 'stream':
+    else:
         handler = logging.StreamHandler(sys.stdout)
         handler.setFormatter(formatter)
         root_logger.addHandler(handler)
-    else:
-        raise exception.BadInputError(
-            "unrecognized log handler '%(log_handler)s'" % locals())
 
 
 def find_config_file(options, args):
@@ -270,6 +230,11 @@ def load_paste_app(app_name, options, args):
                             "Cannot load application %s" % app_name)
     try:
         conf = deploy.appconfig("config:%s" % conf_file, name=app_name)
+
+        # Setup logging early, supplying both the CLI options and the
+        # configuration mapping from the config file
+        setup_logging(options, conf)
+
         # We only update the conf dict for the verbose and debug
         # flags. Everything else must be set up in the conf file...
         conf['verbose'] = options['verbose']

@@ -14,8 +14,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 """
-Parllax Image controller
+Reference implementation registry server WSGI controller
 """
 
 import json
@@ -31,7 +32,9 @@ from glance.registry.db import api as db_api
 
 logger = logging.getLogger('glance.registry.server')
 
-DISPLAY_FIELDS_IN_INDEX = ['id', 'name', 'size', 'checksum']
+DISPLAY_FIELDS_IN_INDEX = ['id', 'name', 'size',
+                           'disk_format', 'container_format',
+                           'checksum']
 
 
 class Controller(wsgi.Controller):
@@ -55,6 +58,8 @@ class Controller(wsgi.Controller):
             'id': <ID>,
             'name': <NAME>,
             'size': <SIZE>,
+            'disk_format': <DISK_FORMAT>,
+            'container_format': <CONTAINER_FORMAT>,
             'checksum': <CHECKSUM>
             }
 
@@ -154,6 +159,8 @@ class Controller(wsgi.Controller):
 
         context = None
         try:
+            logger.debug("Updating image %(id)s with metadata: %(image_data)r"
+                         % locals())
             updated_image = db_api.image_update(context, id, image_data)
             return dict(image=make_image_dict(updated_image))
         except exception.Invalid, e:

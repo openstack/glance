@@ -22,8 +22,6 @@ from __future__ import absolute_import
 import httplib
 import logging
 
-from swift.common.client import Connection, ClientException
-
 from glance.common import config
 from glance.common import exception
 import glance.store
@@ -49,18 +47,19 @@ class SwiftBackend(glance.store.Backend):
         swift instance at auth_url and downloads the file. Returns the
         generator resp_body provided by get_object.
         """
+        from swift.common import client as swift_client
         (user, key, authurl, container, obj) = parse_swift_tokens(parsed_uri)
 
         # TODO(sirp): snet=False for now, however, if the instance of
         # swift we're talking to is within our same region, we should set
         # snet=True
-        swift_conn = Connection(
+        swift_conn = swift_client.Connection(
             authurl=authurl, user=user, key=key, snet=False)
 
         try:
             (resp_headers, resp_body) = swift_conn.get_object(
                 container=container, obj=obj, resp_chunk_size=cls.CHUNKSIZE)
-        except ClientException, e:
+        except swift_client.ClientException, e:
             if e.http_status == httplib.NOT_FOUND:
                 location = format_swift_location(user, key, authurl,
                                                  container, obj)
@@ -99,6 +98,7 @@ class SwiftBackend(glance.store.Backend):
                 The location that was written,
                 and the size in bytes of the data written
         """
+        from swift.common import client as swift_client
         container = options.get('swift_store_container',
                                 DEFAULT_SWIFT_CONTAINER)
         auth_address = options.get('swift_store_auth_address')
@@ -132,8 +132,8 @@ class SwiftBackend(glance.store.Backend):
                    "options.")
             raise glance.store.BackendException(msg)
 
-        swift_conn = Connection(authurl=full_auth_address, user=user,
-                                      key=key, snet=False)
+        swift_conn = swift_client.Connection(
+            authurl=full_auth_address, user=user, key=key, snet=False)
 
         logger.debug("Adding image object to Swift using "
                      "(auth_address=%(auth_address)s, user=%(user)s, "
@@ -162,7 +162,7 @@ class SwiftBackend(glance.store.Backend):
             if 'content-length' in resp_headers:
                 size = int(resp_headers['content-length'])
             return (location, size, obj_etag)
-        except ClientException, e:
+        except swift_client.ClientException, e:
             if e.http_status == httplib.CONFLICT:
                 raise exception.Duplicate("Swift already has an image at "
                                           "location %(location)s" % locals())
@@ -175,17 +175,18 @@ class SwiftBackend(glance.store.Backend):
         """
         Deletes the swift object(s) at the parsed_uri location
         """
+        from swift.common import client as swift_client
         (user, key, authurl, container, obj) = parse_swift_tokens(parsed_uri)
 
         # TODO(sirp): snet=False for now, however, if the instance of
         # swift we're talking to is within our same region, we should set
         # snet=True
-        swift_conn = Connection(
+        swift_conn = swift_client.Connection(
             authurl=authurl, user=user, key=key, snet=False)
 
         try:
             swift_conn.delete_object(container, obj)
-        except ClientException, e:
+        except swift_client.ClientException, e:
             if e.http_status == httplib.NOT_FOUND:
                 location = format_swift_location(user, key, authurl,
                                                  container, obj)
@@ -214,7 +215,16 @@ def parse_swift_tokens(parsed_uri):
             # see lp659445 and Python issue7904
             creds, path = path.split('@')
 
-        user, key = creds.split(':')
+        cred_parts = creds.split(':')
+
+        # User can be account:user, in which case cred_parts[0:2] will be
+        # the account and user. Combine them into a single username of
+        # account:user
+        if len(cred_parts) == 3:
+            user = ':'.join(cred_parts[0:2])
+        else:
+            user = cred_parts[0]
+        key = cred_parts[-1]
         path_parts = path.split('/')
         obj = path_parts.pop()
         container = path_parts.pop()
@@ -253,9 +263,10 @@ def create_container_if_missing(container, swift_conn, options):
     :param swift_conn: Connection to Swift
     :param options: Option mapping
     """
+    from swift.common import client as swift_client
     try:
         swift_conn.head_container(container)
-    except ClientException, e:
+    except swift_client.ClientException, e:
         if e.http_status == httplib.NOT_FOUND:
             add_container = config.get_option(options,
                                 'swift_store_create_container_on_put',

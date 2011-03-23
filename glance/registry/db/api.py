@@ -24,6 +24,7 @@ Defines interface for DB access
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import exc
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import sessionmaker
 
@@ -91,7 +92,7 @@ def unregister_models():
     """Unregister Models, useful clearing out data before testing"""
     global _ENGINE
     assert _ENGINE
-    BASE.metadata.drop_all(engine)
+    BASE.metadata.drop_all(_ENGINE)
 
 
 def image_create(context, values):
@@ -126,8 +127,7 @@ def image_get(context, image_id, session=None):
                        filter_by(id=image_id).\
                        one()
     except exc.NoResultFound:
-        new_exc = exception.NotFound("No model for id %s" % image_id)
-        raise new_exc.__class__, new_exc, sys.exc_info()[2]
+        raise exception.NotFound("No image found with ID %s" % image_id)
 
 
 def image_get_all_public(context):

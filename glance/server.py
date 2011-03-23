@@ -83,6 +83,9 @@ class Controller(wsgi.Controller):
 
             * id -- The opaque image identifier
             * name -- The name of the image
+            * disk_format -- The disk image format
+            * container_format -- The "container" format of the image
+            * checksum -- MD5 checksum of the image data
             * size -- Size of image data in bytes
 
         :param request: The WSGI/Webob Request object
@@ -91,9 +94,10 @@ class Controller(wsgi.Controller):
             {'images': [
                 {'id': <ID>,
                  'name': <NAME>,
-                 'size': <SIZE>,
+                 'disk_format': <DISK_FORMAT>,
+                 'container_format': <DISK_FORMAT>,
                  'checksum': <CHECKSUM>
-                }, ...
+                 'size': <SIZE>}, ...
             ]}
         """
         images = registry.get_images_list(self.options)
@@ -413,7 +417,6 @@ class Controller(wsgi.Controller):
             image_meta = registry.update_image_metadata(self.options,
                                                         id,
                                                         new_image_meta)
-
             if has_body:
                 image_meta = self._upload_and_activate(req, image_meta)
 

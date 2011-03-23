@@ -19,6 +19,7 @@ import os
 import unittest
 
 import glance.registry.db.migration as migration_api
+import glance.registry.db.api as api
 import glance.common.config as config
 
 
@@ -27,15 +28,16 @@ class TestMigrations(unittest.TestCase):
 
     def setUp(self):
         self.db_path = "glance_test_migration.sqlite"
-        if os.path.exists(self.db_path):
-            os.unlink(self.db_path)
-        self.options = dict(sql_connection="sqlite:///%s" % self.db_path,
+        sql_connection = os.environ.get('GLANCE_SQL_CONNECTION',
+                                        "sqlite:///%s" % self.db_path)
+
+        self.options = dict(sql_connection=sql_connection,
                             verbose=False)
-        config.setup_logging(self.options)
+        config.setup_logging(self.options, {})
 
     def tearDown(self):
-        if os.path.exists(self.db_path):
-            os.unlink(self.db_path)
+        api.configure_db(self.options)
+        api.unregister_models()
 
     def test_db_sync_downgrade_then_upgrade(self):
         migration_api.db_sync(self.options)

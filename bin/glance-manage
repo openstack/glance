@@ -54,7 +54,7 @@ def create_options(parser):
     """
     glance.registry.db.add_options(parser)
     config.add_common_options(parser)
-    config.add_log_options('glance-manage', parser)
+    config.add_log_options(parser)
 
 
 def do_db_version(options, args):
@@ -119,7 +119,7 @@ def main():
     (options, args) = config.parse_options(oparser)
 
     try:
-        config.setup_logging(options)
+        config.setup_logging(options, {})
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
 

@@ -90,7 +90,8 @@ def delete_from_backend(uri, **kwargs):
 
     backend_class = get_backend_class(scheme)
 
-    return backend_class.delete(parsed_uri, **kwargs)
+    if hasattr(backend_class, 'delete'):
+        return backend_class.delete(parsed_uri, **kwargs)
 
 
 def get_store_from_location(location):
