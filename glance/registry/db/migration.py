@@ -38,7 +38,7 @@ def db_version(options):
     :param options: options dict
     :retval version number
     """
-    repo_path = _find_migrate_repo()
+    repo_path = get_migrate_repo_path()
     sql_connection = options['sql_connection']
     try:
         return versioning_api.db_version(sql_connection, repo_path)
@@ -56,7 +56,7 @@ def upgrade(options, version=None):
     :retval version number
     """
     db_version(options)  # Ensure db is under migration control
-    repo_path = _find_migrate_repo()
+    repo_path = get_migrate_repo_path()
     sql_connection = options['sql_connection']
     version_str = version or 'latest'
     logger.info("Upgrading %(sql_connection)s to version %(version_str)s" %
@@ -72,7 +72,7 @@ def downgrade(options, version):
     :retval version number
     """
     db_version(options)  # Ensure db is under migration control
-    repo_path = _find_migrate_repo()
+    repo_path = get_migrate_repo_path()
     sql_connection = options['sql_connection']
     logger.info("Downgrading %(sql_connection)s to version %(version)s" %
                 locals())
@@ -98,7 +98,7 @@ def _version_control(options):
 
     :param options: options dict
     """
-    repo_path = _find_migrate_repo()
+    repo_path = get_migrate_repo_path()
     sql_connection = options['sql_connection']
     return versioning_api.version_control(sql_connection, repo_path)
 
@@ -117,7 +117,7 @@ def db_sync(options, version=None):
     upgrade(options, version=version)
 
 
-def _find_migrate_repo():
+def get_migrate_repo_path():
     """Get the path for the migrate repository."""
     path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                         'migrate_repo')
