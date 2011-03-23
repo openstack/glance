@@ -341,8 +341,8 @@ class Controller(wsgi.Controller):
             # This is why we can't use a raise with no arguments here: our
             # exception context was destroyed by Eventlet. To work around
             # this, we need to 'memorize' the exception context, and then
-            # re-raise using 3-arg form after Eventlet has run
-            raise exc_type, exc_value, exc_traceback
+            # re-raise here.
+            raise exc_type(exc_traceback)
 
     def create(self, req):
         """
