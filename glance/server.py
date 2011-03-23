@@ -163,7 +163,9 @@ class Controller(wsgi.Controller):
                 yield chunk
 
         res = Response(app_iter=image_iterator(),
-                       content_type="text/plain")
+                       content_type="application/octet-stream")
+        # Using app_iter blanks content-length, so we set it here...
+        res.headers.add('Content-Length', image['size'])
         utils.inject_image_meta_into_headers(res, image)
         return req.get_response(res)
 

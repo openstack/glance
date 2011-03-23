@@ -270,7 +270,7 @@ to spell field names correctly. :)"""
 
     # Have to handle "boolean" values specially...
     if 'is_public' in fields:
-        image_meta['is_public'] = utils.int_from_bool_as_string(
+        image_meta['is_public'] = utils.bool_from_string(
             fields.pop('is_public'))
 
     # Add custom attributes, which are all the arguments remaining
