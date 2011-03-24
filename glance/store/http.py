@@ -24,7 +24,7 @@ class HTTPBackend(glance.store.Backend):
     """ An implementation of the HTTP Backend Adapter """
 
     @classmethod
-    def get(cls, parsed_uri, expected_size, conn_class=None):
+    def get(cls, parsed_uri, expected_size, options=None, conn_class=None):
         """Takes a parsed uri for an HTTP resource, fetches it, and yields the
         data.
         """

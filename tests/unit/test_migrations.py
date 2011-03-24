@@ -36,7 +36,7 @@ from sqlalchemy.pool import NullPool
 
 from glance.common import exception
 import glance.registry.db.migration as migration_api
-from tests.unit.test_misc import execute
+from tests.utils import execute
 
 
 class TestMigrations(unittest.TestCase):
