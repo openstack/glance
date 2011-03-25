@@ -110,7 +110,7 @@ class TestCurlApi(functional.FunctionalTest):
         lines = out.split("\r\n")
         status_line = lines[0]
 
-        self.assertEqual("HTTP/1.1 200 OK", status_line)
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
 
         # 4. HEAD /images
         # Verify image found now
@@ -214,6 +214,7 @@ class TestCurlApi(functional.FunctionalTest):
              "disk_format": None,
              "id": 1,
              "name": "Image1",
+             "checksum": "c2e5db72bd7fd153f53ede5da5a06de3",
              "size": 5120}]}
         self.assertEqual(expected_result, json.loads(out.strip()))
 
