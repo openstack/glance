@@ -36,7 +36,7 @@ from sqlalchemy.pool import NullPool
 
 from glance.common import exception
 import glance.registry.db.migration as migration_api
-from tests.unit.test_misc import execute
+from tests.utils import execute
 
 
 class TestMigrations(unittest.TestCase):
@@ -44,8 +44,11 @@ class TestMigrations(unittest.TestCase):
     """Test sqlalchemy-migrate migrations"""
 
     TEST_DATABASES = {}
-    CONFIG_FILE_PATH = os.path.join('tests', 'unit',
-                                    'test_migrations.conf')
+    # Test machines can set the GLANCE_TEST_MIGRATIONS_CONF variable
+    # to override the location of the config file for migration testing
+    CONFIG_FILE_PATH = os.environ.get('GLANCE_TEST_MIGRATIONS_CONF',
+                                      os.path.join('tests', 'unit',
+                                                   'test_migrations.conf'))
     REPOSITORY_PATH = os.path.join('glance', 'registry', 'db', 'migrate_repo')
     REPOSITORY = Repository(REPOSITORY_PATH)
 
