@@ -14,8 +14,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 """
-Parllax Image controller
+Reference implementation registry server WSGI controller
 """
 
 import json
@@ -30,6 +31,10 @@ from glance.registry.db import api as db_api
 
 
 logger = logging.getLogger('glance.registry.server')
+
+DISPLAY_FIELDS_IN_INDEX = ['id', 'name', 'size',
+                           'disk_format', 'container_format',
+                           'checksum']
 
 
 class Controller(wsgi.Controller):
@@ -49,16 +54,24 @@ class Controller(wsgi.Controller):
 
         Where image_list is a sequence of mappings::
 
-            {'id': image_id, 'name': image_name}
+            {
+            'id': <ID>,
+            'name': <NAME>,
+            'size': <SIZE>,
+            'disk_format': <DISK_FORMAT>,
+            'container_format': <CONTAINER_FORMAT>,
+            'checksum': <CHECKSUM>
+            }
 
         """
         images = db_api.image_get_all_public(None)
-        image_dicts = [dict(id=i['id'],
-                            name=i['name'],
-                            disk_format=i['disk_format'],
-                            container_format=i['container_format'],
-                            size=i['size']) for i in images]
-        return dict(images=image_dicts)
+        results = []
+        for image in images:
+            result = {}
+            for field in DISPLAY_FIELDS_IN_INDEX:
+                result[field] = image[field]
+            results.append(result)
+        return dict(images=results)
 
     def detail(self, req):
         """Return detailed information for all public, non-deleted images

@@ -67,6 +67,7 @@ JSON-encoded mapping in the following format::
      'disk_format': 'vhd',
      'container_format': 'ovf',
      'size': '5368709120',
+     'checksum': 'c2e5db72bd7fd153f53ede5da5a06de3',
      'location': 'swift://account:key/container/image.tar.gz.0',
      'created_at': '2010-02-03 09:34:01',
      'updated_at': '2010-02-03 09:34:01',
@@ -88,6 +89,8 @@ JSON-encoded mapping in the following format::
 
   The `properties` field is a mapping of free-form key/value pairs that
   have been saved with the image metadata
+
+  The `checksum` field is an MD5 checksum of the image file data
 
 
 Requesting Detailed Metadata on a Specific Image
@@ -116,6 +119,7 @@ following shows an example of the HTTP headers returned from the above
   x-image-meta-disk-format      vhd
   x-image-meta-container-format ovf
   x-image-meta-size             5368709120
+  x-image-meta-checksum         c2e5db72bd7fd153f53ede5da5a06de3
   x-image-meta-location         swift://account:key/container/image.tar.gz.0
   x-image-meta-created_at       2010-02-03 09:34:01
   x-image-meta-updated_at       2010-02-03 09:34:01
@@ -136,6 +140,9 @@ following shows an example of the HTTP headers returned from the above
   `x-image-meta-property-`.  These headers are free-form key/value pairs
   that have been saved with the image metadata. The key is the string
   after `x-image-meta-property-` and the value is the value of the header
+
+  The response's `ETag` header will always be equal to the
+  `x-image-meta-checksum` value
 
 
 Retrieving a Virtual Machine Image
@@ -166,6 +173,7 @@ returned from the above ``GET`` request::
   x-image-meta-disk-format      vhd
   x-image-meta-container-format ovf
   x-image-meta-size             5368709120
+  x-image-meta-checksum         c2e5db72bd7fd153f53ede5da5a06de3
   x-image-meta-location         swift://account:key/container/image.tar.gz.0
   x-image-meta-created_at       2010-02-03 09:34:01
   x-image-meta-updated_at       2010-02-03 09:34:01
@@ -189,6 +197,9 @@ returned from the above ``GET`` request::
 
   The response's `Content-Length` header shall be equal to the value of
   the `x-image-meta-size` header
+
+  The response's `ETag` header will always be equal to the
+  `x-image-meta-checksum` value
 
   The image data itself will be the body of the HTTP response returned
   from the request, which will have content-type of
@@ -283,6 +294,15 @@ The list of metadata headers that Glance accepts are listed below.
 
   When not present, Glance will calculate the image's size based on the size
   of the request body.
+
+* ``x-image-meta-checksum``
+
+  This header is optional. When present it shall be the expected **MD5**
+  checksum of the image file data.
+
+  When present, Glance will verify the checksum generated from the backend
+  store when storing your image against this value and return a 
+  **400 Bad Request** if the values do not match.
 
 * ``x-image-meta-is-public``
 

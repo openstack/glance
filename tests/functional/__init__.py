@@ -203,14 +203,14 @@ sql_idle_timeout = 3600
         """
 
         # Spin down the API and default registry server
-        cmd = ("./bin/glance-control api start "
+        cmd = ("./bin/glance-control api stop "
                "%(conf_file_name)s --pid-file=%(api_pid_file)s"
                % self.__dict__)
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode,
                          "Failed to spin down the API server. "
                          "Got: %s" % err)
-        cmd = ("./bin/glance-control registry start "
+        cmd = ("./bin/glance-control registry stop "
                "%(conf_file_name)s --pid-file=%(registry_pid_file)s"
                % self.__dict__)
         exitcode, out, err = execute(cmd)
