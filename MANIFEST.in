@@ -1,4 +1,4 @@
-include run_tests.sh
+include run_tests.sh ChangeLog
 include README builddeb.sh
 include MANIFEST.in pylintrc
 include tests/__init__.py
