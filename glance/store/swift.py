@@ -161,7 +161,7 @@ class SwiftBackend(glance.store.Backend):
             # header keys are lowercased by Swift
             if 'content-length' in resp_headers:
                 size = int(resp_headers['content-length'])
-            return (location, size)
+            return (location, size, obj_etag)
         except swift_client.ClientException, e:
             if e.http_status == httplib.CONFLICT:
                 raise exception.Duplicate("Swift already has an image at "

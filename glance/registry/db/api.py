@@ -43,7 +43,7 @@ BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
 
 IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size',
                                       'disk_format', 'container_format',
-                                      'is_public', 'location'])
+                                      'is_public', 'location', 'checksum'])
 
 CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
 DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi']
@@ -256,6 +256,11 @@ def _set_properties_for_image(context, image_ref, properties, session=None):
         else:
             image_property_create(context, prop_values, session=session)
 
+    for key in orig_properties.keys():
+        if not key in properties:
+            prop_ref = orig_properties[key]
+            image_property_delete(context, prop_ref, session=session)
+
 
 def image_property_create(context, values, session=None):
     """Create an ImageProperty object"""
@@ -273,6 +278,14 @@ def _image_property_update(context, prop_ref, values, session=None):
     """
     _drop_protected_attrs(models.ImageProperty, values)
     prop_ref.update(values)
+    prop_ref.save(session=session)
+    return prop_ref
+
+
+def image_property_delete(context, prop_ref, session=None):
+    """Used internally by image_property_create and image_property_update
+    """
+    prop_ref.update(dict(deleted=True))
     prop_ref.save(session=session)
     return prop_ref
 

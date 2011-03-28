@@ -104,6 +104,7 @@ class Image(BASE, ModelBase):
     status = Column(String(30), nullable=False)
     is_public = Column(Boolean, nullable=False, default=False)
     location = Column(Text)
+    checksum = Column(String(32))
 
 
 class ImageProperty(BASE, ModelBase):
