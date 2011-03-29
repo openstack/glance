@@ -157,11 +157,16 @@ class Controller(wsgi.Controller):
         """
         image_data = json.loads(req.body)['image']
 
+        purge_props = req.headers.get("X-Glance-Registry-Purge-Props", "false")
         context = None
         try:
             logger.debug("Updating image %(id)s with metadata: %(image_data)r"
                          % locals())
-            updated_image = db_api.image_update(context, id, image_data)
+            if purge_props == "true":
+                updated_image = db_api.image_update(context, id, image_data,
+                                                        True)
+            else:
+                updated_image = db_api.image_update(context, id, image_data)
             return dict(image=make_image_dict(updated_image))
         except exception.Invalid, e:
             msg = ("Failed to update image metadata. "

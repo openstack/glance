@@ -97,16 +97,16 @@ def unregister_models():
 
 def image_create(context, values):
     """Create an image from the values dictionary."""
-    return _image_update(context, values, None)
+    return _image_update(context, values, None, False)
 
 
-def image_update(context, image_id, values):
+def image_update(context, image_id, values, purge_props=False):
     """Set the given properties on an image and update it.
 
     Raises NotFound if image does not exist.
 
     """
-    return _image_update(context, values, image_id)
+    return _image_update(context, values, image_id, purge_props)
 
 
 def image_destroy(context, image_id):
@@ -188,7 +188,7 @@ def validate_image(values):
             raise exception.Invalid(msg)
 
 
-def _image_update(context, values, image_id):
+def _image_update(context, values, image_id, purge_props=False):
     """Used internally by image_create and image_update
 
     :param context: Request context
@@ -227,12 +227,14 @@ def _image_update(context, values, image_id):
 
         image_ref.save(session=session)
 
-        _set_properties_for_image(context, image_ref, properties, session)
+        _set_properties_for_image(context, image_ref, properties, purge_props,
+                                  session)
 
     return image_get(context, image_ref.id)
 
 
-def _set_properties_for_image(context, image_ref, properties, session=None):
+def _set_properties_for_image(context, image_ref, properties,
+                              purge_props=False, session=None):
     """
     Create or update a set of image_properties for a given image
 
@@ -256,10 +258,11 @@ def _set_properties_for_image(context, image_ref, properties, session=None):
         else:
             image_property_create(context, prop_values, session=session)
 
-    for key in orig_properties.keys():
-        if not key in properties:
-            prop_ref = orig_properties[key]
-            image_property_delete(context, prop_ref, session=session)
+    if purge_props:
+        for key in orig_properties.keys():
+            if not key in properties:
+                prop_ref = orig_properties[key]
+                image_property_delete(context, prop_ref, session=session)
 
 
 def image_property_create(context, values, session=None):

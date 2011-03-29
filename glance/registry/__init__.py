@@ -63,13 +63,13 @@ def add_image_metadata(options, image_meta):
     return new_image_meta
 
 
-def update_image_metadata(options, image_id, image_meta):
+def update_image_metadata(options, image_id, image_meta, purge_props=False):
     if options['debug']:
         logger.debug("Updating image metadata for image %s...", image_id)
         _debug_print_metadata(image_meta)
 
     c = get_registry_client(options)
-    new_image_meta = c.update_image(image_id, image_meta)
+    new_image_meta = c.update_image(image_id, image_meta, purge_props)
 
     if options['debug']:
         logger.debug("Returned image metadata from call to "
