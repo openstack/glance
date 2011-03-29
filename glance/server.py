@@ -418,7 +418,8 @@ class Controller(wsgi.Controller):
         try:
             image_meta = registry.update_image_metadata(self.options,
                                                         id,
-                                                        new_image_meta)
+                                                        new_image_meta,
+                                                        True)
             if has_body:
                 image_meta = self._upload_and_activate(req, image_meta)
 

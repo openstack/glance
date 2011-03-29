@@ -87,7 +87,7 @@ class RegistryClient(BaseClient):
         data = json.loads(res.read())
         return data['image']
 
-    def update_image(self, image_id, image_metadata):
+    def update_image(self, image_id, image_metadata, purge_props=False):
         """
         Updates Registry's information about an image
         """
@@ -96,7 +96,10 @@ class RegistryClient(BaseClient):
 
         body = json.dumps(image_metadata)
 
-        res = self.do_request("PUT", "/images/%s" % image_id, body)
+        headers = {}
+        if purge_props:
+            headers["X-Glance-Registry-Purge-Props"] = "true"
+        res = self.do_request("PUT", "/images/%s" % image_id, body, headers)
         data = json.loads(res.read())
         image = data['image']
         return image
