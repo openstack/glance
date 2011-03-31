@@ -47,6 +47,9 @@ DateTime = lambda: sqlalchemy.types.DateTime(timezone=False)
 Integer = lambda: sqlalchemy.types.Integer()
 
 
+BigInteger = lambda: sqlalchemy.types.BigInteger()
+
+
 def from_migration_import(module_name, fromlist):
     """Import a migration file and return the module
 
