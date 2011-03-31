@@ -149,20 +149,20 @@ on our local filesystem in ``/tmp/images/myimage.tar.gz``.
 We'd also like to tell Glance that this image should be called "My Image", and
 that the image should be public -- anyone should be able to fetch it.
 
-Here is how we'd upload this image to Glance::
+Here is how we'd upload this image to Glance. Change example ip number to your server ip number.::
 
-  $> glance add name="My Image" is_public=true < /tmp/images/myimage.tar.gz
+  $> glance add name="My Image" is_public=true < /tmp/images/myimage.tar.gz --host=65.114.169.29
 
 If Glance was able to successfully upload and store your VM image data and
 metadata attributes, you would see something like this::
 
-  $> glance add name="My Image" is_public=true < /tmp/images/myimage.tar.gz
+  $> glance add name="My Image" is_public=true < /tmp/images/myimage.tar.gz --host=65.114.169.29
   Added new image with ID: 2
 
 You can use the ``--verbose`` (or ``-v``) command-line option to print some more
 information about the metadata that was saved with the image::
 
-  $> glance --verbose add name="My Image" is_public=true < /tmp/images/myimage.tar.gz
+  $> glance --verbose add name="My Image" is_public=true < /tmp/images/myimage.tar.gz --host=65.114.169.29
   Added new image with ID: 4
   Returned the following metadata for the new image:
                  container_format => ovf
@@ -183,7 +183,7 @@ information about the metadata that was saved with the image::
 If you are unsure about what will be added, you can use the ``--dry-run``
 command-line option, which will simply show you what *would* have happened::
 
-  $> glance --dry-run add name="Foo" distro="Ubuntu" is_publi=True < /tmp/images/myimage.tar.gz
+  $> glance --dry-run add name="Foo" distro="Ubuntu" is_publi=True < /tmp/images/myimage.tar.gz --host=65.114.169.29
   Dry run. We would have done the following:
   Add new image with metadata:
                  container_format => ovf
@@ -250,12 +250,12 @@ image. You use this command like so::
 Let's say we have an image with identifier 5 that we wish to change the is_public
 attribute of the image from False to True. The following would accomplish this::
 
-  $> glance update 5 is_public=true
+  $> glance update 5 is_public=true --host=65.114.169.29
   Updated image 5
 
 Using the ``--verbose`` flag will show you all the updated data about the image::
 
-  $> glance --verbose update 5 is_public=true
+  $> glance --verbose update 5 is_public=true --host=65.114.169.29
   Updated image 5
   Updated image metadata for image 5:
   URI: http://example.com/images/5
@@ -273,7 +273,7 @@ The ``delete`` command
 
 You can delete an image by using the ``delete`` command, shown below::
 
-  $> glance --verbose delete 5
+  $> glance --verbose delete 5 --host=65.114.169.29
   Deleted image 5
 
 The ``index`` command
@@ -282,7 +282,7 @@ The ``index`` command
 The ``index`` command displays brief information about the *public* images
 available in Glance, as shown below::
 
-  $> glance index
+  $> glance index --host=65.114.169.29
   Found 4 public images...
   ID               Name                           Disk Format          Container Format     Size          
   ---------------- ------------------------------ -------------------- -------------------- --------------
@@ -297,7 +297,7 @@ The ``details`` command
 The ``details`` command displays detailed information about the *public* images
 available in Glance, as shown below::
 
-  $> glance details
+  $> glance details --host=65.114.169.29
   Found 4 public images...
   ================================================================================
   URI: http://example.com/images/1
@@ -349,7 +349,7 @@ The ``show`` command
 The ``show`` command displays detailed information about a specific image, specified
 with ``<ID>``, as shown below::
 
-  $> glance show 3
+  $> glance show 3 --host=65.114.169.29
   URI: http://example.com/images/3
   Id: 3
   Public? Yes
@@ -368,7 +368,7 @@ The ``clear`` command is an administrative command that deletes **ALL** images
 and all image metadata. Passing the ``--verbose`` command will print brief
 information about all the images that were deleted, as shown below::
 
-  $> glance --verbose clear
+  $> glance --verbose clear --host=65.114.169.29
   Deleting image 1 "Some web image" ... done
   Deleting image 2 "Some other web image" ... done
   Completed in 0.0328 sec.

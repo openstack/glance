@@ -30,6 +30,8 @@ reference implementation registry server that ships with Glance):
 
 * Using the ``glance-control`` server daemon wrapper program
 
+We recommend using the second way.
+
 Manually starting the server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -41,7 +43,7 @@ use when configuring the server application.
 
   Glance ships with an ``etc/`` directory that contains sample ``paste.deploy``
   configuration files that you can copy to a standard configuation directory and
-  adapt for your own uses.
+  adapt for your own uses. Specifically, bind_host must be set properly.
 
 If you do `not` specifiy a configuration file on the command line, Glance will
 do its best to locate a ``glance.conf`` configuration file in one of the
@@ -57,30 +59,45 @@ following directories, stopping at the first config file it finds:
 
 * /etc
 
-If no configuration file is found, you will see any error, like so::
+If no configuration file is found, you will see an error, like::
 
   $> glance-api
   ERROR: Unable to locate any configuration file. Cannot load application glance-api
 
-Here is an example showing how you can manually start the ``glance-api`` server
-in a shell.::
+Here is an example showing how you can manually start the ``glance-api`` server and ``glance-registry`` in a shell.::
 
-  $> sudo glance-api etc/glance.conf.sample --debug
-  2011-02-09 14:58:29    DEBUG [glance-api] ********************************************************************************
-  2011-02-09 14:58:29    DEBUG [glance-api] Configuration options gathered from config file:
-  2011-02-09 14:58:29    DEBUG [glance-api] /home/jpipes/repos/glance/trunk/etc/glance.conf.sample
-  2011-02-09 14:58:29    DEBUG [glance-api] ================================================
-  2011-02-09 14:58:29    DEBUG [glance-api] bind_host                      0.0.0.0
-  2011-02-09 14:58:29    DEBUG [glance-api] bind_port                      9292
-  2011-02-09 14:58:29    DEBUG [glance-api] debug                          True
-  2011-02-09 14:58:29    DEBUG [glance-api] default_store                  file
-  2011-02-09 14:58:29    DEBUG [glance-api] filesystem_store_datadir       /var/lib/glance/images/
-  2011-02-09 14:58:29    DEBUG [glance-api] registry_host                  0.0.0.0
-  2011-02-09 14:58:29    DEBUG [glance-api] registry_port                  9191
-  2011-02-09 14:58:29    DEBUG [glance-api] verbose                        False
-  2011-02-09 14:58:29    DEBUG [glance-api] ********************************************************************************
-  2011-02-09 14:58:29    DEBUG [routes.middleware] Initialized with method overriding = True, and path info altering = True
-  (16333) wsgi starting up on http://0.0.0.0:9292/
+  $ sudo glance-api glance.conf --debug &  
+  2011-03-31 12:47:15    DEBUG [glance-api] ********************************************************************************
+  2011-03-31 12:47:15    DEBUG [glance-api] Configuration options gathered from config file:
+  2011-03-31 12:47:15    DEBUG [glance-api] /home/jsuh/glance.conf
+  2011-03-31 12:47:15    DEBUG [glance-api] ================================================
+  2011-03-31 12:47:15    DEBUG [glance-api] bind_host                      65.114.169.29
+  2011-03-31 12:47:15    DEBUG [glance-api] bind_port                      9292
+  2011-03-31 12:47:15    DEBUG [glance-api] debug                          True
+  2011-03-31 12:47:15    DEBUG [glance-api] default_store                  file
+  2011-03-31 12:47:15    DEBUG [glance-api] filesystem_store_datadir       /home/jsuh/images/
+  2011-03-31 12:47:15    DEBUG [glance-api] registry_host                  65.114.169.29
+  2011-03-31 12:47:15    DEBUG [glance-api] registry_port                  9191
+  2011-03-31 12:47:15    DEBUG [glance-api] verbose                        False
+  2011-03-31 12:47:15    DEBUG [glance-api] ********************************************************************************
+  2011-03-31 12:47:15    DEBUG [routes.middleware] Initialized with method overriding = True, and path info altering = True
+  (20009) wsgi starting up on http://65.114.169.29:9292/
+
+  $ sudo glance-registry glance.conf &  
+  2011-03-31 12:47:30,591 INFO sqlalchemy.engine.base.Engine.0x...3cec PRAGMA table_info("images")
+  2011-03-31 12:47:30     INFO [sqlalchemy.engine.base.Engine.0x...3cec] PRAGMA table_info("images")
+  2011-03-31 12:47:30,591 INFO sqlalchemy.engine.base.Engine.0x...3cec ()
+  2011-03-31 12:47:30     INFO [sqlalchemy.engine.base.Engine.0x...3cec] ()
+  2011-03-31 12:47:30,592 INFO sqlalchemy.engine.base.Engine.0x...3cec PRAGMA table_info("image_properties")
+  2011-03-31 12:47:30     INFO [sqlalchemy.engine.base.Engine.0x...3cec] PRAGMA table_info("image_properties")
+  2011-03-31 12:47:30,592 INFO sqlalchemy.engine.base.Engine.0x...3cec ()
+  2011-03-31 12:47:30     INFO [sqlalchemy.engine.base.Engine.0x...3cec] ()
+  (20012) wsgi starting up on http://65.114.169.29:9191/
+
+  $ ps aux | grep glance
+  root     20009  0.7  0.1  12744  9148 pts/1    S    12:47   0:00 /usr/bin/python /usr/bin/glance-api glance.conf --debug
+  root     20012  2.0  0.1  25188 13356 pts/1    S    12:47   0:00 /usr/bin/python /usr/bin/glance-registry glance.conf
+  jsuh     20017  0.0  0.0   3368   744 pts/1    S+   12:47   0:00 grep glance
 
 Simply supply the configuration file as the first argument
 (``etc/glance.conf.sample`` in the above example) and then any common options
@@ -93,9 +110,8 @@ For more information on configuring the server via the ``paste.deploy``
 configuration files, see the section entitled
 :doc:`Configuring Glance servers <configuring>`
 
-Note that the server does not `daemonize` itself when run manually
-from the terminal. You can force the server to daemonize using the standard
-shell backgrounding indicator, ``&``. However, for most use cases, we recommend
+Note that the server `daemonizes` itself by using the standard
+shell backgrounding indicator, ``&``, in the previous example. For most use cases, we recommend
 using the ``glance-control`` server daemon wrapper for daemonizing. See below
 for more details on daemonization with ``glance-control``.
 
@@ -125,8 +141,16 @@ in the following way::
 Here is an example that shows how to start the ``glance-registry`` server
 with the ``glance-control`` wrapper script. ::
 
-  $> sudo glance-control registry start etc/glance.conf.sample
-  Starting glance-registry with /home/jpipes/repos/glance/trunk/etc/glance.conf.sample
+
+  $ sudo glance-control all start glance.conf
+  Starting glance-api with /home/jsuh/glance.conf
+  Starting glance-registry with /home/jsuh/glance.conf
+
+  $ ps aux | grep glance
+  root     20038  4.0  0.1  12728  9116 ?        Ss   12:51   0:00 /usr/bin/python /usr/bin/glance-api /home/jsuh/glance.conf
+  root     20039  6.0  0.1  25188 13356 ?        Ss   12:51   0:00 /usr/bin/python /usr/bin/glance-registry /home/jsuh/glance.conf
+  jsuh     20042  0.0  0.0   3368   744 pts/1    S+   12:51   0:00 grep glance
+
  
 The same ``paste.deploy`` configuration files are used by ``glance-control``
 to start the Glance server programs, and you can specify (as the example above
@@ -134,8 +158,8 @@ shows) a configuration file when starting the server.
 
 .. note::
 
-  To start all the Glance servers (currently the glance-api and glance-registry
-  programs) at once, you can specify "all" for the <SERVER>
+  To start each of Glance servers (currently the glance-api and glance-registry
+  programs), you can specify glance-api and glance-registry, respectively for the <SERVER>.
 
 Stopping a server
 -----------------
