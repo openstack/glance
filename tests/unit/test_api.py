@@ -15,8 +15,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import os
+import hashlib
 import httplib
+import os
 import json
 import unittest
 
@@ -52,7 +53,9 @@ class TestRegistryAPI(unittest.TestCase):
 
         """
         fixture = {'id': 2,
-                   'name': 'fake image #2'}
+                   'name': 'fake image #2',
+                   'size': 19,
+                   'checksum': None}
         req = webob.Request.blank('/')
         res = req.get_response(self.api)
         res_dict = json.loads(res.body)
@@ -70,7 +73,9 @@ class TestRegistryAPI(unittest.TestCase):
 
         """
         fixture = {'id': 2,
-                   'name': 'fake image #2'}
+                   'name': 'fake image #2',
+                   'size': 19,
+                   'checksum': None}
         req = webob.Request.blank('/images')
         res = req.get_response(self.api)
         res_dict = json.loads(res.body)
@@ -90,6 +95,8 @@ class TestRegistryAPI(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
+                   'size': 19,
+                   'checksum': None,
                    'disk_format': 'vhd',
                    'container_format': 'ovf',
                    'status': 'active'}
@@ -396,7 +403,7 @@ class TestGlanceAPI(unittest.TestCase):
         for k, v in fixture_headers.iteritems():
             req.headers[k] = v
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, httplib.OK)
+        self.assertEquals(res.status_int, httplib.CREATED)
 
         res_body = json.loads(res.body)['image']
         self.assertEquals('queued', res_body['status'])
@@ -431,7 +438,7 @@ class TestGlanceAPI(unittest.TestCase):
         req.headers['Content-Type'] = 'application/octet-stream'
         req.body = "chunk00000remainder"
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
+        self.assertEquals(res.status_int, httplib.CREATED)
 
         res_body = json.loads(res.body)['image']
         self.assertEquals(res_body['location'],
@@ -444,6 +451,97 @@ class TestGlanceAPI(unittest.TestCase):
                         "'location' not in response headers.\n"
                         "res.headerlist = %r" % res.headerlist)
         self.assertTrue('/images/3' in res.headers['location'])
+
+    def test_image_is_checksummed(self):
+        """Test that the image contents are checksummed properly"""
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+        image_contents = "chunk00000remainder"
+        image_checksum = hashlib.md5(image_contents).hexdigest()
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.body = image_contents
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.CREATED)
+
+        res_body = json.loads(res.body)['image']
+        self.assertEquals(res_body['location'],
+                          'file:///tmp/glance-tests/3')
+        self.assertEquals(image_checksum, res_body['checksum'],
+                          "Mismatched checksum. Expected %s, got %s" %
+                          (image_checksum, res_body['checksum']))
+
+    def test_etag_equals_checksum_header(self):
+        """Test that the ETag header matches the x-image-meta-checksum"""
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+        image_contents = "chunk00000remainder"
+        image_checksum = hashlib.md5(image_contents).hexdigest()
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.body = image_contents
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.CREATED)
+
+        # HEAD the image and check the ETag equals the checksum header...
+        expected_headers = {'x-image-meta-checksum': image_checksum,
+                            'etag': image_checksum}
+        req = webob.Request.blank("/images/3")
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        for key in expected_headers.keys():
+            self.assertTrue(key in res.headers,
+                            "required header '%s' missing from "
+                            "returned headers" % key)
+        for key, value in expected_headers.iteritems():
+            self.assertEquals(value, res.headers[key])
+
+    def test_bad_checksum_kills_image(self):
+        """Test that the image contents are checksummed properly"""
+        image_contents = "chunk00000remainder"
+        bad_checksum = hashlib.md5("invalid").hexdigest()
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3',
+                           'x-image-meta-checksum': bad_checksum}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.body = image_contents
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+
+        # Test the image was killed...
+        expected_headers = {'x-image-meta-id': '3',
+                            'x-image-meta-status': 'killed'}
+        req = webob.Request.blank("/images/3")
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        for key, value in expected_headers.iteritems():
+            self.assertEquals(value, res.headers[key])
 
     def test_image_meta(self):
         """Test for HEAD /images/<ID>"""

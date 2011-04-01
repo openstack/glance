@@ -29,6 +29,7 @@ Configuration Options
 
 """
 
+import httplib
 import json
 import logging
 import sys
@@ -68,8 +69,8 @@ class Controller(wsgi.Controller):
         GET /images/<ID> -- Return image data for image with id <ID>
         POST /images -- Store image data and return metadata about the
                         newly-stored image
-        PUT /images/<ID> -- Update image metadata (not image data, since
-                            image data is immutable once stored)
+        PUT /images/<ID> -- Update image metadata and/or upload image
+                            data for a previously-reserved image
         DELETE /images/<ID> -- Delete the image with id <ID>
     """
 
@@ -82,6 +83,9 @@ class Controller(wsgi.Controller):
 
             * id -- The opaque image identifier
             * name -- The name of the image
+            * disk_format -- The disk image format
+            * container_format -- The "container" format of the image
+            * checksum -- MD5 checksum of the image data
             * size -- Size of image data in bytes
 
         :param request: The WSGI/Webob Request object
@@ -92,6 +96,7 @@ class Controller(wsgi.Controller):
                  'name': <NAME>,
                  'disk_format': <DISK_FORMAT>,
                  'container_format': <DISK_FORMAT>,
+                 'checksum': <CHECKSUM>
                  'size': <SIZE>}, ...
             ]}
         """
@@ -111,6 +116,7 @@ class Controller(wsgi.Controller):
                  'size': <SIZE>,
                  'disk_format': <DISK_FORMAT>,
                  'container_format': <CONTAINER_FORMAT>,
+                 'checksum': <CHECKSUM>,
                  'store': <STORE>,
                  'status': <STATUS>,
                  'created_at': <TIMESTAMP>,
@@ -136,6 +142,8 @@ class Controller(wsgi.Controller):
 
         res = Response(request=req)
         utils.inject_image_meta_into_headers(res, image)
+        res.headers.add('Location', "/images/%s" % id)
+        res.headers.add('ETag', image['checksum'])
 
         return req.get_response(res)
 
@@ -167,6 +175,8 @@ class Controller(wsgi.Controller):
         # Using app_iter blanks content-length, so we set it here...
         res.headers.add('Content-Length', image['size'])
         utils.inject_image_meta_into_headers(res, image)
+        res.headers.add('Location', "/images/%s" % id)
+        res.headers.add('ETag', image['checksum'])
         return req.get_response(res)
 
     def _reserve(self, req):
@@ -227,36 +237,45 @@ class Controller(wsgi.Controller):
 
         store = self.get_store_or_400(req, store_name)
 
-        image_meta['status'] = 'saving'
         image_id = image_meta['id']
-        logger.debug("Updating image metadata for image %s"
+        logger.debug("Setting image %s to status 'saving'"
                      % image_id)
-        registry.update_image_metadata(self.options,
-                                       image_meta['id'],
-                                       image_meta)
-
+        registry.update_image_metadata(self.options, image_id,
+                                       {'status': 'saving'})
         try:
             logger.debug("Uploading image data for image %(image_id)s "
                          "to %(store_name)s store" % locals())
-            location, size = store.add(image_meta['id'],
-                                       req.body_file,
-                                       self.options)
-            # If size returned from store is different from size
-            # already stored in registry, update the registry with
-            # the new size of the image
-            if image_meta.get('size', 0) != size:
-                image_meta['size'] = size
-                logger.debug("Updating image metadata for image %s"
-                             % image_id)
-                registry.update_image_metadata(self.options,
-                                               image_meta['id'],
-                                               image_meta)
+            location, size, checksum = store.add(image_meta['id'],
+                                                 req.body_file,
+                                                 self.options)
+
+            # Verify any supplied checksum value matches checksum
+            # returned from store when adding image
+            supplied_checksum = image_meta.get('checksum')
+            if supplied_checksum and supplied_checksum != checksum:
+                msg = ("Supplied checksum (%(supplied_checksum)s) and "
+                       "checksum generated from uploaded image "
+                       "(%(checksum)s) did not match. Setting image "
+                       "status to 'killed'.") % locals()
+                self._safe_kill(req, image_meta)
+                raise HTTPBadRequest(msg, content_type="text/plain",
+                                     request=req)
+
+            # Update the database with the checksum returned
+            # from the backend store
+            logger.debug("Updating image %(image_id)s data. "
+                         "Checksum set to %(checksum)s, size set "
+                         "to %(size)d" % locals())
+            registry.update_image_metadata(self.options, image_id,
+                                           {'checksum': checksum,
+                                            'size': size})
+
             return location
         except exception.Duplicate, e:
             logger.error("Error adding image to store: %s", str(e))
             raise HTTPConflict(str(e), request=req)
 
-    def _activate(self, req, image_meta, location):
+    def _activate(self, req, image_id, location):
         """
         Sets the image status to `active` and the image's location
         attribute.
@@ -265,25 +284,25 @@ class Controller(wsgi.Controller):
         :param image_meta: Mapping of metadata about image
         :param location: Location of where Glance stored this image
         """
+        image_meta = {}
         image_meta['location'] = location
         image_meta['status'] = 'active'
-        registry.update_image_metadata(self.options,
-                                       image_meta['id'],
+        return registry.update_image_metadata(self.options,
+                                       image_id,
                                        image_meta)
 
-    def _kill(self, req, image_meta):
+    def _kill(self, req, image_id):
         """
         Marks the image status to `killed`
 
         :param request: The WSGI/Webob Request object
-        :param image_meta: Mapping of metadata about image
+        :param image_id: Opaque image identifier
         """
-        image_meta['status'] = 'killed'
         registry.update_image_metadata(self.options,
-                                       image_meta['id'],
-                                       image_meta)
+                                       image_id,
+                                       {'status': 'killed'})
 
-    def _safe_kill(self, req, image_meta):
+    def _safe_kill(self, req, image_id):
         """
         Mark image killed without raising exceptions if it fails.
 
@@ -291,12 +310,13 @@ class Controller(wsgi.Controller):
         not raise itself, rather it should just log its error.
 
         :param request: The WSGI/Webob Request object
+        :param image_id: Opaque image identifier
         """
         try:
-            self._kill(req, image_meta)
+            self._kill(req, image_id)
         except Exception, e:
             logger.error("Unable to kill image %s: %s",
-                          image_meta['id'], repr(e))
+                          image_id, repr(e))
 
     def _upload_and_activate(self, req, image_meta):
         """
@@ -306,13 +326,16 @@ class Controller(wsgi.Controller):
 
         :param request: The WSGI/Webob Request object
         :param image_meta: Mapping of metadata about image
+
+        :retval Mapping of updated image data
         """
         try:
+            image_id = image_meta['id']
             location = self._upload(req, image_meta)
-            self._activate(req, image_meta, location)
+            return self._activate(req, image_id, location)
         except:  # unqualified b/c we're re-raising it
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self._safe_kill(req, image_meta)
+            self._safe_kill(req, image_id)
             # NOTE(sirp): _safe_kill uses httplib which, in turn, uses
             # Eventlet's GreenSocket. Eventlet subsequently clears exceptions
             # by calling `sys.exc_clear()`.
@@ -356,19 +379,21 @@ class Controller(wsgi.Controller):
                 image data.
         """
         image_meta = self._reserve(req)
+        image_id = image_meta['id']
 
         if utils.has_body(req):
-            self._upload_and_activate(req, image_meta)
+            image_meta = self._upload_and_activate(req, image_meta)
         else:
             if 'x-image-meta-location' in req.headers:
                 location = req.headers['x-image-meta-location']
-                self._activate(req, image_meta, location)
+                image_meta = self._activate(req, image_id, location)
 
         # APP states we should return a Location: header with the edit
         # URI of the resource newly-created.
         res = Response(request=req, body=json.dumps(dict(image=image_meta)),
-                       content_type="text/plain")
-        res.headers.add('Location', "/images/%s" % image_meta['id'])
+                       status=httplib.CREATED, content_type="text/plain")
+        res.headers.add('Location', "/images/%s" % image_id)
+        res.headers.add('ETag', image_meta['checksum'])
 
         return req.get_response(res)
 
@@ -393,11 +418,17 @@ class Controller(wsgi.Controller):
         try:
             image_meta = registry.update_image_metadata(self.options,
                                                         id,
-                                                        new_image_meta)
+                                                        new_image_meta,
+                                                        True)
             if has_body:
-                self._upload_and_activate(req, image_meta)
+                image_meta = self._upload_and_activate(req, image_meta)
 
-            return dict(image=image_meta)
+            res = Response(request=req,
+                           body=json.dumps(dict(image=image_meta)),
+                           content_type="text/plain")
+            res.headers.add('Location', "/images/%s" % id)
+            res.headers.add('ETag', image_meta['checksum'])
+            return res
         except exception.Invalid, e:
             msg = ("Failed to update image metadata. Got error: %(e)s"
                    % locals())

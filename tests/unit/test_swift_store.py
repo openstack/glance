@@ -70,15 +70,20 @@ def stub_out_swift_common_client(stubs):
             if hasattr(contents, 'read'):
                 fixture_object = StringIO.StringIO()
                 chunk = contents.read(SwiftBackend.CHUNKSIZE)
+                checksum = hashlib.md5()
                 while chunk:
                     fixture_object.write(chunk)
+                    checksum.update(chunk)
                     chunk = contents.read(SwiftBackend.CHUNKSIZE)
+                etag = checksum.hexdigest()
             else:
                 fixture_object = StringIO.StringIO(contents)
+                etag = hashlib.md5(fixture_object.getvalue()).hexdigest()
+            read_len = fixture_object.len
             fixture_objects[fixture_key] = fixture_object
             fixture_headers[fixture_key] = {
-                'content-length': fixture_object.len,
-                'etag': hashlib.md5(fixture_object.read()).hexdigest()}
+                'content-length': read_len,
+                'etag': etag}
             return fixture_headers[fixture_key]['etag']
         else:
             msg = ("Object PUT failed - Object with key %s already exists"
@@ -226,8 +231,9 @@ class TestSwiftBackend(unittest.TestCase):
     def test_add(self):
         """Test that we can add an image via the swift backend"""
         expected_image_id = 42
-        expected_swift_size = 1024 * 5  # 5K
+        expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
+        expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
         expected_location = format_swift_location(
             SWIFT_OPTIONS['swift_store_user'],
             SWIFT_OPTIONS['swift_store_key'],
@@ -236,10 +242,12 @@ class TestSwiftBackend(unittest.TestCase):
             expected_image_id)
         image_swift = StringIO.StringIO(expected_swift_contents)
 
-        location, size = SwiftBackend.add(42, image_swift, SWIFT_OPTIONS)
+        location, size, checksum = SwiftBackend.add(42, image_swift,
+                                                    SWIFT_OPTIONS)
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_swift_size, size)
+        self.assertEquals(expected_checksum, checksum)
 
         url_pieces = urlparse.urlparse(expected_location)
         new_image_swift = SwiftBackend.get(url_pieces)
@@ -280,8 +288,9 @@ class TestSwiftBackend(unittest.TestCase):
         options['swift_store_create_container_on_put'] = 'True'
         options['swift_store_container'] = 'noexist'
         expected_image_id = 42
-        expected_swift_size = 1024 * 5  # 5K
+        expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
+        expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
         expected_location = format_swift_location(
             options['swift_store_user'],
             options['swift_store_key'],
@@ -290,10 +299,12 @@ class TestSwiftBackend(unittest.TestCase):
             expected_image_id)
         image_swift = StringIO.StringIO(expected_swift_contents)
 
-        location, size = SwiftBackend.add(42, image_swift, options)
+        location, size, checksum = SwiftBackend.add(42, image_swift,
+                                                    options)
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_swift_size, size)
+        self.assertEquals(expected_checksum, checksum)
 
         url_pieces = urlparse.urlparse(expected_location)
         new_image_swift = SwiftBackend.get(url_pieces)

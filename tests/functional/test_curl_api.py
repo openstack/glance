@@ -110,7 +110,7 @@ class TestCurlApi(functional.FunctionalTest):
         lines = out.split("\r\n")
         status_line = lines[0]
 
-        self.assertEqual("HTTP/1.1 200 OK", status_line)
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
 
         # 4. HEAD /images
         # Verify image found now
@@ -214,6 +214,7 @@ class TestCurlApi(functional.FunctionalTest):
              "disk_format": None,
              "id": 1,
              "name": "Image1",
+             "checksum": "c2e5db72bd7fd153f53ede5da5a06de3",
              "size": 5120}]}
         self.assertEqual(expected_result, json.loads(out.strip()))
 
@@ -298,5 +299,28 @@ class TestCurlApi(functional.FunctionalTest):
                             % (expected_key,
                                expected_value,
                                image[expected_key]))
+
+        # 10. PUT /images/1 and remove a previously existing property.
+        cmd = ("curl -i -X PUT "
+               "-H 'X-Image-Meta-Property-Arch: x86_64' "
+               "http://0.0.0.0:%d/images/1") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 200 OK", status_line)
+
+        cmd = "curl -g http://0.0.0.0:%d/images/detail" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+
+        image = json.loads(out.strip())['images'][0]
+        self.assertEqual(1, len(image['properties']))
+        self.assertEqual('x86_64', image['properties']['arch'])
 
         self.stop_servers()

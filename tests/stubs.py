@@ -282,6 +282,7 @@ def stub_out_registry_db_image_api(stubs):
                 'updated_at': datetime.datetime.utcnow(),
                 'deleted_at': None,
                 'deleted': False,
+                'checksum': None,
                 'size': 13,
                 'location': "swift://user:passwd@acct/container/obj.tar.0",
              'properties': [{'key': 'type',
@@ -297,6 +298,7 @@ def stub_out_registry_db_image_api(stubs):
                 'updated_at': datetime.datetime.utcnow(),
                 'deleted_at': None,
                 'deleted': False,
+                'checksum': None,
                 'size': 19,
                 'location': "file:///tmp/glance-tests/2",
                 'properties': []}]
@@ -316,6 +318,7 @@ def stub_out_registry_db_image_api(stubs):
             glance.registry.db.api.validate_image(values)
 
             values['size'] = values.get('size', 0)
+            values['checksum'] = values.get('checksum')
             values['deleted'] = False
             values['properties'] = values.get('properties', {})
             values['created_at'] = datetime.datetime.utcnow()
@@ -341,26 +344,29 @@ def stub_out_registry_db_image_api(stubs):
             self.images.append(values)
             return values
 
-        def image_update(self, _context, image_id, values):
+        def image_update(self, _context, image_id, values, purge_props=False):
 
             image = self.image_get(_context, image_id)
             copy_image = image.copy()
             copy_image.update(values)
             glance.registry.db.api.validate_image(copy_image)
             props = []
+            orig_properties = image['properties']
 
-            if 'properties' in values.keys():
-                for k, v in values['properties'].items():
-                    p = {}
-                    p['key'] = k
-                    p['value'] = v
-                    p['deleted'] = False
-                    p['created_at'] = datetime.datetime.utcnow()
-                    p['updated_at'] = datetime.datetime.utcnow()
-                    p['deleted_at'] = None
-                    props.append(p)
+            if purge_props == False:
+                if 'properties' in values.keys():
+                    for k, v in values['properties'].items():
+                        p = {}
+                        p['key'] = k
+                        p['value'] = v
+                        p['deleted'] = False
+                        p['created_at'] = datetime.datetime.utcnow()
+                        p['updated_at'] = datetime.datetime.utcnow()
+                        p['deleted_at'] = None
+                        props.append(p)
 
-            values['properties'] = props
+            orig_properties = orig_properties + props
+            values['properties'] = orig_properties
 
             image.update(values)
             return image
