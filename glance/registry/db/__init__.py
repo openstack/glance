@@ -33,7 +33,7 @@ def add_options(parser):
     group = optparse.OptionGroup(parser, "Registry Database Options",
                                  help_text)
     group.add_option('--sql-connection', metavar="CONNECTION",
-                     default='sqlite:///glance.sqlite',
+                     default=None,
                      help="A valid SQLAlchemy connection string for the "
                           "registry database. Default: %default")
     parser.add_option_group(group)
