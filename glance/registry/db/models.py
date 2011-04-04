@@ -110,13 +110,11 @@ class Image(BASE, ModelBase):
 class ImageProperty(BASE, ModelBase):
     """Represents an image properties in the datastore"""
     __tablename__ = 'image_properties'
-    __table_args__ = (UniqueConstraint('image_id', 'key'), {})
+    __table_args__ = (UniqueConstraint('image_id', 'name'), {})
 
     id = Column(Integer, primary_key=True)
     image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
     image = relationship(Image, backref=backref('properties'))
 
-    # FIXME(sirp): KEY is a reserved word in SQL, might be a good idea to
-    # rename this column
-    key = Column(String(255), index=True, nullable=False)
+    name = Column(String(255), index=True, nullable=False)
     value = Column(Text)

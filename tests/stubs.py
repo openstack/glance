@@ -285,7 +285,7 @@ def stub_out_registry_db_image_api(stubs):
                 'checksum': None,
                 'size': 13,
                 'location': "swift://user:passwd@acct/container/obj.tar.0",
-             'properties': [{'key': 'type',
+             'properties': [{'name': 'type',
                              'value': 'kernel',
                              'deleted': False}]},
             {'id': 2,
@@ -330,7 +330,7 @@ def stub_out_registry_db_image_api(stubs):
             if 'properties' in values.keys():
                 for k, v in values['properties'].items():
                     p = {}
-                    p['key'] = k
+                    p['name'] = k
                     p['value'] = v
                     p['deleted'] = False
                     p['created_at'] = datetime.datetime.utcnow()
@@ -356,7 +356,7 @@ def stub_out_registry_db_image_api(stubs):
             if 'properties' in values.keys():
                 for k, v in values['properties'].items():
                     p = {}
-                    p['key'] = k
+                    p['name'] = k
                     p['value'] = v
                     p['deleted'] = False
                     p['created_at'] = datetime.datetime.utcnow()

@@ -243,22 +243,22 @@ def _set_properties_for_image(context, image_ref, properties, session=None):
     """
     orig_properties = {}
     for prop_ref in image_ref.properties:
-        orig_properties[prop_ref.key] = prop_ref
+        orig_properties[prop_ref.name] = prop_ref
 
-    for key, value in properties.iteritems():
+    for name, value in properties.iteritems():
         prop_values = {'image_id': image_ref.id,
-                       'key': key,
+                       'name': name,
                        'value': value}
-        if key in orig_properties:
-            prop_ref = orig_properties[key]
+        if name in orig_properties:
+            prop_ref = orig_properties[name]
             image_property_update(context, prop_ref, prop_values,
                                   session=session)
         else:
             image_property_create(context, prop_values, session=session)
 
-    for key in orig_properties.keys():
-        if not key in properties:
-            prop_ref = orig_properties[key]
+    for name in orig_properties.keys():
+        if not name in properties:
+            prop_ref = orig_properties[name]
             image_property_delete(context, prop_ref, session=session)
 
 

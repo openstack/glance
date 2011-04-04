@@ -199,7 +199,7 @@ def make_image_dict(image):
     # TODO(sirp): should this be a dict, or a list of dicts?
     # A plain dict is more convenient, but list of dicts would provide
     # access to created_at, etc
-    properties = dict((p['key'], p['value'])
+    properties = dict((p['name'], p['value'])
                       for p in image['properties'] if not p['deleted'])
 
     image_dict = _fetch_attrs(image, db_api.IMAGE_ATTRS)
