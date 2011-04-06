@@ -21,6 +21,7 @@
 Defines interface for DB access
 """
 
+import logging
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -59,14 +60,19 @@ def configure_db(options):
     """
     global _ENGINE
     if not _ENGINE:
+        debug = config.get_option(
+            options, 'debug', type='bool', default=False)
         verbose = config.get_option(
             options, 'verbose', type='bool', default=False)
         timeout = config.get_option(
             options, 'sql_idle_timeout', type='int', default=3600)
         _ENGINE = create_engine(options['sql_connection'],
-                                echo=verbose,
-                                echo_pool=verbose,
                                 pool_recycle=timeout)
+        logger = logging.getLogger('sqlalchemy.engine')
+        if verbose:
+            logger.setLevel(logging.INFO)
+        elif debug:
+            logger.setLevel(logging.DEBUG)
         register_models()
 
 
