@@ -69,10 +69,10 @@ def configure_db(options):
         _ENGINE = create_engine(options['sql_connection'],
                                 pool_recycle=timeout)
         logger = logging.getLogger('sqlalchemy.engine')
-        if verbose:
-            logger.setLevel(logging.INFO)
-        elif debug:
+        if debug:
             logger.setLevel(logging.DEBUG)
+        elif verbose:
+            logger.setLevel(logging.INFO)
         register_models()
 
 
