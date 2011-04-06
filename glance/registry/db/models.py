@@ -24,7 +24,7 @@ import sys
 import datetime
 
 from sqlalchemy.orm import relationship, backref, exc, object_mapper, validates
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, BigInteger
 from sqlalchemy import ForeignKey, DateTime, Boolean, Text
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
@@ -100,7 +100,7 @@ class Image(BASE, ModelBase):
     name = Column(String(255))
     disk_format = Column(String(20))
     container_format = Column(String(20))
-    size = Column(Integer)
+    size = Column(BigInteger)
     status = Column(String(30), nullable=False)
     is_public = Column(Boolean, nullable=False, default=False)
     location = Column(Text)
