@@ -321,6 +321,7 @@ def stub_out_registry_db_image_api(stubs):
             values['checksum'] = values.get('checksum')
             values['deleted'] = False
             values['properties'] = values.get('properties', {})
+            values['location'] = values.get('location')
             values['created_at'] = datetime.datetime.utcnow()
             values['updated_at'] = datetime.datetime.utcnow()
             values['deleted_at'] = None

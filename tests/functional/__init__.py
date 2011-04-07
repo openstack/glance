@@ -32,6 +32,7 @@ import socket
 import tempfile
 import time
 import unittest
+import urlparse
 
 from tests.utils import execute, get_unused_port
 
@@ -60,7 +61,7 @@ class FunctionalTest(unittest.TestCase):
 
         self.image_dir = "/tmp/test.%d/images" % self.test_id
 
-        self.sql_connection = os.environ.get('GLANCE_SQL_CONNECTION',
+        self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
                                              "sqlite://")
         self.pid_files = [self.api_pid_file,
                           self.registry_pid_file]
@@ -68,6 +69,41 @@ class FunctionalTest(unittest.TestCase):
 
     def tearDown(self):
         self.cleanup()
+        # We destroy the test data store between each test case,
+        # and recreate it, which ensures that we have no side-effects
+        # from the tests
+        self._reset_database()
+
+    def _reset_database(self):
+        conn_string = self.sql_connection
+        conn_pieces = urlparse.urlparse(conn_string)
+        if conn_string.startswith('sqlite'):
+            # We can just delete the SQLite database, which is
+            # the easiest and cleanest solution
+            db_path = conn_pieces.path.strip('/')
+            if db_path and os.path.exists(db_path):
+                os.unlink(db_path)
+            # No need to recreate the SQLite DB. SQLite will
+            # create it for us if it's not there...
+        elif conn_string.startswith('mysql'):
+            # We can execute the MySQL client to destroy and re-create
+            # the MYSQL database, which is easier and less error-prone
+            # than using SQLAlchemy to do this via MetaData...trust me.
+            database = conn_pieces.path.strip('/')
+            loc_pieces = conn_pieces.netloc.split('@')
+            host = loc_pieces[1]
+            auth_pieces = loc_pieces[0].split(':')
+            user = auth_pieces[0]
+            password = ""
+            if len(auth_pieces) > 1:
+                if auth_pieces[1].strip():
+                    password = "-p%s" % auth_pieces[1]
+            sql = ("drop database if exists %(database)s; "
+                   "create database %(database)s;") % locals()
+            cmd = ("mysql -u%(user)s %(password)s -h%(host)s "
+                   "-e\"%(sql)s\"") % locals()
+            exitcode, out, err = execute(cmd)
+            self.assertEqual(0, exitcode)
 
     def cleanup(self):
         """
