@@ -36,10 +36,10 @@ CREATE TABLE image_properties (
 	UNIQUE (image_id, key), 
 	FOREIGN KEY(image_id) REFERENCES images (id)
 );
-CREATE INDEX ix_image_properties_name ON image_properties (name);
+CREATE INDEX ix_image_properties_key ON image_properties (key);
 
 INSERT INTO image_properties (id, image_id, key, value, created_at, updated_at, deleted_at, deleted)
-SELECT id, image_id, name, value, created_at, updated_at, deleted_at, deleted
+SELECT id, image_id, key, value, created_at, updated_at, deleted_at, deleted
 FROM image_properties_backup;
 
 DROP TABLE image_properties_backup;

@@ -418,7 +418,8 @@ class Controller(wsgi.Controller):
         try:
             image_meta = registry.update_image_metadata(self.options,
                                                         id,
-                                                        new_image_meta)
+                                                        new_image_meta,
+                                                        True)
             if has_body:
                 image_meta = self._upload_and_activate(req, image_meta)
 
@@ -449,7 +450,12 @@ class Controller(wsgi.Controller):
         """
         image = self.get_image_meta_or_404(req, id)
 
-        delete_from_backend(image['location'])
+        # The image's location field may be None in the case
+        # of a saving or queued image, therefore don't ask a backend
+        # to delete the image if the backend doesn't yet store it.
+        # See https://bugs.launchpad.net/glance/+bug/747799
+        if image['location']:
+            delete_from_backend(image['location'])
 
         registry.delete_image_metadata(self.options, id)
 

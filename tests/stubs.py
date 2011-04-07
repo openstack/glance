@@ -321,6 +321,7 @@ def stub_out_registry_db_image_api(stubs):
             values['checksum'] = values.get('checksum')
             values['deleted'] = False
             values['properties'] = values.get('properties', {})
+            values['location'] = values.get('location')
             values['created_at'] = datetime.datetime.utcnow()
             values['updated_at'] = datetime.datetime.utcnow()
             values['deleted_at'] = None
@@ -344,7 +345,7 @@ def stub_out_registry_db_image_api(stubs):
             self.images.append(values)
             return values
 
-        def image_update(self, _context, image_id, values):
+        def image_update(self, _context, image_id, values, purge_props=False):
 
             image = self.image_get(_context, image_id)
             copy_image = image.copy()
@@ -353,16 +354,17 @@ def stub_out_registry_db_image_api(stubs):
             props = []
             orig_properties = image['properties']
 
-            if 'properties' in values.keys():
-                for k, v in values['properties'].items():
-                    p = {}
-                    p['name'] = k
-                    p['value'] = v
-                    p['deleted'] = False
-                    p['created_at'] = datetime.datetime.utcnow()
-                    p['updated_at'] = datetime.datetime.utcnow()
-                    p['deleted_at'] = None
-                    props.append(p)
+            if purge_props == False:
+                if 'properties' in values.keys():
+                    for k, v in values['properties'].items():
+                        p = {}
+                        p['name'] = k
+                        p['value'] = v
+                        p['deleted'] = False
+                        p['created_at'] = datetime.datetime.utcnow()
+                        p['updated_at'] = datetime.datetime.utcnow()
+                        p['deleted_at'] = None
+                        props.append(p)
 
             orig_properties = orig_properties + props
             values['properties'] = orig_properties
