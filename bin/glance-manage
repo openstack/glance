@@ -121,7 +121,8 @@ def main():
     try:
         # We load the glance-registry config section because
         # sql_connection is only part of the glance registry.
-        conf_file, conf = config.load_paste_config('glance-registry', options, args)
+        conf_file, conf = config.load_paste_config('glance-registry',
+                                                   options, args)
         config.setup_logging(options, conf)
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
