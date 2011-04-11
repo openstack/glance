@@ -57,6 +57,10 @@ class TestCurlApi(functional.FunctionalTest):
         - Verify 200 returned
         9. GET /images/1
         - Verify updated information about image was stored
+        # 10. PUT /images/1
+        - Remove a previously existing property.
+        # 11. PUT /images/1
+        - Add a previously deleted property.
         """
 
         self.cleanup()
@@ -323,6 +327,31 @@ class TestCurlApi(functional.FunctionalTest):
         image = json.loads(out.strip())['images'][0]
         self.assertEqual(1, len(image['properties']))
         self.assertEqual('x86_64', image['properties']['arch'])
+
+        # 11. PUT /images/1 and add a previously deleted property.
+        cmd = ("curl -i -X PUT "
+               "-H 'X-Image-Meta-Property-Distro: Ubuntu' "
+               "-H 'X-Image-Meta-Property-Arch: x86_64' "
+               "http://0.0.0.0:%d/images/1") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 200 OK", status_line)
+
+        cmd = "curl -g http://0.0.0.0:%d/images/detail" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+
+        image = json.loads(out.strip())['images'][0]
+        self.assertEqual(2, len(image['properties']))
+        self.assertEqual('x86_64', image['properties']['arch'])
+        self.assertEqual('Ubuntu', image['properties']['distro'])
 
         self.stop_servers()
 

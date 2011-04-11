@@ -286,6 +286,7 @@ def _image_property_update(context, prop_ref, values, session=None):
     """Used internally by image_property_create and image_property_update
     """
     _drop_protected_attrs(models.ImageProperty, values)
+    values["deleted"] = False
     prop_ref.update(values)
     prop_ref.save(session=session)
     return prop_ref
