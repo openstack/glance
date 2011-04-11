@@ -19,6 +19,7 @@
 
 import json
 import os
+import tempfile
 import unittest
 
 from tests import functional
@@ -413,3 +414,36 @@ class TestCurlApi(functional.FunctionalTest):
         self.assertTrue("X-Image-Meta-Size: %d" % FIVE_GB in out,
                         "Size was supposed to be %d. Got:\n%s."
                         % (FIVE_GB, out))
+
+    def test_traceback_not_consumed(self):
+        """
+        A test that errors coming from the POST API do not
+        get consumed and print the actual error message, and
+        not something like &lt;traceback object at 0x1918d40&gt;
+
+        :see https://bugs.launchpad.net/glance/+bug/755912
+        """
+
+        self.cleanup()
+        api_port, reg_port, conf_file = self.start_servers()
+
+        # POST /images with binary data, but not setting
+        # Content-Type to application/octet-stream, verify a
+        # 400 returned and that the error is readable.
+        with tempfile.NamedTemporaryFile() as test_data_file:
+            test_data_file.write("XXX")
+            test_data_file.flush()
+            cmd = ("curl -i -X POST --upload-file %s "
+                   "http://0.0.0.0:%d/images") % (test_data_file.name,
+                                                  api_port)
+
+            exitcode, out, err = execute(cmd)
+            self.assertEqual(0, exitcode)
+
+            lines = out.split("\r\n")
+            status_line = lines.pop(0)
+
+            self.assertEqual("HTTP/1.1 400 Bad Request", status_line)
+            expected = "Content-Type must be application/octet-stream"
+            self.assertTrue(expected in out,
+                            "Could not find '%s' in '%s'" % (expected, out))
