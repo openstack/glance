@@ -344,7 +344,7 @@ class Controller(wsgi.Controller):
             # exception context was destroyed by Eventlet. To work around
             # this, we need to 'memorize' the exception context, and then
             # re-raise here.
-            raise exc_type(exc_traceback)
+            raise exc_type(exc_value)
 
     def create(self, req):
         """
