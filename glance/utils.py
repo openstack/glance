@@ -91,10 +91,25 @@ def get_image_meta_from_headers(response):
     if 'size' in result:
         result['size'] = int(result['size'])
     if 'is_public' in result:
-        result['is_public'] = (result['is_public'] == 'True')
+        result['is_public'] = bool_from_header_value(result['is_public'])
     if 'deleted' in result:
-        result['deleted'] = (result['deleted'] == 'True')
+        result['deleted'] = bool_from_header_value(result['deleted'])
     return result
+
+
+def bool_from_header_value(value):
+    """
+    Returns True if value is any of ('True', 'On', '1'),
+    case-insensitive
+    """
+    if type(value) == type(bool):
+        return value
+    elif isinstance(value, (basestring, unicode)):
+        if str(value).lower() in ('true', 'on', '1'):
+            return True
+    elif type(value) == type(int):
+        return bool(value)
+    return False
 
 
 def has_body(req):

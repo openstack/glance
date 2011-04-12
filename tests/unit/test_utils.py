@@ -65,3 +65,29 @@ class TestUtils(unittest.TestCase):
         result = utils.get_image_meta_from_headers(response)
         for k, v in fixture.iteritems():
             self.assertEqual(v, result[k])
+
+    def test_boolean_header_values(self):
+        """
+        Tests that boolean headers like is_public can be set
+        to True if any of ('True', 'On', 1) is provided, case-insensitive
+        """
+        fixtures = [{'is_public': True},
+                    {'is_public': 'True'},
+                    {'is_public': 'true'},
+                    {'is_public': 'On'},
+                    {'is_public': 1},
+                    {'is_public': '1'}]
+
+        expected = {'is_public': True}
+
+        class FakeResponse():
+            pass
+
+        for fixture in fixtures:
+            headers = utils.image_meta_to_http_headers(fixture)
+
+            response = FakeResponse()
+            response.headers = headers
+            result = utils.get_image_meta_from_headers(response)
+            for k, v in expected.items():
+                self.assertEqual(v, result[k])
