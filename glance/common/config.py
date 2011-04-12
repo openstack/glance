@@ -133,8 +133,10 @@ def setup_logging(options, conf):
             raise RuntimeError("Unable to locate specified logging "
                                "config file: %s" % options['log_config'])
 
-    debug = options.get('debug', False)
-    verbose = options.get('verbose', False)
+    # If either the CLI option or the conf value
+    # is True, we set to True
+    debug = options.get('debug') or conf.get('debug', False)
+    verbose = options.get('verbose') or conf.get('verbose', False)
     root_logger = logging.root
     if debug:
         root_logger.setLevel(logging.DEBUG)
@@ -276,11 +278,13 @@ def load_paste_app(app_name, options, args):
 
         # We only update the conf dict for the verbose and debug
         # flags. Everything else must be set up in the conf file...
-        conf['verbose'] = options['verbose']
-        conf['debug'] = options['debug']
+        debug = options.get('debug') or conf.get('debug', False)
+        verbose = options.get('verbose') or conf.get('verbose', False)
+        conf['verbose'] = debug
+        conf['debug'] = verbose
 
         # Log the options used when starting if we're in debug mode...
-        if conf['debug']:
+        if debug:
             logger = logging.getLogger(app_name)
             logger.debug("*" * 80)
             logger.debug("Configuration options gathered from config file:")
