@@ -308,8 +308,7 @@ The list of metadata headers that Glance accepts are listed below.
 
   This header is optional.
 
-  When present, Glance converts the value of the header to a boolean value,
-  so "on, 1, true" are all true values. When true, the image is marked as
+  When Glance finds the string "true" (case-insensitive), the image is marked as
   a public image, meaning that any user may view its metadata and may read
   the disk image from Glance.
 

@@ -73,15 +73,30 @@ class TestUtils(unittest.TestCase):
         """
         fixtures = [{'is_public': True},
                     {'is_public': 'True'},
-                    {'is_public': 'true'},
-                    {'is_public': 'On'},
-                    {'is_public': 1},
-                    {'is_public': '1'}]
+                    {'is_public': 'true'}]
 
         expected = {'is_public': True}
 
         class FakeResponse():
             pass
+
+        for fixture in fixtures:
+            headers = utils.image_meta_to_http_headers(fixture)
+
+            response = FakeResponse()
+            response.headers = headers
+            result = utils.get_image_meta_from_headers(response)
+            for k, v in expected.items():
+                self.assertEqual(v, result[k])
+
+        # Ensure False for other values...
+        fixtures = [{'is_public': False},
+                    {'is_public': 'Off'},
+                    {'is_public': 'on'},
+                    {'is_public': '1'},
+                    {'is_public': 'False'}]
+
+        expected = {'is_public': False}
 
         for fixture in fixtures:
             headers = utils.image_meta_to_http_headers(fixture)

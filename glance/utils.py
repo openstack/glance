@@ -99,16 +99,14 @@ def get_image_meta_from_headers(response):
 
 def bool_from_header_value(value):
     """
-    Returns True if value is any of ('True', 'On', '1'),
-    case-insensitive
+    Returns True if value is a boolean True or the
+    string 'true', case-insensitive, False otherwise
     """
-    if type(value) == type(bool):
+    if isinstance(value, bool):
         return value
     elif isinstance(value, (basestring, unicode)):
-        if str(value).lower() in ('true', 'on', '1'):
+        if str(value).lower() == 'true':
             return True
-    elif type(value) == type(int):
-        return bool(value)
     return False
 
 
