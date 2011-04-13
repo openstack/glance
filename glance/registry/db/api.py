@@ -21,6 +21,7 @@
 Defines interface for DB access
 """
 
+import logging
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -59,14 +60,19 @@ def configure_db(options):
     """
     global _ENGINE
     if not _ENGINE:
+        debug = config.get_option(
+            options, 'debug', type='bool', default=False)
         verbose = config.get_option(
             options, 'verbose', type='bool', default=False)
         timeout = config.get_option(
             options, 'sql_idle_timeout', type='int', default=3600)
         _ENGINE = create_engine(options['sql_connection'],
-                                echo=verbose,
-                                echo_pool=verbose,
                                 pool_recycle=timeout)
+        logger = logging.getLogger('sqlalchemy.engine')
+        if debug:
+            logger.setLevel(logging.DEBUG)
+        elif verbose:
+            logger.setLevel(logging.INFO)
         register_models()
 
 
@@ -245,14 +251,14 @@ def _set_properties_for_image(context, image_ref, properties,
     """
     orig_properties = {}
     for prop_ref in image_ref.properties:
-        orig_properties[prop_ref.key] = prop_ref
+        orig_properties[prop_ref.name] = prop_ref
 
-    for key, value in properties.iteritems():
+    for name, value in properties.iteritems():
         prop_values = {'image_id': image_ref.id,
-                       'key': key,
+                       'name': name,
                        'value': value}
-        if key in orig_properties:
-            prop_ref = orig_properties[key]
+        if name in orig_properties:
+            prop_ref = orig_properties[name]
             image_property_update(context, prop_ref, prop_values,
                                   session=session)
         else:
@@ -280,6 +286,7 @@ def _image_property_update(context, prop_ref, values, session=None):
     """Used internally by image_property_create and image_property_update
     """
     _drop_protected_attrs(models.ImageProperty, values)
+    values["deleted"] = False
     prop_ref.update(values)
     prop_ref.save(session=session)
     return prop_ref

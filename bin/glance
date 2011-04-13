@@ -224,6 +224,8 @@ def image_update(options, args):
 
 Updates an image's metadata in Glance. Specify metadata fields as arguments.
 
+Metadata fields that are not specified in the update command will be deleted.
+
 All field/value pairs are converted into a mapping that is passed
 to Glance that represents the metadata for an image.
 

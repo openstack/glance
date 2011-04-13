@@ -52,9 +52,9 @@ def create_options(parser):
 
     :param parser: The option parser
     """
-    glance.registry.db.add_options(parser)
     config.add_common_options(parser)
     config.add_log_options(parser)
+    glance.registry.db.add_options(parser)
 
 
 def do_db_version(options, args):
@@ -119,13 +119,20 @@ def main():
     (options, args) = config.parse_options(oparser)
 
     try:
-        config.setup_logging(options, {})
+        # We load the glance-registry config section because
+        # sql_connection is only part of the glance registry.
+        conf_file, conf = config.load_paste_config('glance-registry',
+                                                   options, args)
+        config.setup_logging(options, conf)
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
 
     if not args:
         oparser.print_usage()
         sys.exit(1)
+
+    if conf.get('sql_connection') and not options['sql_connection']:
+        options['sql_connection'] = conf.get('sql_connection')
 
     dispatch_cmd(options, args)
 

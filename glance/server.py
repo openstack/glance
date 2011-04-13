@@ -344,7 +344,7 @@ class Controller(wsgi.Controller):
             # exception context was destroyed by Eventlet. To work around
             # this, we need to 'memorize' the exception context, and then
             # re-raise here.
-            raise exc_type(exc_traceback)
+            raise exc_type(exc_value)
 
     def create(self, req):
         """
@@ -450,7 +450,12 @@ class Controller(wsgi.Controller):
         """
         image = self.get_image_meta_or_404(req, id)
 
-        delete_from_backend(image['location'])
+        # The image's location field may be None in the case
+        # of a saving or queued image, therefore don't ask a backend
+        # to delete the image if the backend doesn't yet store it.
+        # See https://bugs.launchpad.net/glance/+bug/747799
+        if image['location']:
+            delete_from_backend(image['location'])
 
         registry.delete_image_metadata(self.options, id)
 

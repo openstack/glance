@@ -30,7 +30,7 @@ class TestConfig(unittest.TestCase):
         config.add_common_options(parser)
         self.assertEquals(1, len(parser.option_groups))
 
-        expected_options = ['--verbose', '--debug']
+        expected_options = ['--verbose', '--debug', '--config-file']
         for e in expected_options:
             self.assertTrue(parser.option_groups[0].get_option(e),
                             "Missing required common option: %s" % e)
@@ -42,7 +42,8 @@ class TestConfig(unittest.TestCase):
         config.add_common_options(parser)
         parsed_options, args = config.parse_options(parser)
 
-        expected_options = {'verbose': False, 'debug': False}
+        expected_options = {'verbose': False, 'debug': False,
+                            'config_file': None}
         self.assertEquals(expected_options, parsed_options)
 
         # test non-empty args and that parse_options() returns a mapping
@@ -51,7 +52,8 @@ class TestConfig(unittest.TestCase):
         config.add_common_options(parser)
         parsed_options, args = config.parse_options(parser, ['--verbose'])
 
-        expected_options = {'verbose': True, 'debug': False}
+        expected_options = {'verbose': True, 'debug': False,
+                            'config_file': None}
         self.assertEquals(expected_options, parsed_options)
 
         # test non-empty args that contain unknown options raises

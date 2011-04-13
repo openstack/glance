@@ -24,7 +24,7 @@ import sys
 import datetime
 
 from sqlalchemy.orm import relationship, backref, exc, object_mapper, validates
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, BigInteger
 from sqlalchemy import ForeignKey, DateTime, Boolean, Text
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
@@ -100,7 +100,7 @@ class Image(BASE, ModelBase):
     name = Column(String(255))
     disk_format = Column(String(20))
     container_format = Column(String(20))
-    size = Column(Integer)
+    size = Column(BigInteger)
     status = Column(String(30), nullable=False)
     is_public = Column(Boolean, nullable=False, default=False)
     location = Column(Text)
@@ -110,13 +110,11 @@ class Image(BASE, ModelBase):
 class ImageProperty(BASE, ModelBase):
     """Represents an image properties in the datastore"""
     __tablename__ = 'image_properties'
-    __table_args__ = (UniqueConstraint('image_id', 'key'), {})
+    __table_args__ = (UniqueConstraint('image_id', 'name'), {})
 
     id = Column(Integer, primary_key=True)
     image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
     image = relationship(Image, backref=backref('properties'))
 
-    # FIXME(sirp): KEY is a reserved word in SQL, might be a good idea to
-    # rename this column
-    key = Column(String(255), index=True, nullable=False)
+    name = Column(String(255), index=True, nullable=False)
     value = Column(Text)

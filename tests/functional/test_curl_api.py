@@ -19,12 +19,14 @@
 
 import json
 import os
+import tempfile
 import unittest
 
 from tests import functional
 from tests.utils import execute
 
 FIVE_KB = 5 * 1024
+FIVE_GB = 5 * 1024 * 1024 * 1024
 
 
 class TestCurlApi(functional.FunctionalTest):
@@ -56,6 +58,10 @@ class TestCurlApi(functional.FunctionalTest):
         - Verify 200 returned
         9. GET /images/1
         - Verify updated information about image was stored
+        # 10. PUT /images/1
+        - Remove a previously existing property.
+        # 11. PUT /images/1
+        - Add a previously deleted property.
         """
 
         self.cleanup()
@@ -323,4 +329,121 @@ class TestCurlApi(functional.FunctionalTest):
         self.assertEqual(1, len(image['properties']))
         self.assertEqual('x86_64', image['properties']['arch'])
 
+        # 11. PUT /images/1 and add a previously deleted property.
+        cmd = ("curl -i -X PUT "
+               "-H 'X-Image-Meta-Property-Distro: Ubuntu' "
+               "-H 'X-Image-Meta-Property-Arch: x86_64' "
+               "http://0.0.0.0:%d/images/1") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 200 OK", status_line)
+
+        cmd = "curl -g http://0.0.0.0:%d/images/detail" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+
+        image = json.loads(out.strip())['images'][0]
+        self.assertEqual(2, len(image['properties']))
+        self.assertEqual('x86_64', image['properties']['arch'])
+        self.assertEqual('Ubuntu', image['properties']['distro'])
+
         self.stop_servers()
+
+    def test_size_greater_2G_mysql(self):
+        """
+        A test against the actual datastore backend for the registry
+        to ensure that the image size property is not truncated.
+
+        :see https://bugs.launchpad.net/glance/+bug/739433
+        """
+
+        self.cleanup()
+        api_port, reg_port, conf_file = self.start_servers()
+
+        # 1. POST /images with public image named Image1
+        # attribute and a size of 5G. Use the HTTP engine with an
+        # X-Image-Meta-Location attribute to make Glance forego
+        # "adding" the image data.
+        # Verify a 200 OK is returned
+        cmd = ("curl -i -X POST "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'X-Image-Meta-Location: http://example.com/fakeimage' "
+               "-H 'X-Image-Meta-Size: %d' "
+               "-H 'X-Image-Meta-Name: Image1' "
+               "-H 'X-Image-Meta-Is-Public: True' "
+               "http://0.0.0.0:%d/images") % (FIVE_GB, api_port)
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
+
+        # Get the ID of the just-added image. This may NOT be 1, since the
+        # database in the environ variable TEST_GLANCE_CONNECTION may not
+        # have been cleared between test cases... :(
+        new_image_uri = None
+        for line in lines:
+            if line.startswith('Location:'):
+                new_image_uri = line[line.find(':') + 1:].strip()
+
+        self.assertTrue(new_image_uri is not None,
+                        "Could not find a new image URI!")
+
+        # 2. HEAD /images
+        # Verify image size is what was passed in, and not truncated
+        cmd = "curl -i -X HEAD %s" % new_image_uri
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 200 OK", status_line)
+        self.assertTrue("X-Image-Meta-Size: %d" % FIVE_GB in out,
+                        "Size was supposed to be %d. Got:\n%s."
+                        % (FIVE_GB, out))
+
+    def test_traceback_not_consumed(self):
+        """
+        A test that errors coming from the POST API do not
+        get consumed and print the actual error message, and
+        not something like &lt;traceback object at 0x1918d40&gt;
+
+        :see https://bugs.launchpad.net/glance/+bug/755912
+        """
+
+        self.cleanup()
+        api_port, reg_port, conf_file = self.start_servers()
+
+        # POST /images with binary data, but not setting
+        # Content-Type to application/octet-stream, verify a
+        # 400 returned and that the error is readable.
+        with tempfile.NamedTemporaryFile() as test_data_file:
+            test_data_file.write("XXX")
+            test_data_file.flush()
+            cmd = ("curl -i -X POST --upload-file %s "
+                   "http://0.0.0.0:%d/images") % (test_data_file.name,
+                                                  api_port)
+
+            exitcode, out, err = execute(cmd)
+            self.assertEqual(0, exitcode)
+
+            lines = out.split("\r\n")
+            status_line = lines.pop(0)
+
+            self.assertEqual("HTTP/1.1 400 Bad Request", status_line)
+            expected = "Content-Type must be application/octet-stream"
+            self.assertTrue(expected in out,
+                            "Could not find '%s' in '%s'" % (expected, out))
