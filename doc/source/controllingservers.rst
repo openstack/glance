@@ -67,6 +67,24 @@ If no configuration file is found, you will see an error, like::
 Here is an example showing how you can manually start the ``glance-api`` server and ``glance-registry`` in a shell.::
 
   $ sudo glance-api glance.conf --debug &  
+<<<<<<< TREE
+  jsuh@mc-ats1:~$ 2011-04-13 14:50:12    DEBUG [glance-api] ********************************************************************************
+  2011-04-13 14:50:12    DEBUG [glance-api] Configuration options gathered from config file:
+  2011-04-13 14:50:12    DEBUG [glance-api] /home/jsuh/glance.conf
+  2011-04-13 14:50:12    DEBUG [glance-api] ================================================
+  2011-04-13 14:50:12    DEBUG [glance-api] bind_host                      65.114.169.29
+  2011-04-13 14:50:12    DEBUG [glance-api] bind_port                      9292
+  2011-04-13 14:50:12    DEBUG [glance-api] debug                          True
+  2011-04-13 14:50:12    DEBUG [glance-api] default_store                  file
+  2011-04-13 14:50:12    DEBUG [glance-api] filesystem_store_datadir       /home/jsuh/images/
+  2011-04-13 14:50:12    DEBUG [glance-api] registry_host                  65.114.169.29
+  2011-04-13 14:50:12    DEBUG [glance-api] registry_port                  9191
+  2011-04-13 14:50:12    DEBUG [glance-api] verbose                        False
+  2011-04-13 14:50:12    DEBUG [glance-api] ********************************************************************************
+  2011-04-13 14:50:12    DEBUG [routes.middleware] Initialized with method overriding = True, and path info altering = True
+  2011-04-13 14:50:12    DEBUG [eventlet.wsgi.server] (21354) wsgi starting up on http://65.114.169.29:9292/
+
+=======
   2011-03-31 12:47:15    DEBUG [glance-api] ********************************************************************************
   2011-03-31 12:47:15    DEBUG [glance-api] Configuration options gathered from config file:
   2011-03-31 12:47:15    DEBUG [glance-api] /home/jsuh/glance.conf
@@ -82,8 +100,37 @@ Here is an example showing how you can manually start the ``glance-api`` server 
   2011-03-31 12:47:15    DEBUG [glance-api] ********************************************************************************
   2011-03-31 12:47:15    DEBUG [routes.middleware] Initialized with method overriding = True, and path info altering = True
   (20009) wsgi starting up on http://65.114.169.29:9292/
+>>>>>>> MERGE-SOURCE
 
   $ sudo glance-registry glance.conf &  
+<<<<<<< TREE
+  jsuh@mc-ats1:~$ 2011-04-13 14:51:16     INFO [sqlalchemy.engine.base.Engine.0x...feac] PRAGMA table_info("images")
+  2011-04-13 14:51:16     INFO [sqlalchemy.engine.base.Engine.0x...feac] ()
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Col ('cid', 'name', 'type', 'notnull', 'dflt_value', 'pk')
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (0, u'created_at', u'DATETIME', 1, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (1, u'updated_at', u'DATETIME', 0, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (2, u'deleted_at', u'DATETIME', 0, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (3, u'deleted', u'BOOLEAN', 1, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (4, u'id', u'INTEGER', 1, None, 1)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (5, u'name', u'VARCHAR(255)', 0, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (6, u'disk_format', u'VARCHAR(20)', 0, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (7, u'container_format', u'VARCHAR(20)', 0, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (8, u'size', u'INTEGER', 0, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (9, u'status', u'VARCHAR(30)', 1, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (10, u'is_public', u'BOOLEAN', 1, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (11, u'location', u'TEXT', 0, None, 0)
+  2011-04-13 14:51:16     INFO [sqlalchemy.engine.base.Engine.0x...feac] PRAGMA table_info("image_properties")
+  2011-04-13 14:51:16     INFO [sqlalchemy.engine.base.Engine.0x...feac] ()
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Col ('cid', 'name', 'type', 'notnull', 'dflt_value', 'pk')
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (0, u'created_at', u'DATETIME', 1, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (1, u'updated_at', u'DATETIME', 0, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (2, u'deleted_at', u'DATETIME', 0, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (3, u'deleted', u'BOOLEAN', 1, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (4, u'id', u'INTEGER', 1, None, 1)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (5, u'image_id', u'INTEGER', 1, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (6, u'key', u'VARCHAR(255)', 1, None, 0)
+  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (7, u'value', u'TEXT', 0, None, 0)
+=======
   2011-03-31 12:47:30,591 INFO sqlalchemy.engine.base.Engine.0x...3cec PRAGMA table_info("images")
   2011-03-31 12:47:30     INFO [sqlalchemy.engine.base.Engine.0x...3cec] PRAGMA table_info("images")
   2011-03-31 12:47:30,591 INFO sqlalchemy.engine.base.Engine.0x...3cec ()
@@ -93,6 +140,7 @@ Here is an example showing how you can manually start the ``glance-api`` server 
   2011-03-31 12:47:30,592 INFO sqlalchemy.engine.base.Engine.0x...3cec ()
   2011-03-31 12:47:30     INFO [sqlalchemy.engine.base.Engine.0x...3cec] ()
   (20012) wsgi starting up on http://65.114.169.29:9191/
+>>>>>>> MERGE-SOURCE
 
   $ ps aux | grep glance
   root     20009  0.7  0.1  12744  9148 pts/1    S    12:47   0:00 /usr/bin/python /usr/bin/glance-api glance.conf --debug
