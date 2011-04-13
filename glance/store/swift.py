@@ -111,9 +111,9 @@ class SwiftBackend(glance.store.Backend):
         # should be a stateful object with options parsed once in
         # a constructor.
         if not auth_address:
-            logger.error(msg)
             msg = ("Could not find swift_store_auth_address in configuration "
                    "options.")
+            logger.error(msg)
             raise glance.store.BackendException(msg)
         else:
             full_auth_address = auth_address
@@ -121,15 +121,15 @@ class SwiftBackend(glance.store.Backend):
                 full_auth_address = 'https://' + full_auth_address
 
         if not user:
-            logger.error(msg)
             msg = ("Could not find swift_store_user in configuration "
                    "options.")
+            logger.error(msg)
             raise glance.store.BackendException(msg)
 
         if not key:
-            logger.error(msg)
             msg = ("Could not find swift_store_key in configuration "
                    "options.")
+            logger.error(msg)
             raise glance.store.BackendException(msg)
 
         swift_conn = swift_client.Connection(
