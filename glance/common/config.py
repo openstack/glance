@@ -280,8 +280,8 @@ def load_paste_app(app_name, options, args):
         # flags. Everything else must be set up in the conf file...
         debug = options.get('debug') or conf.get('debug', False)
         verbose = options.get('verbose') or conf.get('verbose', False)
-        conf['verbose'] = debug
-        conf['debug'] = verbose
+        conf['debug'] = debug
+        conf['verbose'] = verbose
 
         # Log the options used when starting if we're in debug mode...
         if debug:
