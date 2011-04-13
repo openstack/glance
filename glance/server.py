@@ -227,17 +227,20 @@ class Controller(wsgi.Controller):
         :raises HTTPConflict if image already exists
         :retval The location where the image was stored
         """
+        image_id = image_meta['id']
         content_type = req.headers.get('content-type', 'notset')
         if content_type != 'application/octet-stream':
-            raise HTTPBadRequest(
-                "Content-Type must be application/octet-stream")
+            self._safe_kill(req, image_id)
+            msg = ("Content-Type must be application/octet-stream")
+            logger.error(msg)
+            raise HTTPBadRequest(msg, content_type="text/plain",
+                                 request=req)
 
         store_name = req.headers.get(
             'x-image-meta-store', self.options['default_store'])
 
         store = self.get_store_or_400(req, store_name)
 
-        image_id = image_meta['id']
         logger.debug("Setting image %s to status 'saving'"
                      % image_id)
         registry.update_image_metadata(self.options, image_id,
@@ -257,7 +260,8 @@ class Controller(wsgi.Controller):
                        "checksum generated from uploaded image "
                        "(%(checksum)s) did not match. Setting image "
                        "status to 'killed'.") % locals()
-                self._safe_kill(req, image_meta)
+                logger.error(msg)
+                self._safe_kill(req, image_id)
                 raise HTTPBadRequest(msg, content_type="text/plain",
                                      request=req)
 
@@ -272,8 +276,15 @@ class Controller(wsgi.Controller):
 
             return location
         except exception.Duplicate, e:
-            logger.error("Error adding image to store: %s", str(e))
-            raise HTTPConflict(str(e), request=req)
+            msg = ("Attempt to upload duplicate image: %s") % str(e)
+            logger.error(msg)
+            self._safe_kill(req, image_id)
+            raise HTTPConflict(msg, request=req)
+        except Exception, e:
+            msg = ("Error uploading image: %s") % str(e)
+            logger.error(msg)
+            self._safe_kill(req, image_id)
+            raise HTTPBadRequest(msg, request=req)
 
     def _activate(self, req, image_id, location):
         """
@@ -329,22 +340,9 @@ class Controller(wsgi.Controller):
 
         :retval Mapping of updated image data
         """
-        try:
-            image_id = image_meta['id']
-            location = self._upload(req, image_meta)
-            return self._activate(req, image_id, location)
-        except:  # unqualified b/c we're re-raising it
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            self._safe_kill(req, image_id)
-            # NOTE(sirp): _safe_kill uses httplib which, in turn, uses
-            # Eventlet's GreenSocket. Eventlet subsequently clears exceptions
-            # by calling `sys.exc_clear()`.
-            #
-            # This is why we can't use a raise with no arguments here: our
-            # exception context was destroyed by Eventlet. To work around
-            # this, we need to 'memorize' the exception context, and then
-            # re-raise here.
-            raise exc_type(exc_value)
+        image_id = image_meta['id']
+        location = self._upload(req, image_meta)
+        return self._activate(req, image_id, location)
 
     def create(self, req):
         """

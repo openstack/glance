@@ -415,6 +415,8 @@ class TestCurlApi(functional.FunctionalTest):
                         "Size was supposed to be %d. Got:\n%s."
                         % (FIVE_GB, out))
 
+        self.stop_servers()
+
     def test_traceback_not_consumed(self):
         """
         A test that errors coming from the POST API do not
@@ -447,3 +449,5 @@ class TestCurlApi(functional.FunctionalTest):
             expected = "Content-Type must be application/octet-stream"
             self.assertTrue(expected in out,
                             "Could not find '%s' in '%s'" % (expected, out))
+
+        self.stop_servers()
