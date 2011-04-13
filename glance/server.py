@@ -232,7 +232,7 @@ class Controller(wsgi.Controller):
         if content_type != 'application/octet-stream':
             self._safe_kill(req, image_id)
             msg = ("Content-Type must be application/octet-stream")
-            logger.debug(msg)
+            logger.error(msg)
             raise HTTPBadRequest(msg, content_type="text/plain",
                                  request=req)
 
@@ -260,7 +260,7 @@ class Controller(wsgi.Controller):
                        "checksum generated from uploaded image "
                        "(%(checksum)s) did not match. Setting image "
                        "status to 'killed'.") % locals()
-                logger.debug(msg)
+                logger.error(msg)
                 self._safe_kill(req, image_id)
                 raise HTTPBadRequest(msg, content_type="text/plain",
                                      request=req)
@@ -276,13 +276,13 @@ class Controller(wsgi.Controller):
 
             return location
         except exception.Duplicate, e:
-            msg = ("Attempt to upload duplicate image: %s")
-            logger.error(msg, str(e))
+            msg = ("Attempt to upload duplicate image: %s") % str(e)
+            logger.error(msg)
             self._safe_kill(req, image_id)
             raise HTTPConflict(msg, request=req)
         except Exception, e:
-            msg = ("Error uploading image: %s")
-            logger.error(msg, str(e))
+            msg = ("Error uploading image: %s") % str(e)
+            logger.error(msg)
             self._safe_kill(req, image_id)
             raise HTTPBadRequest(msg, request=req)
 
