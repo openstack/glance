@@ -76,6 +76,15 @@ class SwiftBackend(glance.store.Backend):
         return resp_body
 
     @classmethod
+    def _option_get(cls, options, param):
+        result = options.get(param)
+        if not result:
+            msg = ("Could not find %s in configuration options." % param)
+            logger.error(msg)
+            raise glance.store.BackendException(msg)
+        return result
+
+    @classmethod
     def add(cls, id, data, options):
         """
         Stores image data to Swift and returns a location that the image was
@@ -101,36 +110,19 @@ class SwiftBackend(glance.store.Backend):
         from swift.common import client as swift_client
         container = options.get('swift_store_container',
                                 DEFAULT_SWIFT_CONTAINER)
-        auth_address = options.get('swift_store_auth_address')
-        user = options.get('swift_store_user')
-        key = options.get('swift_store_key')
 
         # TODO(jaypipes): This needs to be checked every time
         # because of the decision to make glance.store.Backend's
         # interface all @classmethods. This is inefficient. Backend
         # should be a stateful object with options parsed once in
         # a constructor.
-        if not auth_address:
-            msg = ("Could not find swift_store_auth_address in configuration "
-                   "options.")
-            logger.error(msg)
-            raise glance.store.BackendException(msg)
-        else:
-            full_auth_address = auth_address
-            if not full_auth_address.startswith('http'):
-                full_auth_address = 'https://' + full_auth_address
+        auth_address = cls._option_get(options, 'swift_store_auth_address')
+        user = cls._option_get(options, 'swift_store_user')
+        key = cls._option_get(options, 'swift_store_key')
 
-        if not user:
-            msg = ("Could not find swift_store_user in configuration "
-                   "options.")
-            logger.error(msg)
-            raise glance.store.BackendException(msg)
-
-        if not key:
-            msg = ("Could not find swift_store_key in configuration "
-                   "options.")
-            logger.error(msg)
-            raise glance.store.BackendException(msg)
+        full_auth_address = auth_address
+        if not full_auth_address.startswith('http'):
+            full_auth_address = 'https://' + full_auth_address
 
         swift_conn = swift_client.Connection(
             authurl=full_auth_address, user=user, key=key, snet=False)

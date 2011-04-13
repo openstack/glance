@@ -324,41 +324,33 @@ class TestSwiftBackend(unittest.TestCase):
                           SwiftBackend.add,
                           2, image_swift, SWIFT_OPTIONS)
 
+    def _assertOptionRequiredForSwift(self, key):
+        image_swift = StringIO.StringIO("nevergonnamakeit")
+        options = SWIFT_OPTIONS.copy()
+        del options[key]
+        self.assertRaises(BackendException, SwiftBackend.add,
+                          2, image_swift, options)
+
     def test_add_no_user(self):
         """
         Tests that adding options without user raises
         an appropriate exception
         """
-        image_swift = StringIO.StringIO("nevergonnamakeit")
-        options = SWIFT_OPTIONS.copy()
-        del options['swift_store_user']
-        self.assertRaises(BackendException,
-                          SwiftBackend.add,
-                          2, image_swift, options)
+        self._assertOptionRequiredForSwift('swift_store_user')
 
     def test_no_key(self):
         """
         Tests that adding options without key raises
         an appropriate exception
         """
-        image_swift = StringIO.StringIO("nevergonnamakeit")
-        options = SWIFT_OPTIONS.copy()
-        del options['swift_store_key']
-        self.assertRaises(BackendException,
-                          SwiftBackend.add,
-                          2, image_swift, options)
+        self._assertOptionRequiredForSwift('swift_store_key')
 
     def test_add_no_auth_address(self):
         """
         Tests that adding options without auth address raises
         an appropriate exception
         """
-        image_swift = StringIO.StringIO("nevergonnamakeit")
-        options = SWIFT_OPTIONS.copy()
-        del options['swift_store_auth_address']
-        self.assertRaises(BackendException,
-                          SwiftBackend.add,
-                          2, image_swift, options)
+        self._assertOptionRequiredForSwift('swift_store_auth_address')
 
     def test_delete(self):
         """
