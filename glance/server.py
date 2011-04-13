@@ -276,9 +276,15 @@ class Controller(wsgi.Controller):
 
             return location
         except exception.Duplicate, e:
-            logger.error("Error uploading image to store: %s", str(e))
+            msg = ("Attempt to upload duplicate image: %s")
+            logger.error(msg, str(e))
             self._safe_kill(req, image_id)
-            raise HTTPConflict(str(e), request=req)
+            raise HTTPConflict(msg, request=req)
+        except Exception, e:
+            msg = ("Error uploading image: %s")
+            logger.error(msg, str(e))
+            self._safe_kill(req, image_id)
+            raise HTTPBadRequest(msg, request=req)
 
     def _activate(self, req, image_id, location):
         """
