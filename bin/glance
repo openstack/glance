@@ -481,7 +481,7 @@ def create_options(parser):
                            "Default: %default")
     parser.add_option('-f', '--force', dest="force", metavar="FORCE",
                       default=False, action="store_true",
-                      help="Prevent select actions from requesting"
+                      help="Prevent select actions from requesting "
                            "user confirmation")
     parser.add_option('--dry-run', default=False, action="store_true",
                       help="Don't actually execute the command, just print "
