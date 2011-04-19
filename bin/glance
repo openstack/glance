@@ -308,13 +308,19 @@ def image_delete(options, args):
 %(prog)s delete [options] <ID>
 
 Deletes an image from Glance"""
-    c = get_client(options)
     try:
         image_id = args.pop()
     except IndexError:
         print "Please specify the ID of the image you wish to delete "
         print "as the first argument"
         return FAILURE
+
+    if not options.force and \
+       not user_confirm("Delete image %s?" % (image_id,)):
+        print 'Not deleting image %s' % (image_id,)
+        return FAILURE
+
+    c = get_client(options)
 
     try:
         c.delete_image(image_id)
@@ -427,6 +433,10 @@ def images_clear(options, args):
 %(prog)s clear [options]
 
 Deletes all images from a Glance server"""
+    if not options.force and not user_confirm("Delete all images?"):
+        print 'Not deleting any images'
+        return FAILURE
+
     c = get_client(options)
     images = c.get_images()
     for image in images:
@@ -469,6 +479,10 @@ def create_options(parser):
                       type=int, default=9292,
                       help="Port the Glance API host listens on. "
                            "Default: %default")
+    parser.add_option('-f', '--force', dest="force", metavar="FORCE",
+                      default=False, action="store_true",
+                      help="Prevent select actions from requesting"
+                           "user confirmation")
     parser.add_option('--dry-run', default=False, action="store_true",
                       help="Don't actually execute the command, just print "
                            "output showing what WOULD happen.")
@@ -529,6 +543,14 @@ def print_help(options, args):
             sys.exit("Unknown command: %s" % command)
 
     print COMMANDS[command].__doc__ % {'prog': os.path.basename(sys.argv[0])}
+
+
+def user_confirm(prompt):
+    try:
+        answer = raw_input("%s [Y/n] " % (prompt,))
+        return answer.lower() in ("yes", "y")
+    except Exception:
+        return False
 
 
 if __name__ == '__main__':

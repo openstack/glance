@@ -72,7 +72,7 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertTrue('MyImage' in image_data_line)
 
         # 3. Delete the image
-        cmd = "bin/glance --port=%d delete 1" % api_port
+        cmd = "bin/glance --port=%d --force delete 1" % api_port
 
         exitcode, out, err = execute(cmd)
 
