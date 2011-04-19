@@ -46,6 +46,8 @@ class FunctionalTest(unittest.TestCase):
 
     def setUp(self):
 
+        self.verbose = True
+        self.debug = True
         self.test_id = random.randint(0, 100000)
         self.test_dir = os.path.join("/", "tmp", "test.%d" % self.test_id)
 
@@ -144,8 +146,8 @@ class FunctionalTest(unittest.TestCase):
 
         conf_file = tempfile.NamedTemporaryFile()
         conf_contents = """[DEFAULT]
-verbose = True
-debug = True
+verbose = %(verbose)s
+debug = %(debug)s
 
 [app:glance-api]
 paste.app_factory = glance.server:app_factory
