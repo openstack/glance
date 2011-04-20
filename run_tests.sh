@@ -39,7 +39,7 @@ done
 
 function run_tests {
   # Just run the test suites in current environment
-  ${wrapper} rm -f glance.sqlite
+  ${wrapper} rm -f tests.sqlite
   ${wrapper} $NOSETESTS 2> run_tests.err.log
 }
 
