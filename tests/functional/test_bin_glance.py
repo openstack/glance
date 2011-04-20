@@ -151,12 +151,15 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.stop_servers()
 
+    @functional.runs_sql
     def test_add_clear(self):
         """
         We test the following:
 
             1. Add a couple images with metadata
             2. Clear the images
+            3. Verify no public images found
+            4. Run SQL against DB to verify no undeleted properties
         """
 
         self.cleanup()

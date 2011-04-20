@@ -24,6 +24,7 @@ and spinning down the servers.
 """
 
 import datetime
+import functools
 import os
 import random
 import shutil
@@ -37,6 +38,25 @@ import urlparse
 from tests.utils import execute, get_unused_port
 
 from sqlalchemy import create_engine
+
+
+def runs_sql(func):
+    """
+    Decorator for a test case method that ensures that the
+    sql_connection setting is overridden to ensure a disk-based
+    SQLite database so that arbitrary SQL statements can be
+    executed out-of-process against the datastore...
+    """
+    @functools.wraps(func)
+    def wrapped(*a, **kwargs):
+        test_obj = a[0]
+        orig_sql_connection = test_obj.sql_connection
+        try:
+            test_obj.sql_connection = "sqlite:///glance.sqlite"
+            func(*a, **kwargs)
+        finally:
+            test_obj.sql_connection = orig_sql_connection
+    return wrapped
 
 
 class FunctionalTest(unittest.TestCase):
@@ -66,7 +86,7 @@ class FunctionalTest(unittest.TestCase):
         self.image_dir = "/tmp/test.%d/images" % self.test_id
 
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
-                                             "sqlite:///glance.sqlite")
+                                             "sqlite://")
         self.pid_files = [self.api_pid_file,
                           self.registry_pid_file]
         self.files_to_destroy = []
