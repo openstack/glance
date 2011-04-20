@@ -265,5 +265,10 @@ sql_idle_timeout = 3600
             shutil.rmtree(self.test_dir)
 
     def run_sql_cmd(self, sql):
+        """
+        Provides a crude mechanism to run manual SQL commands for backend
+        DB verification within the functional tests.
+        The raw result set is returned.
+        """
         engine = create_engine(self.sql_connection, pool_recycle=30)
         return engine.execute(sql)
