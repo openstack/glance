@@ -122,6 +122,9 @@ def image_destroy(context, image_id):
         image_ref = image_get(context, image_id, session=session)
         image_ref.delete(session=session)
 
+        for prop_ref in image_ref.properties:
+            image_property_delete(context, prop_ref, session=session)
+
 
 def image_get(context, image_id, session=None):
     """Get an image or raise if it does not exist."""

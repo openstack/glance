@@ -232,6 +232,7 @@ to Glance that represents the metadata for an image.
 Field names that can be specified:
 
 name                A name for the image.
+location            The location of the image.
 is_public           If specified, interpreted as a boolean value
                     and sets or unsets the image's availability to the public.
 disk_format         Format of the disk image
@@ -263,7 +264,7 @@ to spell field names correctly. :)"""
             print 'Found non-modifiable field %s. Removing.' % field
             fields.pop(field)
 
-    base_image_fields = ['disk_format', 'container_format',
+    base_image_fields = ['disk_format', 'container_format', 'name',
                          'location']
     for field in base_image_fields:
         fvalue = fields.pop(field, None)

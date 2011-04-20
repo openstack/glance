@@ -25,11 +25,15 @@ registry_host = 0.0.0.0
 # Port the registry server is listening on
 registry_port = 9191
 
+# Log to this file. Make sure you do not set the same log
+# file for both the API and registry servers!
+log_file = /var/log/glance/api.log
+
 # ============ Filesystem Store Options ========================
 
 # Directory that the Filesystem backend store
 # writes image data to
-filesystem_store_datadir=/var/lib/glance/images/
+filesystem_store_datadir = /var/lib/glance/images/
 
 # ============ Swift Store Options =============================
 
@@ -58,6 +62,10 @@ bind_host = 0.0.0.0
 
 # Port the bind the registry server to
 bind_port = 9191
+
+# Log to this file. Make sure you do not set the same log
+# file for both the API and registry servers!
+log_file = /var/log/glance/registry.log
 
 # SQLAlchemy connection string for the reference implementation
 # registry server. Any valid SQLAlchemy connection string is fine.

@@ -24,6 +24,7 @@ and spinning down the servers.
 """
 
 import datetime
+import functools
 import os
 import random
 import shutil
@@ -36,6 +37,28 @@ import urlparse
 
 from tests.utils import execute, get_unused_port
 
+from sqlalchemy import create_engine
+
+
+def runs_sql(func):
+    """
+    Decorator for a test case method that ensures that the
+    sql_connection setting is overridden to ensure a disk-based
+    SQLite database so that arbitrary SQL statements can be
+    executed out-of-process against the datastore...
+    """
+    @functools.wraps(func)
+    def wrapped(*a, **kwargs):
+        test_obj = a[0]
+        orig_sql_connection = test_obj.sql_connection
+        try:
+            if orig_sql_connection.startswith('sqlite'):
+                test_obj.sql_connection = "sqlite:///tests.sqlite"
+            func(*a, **kwargs)
+        finally:
+            test_obj.sql_connection = orig_sql_connection
+    return wrapped
+
 
 class FunctionalTest(unittest.TestCase):
 
@@ -46,6 +69,8 @@ class FunctionalTest(unittest.TestCase):
 
     def setUp(self):
 
+        self.verbose = True
+        self.debug = True
         self.test_id = random.randint(0, 100000)
         self.test_dir = os.path.join("/", "tmp", "test.%d" % self.test_id)
 
@@ -144,8 +169,8 @@ class FunctionalTest(unittest.TestCase):
 
         conf_file = tempfile.NamedTemporaryFile()
         conf_contents = """[DEFAULT]
-verbose = True
-debug = True
+verbose = %(verbose)s
+debug = %(debug)s
 
 [app:glance-api]
 paste.app_factory = glance.server:app_factory
@@ -259,3 +284,12 @@ sql_idle_timeout = 3600
         # went wrong...
         if os.path.exists(self.test_dir):
             shutil.rmtree(self.test_dir)
+
+    def run_sql_cmd(self, sql):
+        """
+        Provides a crude mechanism to run manual SQL commands for backend
+        DB verification within the functional tests.
+        The raw result set is returned.
+        """
+        engine = create_engine(self.sql_connection, pool_recycle=30)
+        return engine.execute(sql)
