@@ -36,6 +36,8 @@ import urlparse
 
 from tests.utils import execute, get_unused_port
 
+from sqlalchemy import create_engine
+
 
 class FunctionalTest(unittest.TestCase):
 
@@ -64,7 +66,7 @@ class FunctionalTest(unittest.TestCase):
         self.image_dir = "/tmp/test.%d/images" % self.test_id
 
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
-                                             "sqlite://")
+                                             "sqlite:///glance.sqlite")
         self.pid_files = [self.api_pid_file,
                           self.registry_pid_file]
         self.files_to_destroy = []
@@ -261,3 +263,7 @@ sql_idle_timeout = 3600
         # went wrong...
         if os.path.exists(self.test_dir):
             shutil.rmtree(self.test_dir)
+
+    def run_sql_cmd(self, sql):
+        engine = create_engine(self.sql_connection, pool_recycle=30)
+        return engine.execute(sql)
