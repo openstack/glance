@@ -52,7 +52,8 @@ def runs_sql(func):
         test_obj = a[0]
         orig_sql_connection = test_obj.sql_connection
         try:
-            test_obj.sql_connection = "sqlite:///glance.sqlite"
+            if orig_sql_connection.startswith('sqlite'):
+                test_obj.sql_connection = "sqlite:///glance.sqlite"
             func(*a, **kwargs)
         finally:
             test_obj.sql_connection = orig_sql_connection
