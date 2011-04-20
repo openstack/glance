@@ -24,6 +24,7 @@ and spinning down the servers.
 """
 
 import datetime
+import functools
 import os
 import random
 import shutil
@@ -35,6 +36,28 @@ import unittest
 import urlparse
 
 from tests.utils import execute, get_unused_port
+
+from sqlalchemy import create_engine
+
+
+def runs_sql(func):
+    """
+    Decorator for a test case method that ensures that the
+    sql_connection setting is overridden to ensure a disk-based
+    SQLite database so that arbitrary SQL statements can be
+    executed out-of-process against the datastore...
+    """
+    @functools.wraps(func)
+    def wrapped(*a, **kwargs):
+        test_obj = a[0]
+        orig_sql_connection = test_obj.sql_connection
+        try:
+            if orig_sql_connection.startswith('sqlite'):
+                test_obj.sql_connection = "sqlite:///tests.sqlite"
+            func(*a, **kwargs)
+        finally:
+            test_obj.sql_connection = orig_sql_connection
+    return wrapped
 
 
 class FunctionalTest(unittest.TestCase):
@@ -261,3 +284,12 @@ sql_idle_timeout = 3600
         # went wrong...
         if os.path.exists(self.test_dir):
             shutil.rmtree(self.test_dir)
+
+    def run_sql_cmd(self, sql):
+        """
+        Provides a crude mechanism to run manual SQL commands for backend
+        DB verification within the functional tests.
+        The raw result set is returned.
+        """
+        engine = create_engine(self.sql_connection, pool_recycle=30)
+        return engine.execute(sql)

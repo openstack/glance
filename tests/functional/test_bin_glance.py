@@ -150,3 +150,50 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertTrue('MyImage' in image_data_line)
 
         self.stop_servers()
+
+    @functional.runs_sql
+    def test_add_clear(self):
+        """
+        We test the following:
+
+            1. Add a couple images with metadata
+            2. Clear the images
+            3. Verify no public images found
+            4. Run SQL against DB to verify no undeleted properties
+        """
+
+        self.cleanup()
+        api_port, reg_port, conf_file = self.start_servers()
+
+        # 1. Add some images
+        for i in range(1, 5):
+            cmd = "bin/glance --port=%d add is_public=True name=MyName " \
+                  " foo=bar" % api_port
+            exitcode, out, err = execute(cmd)
+
+            self.assertEqual(0, exitcode)
+            self.assertEqual('Added new image with ID: %i' % i, out.strip())
+
+        # 2. Clear all images
+        cmd = "bin/glance --port=%d clear" % api_port
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        # 3. Verify no public images are found
+        cmd = "bin/glance --port=%d index" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        lines = out.split("\n")
+        first_line = lines[0]
+        self.assertEqual('No public images found.', first_line)
+
+        # 4. Lastly we manually verify with SQL that image properties are
+        # also getting marked as deleted.
+        sql = "SELECT COUNT(*) FROM image_properties WHERE deleted = 0"
+        recs = self.run_sql_cmd(sql)
+        for rec in recs:
+            self.assertEqual(0, rec[0])
+
+        self.stop_servers()

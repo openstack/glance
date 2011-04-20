@@ -1,6 +1,6 @@
 *.pyc
 glance.egg-info
-glance.sqlite
+tests.sqlite
 *.glance-venv
 dist/
 ChangeLog
