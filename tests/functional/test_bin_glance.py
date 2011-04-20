@@ -91,7 +91,7 @@ class TestBinGlance(functional.FunctionalTest):
 
     def test_add_list_update_list(self):
         """
-        Test for LP Bug #736295
+        Test for LP Bugs #736295, #767203
         We test the following:
 
             0. Verify no public images in index
@@ -99,6 +99,8 @@ class TestBinGlance(functional.FunctionalTest):
             2. Check that image does not appear in index
             3. Update the image to be public
             4. Check that image now appears in index
+            5. Update the image's Name attribute
+            6. Verify the updated name is shown
         """
 
         self.cleanup()
@@ -148,6 +150,24 @@ class TestBinGlance(functional.FunctionalTest):
 
         image_data_line = lines[3]
         self.assertTrue('MyImage' in image_data_line)
+
+        # 5. Update the image's Name attribute
+        updated_image_name = "Updated image name"
+        cmd = "bin/glance --port=%d update 1 is_public=True name=\"%s\"" \
+                % (api_port, updated_image_name)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('Updated image 1', out.strip())
+
+        # 6. Verify updated name shown
+        cmd = "bin/glance --port=%d index" % api_port
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(updated_image_name in out,
+                        "%s not found in %s" % (updated_image_name, out))
 
         self.stop_servers()
 
