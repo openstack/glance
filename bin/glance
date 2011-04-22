@@ -548,6 +548,13 @@ def print_help(options, args):
 
 
 def user_confirm(prompt, default=False):
+    """Yes/No question dialog with user.
+
+    :param prompt: question/statement to present to user (string)
+    :param default: boolean value to return if empty string
+                    is received as response to prompt 
+
+    """
     try:
         if default:
             prompt_default = "[Y/n]" 
@@ -562,7 +569,7 @@ def user_confirm(prompt, default=False):
             return answer.lower() in ("yes", "y")
 
     except Exception:
-        return False
+        return default
 
 
 if __name__ == '__main__':
