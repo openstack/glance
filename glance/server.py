@@ -453,7 +453,12 @@ class Controller(wsgi.Controller):
         # to delete the image if the backend doesn't yet store it.
         # See https://bugs.launchpad.net/glance/+bug/747799
         if image['location']:
-            delete_from_backend(image['location'])
+            try:
+                delete_from_backend(image['location'])
+            except UnsupportedBackend:
+                msg = "Failed to delete image from store (%s). " + \
+                      "Continuing with deletion from registry."
+                logger.error(msg % (image['location'],))
 
         registry.delete_image_metadata(self.options, id)
 
