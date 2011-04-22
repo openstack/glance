@@ -192,6 +192,11 @@ class Controller(wsgi.Controller):
         :raises HTTPBadRequest if image metadata is not valid
         """
         image_meta = utils.get_image_meta_from_headers(req)
+
+        if 'location' in image_meta:
+            store = get_store_from_location(image_meta['location'])
+            self.get_store_or_400(req, store)
+
         image_meta['status'] = 'queued'
 
         # Ensure that the size attribute is set to zero for all
