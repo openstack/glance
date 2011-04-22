@@ -317,7 +317,7 @@ Deletes an image from Glance"""
         return FAILURE
 
     if not options.force and \
-       not user_confirm("Delete image %s?" % (image_id,)):
+       not user_confirm("Delete image %s?" % (image_id,), default=False):
         print 'Not deleting image %s' % (image_id,)
         return FAILURE
 
@@ -434,7 +434,8 @@ def images_clear(options, args):
 %(prog)s clear [options]
 
 Deletes all images from a Glance server"""
-    if not options.force and not user_confirm("Delete all images?"):
+    if not options.force and \
+       not user_confirm("Delete all images?", default=False):
         print 'Not deleting any images'
         return FAILURE
 
@@ -546,12 +547,25 @@ def print_help(options, args):
     print COMMANDS[command].__doc__ % {'prog': os.path.basename(sys.argv[0])}
 
 
-def user_confirm(prompt):
-    try:
-        answer = raw_input("%s [Y/n] " % (prompt,))
+def user_confirm(prompt, default=False):
+    """Yes/No question dialog with user.
+
+    :param prompt: question/statement to present to user (string)
+    :param default: boolean value to return if empty string
+                    is received as response to prompt
+
+    """
+    if default:
+        prompt_default = "[Y/n]"
+    else:
+        prompt_default = "[y/N]"
+
+    answer = raw_input("%s %s " % (prompt, prompt_default))
+
+    if answer == "":
+        return default
+    else:
         return answer.lower() in ("yes", "y")
-    except Exception:
-        return False
 
 
 if __name__ == '__main__':
