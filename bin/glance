@@ -552,16 +552,16 @@ def user_confirm(prompt, default=False):
 
     :param prompt: question/statement to present to user (string)
     :param default: boolean value to return if empty string
-                    is received as response to prompt 
+                    is received as response to prompt
 
     """
     try:
         if default:
-            prompt_default = "[Y/n]" 
+            prompt_default = "[Y/n]"
         else:
             prompt_default = "[y/N]"
 
-        answer = raw_input("%s %s " % (prompt,prompt_default))
+        answer = raw_input("%s %s " % (prompt, prompt_default))
 
         if answer == "":
             return default
