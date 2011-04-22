@@ -460,7 +460,7 @@ class Controller(wsgi.Controller):
         if image['location']:
             try:
                 delete_from_backend(image['location'])
-            except UnsupportedBackend:
+            except (UnsupportedBackend, exception.NotFound):
                 msg = "Failed to delete image from store (%s). " + \
                       "Continuing with deletion from registry."
                 logger.error(msg % (image['location'],))
