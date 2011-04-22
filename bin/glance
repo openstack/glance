@@ -555,21 +555,17 @@ def user_confirm(prompt, default=False):
                     is received as response to prompt
 
     """
-    try:
-        if default:
-            prompt_default = "[Y/n]"
-        else:
-            prompt_default = "[y/N]"
+    if default:
+        prompt_default = "[Y/n]"
+    else:
+        prompt_default = "[y/N]"
 
-        answer = raw_input("%s %s " % (prompt, prompt_default))
+    answer = raw_input("%s %s " % (prompt, prompt_default))
 
-        if answer == "":
-            return default
-        else:
-            return answer.lower() in ("yes", "y")
-
-    except Exception:
+    if answer == "":
         return default
+    else:
+        return answer.lower() in ("yes", "y")
 
 
 if __name__ == '__main__':
