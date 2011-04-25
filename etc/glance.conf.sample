@@ -54,6 +54,21 @@ swift_store_container = glance
 # Do we create the container if it does not exist?
 swift_store_create_container_on_put = False
 
+# ============ S3 Store Options ================================
+
+# Address where the S3 authentication service lives
+s3_store_host = 127.0.0.1:3333/
+
+# User to authenticate against the S3 authentication service
+s3_store_access_key = jdoe
+
+# Auth key for the user authenticating against the
+# S3 authentication service
+s3_store_secret_key = a86850deb2742ec3cb41518e26aa2d89
+
+# Bucket to store images on the S3 host.
+s3_store_bucket = glance
+
 [app:glance-registry]
 paste.app_factory = glance.registry.server:app_factory
 
