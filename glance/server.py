@@ -195,6 +195,8 @@ class Controller(wsgi.Controller):
 
         if 'location' in image_meta:
             store = get_store_from_location(image_meta['location'])
+            # check the store exists before we hit the registry, but we
+            # don't actually care what it is at this point
             self.get_store_or_400(req, store)
 
         image_meta['status'] = 'queued'
