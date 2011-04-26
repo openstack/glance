@@ -192,6 +192,13 @@ class Controller(wsgi.Controller):
         :raises HTTPBadRequest if image metadata is not valid
         """
         image_meta = utils.get_image_meta_from_headers(req)
+
+        if 'location' in image_meta:
+            store = get_store_from_location(image_meta['location'])
+            # check the store exists before we hit the registry, but we
+            # don't actually care what it is at this point
+            self.get_store_or_400(req, store)
+
         image_meta['status'] = 'queued'
 
         # Ensure that the size attribute is set to zero for all
@@ -453,7 +460,12 @@ class Controller(wsgi.Controller):
         # to delete the image if the backend doesn't yet store it.
         # See https://bugs.launchpad.net/glance/+bug/747799
         if image['location']:
-            delete_from_backend(image['location'])
+            try:
+                delete_from_backend(image['location'])
+            except (UnsupportedBackend, exception.NotFound):
+                msg = "Failed to delete image from store (%s). " + \
+                      "Continuing with deletion from registry."
+                logger.error(msg % (image['location'],))
 
         registry.delete_image_metadata(self.options, id)
 
