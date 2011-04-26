@@ -71,6 +71,7 @@ class FunctionalTest(unittest.TestCase):
 
         self.verbose = True
         self.debug = True
+        self.default_store = 'file'
         self.test_id = random.randint(0, 100000)
         self.test_dir = os.path.join("/", "tmp", "test.%d" % self.test_id)
 
@@ -175,7 +176,7 @@ debug = %(debug)s
 [app:glance-api]
 paste.app_factory = glance.server:app_factory
 filesystem_store_datadir=%(image_dir)s
-default_store = file
+default_store = %(default_store)s
 bind_host = 0.0.0.0
 bind_port = %(api_port)s
 registry_host = 0.0.0.0

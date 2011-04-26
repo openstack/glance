@@ -18,6 +18,7 @@
 """Functional test case that utilizes the bin/glance CLI tool"""
 
 import os
+import tempfile
 import unittest
 
 from tests import functional
@@ -122,7 +123,7 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         self.assertEqual('Added new image with ID: 1', out.strip())
 
-        # 2. Verify image added as public image
+        # 2. Verify image does not appear as a public image
         cmd = "bin/glance --port=%d index" % api_port
 
         exitcode, out, err = execute(cmd)
@@ -168,6 +169,68 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         self.assertTrue(updated_image_name in out,
                         "%s not found in %s" % (updated_image_name, out))
+
+        self.stop_servers()
+
+    def test_killed_image_not_in_index(self):
+        """
+        We test conditions that produced LP Bug #768969, where an image
+        in the 'killed' status is displayed in the output of glance index,
+        and the status column is not displayed in the output of
+        glance show <ID>.
+
+            Start servers with Swift backend and a bad auth URL, and then:
+            0. Verify no public images in index
+            1. Attempt to add an image
+            2. Verify the image does NOT appear in the index output
+            3. Verify the status of the image is displayed in the show output
+               and is in status 'killed'
+        """
+
+        self.cleanup()
+
+        # Start servers with a Swift backend and a bad auth URL
+        options = {'default_store': 'swift',
+                   'swift_store_auth_address': 'badurl'}
+        api_port, reg_port, conf_file = self.start_servers(**options)
+
+        # 0. Verify no public images
+        cmd = "bin/glance --port=%d index" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('No public images found.', out.strip())
+
+        # 1. Attempt to add an image
+        with tempfile.NamedTemporaryFile() as image_file:
+            image_file.write("XXX")
+            image_file.flush()
+            image_file_name = image_file.name
+            cmd = ("bin/glance --port=%d add name=Jonas is_public=True "
+                   "disk_format=qcow2 container_format=bare < %s"
+                   % (api_port, image_file_name))
+
+            exitcode, out, err = execute(cmd, raise_error=False)
+
+            self.assertNotEqual(0, exitcode)
+            self.assertTrue('Failed to add image.' in out)
+
+        # 2. Verify image does not appear as public image
+        cmd = "bin/glance --port=%d index" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('No public images found.', out.strip())
+
+        # 3. Verify image status in show is 'killed'
+        cmd = "bin/glance --port=%d show 1" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue('Status: killed' in out)
 
         self.stop_servers()
 
