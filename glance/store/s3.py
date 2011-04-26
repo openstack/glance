@@ -19,7 +19,6 @@
 
 import logging
 
-from glance.common import config
 from glance.common import exception
 import glance.store
 
@@ -110,7 +109,7 @@ class S3Backend(glance.store.Backend):
         written to.
 
         S3 writes the image data using the scheme:
-            ``s3://<USER>:<KEY>@<S3_HOST>/<BUCKET>/<ID>`
+            s3://<ACCESS_KEY>:<SECRET_KEY>@<S3_URL>/<BUCKET>/<OBJ>
         where:
             <USER> = ``s3_store_user``
             <KEY> = ``s3_store_key``
