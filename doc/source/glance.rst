@@ -17,44 +17,44 @@
 Using the Glance CLI Tool
 =========================
 
-Glance ships with a command-line tool for quering and managing Glance
+Glance ships with a command-line tool for querying and managing Glance
 It has a fairly simple but powerful interface of the form::
 
   Usage: glance <command> [options] [args]
 
 Where ``<command>`` is one of the following:
 
-* help
+* ``help``
 
   Show detailed help information about a specific command
 
-* add
+* ``add``
 
   Adds an image to Glance
 
-* update
+* ``update``
 
   Updates an image's stored metadata in Glance
 
-* delete
+* ``delete``
 
   Deletes an image and its metadata from Glance
 
-* index
+* ``index``
 
   Lists brief information about *public* images that Glance knows about
 
-* details
+* ``details``
 
   Lists detailed information about *public* images that Glance knows about
 
-* show
+* ``show``
 
   Lists detailed information about a specific image
 
-* clear
+* ``clear``
 
-  Destroys *all* images and their associated metadata
+  Destroys all **public** images and their associated metadata
 
 This document describes how to use the ``glance`` tool for each of
 the above commands.
@@ -134,6 +134,23 @@ The ``add`` command is used to do both of the following:
 
 We cover both use cases below.
 
+Important Information about Uploading Images
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before we go over the commands for adding an image to Glance, it is
+important to understand that Glance **does not currently inspect** the image
+files you add to it. In other words, **Glance only understands what you tell it,
+via attributes and custom properties**. 
+
+If the file extension of the file you upload to Glance ends in '.vhd', Glance
+**does not** know that the image you are uploading has a disk format of ``vhd``.
+You have to **tell** Glance that the image you are uploading has a disk format by
+using the ``disk_format=vhd`` on the command line (see more below).
+
+By the same token, Glance does not currently allow you to upload "multi-part"
+disk images at once. **The common operation of bundling a kernel image and ramdisk image
+into a machine image is not done automagically by Glance.**
+
 Store virtual machine image data and metadata
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -142,27 +159,27 @@ command. You will pass metadata about the VM image on the command line, and
 you will use a standard shell redirect to stream the image data file to
 ``glance``.
 
-Let's walk through a simple example. Suppose we have an image stored on our
-local filesystem that we wish to "upload" to Glance. This image is stored
-on our local filesystem in ``/tmp/images/myimage.tar.gz``.
+Let's walk through a simple example. Suppose we have a virtual disk image
+stored on our local filesystem that we wish to "upload" to Glance. This image is stored
+on our local filesystem in ``/tmp/images/myimage.iso``.
 
 We'd also like to tell Glance that this image should be called "My Image", and
 that the image should be public -- anyone should be able to fetch it.
 
 Here is how we'd upload this image to Glance. Change example ip number to your server ip number.::
 
-  $> glance add name="My Image" is_public=true < /tmp/images/myimage.tar.gz --host=65.114.169.29
+  $> glance add name="My Image" is_public=true < /tmp/images/myimage.iso --host=65.114.169.29
 
 If Glance was able to successfully upload and store your VM image data and
 metadata attributes, you would see something like this::
 
-  $> glance add name="My Image" is_public=true < /tmp/images/myimage.tar.gz --host=65.114.169.29
+  $> glance add name="My Image" is_public=true < /tmp/images/myimage.iso --host=65.114.169.29
   Added new image with ID: 2
 
 You can use the ``--verbose`` (or ``-v``) command-line option to print some more
 information about the metadata that was saved with the image::
 
-  $> glance --verbose add name="My Image" is_public=true < /tmp/images/myimage.tar.gz --host=65.114.169.29
+  $> glance --verbose add name="My Image" is_public=true < /tmp/images/myimage.iso --host=65.114.169.29
   Added new image with ID: 4
   Returned the following metadata for the new image:
                  container_format => ovf
@@ -183,7 +200,7 @@ information about the metadata that was saved with the image::
 If you are unsure about what will be added, you can use the ``--dry-run``
 command-line option, which will simply show you what *would* have happened::
 
-  $> glance --dry-run add name="Foo" distro="Ubuntu" is_publi=True < /tmp/images/myimage.tar.gz --host=65.114.169.29
+  $> glance --dry-run add name="Foo" distro="Ubuntu" is_publi=True < /tmp/images/myimage.iso --host=65.114.169.29
   Dry run. We would have done the following:
   Add new image with metadata:
                  container_format => ovf
@@ -213,10 +230,11 @@ instead, you tell Glance where to find the existing virtual machine image by
 setting the ``location`` field. Below is an example of doing this.
 
 Let's assume that there is a virtual machine image located at the URL
-``http://example.com/images/myimage.tar.gz``. We can register this image with
+``http://example.com/images/myimage.vhd``. We can register this image with
 Glance using the following::
 
-  $> glance --verbose add name="Some web image" location="http://example.com/images/myimage.tar.gz"
+  $> glance --verbose add name="Some web image" disk_format=vhd container_format=ovf\
+     location="http://example.com/images/myimage.vhd"
   Added new image with ID: 1
   Returned the following metadata for the new image:
                  container_format => ovf
@@ -226,7 +244,7 @@ Glance using the following::
                       disk_format => vhd
                                id => 1
                         is_public => True
-                         location => http://example.com/images/myimage.tar.gz
+                         location => http://example.com/images/myimage.vhd
                              name => Some web image
                        properties => {}
                              size => 0
@@ -304,6 +322,7 @@ available in Glance, as shown below::
   Id: 1
   Public? Yes
   Name: Ubuntu 10.10
+  Status: active
   Size: 58520278
   Location: file:///tmp/images/1
   Disk format: vhd
@@ -315,6 +334,7 @@ available in Glance, as shown below::
   Id: 2
   Public? Yes
   Name: Ubuntu 10.04
+  Status: active
   Size: 58520278
   Location: file:///tmp/images/2
   Disk format: ami
@@ -326,6 +346,7 @@ available in Glance, as shown below::
   Id: 3
   Public? Yes
   Name: Fedora 9
+  Status: active
   Size: 3040
   Location: file:///tmp/images/3
   Disk format: vdi
@@ -337,8 +358,9 @@ available in Glance, as shown below::
   Id: 4
   Public? Yes
   Name: Vanilla Linux 2.6.22
+  Status: active
   Size: 0
-  Location: http://example.com/images/vanilla.tar.gz
+  Location: http://example.com/images/vanilla.iso
   Disk format: qcow2
   Container format: bare
   ================================================================================
@@ -354,6 +376,7 @@ with ``<ID>``, as shown below::
   Id: 3
   Public? Yes
   Name: Fedora 9
+  Status: active
   Size: 3040
   Location: file:///tmp/images/3
   Disk format: vdi
