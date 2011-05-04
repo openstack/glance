@@ -374,9 +374,9 @@ class TestCurlApi(functional.FunctionalTest):
         - Verify image now in queued status
         4. PUT /images/1 with image data
         - Verify 200 returned
-        3. HEAD /images/1
+        5. HEAD /images/1
         - Verify image now in active status
-        5. GET /images
+        6. GET /images
         - Verify one public image
         """
 
