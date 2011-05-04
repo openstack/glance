@@ -369,11 +369,15 @@ class TestCurlApi(functional.FunctionalTest):
            attribute and no image data.
         - Verify 201 returned
         2. GET /images
-        - Verify one public image in queued status
-        3. PUT /images/1 with image data
+        - Verify one public image
+        3. HEAD /images/1
+        - Verify image now in queued status
+        4. PUT /images/1 with image data
         - Verify 200 returned
-        4. HEAD /images/1
+        3. HEAD /images/1
         - Verify image now in active status
+        5. GET /images
+        - Verify one public image
         """
 
         self.cleanup()
@@ -467,6 +471,22 @@ class TestCurlApi(functional.FunctionalTest):
         self.assertEqual("HTTP/1.1 200 OK", status_line)
         self.assertTrue("X-Image-Meta-Name: Image1" in out)
         self.assertTrue("X-Image-Meta-Status: active" in out)
+
+        # 6. GET /images
+        # Verify 1 public image still...
+        cmd = "curl -g http://0.0.0.0:%d/images" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        image = json.loads(out.strip())['images'][0]
+        expected = {"name": "Image1",
+                    "container_format": None,
+                    "disk_format": None,
+                    "checksum": 'c2e5db72bd7fd153f53ede5da5a06de3',
+                    "id": 1,
+                    "size": 5120}
+        self.assertEqual(expected, image)
 
     def test_size_greater_2G_mysql(self):
         """
