@@ -58,9 +58,9 @@ class TestCurlApi(functional.FunctionalTest):
         - Verify 200 returned
         9. GET /images/1
         - Verify updated information about image was stored
-        # 10. PUT /images/1
+        10. PUT /images/1
         - Remove a previously existing property.
-        # 11. PUT /images/1
+        11. PUT /images/1
         - Add a previously deleted property.
         """
 
@@ -355,6 +355,118 @@ class TestCurlApi(functional.FunctionalTest):
         self.assertEqual('Ubuntu', image['properties']['distro'])
 
         self.stop_servers()
+
+    def test_queued_process_flow(self):
+        """
+        We test the process flow where a user registers an image
+        with Glance but does not immediately upload an image file.
+        Later, the user uploads an image file using a PUT operation.
+        We track the changing of image status throughout this process.
+
+        0. GET /images
+        - Verify no public images
+        1. POST /images with public image named Image1 with no location
+           attribute and no image data.
+        - Verify 201 returned
+        2. GET /images
+        - Verify one public image in queued status
+        3. PUT /images/1 with image data
+        - Verify 200 returned
+        4. HEAD /images/1
+        - Verify image now in active status
+        """
+
+        self.cleanup()
+        api_port, reg_port, conf_file = self.start_servers()
+
+        # 0. GET /images
+        # Verify no public images
+        cmd = "curl -g http://0.0.0.0:%d/images" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('{"images": []}', out.strip())
+
+        # 1. POST /images with public image named Image1
+        # with no location or image data
+
+        cmd = ("curl -i -X POST "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'X-Image-Meta-Name: Image1' "
+               "-H 'X-Image-Meta-Is-Public: True' "
+               "http://0.0.0.0:%d/images") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
+
+        # 2. GET /images
+        # Verify 1 public image
+        cmd = "curl -g http://0.0.0.0:%d/images" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        image = json.loads(out.strip())['images'][0]
+        expected = {"name": "Image1",
+                    "container_format": None,
+                    "disk_format": None,
+                    "checksum": None,
+                    "id": 1,
+                    "size": 0}
+        self.assertEqual(expected, image)
+
+        # 3. HEAD /images
+        # Verify status is in queued
+        cmd = "curl -i -X HEAD http://0.0.0.0:%d/images/1" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 200 OK", status_line)
+        self.assertTrue("X-Image-Meta-Name: Image1" in out)
+        self.assertTrue("X-Image-Meta-Status: queued" in out)
+
+        # 4. PUT /images/1 with image data, verify 200 returned
+        image_data = "*" * FIVE_KB
+
+        cmd = ("curl -i -X PUT "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'Content-Type: application/octet-stream' "
+               "--data-binary \"%s\" "
+               "http://0.0.0.0:%d/images/1") % (image_data, api_port)
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 200 OK", status_line)
+
+        # 5. HEAD /images
+        # Verify status is in active
+        cmd = "curl -i -X HEAD http://0.0.0.0:%d/images/1" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 200 OK", status_line)
+        self.assertTrue("X-Image-Meta-Name: Image1" in out)
+        self.assertTrue("X-Image-Meta-Status: active" in out)
 
     def test_size_greater_2G_mysql(self):
         """

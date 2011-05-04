@@ -146,7 +146,7 @@ def image_get_all_public(context):
                    options(joinedload(models.Image.properties)).\
                    filter_by(deleted=_deleted(context)).\
                    filter_by(is_public=True).\
-                   filter_by(status='active').\
+                   filter(models.Image.status != 'active').\
                    all()
 
 
