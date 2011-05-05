@@ -42,7 +42,10 @@ class TestBinGlance(functional.FunctionalTest):
         """
 
         self.cleanup()
-        api_port, reg_port, conf_file = self.start_servers()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
 
         # 0. Verify no public images
         cmd = "bin/glance --port=%d index" % api_port
@@ -105,7 +108,10 @@ class TestBinGlance(functional.FunctionalTest):
         """
 
         self.cleanup()
-        api_port, reg_port, conf_file = self.start_servers()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
 
         # 0. Verify no public images
         cmd = "bin/glance --port=%d index" % api_port
@@ -192,7 +198,10 @@ class TestBinGlance(functional.FunctionalTest):
         # Start servers with a Swift backend and a bad auth URL
         options = {'default_store': 'swift',
                    'swift_store_auth_address': 'badurl'}
-        api_port, reg_port, conf_file = self.start_servers(**options)
+        self.start_servers(**options)
+
+        api_port = self.api_port
+        registry_port = self.registry_port
 
         # 0. Verify no public images
         cmd = "bin/glance --port=%d index" % api_port
@@ -246,7 +255,10 @@ class TestBinGlance(functional.FunctionalTest):
         """
 
         self.cleanup()
-        api_port, reg_port, conf_file = self.start_servers()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
 
         # 1. Add some images
         for i in range(1, 5):

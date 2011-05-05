@@ -65,11 +65,14 @@ class TestCurlApi(functional.FunctionalTest):
         """
 
         self.cleanup()
-        api_port, reg_port, conf_file = self.start_servers()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
 
         # 0. GET /images
         # Verify no public images
-        cmd = "curl -g http://0.0.0.0:%d/images" % api_port
+        cmd = "curl -g http://0.0.0.0:%d/v1.0/images" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -78,7 +81,7 @@ class TestCurlApi(functional.FunctionalTest):
 
         # 1. GET /images/detail
         # Verify no public images
-        cmd = "curl -g http://0.0.0.0:%d/images/detail" % api_port
+        cmd = "curl -g http://0.0.0.0:%d/v1.0/images/detail" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -87,7 +90,7 @@ class TestCurlApi(functional.FunctionalTest):
 
         # 2. HEAD /images/1
         # Verify 404 returned
-        cmd = "curl -i -X HEAD http://0.0.0.0:%d/images/1" % api_port
+        cmd = "curl -i -X HEAD http://0.0.0.0:%d/v1.0/images/1" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -108,7 +111,7 @@ class TestCurlApi(functional.FunctionalTest):
                "-H 'X-Image-Meta-Name: Image1' "
                "-H 'X-Image-Meta-Is-Public: True' "
                "--data-binary \"%s\" "
-               "http://0.0.0.0:%d/images") % (image_data, api_port)
+               "http://0.0.0.0:%d/v1.0/images") % (image_data, api_port)
 
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
@@ -120,7 +123,7 @@ class TestCurlApi(functional.FunctionalTest):
 
         # 4. HEAD /images
         # Verify image found now
-        cmd = "curl -i -X HEAD http://0.0.0.0:%d/images/1" % api_port
+        cmd = "curl -i -X HEAD http://0.0.0.0:%d/v1.0/images/1" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -135,7 +138,7 @@ class TestCurlApi(functional.FunctionalTest):
         # 5. GET /images/1
         # Verify all information on image we just added is correct
 
-        cmd = "curl -i -g http://0.0.0.0:%d/images/1" % api_port
+        cmd = "curl -i -g http://0.0.0.0:%d/v1.0/images/1" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -173,7 +176,7 @@ class TestCurlApi(functional.FunctionalTest):
             'X-Image-Meta-Disk_format': '',
             'X-Image-Meta-Container_format': '',
             'X-Image-Meta-Size': str(FIVE_KB),
-            'X-Image-Meta-Location': 'file://%s/1' % self.image_dir}
+            'X-Image-Meta-Location': 'file://%s/1' % self.api_server.image_dir}
 
         expected_std_headers = {
             'Content-Length': str(FIVE_KB),
@@ -209,7 +212,7 @@ class TestCurlApi(functional.FunctionalTest):
 
         # 6. GET /images
         # Verify no public images
-        cmd = "curl -g http://0.0.0.0:%d/images" % api_port
+        cmd = "curl -g http://0.0.0.0:%d/v1.0/images" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -226,7 +229,7 @@ class TestCurlApi(functional.FunctionalTest):
 
         # 7. GET /images/detail
         # Verify image and all its metadata
-        cmd = "curl -g http://0.0.0.0:%d/images/detail" % api_port
+        cmd = "curl -g http://0.0.0.0:%d/v1.0/images/detail" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -239,7 +242,7 @@ class TestCurlApi(functional.FunctionalTest):
             "container_format": None,
             "disk_format": None,
             "id": 1,
-            "location": "file://%s/1" % self.image_dir,
+            "location": "file://%s/1" % self.api_server.image_dir,
             "is_public": True,
             "deleted_at": None,
             "properties": {},
@@ -263,7 +266,7 @@ class TestCurlApi(functional.FunctionalTest):
         cmd = ("curl -i -X PUT "
                "-H 'X-Image-Meta-Property-Distro: Ubuntu' "
                "-H 'X-Image-Meta-Property-Arch: x86_64' "
-               "http://0.0.0.0:%d/images/1") % api_port
+               "http://0.0.0.0:%d/v1.0/images/1") % api_port
 
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
@@ -275,7 +278,7 @@ class TestCurlApi(functional.FunctionalTest):
 
         # 9. GET /images/detail
         # Verify image and all its metadata
-        cmd = "curl -g http://0.0.0.0:%d/images/detail" % api_port
+        cmd = "curl -g http://0.0.0.0:%d/v1.0/images/detail" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -288,7 +291,7 @@ class TestCurlApi(functional.FunctionalTest):
             "container_format": None,
             "disk_format": None,
             "id": 1,
-            "location": "file://%s/1" % self.image_dir,
+            "location": "file://%s/1" % self.api_server.image_dir,
             "is_public": True,
             "deleted_at": None,
             "properties": {'distro': 'Ubuntu', 'arch': 'x86_64'},
@@ -309,7 +312,7 @@ class TestCurlApi(functional.FunctionalTest):
         # 10. PUT /images/1 and remove a previously existing property.
         cmd = ("curl -i -X PUT "
                "-H 'X-Image-Meta-Property-Arch: x86_64' "
-               "http://0.0.0.0:%d/images/1") % api_port
+               "http://0.0.0.0:%d/v1.0/images/1") % api_port
 
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
@@ -319,7 +322,7 @@ class TestCurlApi(functional.FunctionalTest):
 
         self.assertEqual("HTTP/1.1 200 OK", status_line)
 
-        cmd = "curl -g http://0.0.0.0:%d/images/detail" % api_port
+        cmd = "curl -g http://0.0.0.0:%d/v1.0/images/detail" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -333,7 +336,7 @@ class TestCurlApi(functional.FunctionalTest):
         cmd = ("curl -i -X PUT "
                "-H 'X-Image-Meta-Property-Distro: Ubuntu' "
                "-H 'X-Image-Meta-Property-Arch: x86_64' "
-               "http://0.0.0.0:%d/images/1") % api_port
+               "http://0.0.0.0:%d/v1.0/images/1") % api_port
 
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
@@ -343,7 +346,7 @@ class TestCurlApi(functional.FunctionalTest):
 
         self.assertEqual("HTTP/1.1 200 OK", status_line)
 
-        cmd = "curl -g http://0.0.0.0:%d/images/detail" % api_port
+        cmd = "curl -g http://0.0.0.0:%d/v1.0/images/detail" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -381,11 +384,14 @@ class TestCurlApi(functional.FunctionalTest):
         """
 
         self.cleanup()
-        api_port, reg_port, conf_file = self.start_servers()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
 
         # 0. GET /images
         # Verify no public images
-        cmd = "curl -g http://0.0.0.0:%d/images" % api_port
+        cmd = "curl -g http://0.0.0.0:%d/v1.0/images" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -399,7 +405,7 @@ class TestCurlApi(functional.FunctionalTest):
                "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
                "-H 'X-Image-Meta-Name: Image1' "
                "-H 'X-Image-Meta-Is-Public: True' "
-               "http://0.0.0.0:%d/images") % api_port
+               "http://0.0.0.0:%d/v1.0/images") % api_port
 
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
@@ -411,7 +417,7 @@ class TestCurlApi(functional.FunctionalTest):
 
         # 2. GET /images
         # Verify 1 public image
-        cmd = "curl -g http://0.0.0.0:%d/images" % api_port
+        cmd = "curl -g http://0.0.0.0:%d/v1.0/images" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -427,7 +433,7 @@ class TestCurlApi(functional.FunctionalTest):
 
         # 3. HEAD /images
         # Verify status is in queued
-        cmd = "curl -i -X HEAD http://0.0.0.0:%d/images/1" % api_port
+        cmd = "curl -i -X HEAD http://0.0.0.0:%d/v1.0/images/1" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -447,7 +453,7 @@ class TestCurlApi(functional.FunctionalTest):
                "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
                "-H 'Content-Type: application/octet-stream' "
                "--data-binary \"%s\" "
-               "http://0.0.0.0:%d/images/1") % (image_data, api_port)
+               "http://0.0.0.0:%d/v1.0/images/1") % (image_data, api_port)
 
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
@@ -459,7 +465,7 @@ class TestCurlApi(functional.FunctionalTest):
 
         # 5. HEAD /images
         # Verify status is in active
-        cmd = "curl -i -X HEAD http://0.0.0.0:%d/images/1" % api_port
+        cmd = "curl -i -X HEAD http://0.0.0.0:%d/v1.0/images/1" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -474,7 +480,7 @@ class TestCurlApi(functional.FunctionalTest):
 
         # 6. GET /images
         # Verify 1 public image still...
-        cmd = "curl -g http://0.0.0.0:%d/images" % api_port
+        cmd = "curl -g http://0.0.0.0:%d/v1.0/images" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -497,7 +503,10 @@ class TestCurlApi(functional.FunctionalTest):
         """
 
         self.cleanup()
-        api_port, reg_port, conf_file = self.start_servers()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
 
         # 1. POST /images with public image named Image1
         # attribute and a size of 5G. Use the HTTP engine with an
@@ -510,7 +519,7 @@ class TestCurlApi(functional.FunctionalTest):
                "-H 'X-Image-Meta-Size: %d' "
                "-H 'X-Image-Meta-Name: Image1' "
                "-H 'X-Image-Meta-Is-Public: True' "
-               "http://0.0.0.0:%d/images") % (FIVE_GB, api_port)
+               "http://0.0.0.0:%d/v1.0/images") % (FIVE_GB, api_port)
 
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
@@ -530,6 +539,8 @@ class TestCurlApi(functional.FunctionalTest):
 
         self.assertTrue(new_image_uri is not None,
                         "Could not find a new image URI!")
+        self.assertTrue("v1.0/images" in new_image_uri,
+                        "v1.0/images not in %s" % new_image_uri)
 
         # 2. HEAD /images
         # Verify image size is what was passed in, and not truncated
@@ -559,7 +570,10 @@ class TestCurlApi(functional.FunctionalTest):
         """
 
         self.cleanup()
-        api_port, reg_port, conf_file = self.start_servers()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
 
         # POST /images with binary data, but not setting
         # Content-Type to application/octet-stream, verify a
@@ -568,7 +582,7 @@ class TestCurlApi(functional.FunctionalTest):
             test_data_file.write("XXX")
             test_data_file.flush()
             cmd = ("curl -i -X POST --upload-file %s "
-                   "http://0.0.0.0:%d/images") % (test_data_file.name,
+                   "http://0.0.0.0:%d/v1.0/images") % (test_data_file.name,
                                                   api_port)
 
             exitcode, out, err = execute(cmd)

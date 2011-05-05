@@ -29,7 +29,7 @@ import webob
 
 from glance.common import exception
 from glance.registry import server as rserver
-from glance import server
+from glance.api import v1_0 as server
 import glance.store
 import glance.store.filesystem
 import glance.store.http

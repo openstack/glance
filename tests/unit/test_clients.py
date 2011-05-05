@@ -256,7 +256,7 @@ class TestClient(unittest.TestCase):
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_filesystem_backend()
-        self.client = client.Client("0.0.0.0")
+        self.client = client.Client("0.0.0.0", doc_root="")
 
     def tearDown(self):
         """Clear the test environment"""

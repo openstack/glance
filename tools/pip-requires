@@ -4,6 +4,7 @@ pep8==0.5.0
 pylint==0.19
 anyjson
 eventlet>=0.9.12
+Paste
 PasteDeploy
 routes
 webob
