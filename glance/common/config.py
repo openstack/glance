@@ -175,14 +175,14 @@ def setup_logging(options, conf):
         root_logger.addHandler(handler)
 
 
-def find_config_file(options, args):
+def find_config_file(app_name, options, args):
     """
-    Return the first config file found.
+    Return the first config file found for an application.
 
     We search for the paste config file in the following order:
     * If --config-file option is used, use that
     * If args[0] is a file, use that
-    * Search for glance.conf in standard directories:
+    * Search for $app.conf in standard directories:
         * .
         * ~.glance/
         * ~
@@ -208,7 +208,7 @@ def find_config_file(options, args):
                         '/etc']
 
     for cfg_dir in config_file_dirs:
-        cfg_file = os.path.join(cfg_dir, 'glance.conf')
+        cfg_file = os.path.join(cfg_dir, '%s.conf' % app_name)
         if os.path.exists(cfg_file):
             return cfg_file
 
@@ -238,7 +238,7 @@ def load_paste_config(app_name, options, args):
     :raises RuntimeError when config file cannot be located or there was a
             problem loading the configuration file.
     """
-    conf_file = find_config_file(options, args)
+    conf_file = find_config_file(app_name, options, args)
     if not conf_file:
         raise RuntimeError("Unable to locate any configuration file. "
                             "Cannot load application %s" % app_name)

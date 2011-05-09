@@ -17,10 +17,34 @@
 Configuring Glance
 ==================
 
+Glance has a number of options that you can use to configure the Glance API
+server, the Glance Registry server, and the various storage backends that
+Glance can use to store images.
+
+Most configuration is done via configuration files, with the Glance API
+server and Glance Registry server using separate configuration files.
+
+When starting up a Glance server, you can specify the configuration file to
+use (see `the documentation on controller Glance servers <controllingservers>`_).
+If you do **not** specify a configuration file, Glance will look in the following
+directories for a configuration file, in order:
+
+* ``$CWD``
+* ``~/.glance``
+* ``~/``
+* ``/etc/glance``
+* ``/etc``
+
+The Glance API server configuration file should be named ``glance-api.conf``.
+Similarly, the Glance Registry server configuration file should be named
+``glance-registry.conf``. If you installed Glance via your operating system's
+package management system, it is likely that you will have sample
+configuration files installed in ``/etc/glance``.
+
 In addition to this documentation page, you can check the
-``etc/glance.conf.sample`` sample configuration file distributed with Glance
-for an example configuration file with detailed comments on what each options
-does.
+``etc/glance-api.conf`` and ``etc/glance-registry.conf`` sample configuration
+files distributed with Glance for example configuration files for each server
+application with detailed comments on what each options does.
 
 Common Configuration Options in Glance
 --------------------------------------
@@ -67,7 +91,7 @@ Configuring Logging in Glance
 
 There are a number of configuration options in Glance that control how Glance
 servers log messages. The configuration options can be specified both on the
-command line and in the ``glance.conf`` config file.
+command line and in config files.
 
 * ``--log-config=PATH``
 
@@ -113,7 +137,7 @@ Configuring Glance Storage Backends
 
 There are a number of configuration options in Glance that control how Glance
 stores disk images. These configuration options are specified in the
-``glance.conf`` config file `in the section [app:glance-api]`.
+``glance-api.conf`` config file in the section ``[DEFAULT]``.
 
 * ``default_store=STORE``
 
@@ -199,7 +223,7 @@ Configuring the Glance Registry
 Glance ships with a default, reference implementation registry server. There
 are a number of configuration options in Glance that control how this registry
 server operates. These configuration options are specified in the
-``glance.conf`` config file `in the section [app:glance-registry]`.
+``glance-registry.conf`` config file in the section ``[DEFAULT]``.
 
 * ``sql_connection=CONNECTION_STRING`` (``--sql-connection`` when specified
   on command line)

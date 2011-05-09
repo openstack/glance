@@ -148,7 +148,7 @@ registry_host = 0.0.0.0
 registry_port = %(registry_port)s
 log_file = %(log_file)s
 
-[composite:api]
+[composite:glance-api]
 use = egg:Paste#urlmap
 /: versions
 /v1.0: api_1_0

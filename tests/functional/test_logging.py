@@ -45,7 +45,7 @@ class TestLogging(functional.FunctionalTest):
 
         api_log_out = open(self.api_server.log_file, 'r').read()
 
-        self.assertTrue('DEBUG [api]' in api_log_out)
+        self.assertTrue('DEBUG [glance-api]' in api_log_out)
 
         self.assertTrue(os.path.exists(self.registry_server.log_file))
 
