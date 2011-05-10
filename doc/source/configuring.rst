@@ -80,11 +80,15 @@ file. If it is, then we try to use that as the configuration file. If there is
 no file or there were no arguments, we search for a configuration file in the
 following order:
 
-  - ./glance.conf
-  - ~/glance.conf
-  - ~/.glance/glance.conf
-  - /etc/glance/glance.conf
-  - /etc/glance.conf
+* ``$CWD``
+* ``~/.glance``
+* ``~/``
+* ``/etc/glance``
+* ``/etc``
+
+The filename that is searched for depends on the server application name. So,
+if you are starting up the API server, ``glance-api.conf`` is searched for,
+otherwise ``glance-registry.conf``.
 
 Configuring Logging in Glance
 -----------------------------

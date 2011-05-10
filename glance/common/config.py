@@ -200,7 +200,7 @@ def find_config_file(app_name, options, args):
         if os.path.exists(args[0]):
             return fix_path(args[0])
 
-    # Handle standard directory search for glance.conf
+    # Handle standard directory search for $app_name.conf
     config_file_dirs = [fix_path(os.getcwd()),
                         fix_path(os.path.join('~', '.glance')),
                         fix_path('~'),
@@ -221,7 +221,7 @@ def load_paste_config(app_name, options, args):
     We search for the paste config file in the following order:
     * If --config-file option is used, use that
     * If args[0] is a file, use that
-    * Search for glance.conf in standard directories:
+    * Search for $app_name.conf in standard directories:
         * .
         * ~.glance/
         * ~
@@ -257,7 +257,7 @@ def load_paste_app(app_name, options, args):
     We search for the paste config file in the following order:
     * If --config-file option is used, use that
     * If args[0] is a file, use that
-    * Search for glance.conf in standard directories:
+    * Search for $app_name.conf in standard directories:
         * .
         * ~.glance/
         * ~
