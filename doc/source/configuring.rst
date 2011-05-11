@@ -94,8 +94,7 @@ Configuring Logging in Glance
 -----------------------------
 
 There are a number of configuration options in Glance that control how Glance
-servers log messages. The configuration options can be specified both on the
-command line and in config files.
+servers log messages.
 
 * ``--log-config=PATH``
 
@@ -105,30 +104,29 @@ Specified on the command line only.
 
 Takes a path to a configuration file to use for configuring logging.
 
-* ``--log-format``
+Logging Options Available Only in Configuration Files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`Because of a bug in the PasteDeploy package, this option is only available
-on the command line.`
+You will want to place the different logging options in the **[DEFAULT]** section
+in your application configuration file. As an example, you might do the following
+for the API server, in a configuration file called ``etc/glance-api.conf``::
 
-Optional. Default: ``%(asctime)s %(levelname)8s [%(name)s] %(message)s``
+  [DEFAULT]
+  log_file = /var/log/glance/api.log
 
-The format of the log records. See the
-`logging module <http://docs.python.org/library/logging.html>`_ documentation for
-more information on setting this format string.
-
-* ``log_file`` (``--log-file`` when specified on the command line)
+* ``log_file``
 
 The filepath of the file to use for logging messages from Glance's servers. If
 missing, the default is to output messages to ``stdout``, so if you are running
 Glance servers in a daemon mode (using ``glance-control``) you should make
 sure that the ``log_file`` option is set appropriately.
 
-* ``log_dir`` (``--log-dir`` when specified on the command line)
+* ``log_dir``
 
 The filepath of the directory to use for log files. If not specified (the default)
 the ``log_file`` is used as an absolute filepath.
 
-* ``log_date_format`` (``--log-date-format`` when specified from the command line)
+* ``log_date_format``
 
 The format string for timestamps in the log output.
 
