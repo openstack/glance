@@ -177,13 +177,13 @@ class BaseClient(object):
             return response.status
 
 
-class V1_0_Client(BaseClient):
+class V1Client(BaseClient):
 
     """Main client class for accessing Glance resources"""
 
     DEFAULT_PORT = 9292
 
-    def __init__(self, host, port=None, use_ssl=False, doc_root="/v1.0"):
+    def __init__(self, host, port=None, use_ssl=False, doc_root="/v1"):
         """
         Creates a new client to a Glance API service.
 
@@ -199,7 +199,7 @@ class V1_0_Client(BaseClient):
 
     def do_request(self, method, action, body=None, headers=None):
         action = "%s/%s" % (self.doc_root, action.lstrip("/"))
-        return super(V1_0_Client, self).do_request(method, action,
+        return super(V1Client, self).do_request(method, action,
                                                    body, headers)
 
     def get_images(self):
@@ -297,4 +297,4 @@ class V1_0_Client(BaseClient):
         return True
 
 
-Client = V1_0_Client
+Client = V1Client

@@ -56,7 +56,7 @@ class Controller(object):
         return response
 
     def get_href(self):
-        return "http://%s:%s/v1.0" % (self.options['bind_host'],
+        return "http://%s:%s/v1/" % (self.options['bind_host'],
                                       self.options['bind_port'])
 
 

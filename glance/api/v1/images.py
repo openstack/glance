@@ -16,7 +16,7 @@
 #    under the License.
 
 """
-/images endpoint for Glance v1.0 API
+/images endpoint for Glance v1 API
 """
 
 import httplib
@@ -40,13 +40,13 @@ from glance import registry
 from glance import utils
 
 
-logger = logging.getLogger('glance.api.v1_0.images')
+logger = logging.getLogger('glance.api.v1.images')
 
 
 class Controller(wsgi.Controller):
 
     """
-    WSGI controller for images resource in Glance v1.0 API
+    WSGI controller for images resource in Glance v1 API
 
     The images resource API is a RESTful web service for image data. The API
     is as follows::
@@ -131,7 +131,7 @@ class Controller(wsgi.Controller):
 
         res = Response(request=req)
         utils.inject_image_meta_into_headers(res, image)
-        res.headers.add('Location', "/v1.0/images/%s" % id)
+        res.headers.add('Location', "/v1/images/%s" % id)
         res.headers.add('ETag', image['checksum'])
 
         return req.get_response(res)
@@ -164,7 +164,7 @@ class Controller(wsgi.Controller):
         # Using app_iter blanks content-length, so we set it here...
         res.headers.add('Content-Length', image['size'])
         utils.inject_image_meta_into_headers(res, image)
-        res.headers.add('Location', "/v1.0/images/%s" % id)
+        res.headers.add('Location', "/v1/images/%s" % id)
         res.headers.add('ETag', image['checksum'])
         return req.get_response(res)
 
@@ -386,7 +386,7 @@ class Controller(wsgi.Controller):
         # URI of the resource newly-created.
         res = Response(request=req, body=json.dumps(dict(image=image_meta)),
                        status=httplib.CREATED, content_type="text/plain")
-        res.headers.add('Location', "/v1.0/images/%s" % image_id)
+        res.headers.add('Location', "/v1/images/%s" % image_id)
         res.headers.add('ETag', image_meta['checksum'])
 
         return req.get_response(res)

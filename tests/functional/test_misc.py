@@ -46,7 +46,7 @@ class TestMiscellaneous(functional.FunctionalTest):
         api_port = self.api_port
         registry_port = self.registry_port
 
-        cmd = "curl -g http://0.0.0.0:%d/v1.0/images" % api_port
+        cmd = "curl -g http://0.0.0.0:%d/v1/images" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -56,7 +56,7 @@ class TestMiscellaneous(functional.FunctionalTest):
         cmd = "curl -X POST -H 'Content-Type: application/octet-stream' "\
               "-H 'X-Image-Meta-Name: ImageName' "\
               "-H 'X-Image-Meta-Disk-Format: Invalid' "\
-              "http://0.0.0.0:%d/v1.0/images" % api_port
+              "http://0.0.0.0:%d/v1/images" % api_port
         ignored, out, err = execute(cmd)
 
         self.assertTrue('Invalid disk format' in out,

@@ -148,22 +148,20 @@ registry_host = 0.0.0.0
 registry_port = %(registry_port)s
 log_file = %(log_file)s
 
-[composite:glance-api]
-use = egg:Paste#urlmap
-/: versions
-/v1.0: api_1_0
-
-[pipeline:api_1_0]
-pipeline = api_1_0_app
+[pipeline:glance-api]
+pipeline = versionnegotiation apiv1app
 
 [pipeline:versions]
-pipeline = versions_app
+pipeline = versionsapp
 
-[app:versions_app]
+[app:versionsapp]
 paste.app_factory = glance.api.versions:app_factory
 
-[app:api_1_0_app]
-paste.app_factory = glance.api.v1_0:app_factory
+[app:apiv1app]
+paste.app_factory = glance.api.v1:app_factory
+
+[filter:versionnegotiation]
+paste.filter_factory = glance.api.middleware.version_negotiation:filter_factory
 """
 
 

@@ -24,7 +24,7 @@ import unittest
 import stubout
 import webob
 
-from glance.api import v1_0 as server
+from glance.api import v1 as server
 from glance.registry import server as rserver
 from tests import stubs
 

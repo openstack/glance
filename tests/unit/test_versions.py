@@ -46,5 +46,5 @@ class VersionsTest(unittest.TestCase):
                 "links": [
                     {
                         "rel": "self",
-                        "href": "http://0.0.0.0:9292/v1.0"}]}]
+                        "href": "http://0.0.0.0:9292/v1/"}]}]
         self.assertEqual(results, expected)
