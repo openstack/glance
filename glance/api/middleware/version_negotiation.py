@@ -52,6 +52,11 @@ class VersionNegotiationFilter(wsgi.Middleware):
         # API controller
         logger.debug("Processing request: %s %s Accept: %s",
                      req.method, req.path, req.accept)
+
+        # If the request is for /versions, just return the versions container
+        if req.path_info_peek() == "versions":
+            return self.versions_app
+
         match = self._match_version_string(req.path_info_peek(), req)
         if match:
             logger.debug("Matched versioned URI. Version: %d.%d",
@@ -65,8 +70,8 @@ class VersionNegotiationFilter(wsgi.Middleware):
                 return self.versions_app
 
         accept = req.headers['Accept']
-        if accept.startswith('application/vnd.openstack.images'):
-            token_loc = len('application/vnd.openstack.images')
+        if accept.startswith('application/vnd.openstack.images-'):
+            token_loc = len('application/vnd.openstack.images-')
             accept_version = accept[token_loc:]
             match = self._match_version_string(accept_version, req)
             if match:
@@ -76,6 +81,10 @@ class VersionNegotiationFilter(wsgi.Middleware):
                 if req.environ['api.major_version'] == 1:
                     return None
                 else:
+                    logger.debug("Unknown version in accept header: %s.%s..."
+                                 "returning version choices.",
+                                 req.environ['api.major_version'],
+                                 req.environ['api.minor_version'])
                     return self.versions_app
         else:
             if req.accept not in ('*/*', ''):

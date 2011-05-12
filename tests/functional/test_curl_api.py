@@ -538,23 +538,35 @@ class TestCurlApi(functional.FunctionalTest):
         images = {'images': []}
         images_json = json.dumps(images)
 
+        def validate_versions(response_text):
+            """
+            Returns True if supplied response text contains an
+            appropriate 300 Multiple Choices and has the correct
+            versions output.
+            """
+            status_line = response_text.split("\r\n")[0]
+            body = response_text[response_text.index("\r\n\r\n") + 1:].strip()
+
+            return ("HTTP/1.1 300 Multiple Choices" == status_line
+                    and versions_json == body)
+
         # 0. GET / with no Accept: header
         # Verify version choices returned.
-        cmd = "curl http://0.0.0.0:%d/" % api_port
+        cmd = "curl -i http://0.0.0.0:%d/" % api_port
 
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual(versions_json, out.strip())
+        self.assertTrue(validate_versions(out))
 
         # 1. GET /images with no Accept: header
         # Verify version choices returned.
-        cmd = "curl http://0.0.0.0:%d/images" % api_port
+        cmd = "curl -i http://0.0.0.0:%d/images" % api_port
 
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual(versions_json, out.strip())
+        self.assertTrue(validate_versions(out))
 
         # 2. GET /v1/images with no Accept: header
         # Verify empty images list returned.
@@ -568,12 +580,12 @@ class TestCurlApi(functional.FunctionalTest):
         # 3. GET / with Accept: unknown header
         # Verify version choices returned. Verify message in API log about
         # unknown accept header.
-        cmd = "curl -H 'Accept: unknown' http://0.0.0.0:%d/" % api_port
+        cmd = "curl -i -H 'Accept: unknown' http://0.0.0.0:%d/" % api_port
 
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual(versions_json, out.strip())
+        self.assertTrue(validate_versions(out))
         self.assertTrue('Unknown accept header'
                         in open(self.api_server.log_file).read())
 
@@ -590,15 +602,16 @@ class TestCurlApi(functional.FunctionalTest):
         # 5. GET /images with a Accept: application/vnd.openstack.compute-v1
         # header. Verify version choices returned. Verify message in API log
         # about unknown accept header.
-        cmd = ("curl -H 'Accept: application/vnd.openstack.compute-v1' "
+        cmd = ("curl -i -H 'Accept: application/vnd.openstack.compute-v1' "
                "http://0.0.0.0:%d/images") % api_port
 
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual(versions_json, out.strip())
-        self.assertTrue('Unknown accept header'
-                        in open(self.api_server.log_file).read())
+        self.assertTrue(validate_versions(out))
+
+        api_log_text = open(self.api_server.log_file).read()
+        self.assertTrue('Unknown accept header' in api_log_text)
 
         # 6. GET /v1.0/images with no Accept: header
         # Verify empty image list returned
@@ -620,12 +633,66 @@ class TestCurlApi(functional.FunctionalTest):
 
         # 8. GET /va.1/images with no Accept: header
         # Verify version choices returned
-        cmd = "curl http://0.0.0.0:%d/va.1/images" % api_port
+        cmd = "curl -i http://0.0.0.0:%d/va.1/images" % api_port
 
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual(versions_json, out.strip())
+        self.assertTrue(validate_versions(out))
+
+        # 9. GET /versions with no Accept: header
+        # Verify version choices returned
+        cmd = "curl -i http://0.0.0.0:%d/versions" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(validate_versions(out))
+
+        # 10. GET /versions with a Accept: application/vnd.openstack.images-v1
+        # header. Verify version choices returned.
+        cmd = ("curl -i -H 'Accept: application/vnd.openstack.images-v1' "
+               "http://0.0.0.0:%d/versions") % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(validate_versions(out))
+
+        # 11. GET /v1/versions with no Accept: header
+        # Verify 404 returned
+        cmd = "curl -i http://0.0.0.0:%d/v1/versions" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+
+        status_line = out.split("\r\n")[0]
+        self.assertEquals("HTTP/1.1 404 Not Found", status_line)
+
+        # 12. GET /v2/versions with no Accept: header
+        # Verify version choices returned
+        cmd = "curl -i http://0.0.0.0:%d/v2/versions" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(validate_versions(out))
+
+        # 13. GET /images with a Accept: application/vnd.openstack.compute-v2
+        # header. Verify version choices returned. Verify message in API log
+        # about unknown version in accept header.
+        cmd = ("curl -i -H 'Accept: application/vnd.openstack.images-v2' "
+               "http://0.0.0.0:%d/images") % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(validate_versions(out))
+        api_log_text = open(self.api_server.log_file).read()
+        self.assertTrue('Unknown version in accept header' in api_log_text)
+
+        self.stop_servers()
 
     def test_size_greater_2G_mysql(self):
         """

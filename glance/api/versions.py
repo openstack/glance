@@ -19,6 +19,7 @@
 Controller that returns information on the Glance API versions
 """
 
+import httplib
 import json
 
 import webob.dec
@@ -49,8 +50,9 @@ class Controller(object):
 
         body = json.dumps(dict(versions=version_objs))
 
-        response = webob.Response()
-        response.content_type = 'application/json'
+        response = webob.Response(request=req,
+                                  status=httplib.MULTIPLE_CHOICES,
+                                  content_type='application/json')
         response.body = body
 
         return response
