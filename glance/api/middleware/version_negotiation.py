@@ -59,14 +59,19 @@ class VersionNegotiationFilter(wsgi.Middleware):
 
         match = self._match_version_string(req.path_info_peek(), req)
         if match:
-            logger.debug("Matched versioned URI. Version: %d.%d",
-                         req.environ['api.major_version'],
-                         req.environ['api.minor_version'])
-            if req.environ['api.major_version'] == 1:
+            if (req.environ['api.major_version'] == 1 and
+                req.environ['api.minor_version'] == 0):
+                logger.debug("Matched versioned URI. Version: %d.%d",
+                             req.environ['api.major_version'],
+                             req.environ['api.minor_version'])
                 # Strip the version from the path
                 req.path_info_pop()
                 return None
             else:
+                logger.debug("Unknown version in versioned URI: %d.%d. "
+                             "Returning version choices.",
+                             req.environ['api.major_version'],
+                             req.environ['api.minor_version'])
                 return self.versions_app
 
         accept = req.headers['Accept']
@@ -75,10 +80,12 @@ class VersionNegotiationFilter(wsgi.Middleware):
             accept_version = accept[token_loc:]
             match = self._match_version_string(accept_version, req)
             if match:
-                logger.debug("Matched versioned media type. Version: %d.%d",
-                             req.environ['api.major_version'],
-                             req.environ['api.minor_version'])
-                if req.environ['api.major_version'] == 1:
+                if (req.environ['api.major_version'] == 1 and
+                    req.environ['api.minor_version'] == 0):
+                    logger.debug("Matched versioned media type. "
+                                 "Version: %d.%d",
+                                 req.environ['api.major_version'],
+                                 req.environ['api.minor_version'])
                     return None
                 else:
                     logger.debug("Unknown version in accept header: %s.%s..."

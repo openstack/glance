@@ -36,7 +36,7 @@ class VersionsTest(unittest.TestCase):
         options = {'bind_host': '0.0.0.0',
                    'bind_port': 9292}
         res = req.get_response(versions.Controller(options))
-        self.assertEqual(res.status_int, 200)
+        self.assertEqual(res.status_int, 300)
         self.assertEqual(res.content_type, "application/json")
         results = json.loads(res.body)["versions"]
         expected = [

@@ -499,27 +499,6 @@ class TestCurlApi(functional.FunctionalTest):
         We test that various calls to the images and root endpoints are
         handled properly, and that usage of the Accept: header does
         content negotiation properly.
-
-        0. GET / with no Accept: header
-        Verify version choices returned.
-        1. GET /images with no Accept: header
-        Verify version choices returned.
-        2. GET /v1/images with no Accept: header
-        Verify empty image list returned.
-        3. GET / with an Accept: unknown header
-        Verify version choices returned. Verify message in API log about
-        unknown accept header.
-        4. GET / with an Accept: application/vnd.openstack.images-v1
-        Verify empty image list returned
-        5. GET /images with a Accept: application/vnd.openstack.compute-v1
-        header. Verify version choices returned. Verify message in API log
-        about unknown accept header.
-        6. GET /v1.0/images with no Accept: header
-        Verify empty image list returned
-        7. GET /v1.a/images with no Accept: header
-        Verify empty image list returned
-        8. GET /va.1/images with no Accept: header
-        Verify version choices returned.
         """
 
         self.cleanup()
@@ -691,6 +670,17 @@ class TestCurlApi(functional.FunctionalTest):
         self.assertTrue(validate_versions(out))
         api_log_text = open(self.api_server.log_file).read()
         self.assertTrue('Unknown version in accept header' in api_log_text)
+
+        # 14. GET /v1.2/images with no Accept: header
+        # Verify version choices returned
+        cmd = "curl -i http://0.0.0.0:%d/v1.2/images" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(validate_versions(out))
+        api_log_text = open(self.api_server.log_file).read()
+        self.assertTrue('Unknown version in versioned URI' in api_log_text)
 
         self.stop_servers()
 
