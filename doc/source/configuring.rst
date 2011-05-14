@@ -17,10 +17,34 @@
 Configuring Glance
 ==================
 
+Glance has a number of options that you can use to configure the Glance API
+server, the Glance Registry server, and the various storage backends that
+Glance can use to store images.
+
+Most configuration is done via configuration files, with the Glance API
+server and Glance Registry server using separate configuration files.
+
+When starting up a Glance server, you can specify the configuration file to
+use (see `the documentation on controller Glance servers <controllingservers>`_).
+If you do **not** specify a configuration file, Glance will look in the following
+directories for a configuration file, in order:
+
+* ``$CWD``
+* ``~/.glance``
+* ``~/``
+* ``/etc/glance``
+* ``/etc``
+
+The Glance API server configuration file should be named ``glance-api.conf``.
+Similarly, the Glance Registry server configuration file should be named
+``glance-registry.conf``. If you installed Glance via your operating system's
+package management system, it is likely that you will have sample
+configuration files installed in ``/etc/glance``.
+
 In addition to this documentation page, you can check the
-``etc/glance.conf.sample`` sample configuration file distributed with Glance
-for an example configuration file with detailed comments on what each options
-does.
+``etc/glance-api.conf`` and ``etc/glance-registry.conf`` sample configuration
+files distributed with Glance for example configuration files for each server
+application with detailed comments on what each options does.
 
 Common Configuration Options in Glance
 --------------------------------------
@@ -56,11 +80,15 @@ file. If it is, then we try to use that as the configuration file. If there is
 no file or there were no arguments, we search for a configuration file in the
 following order:
 
-  - ./glance.conf
-  - ~/glance.conf
-  - ~/.glance/glance.conf
-  - /etc/glance/glance.conf
-  - /etc/glance.conf
+* ``$CWD``
+* ``~/.glance``
+* ``~/``
+* ``/etc/glance``
+* ``/etc``
+
+The filename that is searched for depends on the server application name. So,
+if you are starting up the API server, ``glance-api.conf`` is searched for,
+otherwise ``glance-registry.conf``.
 
 Configuring Logging in Glance
 -----------------------------
@@ -76,19 +104,15 @@ Specified on the command line only.
 
 Takes a path to a configuration file to use for configuring logging.
 
-Logging Options Available in ``glance.conf``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Logging Options Available Only in Configuration Files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You will want to place the different logging options **in each of the API and registry
-application sections in your glance.conf**. As an example, you might do the following::
+You will want to place the different logging options in the **[DEFAULT]** section
+in your application configuration file. As an example, you might do the following
+for the API server, in a configuration file called ``etc/glance-api.conf``::
 
-  [app:glance-api]
-  ... other options ...
+  [DEFAULT]
   log_file = /var/log/glance/api.log
-
-  [app:glance-registry]
-  ... other options ...
-  log_file = /var/log/glance/registry.log
 
 * ``log_file``
 
@@ -115,7 +139,7 @@ Configuring Glance Storage Backends
 
 There are a number of configuration options in Glance that control how Glance
 stores disk images. These configuration options are specified in the
-``glance.conf`` config file `in the section [app:glance-api]`.
+``glance-api.conf`` config file in the section ``[DEFAULT]``.
 
 * ``default_store=STORE``
 
@@ -201,7 +225,7 @@ Configuring the Glance Registry
 Glance ships with a default, reference implementation registry server. There
 are a number of configuration options in Glance that control how this registry
 server operates. These configuration options are specified in the
-``glance.conf`` config file `in the section [app:glance-registry]`.
+``glance-registry.conf`` config file in the section ``[DEFAULT]``.
 
 * ``sql_connection=CONNECTION_STRING`` (``--sql-connection`` when specified
   on command line)

@@ -127,23 +127,6 @@ def abspath(s):
     return os.path.join(os.path.dirname(__file__), s)
 
 
-# TODO(sirp): when/if utils is extracted to common library, we should remove
-# the argument's default.
-#def default_flagfile(filename='nova.conf'):
-def default_flagfile(filename='glance.conf'):
-    for arg in sys.argv:
-        if arg.find('flagfile') != -1:
-            break
-    else:
-        if not os.path.isabs(filename):
-            # turn relative filename into an absolute path
-            script_dir = os.path.dirname(inspect.stack()[-1][1])
-            filename = os.path.abspath(os.path.join(script_dir, filename))
-        if os.path.exists(filename):
-            sys.argv = \
-                sys.argv[:1] + ['--flagfile=%s' % filename] + sys.argv[1:]
-
-
 def debug(arg):
     logging.debug('debug in callback: %s', arg)
     return arg

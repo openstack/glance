@@ -16,17 +16,7 @@
 #    under the License.
 
 """
-=================
-Glance API Server
-=================
-
-Configuration Options
----------------------
-
-   `default_store`: When no x-image-meta-store header is sent for a
-                    `POST /images` request, this store will be used
-                    for storing the image data. Default: 'file'
-
+/images endpoint for Glance v1 API
 """
 
 import httplib
@@ -34,7 +24,6 @@ import json
 import logging
 import sys
 
-import routes
 from webob import Response
 from webob.exc import (HTTPNotFound,
                        HTTPConflict,
@@ -51,15 +40,15 @@ from glance import registry
 from glance import utils
 
 
-logger = logging.getLogger('glance.server')
+logger = logging.getLogger('glance.api.v1.images')
 
 
 class Controller(wsgi.Controller):
 
     """
-    Main WSGI application controller for Glance.
+    WSGI controller for images resource in Glance v1 API
 
-    The Glance API is a RESTful web service for image data. The API
+    The images resource API is a RESTful web service for image data. The API
     is as follows::
 
         GET /images -- Returns a set of brief metadata about images
@@ -142,7 +131,7 @@ class Controller(wsgi.Controller):
 
         res = Response(request=req)
         utils.inject_image_meta_into_headers(res, image)
-        res.headers.add('Location', "/images/%s" % id)
+        res.headers.add('Location', "/v1/images/%s" % id)
         res.headers.add('ETag', image['checksum'])
 
         return req.get_response(res)
@@ -175,7 +164,7 @@ class Controller(wsgi.Controller):
         # Using app_iter blanks content-length, so we set it here...
         res.headers.add('Content-Length', image['size'])
         utils.inject_image_meta_into_headers(res, image)
-        res.headers.add('Location', "/images/%s" % id)
+        res.headers.add('Location', "/v1/images/%s" % id)
         res.headers.add('ETag', image['checksum'])
         return req.get_response(res)
 
@@ -397,7 +386,7 @@ class Controller(wsgi.Controller):
         # URI of the resource newly-created.
         res = Response(request=req, body=json.dumps(dict(image=image_meta)),
                        status=httplib.CREATED, content_type="text/plain")
-        res.headers.add('Location', "/images/%s" % image_id)
+        res.headers.add('Location', "/v1/images/%s" % image_id)
         res.headers.add('ETag', image_meta['checksum'])
 
         return req.get_response(res)
@@ -505,26 +494,3 @@ class Controller(wsgi.Controller):
             logger.error(msg)
             raise HTTPBadRequest(msg, request=request,
                                  content_type='text/plain')
-
-
-class API(wsgi.Router):
-
-    """WSGI entry point for all Glance API requests."""
-
-    def __init__(self, options):
-        self.options = options
-        mapper = routes.Mapper()
-        controller = Controller(options)
-        mapper.resource("image", "images", controller=controller,
-                       collection={'detail': 'GET'})
-        mapper.connect("/", controller=controller, action="index")
-        mapper.connect("/images/{id}", controller=controller, action="meta",
-                       conditions=dict(method=["HEAD"]))
-        super(API, self).__init__(mapper)
-
-
-def app_factory(global_conf, **local_conf):
-    """paste.deploy app factory for creating Glance API server apps"""
-    conf = global_conf.copy()
-    conf.update(local_conf)
-    return API(conf)
