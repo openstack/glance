@@ -390,6 +390,12 @@ def stub_out_registry_db_image_api(stubs):
             return [f for f in self.images
                     if f['is_public'] == public]
 
+        def image_get_filtered(self, _context, filters):
+            images = [f for f in self.images if f['is_public'] == True]
+            for k, v in filters.items():
+                images = [f for f in images if f[k] == v]
+            return images
+
     fake_datastore = FakeDatastore()
     stubs.Set(glance.registry.db.api, 'image_create',
               fake_datastore.image_create)
@@ -401,3 +407,5 @@ def stub_out_registry_db_image_api(stubs):
               fake_datastore.image_get)
     stubs.Set(glance.registry.db.api, 'image_get_all_public',
               fake_datastore.image_get_all_public)
+    stubs.Set(glance.registry.db.api, 'image_get_filtered',
+              fake_datastore.image_get_filtered)

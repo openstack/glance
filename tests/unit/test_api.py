@@ -26,6 +26,7 @@ import webob
 
 from glance.api import v1 as server
 from glance.registry import server as rserver
+import glance.registry.db.api
 from tests import stubs
 
 VERBOSE = False
@@ -87,6 +88,50 @@ class TestRegistryAPI(unittest.TestCase):
         for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
 
+    def test_get_index_filter_name(self):
+        """Tests that the /images registry API returns list of
+        public images that have a specific name. This is really a sanity
+        check, filtering is tested more in-depth using /images/detail
+
+        """
+        fixture = {'id': 2,
+                   'name': 'fake image #2',
+                   'size': 19,
+                   'checksum': None}
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?name=new name! #123')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertEqual('new name! #123', image['name'])
+
     def test_get_details(self):
         """Tests that the /images/detail registry API returns
         a mapping containing a list of detailed image information
@@ -111,6 +156,178 @@ class TestRegistryAPI(unittest.TestCase):
 
         for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
+
+    def test_get_details_filter_name(self):
+        """Tests that the /images/detail registry API returns list of
+        public images that have a specific name
+
+        """
+        fixture = {'id': 2,
+                   'name': 'fake image #2',
+                   'size': 19,
+                   'checksum': None}
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?name=new name! #123')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertEqual('new name! #123', image['name'])
+
+    def test_get_details_filter_status(self):
+        """Tests that the /images/detail registry API returns list of
+        public images that have a specific status
+
+        """
+        fixture = {'id': 2,
+                   'name': 'fake image #2',
+                   'size': 19,
+                   'checksum': None}
+
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #4',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?status=saving')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEqual('saving', image['status'])
+
+    def test_get_details_filter_container_format(self):
+        """Tests that the /images/detail registry API returns list of
+        public images that have a specific container_format
+
+        """
+        fixture = {'id': 2,
+                   'name': 'fake image #2',
+                   'size': 19,
+                   'checksum': None}
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vdi',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?container_format=ovf')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertEqual('ovf', image['container_format'])
+
+    def test_get_details_filter_disk_format(self):
+        """Tests that the /images/detail registry API returns list of
+        public images that have a specific disk_format
+
+        """
+        fixture = {'id': 2,
+                   'name': 'fake image #2',
+                   'size': 19,
+                   'checksum': None}
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?disk_format=vhd')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertEqual('vhd', image['disk_format'])
 
     def test_create_image(self):
         """Tests that the /images POST registry API creates the image"""

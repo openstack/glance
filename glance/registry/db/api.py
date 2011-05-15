@@ -150,6 +150,25 @@ def image_get_all_public(context):
                    all()
 
 
+def image_get_filtered(context, filters):
+    """Get all public images that match the provided filters.
+
+    :param filters: dict of filter keys and values
+
+    """
+    session = get_session()
+    query = session.query(models.Image).\
+                   options(joinedload(models.Image.properties)).\
+                   filter_by(deleted=_deleted(context)).\
+                   filter_by(is_public=True).\
+                   filter(models.Image.status != 'killed')
+
+    for (k, v) in filters.items():
+        query = query.filter(getattr(models.Image, k) == v)
+
+    return query.all()
+
+
 def _drop_protected_attrs(model_class, values):
     """Removed protected attributes from values dictionary using the models
     __protected_attributes__ field.
