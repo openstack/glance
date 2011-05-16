@@ -405,12 +405,11 @@ def stub_out_registry_db_image_api(stubs):
                     return False
                 return _func
 
+            for k, v in filters.pop('properties', {}).items():
+                images = filter(_prop_filter(k, v), images)
+
             for k, v in filters.items():
-                if k.startswith('property-'):
-                    _k = k[9:]
-                    images = filter(_prop_filter(_k, v), images)
-                else:
-                    images = [f for f in images if f[k] == v]
+                images = [f for f in images if f[k] == v]
 
             return images
 

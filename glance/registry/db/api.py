@@ -142,7 +142,9 @@ def image_get(context, image_id, session=None):
 def image_get_all_public(context, filters=None):
     """Get all public images that match zero or more filters.
 
-    :param filters: dict of filter keys and values
+    :param filters: dict of filter keys and values. If a 'properties'
+                    key is present, it is treated as a dict of key/value
+                    filters on the image properties attribute
 
     """
     if filters == None:
@@ -163,29 +165,13 @@ def image_get_all_public(context, filters=None):
         query = query.filter(models.Image.size <= filters['size_max'])
         del filters['size_max']
 
-    for (k, v) in filters.items():
-        if not k.startswith('property-'):
-            query = query.filter(getattr(models.Image, k) == v)
-
-    images = query.all()
-
-    #TODO(bcwaldon): use an actual sqlalchemy query to accomplish this
-    def prop_filter(key, value):
-        def func(image):
-            for prop in image.properties:
-                if prop.deleted == False and \
-                   prop.name == key and \
-                   prop.value == value:
-                    return True
-            return False
-        return func
+    for (k, v) in filters.pop('properties', {}).items():
+        query = query.filter(models.Image.properties.any(name=k, value=v))
 
     for (k, v) in filters.items():
-        if k.startswith('property-'):
-            _k = k[9:]
-            images = filter(prop_filter(_k, v), images)
+        query = query.filter(getattr(models.Image, k) == v)
 
-    return images
+    return query.all()
 
 
 def _drop_protected_attrs(model_class, values):
