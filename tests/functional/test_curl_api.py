@@ -981,3 +981,19 @@ class TestCurlApi(functional.FunctionalTest):
         self.assertEqual(len(images["images"]), 2)
         for image in images["images"]:
             self.assertEqual(image["properties"]["pants"], "are on")
+
+        # 10. GET /images with property filter and name filter
+        # Verify correct images returned with property and name
+        # Make sure you quote the url when using more than one param!
+        cmd = ("curl 'http://0.0.0.0:%d/v1/images/detail?"
+               "name=My%%20Image!&property-pants=are%%20on'" % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images["images"]), 1)
+        for image in images["images"]:
+            self.assertEqual(image["properties"]["pants"], "are on")
+            self.assertEqual(image["name"], "My Image!")
