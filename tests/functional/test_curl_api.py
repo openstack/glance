@@ -997,3 +997,117 @@ class TestCurlApi(functional.FunctionalTest):
         for image in images["images"]:
             self.assertEqual(image["properties"]["pants"], "are on")
             self.assertEqual(image["name"], "My Image!")
+
+    def test_limited_images(self):
+        """
+        Ensure marker and limit query params work
+        """
+        self.cleanup()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 0. GET /images
+        # Verify no public images
+        cmd = "curl http://0.0.0.0:%d/v1/images" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('{"images": []}', out.strip())
+
+        # 1. POST /images with three public images with various attributes
+        cmd = ("curl -i -X POST "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'X-Image-Meta-Name: Image1' "
+               "-H 'X-Image-Meta-Is-Public: True' "
+               "http://0.0.0.0:%d/v1/images") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
+
+        cmd = ("curl -i -X POST "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'X-Image-Meta-Name: Image2' "
+               "-H 'X-Image-Meta-Is-Public: True' "
+               "http://0.0.0.0:%d/v1/images") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
+        cmd = ("curl -i -X POST "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'X-Image-Meta-Name: Image3' "
+               "-H 'X-Image-Meta-Is-Public: True' "
+               "http://0.0.0.0:%d/v1/images") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
+
+        # 2. GET /images with limit of 2
+        # Verify only two images were returned
+        cmd = "curl http://0.0.0.0:%d/v1/images?limit=2" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        print out.strip()
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images['images']), 2)
+        for image in images['images']:
+            self.assertTrue(image['id'] < 3)
+
+        # 3. GET /images with marker 1
+        # Verify only two images were returned
+        cmd = "curl http://0.0.0.0:%d/v1/images?marker=1" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images['images']), 2)
+        for image in images['images']:
+            self.assertTrue(image['id'] >= 2)
+
+        # 4. GET /images with marker 1 and limit of 1
+        # Verify only one image was returned with the correct id
+        cmd = ("curl 'http://0.0.0.0:%d/v1/images?"
+               "limit=1&marker=1'" % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images['images']), 1)
+        self.assertEqual(images['images'][0]['id'], 2)
+
+        # 5. GET /images/detail with marker 1 and limit of 1
+        # Verify only one image was returned with the correct id
+        cmd = ("curl 'http://0.0.0.0:%d/v1/images/detail?"
+               "limit=1&marker=1'" % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images['images']), 1)
+        self.assertEqual(images['images'][0]['id'], 2)

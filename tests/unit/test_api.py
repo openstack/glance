@@ -88,6 +88,123 @@ class TestRegistryAPI(unittest.TestCase):
         for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
 
+    def test_get_index_marker(self):
+        """Tests that the /images registry API returns list of
+        public images that conforms to a marker query param
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?marker=2')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        # expect list to be sorted by id asc
+        for image in images:
+            self.assertTrue(int(image['id']) >= 3)
+
+    def test_get_index_limit(self):
+        """Tests that the /images registry API returns list of
+        public images that conforms to a limit query param
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?limit=1')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        # expect list to be sorted by id asc
+        for image in images:
+            self.assertTrue(int(image['id']), 2)
+
+    def test_get_index_limit_marker(self):
+        """Tests that the /images registry API returns list of
+        public images that conforms to limit and marker query params
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?marker=2&limit=1')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        # expect list to be sorted by id asc
+        for image in images:
+            self.assertTrue(int(image['id']) >= 3)
+
     def test_get_index_filter_name(self):
         """Tests that the /images registry API returns list of
         public images that have a specific name. This is really a sanity
@@ -156,6 +273,47 @@ class TestRegistryAPI(unittest.TestCase):
 
         for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
+
+    def test_get_details_limit_marker(self):
+        """Tests that the /images/details registry API returns list of
+        public images that conforms to limit and marker query params.
+        This functionality is tested more thoroughly on /images, this is
+        just a sanity check
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?marker=2&limit=1')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        # expect list to be sorted by id asc
+        for image in images:
+            self.assertTrue(int(image['id']) >= 3)
 
     def test_get_details_filter_name(self):
         """Tests that the /images/detail registry API returns list of

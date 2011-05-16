@@ -68,9 +68,10 @@ class Controller(wsgi.Controller):
 
         """
         images = db_api.image_get_all_public(None, self._get_filters(req))
+        limited = self._limit_collection(req, images)
 
         results = []
-        for image in images:
+        for image in limited:
             result = {}
             for field in DISPLAY_FIELDS_IN_INDEX:
                 result[field] = image[field]
@@ -90,8 +91,9 @@ class Controller(wsgi.Controller):
 
         """
         images = db_api.image_get_all_public(None, self._get_filters(req))
+        limited = self._limit_collection(req, images)
 
-        image_dicts = [make_image_dict(i) for i in images]
+        image_dicts = [make_image_dict(i) for i in limited]
         return dict(images=image_dicts)
 
     def _get_filters(self, req):
@@ -115,6 +117,34 @@ class Controller(wsgi.Controller):
             filters['properties'] = properties
 
         return filters
+
+    def _limit_collection(self, req, images):
+        """Return a single page of images."""
+        #TODO(bcwaldon): make configurable through flag
+        max_limit = 1000
+
+        try:
+            marker = int(req.str_params.get('marker', 0))
+        except ValueError:
+            raise webob.exc.HTTPBadRequest(_("marker param must "
+                                             "be an integer"))
+
+        try:
+            limit = int(req.str_params.get('limit', max_limit))
+        except ValueError:
+            raise webob.exc.HTTPBadRequest(_("limit param must "
+                                             "be an integer"))
+
+        if limit < 0:
+            raise webob.exc.HTTPBadRequest(_("limit param must "
+                                             "be positive"))
+
+        limit = min(max_limit, limit)
+
+        try:
+            return wsgi.limit_collection(images, marker, limit)
+        except IndexError, exc:
+            raise webob.exc.HTTPBadRequest(_("marker %s not found" % exc))
 
     def show(self, req, id):
         """Return data about the given image id."""
