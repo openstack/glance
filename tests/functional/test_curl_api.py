@@ -816,6 +816,7 @@ class TestCurlApi(functional.FunctionalTest):
                "-H 'X-Image-Meta-Disk-Format: vdi' "
                "-H 'X-Image-Meta-Size: 19' "
                "-H 'X-Image-Meta-Is-Public: True' "
+               "-H 'X-Image-Meta-Property-pants: are on' "
                "http://0.0.0.0:%d/v1/images") % api_port
 
         exitcode, out, err = execute(cmd)
@@ -834,6 +835,7 @@ class TestCurlApi(functional.FunctionalTest):
                "-H 'X-Image-Meta-Disk-Format: vhd' "
                "-H 'X-Image-Meta-Size: 20' "
                "-H 'X-Image-Meta-Is-Public: True' "
+               "-H 'X-Image-Meta-Property-pants: are on' "
                "http://0.0.0.0:%d/v1/images") % api_port
 
         exitcode, out, err = execute(cmd)
@@ -851,6 +853,7 @@ class TestCurlApi(functional.FunctionalTest):
                "-H 'X-Image-Meta-Disk-Format: ami' "
                "-H 'X-Image-Meta-Size: 21' "
                "-H 'X-Image-Meta-Is-Public: True' "
+               "-H 'X-Image-Meta-Property-pants: are off' "
                "http://0.0.0.0:%d/v1/images") % api_port
 
         exitcode, out, err = execute(cmd)
@@ -964,3 +967,17 @@ class TestCurlApi(functional.FunctionalTest):
         self.assertEqual(len(images["images"]), 2)
         for image in images["images"]:
             self.assertTrue(image["size"] >= 20)
+
+        # 9. GET /images with property filter
+        # Verify correct images returned with property
+        cmd = ("curl http://0.0.0.0:%d/v1/images/detail?"
+               "property-pants=are%%20on" % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images["images"]), 2)
+        for image in images["images"]:
+            self.assertEqual(image["properties"]["pants"], "are on")

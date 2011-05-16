@@ -102,8 +102,8 @@ class Controller(wsgi.Controller):
 
         """
         filters = {}
-        for param in SUPPORTED_FILTERS:
-            if param in req.str_params:
+        for param in req.str_params:
+            if param in SUPPORTED_FILTERS or param.startswith('property-'):
                 filters[param] = req.str_params.get(param)
 
         return filters

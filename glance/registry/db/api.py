@@ -172,9 +172,28 @@ def image_get_filtered(context, filters):
         del filters['size_max']
 
     for (k, v) in filters.items():
-        query = query.filter(getattr(models.Image, k) == v)
+        if not k.startswith('property-'):
+            query = query.filter(getattr(models.Image, k) == v)
 
-    return query.all()
+    images = query.all()
+
+    #TODO(bcwaldon): use an actual sqlalchemy query to accomplish this
+    def prop_filter(key, value):
+        def func(image):
+            for prop in image.properties:
+                if prop.deleted == False and \
+                   prop.name == key and \
+                   prop.value == value:
+                    return True
+            return False
+        return func
+
+    for (k, v) in filters.items():
+        if k.startswith('property-'):
+            _k = k[9:]
+            images = filter(prop_filter(_k, v), images)
+
+    return images
 
 
 def _drop_protected_attrs(model_class, values):

@@ -401,8 +401,20 @@ def stub_out_registry_db_image_api(stubs):
                 size_max = int(filters.pop('size_max'))
                 images = [f for f in images if int(f['size']) <= size_max]
 
+            def _prop_filter(key, value):
+                def _func(image):
+                    for prop in image['properties']:
+                        if prop['name'] == key:
+                            return prop['value'] == value
+                    return False
+                return _func
+
             for k, v in filters.items():
-                images = [f for f in images if f[k] == v]
+                if k.startswith('property-'):
+                    _k = k[9:]
+                    images = filter(_prop_filter(_k, v), images)
+                else:
+                    images = [f for f in images if f[k] == v]
 
             return images
 

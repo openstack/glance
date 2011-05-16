@@ -222,6 +222,26 @@ class TestRegistryClient(unittest.TestCase):
         for image in images:
             self.assertTrue(image['size'] >= 20)
 
+    def test_get_image_details_by_property(self):
+        """Tests that a detailed call can be filtered by a property"""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None,
+                         'properties': {'p a': 'v a'}}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images_detailed({'property-p a': 'v a'})
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEquals('v a', image['properties']['p a'])
+
     def test_get_image(self):
         """Tests that the detailed info about an image returned"""
         fixture = {'id': 1,
