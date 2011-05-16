@@ -67,7 +67,7 @@ class Controller(wsgi.Controller):
             }
 
         """
-        images = db_api.image_get_filtered(None, self._get_filters(req))
+        images = db_api.image_get_all_public(None, self._get_filters(req))
 
         results = []
         for image in images:
@@ -89,7 +89,7 @@ class Controller(wsgi.Controller):
         all image model fields.
 
         """
-        images = db_api.image_get_filtered(None, self._get_filters(req))
+        images = db_api.image_get_all_public(None, self._get_filters(req))
 
         image_dicts = [make_image_dict(i) for i in images]
         return dict(images=image_dicts)

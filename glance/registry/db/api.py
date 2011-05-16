@@ -139,23 +139,15 @@ def image_get(context, image_id, session=None):
         raise exception.NotFound("No image found with ID %s" % image_id)
 
 
-def image_get_all_public(context):
-    """Get all public images."""
-    session = get_session()
-    return session.query(models.Image).\
-                   options(joinedload(models.Image.properties)).\
-                   filter_by(deleted=_deleted(context)).\
-                   filter_by(is_public=True).\
-                   filter(models.Image.status != 'killed').\
-                   all()
-
-
-def image_get_filtered(context, filters):
-    """Get all public images that match the provided filters.
+def image_get_all_public(context, filters=None):
+    """Get all public images that match zero or more filters.
 
     :param filters: dict of filter keys and values
 
     """
+    if filters == None:
+        filters = {}
+
     session = get_session()
     query = session.query(models.Image).\
                    options(joinedload(models.Image.properties)).\
