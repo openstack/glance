@@ -1066,7 +1066,6 @@ class TestCurlApi(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        print out.strip()
         images = json.loads(out.strip())
 
         self.assertEqual(len(images['images']), 2)

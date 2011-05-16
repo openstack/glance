@@ -67,11 +67,18 @@ class Controller(wsgi.Controller):
             }
 
         """
-        images = db_api.image_get_all_public(None, self._get_filters(req))
-        limited = self._limit_collection(req, images)
+        params = {'filters': self._get_filters(req)}
+
+        if 'limit' in req.str_params:
+            params['limit'] = int(req.str_params.get('limit'))
+
+        if 'marker' in req.str_params:
+            params['marker'] = int(req.str_params.get('marker'))
+
+        images = db_api.image_get_all_public(None, **params)
 
         results = []
-        for image in limited:
+        for image in images:
             result = {}
             for field in DISPLAY_FIELDS_IN_INDEX:
                 result[field] = image[field]
@@ -90,10 +97,17 @@ class Controller(wsgi.Controller):
         all image model fields.
 
         """
-        images = db_api.image_get_all_public(None, self._get_filters(req))
-        limited = self._limit_collection(req, images)
+        params = {'filters': self._get_filters(req)}
 
-        image_dicts = [make_image_dict(i) for i in limited]
+        if 'limit' in req.str_params:
+            params['limit'] = int(req.str_params.get('limit'))
+
+        if 'marker' in req.str_params:
+            params['marker'] = int(req.str_params.get('marker'))
+
+        images = db_api.image_get_all_public(None, **params)
+
+        image_dicts = [make_image_dict(i) for i in images]
         return dict(images=image_dicts)
 
     def _get_filters(self, req):
