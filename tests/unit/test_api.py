@@ -329,6 +329,147 @@ class TestRegistryAPI(unittest.TestCase):
         for image in images:
             self.assertEqual('vhd', image['disk_format'])
 
+    def test_get_details_filter_size_min(self):
+        """Tests that the /images/detail registry API returns list of
+        public images that have a size greater than or equal to size_min
+
+        """
+        fixture = {'id': 2,
+                   'name': 'fake image #2',
+                   'size': 19,
+                   'checksum': None}
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?size_min=19')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertTrue(image['size'] >= 19)
+
+    def test_get_details_filter_size_max(self):
+        """Tests that the /images/detail registry API returns list of
+        public images that have a size less than or equal to size_max
+
+        """
+        fixture = {'id': 2,
+                   'name': 'fake image #2',
+                   'size': 19,
+                   'checksum': None}
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?size_max=19')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertTrue(image['size'] <= 19)
+
+    def test_get_details_filter_size_min_max(self):
+        """Tests that the /images/detail registry API returns list of
+        public images that have a size less than or equal to size_max
+        and greater than or equal to size_min
+
+        """
+        fixture = {'id': 2,
+                   'name': 'fake image #2',
+                   'size': 19,
+                   'checksum': None}
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 5,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #5',
+                         'size': 6,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?size_min=18&size_max=19')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertTrue(image['size'] <= 19 and image['size'] >= 18)
+
     def test_create_image(self):
         """Tests that the /images POST registry API creates the image"""
         fixture = {'name': 'fake public image',

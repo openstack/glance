@@ -42,7 +42,8 @@ from glance import utils
 
 logger = logging.getLogger('glance.api.v1.images')
 
-SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format']
+SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
+                     'size_min', 'size_max']
 
 
 class Controller(wsgi.Controller):

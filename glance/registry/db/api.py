@@ -163,6 +163,14 @@ def image_get_filtered(context, filters):
                    filter_by(is_public=True).\
                    filter(models.Image.status != 'killed')
 
+    if 'size_min' in filters:
+        query = query.filter(models.Image.size >= filters['size_min'])
+        del filters['size_min']
+
+    if 'size_max' in filters:
+        query = query.filter(models.Image.size <= filters['size_max'])
+        del filters['size_max']
+
     for (k, v) in filters.items():
         query = query.filter(getattr(models.Image, k) == v)
 

@@ -36,7 +36,8 @@ DISPLAY_FIELDS_IN_INDEX = ['id', 'name', 'size',
                            'disk_format', 'container_format',
                            'checksum']
 
-SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format']
+SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
+                     'size_min', 'size_max']
 
 
 class Controller(wsgi.Controller):

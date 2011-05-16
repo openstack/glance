@@ -790,7 +790,7 @@ class TestCurlApi(functional.FunctionalTest):
 
     def test_filtered_images(self):
         """
-
+        Set up three test images and ensure each query param filter works
         """
         self.cleanup()
         self.start_servers()
@@ -814,6 +814,7 @@ class TestCurlApi(functional.FunctionalTest):
                "-H 'X-Image-Meta-Status: active' "
                "-H 'X-Image-Meta-Container-Format: ovf' "
                "-H 'X-Image-Meta-Disk-Format: vdi' "
+               "-H 'X-Image-Meta-Size: 19' "
                "-H 'X-Image-Meta-Is-Public: True' "
                "http://0.0.0.0:%d/v1/images") % api_port
 
@@ -831,6 +832,7 @@ class TestCurlApi(functional.FunctionalTest):
                "-H 'X-Image-Meta-Status: active' "
                "-H 'X-Image-Meta-Container-Format: ovf' "
                "-H 'X-Image-Meta-Disk-Format: vhd' "
+               "-H 'X-Image-Meta-Size: 20' "
                "-H 'X-Image-Meta-Is-Public: True' "
                "http://0.0.0.0:%d/v1/images") % api_port
 
@@ -847,6 +849,7 @@ class TestCurlApi(functional.FunctionalTest):
                "-H 'X-Image-Meta-Status: saving' "
                "-H 'X-Image-Meta-Container-Format: ami' "
                "-H 'X-Image-Meta-Disk-Format: ami' "
+               "-H 'X-Image-Meta-Size: 21' "
                "-H 'X-Image-Meta-Is-Public: True' "
                "http://0.0.0.0:%d/v1/images") % api_port
 
@@ -933,3 +936,31 @@ class TestCurlApi(functional.FunctionalTest):
         self.assertEqual(len(images["images"]), 1)
         for image in images["images"]:
             self.assertEqual(image["disk_format"], "vdi")
+
+        # 7. GET /images with size_max filter
+        # Verify correct images returned with size <= expected
+        cmd = ("curl http://0.0.0.0:%d/v1/images?size_max=20"
+               % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images["images"]), 2)
+        for image in images["images"]:
+            self.assertTrue(image["size"] <= 20)
+
+        # 8. GET /images with size_min filter
+        # Verify correct images returned with size >= expected
+        cmd = ("curl http://0.0.0.0:%d/v1/images?size_min=20"
+               % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images["images"]), 2)
+        for image in images["images"]:
+            self.assertTrue(image["size"] >= 20)

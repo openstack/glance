@@ -392,8 +392,18 @@ def stub_out_registry_db_image_api(stubs):
 
         def image_get_filtered(self, _context, filters):
             images = [f for f in self.images if f['is_public'] == True]
+
+            if 'size_min' in filters:
+                size_min = int(filters.pop('size_min'))
+                images = [f for f in images if int(f['size']) >= size_min]
+
+            if 'size_max' in filters:
+                size_max = int(filters.pop('size_max'))
+                images = [f for f in images if int(f['size']) <= size_max]
+
             for k, v in filters.items():
                 images = [f for f in images if f[k] == v]
+
             return images
 
     fake_datastore = FakeDatastore()
