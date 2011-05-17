@@ -24,6 +24,7 @@ and spinning down the servers.
 """
 
 import datetime
+import functools
 import os
 import random
 import shutil
@@ -35,6 +36,161 @@ import unittest
 import urlparse
 
 from tests.utils import execute, get_unused_port
+
+from sqlalchemy import create_engine
+
+
+def runs_sql(func):
+    """
+    Decorator for a test case method that ensures that the
+    sql_connection setting is overridden to ensure a disk-based
+    SQLite database so that arbitrary SQL statements can be
+    executed out-of-process against the datastore...
+    """
+    @functools.wraps(func)
+    def wrapped(*a, **kwargs):
+        test_obj = a[0]
+        orig_sql_connection = test_obj.registry_server.sql_connection
+        try:
+            if orig_sql_connection.startswith('sqlite'):
+                test_obj.registry_server.sql_connection =\
+                        "sqlite:///tests.sqlite"
+            func(*a, **kwargs)
+        finally:
+            test_obj.registry_server.sql_connection = orig_sql_connection
+    return wrapped
+
+
+class Server(object):
+    """
+    Class used to easily manage starting and stopping
+    a server during functional test runs.
+    """
+    def __init__(self, test_dir, port):
+        """
+        Creates a new Server object.
+
+        :param test_dir: The directory where all test stuff is kept. This is
+                         passed from the FunctionalTestCase.
+        :param port: The port to start a server up on.
+        """
+        self.verbose = True
+        self.debug = True
+        self.test_dir = test_dir
+        self.bind_port = port
+        self.conf_file = None
+        self.conf_base = None
+
+    def start(self, **kwargs):
+        """
+        Starts the server.
+
+        Any kwargs passed to this method will override the configuration
+        value in the conf file used in starting the servers.
+        """
+        if self.conf_file:
+            raise RuntimeError("Server configuration file already exists!")
+        if not self.conf_base:
+            raise RuntimeError("Subclass did not populate config_base!")
+
+        conf_override = self.__dict__.copy()
+        if kwargs:
+            conf_override.update(**kwargs)
+
+        # A config file to use just for this test...we don't want
+        # to trample on currently-running Glance servers, now do we?
+
+        conf_file = tempfile.NamedTemporaryFile()
+        conf_file.write(self.conf_base % conf_override)
+        conf_file.flush()
+        self.conf_file = conf_file
+        self.conf_file_name = conf_file.name
+
+        cmd = ("./bin/glance-control %(server_name)s start "
+               "%(conf_file_name)s --pid-file=%(pid_file)s"
+               % self.__dict__)
+        return execute(cmd)
+
+    def stop(self):
+        """
+        Spin down the server.
+        """
+        cmd = ("./bin/glance-control %(server_name)s stop "
+               "%(conf_file_name)s --pid-file=%(pid_file)s"
+               % self.__dict__)
+        return execute(cmd)
+
+
+class ApiServer(Server):
+
+    """
+    Server object that starts/stops/manages the API server
+    """
+
+    def __init__(self, test_dir, port, registry_port):
+        super(ApiServer, self).__init__(test_dir, port)
+        self.server_name = 'api'
+        self.default_store = 'file'
+        self.image_dir = os.path.join(self.test_dir,
+                                         "images")
+        self.pid_file = os.path.join(self.test_dir,
+                                         "api.pid")
+        self.log_file = os.path.join(self.test_dir, "api.log")
+        self.registry_port = registry_port
+        self.conf_base = """[DEFAULT]
+verbose = %(verbose)s
+debug = %(debug)s
+filesystem_store_datadir=%(image_dir)s
+default_store = %(default_store)s
+bind_host = 0.0.0.0
+bind_port = %(bind_port)s
+registry_host = 0.0.0.0
+registry_port = %(registry_port)s
+log_file = %(log_file)s
+
+[pipeline:glance-api]
+pipeline = versionnegotiation apiv1app
+
+[pipeline:versions]
+pipeline = versionsapp
+
+[app:versionsapp]
+paste.app_factory = glance.api.versions:app_factory
+
+[app:apiv1app]
+paste.app_factory = glance.api.v1:app_factory
+
+[filter:versionnegotiation]
+paste.filter_factory = glance.api.middleware.version_negotiation:filter_factory
+"""
+
+
+class RegistryServer(Server):
+
+    """
+    Server object that starts/stops/manages the Registry server
+    """
+
+    def __init__(self, test_dir, port):
+        super(RegistryServer, self).__init__(test_dir, port)
+        self.server_name = 'registry'
+        self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
+                                             "sqlite://")
+        self.pid_file = os.path.join(self.test_dir,
+                                         "registry.pid")
+        self.log_file = os.path.join(self.test_dir, "registry.log")
+        self.conf_base = """[DEFAULT]
+verbose = %(verbose)s
+debug = %(debug)s
+bind_host = 0.0.0.0
+bind_port = %(bind_port)s
+log_file = %(log_file)s
+sql_connection = %(sql_connection)s
+sql_idle_timeout = 3600
+
+[app:glance-registry]
+paste.app_factory = glance.registry.server:app_factory
+"""
 
 
 class FunctionalTest(unittest.TestCase):
@@ -50,21 +206,16 @@ class FunctionalTest(unittest.TestCase):
         self.test_dir = os.path.join("/", "tmp", "test.%d" % self.test_id)
 
         self.api_port = get_unused_port()
-        self.api_pid_file = os.path.join(self.test_dir,
-                                         "glance-api.pid")
-        self.api_log_file = os.path.join(self.test_dir, "apilog")
-
         self.registry_port = get_unused_port()
-        self.registry_pid_file = ("/tmp/test.%d/glance-registry.pid"
-                                  % self.test_id)
-        self.registry_log_file = os.path.join(self.test_dir, "registrylog")
 
-        self.image_dir = "/tmp/test.%d/images" % self.test_id
+        self.api_server = ApiServer(self.test_dir,
+                                    self.api_port,
+                                    self.registry_port)
+        self.registry_server = RegistryServer(self.test_dir,
+                                              self.registry_port)
 
-        self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
-                                             "sqlite://")
-        self.pid_files = [self.api_pid_file,
-                          self.registry_pid_file]
+        self.pid_files = [self.api_server.pid_file,
+                          self.registry_server.pid_file]
         self.files_to_destroy = []
 
     def tearDown(self):
@@ -75,7 +226,7 @@ class FunctionalTest(unittest.TestCase):
         self._reset_database()
 
     def _reset_database(self):
-        conn_string = self.sql_connection
+        conn_string = self.registry_server.sql_connection
         conn_pieces = urlparse.urlparse(conn_string)
         if conn_string.startswith('sqlite'):
             # We can just delete the SQLite database, which is
@@ -135,55 +286,15 @@ class FunctionalTest(unittest.TestCase):
         """
         self.cleanup()
 
-        conf_override = self.__dict__.copy()
-        if kwargs:
-            conf_override.update(**kwargs)
-
-        # A config file to use just for this test...we don't want
-        # to trample on currently-running Glance servers, now do we?
-
-        conf_file = tempfile.NamedTemporaryFile()
-        conf_contents = """[DEFAULT]
-verbose = True
-debug = True
-
-[app:glance-api]
-paste.app_factory = glance.server:app_factory
-filesystem_store_datadir=%(image_dir)s
-default_store = file
-bind_host = 0.0.0.0
-bind_port = %(api_port)s
-registry_host = 0.0.0.0
-registry_port = %(registry_port)s
-log_file = %(api_log_file)s
-
-[app:glance-registry]
-paste.app_factory = glance.registry.server:app_factory
-bind_host = 0.0.0.0
-bind_port = %(registry_port)s
-log_file = %(registry_log_file)s
-sql_connection = %(sql_connection)s
-sql_idle_timeout = 3600
-""" % conf_override
-        conf_file.write(conf_contents)
-        conf_file.flush()
-        self.conf_file_name = conf_file.name
-
         # Start up the API and default registry server
-        cmd = ("./bin/glance-control api start "
-               "%(conf_file_name)s --pid-file=%(api_pid_file)s"
-               % self.__dict__)
-        exitcode, out, err = execute(cmd)
+        exitcode, out, err = self.api_server.start(**kwargs)
 
         self.assertEqual(0, exitcode,
                          "Failed to spin up the API server. "
                          "Got: %s" % err)
         self.assertTrue("Starting glance-api with" in out)
 
-        cmd = ("./bin/glance-control registry start "
-               "%(conf_file_name)s --pid-file=%(registry_pid_file)s"
-               % self.__dict__)
-        exitcode, out, err = execute(cmd)
+        exitcode, out, err = self.registry_server.start(**kwargs)
 
         self.assertEqual(0, exitcode,
                          "Failed to spin up the Registry server. "
@@ -191,8 +302,6 @@ sql_idle_timeout = 3600
         self.assertTrue("Starting glance-registry with" in out)
 
         self.wait_for_servers()
-
-        return self.api_port, self.registry_port, self.conf_file_name
 
     def ping_server(self, port):
         """
@@ -239,17 +348,12 @@ sql_idle_timeout = 3600
         """
 
         # Spin down the API and default registry server
-        cmd = ("./bin/glance-control api stop "
-               "%(conf_file_name)s --pid-file=%(api_pid_file)s"
-               % self.__dict__)
-        exitcode, out, err = execute(cmd)
+        exitcode, out, err = self.api_server.stop()
         self.assertEqual(0, exitcode,
                          "Failed to spin down the API server. "
                          "Got: %s" % err)
-        cmd = ("./bin/glance-control registry stop "
-               "%(conf_file_name)s --pid-file=%(registry_pid_file)s"
-               % self.__dict__)
-        exitcode, out, err = execute(cmd)
+
+        exitcode, out, err = self.registry_server.stop()
         self.assertEqual(0, exitcode,
                          "Failed to spin down the Registry server. "
                          "Got: %s" % err)
@@ -259,3 +363,13 @@ sql_idle_timeout = 3600
         # went wrong...
         if os.path.exists(self.test_dir):
             shutil.rmtree(self.test_dir)
+
+    def run_sql_cmd(self, sql):
+        """
+        Provides a crude mechanism to run manual SQL commands for backend
+        DB verification within the functional tests.
+        The raw result set is returned.
+        """
+        engine = create_engine(self.registry_server.sql_connection,
+                               pool_recycle=30)
+        return engine.execute(sql)

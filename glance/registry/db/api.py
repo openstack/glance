@@ -123,6 +123,9 @@ def image_destroy(context, image_id):
         image_ref = image_get(context, image_id, session=session)
         image_ref.delete(session=session)
 
+        for prop_ref in image_ref.properties:
+            image_property_delete(context, prop_ref, session=session)
+
 
 def image_get(context, image_id, session=None):
     """Get an image or raise if it does not exist."""
@@ -144,6 +147,7 @@ def image_get_all_public(context):
                    options(joinedload(models.Image.properties)).\
                    filter_by(deleted=_deleted(context)).\
                    filter_by(is_public=True).\
+                   filter(models.Image.status != 'killed').\
                    all()
 
 

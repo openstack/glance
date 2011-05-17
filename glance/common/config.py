@@ -135,8 +135,10 @@ def setup_logging(options, conf):
 
     # If either the CLI option or the conf value
     # is True, we set to True
-    debug = options.get('debug') or conf.get('debug', False)
-    verbose = options.get('verbose') or conf.get('verbose', False)
+    debug = options.get('debug') or \
+            get_option(conf, 'debug', type='bool', default=False)
+    verbose = options.get('verbose') or \
+            get_option(conf, 'verbose', type='bool', default=False)
     root_logger = logging.root
     if debug:
         root_logger.setLevel(logging.DEBUG)
@@ -173,14 +175,14 @@ def setup_logging(options, conf):
         root_logger.addHandler(handler)
 
 
-def find_config_file(options, args):
+def find_config_file(app_name, options, args):
     """
-    Return the first config file found.
+    Return the first config file found for an application.
 
     We search for the paste config file in the following order:
     * If --config-file option is used, use that
     * If args[0] is a file, use that
-    * Search for glance.conf in standard directories:
+    * Search for $app.conf in standard directories:
         * .
         * ~.glance/
         * ~
@@ -198,7 +200,7 @@ def find_config_file(options, args):
         if os.path.exists(args[0]):
             return fix_path(args[0])
 
-    # Handle standard directory search for glance.conf
+    # Handle standard directory search for $app_name.conf
     config_file_dirs = [fix_path(os.getcwd()),
                         fix_path(os.path.join('~', '.glance')),
                         fix_path('~'),
@@ -206,7 +208,7 @@ def find_config_file(options, args):
                         '/etc']
 
     for cfg_dir in config_file_dirs:
-        cfg_file = os.path.join(cfg_dir, 'glance.conf')
+        cfg_file = os.path.join(cfg_dir, '%s.conf' % app_name)
         if os.path.exists(cfg_file):
             return cfg_file
 
@@ -219,7 +221,7 @@ def load_paste_config(app_name, options, args):
     We search for the paste config file in the following order:
     * If --config-file option is used, use that
     * If args[0] is a file, use that
-    * Search for glance.conf in standard directories:
+    * Search for $app_name.conf in standard directories:
         * .
         * ~.glance/
         * ~
@@ -236,7 +238,7 @@ def load_paste_config(app_name, options, args):
     :raises RuntimeError when config file cannot be located or there was a
             problem loading the configuration file.
     """
-    conf_file = find_config_file(options, args)
+    conf_file = find_config_file(app_name, options, args)
     if not conf_file:
         raise RuntimeError("Unable to locate any configuration file. "
                             "Cannot load application %s" % app_name)
@@ -255,7 +257,7 @@ def load_paste_app(app_name, options, args):
     We search for the paste config file in the following order:
     * If --config-file option is used, use that
     * If args[0] is a file, use that
-    * Search for glance.conf in standard directories:
+    * Search for $app_name.conf in standard directories:
         * .
         * ~.glance/
         * ~
@@ -278,8 +280,10 @@ def load_paste_app(app_name, options, args):
 
         # We only update the conf dict for the verbose and debug
         # flags. Everything else must be set up in the conf file...
-        debug = options.get('debug') or conf.get('debug', False)
-        verbose = options.get('verbose') or conf.get('verbose', False)
+        debug = options.get('debug') or \
+                get_option(conf, 'debug', type='bool', default=False)
+        verbose = options.get('verbose') or \
+                get_option(conf, 'verbose', type='bool', default=False)
         conf['debug'] = debug
         conf['verbose'] = verbose
 

@@ -77,6 +77,7 @@ def print_image_formatted(client, image):
     print "Id: %s" % image['id']
     print "Public: " + (image['is_public'] and "Yes" or "No")
     print "Name: %s" % image['name']
+    print "Status: %s" % image['status']
     print "Size: %d" % int(image['size'])
     print "Location: %s" % image['location']
     print "Disk format: %s" % image['disk_format']
@@ -208,6 +209,8 @@ EXAMPLES
             pieces = str(e).split('\n')
             for piece in pieces:
                 print piece
+            print ("Note: Your image metadata may still be in the registry, "
+                   "but the image's status will likely be 'killed'.")
             return FAILURE
     else:
         print "Dry run. We would have done the following:"
@@ -232,6 +235,7 @@ to Glance that represents the metadata for an image.
 Field names that can be specified:
 
 name                A name for the image.
+location            The location of the image.
 is_public           If specified, interpreted as a boolean value
                     and sets or unsets the image's availability to the public.
 disk_format         Format of the disk image
@@ -263,7 +267,7 @@ to spell field names correctly. :)"""
             print 'Found non-modifiable field %s. Removing.' % field
             fields.pop(field)
 
-    base_image_fields = ['disk_format', 'container_format',
+    base_image_fields = ['disk_format', 'container_format', 'name',
                          'location']
     for field in base_image_fields:
         fvalue = fields.pop(field, None)
@@ -308,13 +312,19 @@ def image_delete(options, args):
 %(prog)s delete [options] <ID>
 
 Deletes an image from Glance"""
-    c = get_client(options)
     try:
         image_id = args.pop()
     except IndexError:
         print "Please specify the ID of the image you wish to delete "
         print "as the first argument"
         return FAILURE
+
+    if not options.force and \
+       not user_confirm("Delete image %s?" % (image_id,), default=False):
+        print 'Not deleting image %s' % (image_id,)
+        return FAILURE
+
+    c = get_client(options)
 
     try:
         c.delete_image(image_id)
@@ -427,6 +437,11 @@ def images_clear(options, args):
 %(prog)s clear [options]
 
 Deletes all images from a Glance server"""
+    if not options.force and \
+       not user_confirm("Delete all images?", default=False):
+        print 'Not deleting any images'
+        return FAILURE
+
     c = get_client(options)
     images = c.get_images()
     for image in images:
@@ -469,6 +484,10 @@ def create_options(parser):
                       type=int, default=9292,
                       help="Port the Glance API host listens on. "
                            "Default: %default")
+    parser.add_option('-f', '--force', dest="force", metavar="FORCE",
+                      default=False, action="store_true",
+                      help="Prevent select actions from requesting "
+                           "user confirmation")
     parser.add_option('--dry-run', default=False, action="store_true",
                       help="Don't actually execute the command, just print "
                            "output showing what WOULD happen.")
@@ -529,6 +548,27 @@ def print_help(options, args):
             sys.exit("Unknown command: %s" % command)
 
     print COMMANDS[command].__doc__ % {'prog': os.path.basename(sys.argv[0])}
+
+
+def user_confirm(prompt, default=False):
+    """Yes/No question dialog with user.
+
+    :param prompt: question/statement to present to user (string)
+    :param default: boolean value to return if empty string
+                    is received as response to prompt
+
+    """
+    if default:
+        prompt_default = "[Y/n]"
+    else:
+        prompt_default = "[y/N]"
+
+    answer = raw_input("%s %s " % (prompt, prompt_default))
+
+    if answer == "":
+        return default
+    else:
+        return answer.lower() in ("yes", "y")
 
 
 if __name__ == '__main__':
