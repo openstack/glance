@@ -123,11 +123,11 @@ class Controller(wsgi.Controller):
         return dict(images=images)
 
     def _get_filters(self, req):
-        """Return a dictionary of query param filters from the request
+        """
+        Return a dictionary of query param filters from the request
 
         :param req: the Request object coming from the wsgi layer
         :retval a dict of key/value filters
-
         """
         filters = {}
         for param in req.str_params:
