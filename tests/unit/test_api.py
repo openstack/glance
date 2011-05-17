@@ -37,7 +37,7 @@ class TestRegistryAPI(unittest.TestCase):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_and_store_server(self.stubs)
-        stubs.stub_out_registry_db_image_api(self.stubs)
+        self.next_image_id = stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_filesystem_backend()
         self.api = rserver.API({'verbose': VERBOSE,
                                 'debug': DEBUG})
@@ -134,14 +134,14 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertEquals(v, res_dict['image'][k])
 
         # Test ID auto-assigned properly
-        self.assertEquals(3, res_dict['image']['id'])
+        self.assertEquals(self.next_image_id, res_dict['image']['id'])
 
         # Test status was updated properly
         self.assertEquals('active', res_dict['image']['status'])
 
     def test_create_image_with_bad_container_format(self):
         """Tests proper exception is raised if a bad disk_format is set"""
-        fixture = {'id': 3,
+        fixture = {'id': self.next_image_id,
                    'name': 'fake public image',
                    'is_public': True,
                    'disk_format': 'vhd',
@@ -158,7 +158,7 @@ class TestRegistryAPI(unittest.TestCase):
 
     def test_create_image_with_bad_disk_format(self):
         """Tests proper exception is raised if a bad disk_format is set"""
-        fixture = {'id': 3,
+        fixture = {'id': self.next_image_id,
                    'name': 'fake public image',
                    'is_public': True,
                    'disk_format': 'invalid',
@@ -192,7 +192,7 @@ class TestRegistryAPI(unittest.TestCase):
 
     def test_create_image_with_bad_status(self):
         """Tests proper exception is raised if a bad status is set"""
-        fixture = {'id': 3,
+        fixture = {'id': self.next_image_id,
                    'name': 'fake public image',
                    'is_public': True,
                    'disk_format': 'vhd',
@@ -232,7 +232,7 @@ class TestRegistryAPI(unittest.TestCase):
         image"""
         fixture = {'status': 'killed'}
 
-        req = webob.Request.blank('/images/3')
+        req = webob.Request.blank('/images/' + str(self.next_image_id))
 
         req.method = 'PUT'
         req.body = json.dumps(dict(image=fixture))
@@ -328,7 +328,7 @@ class TestRegistryAPI(unittest.TestCase):
         """Tests proper exception is raised if attempt to delete non-existing
         image"""
 
-        req = webob.Request.blank('/images/3')
+        req = webob.Request.blank('/images/' + str(self.next_image_id))
 
         req.method = 'DELETE'
 
@@ -342,7 +342,7 @@ class TestGlanceAPI(unittest.TestCase):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_and_store_server(self.stubs)
-        stubs.stub_out_registry_db_image_api(self.stubs)
+        self.next_image_id = stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_filesystem_backend()
         sql_connection = os.environ.get('GLANCE_SQL_CONNECTION', "sqlite://")
         options = {'verbose': VERBOSE,
@@ -442,7 +442,7 @@ class TestGlanceAPI(unittest.TestCase):
 
         res_body = json.loads(res.body)['image']
         self.assertEquals(res_body['location'],
-                          'file:///tmp/glance-tests/3')
+                    'file:///tmp/glance-tests/' + str(self.next_image_id))
 
         # Test that the Location: header is set to the URI to
         # edit the newly-created image, as required by APP.
@@ -450,7 +450,8 @@ class TestGlanceAPI(unittest.TestCase):
         self.assertTrue('location' in res.headers,
                         "'location' not in response headers.\n"
                         "res.headerlist = %r" % res.headerlist)
-        self.assertTrue('/images/3' in res.headers['location'])
+        self.assertTrue('/images/' + str(self.next_image_id)
+                        in res.headers['location'])
 
     def test_image_is_checksummed(self):
         """Test that the image contents are checksummed properly"""
@@ -473,9 +474,9 @@ class TestGlanceAPI(unittest.TestCase):
 
         res_body = json.loads(res.body)['image']
         self.assertEquals(res_body['location'],
-                          'file:///tmp/glance-tests/3')
+                      'file:///tmp/glance-tests/' + str(self.next_image_id))
         self.assertEquals(image_checksum, res_body['checksum'],
-                          "Mismatched checksum. Expected %s, got %s" %
+                      "Mismatched checksum. Expected %s, got %s" %
                           (image_checksum, res_body['checksum']))
 
     def test_etag_equals_checksum_header(self):
@@ -500,7 +501,7 @@ class TestGlanceAPI(unittest.TestCase):
         # HEAD the image and check the ETag equals the checksum header...
         expected_headers = {'x-image-meta-checksum': image_checksum,
                             'etag': image_checksum}
-        req = webob.Request.blank("/images/3")
+        req = webob.Request.blank("/images/" + str(self.next_image_id))
         req.method = 'HEAD'
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 200)
@@ -533,9 +534,9 @@ class TestGlanceAPI(unittest.TestCase):
         self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
 
         # Test the image was killed...
-        expected_headers = {'x-image-meta-id': '3',
+        expected_headers = {'x-image-meta-id': str(self.next_image_id),
                             'x-image-meta-status': 'killed'}
-        req = webob.Request.blank("/images/3")
+        req = webob.Request.blank("/images/" + str(self.next_image_id))
         req.method = 'HEAD'
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 200)

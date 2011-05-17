@@ -51,7 +51,7 @@ class TestRegistryClient(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_registry_db_image_api(self.stubs)
+        self.next_image_id = stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_registry_and_store_server(self.stubs)
         self.client = rclient.RegistryClient("0.0.0.0")
 
@@ -127,10 +127,10 @@ class TestRegistryClient(unittest.TestCase):
         new_image = self.client.add_image(fixture)
 
         # Test ID auto-assigned properly
-        self.assertEquals(3, new_image['id'])
+        self.assertEquals(self.next_image_id, new_image['id'])
 
         # Test all other attributes set
-        data = self.client.get_image(3)
+        data = self.client.get_image(self.next_image_id)
 
         for k, v in fixture.items():
             self.assertEquals(v, data[k])
@@ -152,7 +152,7 @@ class TestRegistryClient(unittest.TestCase):
         new_image = self.client.add_image(fixture)
 
         # Test ID auto-assigned properly
-        self.assertEquals(3, new_image['id'])
+        self.assertEquals(self.next_image_id, new_image['id'])
 
         for k, v in fixture.items():
             self.assertEquals(v, new_image[k])
@@ -179,7 +179,7 @@ class TestRegistryClient(unittest.TestCase):
 
     def test_add_image_with_bad_status(self):
         """Tests proper exception is raised if a bad status is set"""
-        fixture = {'id': 3,
+        fixture = {'id': self.next_image_id,
                    'name': 'fake public image',
                    'is_public': True,
                    'disk_format': 'vmdk',
@@ -208,7 +208,7 @@ class TestRegistryClient(unittest.TestCase):
 
     def test_update_image_not_existing(self):
         """Tests non existing image update doesn't work"""
-        fixture = {'id': 3,
+        fixture = {'id': self.next_image_id,
                    'name': 'fake public image',
                    'is_public': True,
                    'disk_format': 'vmdk',
@@ -218,7 +218,7 @@ class TestRegistryClient(unittest.TestCase):
 
         self.assertRaises(exception.NotFound,
                           self.client.update_image,
-                          3,
+                          self.next_image_id,
                           fixture)
 
     def test_delete_image(self):
@@ -240,7 +240,7 @@ class TestRegistryClient(unittest.TestCase):
 
         self.assertRaises(exception.NotFound,
                           self.client.delete_image,
-                          3)
+                          self.next_image_id)
 
 
 class TestClient(unittest.TestCase):
@@ -253,7 +253,7 @@ class TestClient(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_registry_db_image_api(self.stubs)
+        self.next_image_id = stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_filesystem_backend()
         self.client = client.Client("0.0.0.0", doc_root="")
@@ -290,7 +290,7 @@ class TestClient(unittest.TestCase):
 
         self.assertRaises(exception.NotFound,
                           self.client.get_image,
-                          3)
+                          self.next_image_id)
 
     def test_get_image_index(self):
         """Test correct set of public image returned"""
@@ -347,6 +347,23 @@ class TestClient(unittest.TestCase):
         for k, v in fixture.items():
             self.assertEquals(v, data[k])
 
+    def test_get_image_iso_meta(self):
+        """Tests that the detailed info about an iso image is returned"""
+        fixture = {'id': 3,
+                   'name': 'fake iso image',
+                   'is_public': False,
+                   'disk_format': 'iso',
+                   'container_format': 'bare',
+                   'status': 'active',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/3",
+                   'properties': {}}
+
+        data = self.client.get_image_meta(3)
+
+        for k, v in fixture.items():
+            self.assertEquals(v, data[k])
+
     def test_get_image_non_existing(self):
         """Tests that NotFound is raised when getting a non-existing image"""
 
@@ -378,10 +395,10 @@ class TestClient(unittest.TestCase):
         new_image_id = new_image['id']
 
         # Test ID auto-assigned properly
-        self.assertEquals(3, new_image_id)
+        self.assertEquals(self.next_image_id, new_image_id)
 
         # Test all other attributes set
-        data = self.client.get_image_meta(3)
+        data = self.client.get_image_meta(self.next_image_id)
 
         for k, v in fixture.items():
             self.assertEquals(v, data[k])
@@ -404,10 +421,10 @@ class TestClient(unittest.TestCase):
         new_image_id = new_image['id']
 
         # Test ID auto-assigned properly
-        self.assertEquals(3, new_image_id)
+        self.assertEquals(self.next_image_id, new_image_id)
 
         # Test all other attributes set
-        data = self.client.get_image_meta(3)
+        data = self.client.get_image_meta(self.next_image_id)
 
         for k, v in fixture.items():
             self.assertEquals(v, data[k])
@@ -415,6 +432,48 @@ class TestClient(unittest.TestCase):
         # Test status was updated properly
         self.assertTrue('status' in data)
         self.assertEquals('active', data['status'])
+
+    def test_add_image_with_iso_properties(self):
+        """Tests that we can add image metadata with iso disk format"""
+        fixture = {'name': 'fake public iso',
+                   'is_public': True,
+                   'disk_format': 'iso',
+                   'container_format': 'bare',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {'install': 'Bindows Heaven'},
+                  }
+        new_image = self.client.add_image(fixture)
+        new_image_id = new_image['id']
+
+        # Test ID auto-assigned properly
+        self.assertEquals(self.next_image_id, new_image_id)
+
+        # Test all other attributes set
+        data = self.client.get_image_meta(self.next_image_id)
+
+        for k, v in fixture.items():
+            self.assertEquals(v, data[k])
+
+        # Test status was updated properly
+        self.assertTrue('status' in data)
+        self.assertEquals('active', data['status'])
+
+    def test_add_image_with_bad_iso_properties(self):
+        """Tests that we can add image metadata with iso disk format"""
+        fixture = {'name': 'fake public iso',
+                   'is_public': True,
+                   'disk_format': 'iso',
+                   'container_format': 'vhd',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/"
+                               + str(self.next_image_id),
+                   'properties': {'install': 'Bindows Heaven'},
+                  }
+
+        self.assertRaises(exception.Invalid,
+            self.client.add_image,
+            fixture)
 
     def test_add_image_already_exists(self):
         """Tests proper exception is raised if image with ID already exists"""
@@ -460,9 +519,9 @@ class TestClient(unittest.TestCase):
 
         new_image = self.client.add_image(fixture, image_data_fixture)
         new_image_id = new_image['id']
-        self.assertEquals(3, new_image_id)
+        self.assertEquals(self.next_image_id, new_image_id)
 
-        new_meta, new_image_chunks = self.client.get_image(3)
+        new_meta, new_image_chunks = self.client.get_image(self.next_image_id)
 
         new_image_data = ""
         for image_chunk in new_image_chunks:
@@ -495,12 +554,12 @@ class TestClient(unittest.TestCase):
 
         new_image = self.client.add_image(fixture, open(tmp_image_filepath))
         new_image_id = new_image['id']
-        self.assertEquals(3, new_image_id)
+        self.assertEquals(self.next_image_id, new_image_id)
 
         if os.path.exists(tmp_image_filepath):
             os.unlink(tmp_image_filepath)
 
-        new_meta, new_image_chunks = self.client.get_image(3)
+        new_meta, new_image_chunks = self.client.get_image(self.next_image_id)
 
         new_image_data = ""
         for image_chunk in new_image_chunks:
@@ -523,9 +582,9 @@ class TestClient(unittest.TestCase):
 
         new_image = self.client.add_image(fixture, image_data_fixture)
         new_image_id = new_image['id']
-        self.assertEquals(3, new_image_id)
+        self.assertEquals(self.next_image_id, new_image_id)
 
-        new_meta, new_image_chunks = self.client.get_image(3)
+        new_meta, new_image_chunks = self.client.get_image(self.next_image_id)
 
         new_image_data = ""
         for image_chunk in new_image_chunks:
@@ -570,7 +629,7 @@ class TestClient(unittest.TestCase):
 
     def test_update_image_not_existing(self):
         """Tests non existing image update doesn't work"""
-        fixture = {'id': 3,
+        fixture = {'id': self.next_image_id,
                    'name': 'fake public image',
                    'is_public': True,
                    'disk_format': 'vhd',
@@ -580,7 +639,7 @@ class TestClient(unittest.TestCase):
 
         self.assertRaises(exception.NotFound,
                           self.client.update_image,
-                          3,
+                          self.next_image_id,
                           fixture)
 
     def test_delete_image(self):
@@ -602,4 +661,4 @@ class TestClient(unittest.TestCase):
 
         self.assertRaises(exception.NotFound,
                           self.client.delete_image,
-                          3)
+                          self.next_image_id)
