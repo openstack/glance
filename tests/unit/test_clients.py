@@ -24,8 +24,9 @@ import unittest
 import webob
 
 from glance import client
-from glance.registry import client as rclient
 from glance.common import exception
+import glance.registry.db.api
+from glance.registry import client as rclient
 from tests import stubs
 
 
@@ -69,6 +70,26 @@ class TestRegistryClient(unittest.TestCase):
         for k, v in fixture.items():
             self.assertEquals(v, images[0][k])
 
+    def test_get_image_index_by_name(self):
+        """Test correct set of public, name-filtered image returned. This
+        is just a sanity check, we test the details call more in-depth."""
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images({'name': 'new name! #123'})
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEquals('new name! #123', image['name'])
+
     def test_get_image_details(self):
         """Tests that the detailed info about public images returned"""
         fixture = {'id': 2,
@@ -86,6 +107,140 @@ class TestRegistryClient(unittest.TestCase):
 
         for k, v in fixture.items():
             self.assertEquals(v, images[0][k])
+
+    def test_get_image_details_by_name(self):
+        """Tests that a detailed call can be filtered by name"""
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images_detailed({'name': 'new name! #123'})
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEquals('new name! #123', image['name'])
+
+    def test_get_image_details_by_status(self):
+        """Tests that a detailed call can be filtered by status"""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images_detailed({'status': 'saving'})
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEquals('saving', image['status'])
+
+    def test_get_image_details_by_container_format(self):
+        """Tests that a detailed call can be filtered by container_format"""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images_detailed({'container_format': 'ovf'})
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertEquals('ovf', image['container_format'])
+
+    def test_get_image_details_by_disk_format(self):
+        """Tests that a detailed call can be filtered by disk_format"""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images_detailed({'disk_format': 'vhd'})
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertEquals('vhd', image['disk_format'])
+
+    def test_get_image_details_with_maximum_size(self):
+        """Tests that a detailed call can be filtered by size_max"""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 21,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images_detailed({'size_max': 20})
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertTrue(image['size'] <= 20)
+
+    def test_get_image_details_with_minimum_size(self):
+        """Tests that a detailed call can be filtered by size_min"""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images_detailed({'size_min': 20})
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertTrue(image['size'] >= 20)
+
+    def test_get_image_details_by_property(self):
+        """Tests that a detailed call can be filtered by a property"""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None,
+                         'properties': {'p a': 'v a'}}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images_detailed({'property-p a': 'v a'})
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEquals('v a', image['properties']['p a'])
 
     def test_get_image(self):
         """Tests that the detailed info about an image returned"""

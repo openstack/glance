@@ -20,14 +20,9 @@ Simple client class to speak with any RESTful service that implements
 the Glance Registry API
 """
 
-import httplib
 import json
-import logging
-import urlparse
-import socket
-import sys
+import urllib
 
-from glance.common import exception
 from glance.client import BaseClient
 
 
@@ -49,28 +44,34 @@ class RegistryClient(BaseClient):
         port = port or self.DEFAULT_PORT
         super(RegistryClient, self).__init__(host, port, use_ssl)
 
-    def get_images(self):
+    def get_images(self, filters=None):
         """
         Returns a list of image id/name mappings from Registry
         """
-        res = self.do_request("GET", "/images")
+        if filters != None:
+            action = "/images?%s" % urllib.urlencode(filters)
+        else:
+            action = "/images"
+
+        res = self.do_request("GET", action)
         data = json.loads(res.read())['images']
         return data
 
-    def get_images_detailed(self):
+    def get_images_detailed(self, filters=None):
         """
         Returns a list of detailed image data mappings from Registry
         """
-        res = self.do_request("GET", "/images/detail")
+        if filters != None:
+            action = "/images/detail?%s" % urllib.urlencode(filters)
+        else:
+            action = "/images/detail"
+
+        res = self.do_request("GET", action)
         data = json.loads(res.read())['images']
         return data
 
     def get_image(self, image_id):
-        """
-        Returns a mapping of image metadata from Registry
-
-        :raises exception.NotFound if image is not in registry
-        """
+        """Returns a mapping of image metadata from Registry"""
         res = self.do_request("GET", "/images/%s" % image_id)
         data = json.loads(res.read())['image']
         return data

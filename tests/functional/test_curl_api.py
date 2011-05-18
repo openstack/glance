@@ -787,3 +787,213 @@ class TestCurlApi(functional.FunctionalTest):
                             "Could not find '%s' in '%s'" % (expected, out))
 
         self.stop_servers()
+
+    def test_filtered_images(self):
+        """
+        Set up three test images and ensure each query param filter works
+        """
+        self.cleanup()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 0. GET /images
+        # Verify no public images
+        cmd = "curl http://0.0.0.0:%d/v1/images" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('{"images": []}', out.strip())
+
+        # 1. POST /images with three public images with various attributes
+        cmd = ("curl -i -X POST "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'X-Image-Meta-Name: Image1' "
+               "-H 'X-Image-Meta-Status: active' "
+               "-H 'X-Image-Meta-Container-Format: ovf' "
+               "-H 'X-Image-Meta-Disk-Format: vdi' "
+               "-H 'X-Image-Meta-Size: 19' "
+               "-H 'X-Image-Meta-Is-Public: True' "
+               "-H 'X-Image-Meta-Property-pants: are on' "
+               "http://0.0.0.0:%d/v1/images") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
+
+        cmd = ("curl -i -X POST "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'X-Image-Meta-Name: My Image!' "
+               "-H 'X-Image-Meta-Status: active' "
+               "-H 'X-Image-Meta-Container-Format: ovf' "
+               "-H 'X-Image-Meta-Disk-Format: vhd' "
+               "-H 'X-Image-Meta-Size: 20' "
+               "-H 'X-Image-Meta-Is-Public: True' "
+               "-H 'X-Image-Meta-Property-pants: are on' "
+               "http://0.0.0.0:%d/v1/images") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
+        cmd = ("curl -i -X POST "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'X-Image-Meta-Name: My Image!' "
+               "-H 'X-Image-Meta-Status: saving' "
+               "-H 'X-Image-Meta-Container-Format: ami' "
+               "-H 'X-Image-Meta-Disk-Format: ami' "
+               "-H 'X-Image-Meta-Size: 21' "
+               "-H 'X-Image-Meta-Is-Public: True' "
+               "-H 'X-Image-Meta-Property-pants: are off' "
+               "http://0.0.0.0:%d/v1/images") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
+
+        # 2. GET /images
+        # Verify three public images
+        cmd = "curl http://0.0.0.0:%d/v1/images" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images["images"]), 3)
+
+        # 3. GET /images with name filter
+        # Verify correct images returned with name
+        cmd = "curl http://0.0.0.0:%d/v1/images?name=My%%20Image!" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images["images"]), 2)
+        for image in images["images"]:
+            self.assertEqual(image["name"], "My Image!")
+
+        # 4. GET /images with status filter
+        # Verify correct images returned with status
+        cmd = ("curl http://0.0.0.0:%d/v1/images/detail?status=queued"
+               % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images["images"]), 3)
+        for image in images["images"]:
+            self.assertEqual(image["status"], "queued")
+
+        cmd = ("curl http://0.0.0.0:%d/v1/images/detail?status=active"
+               % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images["images"]), 0)
+
+        # 5. GET /images with container_format filter
+        # Verify correct images returned with container_format
+        cmd = ("curl http://0.0.0.0:%d/v1/images?container_format=ovf"
+               % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images["images"]), 2)
+        for image in images["images"]:
+            self.assertEqual(image["container_format"], "ovf")
+
+        # 6. GET /images with disk_format filter
+        # Verify correct images returned with disk_format
+        cmd = ("curl http://0.0.0.0:%d/v1/images?disk_format=vdi"
+               % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images["images"]), 1)
+        for image in images["images"]:
+            self.assertEqual(image["disk_format"], "vdi")
+
+        # 7. GET /images with size_max filter
+        # Verify correct images returned with size <= expected
+        cmd = ("curl http://0.0.0.0:%d/v1/images?size_max=20"
+               % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images["images"]), 2)
+        for image in images["images"]:
+            self.assertTrue(image["size"] <= 20)
+
+        # 8. GET /images with size_min filter
+        # Verify correct images returned with size >= expected
+        cmd = ("curl http://0.0.0.0:%d/v1/images?size_min=20"
+               % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images["images"]), 2)
+        for image in images["images"]:
+            self.assertTrue(image["size"] >= 20)
+
+        # 9. GET /images with property filter
+        # Verify correct images returned with property
+        cmd = ("curl http://0.0.0.0:%d/v1/images/detail?"
+               "property-pants=are%%20on" % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images["images"]), 2)
+        for image in images["images"]:
+            self.assertEqual(image["properties"]["pants"], "are on")
+
+        # 10. GET /images with property filter and name filter
+        # Verify correct images returned with property and name
+        # Make sure you quote the url when using more than one param!
+        cmd = ("curl 'http://0.0.0.0:%d/v1/images/detail?"
+               "name=My%%20Image!&property-pants=are%%20on'" % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())
+
+        self.assertEqual(len(images["images"]), 1)
+        for image in images["images"]:
+            self.assertEqual(image["properties"]["pants"], "are on")
+            self.assertEqual(image["name"], "My Image!")

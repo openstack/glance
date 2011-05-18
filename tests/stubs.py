@@ -386,9 +386,32 @@ def stub_out_registry_db_image_api(stubs):
             else:
                 return images[0]
 
-        def image_get_all_public(self, _context, public=True):
-            return [f for f in self.images
-                    if f['is_public'] == public]
+        def image_get_all_public(self, _context, filters):
+            images = [f for f in self.images if f['is_public'] == True]
+
+            if 'size_min' in filters:
+                size_min = int(filters.pop('size_min'))
+                images = [f for f in images if int(f['size']) >= size_min]
+
+            if 'size_max' in filters:
+                size_max = int(filters.pop('size_max'))
+                images = [f for f in images if int(f['size']) <= size_max]
+
+            def _prop_filter(key, value):
+                def _func(image):
+                    for prop in image['properties']:
+                        if prop['name'] == key:
+                            return prop['value'] == value
+                    return False
+                return _func
+
+            for k, v in filters.pop('properties', {}).items():
+                images = filter(_prop_filter(k, v), images)
+
+            for k, v in filters.items():
+                images = [f for f in images if f[k] == v]
+
+            return images
 
     fake_datastore = FakeDatastore()
     stubs.Set(glance.registry.db.api, 'image_create',

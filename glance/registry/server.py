@@ -36,6 +36,9 @@ DISPLAY_FIELDS_IN_INDEX = ['id', 'name', 'size',
                            'disk_format', 'container_format',
                            'checksum']
 
+SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
+                     'size_min', 'size_max']
+
 
 class Controller(wsgi.Controller):
     """Controller for the reference implementation registry server"""
@@ -45,7 +48,7 @@ class Controller(wsgi.Controller):
         db_api.configure_db(options)
 
     def index(self, req):
-        """Return basic information for all public, non-deleted images
+        """Return a basic filtered list of public, non-deleted images
 
         :param req: the Request object coming from the wsgi layer
         :retval a mapping of the following form::
@@ -64,7 +67,8 @@ class Controller(wsgi.Controller):
             }
 
         """
-        images = db_api.image_get_all_public(None)
+        images = db_api.image_get_all_public(None, self._get_filters(req))
+
         results = []
         for image in images:
             result = {}
@@ -74,7 +78,7 @@ class Controller(wsgi.Controller):
         return dict(images=results)
 
     def detail(self, req):
-        """Return detailed information for all public, non-deleted images
+        """Return a filtered list of public, non-deleted images in detail
 
         :param req: the Request object coming from the wsgi layer
         :retval a mapping of the following form::
@@ -85,9 +89,32 @@ class Controller(wsgi.Controller):
         all image model fields.
 
         """
-        images = db_api.image_get_all_public(None)
+        images = db_api.image_get_all_public(None, self._get_filters(req))
+
         image_dicts = [make_image_dict(i) for i in images]
         return dict(images=image_dicts)
+
+    def _get_filters(self, req):
+        """Return a dictionary of query param filters from the request
+
+        :param req: the Request object coming from the wsgi layer
+        :retval a dict of key/value filters
+
+        """
+        filters = {}
+        properties = {}
+
+        for param in req.str_params:
+            if param in SUPPORTED_FILTERS:
+                filters[param] = req.str_params.get(param)
+            if param.startswith('property-'):
+                _param = param[9:]
+                properties[_param] = req.str_params.get(param)
+
+        if len(properties) > 0:
+            filters['properties'] = properties
+
+        return filters
 
     def show(self, req, id):
         """Return data about the given image id."""
