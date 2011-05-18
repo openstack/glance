@@ -157,7 +157,8 @@ def image_get_all_public(context, filters=None, marker=None, limit=None):
                    filter_by(deleted=_deleted(context)).\
                    filter_by(is_public=True).\
                    filter(models.Image.status != 'killed').\
-                   order_by(desc(models.Image.created_at))
+                   order_by(desc(models.Image.created_at)).\
+                   order_by(desc(models.Image.id))
 
     if 'size_min' in filters:
         query = query.filter(models.Image.size >= filters['size_min'])
@@ -174,8 +175,7 @@ def image_get_all_public(context, filters=None, marker=None, limit=None):
         query = query.filter(getattr(models.Image, k) == v)
 
     if marker != None:
-        query = query.filter(models.Image.created_at <
-            session.query(models.Image).filter_by(id=marker).one().created_at)
+        query = query.filter(models.Image.id < marker)
 
     if limit != None:
         query = query.limit(limit)
