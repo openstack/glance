@@ -412,6 +412,9 @@ def stub_out_registry_db_image_api(stubs):
             for k, v in filters.items():
                 images = [f for f in images if f[k] == v]
 
+            images = sorted(images, key=lambda i: i['created_at'])
+            images.reverse()
+
             if marker == None:
                 start_index = 0
             else:
@@ -420,8 +423,6 @@ def stub_out_registry_db_image_api(stubs):
                     if image['id'] == marker:
                         start_index = i + 1
                         break
-
-            images = sorted(images, key=lambda i: i['created_at'])
 
             return images[start_index:start_index + limit]
 

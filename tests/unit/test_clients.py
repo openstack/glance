@@ -94,11 +94,11 @@ class TestRegistryClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images(marker=2)
+        images = self.client.get_images(marker=4)
         self.assertEquals(len(images), 2)
 
         for image in images:
-            self.assertTrue(image['id'] > 2)
+            self.assertTrue(image['id'] < 4)
 
     def test_get_image_index_limit(self):
         """Test correct number of images returned with limit param."""
@@ -151,10 +151,10 @@ class TestRegistryClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images(marker=2, limit=1)
+        images = self.client.get_images(marker=3, limit=1)
         self.assertEquals(len(images), 1)
 
-        self.assertEquals(images[0]['id'], 3)
+        self.assertEquals(images[0]['id'], 2)
 
     def test_get_image_index_by_name(self):
         """Test correct set of public, name-filtered image returned. This
@@ -218,10 +218,10 @@ class TestRegistryClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images_detailed(marker=2, limit=1)
+        images = self.client.get_images_detailed(marker=3, limit=1)
         self.assertEquals(len(images), 1)
 
-        self.assertEquals(images[0]['id'], 3)
+        self.assertEquals(images[0]['id'], 2)
 
     def test_get_image_details_by_name(self):
         """Tests that a detailed call can be filtered by name"""

@@ -115,7 +115,7 @@ class TestRegistryAPI(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        req = webob.Request.blank('/images?marker=2')
+        req = webob.Request.blank('/images?marker=4')
         res = req.get_response(self.api)
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
@@ -123,9 +123,9 @@ class TestRegistryAPI(unittest.TestCase):
         images = res_dict['images']
         self.assertEquals(len(images), 2)
 
-        # expect list to be sorted by id asc
+        # expect list to be sorted by created_at desc
         for image in images:
-            self.assertTrue(int(image['id']) >= 3)
+            self.assertTrue(int(image['id']) < 4)
 
     def test_get_index_limit(self):
         """Tests that the /images registry API returns list of
@@ -162,9 +162,26 @@ class TestRegistryAPI(unittest.TestCase):
         images = res_dict['images']
         self.assertEquals(len(images), 1)
 
-        # expect list to be sorted by id asc
-        for image in images:
-            self.assertTrue(int(image['id']), 2)
+        # expect list to be sorted by created_at desc
+        self.assertTrue(int(images[0]['id']), 4)
+
+    def test_get_index_limit_negative(self):
+        """Tests that the /images registry API returns list of
+        public images that conforms to a limit query param
+
+        """
+        req = webob.Request.blank('/images?limit=-1')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_get_index_limit_non_int(self):
+        """Tests that the /images registry API returns list of
+        public images that conforms to a limit query param
+
+        """
+        req = webob.Request.blank('/images?limit=a')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
 
     def test_get_index_limit_marker(self):
         """Tests that the /images registry API returns list of
@@ -193,7 +210,7 @@ class TestRegistryAPI(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        req = webob.Request.blank('/images?marker=2&limit=1')
+        req = webob.Request.blank('/images?marker=3&limit=1')
         res = req.get_response(self.api)
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
@@ -201,9 +218,8 @@ class TestRegistryAPI(unittest.TestCase):
         images = res_dict['images']
         self.assertEquals(len(images), 1)
 
-        # expect list to be sorted by id asc
-        for image in images:
-            self.assertTrue(int(image['id']) >= 3)
+        # expect list to be sorted by created_at desc
+        self.assertEqual(int(images[0]['id']), 2)
 
     def test_get_index_filter_name(self):
         """Tests that the /images registry API returns list of
@@ -303,7 +319,7 @@ class TestRegistryAPI(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?marker=2&limit=1')
+        req = webob.Request.blank('/images/detail?marker=3&limit=1')
         res = req.get_response(self.api)
         res_dict = json.loads(res.body)
         self.assertEquals(res.status_int, 200)
@@ -311,9 +327,8 @@ class TestRegistryAPI(unittest.TestCase):
         images = res_dict['images']
         self.assertEquals(len(images), 1)
 
-        # expect list to be sorted by id asc
-        for image in images:
-            self.assertTrue(int(image['id']) >= 3)
+        # expect list to be sorted by created_at desc
+        self.assertEqual(int(images[0]['id']), 2)
 
     def test_get_details_filter_name(self):
         """Tests that the /images/detail registry API returns list of
