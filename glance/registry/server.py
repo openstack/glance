@@ -139,12 +139,10 @@ class Controller(wsgi.Controller):
         try:
             limit = int(req.str_params.get('limit', MAX_ITEM_LIMIT))
         except ValueError:
-            raise exc.HTTPBadRequest(_("limit param must "
-                                             "be an integer"))
+            raise exc.HTTPBadRequest("limit param must be an integer")
 
         if limit < 0:
-            raise exc.HTTPBadRequest(_("limit param must "
-                                             "be positive"))
+            raise exc.HTTPBadRequest("limit param must be positive")
 
         return min(MAX_ITEM_LIMIT, limit)
 
@@ -153,8 +151,7 @@ class Controller(wsgi.Controller):
         try:
             marker = int(req.str_params.get('marker', None))
         except ValueError:
-            raise exc.HTTPBadRequest(_("marker param must "
-                                             "be an integer"))
+            raise exc.HTTPBadRequest("marker param must be an integer")
         return marker
 
     def show(self, req, id):
