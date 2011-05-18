@@ -313,25 +313,3 @@ class Serializer(object):
             node = doc.createTextNode(str(data))
             result.appendChild(node)
         return result
-
-
-def limit_collection(items, marker, limit):
-    """Return a set of items according to the requested marker and limit.
-
-    :param limit: maximum number of items to return
-    :param marker: image id after which to start the page
-
-    """
-    start_index = 0
-    if marker:
-        start_index = -1
-        for i, item in enumerate(items):
-            if item['id'] == marker:
-                start_index = i + 1
-                break
-        if start_index < 0:
-            raise IndexError(start_index)
-
-    range_end = start_index + limit
-
-    return items[start_index:range_end]

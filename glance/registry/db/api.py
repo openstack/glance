@@ -23,7 +23,7 @@ Defines interface for DB access
 
 import logging
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, desc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import exc
 from sqlalchemy.orm import joinedload
@@ -149,8 +149,7 @@ def image_get_all_public(context, filters=None, marker=None, limit=None):
     :param limit: maximum number of images to return
 
     """
-    if filters == None:
-        filters = {}
+    filters = filters or {}
 
     session = get_session()
     query = session.query(models.Image).\
@@ -158,7 +157,8 @@ def image_get_all_public(context, filters=None, marker=None, limit=None):
                    filter_by(deleted=_deleted(context)).\
                    filter_by(is_public=True).\
                    filter(models.Image.status != 'killed').\
-                   order_by(models.Image.id)
+                   order_by(desc(models.Image.created_at))
+
     if 'size_min' in filters:
         query = query.filter(models.Image.size >= filters['size_min'])
         del filters['size_min']
@@ -174,7 +174,8 @@ def image_get_all_public(context, filters=None, marker=None, limit=None):
         query = query.filter(getattr(models.Image, k) == v)
 
     if marker != None:
-        query = query.filter(models.Image.id > marker)
+        query = query.filter(models.Image.created_at <
+            session.query(models.Image).filter_by(id=marker).one().created_at)
 
     if limit != None:
         query = query.limit(limit)

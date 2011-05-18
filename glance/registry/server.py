@@ -39,6 +39,8 @@ DISPLAY_FIELDS_IN_INDEX = ['id', 'name', 'size',
 SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
                      'size_min', 'size_max']
 
+MAX_ITEM_LIMIT = 25
+
 
 class Controller(wsgi.Controller):
     """Controller for the reference implementation registry server"""
@@ -67,13 +69,13 @@ class Controller(wsgi.Controller):
             }
 
         """
-        params = {'filters': self._get_filters(req)}
-
-        if 'limit' in req.str_params:
-            params['limit'] = int(req.str_params.get('limit'))
+        params = {
+            'filters': self._get_filters(req),
+            'limit': self._get_limit(req),
+        }
 
         if 'marker' in req.str_params:
-            params['marker'] = int(req.str_params.get('marker'))
+            params['marker'] = self._get_marker(req)
 
         images = db_api.image_get_all_public(None, **params)
 
@@ -97,13 +99,13 @@ class Controller(wsgi.Controller):
         all image model fields.
 
         """
-        params = {'filters': self._get_filters(req)}
-
-        if 'limit' in req.str_params:
-            params['limit'] = int(req.str_params.get('limit'))
+        params = {
+            'filters': self._get_filters(req),
+            'limit': self._get_limit(req),
+        }
 
         if 'marker' in req.str_params:
-            params['marker'] = int(req.str_params.get('marker'))
+            params['marker'] = self._get_marker(req)
 
         images = db_api.image_get_all_public(None, **params)
 
@@ -132,19 +134,10 @@ class Controller(wsgi.Controller):
 
         return filters
 
-    def _limit_collection(self, req, images):
-        """Return a single page of images."""
-        #TODO(bcwaldon): make configurable through flag
-        max_limit = 1000
-
+    def _get_limit(self, req):
+        """Parse a limit query param into something usable."""
         try:
-            marker = int(req.str_params.get('marker', 0))
-        except ValueError:
-            raise webob.exc.HTTPBadRequest(_("marker param must "
-                                             "be an integer"))
-
-        try:
-            limit = int(req.str_params.get('limit', max_limit))
+            limit = int(req.str_params.get('limit', MAX_ITEM_LIMIT))
         except ValueError:
             raise webob.exc.HTTPBadRequest(_("limit param must "
                                              "be an integer"))
@@ -153,12 +146,16 @@ class Controller(wsgi.Controller):
             raise webob.exc.HTTPBadRequest(_("limit param must "
                                              "be positive"))
 
-        limit = min(max_limit, limit)
+        return min(MAX_ITEM_LIMIT, limit)
 
+    def _get_marker(self, req):
+        """Parse a marker query param into something usable."""
         try:
-            return wsgi.limit_collection(images, marker, limit)
-        except IndexError, exc:
-            raise webob.exc.HTTPBadRequest(_("marker %s not found" % exc))
+            marker = int(req.str_params.get('marker', None))
+        except ValueError:
+            raise webob.exc.HTTPBadRequest(_("marker param must "
+                                             "be an integer"))
+        return marker
 
     def show(self, req, id):
         """Return data about the given image id."""

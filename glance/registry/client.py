@@ -44,7 +44,7 @@ class RegistryClient(BaseClient):
         port = port or self.DEFAULT_PORT
         super(RegistryClient, self).__init__(host, port, use_ssl)
 
-    def get_images(self, filters=None, marker=None, limit=1000):
+    def get_images(self, filters=None, marker=None, limit=None):
         """
         Returns a list of image id/name mappings from Registry
 
@@ -52,15 +52,13 @@ class RegistryClient(BaseClient):
         :param marker: image id after which to start page
         :param limit: max number of images to return
         """
-        if filters != None:
-            params = filters
-        else:
-            params = {}
+        params = filters or {}
 
         if marker != None:
             params['marker'] = marker
 
-        params['limit'] = limit
+        if limit != None:
+            params['limit'] = limit
 
         action = "/images?%s" % urllib.urlencode(params)
 
@@ -68,7 +66,7 @@ class RegistryClient(BaseClient):
         data = json.loads(res.read())['images']
         return data
 
-    def get_images_detailed(self, filters=None, marker=None, limit=1000):
+    def get_images_detailed(self, filters=None, marker=None, limit=None):
         """
         Returns a list of detailed image data mappings from Registry
 
@@ -76,15 +74,13 @@ class RegistryClient(BaseClient):
         :param marker: image id after which to start page
         :param limit: max number of images to return
         """
-        if filters != None:
-            params = filters
-        else:
-            params = {}
+        params = filters or {}
 
         if marker != None:
             params['marker'] = marker
 
-        params['limit'] = limit
+        if limit != None:
+            params['limit'] = limit
 
         action = "/images/detail?%s" % urllib.urlencode(params)
 
