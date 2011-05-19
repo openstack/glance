@@ -42,6 +42,9 @@ from glance import utils
 
 logger = logging.getLogger('glance.api.v1.images')
 
+SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
+                     'size_min', 'size_max']
+
 
 class Controller(wsgi.Controller):
 
@@ -89,7 +92,8 @@ class Controller(wsgi.Controller):
                  'size': <SIZE>}, ...
             ]}
         """
-        images = registry.get_images_list(self.options)
+        filters = self._get_filters(req)
+        images = registry.get_images_list(self.options, filters)
         return dict(images=images)
 
     def detail(self, req):
@@ -114,8 +118,23 @@ class Controller(wsgi.Controller):
                  'properties': {'distro': 'Ubuntu 10.04 LTS', ...}}, ...
             ]}
         """
-        images = registry.get_images_detail(self.options)
+        filters = self._get_filters(req)
+        images = registry.get_images_detail(self.options, filters)
         return dict(images=images)
+
+    def _get_filters(self, req):
+        """
+        Return a dictionary of query param filters from the request
+
+        :param req: the Request object coming from the wsgi layer
+        :retval a dict of key/value filters
+        """
+        filters = {}
+        for param in req.str_params:
+            if param in SUPPORTED_FILTERS or param.startswith('property-'):
+                filters[param] = req.str_params.get(param)
+
+        return filters
 
     def meta(self, req, id):
         """
