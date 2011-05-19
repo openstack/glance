@@ -69,7 +69,7 @@ The request shall validate the following conditions and return a
   **queued**, or **killed**
 
 * ``disk_format`` must be non-empty, and must be one of **ari**, **aki**,
-  **ami**, **raw**, **vhd**, **vdi**, **qcow2**, or **vmdk**
+  **ami**, **raw**, **iso**, **vhd**, **vdi**, **qcow2**, or **vmdk**
 
 * ``container_format`` must be non-empty, and must be on of **ari**,
   **aki**, **ami**, **bare**, or **ovf**
