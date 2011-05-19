@@ -49,6 +49,10 @@ You can set your image's container format to one of the following:
   A disk format supported by VirtualBox virtual machine monitor and the QEMU
   emulator
 
+* **iso**
+
+  An archive format for the data contents of an optical disc (e.g. CDROM). 
+
 * **qcow2**
 
   A disk format supported by the QEMU emulator that can expand dynamically and
