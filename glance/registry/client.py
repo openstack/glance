@@ -48,7 +48,7 @@ class RegistryClient(BaseClient):
         """
         Returns a list of image id/name mappings from Registry
         """
-        res = self.do_request("GET", "/images", query_params=filters)
+        res = self.do_request("GET", "/images", params=filters)
         data = json.loads(res.read())['images']
         return data
 
@@ -56,7 +56,7 @@ class RegistryClient(BaseClient):
         """
         Returns a list of detailed image data mappings from Registry
         """
-        res = self.do_request("GET", "/images/detail", query_params=filters)
+        res = self.do_request("GET", "/images/detail", params=filters)
         data = json.loads(res.read())['images']
         return data
 

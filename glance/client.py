@@ -96,7 +96,7 @@ class BaseClient(object):
             return httplib.HTTPConnection
 
     def do_request(self, method, action, body=None, headers=None,
-                   query_params=None):
+                   params=None):
         """
         Connects to the server and issues a request.  Handles converting
         any returned HTTP error status codes to OpenStack/Glance exceptions
@@ -107,7 +107,7 @@ class BaseClient(object):
         :param action: part of URL after root netloc
         :param body: string of data to send, or None (default)
         :param headers: mapping of key/value pairs to add as headers
-        :param query_params: dictionary of key/value pairs to add to append
+        :param params: dictionary of key/value pairs to add to append
                              to action
 
         :note
@@ -119,8 +119,8 @@ class BaseClient(object):
         objects to be transferred efficiently without buffering the entire
         body in memory.
         """
-        if type(query_params) is dict:
-            action += '?' + urllib.urlencode(query_params)
+        if type(params) is dict:
+            action += '?' + urllib.urlencode(params)
 
         try:
             connection_type = self.get_connection_type()
@@ -204,17 +204,16 @@ class V1Client(BaseClient):
         self.doc_root = doc_root
         super(Client, self).__init__(host, port, use_ssl)
 
-    def do_request(self, method, action, body=None, headers=None,
-                   query_params=None):
+    def do_request(self, method, action, body=None, headers=None, params=None):
         action = "%s/%s" % (self.doc_root, action.lstrip("/"))
         return super(V1Client, self).do_request(method, action, body,
-                                                headers, query_params)
+                                                headers, params)
 
     def get_images(self, filters=None):
         """
         Returns a list of image id/name mappings from Registry
         """
-        res = self.do_request("GET", "/images", query_params=filters)
+        res = self.do_request("GET", "/images", params=filters)
         data = json.loads(res.read())['images']
         return data
 
@@ -222,7 +221,7 @@ class V1Client(BaseClient):
         """
         Returns a list of detailed image data mappings from Registry
         """
-        res = self.do_request("GET", "/images/detail", query_params=filters)
+        res = self.do_request("GET", "/images/detail", params=filters)
         data = json.loads(res.read())['images']
         return data
 
