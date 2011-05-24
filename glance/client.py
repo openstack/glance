@@ -25,6 +25,7 @@ import logging
 import urlparse
 import socket
 import sys
+import urllib
 
 from glance import utils
 from glance.common import exception
@@ -202,19 +203,27 @@ class V1Client(BaseClient):
         return super(V1Client, self).do_request(method, action,
                                                    body, headers)
 
-    def get_images(self):
+    def get_images(self, filters=None):
         """
         Returns a list of image id/name mappings from Registry
         """
-        res = self.do_request("GET", "/images")
+        action = '/images'
+        if filters != None:
+            action += '?' + urllib.urlencode(filters)
+
+        res = self.do_request("GET", action)
         data = json.loads(res.read())['images']
         return data
 
-    def get_images_detailed(self):
+    def get_images_detailed(self, filters=None):
         """
         Returns a list of detailed image data mappings from Registry
         """
-        res = self.do_request("GET", "/images/detail")
+        action = '/images/detail'
+        if filters != None:
+            action += '?' + urllib.urlencode(filters)
+
+        res = self.do_request("GET", action)
         data = json.loads(res.read())['images']
         return data
 
