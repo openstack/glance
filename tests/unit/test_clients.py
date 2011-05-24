@@ -522,8 +522,8 @@ class TestClient(unittest.TestCase):
         for k, v in expected.items():
             self.assertEquals(v, images[0][k])
 
-    def test_get_image_index_by_base_attribute(self):
-        """Tests that an index call can be filtered by a base attribute"""
+    def test_get_image_details_by_base_attribute(self):
+        """Tests that a detailed call can be filtered by a base attribute"""
         extra_fixture = {'id': 3,
                          'status': 'active',
                          'is_public': True,
@@ -541,8 +541,8 @@ class TestClient(unittest.TestCase):
         for image in images:
             self.assertEquals('new name! #123', image['name'])
 
-    def test_get_image_index_by_property(self):
-        """Tests that an index call can be filtered by a property"""
+    def test_get_image_details_by_property(self):
+        """Tests that a detailed call can be filtered by a property"""
         extra_fixture = {'id': 3,
                          'status': 'saving',
                          'is_public': True,
