@@ -48,12 +48,7 @@ class RegistryClient(BaseClient):
         """
         Returns a list of image id/name mappings from Registry
         """
-        if filters != None:
-            action = "/images?%s" % urllib.urlencode(filters)
-        else:
-            action = "/images"
-
-        res = self.do_request("GET", action)
+        res = self.do_request("GET", "/images", params=filters)
         data = json.loads(res.read())['images']
         return data
 
@@ -61,12 +56,7 @@ class RegistryClient(BaseClient):
         """
         Returns a list of detailed image data mappings from Registry
         """
-        if filters != None:
-            action = "/images/detail?%s" % urllib.urlencode(filters)
-        else:
-            action = "/images/detail"
-
-        res = self.do_request("GET", action)
+        res = self.do_request("GET", "/images/detail", params=filters)
         data = json.loads(res.read())['images']
         return data
 

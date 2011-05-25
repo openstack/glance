@@ -25,6 +25,7 @@ import logging
 import urlparse
 import socket
 import sys
+import urllib
 
 from glance import utils
 from glance.common import exception
@@ -94,7 +95,8 @@ class BaseClient(object):
         else:
             return httplib.HTTPConnection
 
-    def do_request(self, method, action, body=None, headers=None):
+    def do_request(self, method, action, body=None, headers=None,
+                   params=None):
         """
         Connects to the server and issues a request.  Handles converting
         any returned HTTP error status codes to OpenStack/Glance exceptions
@@ -105,6 +107,8 @@ class BaseClient(object):
         :param action: part of URL after root netloc
         :param body: string of data to send, or None (default)
         :param headers: mapping of key/value pairs to add as headers
+        :param params: dictionary of key/value pairs to add to append
+                             to action
 
         :note
 
@@ -115,6 +119,9 @@ class BaseClient(object):
         objects to be transferred efficiently without buffering the entire
         body in memory.
         """
+        if type(params) is dict:
+            action += '?' + urllib.urlencode(params)
+
         try:
             connection_type = self.get_connection_type()
             headers = headers or {}
@@ -197,24 +204,24 @@ class V1Client(BaseClient):
         self.doc_root = doc_root
         super(Client, self).__init__(host, port, use_ssl)
 
-    def do_request(self, method, action, body=None, headers=None):
+    def do_request(self, method, action, body=None, headers=None, params=None):
         action = "%s/%s" % (self.doc_root, action.lstrip("/"))
-        return super(V1Client, self).do_request(method, action,
-                                                   body, headers)
+        return super(V1Client, self).do_request(method, action, body,
+                                                headers, params)
 
-    def get_images(self):
+    def get_images(self, filters=None):
         """
         Returns a list of image id/name mappings from Registry
         """
-        res = self.do_request("GET", "/images")
+        res = self.do_request("GET", "/images", params=filters)
         data = json.loads(res.read())['images']
         return data
 
-    def get_images_detailed(self):
+    def get_images_detailed(self, filters=None):
         """
         Returns a list of detailed image data mappings from Registry
         """
-        res = self.do_request("GET", "/images/detail")
+        res = self.do_request("GET", "/images/detail", params=filters)
         data = json.loads(res.read())['images']
         return data
 
