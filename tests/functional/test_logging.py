@@ -35,21 +35,21 @@ class TestLogging(functional.FunctionalTest):
         """
 
         self.cleanup()
-        api_port, reg_port, conf_file = self.start_servers()
+        self.start_servers()
 
         # The default functional test case has both verbose
         # and debug on. Let's verify that debug statements
         # appear in both the API and registry logs.
 
-        self.assertTrue(os.path.exists(self.api_log_file))
+        self.assertTrue(os.path.exists(self.api_server.log_file))
 
-        api_log_out = open(self.api_log_file, 'r').read()
+        api_log_out = open(self.api_server.log_file, 'r').read()
 
         self.assertTrue('DEBUG [glance-api]' in api_log_out)
 
-        self.assertTrue(os.path.exists(self.registry_log_file))
+        self.assertTrue(os.path.exists(self.registry_server.log_file))
 
-        registry_log_out = open(self.registry_log_file, 'r').read()
+        registry_log_out = open(self.registry_server.log_file, 'r').read()
 
         self.assertTrue('DEBUG [glance-registry]' in registry_log_out)
 
@@ -62,18 +62,17 @@ class TestLogging(functional.FunctionalTest):
         """
 
         self.cleanup()
-        api_port, reg_port, conf_file = self.start_servers(debug=False,
-                                                           verbose=False)
+        self.start_servers(debug=False, verbose=False)
 
-        self.assertTrue(os.path.exists(self.api_log_file))
+        self.assertTrue(os.path.exists(self.api_server.log_file))
 
-        api_log_out = open(self.api_log_file, 'r').read()
+        api_log_out = open(self.api_server.log_file, 'r').read()
 
         self.assertFalse('DEBUG [glance-api]' in api_log_out)
 
-        self.assertTrue(os.path.exists(self.registry_log_file))
+        self.assertTrue(os.path.exists(self.registry_server.log_file))
 
-        registry_log_out = open(self.registry_log_file, 'r').read()
+        registry_log_out = open(self.registry_server.log_file, 'r').read()
 
         self.assertFalse('DEBUG [glance-registry]' in registry_log_out)
 

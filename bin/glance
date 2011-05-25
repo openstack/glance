@@ -77,6 +77,7 @@ def print_image_formatted(client, image):
     print "Id: %s" % image['id']
     print "Public: " + (image['is_public'] and "Yes" or "No")
     print "Name: %s" % image['name']
+    print "Status: %s" % image['status']
     print "Size: %d" % int(image['size'])
     print "Location: %s" % image['location']
     print "Disk format: %s" % image['disk_format']
@@ -208,6 +209,8 @@ EXAMPLES
             pieces = str(e).split('\n')
             for piece in pieces:
                 print piece
+            print ("Note: Your image metadata may still be in the registry, "
+                   "but the image's status will likely be 'killed'.")
             return FAILURE
     else:
         print "Dry run. We would have done the following:"

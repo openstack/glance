@@ -1,0 +1,11 @@
+# Format is:
+# <preferred e-mail> <other e-mail 1>
+# <preferred e-mail> <other e-mail 2>
+<corywright@gmail.com> <cory.wright@rackspace.com>
+<jsuh@isi.edu> <jsuh@bespin>
+<josh@jk0.org> <josh.kearney@rackspace.com>
+<rconradharris@gmail.com> <rick.harris@rackspace.com> 
+<rconradharris@gmail.com> <rick@quasar.racklabs.com>
+<rick@openstack.org> <rclark@chat-blanc>
+<soren.hansen@rackspace.com> <soren@linux2go.dk>
+<soren.hansen@rackspace.com> <soren@openstack.org>

@@ -133,7 +133,7 @@ def do_start(server, options, args):
         pid_file = '/var/run/glance/%s.pid' % server
     else:
         pid_file = os.path.abspath(options['pid_file'])
-    conf_file = config.find_config_file(options, args)
+    conf_file = config.find_config_file(server, options, args)
     if not conf_file:
         sys.exit("Could not find any configuration file to use!")
     launch_args = [(conf_file, pid_file)]

@@ -139,14 +139,39 @@ def image_get(context, image_id, session=None):
         raise exception.NotFound("No image found with ID %s" % image_id)
 
 
-def image_get_all_public(context):
-    """Get all public images."""
+def image_get_all_public(context, filters=None):
+    """Get all public images that match zero or more filters.
+
+    :param filters: dict of filter keys and values. If a 'properties'
+                    key is present, it is treated as a dict of key/value
+                    filters on the image properties attribute
+
+    """
+    if filters == None:
+        filters = {}
+
     session = get_session()
-    return session.query(models.Image).\
+    query = session.query(models.Image).\
                    options(joinedload(models.Image.properties)).\
                    filter_by(deleted=_deleted(context)).\
                    filter_by(is_public=True).\
-                   all()
+                   filter(models.Image.status != 'killed')
+
+    if 'size_min' in filters:
+        query = query.filter(models.Image.size >= filters['size_min'])
+        del filters['size_min']
+
+    if 'size_max' in filters:
+        query = query.filter(models.Image.size <= filters['size_max'])
+        del filters['size_max']
+
+    for (k, v) in filters.pop('properties', {}).items():
+        query = query.filter(models.Image.properties.any(name=k, value=v))
+
+    for (k, v) in filters.items():
+        query = query.filter(getattr(models.Image, k) == v)
+
+    return query.all()
 
 
 def _drop_protected_attrs(model_class, values):
