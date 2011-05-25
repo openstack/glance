@@ -63,6 +63,57 @@ Using Glance's Client, we can do this using the following code
 
   print c.get_images_detailed()
 
+Filtering Images Returned via ``get_images()`` and ``get_images_detailed()``
+----------------------------------------------------------------------------
+
+Both the ``get_images()`` and ``get_images_detailed()`` methods take query
+parameters that serve to filter the returned list of images. 
+
+When calling, simple pass an optional dictionary to the method containing
+the filters by which you wish to limit results, with the filter keys being one
+or more of the below:
+
+* ``name: NAME``
+
+  Filters images having a ``name`` attribute matching ``NAME``.
+
+* ``container_format: FORMAT``
+
+  Filters images having a ``container_format`` attribute matching ``FORMAT``
+
+  For more information, see :doc:`About Disk and Container Formats <formats>`
+
+* ``disk_format: FORMAT``
+
+  Filters images having a ``disk_format`` attribute matching ``FORMAT``
+
+  For more information, see :doc:`About Disk and Container Formats <formats>`
+
+* ``status: STATUS``
+
+  Filters images having a ``status`` attribute matching ``STATUS``
+
+  For more information, see :doc:`About Image Statuses <statuses>`
+
+* ``size_min: BYTES``
+
+  Filters images having a ``size`` attribute greater than or equal to ``BYTES``
+
+* ``size_max: BYTES``
+
+  Filters images having a ``size`` attribute less than or equal to ``BYTES``
+
+Here's a quick example that will return all images less than or equal to 5G
+in size and in the `saving` status.
+
+.. code-block:: python
+
+  from glance.client import Client
+
+  c = Client("glance.example.com", 9292)
+
+  filters = {'status': 'saving', 'size_max': (5 * 1024 * 1024 * 1024)}
+  print c.get_images_detailed(filters)
 
 Requesting Detailed Metadata on a Specific Image
 ------------------------------------------------
@@ -85,7 +136,6 @@ first public image returned, we can use the following code
   c = Client("glance.example.com", 9292)
 
   print c.get_image_meta("http://glance.example.com/images/1")
-
 
 Retrieving a Virtual Machine Image
 ----------------------------------
