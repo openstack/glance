@@ -36,7 +36,7 @@ Manually starting the server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The first is by directly calling the server program, passing in command-line
-options and a single argument for the ``paste.deploy`` configuration file to
+options and a single argument for a ``paste.deploy`` configuration file to
 use when configuring the server application.
 
 .. note::
@@ -46,18 +46,18 @@ use when configuring the server application.
   adapt for your own uses. Specifically, bind_host must be set properly.
 
 If you do `not` specifiy a configuration file on the command line, Glance will
-do its best to locate a ``glance.conf`` configuration file in one of the
+do its best to locate a configuration file in one of the
 following directories, stopping at the first config file it finds:
 
-* .
+* ``$CWD``
+* ``~/.glance``
+* ``~/``
+* ``/etc/glance``
+* ``/etc``
 
-* ~/.glance
-
-* ~/
-
-* /etc/glance/
-
-* /etc
+The filename that is searched for depends on the server application name. So,
+if you are starting up the API server, ``glance-api.conf`` is searched for,
+otherwise ``glance-registry.conf``.
 
 If no configuration file is found, you will see an error, like::
 
@@ -66,10 +66,10 @@ If no configuration file is found, you will see an error, like::
 
 Here is an example showing how you can manually start the ``glance-api`` server and ``glance-registry`` in a shell.::
 
-  $ sudo glance-api glance.conf --debug &  
+  $ sudo glance-api glance-api.conf --debug &  
   jsuh@mc-ats1:~$ 2011-04-13 14:50:12    DEBUG [glance-api] ********************************************************************************
   2011-04-13 14:50:12    DEBUG [glance-api] Configuration options gathered from config file:
-  2011-04-13 14:50:12    DEBUG [glance-api] /home/jsuh/glance.conf
+  2011-04-13 14:50:12    DEBUG [glance-api] /home/jsuh/glance-api.conf
   2011-04-13 14:50:12    DEBUG [glance-api] ================================================
   2011-04-13 14:50:12    DEBUG [glance-api] bind_host                      65.114.169.29
   2011-04-13 14:50:12    DEBUG [glance-api] bind_port                      9292
@@ -83,7 +83,7 @@ Here is an example showing how you can manually start the ``glance-api`` server 
   2011-04-13 14:50:12    DEBUG [routes.middleware] Initialized with method overriding = True, and path info altering = True
   2011-04-13 14:50:12    DEBUG [eventlet.wsgi.server] (21354) wsgi starting up on http://65.114.169.29:9292/
 
-  $ sudo glance-registry glance.conf &  
+  $ sudo glance-registry glance-registry.conf &  
   jsuh@mc-ats1:~$ 2011-04-13 14:51:16     INFO [sqlalchemy.engine.base.Engine.0x...feac] PRAGMA table_info("images")
   2011-04-13 14:51:16     INFO [sqlalchemy.engine.base.Engine.0x...feac] ()
   2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Col ('cid', 'name', 'type', 'notnull', 'dflt_value', 'pk')
@@ -112,12 +112,13 @@ Here is an example showing how you can manually start the ``glance-api`` server 
   2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (7, u'value', u'TEXT', 0, None, 0)
 
   $ ps aux | grep glance
-  root     20009  0.7  0.1  12744  9148 pts/1    S    12:47   0:00 /usr/bin/python /usr/bin/glance-api glance.conf --debug
-  root     20012  2.0  0.1  25188 13356 pts/1    S    12:47   0:00 /usr/bin/python /usr/bin/glance-registry glance.conf
+  root     20009  0.7  0.1  12744  9148 pts/1    S    12:47   0:00 /usr/bin/python /usr/bin/glance-api glance-api.conf --debug
+  root     20012  2.0  0.1  25188 13356 pts/1    S    12:47   0:00 /usr/bin/python /usr/bin/glance-registry glance-registry.conf
   jsuh     20017  0.0  0.0   3368   744 pts/1    S+   12:47   0:00 grep glance
 
 Simply supply the configuration file as the first argument
-(``etc/glance.conf.sample`` in the above example) and then any common options
+(the ``etc/glance-api.conf`` and  ``etc/glance-registry.conf`` sample configuration
+files were used in the above example) and then any common options
 you want to use (``--debug`` was used above to show some of the debugging
 output that the server shows when starting up. Call the server program
 with ``--help`` to see all available options you can specify on the
@@ -159,24 +160,21 @@ Here is an example that shows how to start the ``glance-registry`` server
 with the ``glance-control`` wrapper script. ::
 
 
-  $ sudo glance-control all start glance.conf
+  $ sudo glance-control api start glance-api.conf
   Starting glance-api with /home/jsuh/glance.conf
+
+  $ sudo glance-control registry start glance-registry.conf
   Starting glance-registry with /home/jsuh/glance.conf
 
   $ ps aux | grep glance
-  root     20038  4.0  0.1  12728  9116 ?        Ss   12:51   0:00 /usr/bin/python /usr/bin/glance-api /home/jsuh/glance.conf
-  root     20039  6.0  0.1  25188 13356 ?        Ss   12:51   0:00 /usr/bin/python /usr/bin/glance-registry /home/jsuh/glance.conf
+  root     20038  4.0  0.1  12728  9116 ?        Ss   12:51   0:00 /usr/bin/python /usr/bin/glance-api /home/jsuh/glance-api.conf
+  root     20039  6.0  0.1  25188 13356 ?        Ss   12:51   0:00 /usr/bin/python /usr/bin/glance-registry /home/jsuh/glance-registry.conf
   jsuh     20042  0.0  0.0   3368   744 pts/1    S+   12:51   0:00 grep glance
 
  
 The same ``paste.deploy`` configuration files are used by ``glance-control``
 to start the Glance server programs, and you can specify (as the example above
 shows) a configuration file when starting the server.
-
-.. note::
-
-  To start each of Glance servers (currently the glance-api and glance-registry
-  programs), you can specify glance-api and glance-registry, respectively for the <SERVER>.
 
 Stopping a server
 -----------------
@@ -201,6 +199,6 @@ Restarting a server
 You can restart a server with the ``glance-control`` program, as demonstrated
 here::
 
-  $> sudo glance-control registry restart etc/glance.conf.sample
+  $> sudo glance-control registry restart etc/glance-registry.conf
   Stopping glance-registry  pid: 17611  signal: 15
-  Starting glance-registry with /home/jpipes/repos/glance/trunk/etc/glance.conf.sample
+  Starting glance-registry with /home/jpipes/repos/glance/trunk/etc/glance-registry.conf

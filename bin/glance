@@ -209,8 +209,8 @@ EXAMPLES
             pieces = str(e).split('\n')
             for piece in pieces:
                 print piece
-            print ("Note: Your image metadata may still be in the registry, but "
-                   "the image's status will likely be 'killed'.")
+            print ("Note: Your image metadata may still be in the registry, "
+                   "but the image's status will likely be 'killed'.")
             return FAILURE
     else:
         print "Dry run. We would have done the following:"

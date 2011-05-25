@@ -25,6 +25,7 @@ import logging
 import urlparse
 import socket
 import sys
+import urllib
 
 from glance import utils
 from glance.common import exception
@@ -94,7 +95,8 @@ class BaseClient(object):
         else:
             return httplib.HTTPConnection
 
-    def do_request(self, method, action, body=None, headers=None):
+    def do_request(self, method, action, body=None, headers=None,
+                   params=None):
         """
         Connects to the server and issues a request.  Handles converting
         any returned HTTP error status codes to OpenStack/Glance exceptions
@@ -105,6 +107,8 @@ class BaseClient(object):
         :param action: part of URL after root netloc
         :param body: string of data to send, or None (default)
         :param headers: mapping of key/value pairs to add as headers
+        :param params: dictionary of key/value pairs to add to append
+                             to action
 
         :note
 
@@ -115,6 +119,9 @@ class BaseClient(object):
         objects to be transferred efficiently without buffering the entire
         body in memory.
         """
+        if type(params) is dict:
+            action += '?' + urllib.urlencode(params)
+
         try:
             connection_type = self.get_connection_type()
             headers = headers or {}
@@ -177,37 +184,44 @@ class BaseClient(object):
             return response.status
 
 
-class Client(BaseClient):
+class V1Client(BaseClient):
 
     """Main client class for accessing Glance resources"""
 
     DEFAULT_PORT = 9292
 
-    def __init__(self, host, port=None, use_ssl=False):
+    def __init__(self, host, port=None, use_ssl=False, doc_root="/v1"):
         """
         Creates a new client to a Glance API service.
 
         :param host: The host where Glance resides
         :param port: The port where Glance resides (defaults to 9292)
         :param use_ssl: Should we use HTTPS? (defaults to False)
+        :param doc_root: Prefix for all URLs we request from host
         """
 
         port = port or self.DEFAULT_PORT
+        self.doc_root = doc_root
         super(Client, self).__init__(host, port, use_ssl)
 
-    def get_images(self):
+    def do_request(self, method, action, body=None, headers=None, params=None):
+        action = "%s/%s" % (self.doc_root, action.lstrip("/"))
+        return super(V1Client, self).do_request(method, action, body,
+                                                headers, params)
+
+    def get_images(self, filters=None):
         """
         Returns a list of image id/name mappings from Registry
         """
-        res = self.do_request("GET", "/images")
+        res = self.do_request("GET", "/images", params=filters)
         data = json.loads(res.read())['images']
         return data
 
-    def get_images_detailed(self):
+    def get_images_detailed(self, filters=None):
         """
         Returns a list of detailed image data mappings from Registry
         """
-        res = self.do_request("GET", "/images/detail")
+        res = self.do_request("GET", "/images/detail", params=filters)
         data = json.loads(res.read())['images']
         return data
 
@@ -288,3 +302,6 @@ class Client(BaseClient):
         """
         self.do_request("DELETE", "/images/%s" % image_id)
         return True
+
+
+Client = V1Client
