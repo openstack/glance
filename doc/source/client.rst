@@ -69,7 +69,7 @@ Filtering Images Returned via ``get_images()`` and ``get_images_detailed()``
 Both the ``get_images()`` and ``get_images_detailed()`` methods take query
 parameters that serve to filter the returned list of images. 
 
-When calling, simple pass an optional dictionary to the method containing
+When calling, simply pass an optional dictionary to the method containing
 the filters by which you wish to limit results, with the filter keys being one
 or more of the below:
 
