@@ -301,25 +301,11 @@ def stub_out_registry_db_image_api(stubs):
                 'checksum': None,
                 'size': 19,
                 'location': "file:///tmp/glance-tests/2",
-                'properties': []},
-            {'id': 3,
-                'name': 'fake iso image',
-                'status': 'active',
-                'disk_format': 'iso',
-                'container_format': 'bare',
-                'is_public': False,
-                'created_at': datetime.datetime.utcnow(),
-                'updated_at': datetime.datetime.utcnow(),
-                'deleted_at': None,
-                'deleted': False,
-                'checksum': None,
-                'size': 19,
-                'location': "file:///tmp/glance-tests/3",
-                'properties': {}}]
+                'properties': []}]
 
         def __init__(self):
             self.images = FakeDatastore.FIXTURES
-            self.next_id = 4
+            self.next_id = 3
 
         def image_create(self, _context, values):
 
