@@ -137,6 +137,10 @@ class ApiServer(Server):
                                          "api.pid")
         self.log_file = os.path.join(self.test_dir, "api.log")
         self.registry_port = registry_port
+        self.s3_store_host = "s3.amazonaws.com"
+        self.s3_store_access_key = ""
+        self.s3_store_secret_key = ""
+        self.s3_store_bucket = ""
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
@@ -147,6 +151,10 @@ bind_port = %(bind_port)s
 registry_host = 0.0.0.0
 registry_port = %(registry_port)s
 log_file = %(log_file)s
+s3_store_host = %(s3_store_host)s
+s3_store_access_key = %(s3_store_access_key)s
+s3_store_secret_key = %(s3_store_secret_key)s
+s3_store_bucket = %(s3_store_bucket)s
 
 [pipeline:glance-api]
 pipeline = versionnegotiation apiv1app

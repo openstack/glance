@@ -18,6 +18,7 @@
 """Storage backend for S3 or Storage Servers that follow the S3 Protocol"""
 
 import logging
+import urlparse
 
 from glance.common import exception
 import glance.store
@@ -85,7 +86,11 @@ class S3Backend(glance.store.Backend):
         (access_key, secret_key, s3_host, bucket, obj_name) = \
             parse_s3_tokens(parsed_uri)
 
-        s3_conn = S3Connection(access_key, secret_key, host=s3_host)
+        # This is annoying. If I pass http://s3.amazonaws.com to Boto, it
+        # dies. If I pass s3.amazonaws.com it works fine. :(
+        s3_host_only = urlparse.urlparse(s3_host).netloc
+
+        s3_conn = S3Connection(access_key, secret_key, host=s3_host_only)
         bucket_obj = get_bucket(s3_conn, bucket)
 
         key = get_key(bucket_obj, obj_name)
@@ -100,7 +105,7 @@ class S3Backend(glance.store.Backend):
             raise glance.store.BackendException(msg)
 
         key.BufferSize = cls.CHUNKSIZE
-        return ChunkedFile(key.get_file())
+        return ChunkedFile(key)
 
     @classmethod
     def add(cls, id, data, options):
@@ -149,7 +154,7 @@ class S3Backend(glance.store.Backend):
                                       bucket, obj_name)
 
         key = bucket_obj.get_key(obj_name)
-        if key.exists():
+        if key and key.exists():
             raise exception.Duplicate("S3 already has an image at "
                                       "location %(location)s" % locals())
 
@@ -160,8 +165,8 @@ class S3Backend(glance.store.Backend):
         key = bucket_obj.new_key(obj_name)
 
         # OK, now upload the data into the key
-        obj_md5 = key.compute_md5(data)
-        key.set_contents_from_file(data, replace=False, md5=obj_md5)
+        obj_md5, _base64_digest = key.compute_md5(data)
+        key.set_contents_from_file(data, replace=False)
         size = key.size
 
         return (location, size, obj_md5)
@@ -247,31 +252,24 @@ def parse_s3_tokens(parsed_uri):
     """
     Return the various tokens used by S3.
 
+    Note that an Amazon AWS secret key can contain the forward slash,
+    which is entirely retarded, and breaks urlparse miserably.
+    This function works around that issue.
+
     :param parsed_uri: The pieces of a URI returned by urlparse
     :retval A tuple of (user, key, s3_host, bucket, obj_name)
     """
-    path = parsed_uri.path.lstrip('//')
-    netloc = parsed_uri.netloc
+
+    # TODO(jaypipes): Do parsing in the stores. Don't call urlparse in the
+    #                 base get_backend_class routine...
+    entire_path = "%s%s" % (parsed_uri.netloc, parsed_uri.path)
 
     try:
-        try:
-            creds, netloc = netloc.split('@')
-            path = '/'.join([netloc, path])
-        except ValueError:
-            # Python 2.6.1 compat
-            # see lp659445 and Python issue7904
-            creds, path = path.split('@')
-
+        creds, path = entire_path.split('@')
         cred_parts = creds.split(':')
 
-        # User can be account:user, in which case cred_parts[0:2] will be
-        # the account and user. Combine them into a single username of
-        # account:user
-        if len(cred_parts) == 3:
-            user = ':'.join(cred_parts[0:2])
-        else:
-            user = cred_parts[0]
-        key = cred_parts[-1]
+        user = cred_parts[0]
+        key = cred_parts[1]
         path_parts = path.split('/')
         obj = path_parts.pop()
         bucket = path_parts.pop()

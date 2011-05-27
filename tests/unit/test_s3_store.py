@@ -70,7 +70,7 @@ def stub_out_s3(stubs):
             while chunk:
                 checksum.update(chunk)
                 chunk = data.read(self.BufferSize)
-            return checksum.hexdigest()
+            return checksum.hexdigest(), None
 
         def set_contents_from_file(self, fp, replace=False, **kwargs):
             self.data = StringIO.StringIO()
@@ -163,6 +163,16 @@ class TestS3Backend(unittest.TestCase):
         self.assertEqual("user", user)
         self.assertEqual("key", key)
         self.assertEqual("https://localhost:9090/v1.0", authurl)
+        self.assertEqual("bucket", bucket)
+        self.assertEqual("objname", objname)
+
+        uri = "s3://user:key/part@s3.amazonaws.com/bucket/objname"
+        url_pieces = urlparse.urlparse(uri)
+        user, key, authurl, bucket, objname =\
+                parse_s3_tokens(url_pieces)
+        self.assertEqual("user", user)
+        self.assertEqual("key/part", key)
+        self.assertEqual("https://s3.amazonaws.com", authurl)
         self.assertEqual("bucket", bucket)
         self.assertEqual("objname", objname)
 

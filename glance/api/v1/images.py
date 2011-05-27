@@ -264,7 +264,7 @@ class Controller(wsgi.Controller):
             logger.debug("Uploading image data for image %(image_id)s "
                          "to %(store_name)s store" % locals())
             location, size, checksum = store.add(image_meta['id'],
-                                                 req.body_file,
+                                                 req.body_file_seekable,
                                                  self.options)
 
             # Verify any supplied checksum value matches checksum
