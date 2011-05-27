@@ -267,7 +267,6 @@ def stub_out_registry_db_image_api(stubs):
     The "datastore" always starts with this set of image fixtures.
 
     :param stubs: Set of stubout stubs
-    :return: count of items in the "datastore"
     """
     class FakeDatastore(object):
 
@@ -424,4 +423,3 @@ def stub_out_registry_db_image_api(stubs):
               fake_datastore.image_get)
     stubs.Set(glance.registry.db.api, 'image_get_all_public',
               fake_datastore.image_get_all_public)
-    return fake_datastore.next_id
