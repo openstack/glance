@@ -572,6 +572,43 @@ class TestClient(unittest.TestCase):
         for k, v in fixture.items():
             self.assertEquals(v, images[0][k])
 
+    def test_get_image_index_by_base_attribute(self):
+        """Tests that an index call can be filtered by a base attribute"""
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images({'name': 'new name! #123'})
+
+        self.assertEquals(len(images), 1)
+        self.assertEquals('new name! #123', images[0]['name'])
+
+    def test_get_image_index_by_property(self):
+        """Tests that an index call can be filtered by a property"""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None,
+                         'properties': {'p a': 'v a'}}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images({'property-p a': 'v a'})
+
+        self.assertEquals(len(images), 1)
+        self.assertEquals(3, images[0]['id'])
+
     def test_get_image_details(self):
         """Tests that the detailed info about public images returned"""
         fixture = {'id': 2,
@@ -599,6 +636,45 @@ class TestClient(unittest.TestCase):
 
         for k, v in expected.items():
             self.assertEquals(v, images[0][k])
+
+    def test_get_image_details_by_base_attribute(self):
+        """Tests that a detailed call can be filtered by a base attribute"""
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images_detailed({'name': 'new name! #123'})
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEquals('new name! #123', image['name'])
+
+    def test_get_image_details_by_property(self):
+        """Tests that a detailed call can be filtered by a property"""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None,
+                         'properties': {'p a': 'v a'}}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images_detailed({'property-p a': 'v a'})
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEquals('v a', image['properties']['p a'])
 
     def test_get_image_meta(self):
         """Tests that the detailed info about an image returned"""

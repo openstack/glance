@@ -60,9 +60,7 @@ class RegistryClient(BaseClient):
         if limit != None:
             params['limit'] = limit
 
-        action = "/images?%s" % urllib.urlencode(params)
-
-        res = self.do_request("GET", action)
+        res = self.do_request("GET", "/images", params=params)
         data = json.loads(res.read())['images']
         return data
 
@@ -82,9 +80,7 @@ class RegistryClient(BaseClient):
         if limit != None:
             params['limit'] = limit
 
-        action = "/images/detail?%s" % urllib.urlencode(params)
-
-        res = self.do_request("GET", action)
+        res = self.do_request("GET", "/images/detail", params=params)
         data = json.loads(res.read())['images']
         return data
 
