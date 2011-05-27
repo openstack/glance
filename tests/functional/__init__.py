@@ -174,8 +174,15 @@ class RegistryServer(Server):
     def __init__(self, test_dir, port):
         super(RegistryServer, self).__init__(test_dir, port)
         self.server_name = 'registry'
+
+        # NOTE(sirp): in-memory DBs don't play well with sqlalchemy migrate
+        # (see http://code.google.com/p/sqlalchemy-migrate/
+        #            issues/detail?id=72)
+        self.db_file = os.path.join(self.test_dir, 'test_glance_api.sqlite')
+        default_sql_connection = 'sqlite:///%s' % self.db_file
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
-                                             "sqlite://")
+                                             default_sql_connection)
+
         self.pid_file = os.path.join(self.test_dir,
                                          "registry.pid")
         self.log_file = os.path.join(self.test_dir, "registry.log")
@@ -325,7 +332,7 @@ class FunctionalTest(unittest.TestCase):
         available on the ports. Returns when both are pingable. There
         is a timeout on waiting for the servers to come up.
 
-        :param timeout: Optional, defaults to 3
+        :param timeout: Optional, defaults to 3 seconds
         """
         now = datetime.datetime.now()
         timeout_time = now + datetime.timedelta(seconds=timeout)

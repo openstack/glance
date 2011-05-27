@@ -32,6 +32,7 @@ from sqlalchemy.orm import sessionmaker
 from glance.common import config
 from glance.common import exception
 from glance.common import utils
+from glance.registry.db import migration
 from glance.registry.db import models
 
 _ENGINE = None
@@ -73,7 +74,8 @@ def configure_db(options):
             logger.setLevel(logging.DEBUG)
         elif verbose:
             logger.setLevel(logging.INFO)
-        register_models()
+
+        migration.db_sync(options)
 
 
 def get_session(autocommit=True, expire_on_commit=False):
@@ -85,20 +87,6 @@ def get_session(autocommit=True, expire_on_commit=False):
                               autocommit=autocommit,
                               expire_on_commit=expire_on_commit)
     return _MAKER()
-
-
-def register_models():
-    """Register Models and create properties"""
-    global _ENGINE
-    assert _ENGINE
-    BASE.metadata.create_all(_ENGINE)
-
-
-def unregister_models():
-    """Unregister Models, useful clearing out data before testing"""
-    global _ENGINE
-    assert _ENGINE
-    BASE.metadata.drop_all(_ENGINE)
 
 
 def image_create(context, values):
