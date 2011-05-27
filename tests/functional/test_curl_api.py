@@ -494,6 +494,8 @@ class TestCurlApi(functional.FunctionalTest):
                     "size": 5120}
         self.assertEqual(expected, image)
 
+        self.stop_servers()
+
     def test_version_variations(self):
         """
         We test that various calls to the images and root endpoints are
@@ -997,3 +999,5 @@ class TestCurlApi(functional.FunctionalTest):
         for image in images["images"]:
             self.assertEqual(image["properties"]["pants"], "are on")
             self.assertEqual(image["name"], "My Image!")
+
+        self.stop_servers()
