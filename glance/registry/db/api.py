@@ -28,6 +28,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import exc
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import or_, and_
 
 from glance.common import config
 from glance.common import exception
@@ -176,12 +177,11 @@ def image_get_all_public(context, filters=None, marker=None, limit=None):
 
     if marker != None:
         # images returned should be created before the image defined by marker
-        marker_created_at = image_get(context, marker, session).created_at
-        query = query.filter(models.Image.created_at < marker_created_at)
-
-        # ensure marker is respected if there are multiple images with the same
-        # created_at timestamp. This only works if also sorted by id
-        query = query.filter(models.Image.id < marker)
+        marker_created_at = image_get(context, marker).created_at
+        query = query.filter(
+            or_(models.Image.created_at < marker_created_at,
+                and_(models.Image.created_at == marker_created_at,
+                     models.Image.id < marker)))
 
     if limit != None:
         query = query.limit(limit)
