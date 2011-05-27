@@ -579,7 +579,7 @@ class TestClient(unittest.TestCase):
             self.assertEquals(v, data[k])
 
     def test_get_image_iso_meta(self):
-        """Tests that the detailed info about an iso image is returned"""
+        """Tests that the detailed info about an ISO image is returned"""
         fixture = {'id': 3,
                    'name': 'fake iso image',
                    'is_public': False,
@@ -672,7 +672,7 @@ class TestClient(unittest.TestCase):
         self.assertEquals('active', data['status'])
 
     def test_add_image_with_iso_properties(self):
-        """Tests that we can add image metadata with iso disk format"""
+        """Tests that we can add image metadata with ISO disk format"""
         fixture = {'name': 'fake public iso',
                    'is_public': True,
                    'disk_format': 'iso',
@@ -698,7 +698,9 @@ class TestClient(unittest.TestCase):
         self.assertEquals('active', data['status'])
 
     def test_add_image_with_bad_iso_properties(self):
-        """Tests that we can add image metadata with iso disk format"""
+        """Verify that ISO with invalid container format is rejected.
+        Intended to exercise error path once rather than be exhaustive
+        set of mismatches"""
         fixture = {'name': 'fake public iso',
                    'is_public': True,
                    'disk_format': 'iso',
