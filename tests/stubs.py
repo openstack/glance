@@ -19,6 +19,7 @@
 
 import datetime
 import httplib
+import operator
 import os
 import shutil
 import StringIO
@@ -322,8 +323,10 @@ def stub_out_registry_db_image_api(stubs):
             values['deleted'] = False
             values['properties'] = values.get('properties', {})
             values['location'] = values.get('location')
-            values['created_at'] = datetime.datetime.utcnow()
-            values['updated_at'] = datetime.datetime.utcnow()
+
+            now = datetime.datetime.utcnow()
+            values['created_at'] = values.get('created_at', now)
+            values['updated_at'] = values.get('updated_at', now)
             values['deleted_at'] = None
 
             props = []
@@ -334,8 +337,8 @@ def stub_out_registry_db_image_api(stubs):
                     p['name'] = k
                     p['value'] = v
                     p['deleted'] = False
-                    p['created_at'] = datetime.datetime.utcnow()
-                    p['updated_at'] = datetime.datetime.utcnow()
+                    p['created_at'] = now
+                    p['updated_at'] = now
                     p['deleted_at'] = None
                     props.append(p)
 
@@ -412,7 +415,18 @@ def stub_out_registry_db_image_api(stubs):
             for k, v in filters.items():
                 images = [f for f in images if f[k] == v]
 
-            images = sorted(images, key=lambda i: i['created_at'])
+            def image_cmp(x, y):
+                if x['created_at'] > y['created_at']:
+                    return 1
+                elif x['created_at'] == y['created_at']:
+                    if x['id'] > y['id']:
+                        return 1
+                    else:
+                        return -1
+                else:
+                    return -1
+
+            images = sorted(images, cmp=image_cmp)
             images.reverse()
 
             if marker == None:

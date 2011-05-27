@@ -175,6 +175,12 @@ def image_get_all_public(context, filters=None, marker=None, limit=None):
         query = query.filter(getattr(models.Image, k) == v)
 
     if marker != None:
+        # images returned should be created before the image defined by marker
+        marker_created_at = image_get(context, marker, session).created_at
+        query = query.filter(models.Image.created_at < marker_created_at)
+
+        # ensure marker is respected if there are multiple images with the same
+        # created_at timestamp. This only works if also sorted by id
         query = query.filter(models.Image.id < marker)
 
     if limit != None:

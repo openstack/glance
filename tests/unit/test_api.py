@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import hashlib
 import httplib
 import os
@@ -93,6 +94,10 @@ class TestRegistryAPI(unittest.TestCase):
         public images that conforms to a marker query param
 
         """
+
+        time1 = datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
+        time2 = datetime.datetime.utcnow()
+
         extra_fixture = {'id': 3,
                          'status': 'active',
                          'is_public': True,
@@ -100,7 +105,8 @@ class TestRegistryAPI(unittest.TestCase):
                          'container_format': 'ovf',
                          'name': 'new name! #123',
                          'size': 19,
-                         'checksum': None}
+                         'checksum': None,
+                         'created_at': time1}
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
@@ -111,7 +117,20 @@ class TestRegistryAPI(unittest.TestCase):
                          'container_format': 'ovf',
                          'name': 'new name! #123',
                          'size': 20,
-                         'checksum': None}
+                         'checksum': None,
+                         'created_at': time1}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 5,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': time2}
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
@@ -121,11 +140,12 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
-        self.assertEquals(len(images), 2)
-
-        # expect list to be sorted by created_at desc
-        for image in images:
-            self.assertTrue(int(image['id']) < 4)
+        # should be sorted by created_at desc, id desc
+        # page should start after marker 4
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 5)
+        self.assertEquals(int(images[2]['id']), 2)
 
     def test_get_index_limit(self):
         """Tests that the /images registry API returns list of

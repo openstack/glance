@@ -1045,6 +1045,7 @@ class TestCurlApi(functional.FunctionalTest):
         status_line = lines[0]
 
         self.assertEqual("HTTP/1.1 201 Created", status_line)
+
         cmd = ("curl -i -X POST "
                "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
                "-H 'X-Image-Meta-Name: Image3' "
@@ -1066,26 +1067,26 @@ class TestCurlApi(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        images = json.loads(out.strip())
+        images = json.loads(out.strip())['images']
 
-        self.assertEqual(len(images['images']), 2)
-        for image in images['images']:
-            self.assertTrue(image['id'] >= 2)
+        self.assertEqual(len(images), 2)
+        self.assertEqual(int(images[0]['id']), 3)
+        self.assertEqual(int(images[1]['id']), 2)
 
-        # 3. GET /images with marker 2
+        # 3. GET /images with marker
         # Verify only two images were returned
         cmd = "curl http://0.0.0.0:%d/v1/images?marker=3" % api_port
 
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        images = json.loads(out.strip())
+        images = json.loads(out.strip())['images']
 
-        self.assertEqual(len(images['images']), 2)
-        for image in images['images']:
-            self.assertTrue(image['id'] <= 2)
+        self.assertEqual(len(images), 2)
+        self.assertEqual(int(images[0]['id']), 2)
+        self.assertEqual(int(images[1]['id']), 1)
 
-        # 4. GET /images with marker 1 and limit of 1
+        # 4. GET /images with marker and limit
         # Verify only one image was returned with the correct id
         cmd = ("curl 'http://0.0.0.0:%d/v1/images?"
                "limit=1&marker=2'" % api_port)
@@ -1093,12 +1094,12 @@ class TestCurlApi(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        images = json.loads(out.strip())
+        images = json.loads(out.strip())['images']
 
-        self.assertEqual(len(images['images']), 1)
-        self.assertEqual(images['images'][0]['id'], 1)
+        self.assertEqual(len(images), 1)
+        self.assertEqual(int(images[0]['id']), 1)
 
-        # 5. GET /images/detail with marker 1 and limit of 1
+        # 5. GET /images/detail with marker and limit
         # Verify only one image was returned with the correct id
         cmd = ("curl 'http://0.0.0.0:%d/v1/images/detail?"
                "limit=1&marker=3'" % api_port)
@@ -1106,7 +1107,7 @@ class TestCurlApi(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        images = json.loads(out.strip())
+        images = json.loads(out.strip())['images']
 
-        self.assertEqual(len(images['images']), 1)
-        self.assertEqual(images['images'][0]['id'], 2)
+        self.assertEqual(len(images), 1)
+        self.assertEqual(int(images[0]['id']), 2)
