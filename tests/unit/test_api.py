@@ -703,6 +703,12 @@ class TestRegistryAPI(unittest.TestCase):
 class TestGlanceAPI(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
+        # NOTE(sirp): in-memory DBs don't play well with sqlalchemy migrate
+        # (see http://code.google.com/p/sqlalchemy-migrate/
+        #            issues/detail?id=72)
+        self.db_file = 'test_glance_api.sqlite'
+        os.environ['GLANCE_SQL_CONNECTION'] = 'sqlite:///%s' % self.db_file
+
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_registry_db_image_api(self.stubs)
@@ -721,6 +727,8 @@ class TestGlanceAPI(unittest.TestCase):
         """Clear the test environment"""
         stubs.clean_out_fake_filesystem_backend()
         self.stubs.UnsetAll()
+        if os.path.exists(self.db_file):
+            os.unlink(self.db_file)
 
     def test_bad_disk_format(self):
         fixture_headers = {'x-image-meta-store': 'bad',
