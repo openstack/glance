@@ -58,6 +58,9 @@ def stub_out_s3(stubs):
             self.size = 0
             self.BufferSize = 1024
 
+        def close(self):
+            pass
+
         def exists(self):
             return self.bucket.exists(self.name)
 
@@ -78,6 +81,7 @@ def stub_out_s3(stubs):
             self.size = self.data.len
             # Reset the buffer to start
             self.data.seek(0)
+            self.read = self.data.read
 
         def get_file(self):
             return self.data

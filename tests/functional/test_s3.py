@@ -75,6 +75,7 @@ class TestS3(functional.FunctionalTest):
             except ConfigParser.ParsingError, e:
                 print ("Failed to read test_s3.conf config file. "
                        "Got error: %s" % e)
+                super(TestS3, self).setUp()
                 self.inited = True
                 return
 
@@ -90,6 +91,7 @@ class TestS3(functional.FunctionalTest):
             print ("Failed to find required configuration options for "
                    "S3 store. Got error: %s" % e)
             self.inited = True
+            super(TestS3, self).setUp()
             return
 
         s3_conn = S3Connection(access_key, secret_key, host=s3_host)
@@ -104,6 +106,7 @@ class TestS3(functional.FunctionalTest):
             print ("Failed to connect to S3 with credentials,"
                    "to find bucket. Got error: %s" % e)
             self.inited = True
+            super(TestS3, self).setUp()
             return
 
         self.s3_conn = s3_conn
@@ -114,6 +117,7 @@ class TestS3(functional.FunctionalTest):
             except boto.exception.S3ResponseError, e:
                 print ("Failed to create bucket. Got error: %s" % e)
                 self.inited = True
+                super(TestS3, self).setUp()
                 return
         else:
             self.clear_bucket()
