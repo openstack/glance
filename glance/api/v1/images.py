@@ -263,8 +263,12 @@ class Controller(wsgi.Controller):
         try:
             logger.debug("Uploading image data for image %(image_id)s "
                          "to %(store_name)s store" % locals())
+            # NOTE(jaypipes): webob 1.0.3 has body_file_seekable attr
+            # but webob 0.9.8 does not; it has the make_body_seekable() method
+            # which newer versions have also, so we use the old method
+            req.make_body_seekable()
             location, size, checksum = store.add(image_meta['id'],
-                                                 req.body_file_seekable,
+                                                 req.body_file,
                                                  self.options)
 
             # Verify any supplied checksum value matches checksum

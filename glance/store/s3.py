@@ -140,6 +140,12 @@ class S3Backend(glance.store.Backend):
         s3_host = cls._option_get(options, 's3_store_host')
         access_key = cls._option_get(options, 's3_store_access_key')
         secret_key = cls._option_get(options, 's3_store_secret_key')
+        # NOTE(jaypipes): Need to encode to UTF-8 here because of a
+        # bug in the HMAC library that boto uses.
+        # See: http://bugs.python.org/issue5285
+        # See: http://trac.edgewall.org/ticket/8083
+        access_key = access_key.encode('utf-8')
+        secret_key = secret_key.encode('utf-8')
         bucket = options.get('s3_store_bucket', DEFAULT_S3_BUCKET)
 
         full_s3_host = s3_host
@@ -257,7 +263,7 @@ def parse_s3_tokens(parsed_uri):
     This function works around that issue.
 
     :param parsed_uri: The pieces of a URI returned by urlparse
-    :retval A tuple of (user, key, s3_host, bucket, obj_name)
+    :retval A tuple of (access_key, secret_key, s3_host, bucket, obj_name)
     """
 
     # TODO(jaypipes): Do parsing in the stores. Don't call urlparse in the
@@ -268,8 +274,8 @@ def parse_s3_tokens(parsed_uri):
         creds, path = entire_path.split('@')
         cred_parts = creds.split(':')
 
-        user = cred_parts[0]
-        key = cred_parts[1]
+        access_key = cred_parts[0]
+        secret_key = cred_parts[1]
         path_parts = path.split('/')
         obj = path_parts.pop()
         bucket = path_parts.pop()
@@ -279,6 +285,12 @@ def parse_s3_tokens(parsed_uri):
              "Should have received something like: %s."
              % (parsed_uri.path, S3Backend.EXAMPLE_URL))
 
+    # NOTE(jaypipes): Need to encode to UTF-8 here because of a
+    # bug in the HMAC library that boto uses.
+    # See: http://bugs.python.org/issue5285
+    # See: http://trac.edgewall.org/ticket/8083
+    access_key = access_key.encode('utf-8')
+    secret_key = secret_key.encode('utf-8')
     s3_host = "https://%s" % '/'.join(path_parts)
 
-    return user, key, s3_host, bucket, obj
+    return access_key, secret_key, s3_host, bucket, obj
