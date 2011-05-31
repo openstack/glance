@@ -267,7 +267,6 @@ def stub_out_registry_db_image_api(stubs):
     The "datastore" always starts with this set of image fixtures.
 
     :param stubs: Set of stubout stubs
-
     """
     class FakeDatastore(object):
 
