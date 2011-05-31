@@ -209,19 +209,41 @@ class V1Client(BaseClient):
         return super(V1Client, self).do_request(method, action, body,
                                                 headers, params)
 
-    def get_images(self, filters=None):
+    def get_images(self, filters=None, marker=None, limit=None):
         """
         Returns a list of image id/name mappings from Registry
+
+        :param filters: dictionary of attributes by which the resulting
+                        collection of images should be filtered
+        :param marker: id after which to start the page of images
+        :param limit: maximum number of items to return
         """
-        res = self.do_request("GET", "/images", params=filters)
+
+        params = filters or {}
+        if marker:
+            params['marker'] = marker
+        if limit:
+            params['limit'] = limit
+        res = self.do_request("GET", "/images", params=params)
         data = json.loads(res.read())['images']
         return data
 
-    def get_images_detailed(self, filters=None):
+    def get_images_detailed(self, filters=None, marker=None, limit=None):
         """
         Returns a list of detailed image data mappings from Registry
+
+        :param filters: dictionary of attributes by which the resulting
+                        collection of images should be filtered
+        :param marker: id after which to start the page of images
+        :param limit: maximum number of items to return
         """
-        res = self.do_request("GET", "/images/detail", params=filters)
+
+        params = filters or {}
+        if marker:
+            params['marker'] = marker
+        if limit:
+            params['limit'] = limit
+        res = self.do_request("GET", "/images/detail", params=params)
         data = json.loads(res.read())['images']
         return data
 
