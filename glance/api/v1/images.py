@@ -92,8 +92,15 @@ class Controller(wsgi.Controller):
                  'size': <SIZE>}, ...
             ]}
         """
-        filters = self._get_filters(req)
-        images = registry.get_images_list(self.options, filters)
+        params = {'filters': self._get_filters(req)}
+
+        if 'limit' in req.str_params:
+            params['limit'] = req.str_params.get('limit')
+
+        if 'marker' in req.str_params:
+            params['marker'] = req.str_params.get('marker')
+
+        images = registry.get_images_list(self.options, **params)
         return dict(images=images)
 
     def detail(self, req):
@@ -118,8 +125,15 @@ class Controller(wsgi.Controller):
                  'properties': {'distro': 'Ubuntu 10.04 LTS', ...}}, ...
             ]}
         """
-        filters = self._get_filters(req)
-        images = registry.get_images_detail(self.options, filters)
+        params = {'filters': self._get_filters(req)}
+
+        if 'limit' in req.str_params:
+            params['limit'] = req.str_params.get('limit')
+
+        if 'marker' in req.str_params:
+            params['marker'] = req.str_params.get('marker')
+
+        images = registry.get_images_detail(self.options, **params)
         return dict(images=images)
 
     def _get_filters(self, req):

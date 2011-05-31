@@ -1001,3 +1001,119 @@ class TestCurlApi(functional.FunctionalTest):
             self.assertEqual(image["name"], "My Image!")
 
         self.stop_servers()
+
+    def test_limited_images(self):
+        """
+        Ensure marker and limit query params work
+        """
+        self.cleanup()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 0. GET /images
+        # Verify no public images
+        cmd = "curl http://0.0.0.0:%d/v1/images" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('{"images": []}', out.strip())
+
+        # 1. POST /images with three public images with various attributes
+        cmd = ("curl -i -X POST "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'X-Image-Meta-Name: Image1' "
+               "-H 'X-Image-Meta-Is-Public: True' "
+               "http://0.0.0.0:%d/v1/images") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
+
+        cmd = ("curl -i -X POST "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'X-Image-Meta-Name: Image2' "
+               "-H 'X-Image-Meta-Is-Public: True' "
+               "http://0.0.0.0:%d/v1/images") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
+
+        cmd = ("curl -i -X POST "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'X-Image-Meta-Name: Image3' "
+               "-H 'X-Image-Meta-Is-Public: True' "
+               "http://0.0.0.0:%d/v1/images") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
+
+        # 2. GET /images with limit of 2
+        # Verify only two images were returned
+        cmd = "curl http://0.0.0.0:%d/v1/images?limit=2" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())['images']
+
+        self.assertEqual(len(images), 2)
+        self.assertEqual(int(images[0]['id']), 3)
+        self.assertEqual(int(images[1]['id']), 2)
+
+        # 3. GET /images with marker
+        # Verify only two images were returned
+        cmd = "curl http://0.0.0.0:%d/v1/images?marker=3" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())['images']
+
+        self.assertEqual(len(images), 2)
+        self.assertEqual(int(images[0]['id']), 2)
+        self.assertEqual(int(images[1]['id']), 1)
+
+        # 4. GET /images with marker and limit
+        # Verify only one image was returned with the correct id
+        cmd = ("curl 'http://0.0.0.0:%d/v1/images?"
+               "limit=1&marker=2'" % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())['images']
+
+        self.assertEqual(len(images), 1)
+        self.assertEqual(int(images[0]['id']), 1)
+
+        # 5. GET /images/detail with marker and limit
+        # Verify only one image was returned with the correct id
+        cmd = ("curl 'http://0.0.0.0:%d/v1/images/detail?"
+               "limit=1&marker=3'" % api_port)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())['images']
+
+        self.assertEqual(len(images), 1)
+        self.assertEqual(int(images[0]['id']), 2)
+
+        self.stop_servers()

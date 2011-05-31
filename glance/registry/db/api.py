@@ -23,11 +23,12 @@ Defines interface for DB access
 
 import logging
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, desc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import exc
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import or_, and_
 
 from glance.common import config
 from glance.common import exception
@@ -128,23 +129,26 @@ def image_get(context, image_id, session=None):
         raise exception.NotFound("No image found with ID %s" % image_id)
 
 
-def image_get_all_public(context, filters=None):
+def image_get_all_public(context, filters=None, marker=None, limit=None):
     """Get all public images that match zero or more filters.
 
     :param filters: dict of filter keys and values. If a 'properties'
                     key is present, it is treated as a dict of key/value
                     filters on the image properties attribute
+    :param marker: image id after which to start page
+    :param limit: maximum number of images to return
 
     """
-    if filters == None:
-        filters = {}
+    filters = filters or {}
 
     session = get_session()
     query = session.query(models.Image).\
                    options(joinedload(models.Image.properties)).\
                    filter_by(deleted=_deleted(context)).\
                    filter_by(is_public=True).\
-                   filter(models.Image.status != 'killed')
+                   filter(models.Image.status != 'killed').\
+                   order_by(desc(models.Image.created_at)).\
+                   order_by(desc(models.Image.id))
 
     if 'size_min' in filters:
         query = query.filter(models.Image.size >= filters['size_min'])
@@ -159,6 +163,17 @@ def image_get_all_public(context, filters=None):
 
     for (k, v) in filters.items():
         query = query.filter(getattr(models.Image, k) == v)
+
+    if marker != None:
+        # images returned should be created before the image defined by marker
+        marker_created_at = image_get(context, marker).created_at
+        query = query.filter(
+            or_(models.Image.created_at < marker_created_at,
+                and_(models.Image.created_at == marker_created_at,
+                     models.Image.id < marker)))
+
+    if limit != None:
+        query = query.limit(limit)
 
     return query.all()
 

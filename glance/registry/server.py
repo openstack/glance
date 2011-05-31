@@ -39,6 +39,8 @@ DISPLAY_FIELDS_IN_INDEX = ['id', 'name', 'size',
 SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
                      'size_min', 'size_max']
 
+MAX_ITEM_LIMIT = 25
+
 
 class Controller(wsgi.Controller):
     """Controller for the reference implementation registry server"""
@@ -67,7 +69,15 @@ class Controller(wsgi.Controller):
             }
 
         """
-        images = db_api.image_get_all_public(None, self._get_filters(req))
+        params = {
+            'filters': self._get_filters(req),
+            'limit': self._get_limit(req),
+        }
+
+        if 'marker' in req.str_params:
+            params['marker'] = self._get_marker(req)
+
+        images = db_api.image_get_all_public(None, **params)
 
         results = []
         for image in images:
@@ -89,7 +99,15 @@ class Controller(wsgi.Controller):
         all image model fields.
 
         """
-        images = db_api.image_get_all_public(None, self._get_filters(req))
+        params = {
+            'filters': self._get_filters(req),
+            'limit': self._get_limit(req),
+        }
+
+        if 'marker' in req.str_params:
+            params['marker'] = self._get_marker(req)
+
+        images = db_api.image_get_all_public(None, **params)
 
         image_dicts = [make_image_dict(i) for i in images]
         return dict(images=image_dicts)
@@ -115,6 +133,26 @@ class Controller(wsgi.Controller):
             filters['properties'] = properties
 
         return filters
+
+    def _get_limit(self, req):
+        """Parse a limit query param into something usable."""
+        try:
+            limit = int(req.str_params.get('limit', MAX_ITEM_LIMIT))
+        except ValueError:
+            raise exc.HTTPBadRequest("limit param must be an integer")
+
+        if limit < 0:
+            raise exc.HTTPBadRequest("limit param must be positive")
+
+        return min(MAX_ITEM_LIMIT, limit)
+
+    def _get_marker(self, req):
+        """Parse a marker query param into something usable."""
+        try:
+            marker = int(req.str_params.get('marker', None))
+        except ValueError:
+            raise exc.HTTPBadRequest("marker param must be an integer")
+        return marker
 
     def show(self, req, id):
         """Return data about the given image id."""
