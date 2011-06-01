@@ -23,8 +23,6 @@ import urlparse
 from glance.common import exception
 import glance.store
 
-DEFAULT_S3_BUCKET = 'glance'
-
 logger = logging.getLogger('glance.store.s3')
 
 
@@ -146,13 +144,15 @@ class S3Backend(glance.store.Backend):
         # See: http://trac.edgewall.org/ticket/8083
         access_key = access_key.encode('utf-8')
         secret_key = secret_key.encode('utf-8')
-        bucket = options.get('s3_store_bucket', DEFAULT_S3_BUCKET)
+        bucket = cls._option_get(options, 's3_store_bucket')
 
         full_s3_host = s3_host
         if not full_s3_host.startswith('http'):
             full_s3_host = 'https://' + full_s3_host
 
         s3_conn = S3Connection(access_key, secret_key, host=s3_host)
+
+        create_bucket_if_missing(bucket, s3_conn, options)
 
         bucket_obj = get_bucket(s3_conn, bucket)
         obj_name = str(id)
@@ -220,6 +220,41 @@ def get_bucket(conn, bucket_id):
         raise exception.NotFound(msg)
 
     return bucket
+
+
+def create_bucket_if_missing(bucket, s3_conn, options):
+    """
+    Creates a missing bucket in S3 if the
+    ``s3_store_create_bucket_on_put`` option is set.
+
+    :param bucket: Name of bucket to create
+    :param s3_conn: Connection to S3
+    :param options: Option mapping
+    """
+    from boto.exception import S3ResponseError
+    try:
+        s3_conn.get_bucket(bucket)
+    except S3ResponseError, e:
+        if e.status == httplib.NOT_FOUND:
+            add_bucket = config.get_option(options,
+                                's3_store_create_bucket_on_put',
+                                type='bool', default=False)
+            if add_bucket:
+                try:
+                    s3_conn.create_bucket(bucket)
+                except S3ResponseError, e:
+                    msg = ("Failed to add bucket to S3.\n"
+                           "Got error from S3: %(e)s" % locals())
+                    raise glance.store.BackendException(msg)
+            else:
+                msg = ("The bucket %(bucket)s does not exist in "
+                       "S3. Please set the "
+                       "s3_store_create_bucket_on_put option"
+                       "to add bucket to S3 automatically."
+                       % locals())
+                raise glance.store.BackendException(msg)
+        else:
+            raise
 
 
 def get_key(bucket, obj):
