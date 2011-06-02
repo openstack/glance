@@ -19,6 +19,7 @@
 
 import datetime
 import httplib
+import operator
 import os
 import shutil
 import StringIO
@@ -267,7 +268,6 @@ def stub_out_registry_db_image_api(stubs):
     The "datastore" always starts with this set of image fixtures.
 
     :param stubs: Set of stubout stubs
-
     """
     class FakeDatastore(object):
 
@@ -322,8 +322,10 @@ def stub_out_registry_db_image_api(stubs):
             values['deleted'] = False
             values['properties'] = values.get('properties', {})
             values['location'] = values.get('location')
-            values['created_at'] = datetime.datetime.utcnow()
-            values['updated_at'] = datetime.datetime.utcnow()
+
+            now = datetime.datetime.utcnow()
+            values['created_at'] = values.get('created_at', now)
+            values['updated_at'] = values.get('updated_at', now)
             values['deleted_at'] = None
 
             props = []
@@ -334,8 +336,8 @@ def stub_out_registry_db_image_api(stubs):
                     p['name'] = k
                     p['value'] = v
                     p['deleted'] = False
-                    p['created_at'] = datetime.datetime.utcnow()
-                    p['updated_at'] = datetime.datetime.utcnow()
+                    p['created_at'] = now
+                    p['updated_at'] = now
                     p['deleted_at'] = None
                     props.append(p)
 
@@ -386,7 +388,8 @@ def stub_out_registry_db_image_api(stubs):
             else:
                 return images[0]
 
-        def image_get_all_public(self, _context, filters):
+        def image_get_all_public(self, _context, filters=None,
+                                 marker=None, limit=1000):
             images = [f for f in self.images if f['is_public'] == True]
 
             if 'size_min' in filters:
@@ -411,7 +414,30 @@ def stub_out_registry_db_image_api(stubs):
             for k, v in filters.items():
                 images = [f for f in images if f[k] == v]
 
-            return images
+            def image_cmp(x, y):
+                if x['created_at'] > y['created_at']:
+                    return 1
+                elif x['created_at'] == y['created_at']:
+                    if x['id'] > y['id']:
+                        return 1
+                    else:
+                        return -1
+                else:
+                    return -1
+
+            images = sorted(images, cmp=image_cmp)
+            images.reverse()
+
+            if marker == None:
+                start_index = 0
+            else:
+                start_index = -1
+                for i, image in enumerate(images):
+                    if image['id'] == marker:
+                        start_index = i + 1
+                        break
+
+            return images[start_index:start_index + limit]
 
     fake_datastore = FakeDatastore()
     stubs.Set(glance.registry.db.api, 'image_create',

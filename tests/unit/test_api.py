@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import hashlib
 import httplib
 import os
@@ -88,6 +89,158 @@ class TestRegistryAPI(unittest.TestCase):
         for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
 
+    def test_get_index_marker(self):
+        """Tests that the /images registry API returns list of
+        public images that conforms to a marker query param
+
+        """
+
+        time1 = datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
+        time2 = datetime.datetime.utcnow()
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None,
+                         'created_at': time1}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': time1}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 5,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': time2}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?marker=4')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        # should be sorted by created_at desc, id desc
+        # page should start after marker 4
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 5)
+        self.assertEquals(int(images[2]['id']), 2)
+
+    def test_get_index_limit(self):
+        """Tests that the /images registry API returns list of
+        public images that conforms to a limit query param
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?limit=1')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        # expect list to be sorted by created_at desc
+        self.assertTrue(int(images[0]['id']), 4)
+
+    def test_get_index_limit_negative(self):
+        """Tests that the /images registry API returns list of
+        public images that conforms to a limit query param
+
+        """
+        req = webob.Request.blank('/images?limit=-1')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_get_index_limit_non_int(self):
+        """Tests that the /images registry API returns list of
+        public images that conforms to a limit query param
+
+        """
+        req = webob.Request.blank('/images?limit=a')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_get_index_limit_marker(self):
+        """Tests that the /images registry API returns list of
+        public images that conforms to limit and marker query params
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?marker=3&limit=1')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        # expect list to be sorted by created_at desc
+        self.assertEqual(int(images[0]['id']), 2)
+
     def test_get_index_filter_name(self):
         """Tests that the /images registry API returns list of
         public images that have a specific name. This is really a sanity
@@ -156,6 +309,46 @@ class TestRegistryAPI(unittest.TestCase):
 
         for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
+
+    def test_get_details_limit_marker(self):
+        """Tests that the /images/details registry API returns list of
+        public images that conforms to limit and marker query params.
+        This functionality is tested more thoroughly on /images, this is
+        just a sanity check
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?marker=3&limit=1')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        # expect list to be sorted by created_at desc
+        self.assertEqual(int(images[0]['id']), 2)
 
     def test_get_details_filter_name(self):
         """Tests that the /images/detail registry API returns list of
@@ -703,6 +896,12 @@ class TestRegistryAPI(unittest.TestCase):
 class TestGlanceAPI(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
+        # NOTE(sirp): in-memory DBs don't play well with sqlalchemy migrate
+        # (see http://code.google.com/p/sqlalchemy-migrate/
+        #            issues/detail?id=72)
+        self.db_file = 'test_glance_api.sqlite'
+        os.environ['GLANCE_SQL_CONNECTION'] = 'sqlite:///%s' % self.db_file
+
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_registry_db_image_api(self.stubs)
@@ -721,6 +920,8 @@ class TestGlanceAPI(unittest.TestCase):
         """Clear the test environment"""
         stubs.clean_out_fake_filesystem_backend()
         self.stubs.UnsetAll()
+        if os.path.exists(self.db_file):
+            os.unlink(self.db_file)
 
     def test_bad_disk_format(self):
         fixture_headers = {'x-image-meta-store': 'bad',

@@ -70,6 +70,92 @@ class TestRegistryClient(unittest.TestCase):
         for k, v in fixture.items():
             self.assertEquals(v, images[0][k])
 
+    def test_get_image_index_marker(self):
+        """Test correct set of images returned with marker param."""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #125',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(marker=4)
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertTrue(image['id'] < 4)
+
+    def test_get_image_index_limit(self):
+        """Test correct number of images returned with limit param."""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #125',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(limit=2)
+        self.assertEquals(len(images), 2)
+
+    def test_get_image_index_marker_limit(self):
+        """Test correct set of images returned with marker/limit params."""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #125',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(marker=3, limit=1)
+        self.assertEquals(len(images), 1)
+
+        self.assertEquals(images[0]['id'], 2)
+
     def test_get_image_index_by_name(self):
         """Test correct set of public, name-filtered image returned. This
         is just a sanity check, we test the details call more in-depth."""
@@ -107,6 +193,35 @@ class TestRegistryClient(unittest.TestCase):
 
         for k, v in fixture.items():
             self.assertEquals(v, images[0][k])
+
+    def test_get_image_details_marker_limit(self):
+        """Test correct set of images returned with marker/limit params."""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #125',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images_detailed(marker=3, limit=1)
+        self.assertEquals(len(images), 1)
+
+        self.assertEquals(images[0]['id'], 2)
 
     def test_get_image_details_by_name(self):
         """Tests that a detailed call can be filtered by name"""
@@ -457,6 +572,92 @@ class TestClient(unittest.TestCase):
         for k, v in fixture.items():
             self.assertEquals(v, images[0][k])
 
+    def test_get_image_index_marker(self):
+        """Test correct set of public images returned with marker param."""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #125',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(marker=4)
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertTrue(image['id'] < 4)
+
+    def test_get_image_index_limit(self):
+        """Test correct number of public images returned with limit param."""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #125',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(limit=2)
+        self.assertEquals(len(images), 2)
+
+    def test_get_image_index_marker_limit(self):
+        """Test correct set of images returned with marker/limit params."""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #125',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(marker=3, limit=1)
+        self.assertEquals(len(images), 1)
+
+        self.assertEquals(images[0]['id'], 2)
+
     def test_get_image_index_by_base_attribute(self):
         """Tests that an index call can be filtered by a base attribute"""
         extra_fixture = {'id': 3,
@@ -522,6 +723,35 @@ class TestClient(unittest.TestCase):
         for k, v in expected.items():
             self.assertEquals(v, images[0][k])
 
+    def test_get_image_details_marker_limit(self):
+        """Test detailed calls are filtered by marker/limit params."""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #125',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images_detailed(marker=3, limit=1)
+        self.assertEquals(len(images), 1)
+
+        self.assertEquals(images[0]['id'], 2)
+
     def test_get_image_details_by_base_attribute(self):
         """Tests that a detailed call can be filtered by a base attribute"""
         extra_fixture = {'id': 3,
@@ -574,6 +804,30 @@ class TestClient(unittest.TestCase):
                    'properties': {}}
 
         data = self.client.get_image_meta(2)
+
+        for k, v in fixture.items():
+            self.assertEquals(v, data[k])
+
+    def test_get_image_iso_meta(self):
+        """Tests that the detailed info about an ISO image is returned"""
+        fixture = {'id': 3,
+                   'name': 'fake iso image',
+                   'is_public': False,
+                   'disk_format': 'iso',
+                   'container_format': 'bare',
+                   'status': 'active',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/3",
+                   'properties': {}}
+
+        new_image = self.client.add_image(fixture)
+        new_image_id = new_image['id']
+
+        # Test ID auto-assigned properly
+        self.assertEquals(3, new_image_id)
+
+        # Test all other attributes set
+        data = self.client.get_image_meta(3)
 
         for k, v in fixture.items():
             self.assertEquals(v, data[k])
@@ -646,6 +900,49 @@ class TestClient(unittest.TestCase):
         # Test status was updated properly
         self.assertTrue('status' in data)
         self.assertEquals('active', data['status'])
+
+    def test_add_image_with_iso_properties(self):
+        """Tests that we can add image metadata with ISO disk format"""
+        fixture = {'name': 'fake public iso',
+                   'is_public': True,
+                   'disk_format': 'iso',
+                   'container_format': 'bare',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                   'properties': {'install': 'Bindows Heaven'},
+                  }
+        new_image = self.client.add_image(fixture)
+        new_image_id = new_image['id']
+
+        # Test ID auto-assigned properly
+        self.assertEquals(3, new_image_id)
+
+        # Test all other attributes set
+        data = self.client.get_image_meta(3)
+
+        for k, v in fixture.items():
+            self.assertEquals(v, data[k])
+
+        # Test status was updated properly
+        self.assertTrue('status' in data)
+        self.assertEquals('active', data['status'])
+
+    def test_add_image_with_bad_iso_properties(self):
+        """Verify that ISO with invalid container format is rejected.
+        Intended to exercise error path once rather than be exhaustive
+        set of mismatches"""
+        fixture = {'name': 'fake public iso',
+                   'is_public': True,
+                   'disk_format': 'iso',
+                   'container_format': 'vhd',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/3",
+                   'properties': {'install': 'Bindows Heaven'},
+                  }
+
+        self.assertRaises(exception.Invalid,
+            self.client.add_image,
+            fixture)
 
     def test_add_image_already_exists(self):
         """Tests proper exception is raised if image with ID already exists"""
