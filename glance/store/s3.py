@@ -190,8 +190,12 @@ class S3Backend(glance.store.Backend):
         (access_key, secret_key, s3_host, bucket, obj_name) = \
             parse_s3_tokens(parsed_uri)
 
+        # This is annoying. If I pass http://s3.amazonaws.com to Boto, it
+        # dies. If I pass s3.amazonaws.com it works fine. :(
+        s3_host_only = urlparse.urlparse(s3_host).netloc
+
         # Close the connection when we're through.
-        s3_conn = S3Connection(access_key, secret_key, host=s3_host)
+        s3_conn = S3Connection(access_key, secret_key, host=s3_host_only)
         bucket_obj = get_bucket(s3_conn, bucket)
 
         # Close the key when we're through.

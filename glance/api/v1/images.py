@@ -360,6 +360,10 @@ class Controller(wsgi.Controller):
         :retval Mapping of updated image data
         """
         image_id = image_meta['id']
+        # This is necessary because of a bug in Webob 1.0.2 - 1.0.7
+        # See: https://bitbucket.org/ianb/webob/
+        # issue/12/fix-for-issue-6-broke-chunked-transfer
+        req.is_body_readable = True
         location = self._upload(req, image_meta)
         return self._activate(req, image_id, location)
 
