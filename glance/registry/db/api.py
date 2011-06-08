@@ -51,7 +51,8 @@ IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size',
 CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
 DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi',
                'iso']
-STATUSES = ['active', 'saving', 'queued', 'killed']
+STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
+            'deleted']
 
 
 def configure_db(options):
@@ -127,6 +128,26 @@ def image_get(context, image_id, session=None):
                        one()
     except exc.NoResultFound:
         raise exception.NotFound("No image found with ID %s" % image_id)
+
+
+def image_get_all_pending_delete(context, limit=None):
+    """Get all images that are pending deletion
+
+    :param limit: maximum number of images to return
+
+    """
+    session = get_session()
+    query = session.query(models.Image).\
+                   options(joinedload(models.Image.properties)).\
+                   filter_by(deleted=True).\
+                   filter(models.Image.status == 'pending_delete').\
+                   order_by(desc(models.Image.deleted_at)).\
+                   order_by(desc(models.Image.id))
+
+    if limit != None:
+        query = query.limit(limit)
+
+    return query.all()
 
 
 def image_get_all_public(context, filters=None, marker=None, limit=None):
