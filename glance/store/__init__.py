@@ -22,6 +22,7 @@ import urlparse
 
 from eventlet import greenthread
 
+from glance import registry
 from glance.common import config, exception
 
 
@@ -148,24 +149,26 @@ def parse_uri_tokens(parsed_uri, example_url):
     return user, key, authurl, container, obj
 
 
-def _log_scheduled_delete(gt, uri):
+def _log_scheduled_delete(gt, id, options, uri):
     try:
         gt.wait()
     except (UnsupportedBackend, exception.NotFound):
         msg = "Failed to delete image from store (%s). "
         logger.error(msg % uri)
 
-def schedule_delete_from_backend(uri, options=None, **kwargs):
+    registry.update_image_metadata(options, id, {'status': 'deleted'})
+
+
+def schedule_delete_from_backend(uri, options, id, **kwargs):
     """
     Given a uri and a time, schedule the deletion of an image. Time may be 0
     in which case we delete immediatly (or if it is less than 1 ;).
     """
-    time = 1
-    if options:
-        time = config.get_option(options, 'delayed_delete_time')
-        if time < 1:
-            time = 1
+    time = config.get_option(options, 'delayed_delete_time', default=1)
+    use_delay = config.get_option(options, 'delayed_delete', default=False)
+    if time < 1 or not use_delay:
+        time = 1
 
     scheduled_delete = greenthread.spawn_after(time, delete_from_backend, uri,
                                                **kwargs)
-    scheduled_delete.link(_log_scheduled_delete, uri)
+    scheduled_delete.link(_log_scheduled_delete, id, options, uri)
