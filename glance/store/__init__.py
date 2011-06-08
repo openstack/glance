@@ -15,12 +15,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import optparse
 import os
 import urlparse
 
-from glance.common import exception
+from eventlet import greenthread
 
+from glance.common import config, exception
+
+
+logger = logging.getLogger('glance.store')
 
 # TODO(sirp): should this be moved out to common/utils.py ?
 def _file_iter(f, size):
@@ -141,3 +146,26 @@ def parse_uri_tokens(parsed_uri, example_url):
     authurl = "https://%s" % '/'.join(path_parts)
 
     return user, key, authurl, container, obj
+
+
+def _log_scheduled_delete(gt, uri):
+    try:
+        gt.wait()
+    except (UnsupportedBackend, exception.NotFound):
+        msg = "Failed to delete image from store (%s). "
+        logger.error(msg % uri)
+
+def schedule_delete_from_backend(uri, options=None, **kwargs):
+    """
+    Given a uri and a time, schedule the deletion of an image. Time may be 0
+    in which case we delete immediatly (or if it is less than 1 ;).
+    """
+    time = 1
+    if options:
+        time = config.get_option(options, 'delayed_delete_time')
+        if time < 1:
+            time = 1
+
+    scheduled_delete = greenthread.spawn_after(time, delete_from_backend, uri,
+                                               **kwargs)
+    scheduled_delete.link(_log_scheduled_delete, uri)
