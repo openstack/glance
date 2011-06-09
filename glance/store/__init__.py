@@ -161,8 +161,7 @@ def _log_scheduled_delete(gt, id, options, uri):
 
 def schedule_delete_from_backend(uri, options, id, **kwargs):
     """
-    Given a uri and a time, schedule the deletion of an image. Time may be 0
-    in which case we delete immediatly (or if it is less than 1 ;).
+    Given a uri and a time, schedule the deletion of an image. 
     """
     use_delay = config.get_option(options, 'delayed_delete', default=False)
     if not use_delay:
