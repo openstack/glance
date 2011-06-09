@@ -25,7 +25,7 @@ from glance.common import config
 logger = logging.getLogger('glance.store.scrub')
 
 class Server(object):
-    def __init__(self):
+    def __init__(self, wakeup_time=300):
         pass
 
 class Scrubber(object):
