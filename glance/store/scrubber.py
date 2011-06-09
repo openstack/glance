@@ -16,6 +16,7 @@
 #    under the License.
 
 import eventlet
+import logging
 
 from glance import registry
 from glance.common import config
@@ -23,6 +24,17 @@ from glance.common import config
 
 logger = logging.getLogger('glance.store.scrub')
 
-def scrub(options):
-    pass
+class Server(object):
+    def __init__(self):
+        pass
+
+class Scrubber(object):
+    def __init__(self, options):
+        pass
+
+
+def app_factory(global_config, **local_conf):
+    conf = global_config.copy()
+    conf.update(local_conf)
+    return Scrubber(conf)
 
