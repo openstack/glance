@@ -18,19 +18,56 @@
 import eventlet
 import logging
 
+from glance import exception
 from glance import registry
+from glance import store
 from glance.common import config
+from glance.registry.db import api as db_api
 
 
 logger = logging.getLogger('glance.store.scrub')
 
 class Server(object):
-    def __init__(self, wakeup_time=300):
-        pass
+    def __init__(self, wakeup_time=300, threads=1000):
+        self.wakeup_time = wakeup_time
+        self.event = eventlet.event.Event()
+        self.pool = eventlet.greenpool.GreenPool(threads)
+
+    def start(self, application):
+        self._run(application)
+
+    def wait(self):
+        try:
+            self.event.wait()
+        except KeyboardInterrupt:
+            pass
+
+    def _run(self, application):
+        self.pool.spawn_n(application.scrubi, self.event, self.pool)
+        eventlet.spawn_after(wakeup_time, self._run, application)
+
 
 class Scrubber(object):
     def __init__(self, options):
-        pass
+        self.options = options
+        db_api.configure_db(options)
+
+    def scrub(self, event, pool):
+        pending = db_api.image_get_all_pending_delete(None)
+
+        # TODO(jkoelker): filter pending to be only the ones to be deleted now
+        delete_work = [(p['id'], p['location']) for p in pending])
+        pool.starmap(self._delete, delete_work)
+
+    def _delete(self, id, location):
+        try:
+            store.delete_from_backend(location)
+        except (store.UnsupportedBackend, exception.NotFound):
+            msg = "Failed to delete image from store (%s). "
+            logger.error(msg % uri)
+
+        context = {'deleted': True}
+        db_api.image_update(context, id, {'status': 'deleted'})
 
 
 def app_factory(global_config, **local_conf):
