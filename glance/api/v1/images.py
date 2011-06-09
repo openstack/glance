@@ -482,8 +482,6 @@ class Controller(wsgi.Controller):
         # to delete the image if the backend doesn't yet store it.
         # See https://bugs.launchpad.net/glance/+bug/747799
         if image['location']:
-            registry.update_image_metadata(self.options, id,
-                                           {'status': 'pending_delete'})
             schedule_delete_from_backend(image['location'], self.options, id)
         registry.delete_image_metadata(self.options, id)
 

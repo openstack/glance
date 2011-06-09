@@ -164,11 +164,15 @@ def schedule_delete_from_backend(uri, options, id, **kwargs):
     Given a uri and a time, schedule the deletion of an image. Time may be 0
     in which case we delete immediatly (or if it is less than 1 ;).
     """
-    time = config.get_option(options, 'delayed_delete_time', default=1)
     use_delay = config.get_option(options, 'delayed_delete', default=False)
-    if time < 1 or not use_delay:
-        time = 1
+    if not use_delay:
+        registry.update_image_metadata(self.options, id,
+                                       {'status': 'deleted'})
+        try:
+            return delete_from_backend(uri, **kwargs)
+        except (UnsupportedBackend, exception.NotFound):
+            msg = "Failed to delete image from store (%s). "
+            logger.error(msg % uri)
 
-    scheduled_delete = greenthread.spawn_after(time, delete_from_backend, uri,
-                                               **kwargs)
-    scheduled_delete.link(_log_scheduled_delete, id, options, uri)
+    registry.update_image_metadata(self.options, id,
+                                   {'status': 'pending_delete'})
