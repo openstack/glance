@@ -143,10 +143,10 @@ def image_get_all_pending_delete(context, delete_time=None, limit=None):
                    filter(models.Image.status == 'pending_delete')
 
     if delete_time:
-        query.filter(models.Image.deleted_at <= delete_time)
+        query = query.filter(models.Image.deleted_at <= delete_time)
 
-    query.order_by(desc(models.Image.deleted_at)).\
-          order_by(desc(models.Image.id))
+    query = query.order_by(desc(models.Image.deleted_at)).\
+                  order_by(desc(models.Image.id))
 
     if limit:
         query = query.limit(limit)
