@@ -130,7 +130,7 @@ def image_get(context, image_id, session=None):
         raise exception.NotFound("No image found with ID %s" % image_id)
 
 
-def image_get_all_pending_delete(context, limit=None):
+def image_get_all_pending_delete(context, delete_time=None, limit=None):
     """Get all images that are pending deletion
 
     :param limit: maximum number of images to return
@@ -140,11 +140,15 @@ def image_get_all_pending_delete(context, limit=None):
     query = session.query(models.Image).\
                    options(joinedload(models.Image.properties)).\
                    filter_by(deleted=True).\
-                   filter(models.Image.status == 'pending_delete').\
-                   order_by(desc(models.Image.deleted_at)).\
-                   order_by(desc(models.Image.id))
+                   filter(models.Image.status == 'pending_delete')
 
-    if limit != None:
+    if delete_time:
+        query.filter(models.Image.deleted_at <= delete_time)
+
+    query.order_by(desc(models.Image.deleted_at)).\
+          order_by(desc(models.Image.id))
+
+    if limit:
         query = query.limit(limit)
 
     return query.all()
