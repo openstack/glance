@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import eventlet
 import logging
 
@@ -50,12 +51,13 @@ class Server(object):
 class Scrubber(object):
     def __init__(self, options):
         self.options = options
+        scrub_time = int(self.options.get('scrub_time', 0))
+        self.scrub_time = datetime.timedelta(seconds=scrub_time)
         db_api.configure_db(options)
 
     def scrub(self, event, pool):
-        pending = db_api.image_get_all_pending_delete(None)
-
-        # TODO(jkoelker): filter pending to be only the ones to be deleted now
+        delete_time = datetime.datetime.utcnow() - self.scrub_time
+        pending = db_api.image_get_all_pending_delete(None, delete_time)
         delete_work = [(p['id'], p['location']) for p in pending])
         pool.starmap(self._delete, delete_work)
 
