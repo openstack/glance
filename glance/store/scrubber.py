@@ -51,6 +51,8 @@ class Server(object):
 class Scrubber(object):
     def __init__(self, options):
         self.options = options
+        scrub_time = config.get_option(options, 'scrub_time', type='int',
+                                       default=0)
         scrub_time = int(self.options.get('scrub_time', 0))
         self.scrub_time = datetime.timedelta(seconds=scrub_time)
         db_api.configure_db(options)

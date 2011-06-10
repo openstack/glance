@@ -163,7 +163,8 @@ def schedule_delete_from_backend(uri, options, id, **kwargs):
     """
     Given a uri and a time, schedule the deletion of an image. 
     """
-    use_delay = config.get_option(options, 'delayed_delete', default=False)
+    use_delay = config.get_option(options, 'delayed_delete', type='bool',
+                                  default=False)
     if not use_delay:
         registry.update_image_metadata(options, id, {'status': 'deleted'})
         try:
