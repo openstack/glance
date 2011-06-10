@@ -28,6 +28,7 @@ from glance.common import config, exception
 
 logger = logging.getLogger('glance.store')
 
+
 # TODO(sirp): should this be moved out to common/utils.py ?
 def _file_iter(f, size):
     """
@@ -161,7 +162,7 @@ def _log_scheduled_delete(gt, id, options, uri):
 
 def schedule_delete_from_backend(uri, options, id, **kwargs):
     """
-    Given a uri and a time, schedule the deletion of an image. 
+    Given a uri and a time, schedule the deletion of an image.
     """
     use_delay = config.get_option(options, 'delayed_delete', type='bool',
                                   default=False)
