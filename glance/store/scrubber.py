@@ -28,6 +28,7 @@ from glance.registry.db import api as db_api
 
 logger = logging.getLogger('glance.store.scrub')
 
+
 class Server(object):
     def __init__(self, wakeup_time=300, threads=1000):
         self.wakeup_time = wakeup_time
@@ -60,7 +61,7 @@ class Scrubber(object):
     def scrub(self, event, pool):
         delete_time = datetime.datetime.utcnow() - self.scrub_time
         pending = db_api.image_get_all_pending_delete(None, delete_time)
-        delete_work = [(p['id'], p['location']) for p in pending])
+        delete_work = [(p['id'], p['location']) for p in pending]
         pool.starmap(self._delete, delete_work)
 
     def _delete(self, id, location):
@@ -78,4 +79,3 @@ def app_factory(global_config, **local_conf):
     conf = global_config.copy()
     conf.update(local_conf)
     return Scrubber(conf)
-
