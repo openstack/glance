@@ -305,6 +305,7 @@ def stub_out_registry_db_image_api(stubs):
 
         def __init__(self):
             self.images = FakeDatastore.FIXTURES
+            self.deleted_images = []
             self.next_id = 3
 
         def image_create(self, _context, values):
@@ -377,6 +378,8 @@ def stub_out_registry_db_image_api(stubs):
         def image_destroy(self, _context, image_id):
             image = self.image_get(_context, image_id)
             self.images.remove(image)
+            image['deleted_at'] = datetime.datetime.utcnow()
+            self.deleted_images.append(image)
 
         def image_get(self, _context, image_id):
 
@@ -387,6 +390,13 @@ def stub_out_registry_db_image_api(stubs):
                                          (image_id, str(self.images)))
             else:
                 return images[0]
+
+        def image_get_all_pending_delete(self, _context, delete_time=None,
+                                         limit=None):
+            images = [f for f in self.deleted_images \
+                      if f['status'] == 'pending_delete' and \
+                         f['deleted_at'] <= delete_time]
+            return images
 
         def image_get_all_public(self, _context, filters=None,
                                  marker=None, limit=1000):
