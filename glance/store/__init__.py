@@ -165,13 +165,11 @@ def schedule_delete_from_backend(uri, options, id, **kwargs):
     """
     use_delay = config.get_option(options, 'delayed_delete', default=False)
     if not use_delay:
-        registry.update_image_metadata(self.options, id,
-                                       {'status': 'deleted'})
+        registry.update_image_metadata(options, id, {'status': 'deleted'})
         try:
             return delete_from_backend(uri, **kwargs)
         except (UnsupportedBackend, exception.NotFound):
             msg = "Failed to delete image from store (%s). "
             logger.error(msg % uri)
 
-    registry.update_image_metadata(self.options, id,
-                                   {'status': 'pending_delete'})
+    registry.update_image_metadata(options, id, {'status': 'pending_delete'})
