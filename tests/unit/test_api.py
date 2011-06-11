@@ -983,6 +983,21 @@ class TestGlanceAPI(unittest.TestCase):
         res_body = json.loads(res.body)['image']
         self.assertEquals('queued', res_body['status'])
 
+    def test_add_image_no_location_no_content_type(self):
+        """Tests creates a queued image for no body and no loc header"""
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.body = "chunk00000remainder"
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
     def test_add_image_bad_store(self):
         """Tests raises BadRequest for invalid store header"""
         fixture_headers = {'x-image-meta-store': 'bad',

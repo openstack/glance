@@ -46,7 +46,7 @@ SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
                      'size_min', 'size_max']
 
 
-class Controller(wsgi.Controller):
+class Controller(object):
 
     """
     WSGI controller for images resource in Glance v1 API
@@ -160,14 +160,9 @@ class Controller(wsgi.Controller):
 
         :raises HTTPNotFound if image metadata is not available to user
         """
-        image = self.get_image_meta_or_404(req, id)
-
-        res = Response(request=req)
-        utils.inject_image_meta_into_headers(res, image)
-        res.headers.add('Location', "/v1/images/%s" % id)
-        res.headers.add('ETag', image['checksum'])
-
-        return req.get_response(res)
+        return {
+            'image_meta': self.get_image_meta_or_404(req, id),
+        }
 
     def show(self, req, id):
         """
@@ -192,16 +187,12 @@ class Controller(wsgi.Controller):
             for chunk in chunks:
                 yield chunk
 
-        res = Response(app_iter=image_iterator(),
-                       content_type="application/octet-stream")
-        # Using app_iter blanks content-length, so we set it here...
-        res.headers.add('Content-Length', image['size'])
-        utils.inject_image_meta_into_headers(res, image)
-        res.headers.add('Location', "/v1/images/%s" % id)
-        res.headers.add('ETag', image['checksum'])
-        return req.get_response(res)
+        return {
+            'image_iterator': image_iterator(),
+            'image_meta': image,
+        }
 
-    def _reserve(self, req):
+    def _reserve(self, req, image_meta):
         """
         Adds the image metadata to the registry and assigns
         an image identifier if one is not supplied in the request
@@ -213,9 +204,7 @@ class Controller(wsgi.Controller):
         :raises HTTPConflict if image already exists
         :raises HTTPBadRequest if image metadata is not valid
         """
-        image_meta = utils.get_image_meta_from_headers(req)
-
-        if 'location' in image_meta:
+        if 'location' in image_meta and image_meta['location'] is not None:
             store = get_store_from_location(image_meta['location'])
             # check the store exists before we hit the registry, but we
             # don't actually care what it is at this point
@@ -256,22 +245,20 @@ class Controller(wsgi.Controller):
         :raises HTTPConflict if image already exists
         :retval The location where the image was stored
         """
-        image_id = image_meta['id']
-        content_type = req.headers.get('content-type', 'notset')
-        if content_type != 'application/octet-stream':
-            self._safe_kill(req, image_id)
-            msg = ("Content-Type must be application/octet-stream")
+        try:
+            req.get_content_type('application/octet-stream')
+        except exception.InvalidContentType:
+            msg = "Content-Type must be application/octet-stream"
             logger.error(msg)
-            raise HTTPBadRequest(msg, content_type="text/plain",
-                                 request=req)
+            raise HTTPBadRequest(msg)
 
         store_name = req.headers.get(
             'x-image-meta-store', self.options['default_store'])
 
         store = self.get_store_or_400(req, store_name)
 
-        logger.debug("Setting image %s to status 'saving'"
-                     % image_id)
+        image_id = image_meta['id']
+        logger.debug("Setting image %s to status 'saving'" % image_id)
         registry.update_image_metadata(self.options, image_id,
                                        {'status': 'saving'})
         try:
@@ -304,11 +291,13 @@ class Controller(wsgi.Controller):
                                             'size': size})
 
             return location
+
         except exception.Duplicate, e:
             msg = ("Attempt to upload duplicate image: %s") % str(e)
             logger.error(msg)
             self._safe_kill(req, image_id)
             raise HTTPConflict(msg, request=req)
+
         except Exception, e:
             msg = ("Error uploading image: %s") % str(e)
             logger.error(msg)
@@ -373,7 +362,7 @@ class Controller(wsgi.Controller):
         location = self._upload(req, image_meta)
         return self._activate(req, image_id, location)
 
-    def create(self, req):
+    def create(self, req, image_meta, image_data):
         """
         Adds a new image to Glance. Three scenarios exist when creating an
         image:
@@ -401,30 +390,23 @@ class Controller(wsgi.Controller):
 
         :param request: The WSGI/Webob Request object
 
-        :raises HTTPBadRequest if no x-image-meta-location is missing
+        :raises HTTPBadRequest if x-image-meta-location is missing
                 and the request body is not application/octet-stream
                 image data.
         """
-        image_meta = self._reserve(req)
+        image_meta = self._reserve(req, image_meta)
         image_id = image_meta['id']
 
-        if utils.has_body(req):
+        if image_data is not None:
             image_meta = self._upload_and_activate(req, image_meta)
         else:
-            if 'x-image-meta-location' in req.headers:
-                location = req.headers['x-image-meta-location']
+            if 'location' in image_meta and image_meta['location'] is not None:
+                location = image_meta['location']
                 image_meta = self._activate(req, image_id, location)
 
-        # APP states we should return a Location: header with the edit
-        # URI of the resource newly-created.
-        res = Response(request=req, body=json.dumps(dict(image=image_meta)),
-                       status=httplib.CREATED, content_type="text/plain")
-        res.headers.add('Location', "/v1/images/%s" % image_id)
-        res.headers.add('ETag', image_meta['checksum'])
+        return {'image_meta': image_meta}
 
-        return req.get_response(res)
-
-    def update(self, req, id):
+    def update(self, req, id, image_meta, image_data):
         """
         Updates an existing image with the registry.
 
@@ -433,35 +415,25 @@ class Controller(wsgi.Controller):
 
         :retval Returns the updated image information as a mapping
         """
-        has_body = utils.has_body(req)
-
         orig_image_meta = self.get_image_meta_or_404(req, id)
         orig_status = orig_image_meta['status']
 
-        if has_body and orig_status != 'queued':
+        if image_data is not None and orig_status != 'queued':
             raise HTTPConflict("Cannot upload to an unqueued image")
 
-        new_image_meta = utils.get_image_meta_from_headers(req)
         try:
-            image_meta = registry.update_image_metadata(self.options,
-                                                        id,
-                                                        new_image_meta,
-                                                        True)
-            if has_body:
+            image_meta = registry.update_image_metadata(self.options, id,
+                                                         image_meta, True)
+            if image_data is not None:
                 image_meta = self._upload_and_activate(req, image_meta)
-
-            res = Response(request=req,
-                           body=json.dumps(dict(image=image_meta)),
-                           content_type="text/plain")
-            res.headers.add('Location', "/images/%s" % id)
-            res.headers.add('ETag', image_meta['checksum'])
-            return res
         except exception.Invalid, e:
             msg = ("Failed to update image metadata. Got error: %(e)s"
                    % locals())
             for line in msg.split('\n'):
                 logger.error(line)
             raise HTTPBadRequest(msg, request=req, content_type="text/plain")
+
+        return {'image_meta': image_meta}
 
     def delete(self, req, id):
         """
@@ -527,3 +499,97 @@ class Controller(wsgi.Controller):
             logger.error(msg)
             raise HTTPBadRequest(msg, request=request,
                                  content_type='text/plain')
+
+
+class ImageDeserializer(wsgi.JSONRequestDeserializer):
+
+    def create(self, request):
+        result = {}
+        result['image_meta'] = utils.get_image_meta_from_headers(request)
+        data = request.body if self.has_body(request) else None
+        result['image_data'] = data
+        return result
+
+    def update(self, request):
+        result = {}
+        result['image_meta'] = utils.get_image_meta_from_headers(request)
+        data = request.body if self.has_body(request) else None
+        result['image_data'] = data
+        return result
+
+
+class ImageSerializer(wsgi.JSONResponseSerializer):
+
+    def _inject_location_header(self, response, image_meta):
+        location = self._get_image_location(image_meta)
+        response.headers.add('Location', location)
+
+    def _inject_checksum_header(self, response, image_meta):
+        response.headers.add('ETag', image_meta['checksum'])
+
+    def _inject_image_meta_headers(self, response, image_meta):
+        """
+        Given a response and mapping of image metadata, injects
+        the Response with a set of HTTP headers for the image
+        metadata. Each main image metadata field is injected
+        as a HTTP header with key 'x-image-meta-<FIELD>' except
+        for the properties field, which is further broken out
+        into a set of 'x-image-meta-property-<KEY>' headers
+
+        :param response: The Webob Response object
+        :param image_meta: Mapping of image metadata
+        """
+        headers = utils.image_meta_to_http_headers(image_meta)
+
+        for k, v in headers.items():
+            response.headers.add(k, v)
+
+    def _get_image_location(self, image_meta):
+        return "/v1/images/%s" % image_meta['id']
+
+    def meta(self, result):
+        image_meta = result['image_meta']
+        response = Response()
+        self._inject_image_meta_headers(response, image_meta)
+        self._inject_location_header(response, image_meta)
+        self._inject_checksum_header(response, image_meta)
+        return response
+
+    def show(self, result):
+        image_meta = result['image_meta']
+
+        response = Response(app_iter=result['image_iterator'])
+        # Using app_iter blanks content-length, so we set it here...
+        response.headers.add('Content-Length', image_meta['size'])
+        response.headers.add('Content-Type', 'application/octet-stream')
+
+        self._inject_image_meta_headers(response, image_meta)
+        self._inject_location_header(response, image_meta)
+        self._inject_checksum_header(response, image_meta)
+
+        return response
+
+    def update(self, result):
+        image_meta = result['image_meta']
+        response = Response()
+        response.body = self.to_json(dict(image=image_meta))
+        response.headers.add('Content-Type', 'application/json')
+        self._inject_location_header(response, image_meta)
+        self._inject_checksum_header(response, image_meta)
+        return response
+
+    def create(self, result):
+        image_meta = result['image_meta']
+        response = Response()
+        response.status = httplib.CREATED
+        response.headers.add('Content-Type', 'application/json')
+        response.body = self.to_json(dict(image=image_meta))
+        self._inject_location_header(response, image_meta)
+        self._inject_checksum_header(response, image_meta)
+        return response
+
+
+def create_resource(options):
+    deserializer = ImageDeserializer()
+    serializer = ImageSerializer()
+    return wsgi.Resource(deserializer, Controller(options), serializer)

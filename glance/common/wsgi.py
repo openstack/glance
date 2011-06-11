@@ -243,79 +243,6 @@ class Controller(object):
         return serializer.to_content_type(data)
 
 
-class Serializer(object):
-    """
-    Serializes a dictionary to a Content Type specified by a WSGI environment.
-    """
-
-    def __init__(self, environ, metadata=None):
-        """
-        Create a serializer based on the given WSGI environment.
-        'metadata' is an optional dict mapping MIME types to information
-        needed to serialize a dictionary to that type.
-        """
-        self.environ = environ
-        self.metadata = metadata or {}
-        self._methods = {
-            'application/json': self._to_json,
-            'application/xml': self._to_xml}
-
-    def to_content_type(self, data):
-        """
-        Serialize a dictionary into a string.  The format of the string
-        will be decided based on the Content Type requested in self.environ:
-        by Accept: header, or by URL suffix.
-        """
-        # FIXME(sirp): for now, supporting json only
-        #mimetype = 'application/xml'
-        mimetype = 'application/json'
-        # TODO(gundlach): determine mimetype from request
-        return self._methods.get(mimetype, repr)(data)
-
-    def _to_json(self, data):
-        def sanitizer(obj):
-            if isinstance(obj, datetime.datetime):
-                return obj.isoformat()
-            return obj
-
-        return json.dumps(data, default=sanitizer)
-
-    def _to_xml(self, data):
-        metadata = self.metadata.get('application/xml', {})
-        # We expect data to contain a single key which is the XML root.
-        root_key = data.keys()[0]
-        from xml.dom import minidom
-        doc = minidom.Document()
-        node = self._to_xml_node(doc, metadata, root_key, data[root_key])
-        return node.toprettyxml(indent='    ')
-
-    def _to_xml_node(self, doc, metadata, nodename, data):
-        """Recursive method to convert data members to XML nodes."""
-        result = doc.createElement(nodename)
-        if type(data) is list:
-            singular = metadata.get('plurals', {}).get(nodename, None)
-            if singular is None:
-                if nodename.endswith('s'):
-                    singular = nodename[:-1]
-                else:
-                    singular = 'item'
-            for item in data:
-                node = self._to_xml_node(doc, metadata, singular, item)
-                result.appendChild(node)
-        elif type(data) is dict:
-            attrs = metadata.get('attributes', {}).get(nodename, {})
-            for k, v in data.items():
-                if k in attrs:
-                    result.setAttribute(k, str(v))
-                else:
-                    node = self._to_xml_node(doc, metadata, k, v)
-                    result.appendChild(node)
-        else:  # atom
-            node = doc.createTextNode(str(data))
-            result.appendChild(node)
-        return result
-
-
 class Request(webob.Request):
     """Add some Openstack API-specific logic to the base webob.Request."""
 
@@ -338,7 +265,7 @@ class Request(webob.Request):
         # default to application/json if we don't find a preference
         return bm or 'application/json'
 
-    def get_content_type(self):
+    def get_content_type(self, allowed_content_types):
         """Determine content type of the request body.
 
         Does not do any body introspection, only checks header
@@ -347,85 +274,101 @@ class Request(webob.Request):
         if not "Content-Type" in self.headers:
             raise exception.InvalidContentType(content_type=None)
 
-        allowed_types = ("application/json")
         content_type = self.content_type
 
-        if content_type not in allowed_types:
+        if content_type not in allowed_content_types:
             raise exception.InvalidContentType(content_type=content_type)
         else:
             return content_type
 
 
-class BodyDeserializer(object):
-    """Custom request body deserialization based on controller action name."""
-
-    def deserialize(self, datastring, action='default'):
-        """Find local deserialization method and parse request body."""
-        action_method = getattr(self, action, self.default)
-        return action_method(datastring)
-
-    def default(self, datastring):
-        """Default deserialization code should live here"""
-        raise NotImplementedError()
-
-
-class JSONBodyDeserializer(BodyDeserializer):
-
-    def default(self, datastring):
-        return json.loads(datastring)
-
-
-class RequestDeserializer(object):
-    """Break up a Request object into more useful pieces."""
-
-    def __init__(self, body_deserializers=None):
+class JSONRequestDeserializer(object):
+    def has_body(self, request):
         """
-        :param deserializers: dictionary of content-type-specific deserializers
+        Returns whether a Webob.Request object will possess an entity body.
+
+        :param request:  Webob.Request object
+        """
+        return request.content_length or 'transfer-encoding' in request.headers
+
+    def default(self, request):
+        if 'Content-Length' in request.headers and \
+            request.headers['Content-Length'] > 0:
+            return {'body': json.loads(request.body)}
+        else:
+            return {}
+
+
+class JSONResponseSerializer(object):
+
+    def to_json(self, data):
+        def sanitizer(obj):
+            if isinstance(obj, datetime.datetime):
+                return obj.isoformat()
+            return obj
+
+        return json.dumps(data, default=sanitizer)
+
+    def default(self, result):
+        response = webob.Response()
+        response.headers.add('Content-Type', 'application/json')
+        response.body = self.to_json(result)
+        return response
+
+
+class Resource(object):
+    """WSGI app that handles (de)serialization and controller dispatch.
+
+    WSGI app that reads routing information supplied by RoutesMiddleware
+    and calls the requested action method upon its controller.  All
+    controller action methods must accept a 'req' argument, which is the
+    incoming wsgi.Request. If the operation is a PUT or POST, the controller
+    method must also accept a 'body' argument (the deserialized request body).
+    They may raise a webob.exc exception or return a dict, which will be
+    serialized by requested content type.
+
+    """
+    def __init__(self, deserializer, controller, serializer):
+        """
+        :param controller: object that implement methods created by routes lib
+        :param serializers: dict of content-type specific text serializers
+        :param deserializers: dict of content-type specific text deserializers
 
         """
-        self._body_deserializers = {
-            'application/json': JSONBodyDeserializer(),
-        }
+        self.controller = controller
+        self.serializer = serializer
+        self.deserializer = deserializer
 
-        self._body_deserializers.update(body_deserializers or {})
+    @webob.dec.wsgify(RequestClass=Request)
+    def __call__(self, request):
+        """WSGI method that controls (de)serialization and method dispatch."""
 
-    def deserialize(self, request):
-        """Extract necessary pieces of the request.
-
-        :param request: Request object
-        :returns tuple of expected controller action name, dictionary of
-                 keyword arguments to pass to the controller, the expected
-                 content type of the response
-
-        """
         action_args = self.get_action_args(request.environ)
         action = action_args.pop('action', None)
 
-        if request.method.lower() in ('post', 'put'):
-            if len(request.body) == 0:
-                action_args['body'] = None
-            else:
-                content_type = request.get_content_type()
-                body_deserializer = self.get_body_deserializer(content_type)
+        deserialized_request = self.dispatch(self.deserializer,
+                                             action, request)
+        action_args.update(deserialized_request)
 
-                try:
-                    body = body_deserializer.deserialize(request.body, action)
-                    action_args['body'] = body
-                except exception.InvalidContentType:
-                    action_args['body'] = None
+        action_result = self.dispatch(self.controller, action,
+                                      request, **action_args)
 
-        accept = self.get_expected_content_type(request)
+        #TODO(bcwaldon): find a more elegant way to pass through non-dict types
+        if type(action_result) is dict:
+            response = self.dispatch(self.serializer, action, action_result)
+        else:
+            response = action_result
 
-        return (action, action_args, accept)
+        return response
 
-    def get_body_deserializer(self, content_type):
+    def dispatch(self, obj, action, *args, **kwargs):
+        """Find action-spefic method on self and call it."""
         try:
-            return self._body_deserializers[content_type]
-        except (KeyError, TypeError):
-            raise exception.InvalidContentType(content_type=content_type)
+            method = getattr(obj, action)
+        except Exception:
+            method = getattr(obj, 'default')
 
-    def get_expected_content_type(self, request):
-        return request.best_match_content_type()
+        return method(*args, **kwargs)
 
     def get_action_args(self, request_environment):
         """Parse dictionary created by routes library."""
@@ -445,112 +388,3 @@ class RequestDeserializer(object):
             pass
 
         return args
-
-
-class BodySerializer(object):
-    """Custom response body serialization based on controller action name."""
-
-    def serialize(self, data, action='default'):
-        """Find local serialization method and encode response body."""
-        action_method = getattr(self, action, self.default)
-        return action_method(data)
-
-    def default(self, data):
-        """Default serialization code should live here"""
-        raise NotImplementedError()
-
-
-class JSONBodySerializer(BodySerializer):
-
-    def default(self, data):
-        def sanitizer(obj):
-            if isinstance(obj, datetime.datetime):
-                return obj.isoformat()
-            return obj
-
-        return json.dumps(data, default=sanitizer)
-
-
-class ResponseSerializer(object):
-    """Encode the necessary pieces into a response object"""
-
-    def __init__(self, body_serializers=None):
-        """
-        :param serializers: dictionary of content-type-specific serializers
-
-        """
-        self._body_serializers = {
-            'application/json': JSONBodySerializer(),
-        }
-        self._body_serializers.update(body_serializers or {})
-
-    def serialize(self, response_data, content_type):
-        """Serialize a dict into a string and wrap in a wsgi.Request object.
-
-        :param response_data: dict produced by the Controller
-        :param content_type: expected mimetype of serialized response body
-
-        """
-        response = webob.Response()
-        response.headers['Content-Type'] = content_type
-
-        body_serializer = self.get_body_serializer(content_type)
-        response.body = body_serializer.serialize(response_data)
-
-        return response
-
-    def get_body_serializer(self, content_type):
-        try:
-            return self._body_serializers[content_type]
-        except (KeyError, TypeError):
-            raise exception.InvalidContentType(content_type=content_type)
-
-
-class Resource():
-    """WSGI app that handles (de)serialization and controller dispatch.
-
-    WSGI app that reads routing information supplied by RoutesMiddleware
-    and calls the requested action method upon its controller.  All
-    controller action methods must accept a 'req' argument, which is the
-    incoming wsgi.Request. If the operation is a PUT or POST, the controller
-    method must also accept a 'body' argument (the deserialized request body).
-    They may raise a webob.exc exception or return a dict, which will be
-    serialized by requested content type.
-
-    """
-    def __init__(self, controller, serializers=None, deserializers=None):
-        """
-        :param controller: object that implement methods created by routes lib
-        :param serializers: dict of content-type specific text serializers
-        :param deserializers: dict of content-type specific text deserializers
-
-        """
-        self.controller = controller
-        self.serializer = ResponseSerializer(serializers)
-        self.deserializer = RequestDeserializer(deserializers)
-
-    @webob.dec.wsgify(RequestClass=Request)
-    def __call__(self, request):
-        """WSGI method that controls (de)serialization and method dispatch."""
-
-        try:
-            action, action_args, accept = self.deserializer.deserialize(
-                                                                      request)
-        except exception.InvalidContentType:
-            return webob.exc.HTTPBadRequest("Unsupported Content-Type")
-
-        action_result = self.dispatch(request, action, action_args)
-
-        #TODO(bcwaldon): find a more elegant way to pass through non-dict types
-        if type(action_result) is dict:
-            response = self.serializer.serialize(action_result, accept)
-        else:
-            response = action_result
-
-        return response
-
-    def dispatch(self, request, action, action_args):
-        """Find action-spefic method on controller and call it."""
-
-        controller_method = getattr(self.controller, action)
-        return controller_method(req=request, **action_args)

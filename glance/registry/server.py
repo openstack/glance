@@ -49,7 +49,7 @@ class Controller(object):
         self.options = options
         db_api.configure_db(options)
 
-    def index(self, req):
+    def index(self, req, headers=None, body=None):
         """Return a basic filtered list of public, non-deleted images
 
         :param req: the Request object coming from the wsgi layer
@@ -87,7 +87,7 @@ class Controller(object):
             results.append(result)
         return dict(images=results)
 
-    def detail(self, req):
+    def detail(self, req, headers=None, body=None):
         """Return a filtered list of public, non-deleted images in detail
 
         :param req: the Request object coming from the wsgi layer
@@ -154,7 +154,7 @@ class Controller(object):
             raise exc.HTTPBadRequest("marker param must be an integer")
         return marker
 
-    def show(self, req, id):
+    def show(self, req, id, headers=None, body=None):
         """Return data about the given image id."""
         try:
             image = db_api.image_get(None, id)
@@ -179,7 +179,7 @@ class Controller(object):
         except exception.NotFound:
             return exc.HTTPNotFound()
 
-    def create(self, req, body):
+    def create(self, req, headers=None, body=None):
         """
         Registers a new image with the registry.
 
@@ -209,7 +209,7 @@ class Controller(object):
             logger.error(msg)
             return exc.HTTPBadRequest(msg)
 
-    def update(self, req, id, body):
+    def update(self, req, id, headers=None, body=None):
         """Updates an existing image with the registry.
 
         :param req: Request body.  A JSON-ified dict of information about
@@ -244,8 +244,18 @@ class Controller(object):
                                content_type='text/plain')
 
 
+class ImageSerializer(wsgi.JSONResponseSerializer):
+    pass
+
+
+class ImageDeserializer(wsgi.JSONRequestDeserializer):
+    pass
+
+
 def create_resource(options):
-    return wsgi.Resource(Controller(options))
+    deserializer = wsgi.JSONRequestDeserializer()
+    serializer = wsgi.JSONResponseSerializer()
+    return wsgi.Resource(deserializer, Controller(options), serializer)
 
 
 class API(wsgi.Router):

@@ -752,7 +752,7 @@ class TestCurlApi(functional.FunctionalTest):
 
         self.stop_servers()
 
-    def test_traceback_not_consumed(self):
+    def _test_traceback_not_consumed(self):
         """
         A test that errors coming from the POST API do not
         get consumed and print the actual error message, and

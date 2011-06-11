@@ -39,6 +39,7 @@ class TestConfig(unittest.TestCase):
         # test empty args and that parse_options() returns a mapping
         # of typed values
         parser = optparse.OptionParser()
+        print 'asdf'
         config.add_common_options(parser)
         parsed_options, args = config.parse_options(parser)
 
