@@ -49,7 +49,7 @@ class Controller(object):
         self.options = options
         db_api.configure_db(options)
 
-    def index(self, req, headers=None, body=None):
+    def index(self, req):
         """Return a basic filtered list of public, non-deleted images
 
         :param req: the Request object coming from the wsgi layer
@@ -87,7 +87,7 @@ class Controller(object):
             results.append(result)
         return dict(images=results)
 
-    def detail(self, req, headers=None, body=None):
+    def detail(self, req):
         """Return a filtered list of public, non-deleted images in detail
 
         :param req: the Request object coming from the wsgi layer
@@ -154,7 +154,7 @@ class Controller(object):
             raise exc.HTTPBadRequest("marker param must be an integer")
         return marker
 
-    def show(self, req, id, headers=None, body=None):
+    def show(self, req, id):
         """Return data about the given image id."""
         try:
             image = db_api.image_get(None, id)
@@ -167,7 +167,7 @@ class Controller(object):
         """
         Deletes an existing image with the registry.
 
-        :param req: Request body.  Ignored.
+        :param req: wsgi Request object
         :param id:  The opaque internal identifier for the image
 
         :retval Returns 200 if delete was successful, a fault if not.
@@ -179,12 +179,12 @@ class Controller(object):
         except exception.NotFound:
             return exc.HTTPNotFound()
 
-    def create(self, req, headers=None, body=None):
+    def create(self, req, body):
         """
         Registers a new image with the registry.
 
-        :param req: Request body.  A JSON-ified dict of information about
-                    the image.
+        :param req: wsgi Request object
+        :param body: Dictionary of information about the image
 
         :retval Returns the newly-created image information as a mapping,
                 which will include the newly-created image's internal id
@@ -209,12 +209,11 @@ class Controller(object):
             logger.error(msg)
             return exc.HTTPBadRequest(msg)
 
-    def update(self, req, id, headers=None, body=None):
+    def update(self, req, id, body):
         """Updates an existing image with the registry.
 
-        :param req: Request body.  A JSON-ified dict of information about
-                    the image.  This will replace the information in the
-                    registry about this image
+        :param req: wsgi Request object
+        :param body: Dictionary of information about the image
         :param id:  The opaque internal identifier for the image
 
         :retval Returns the updated image information as a mapping,
@@ -242,14 +241,6 @@ class Controller(object):
             raise exc.HTTPNotFound(body='Image not found',
                                request=req,
                                content_type='text/plain')
-
-
-class ImageSerializer(wsgi.JSONResponseSerializer):
-    pass
-
-
-class ImageDeserializer(wsgi.JSONRequestDeserializer):
-    pass
 
 
 def create_resource(options):

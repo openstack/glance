@@ -24,7 +24,7 @@ import json
 import logging
 import sys
 
-from webob import Response
+import webob
 from webob.exc import (HTTPNotFound,
                        HTTPConflict,
                        HTTPBadRequest)
@@ -80,7 +80,7 @@ class Controller(object):
             * checksum -- MD5 checksum of the image data
             * size -- Size of image data in bytes
 
-        :param request: The WSGI/Webob Request object
+        :param req: The WSGI/Webob Request object
         :retval The response body is a mapping of the following form::
 
             {'images': [
@@ -107,7 +107,7 @@ class Controller(object):
         """
         Returns detailed information for all public, available images
 
-        :param request: The WSGI/Webob Request object
+        :param req: The WSGI/Webob Request object
         :retval The response body is a mapping of the following form::
 
             {'images': [
@@ -155,8 +155,9 @@ class Controller(object):
         Returns metadata about an image in the HTTP headers of the
         response object
 
-        :param request: The WSGI/Webob Request object
+        :param req: The WSGI/Webob Request object
         :param id: The opaque image identifier
+        :retval similiar to 'show' method but without image_data
 
         :raises HTTPNotFound if image metadata is not available to user
         """
@@ -166,13 +167,10 @@ class Controller(object):
 
     def show(self, req, id):
         """
-        Returns an iterator as a Response object that
-        can be used to retrieve an image's data. The
-        content-type of the response is the content-type
-        of the image, or application/octet-stream if none
-        is known or found.
+        Returns an iterator that can be used to retrieve an image's
+        data along with the image metadata.
 
-        :param request: The WSGI/Webob Request object
+        :param req: The WSGI/Webob Request object
         :param id: The opaque image identifier
 
         :raises HTTPNotFound if image is not available to user
@@ -196,9 +194,9 @@ class Controller(object):
         """
         Adds the image metadata to the registry and assigns
         an image identifier if one is not supplied in the request
-        headers. Sets the image's status to `queued`
+        headers. Sets the image's status to `queued`.
 
-        :param request: The WSGI/Webob Request object
+        :param req: The WSGI/Webob Request object
         :param id: The opaque image identifier
 
         :raises HTTPConflict if image already exists
@@ -239,7 +237,7 @@ class Controller(object):
         will attempt to use that store, if not, Glance will use the
         store set by the flag `default_store`.
 
-        :param request: The WSGI/Webob Request object
+        :param req: The WSGI/Webob Request object
         :param image_meta: Mapping of metadata about image
 
         :raises HTTPConflict if image already exists
@@ -252,8 +250,8 @@ class Controller(object):
             logger.error(msg)
             raise HTTPBadRequest(msg)
 
-        store_name = req.headers.get(
-            'x-image-meta-store', self.options['default_store'])
+        store_name = req.headers.get('x-image-meta-store',
+                                     self.options['default_store'])
 
         store = self.get_store_or_400(req, store_name)
 
@@ -309,8 +307,8 @@ class Controller(object):
         Sets the image status to `active` and the image's location
         attribute.
 
-        :param request: The WSGI/Webob Request object
-        :param image_meta: Mapping of metadata about image
+        :param req: The WSGI/Webob Request object
+        :param image_id: Opaque image identifier
         :param location: Location of where Glance stored this image
         """
         image_meta = {}
@@ -322,9 +320,9 @@ class Controller(object):
 
     def _kill(self, req, image_id):
         """
-        Marks the image status to `killed`
+        Marks the image status to `killed`.
 
-        :param request: The WSGI/Webob Request object
+        :param req: The WSGI/Webob Request object
         :param image_id: Opaque image identifier
         """
         registry.update_image_metadata(self.options,
@@ -338,7 +336,7 @@ class Controller(object):
         Since _kill is meant to be called from exceptions handlers, it should
         not raise itself, rather it should just log its error.
 
-        :param request: The WSGI/Webob Request object
+        :param req: The WSGI/Webob Request object
         :param image_id: Opaque image identifier
         """
         try:
@@ -353,7 +351,7 @@ class Controller(object):
         and activates the image in the registry after a successful
         upload.
 
-        :param request: The WSGI/Webob Request object
+        :param req: The WSGI/Webob Request object
         :param image_meta: Mapping of metadata about image
 
         :retval Mapping of updated image data
@@ -388,7 +386,9 @@ class Controller(object):
         containing metadata about the image is returned, including its
         opaque identifier.
 
-        :param request: The WSGI/Webob Request object
+        :param req: The WSGI/Webob Request object
+        :param image_meta: Mapping of metadata about image
+        :param image_data: Actual image data that is to be stored
 
         :raises HTTPBadRequest if x-image-meta-location is missing
                 and the request body is not application/octet-stream
@@ -439,7 +439,7 @@ class Controller(object):
         """
         Deletes the image and all its chunks from the Glance
 
-        :param request: The WSGI/Webob Request object
+        :param req: The WSGI/Webob Request object
         :param id: The opaque image identifier
 
         :raises HttpBadRequest if image registry is invalid
@@ -502,6 +502,7 @@ class Controller(object):
 
 
 class ImageDeserializer(wsgi.JSONRequestDeserializer):
+    """Handles deserialization of specific controller method requests."""
 
     def create(self, request):
         result = {}
@@ -519,6 +520,7 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
 
 
 class ImageSerializer(wsgi.JSONResponseSerializer):
+    """Handles serialization of specific controller method responses."""
 
     def _inject_location_header(self, response, image_meta):
         location = self._get_image_location(image_meta)
@@ -545,11 +547,12 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
             response.headers.add(k, v)
 
     def _get_image_location(self, image_meta):
+        """Build a relative url to reach the image defined by image_meta."""
         return "/v1/images/%s" % image_meta['id']
 
     def meta(self, result):
         image_meta = result['image_meta']
-        response = Response()
+        response = webob.Response()
         self._inject_image_meta_headers(response, image_meta)
         self._inject_location_header(response, image_meta)
         self._inject_checksum_header(response, image_meta)
@@ -558,7 +561,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
     def show(self, result):
         image_meta = result['image_meta']
 
-        response = Response(app_iter=result['image_iterator'])
+        response = webob.Response(app_iter=result['image_iterator'])
         # Using app_iter blanks content-length, so we set it here...
         response.headers.add('Content-Length', image_meta['size'])
         response.headers.add('Content-Type', 'application/octet-stream')
@@ -571,7 +574,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
 
     def update(self, result):
         image_meta = result['image_meta']
-        response = Response()
+        response = webob.Response()
         response.body = self.to_json(dict(image=image_meta))
         response.headers.add('Content-Type', 'application/json')
         self._inject_location_header(response, image_meta)
@@ -580,7 +583,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
 
     def create(self, result):
         image_meta = result['image_meta']
-        response = Response()
+        response = webob.Response()
         response.status = httplib.CREATED
         response.headers.add('Content-Type', 'application/json')
         response.body = self.to_json(dict(image=image_meta))
