@@ -42,7 +42,7 @@ SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
 MAX_ITEM_LIMIT = 25
 
 
-class Controller(wsgi.Controller):
+class Controller(object):
     """Controller for the reference implementation registry server"""
 
     def __init__(self, options):
@@ -179,7 +179,7 @@ class Controller(wsgi.Controller):
         except exception.NotFound:
             return exc.HTTPNotFound()
 
-    def create(self, req):
+    def create(self, req, body):
         """
         Registers a new image with the registry.
 
@@ -191,7 +191,7 @@ class Controller(wsgi.Controller):
                 in the 'id' field
 
         """
-        image_data = json.loads(req.body)['image']
+        image_data = body['image']
 
         # Ensure the image has a status set
         image_data.setdefault('status', 'active')
@@ -209,7 +209,7 @@ class Controller(wsgi.Controller):
             logger.error(msg)
             return exc.HTTPBadRequest(msg)
 
-    def update(self, req, id):
+    def update(self, req, id, body):
         """Updates an existing image with the registry.
 
         :param req: Request body.  A JSON-ified dict of information about
@@ -220,7 +220,7 @@ class Controller(wsgi.Controller):
         :retval Returns the updated image information as a mapping,
 
         """
-        image_data = json.loads(req.body)['image']
+        image_data = body['image']
 
         purge_props = req.headers.get("X-Glance-Registry-Purge-Props", "false")
         context = None
@@ -244,15 +244,19 @@ class Controller(wsgi.Controller):
                                content_type='text/plain')
 
 
+def create_resource(options):
+    return wsgi.Resource(Controller(options))
+
+
 class API(wsgi.Router):
     """WSGI entry point for all Registry requests."""
 
     def __init__(self, options):
         mapper = routes.Mapper()
-        controller = Controller(options)
-        mapper.resource("image", "images", controller=controller,
+        resource = create_resource(options)
+        mapper.resource("image", "images", controller=resource,
                        collection={'detail': 'GET'})
-        mapper.connect("/", controller=controller, action="index")
+        mapper.connect("/", controller=resource, action="index")
         super(API, self).__init__(mapper)
 
 

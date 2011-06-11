@@ -678,6 +678,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -706,6 +707,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -723,6 +725,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -739,6 +742,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -758,6 +762,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -772,6 +777,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/2')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -791,6 +797,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/3')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -804,6 +811,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/2')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -817,6 +825,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/2')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -830,6 +839,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/2')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -844,6 +854,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/2')  # Image 2 has disk format 'vhd'
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
