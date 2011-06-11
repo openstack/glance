@@ -206,71 +206,17 @@ class Router(object):
         return app
 
 
-class Controller(object):
-    """
-    WSGI app that reads routing information supplied by RoutesMiddleware
-    and calls the requested action method upon itself.  All action methods
-    must, in addition to their normal parameters, accept a 'req' argument
-    which is the incoming webob.Request.  They raise a webob.exc exception,
-    or return a dict which will be serialized by requested content type.
-    """
-
-    @webob.dec.wsgify
-    def __call__(self, req):
-        """
-        Call the method specified in req.environ by RoutesMiddleware.
-        """
-        arg_dict = req.environ['wsgiorg.routing_args'][1]
-        action = arg_dict['action']
-        method = getattr(self, action)
-        del arg_dict['controller']
-        del arg_dict['action']
-        arg_dict['req'] = req
-        result = method(**arg_dict)
-        if type(result) is dict:
-            return self._serialize(result, req)
-        else:
-            return result
-
-    def _serialize(self, data, request):
-        """
-        Serialize the given dict to the response type requested in request.
-        Uses self._serialization_metadata if it exists, which is a dict mapping
-        MIME types to information needed to serialize to that type.
-        """
-        _metadata = getattr(type(self), "_serialization_metadata", {})
-        serializer = Serializer(request.environ, _metadata)
-        return serializer.to_content_type(data)
-
-
 class Request(webob.Request):
     """Add some Openstack API-specific logic to the base webob.Request."""
 
     def best_match_content_type(self):
-        """Determine the requested response content-type.
-
-        Based on the query extension then the Accept header.
-
-        """
+        """Determine the requested response content-type."""
         supported = ('application/json',)
-
-        #parts = self.path.rsplit('.', 1)
-        #if len(parts) > 1:
-        #    ctype = 'application/{0}'.format(parts[1])
-        #    if ctype in supported:
-        #        return ctype
-
         bm = self.accept.best_match(supported)
-
-        # default to application/json if we don't find a preference
         return bm or 'application/json'
 
     def get_content_type(self, allowed_content_types):
-        """Determine content type of the request body.
-
-        Does not do any body introspection, only checks header
-
-        """
+        """Determine content type of the request body."""
         if not "Content-Type" in self.headers:
             raise exception.InvalidContentType(content_type=None)
 
@@ -289,12 +235,15 @@ class JSONRequestDeserializer(object):
 
         :param request:  Webob.Request object
         """
-        return request.content_length or 'transfer-encoding' in request.headers
+        return (request.content_length and request.content_length > 0) \
+            or 'transfer-encoding' in request.headers
+
+    def from_json(self, datastring):
+        return json.loads(datastring)
 
     def default(self, request):
-        if 'Content-Length' in request.headers and \
-            request.headers['Content-Length'] > 0:
-            return {'body': json.loads(request.body)}
+        if self.has_body(request):
+            return {'body': self.from_json(request.body)}
         else:
             return {}
 
