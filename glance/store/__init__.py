@@ -20,8 +20,6 @@ import optparse
 import os
 import urlparse
 
-from eventlet import greenthread
-
 from glance import registry
 from glance.common import config, exception
 
@@ -148,16 +146,6 @@ def parse_uri_tokens(parsed_uri, example_url):
     authurl = "https://%s" % '/'.join(path_parts)
 
     return user, key, authurl, container, obj
-
-
-def _log_scheduled_delete(gt, id, options, uri):
-    try:
-        gt.wait()
-    except (UnsupportedBackend, exception.NotFound):
-        msg = "Failed to delete image from store (%s). "
-        logger.error(msg % uri)
-
-    registry.update_image_metadata(options, id, {'status': 'deleted'})
 
 
 def schedule_delete_from_backend(uri, options, id, **kwargs):
