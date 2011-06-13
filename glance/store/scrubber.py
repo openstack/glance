@@ -29,9 +29,9 @@ from glance.registry.db import api as db_api
 logger = logging.getLogger('glance.store.scrubber')
 
 
-class Server(object):
+class Daemon(object):
     def __init__(self, wakeup_time=300, threads=1000):
-        logger.info("Starting Server: " +
+        logger.info("Starting Daemon: " +
                     "wakeup_time=%s threads=%s" % (wakeup_time, threads))
         self.wakeup_time = wakeup_time
         self.event = eventlet.event.Event()
@@ -44,7 +44,7 @@ class Server(object):
         try:
             self.event.wait()
         except KeyboardInterrupt:
-            logger.info("Server Shutdown on KeyboardInterrupt")
+            logger.info("Daemon Shutdown on KeyboardInterrupt")
 
     def _run(self, application):
         logger.debug("Runing application")

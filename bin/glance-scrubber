@@ -60,7 +60,7 @@ if __name__ == '__main__':
         conf, app = config.load_paste_app('glance-scrubber', options, args)
 
         wakeup_time = int(conf.get('wakeup_time', 300))
-        server = scrubber.Server(wakeup_time)
+        server = scrubber.Daemon(wakeup_time)
         server.start(app)
         server.wait()
     except RuntimeError, e:
