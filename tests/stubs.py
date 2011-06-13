@@ -458,5 +458,7 @@ def stub_out_registry_db_image_api(stubs):
               fake_datastore.image_destroy)
     stubs.Set(glance.registry.db.api, 'image_get',
               fake_datastore.image_get)
+    stubs.Set(glance.registry.db.api, 'image_get_all_pending_delete',
+              fake_datastore.image_get_all_pending_delete)
     stubs.Set(glance.registry.db.api, 'image_get_all_public',
               fake_datastore.image_get_all_public)
