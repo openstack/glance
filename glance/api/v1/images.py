@@ -246,6 +246,7 @@ class Controller(object):
         try:
             req.get_content_type('application/octet-stream')
         except exception.InvalidContentType:
+            self._safe_kill(req, image_meta['id'])
             msg = "Content-Type must be application/octet-stream"
             logger.error(msg)
             raise HTTPBadRequest(msg)

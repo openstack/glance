@@ -752,7 +752,7 @@ class TestCurlApi(functional.FunctionalTest):
 
         self.stop_servers()
 
-    def _test_traceback_not_consumed(self):
+    def test_traceback_not_consumed(self):
         """
         A test that errors coming from the POST API do not
         get consumed and print the actual error message, and
@@ -773,7 +773,7 @@ class TestCurlApi(functional.FunctionalTest):
         with tempfile.NamedTemporaryFile() as test_data_file:
             test_data_file.write("XXX")
             test_data_file.flush()
-            cmd = ("curl -i -X POST --upload-file %s "
+            cmd = ("curl -i -X POST --upload-file %s -H 'Expect: ' "
                    "http://0.0.0.0:%d/v1/images") % (test_data_file.name,
                                                   api_port)
 
