@@ -63,10 +63,11 @@ if __name__ == '__main__':
     create_options(oparser)
     (options, args) = config.parse_options(oparser)
 
-    daemon = options.get('daemon')
-
     try:
         conf, app = config.load_paste_app('glance-scrubber', options, args)
+        daemon = options.get('daemon') or \
+                 config.get_option(conf, 'daemon', type='bool',
+                                   default=False)
 
         if daemon:
             wakeup_time = int(conf.get('wakeup_time', 300))
