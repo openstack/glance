@@ -48,7 +48,7 @@ class Daemon(object):
 
     def _run(self, application):
         logger.debug("Runing application")
-        self.pool.spawn_n(application.run, self.event, self.pool)
+        self.pool.spawn_n(application.run, self.pool, self.event)
         eventlet.spawn_after(self.wakeup_time, self._run, application)
         logger.debug("Next run scheduled in %s seconds" % self.wakeup_time)
 
@@ -64,7 +64,7 @@ class Scrubber(object):
         self.scrub_time = datetime.timedelta(seconds=scrub_time)
         db_api.configure_db(options)
 
-    def run(self, event, pool):
+    def run(self, pool, event=None):
         delete_time = datetime.datetime.utcnow() - self.scrub_time
         logger.info("Getting images deleted before %s" % delete_time)
         pending = db_api.image_get_all_pending_delete(None, delete_time)
