@@ -48,6 +48,13 @@ def create_options(parser):
     """
     config.add_common_options(parser)
     config.add_log_options(parser)
+    parser.add_option("-D", "--daemon", default=False, dest="daemon",
+                      action="store_true",
+                      help="Run as a long-running process. When not "
+                           "specified (the default) run the scrub "
+                           "operation once and then exits. When specified "
+                           "do not exit and run scrub on wakeup_time "
+                           "interval as specified in the config file.")
 
 
 if __name__ == '__main__':
@@ -56,12 +63,19 @@ if __name__ == '__main__':
     create_options(oparser)
     (options, args) = config.parse_options(oparser)
 
+    daemon = options.get('daemon')
+
     try:
         conf, app = config.load_paste_app('glance-scrubber', options, args)
 
-        wakeup_time = int(conf.get('wakeup_time', 300))
-        server = scrubber.Daemon(wakeup_time)
-        server.start(app)
-        server.wait()
+        if daemon:
+            wakeup_time = int(conf.get('wakeup_time', 300))
+            server = scrubber.Daemon(wakeup_time)
+            server.start(app)
+            server.wait()
+        else:
+            import eventlet
+            pool = eventlet.greenpool.GreenPool(1000)
+            scrubber = app.run(pool)
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
