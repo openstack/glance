@@ -244,9 +244,10 @@ class Controller(object):
 
 
 def create_resource(options):
+    """Images resource factory method."""
     deserializer = wsgi.JSONRequestDeserializer()
     serializer = wsgi.JSONResponseSerializer()
-    return wsgi.Resource(deserializer, Controller(options), serializer)
+    return wsgi.Resource(Controller(options), deserializer, serializer)
 
 
 class API(wsgi.Router):

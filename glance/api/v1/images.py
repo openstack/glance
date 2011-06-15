@@ -157,7 +157,7 @@ class Controller(object):
 
         :param req: The WSGI/Webob Request object
         :param id: The opaque image identifier
-        :retval similiar to 'show' method but without image_data
+        :retval similar to 'show' method but without image_data
 
         :raises HTTPNotFound if image metadata is not available to user
         """
@@ -202,8 +202,9 @@ class Controller(object):
         :raises HTTPConflict if image already exists
         :raises HTTPBadRequest if image metadata is not valid
         """
-        if 'location' in image_meta and image_meta['location'] is not None:
-            store = get_store_from_location(image_meta['location'])
+        location = image_meta.get('location')
+        if location:
+            store = get_store_from_location(location)
             # check the store exists before we hit the registry, but we
             # don't actually care what it is at this point
             self.get_store_or_400(req, store)
@@ -401,8 +402,8 @@ class Controller(object):
         if image_data is not None:
             image_meta = self._upload_and_activate(req, image_meta)
         else:
-            if 'location' in image_meta and image_meta['location'] is not None:
-                location = image_meta['location']
+            location = image_meta.get('location')
+            if location:
                 image_meta = self._activate(req, image_id, location)
 
         return {'image_meta': image_meta}
@@ -505,19 +506,18 @@ class Controller(object):
 class ImageDeserializer(wsgi.JSONRequestDeserializer):
     """Handles deserialization of specific controller method requests."""
 
-    def create(self, request):
+    def _deserialize(self, request):
         result = {}
         result['image_meta'] = utils.get_image_meta_from_headers(request)
         data = request.body if self.has_body(request) else None
         result['image_data'] = data
         return result
 
+    def create(self, request):
+        return self._deserialize(request)
+
     def update(self, request):
-        result = {}
-        result['image_meta'] = utils.get_image_meta_from_headers(request)
-        data = request.body if self.has_body(request) else None
-        result['image_data'] = data
-        return result
+        return self._deserialize(request)
 
 
 class ImageSerializer(wsgi.JSONResponseSerializer):
@@ -551,18 +551,17 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
         """Build a relative url to reach the image defined by image_meta."""
         return "/v1/images/%s" % image_meta['id']
 
-    def meta(self, result):
+    def meta(self, response, result):
         image_meta = result['image_meta']
-        response = webob.Response()
         self._inject_image_meta_headers(response, image_meta)
         self._inject_location_header(response, image_meta)
         self._inject_checksum_header(response, image_meta)
         return response
 
-    def show(self, result):
+    def show(self, response, result):
         image_meta = result['image_meta']
 
-        response = webob.Response(app_iter=result['image_iterator'])
+        response.app_iter = result['image_iterator']
         # Using app_iter blanks content-length, so we set it here...
         response.headers.add('Content-Length', image_meta['size'])
         response.headers.add('Content-Type', 'application/octet-stream')
@@ -573,18 +572,16 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
 
         return response
 
-    def update(self, result):
+    def update(self, response, result):
         image_meta = result['image_meta']
-        response = webob.Response()
         response.body = self.to_json(dict(image=image_meta))
         response.headers.add('Content-Type', 'application/json')
         self._inject_location_header(response, image_meta)
         self._inject_checksum_header(response, image_meta)
         return response
 
-    def create(self, result):
+    def create(self, response, result):
         image_meta = result['image_meta']
-        response = webob.Response()
         response.status = httplib.CREATED
         response.headers.add('Content-Type', 'application/json')
         response.body = self.to_json(dict(image=image_meta))
@@ -594,6 +591,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
 
 
 def create_resource(options):
+    """Images resource factory method"""
     deserializer = ImageDeserializer()
     serializer = ImageSerializer()
-    return wsgi.Resource(deserializer, Controller(options), serializer)
+    return wsgi.Resource(Controller(options), deserializer, serializer)

@@ -16,6 +16,7 @@
 #    under the License.
 
 import unittest
+import webob
 
 from glance.common import wsgi
 from glance.common import exception
@@ -128,7 +129,8 @@ class JSONResponseSerializerTest(unittest.TestCase):
 
     def test_default(self):
         fixture = {"key": "value"}
-        response = wsgi.JSONResponseSerializer().default(fixture)
+        response = webob.Response()
+        wsgi.JSONResponseSerializer().default(response, fixture)
         self.assertEqual(response.status_int, 200)
         self.assertEqual(response.content_type, 'application/json')
         self.assertEqual(response.body, '{"key": "value"}')

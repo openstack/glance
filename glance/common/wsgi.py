@@ -25,6 +25,7 @@ import json
 import logging
 import sys
 import datetime
+
 import eventlet
 import eventlet.wsgi
 eventlet.patcher.monkey_patch(all=False, socket=True)
@@ -258,15 +259,14 @@ class JSONResponseSerializer(object):
 
         return json.dumps(data, default=sanitizer)
 
-    def default(self, result):
-        response = webob.Response()
+    def default(self, response, result):
         response.headers.add('Content-Type', 'application/json')
         response.body = self.to_json(result)
-        return response
 
 
 class Resource(object):
-    """WSGI app that handles (de)serialization and controller dispatch.
+    """
+    WSGI app that handles (de)serialization and controller dispatch.
 
     WSGI app that reads routing information supplied by RoutesMiddleware
     and calls the requested action method upon its controller.  All
@@ -275,14 +275,14 @@ class Resource(object):
     method must also accept a 'body' argument (the deserialized request body).
     They may raise a webob.exc exception or return a dict, which will be
     serialized by requested content type.
-
     """
-    def __init__(self, deserializer, controller, serializer):
+    def __init__(self, controller, deserializer, serializer):
         """
         :param controller: object that implement methods created by routes lib
-        :param serializers: dict of content-type specific text serializers
-        :param deserializers: dict of content-type specific text deserializers
-
+        :param deserializer: object that supports webob request deserialization
+                             through controller-like actions
+        :param serializer: object that supports webob response serialization
+                           through controller-like actions
         """
         self.controller = controller
         self.serializer = serializer
@@ -304,7 +304,8 @@ class Resource(object):
 
         #TODO(bcwaldon): find a more elegant way to pass through non-dict types
         if type(action_result) is dict:
-            response = self.dispatch(self.serializer, action, action_result)
+            response = webob.Response()
+            self.dispatch(self.serializer, action, response, action_result)
         else:
             response = action_result
 
