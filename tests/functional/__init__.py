@@ -207,10 +207,11 @@ class ScrubberDaemon(Server):
     Server object that starts/stops/manages the Scrubber server
     """
 
-    def __init__(self, test_dir):
+    def __init__(self, test_dir, daemon=False):
         # NOTE(jkoelker): Set the port to 0 since we actually don't listen
         super(ScrubberDaemon, self).__init__(test_dir, 0)
         self.server_name = 'scrubber'
+        self.daemon = daemon
 
         self.db_file = os.path.join(self.test_dir, 'test_glance_api.sqlite')
         default_sql_connection = 'sqlite:///%s' % self.db_file
@@ -224,6 +225,7 @@ verbose = %(verbose)s
 debug = %(debug)s
 log_file = %(log_file)s
 scrub_time = 10
+daemon = %(daemon)s
 wakeup_time = 2
 sql_connection = %(sql_connection)s
 sql_idle_timeout = 3600

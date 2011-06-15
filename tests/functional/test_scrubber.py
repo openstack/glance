@@ -79,7 +79,7 @@ class TestScrubber(functional.FunctionalTest):
         """
 
         self.cleanup()
-        self.start_servers(delayed_delete=True)
+        self.start_servers(delayed_delete=True, daemon=True)
 
         client = self._get_client()
         image_data = '*' * FIVE_KB
