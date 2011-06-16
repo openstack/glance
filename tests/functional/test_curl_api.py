@@ -21,12 +21,156 @@ import json
 import os
 import tempfile
 import unittest
+import httplib2
+import hashlib
+
+from pprint import pprint
 
 from tests import functional
 from tests.utils import execute
 
 FIVE_KB = 5 * 1024
 FIVE_GB = 5 * 1024 * 1024 * 1024
+
+class TestApi(functional.FunctionalTest):
+
+    """Functional tests using httplib2 against the API server"""
+
+    def test_001_get_head_simple_post(self):
+        """
+        We test the following sequential series of actions:
+
+        0. GET /images
+        - Verify no public images
+        1. GET /images/detail
+        - Verify no public images
+        2. HEAD /images/1
+        - Verify 404 returned
+        3. POST /images with public image named Image1 with a location
+        attribute and no custom properties
+        - Verify 201 returned
+        4. HEAD /images/1
+        - Verify HTTP headers have correct information we just added
+        5. GET /images/1
+        - Verify all information on image we just added is correct
+        6. GET /images
+        - Verify the image we just added is returned
+        7. GET /images/detail
+        - Verify the image we just added is returned
+        8. PUT /images/1 with custom properties of "distro" and "arch"
+        - Verify 200 returned
+        9. GET /images/1
+        - Verify updated information about image was stored
+        10. PUT /images/1
+        - Remove a previously existing property.
+        11. PUT /images/1
+        - Add a previously deleted property.
+        """
+
+        self.cleanup()
+        self.start_servers()
+
+        # 0. GET /images
+        # Verify no public images
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, '{"images": []}')
+
+        # 1. GET /images/detail
+        # Verify no public images
+        path = "http://%s:%d/v1/images/detail" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, '{"images": []}')
+
+        # 2. HEAD /images/1
+        # Verify 404 returned
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 404)
+
+        # 3. POST /images with public image named Image1
+        # attribute and no custom properties. Verify a 200 OK is returned
+        image_data = "*" * FIVE_KB
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers, body=image_data)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        self.assertEqual(data['image']['checksum'], hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_KB)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(data['image']['is_public'], True)
+
+        # 4. HEAD /images/1
+        # Verify image found now
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['x-image-meta-name'], "Image1")
+
+        # 5. GET /images/1
+        # Verify all information on image we just added is correct
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        expected_image_headers = {
+            'x-image-meta-id': '1',
+            'x-image-meta-name': 'Image1',
+            'x-image-meta-is_public': 'True',
+            'x-image-meta-status': 'active',
+            'x-image-meta-disk_format': '',
+            'x-image-meta-container_format': '',
+            'x-image-meta-size': str(FIVE_KB),
+            'x-image-meta-location': 'file://%s/1' % self.api_server.image_dir}
+
+        expected_std_headers = {
+            'content-length': str(FIVE_KB),
+            'content-type': 'application/octet-stream'}
+
+        for expected_key, expected_value in expected_image_headers.items():
+            self.assertEqual(response[expected_key], expected_value,
+                            "For key '%s' expected header value '%s'. Got '%s'"
+                            % (expected_key, expected_value,
+                               response[expected_key]))
+
+        for expected_key, expected_value in expected_std_headers.items():
+            self.assertEqual(response[expected_key], expected_value,
+                            "For key '%s' expected header value '%s'. Got '%s'"
+                            % (expected_key,
+                               expected_value,
+                               response[expected_key]))
+
+        self.assertEqual(content, "*" * FIVE_KB)
+        # self.assertEqual(hashlib.md5(content).hexdigest(), hashlib.md5("*" * FIVE_KB).hexdigest())
+
+        # 6. GET /images
+        # Verify no public images
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        expected_result = {"images": [
+            {"container_format": None,
+             "disk_format": None,
+             "id": 1,
+             "name": "Image1",
+             "checksum": "c2e5db72bd7fd153f53ede5da5a06de3",
+             "size": 5120}]}
+        self.assertEqual(json.loads(content), expected_result)
+
+        self.stop_servers()
 
 
 class TestCurlApi(functional.FunctionalTest):
