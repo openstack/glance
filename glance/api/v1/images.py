@@ -250,7 +250,7 @@ class Controller(object):
             self._safe_kill(req, image_meta['id'])
             msg = "Content-Type must be application/octet-stream"
             logger.error(msg)
-            raise HTTPBadRequest(msg)
+            raise HTTPBadRequest(explanation=msg)
 
         store_name = req.headers.get('x-image-meta-store',
                                      self.options['default_store'])

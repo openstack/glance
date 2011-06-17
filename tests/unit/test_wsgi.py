@@ -48,16 +48,19 @@ class RequestTest(unittest.TestCase):
         result = request.best_match_content_type()
         self.assertEqual(result, "application/json")
 
+    def test_content_type_from_accept_json(self):
         request = wsgi.Request.blank('/tests/123')
         request.headers["Accept"] = "application/json"
         result = request.best_match_content_type()
         self.assertEqual(result, "application/json")
 
+    def test_content_type_from_accept_xml_json(self):
         request = wsgi.Request.blank('/tests/123')
         request.headers["Accept"] = "application/xml, application/json"
         result = request.best_match_content_type()
         self.assertEqual(result, "application/json")
 
+    def test_content_type_from_accept_json_xml_quality(self):
         request = wsgi.Request.blank('/tests/123')
         request.headers["Accept"] = \
             "application/json; q=0.3, application/xml; q=0.9"

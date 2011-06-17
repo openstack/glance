@@ -300,7 +300,6 @@ class Resource(object):
     @webob.dec.wsgify(RequestClass=Request)
     def __call__(self, request):
         """WSGI method that controls (de)serialization and method dispatch."""
-
         action_args = self.get_action_args(request.environ)
         action = action_args.pop('action', None)
 
@@ -310,7 +309,6 @@ class Resource(object):
 
         action_result = self.dispatch(self.controller, action,
                                       request, **action_args)
-
         try:
             response = webob.Response()
             self.dispatch(self.serializer, action, response, action_result)
