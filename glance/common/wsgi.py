@@ -236,8 +236,12 @@ class JSONRequestDeserializer(object):
 
         :param request:  Webob.Request object
         """
-        return (request.content_length and request.content_length > 0) \
-            or 'transfer-encoding' in request.headers
+        if 'transfer-encoding' in request.headers:
+            return True
+        elif request.content_length > 0:
+            return True
+
+        return False
 
     def from_json(self, datastring):
         return json.loads(datastring)
@@ -268,12 +272,17 @@ class Resource(object):
     """
     WSGI app that handles (de)serialization and controller dispatch.
 
-    WSGI app that reads routing information supplied by RoutesMiddleware
-    and calls the requested action method upon its controller.  All
-    controller action methods must accept a 'req' argument, which is the
-    incoming wsgi.Request. If the operation is a PUT or POST, the controller
-    method must also accept a 'body' argument (the deserialized request body).
-    They may raise a webob.exc exception or return a dict, which will be
+    Reads routing information supplied by RoutesMiddleware and calls
+    the requested action method upon its deserializer, controller,
+    and serializer. Those three objects may implement any of the basic
+    controller action methods (create, update, show, index, delete)
+    along with any that may be specified in the api router. A 'default'
+    method may also be implemented to be used in place of any
+    non-implemented actions. Deserializer methods must accept a request
+    argument and return a dictionary. Controller methods must accept a
+    request argument. Additionally, they must also accept keyword
+    arguments that represent the keys returned by the Deserializer. They
+    may raise a webob.exc exception or return a dict, which will be
     serialized by requested content type.
     """
     def __init__(self, controller, deserializer, serializer):
@@ -302,20 +311,20 @@ class Resource(object):
         action_result = self.dispatch(self.controller, action,
                                       request, **action_args)
 
-        #TODO(bcwaldon): find a more elegant way to pass through non-dict types
-        if type(action_result) is dict:
+        try:
             response = webob.Response()
             self.dispatch(self.serializer, action, response, action_result)
-        else:
-            response = action_result
+            return response
 
-        return response
+        # return unserializable result (typically a webob exc)
+        except Exception:
+            return action_result
 
     def dispatch(self, obj, action, *args, **kwargs):
-        """Find action-spefic method on self and call it."""
+        """Find action-specific method on self and call it."""
         try:
             method = getattr(obj, action)
-        except Exception:
+        except AttributeError:
             method = getattr(obj, 'default')
 
         return method(*args, **kwargs)
