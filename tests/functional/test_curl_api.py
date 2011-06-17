@@ -32,6 +32,7 @@ from tests.utils import execute
 FIVE_KB = 5 * 1024
 FIVE_GB = 5 * 1024 * 1024 * 1024
 
+
 class TestApi(functional.FunctionalTest):
 
     """Functional tests using httplib2 against the API server"""
@@ -101,10 +102,12 @@ class TestApi(functional.FunctionalTest):
                    'X-Image-Meta-Is-Public': 'True'}
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
-        response, content = http.request(path, 'POST', headers=headers, body=image_data)
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=image_data)
         self.assertEqual(response.status, 201)
         data = json.loads(content)
-        self.assertEqual(data['image']['checksum'], hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['image']['checksum'],
+                         hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], True)
@@ -152,7 +155,8 @@ class TestApi(functional.FunctionalTest):
                                response[expected_key]))
 
         self.assertEqual(content, "*" * FIVE_KB)
-        # self.assertEqual(hashlib.md5(content).hexdigest(), hashlib.md5("*" * FIVE_KB).hexdigest())
+        #self.assertEqual(hashlib.md5(content).hexdigest(),
+        #                 hashlib.md5("*" * FIVE_KB).hexdigest())
 
         # 6. GET /images
         # Verify no public images
@@ -169,6 +173,107 @@ class TestApi(functional.FunctionalTest):
              "checksum": "c2e5db72bd7fd153f53ede5da5a06de3",
              "size": 5120}]}
         self.assertEqual(json.loads(content), expected_result)
+
+        # 7. GET /images/detail
+        # Verify image and all its metadata
+        path = "http://%s:%d/v1/images/detail" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        expected_image = {
+            "status": "active",
+            "name": "Image1",
+            "deleted": False,
+            "container_format": None,
+            "disk_format": None,
+            "id": 1,
+            "location": "file://%s/1" % self.api_server.image_dir,
+            "is_public": True,
+            "deleted_at": None,
+            "properties": {},
+            "size": 5120}
+
+        image = json.loads(content)
+
+        for expected_key, expected_value in expected_image.items():
+            self.assertEqual(expected_value, expected_image[expected_key],
+                            "For key '%s' expected header value '%s'. Got '%s'"
+                            % (expected_key,
+                               expected_value,
+                               image['images'][0][expected_key]))
+
+        # 8. PUT /images/1 with custom properties of "distro" and "arch"
+        # Verify 200 returned
+        headers = {'X-Image-Meta-Property-Distro': 'Ubuntu',
+                   'X-Image-Meta-Property-Arch': 'x86_64'}
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT', headers=headers)
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(data['image']['properties']['arch'], "x86_64")
+        self.assertEqual(data['image']['properties']['distro'], "Ubuntu")
+
+        # 9. GET /images/detail
+        # Verify image and all its metadata
+        path = "http://%s:%d/v1/images/detail" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        expected_image = {
+            "status": "active",
+            "name": "Image1",
+            "deleted": False,
+            "container_format": None,
+            "disk_format": None,
+            "id": 1,
+            "location": "file://%s/1" % self.api_server.image_dir,
+            "is_public": True,
+            "deleted_at": None,
+            "properties": {'distro': 'Ubuntu', 'arch': 'x86_64'},
+            "size": 5120}
+
+        image = json.loads(content)
+
+        for expected_key, expected_value in expected_image.items():
+            self.assertEqual(expected_value, expected_image[expected_key],
+                            "For key '%s' expected header value '%s'. Got '%s'"
+                            % (expected_key,
+                               expected_value,
+                               image['images'][0][expected_key]))
+
+        # 10. PUT /images/1 and remove a previously existing property.
+        headers = {'X-Image-Meta-Property-Arch': 'x86_64'}
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT', headers=headers)
+        self.assertEqual(response.status, 200)
+        
+        path = "http://%s:%d/v1/images/detail" % ("0.0.0.0", self.api_port)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)['images'][0]
+        self.assertEqual(len(data['properties']), 1)
+        self.assertEqual(data['properties']['arch'], "x86_64")
+
+        # 11. PUT /images/1 and add a previously deleted property.
+        headers = {'X-Image-Meta-Property-Distro': 'Ubuntu',
+                   'X-Image-Meta-Property-Arch': 'x86_64'}
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT', headers=headers)
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+
+        path = "http://%s:%d/v1/images/detail" % ("0.0.0.0", self.api_port)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)['images'][0]
+        self.assertEqual(len(data['properties']), 2)
+        self.assertEqual(data['properties']['arch'], "x86_64")
+        self.assertEqual(data['properties']['distro'], "Ubuntu")
 
         self.stop_servers()
 
