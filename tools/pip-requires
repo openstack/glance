@@ -17,3 +17,4 @@ swift
 sqlalchemy-migrate>=0.6,<0.7
 bzr
 httplib2
+hashlib
