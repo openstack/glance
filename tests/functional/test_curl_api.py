@@ -24,8 +24,6 @@ import unittest
 import httplib2
 import hashlib
 
-from pprint import pprint
-
 from tests import functional
 from tests.utils import execute
 
