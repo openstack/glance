@@ -250,7 +250,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'PUT', headers=headers)
         self.assertEqual(response.status, 200)
-        
+
         path = "http://%s:%d/v1/images/detail" % ("0.0.0.0", self.api_port)
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
