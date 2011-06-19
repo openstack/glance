@@ -293,7 +293,7 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.stop_servers()
 
-    def test_filtering(self):
+    def test_results_filtering(self):
         self.cleanup()
         self.start_servers()
 
@@ -315,7 +315,8 @@ class TestBinGlance(functional.FunctionalTest):
             expected_out = 'Added new image with ID: %d' % (i + 1,)
             self.assertEqual(expected_out, out.strip())
 
-        _index_cmd = "bin/glance --port=%d index" % api_port
+        _base_cmd = "bin/glance --port=%d" % api_port
+        _index_cmd = "%s index" % (_base_cmd,)
 
         # 2. Check name filter
         cmd = "name=Name2"
@@ -354,5 +355,16 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(2, len(image_lines))
         self.assertTrue(image_lines[0].startswith('2'))
         self.assertTrue(image_lines[1].startswith('1'))
+
+        # 6. Ensure details call also respects filters
+        _details_cmd = "%s details" % (_base_cmd,)
+        cmd = "foo=bar"
+        exitcode, out, err = execute("%s %s" % (_details_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(22, len(image_lines))
+        self.assertTrue(image_lines[1].startswith('Id: 2'))
+        self.assertTrue(image_lines[12].startswith('Id: 1'))
 
         self.stop_servers()
