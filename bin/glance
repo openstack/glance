@@ -366,13 +366,28 @@ Shows image metadata for an image in Glance"""
 
 def images_index(options, args):
     """
-%(prog)s index [options]
+%(prog)s index [options] <field1=value1 field2=value2 ...>
 
 Returns basic information for all public images
-a Glance server knows about"""
+a Glance server knows about. Results will be filtered by
+supplied fields"""
+    try:
+        fields = get_image_fields_from_args(args)
+    except RuntimeError, e:
+        print e
+        return FAILURE
+
+    SUPPORTED_FILTERS = ['name', 'disk_format', 'container_format',
+                         'size_min', 'size_max']
+    filters = {}
+    for (key, value) in fields.items():
+        if key not in SUPPORTED_FILTERS:
+            key = 'property-%s' % (key,)
+        filters[key] = value
+
     c = get_client(options)
     try:
-        images = c.get_images()
+        images = c.get_images(filters=filters)
         if len(images) == 0:
             print "No public images found."
             return SUCCESS

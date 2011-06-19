@@ -292,3 +292,67 @@ class TestBinGlance(functional.FunctionalTest):
             self.assertEqual(0, rec[0])
 
         self.stop_servers()
+
+    def test_filtering(self):
+        self.cleanup()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 1. Add some images
+        _add_cmd = "bin/glance --port=%d add is_public=True" % api_port
+        _add_args = [
+            "name=Name1 disk_format=vhd container_format=ovf foo=bar",
+            "name=Name2 disk_format=ami container_format=ami foo=bar",
+            "name=Name3 disk_format=vhd container_format=ovf foo=baz",
+        ]
+
+        for i, args in enumerate(_add_args):
+            cmd = "%s %s" % (_add_cmd, args)
+            exitcode, out, err = execute(cmd)
+            self.assertEqual(0, exitcode)
+            expected_out = 'Added new image with ID: %d' % (i + 1,)
+            self.assertEqual(expected_out, out.strip())
+
+        _index_cmd = "bin/glance --port=%d index" % api_port
+
+        # 2. Check name filter
+        cmd = "name=Name2"
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[3:-1]
+        self.assertEqual(1, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('2'))
+
+        # 3. Check disk_format filter
+        cmd = "disk_format=vhd"
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[3:-1]
+        self.assertEqual(2, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('3'))
+        self.assertTrue(image_lines[1].startswith('1'))
+
+        # 4. Check container_format filter
+        cmd = "container_format=ami"
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[3:-1]
+        self.assertEqual(1, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('2'))
+
+        # 5. Check property filter
+        cmd = "foo=bar"
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[3:-1]
+        self.assertEqual(2, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('2'))
+        self.assertTrue(image_lines[1].startswith('1'))
+
+        self.stop_servers()
