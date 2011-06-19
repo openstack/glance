@@ -309,6 +309,12 @@ available in Glance, as shown below::
   3                Fedora 9                       vdi                  bare                           3040
   4                Vanilla Linux 2.6.22           qcow2                bare                              0
 
+Image metadata such as 'name', 'disk_format', 'container_format' and 'status'
+may be used to filter the results of an index or details command. These
+commands also accept 'size_min' and 'size_max' as lower and upper bounds
+of the image metadata 'size.' Any unrecognized fields are handled as
+custom image properties.
+
 The ``details`` command
 -----------------------
 

@@ -72,7 +72,7 @@ def get_image_filters_from_args(args):
         print e
         return FAILURE
 
-    SUPPORTED_FILTERS = ['name', 'disk_format', 'container_format',
+    SUPPORTED_FILTERS = ['name', 'disk_format', 'container_format', 'status',
                          'size_min', 'size_max']
     filters = {}
     for (key, value) in fields.items():
@@ -391,8 +391,8 @@ Returns basic information for all public images
 a Glance server knows about. Provided fields are
 handled as query filters. Supported filters
 include 'name', 'disk_format', 'container_format',
-'size_min', and 'size_max.' Any extra fields are
-treated as image metadata properties"""
+'status', 'size_min', and 'size_max.' Any extra
+fields are treated as image metadata properties"""
     filters = get_image_filters_from_args(args)
 
     c = get_client(options)
@@ -433,8 +433,8 @@ Returns detailed information for all public images
 a Glance server knows about. Provided fields are
 handled as query filters. Supported filters
 include 'name', 'disk_format', 'container_format',
-'size_min', and 'size_max.' Any extra fields are
-treated as image metadata properties"""
+'status', 'size_min', and 'size_max.' Any extra
+fields are treated as image metadata properties"""
     filters = get_image_filters_from_args(args)
 
     c = get_client(options)

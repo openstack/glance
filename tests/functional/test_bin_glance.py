@@ -346,7 +346,24 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(1, len(image_lines))
         self.assertTrue(image_lines[0].startswith('2'))
 
-        # 5. Check property filter
+        # 5. Check container_format filter
+        cmd = "container_format=ami"
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[3:-1]
+        self.assertEqual(1, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('2'))
+
+        # 6. Check status filter
+        cmd = "status=killed"
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[3:-1]
+        self.assertEqual(0, len(image_lines))
+
+        # 7. Check property filter
         cmd = "foo=bar"
         exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
 
@@ -356,7 +373,16 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertTrue(image_lines[0].startswith('2'))
         self.assertTrue(image_lines[1].startswith('1'))
 
-        # 6. Ensure details call also respects filters
+        # 8. Check multiple filters
+        cmd = "name=Name2 foo=bar"
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[3:-1]
+        self.assertEqual(1, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('2'))
+
+        # 9. Ensure details call also respects filters
         _details_cmd = "%s details" % (_base_cmd,)
         cmd = "foo=bar"
         exitcode, out, err = execute("%s %s" % (_details_cmd, cmd))
