@@ -19,7 +19,6 @@
 
 import json
 import os
-import unittest
 import httplib2
 import hashlib
 
