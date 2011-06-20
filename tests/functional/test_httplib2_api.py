@@ -17,10 +17,10 @@
 
 """Functional test case that utilizes cURL against the API server"""
 
+import hashlib
+import httplib2
 import json
 import os
-import httplib2
-import hashlib
 
 from tests import functional
 from tests.utils import execute
