@@ -171,7 +171,7 @@ class Controller(wsgi.Controller):
         """Parse a sort key query param from the request object."""
         sort_key = req.str_params.get('sort_key', None)
         if sort_key is not None and sort_key not in SUPPORTED_SORT_KEYS:
-            _keys = '. '.join(SUPPORTED_SORT_KEYS)
+            _keys = ', '.join(SUPPORTED_SORT_KEYS)
             msg = "Unsupported sort_key. Acceptable values: %s" % (_keys,)
             raise exc.HTTPBadRequest(explanation=msg)
         return sort_key
@@ -180,7 +180,7 @@ class Controller(wsgi.Controller):
         """Parse a sort direction query param from the request object."""
         sort_dir = req.str_params.get('sort_dir', None)
         if sort_dir is not None and sort_dir not in SUPPORTED_SORT_DIRS:
-            _keys = '. '.join(SUPPORTED_SORT_DIRS)
+            _keys = ', '.join(SUPPORTED_SORT_DIRS)
             msg = "Unsupported sort_dir. Acceptable values: %s" % (_keys,)
             raise exc.HTTPBadRequest(explanation=msg)
         return sort_dir
