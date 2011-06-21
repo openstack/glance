@@ -45,6 +45,8 @@ logger = logging.getLogger('glance.api.v1.images')
 SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
                      'size_min', 'size_max']
 
+SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
+
 
 class Controller(wsgi.Controller):
 
@@ -130,7 +132,6 @@ class Controller(wsgi.Controller):
         :retval dict of parameters that can be used by registry client
         """
         params = {'filters': self._get_filters(req)}
-        SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
         for PARAM in SUPPORTED_PARAMS:
             if PARAM in req.str_params:
                 params[PARAM] = req.str_params.get(PARAM)

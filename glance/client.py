@@ -33,6 +33,10 @@ from glance.common import exception
 #TODO(jaypipes) Allow a logger param for client classes
 
 
+# parameters accepted in get_images* methods
+SUPPORTED_GET_PARAMS = ('marker', 'limit', 'sort_key', 'sort_dir')
+
+
 class ClientConnectionError(Exception):
     """Error resulting from a client connecting to a server"""
     pass
@@ -190,8 +194,7 @@ class BaseClient(object):
         :param params: dict of values to filter
         :retval subset of 'params' dict
         """
-        SUPPORTED_GET_PARAMS = ('marker', 'limit', 'sort_key', 'sort_dir')
-        result = {}
+        result = params.get('filters', {})
         for PARAM in SUPPORTED_GET_PARAMS:
             if PARAM in params:
                 result[PARAM] = params[PARAM]
@@ -235,8 +238,7 @@ class V1Client(BaseClient):
         :param sort_dir: direction in which to to order results (asc, desc)
         """
 
-        params = kwargs.get('filters', {})
-        params.update(self._extract_get_params(kwargs))
+        params = self._extract_get_params(kwargs)
         res = self.do_request("GET", "/images", params=params)
         data = json.loads(res.read())['images']
         return data
@@ -253,8 +255,7 @@ class V1Client(BaseClient):
         :param sort_dir: direction in which to to order results (asc, desc)
         """
 
-        params = kwargs.get('filters', {})
-        params.update(self._extract_get_params(kwargs))
+        params = self._extract_get_params(kwargs)
         res = self.do_request("GET", "/images/detail", params=params)
         data = json.loads(res.read())['images']
         return data

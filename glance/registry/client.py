@@ -54,8 +54,7 @@ class RegistryClient(BaseClient):
         :param sort_key: results will be ordered by this image attribute
         :param sort_dir: direction in which to to order results (asc, desc)
         """
-        params = kwargs.get('filters', {})
-        params.update(self._extract_get_params(kwargs))
+        params = self._extract_get_params(kwargs)
         res = self.do_request("GET", "/images", params=params)
         data = json.loads(res.read())['images']
         return data
@@ -70,8 +69,7 @@ class RegistryClient(BaseClient):
         :param sort_key: results will be ordered by this image attribute
         :param sort_dir: direction in which to to order results (asc, desc)
         """
-        params = kwargs.get('filters', {})
-        params.update(self._extract_get_params(kwargs))
+        params = self._extract_get_params(kwargs)
         res = self.do_request("GET", "/images/detail", params=params)
         data = json.loads(res.read())['images']
         return data
