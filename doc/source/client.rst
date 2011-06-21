@@ -113,7 +113,36 @@ in size and in the `saving` status.
   c = Client("glance.example.com", 9292)
 
   filters = {'status': 'saving', 'size_max': (5 * 1024 * 1024 * 1024)}
-  print c.get_images_detailed(filters)
+  print c.get_images_detailed(filters=filters)
+
+Sorting Images Returned via ``get_images()`` and ``get_images_detailed()``
+--------------------------------------------------------------------------
+
+Two parameters are available to sort the list of images returned by
+these methods.
+
+* ``sort_key: KEY``
+
+  Images can be ordered by the image attribute ``KEY``. Acceptable values:
+  ``id``, ``name``, ``status``, ``container_format``, ``disk_format``,
+  ``created_at`` (default) and ``updated_at``.
+
+* ``sort_dir: DIR``
+
+  The direction of the sort may be defined by ``DIR``. Accepted values:
+  ``asc`` for ascending or ``desc`` (default) for descending.
+
+The following example will return a list of images sorted alphabetically
+by name in ascending order.
+
+.. code-block:: python
+
+  from glance.client import Client
+
+  c = Client("glance.example.com", 9292)
+
+  print c.get_images(sort_key='name', sort_dir='asc')
+
 
 Requesting Detailed Metadata on a Specific Image
 ------------------------------------------------
