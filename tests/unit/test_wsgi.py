@@ -25,14 +25,12 @@ from glance.common import exception
 class RequestTest(unittest.TestCase):
     def test_content_type_missing(self):
         request = wsgi.Request.blank('/tests/123')
-        request.body = "<body />"
         self.assertRaises(exception.InvalidContentType,
                           request.get_content_type, ('application/xml'))
 
     def test_content_type_unsupported(self):
         request = wsgi.Request.blank('/tests/123')
         request.headers["Content-Type"] = "text/html"
-        request.body = "asdf<br />"
         self.assertRaises(exception.InvalidContentType,
                           request.get_content_type, ('application/xml'))
 
@@ -142,18 +140,21 @@ class JSONResponseSerializerTest(unittest.TestCase):
 class JSONRequestDeserializerTest(unittest.TestCase):
     def test_has_body_no_content_length(self):
         request = wsgi.Request.blank('/')
+        request.method = 'POST'
         request.body = 'asdf'
         request.headers.pop('Content-Length')
         self.assertFalse(wsgi.JSONRequestDeserializer().has_body(request))
 
     def test_has_body_zero_content_length(self):
         request = wsgi.Request.blank('/')
+        request.method = 'POST'
         request.body = 'asdf'
         request.headers['Content-Length'] = 0
         self.assertFalse(wsgi.JSONRequestDeserializer().has_body(request))
 
     def test_has_body_has_content_length(self):
         request = wsgi.Request.blank('/')
+        request.method = 'POST'
         request.body = 'asdf'
         self.assertTrue('Content-Length' in request.headers)
         self.assertTrue(wsgi.JSONRequestDeserializer().has_body(request))
@@ -176,6 +177,7 @@ class JSONRequestDeserializerTest(unittest.TestCase):
 
     def test_default_with_body(self):
         request = wsgi.Request.blank('/')
+        request.method = 'POST'
         request.body = '{"key": "value"}'
         actual = wsgi.JSONRequestDeserializer().default(request)
         expected = {"body": {"key": "value"}}
