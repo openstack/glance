@@ -388,8 +388,8 @@ def stub_out_registry_db_image_api(stubs):
             else:
                 return images[0]
 
-        def image_get_all_public(self, _context, filters=None,
-                                 marker=None, limit=1000):
+        def image_get_all_public(self, _context, filters=None, marker=None,
+                                 limit=1000, sort_key=None, sort_dir=None):
             images = [f for f in self.images if f['is_public'] == True]
 
             if 'size_min' in filters:
@@ -414,16 +414,24 @@ def stub_out_registry_db_image_api(stubs):
             for k, v in filters.items():
                 images = [f for f in images if f[k] == v]
 
+            # sorted func expects func that compares in descending order
             def image_cmp(x, y):
-                if x['created_at'] > y['created_at']:
-                    return 1
-                elif x['created_at'] == y['created_at']:
+                _sort_dir = sort_dir or 'desc'
+                multiplier = {
+                    'asc': -1,
+                    'desc': 1,
+                }[_sort_dir]
+
+                _sort_key = sort_key or 'created_at'
+                if x[_sort_key] > y[_sort_key]:
+                    return 1 * multiplier
+                elif x[_sort_key] == y[_sort_key]:
                     if x['id'] > y['id']:
-                        return 1
+                        return 1 * multiplier
                     else:
-                        return -1
+                        return -1 * multiplier
                 else:
-                    return -1
+                    return -1 * multiplier
 
             images = sorted(images, cmp=image_cmp)
             images.reverse()

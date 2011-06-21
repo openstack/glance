@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import json
 import os
 import stubout
@@ -69,6 +70,299 @@ class TestRegistryClient(unittest.TestCase):
 
         for k, v in fixture.items():
             self.assertEquals(v, images[0][k])
+
+    def test_get_index_sort_id_desc(self):
+        """Tests that the /images registry API returns list of
+        public images sorted by id in descending order.
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(sort_key='id', sort_dir='desc')
+
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 4)
+        self.assertEquals(int(images[1]['id']), 3)
+        self.assertEquals(int(images[2]['id']), 2)
+
+    def test_get_index_sort_name_asc(self):
+        """Tests that the /images registry API returns list of
+        public images sorted alphabetically by name in
+        ascending order.
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(sort_key='name', sort_dir='asc')
+
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 2)
+        self.assertEquals(int(images[2]['id']), 4)
+
+    def test_get_index_sort_status_desc(self):
+        """Tests that the /images registry API returns list of
+        public images sorted alphabetically by status in
+        descending order.
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'killed',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(sort_key='status', sort_dir='desc')
+
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 4)
+        self.assertEquals(int(images[2]['id']), 2)
+
+    def test_get_index_sort_disk_format_asc(self):
+        """Tests that the /images registry API returns list of
+        public images sorted alphabetically by disk_format in
+        ascending order.
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vdi',
+                         'container_format': 'ovf',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(sort_key='disk_format',
+                                        sort_dir='asc')
+
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 4)
+        self.assertEquals(int(images[2]['id']), 2)
+
+    def test_get_index_sort_container_format_desc(self):
+        """Tests that the /images registry API returns list of
+        public images sorted alphabetically by container_format in
+        descending order.
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'iso',
+                         'container_format': 'bare',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(sort_key='container_format',
+                                        sort_dir='desc')
+
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 2)
+        self.assertEquals(int(images[1]['id']), 4)
+        self.assertEquals(int(images[2]['id']), 3)
+
+    def test_get_index_sort_size_asc(self):
+        """Tests that the /images registry API returns list of
+        public images sorted by size in ascending order.
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'asdf',
+                         'size': 100,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'iso',
+                         'container_format': 'bare',
+                         'name': 'xyz',
+                         'size': 2,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(sort_key='size', sort_dir='asc')
+
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 4)
+        self.assertEquals(int(images[1]['id']), 2)
+        self.assertEquals(int(images[2]['id']), 3)
+
+    def test_get_index_sort_created_at_asc(self):
+        """Tests that the /images registry API returns list of
+        public images sorted by created_at in ascending order.
+
+        """
+        now = datetime.datetime.utcnow()
+        time1 = now + datetime.timedelta(seconds=5)
+        time2 = now
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None,
+                         'created_at': time1}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': time2}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(sort_key='created_at', sort_dir='asc')
+
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 2)
+        self.assertEquals(int(images[1]['id']), 4)
+        self.assertEquals(int(images[2]['id']), 3)
+
+    def test_get_index_sort_updated_at_desc(self):
+        """Tests that the /images registry API returns list of
+        public images sorted by updated_at in descending order.
+
+        """
+        now = datetime.datetime.utcnow()
+        time1 = now + datetime.timedelta(seconds=5)
+        time2 = now
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None,
+                         'created_at': None,
+                         'created_at': time1}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': None,
+                         'updated_at': time2}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(sort_key='updated_at', sort_dir='desc')
+
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 4)
+        self.assertEquals(int(images[2]['id']), 2)
+
 
     def test_get_image_index_marker(self):
         """Test correct set of images returned with marker param."""
@@ -170,7 +464,7 @@ class TestRegistryClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images({'name': 'new name! #123'})
+        images = self.client.get_images(filters={'name': 'new name! #123'})
         self.assertEquals(len(images), 1)
 
         for image in images:
@@ -236,7 +530,8 @@ class TestRegistryClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images_detailed({'name': 'new name! #123'})
+        filters = {'name': 'new name! #123'}
+        images = self.client.get_images_detailed(filters=filters)
         self.assertEquals(len(images), 1)
 
         for image in images:
@@ -255,7 +550,7 @@ class TestRegistryClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images_detailed({'status': 'saving'})
+        images = self.client.get_images_detailed(filters={'status': 'saving'})
         self.assertEquals(len(images), 1)
 
         for image in images:
@@ -274,7 +569,8 @@ class TestRegistryClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images_detailed({'container_format': 'ovf'})
+        filters = {'container_format': 'ovf'}
+        images = self.client.get_images_detailed(filters=filters)
         self.assertEquals(len(images), 2)
 
         for image in images:
@@ -293,7 +589,8 @@ class TestRegistryClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images_detailed({'disk_format': 'vhd'})
+        filters = {'disk_format': 'vhd'}
+        images = self.client.get_images_detailed(filters=filters)
         self.assertEquals(len(images), 2)
 
         for image in images:
@@ -312,7 +609,7 @@ class TestRegistryClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images_detailed({'size_max': 20})
+        images = self.client.get_images_detailed(filters={'size_max': 20})
         self.assertEquals(len(images), 1)
 
         for image in images:
@@ -331,7 +628,7 @@ class TestRegistryClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images_detailed({'size_min': 20})
+        images = self.client.get_images_detailed(filters={'size_min': 20})
         self.assertEquals(len(images), 1)
 
         for image in images:
@@ -351,11 +648,49 @@ class TestRegistryClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images_detailed({'property-p a': 'v a'})
+        filters = {'property-p a': 'v a'}
+        images = self.client.get_images_detailed(filters=filters)
         self.assertEquals(len(images), 1)
 
         for image in images:
             self.assertEquals('v a', image['properties']['p a'])
+
+    def test_get_image_details_sort_disk_format_asc(self):
+        """Tests that a detailed call returns list of
+        public images sorted alphabetically by disk_format in
+        ascending order.
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vdi',
+                         'container_format': 'ovf',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images_detailed(sort_key='disk_format',
+                                                 sort_dir='asc')
+
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 4)
+        self.assertEquals(int(images[2]['id']), 2)
+
 
     def test_get_image(self):
         """Tests that the detailed info about an image returned"""

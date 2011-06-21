@@ -44,45 +44,51 @@ class RegistryClient(BaseClient):
         port = port or self.DEFAULT_PORT
         super(RegistryClient, self).__init__(host, port, use_ssl)
 
-    def get_images(self, filters=None, marker=None, limit=None):
+    def get_images(self, **kwargs):
         """
         Returns a list of image id/name mappings from Registry
 
         :param filters: dict of keys & expected values to filter results
         :param marker: image id after which to start page
         :param limit: max number of images to return
+        :param sort_key: results will be ordered by this image attribute
+        :param sort_dir: direction in which to to order results (asc, desc)
         """
-        params = filters or {}
-
-        if marker != None:
-            params['marker'] = marker
-
-        if limit != None:
-            params['limit'] = limit
-
+        params = kwargs.get('filters', {})
+        params.update(self._extract_get_params(kwargs))
         res = self.do_request("GET", "/images", params=params)
         data = json.loads(res.read())['images']
         return data
 
-    def get_images_detailed(self, filters=None, marker=None, limit=None):
+    def get_images_detailed(self, **kwargs):
         """
         Returns a list of detailed image data mappings from Registry
 
         :param filters: dict of keys & expected values to filter results
         :param marker: image id after which to start page
         :param limit: max number of images to return
+        :param sort_key: results will be ordered by this image attribute
+        :param sort_dir: direction in which to to order results (asc, desc)
         """
-        params = filters or {}
-
-        if marker != None:
-            params['marker'] = marker
-
-        if limit != None:
-            params['limit'] = limit
-
+        params = kwargs.get('filters', {})
+        params.update(self._extract_get_params(kwargs))
         res = self.do_request("GET", "/images/detail", params=params)
         data = json.loads(res.read())['images']
         return data
+
+    def _extract_get_params(self, params):
+        """
+        Attempts to extract a subset of keys from the input dictionary.
+
+        :param params: dict of values to filter
+        :retval subset of 'params' dict
+        """
+        SUPPORTED_GET_PARAMS = ['marker', 'limit', 'sort_key', 'sort_dir']
+        result = {}
+        for PARAM in SUPPORTED_GET_PARAMS:
+            if PARAM in params:
+                result[PARAM] = params[PARAM]
+        return result
 
     def get_image(self, image_id):
         """Returns a mapping of image metadata from Registry"""
