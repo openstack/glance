@@ -991,8 +991,8 @@ class TestGlanceAPI(unittest.TestCase):
                            'x-image-meta-name': 'fake image #3'}
 
         req = webob.Request.blank("/images")
-        req.body = "chunk00000remainder"
         req.method = 'POST'
+        req.body = "chunk00000remainder"
         for k, v in fixture_headers.iteritems():
             req.headers[k] = v
         res = req.get_response(self.api)
