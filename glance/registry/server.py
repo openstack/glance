@@ -39,10 +39,10 @@ DISPLAY_FIELDS_IN_INDEX = ['id', 'name', 'size',
 SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
                      'size_min', 'size_max']
 
-SUPPORTED_SORT_KEYS = ['name', 'status', 'container_format', 'disk_format',
-                       'size', 'id', 'created_at', 'updated_at']
+SUPPORTED_SORT_KEYS = ('name', 'status', 'container_format', 'disk_format',
+                       'size', 'id', 'created_at', 'updated_at')
 
-SUPPORTED_SORT_DIRS = ['asc', 'desc']
+SUPPORTED_SORT_DIRS = ('asc', 'desc')
 
 MAX_ITEM_LIMIT = 25
 

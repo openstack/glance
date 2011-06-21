@@ -190,7 +190,7 @@ class BaseClient(object):
         :param params: dict of values to filter
         :retval subset of 'params' dict
         """
-        SUPPORTED_GET_PARAMS = ['marker', 'limit', 'sort_key', 'sort_dir']
+        SUPPORTED_GET_PARAMS = ('marker', 'limit', 'sort_key', 'sort_dir')
         result = {}
         for PARAM in SUPPORTED_GET_PARAMS:
             if PARAM in params:
