@@ -27,11 +27,11 @@ from glance import client
 from glance.registry.db import api as db_api
 
 
-FIVE_KB = 5 * 1024
-IMAGE_META = {'name': 'test_image',
-              'is_public': False,
-              'disk_format': 'raw',
-              'container_format': 'ovf'}
+TEST_IMAGE_DATA = '*' * 5 * 1024
+TEST_IMAGE_META = {'name': 'test_image',
+                  'is_public': False,
+                  'disk_format': 'raw',
+                  'container_format': 'ovf'}
 
 
 class TestScrubber(functional.FunctionalTest):
@@ -58,8 +58,7 @@ class TestScrubber(functional.FunctionalTest):
         self.start_servers()
 
         client = self._get_client()
-        image_data = '*' * FIVE_KB
-        meta = client.add_image(IMAGE_META, image_data)
+        meta = client.add_image(TEST_IMAGE_META, TEST_IMAGE_DATA)
         id = meta['id']
         self.assertFalse(db_api.image_get_all_pending_delete(None))
 
@@ -82,8 +81,7 @@ class TestScrubber(functional.FunctionalTest):
         self.start_servers(delayed_delete=True, daemon=True)
 
         client = self._get_client()
-        image_data = '*' * FIVE_KB
-        meta = client.add_image(IMAGE_META, image_data)
+        meta = client.add_image(TEST_IMAGE_META, TEST_IMAGE_DATA)
         id = meta['id']
         self.assertFalse(db_api.image_get_all_pending_delete(None))
 
