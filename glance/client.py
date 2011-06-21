@@ -183,6 +183,20 @@ class BaseClient(object):
         else:
             return response.status
 
+    def _extract_get_params(self, params):
+        """
+        Attempts to extract a subset of keys from the input dictionary.
+
+        :param params: dict of values to filter
+        :retval subset of 'params' dict
+        """
+        SUPPORTED_GET_PARAMS = ['marker', 'limit', 'sort_key', 'sort_dir']
+        result = {}
+        for PARAM in SUPPORTED_GET_PARAMS:
+            if PARAM in params:
+                result[PARAM] = params[PARAM]
+        return result
+
 
 class V1Client(BaseClient):
 
@@ -209,7 +223,7 @@ class V1Client(BaseClient):
         return super(V1Client, self).do_request(method, action, body,
                                                 headers, params)
 
-    def get_images(self, filters=None, marker=None, limit=None):
+    def get_images(self, **kwargs):
         """
         Returns a list of image id/name mappings from Registry
 
@@ -217,18 +231,17 @@ class V1Client(BaseClient):
                         collection of images should be filtered
         :param marker: id after which to start the page of images
         :param limit: maximum number of items to return
+        :param sort_key: results will be ordered by this image attribute
+        :param sort_dir: direction in which to to order results (asc, desc)
         """
 
-        params = filters or {}
-        if marker:
-            params['marker'] = marker
-        if limit:
-            params['limit'] = limit
+        params = kwargs.get('filters', {})
+        params.update(self._extract_get_params(kwargs))
         res = self.do_request("GET", "/images", params=params)
         data = json.loads(res.read())['images']
         return data
 
-    def get_images_detailed(self, filters=None, marker=None, limit=None):
+    def get_images_detailed(self, **kwargs):
         """
         Returns a list of detailed image data mappings from Registry
 
@@ -236,13 +249,12 @@ class V1Client(BaseClient):
                         collection of images should be filtered
         :param marker: id after which to start the page of images
         :param limit: maximum number of items to return
+        :param sort_key: results will be ordered by this image attribute
+        :param sort_dir: direction in which to to order results (asc, desc)
         """
 
-        params = filters or {}
-        if marker:
-            params['marker'] = marker
-        if limit:
-            params['limit'] = limit
+        params = kwargs.get('filters', {})
+        params.update(self._extract_get_params(kwargs))
         res = self.do_request("GET", "/images/detail", params=params)
         data = json.loads(res.read())['images']
         return data

@@ -1099,8 +1099,6 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(int(images[1]['id']), 2)
         self.assertEquals(int(images[2]['id']), 4)
 
-
-
     def test_create_image(self):
         """Tests that the /images POST registry API creates the image"""
         fixture = {'name': 'fake public image',
@@ -1448,6 +1446,45 @@ class TestGlanceAPI(unittest.TestCase):
                         "'location' not in response headers.\n"
                         "res.headerlist = %r" % res.headerlist)
         self.assertTrue('/images/3' in res.headers['location'])
+
+    def test_get_index_sort_name_asc(self):
+        """Tests that the /images registry API returns list of
+        public images sorted alphabetically by name in
+        ascending order.
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?sort_key=name&sort_dir=asc')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 2)
+        self.assertEquals(int(images[2]['id']), 4)
 
     def test_image_is_checksummed(self):
         """Test that the image contents are checksummed properly"""

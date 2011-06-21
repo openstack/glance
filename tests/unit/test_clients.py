@@ -363,7 +363,6 @@ class TestRegistryClient(unittest.TestCase):
         self.assertEquals(int(images[1]['id']), 4)
         self.assertEquals(int(images[2]['id']), 2)
 
-
     def test_get_image_index_marker(self):
         """Test correct set of images returned with marker param."""
         extra_fixture = {'id': 3,
@@ -691,7 +690,6 @@ class TestRegistryClient(unittest.TestCase):
         self.assertEquals(int(images[1]['id']), 4)
         self.assertEquals(int(images[2]['id']), 2)
 
-
     def test_get_image(self):
         """Tests that the detailed info about an image returned"""
         fixture = {'id': 1,
@@ -897,6 +895,42 @@ class TestClient(unittest.TestCase):
                           self.client.get_image,
                           3)
 
+    def test_get_image_index_sort_container_format_desc(self):
+        """Tests that the client returns list of public images
+        sorted alphabetically by container_format in
+        descending order.
+
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'iso',
+                         'container_format': 'bare',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images(sort_key='container_format',
+                                        sort_dir='desc')
+
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 2)
+        self.assertEquals(int(images[1]['id']), 4)
+        self.assertEquals(int(images[2]['id']), 3)
+
     def test_get_image_index(self):
         """Test correct set of public image returned"""
         fixture = {'id': 2,
@@ -1006,7 +1040,8 @@ class TestClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images({'name': 'new name! #123'})
+        filters = {'name': 'new name! #123'}
+        images = self.client.get_images(filters=filters)
 
         self.assertEquals(len(images), 1)
         self.assertEquals('new name! #123', images[0]['name'])
@@ -1025,7 +1060,8 @@ class TestClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images({'property-p a': 'v a'})
+        filters = {'property-p a': 'v a'}
+        images = self.client.get_images(filters=filters)
 
         self.assertEquals(len(images), 1)
         self.assertEquals(3, images[0]['id'])
@@ -1100,7 +1136,8 @@ class TestClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images_detailed({'name': 'new name! #123'})
+        filters = {'name': 'new name! #123'}
+        images = self.client.get_images_detailed(filters=filters)
         self.assertEquals(len(images), 1)
 
         for image in images:
@@ -1120,7 +1157,8 @@ class TestClient(unittest.TestCase):
 
         glance.registry.db.api.image_create(None, extra_fixture)
 
-        images = self.client.get_images_detailed({'property-p a': 'v a'})
+        filters = {'property-p a': 'v a'}
+        images = self.client.get_images_detailed(filters=filters)
         self.assertEquals(len(images), 1)
 
         for image in images:

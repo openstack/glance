@@ -76,20 +76,6 @@ class RegistryClient(BaseClient):
         data = json.loads(res.read())['images']
         return data
 
-    def _extract_get_params(self, params):
-        """
-        Attempts to extract a subset of keys from the input dictionary.
-
-        :param params: dict of values to filter
-        :retval subset of 'params' dict
-        """
-        SUPPORTED_GET_PARAMS = ['marker', 'limit', 'sort_key', 'sort_dir']
-        result = {}
-        for PARAM in SUPPORTED_GET_PARAMS:
-            if PARAM in params:
-                result[PARAM] = params[PARAM]
-        return result
-
     def get_image(self, image_id):
         """Returns a mapping of image metadata from Registry"""
         res = self.do_request("GET", "/images/%s" % image_id)

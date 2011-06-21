@@ -92,14 +92,7 @@ class Controller(wsgi.Controller):
                  'size': <SIZE>}, ...
             ]}
         """
-        params = {'filters': self._get_filters(req)}
-
-        if 'limit' in req.str_params:
-            params['limit'] = req.str_params.get('limit')
-
-        if 'marker' in req.str_params:
-            params['marker'] = req.str_params.get('marker')
-
+        params = self._get_query_params(req)
         images = registry.get_images_list(self.options, **params)
         return dict(images=images)
 
@@ -125,6 +118,17 @@ class Controller(wsgi.Controller):
                  'properties': {'distro': 'Ubuntu 10.04 LTS', ...}}, ...
             ]}
         """
+        params = self._get_query_params(req)
+        images = registry.get_images_detail(self.options, **params)
+        return dict(images=images)
+
+    def _get_query_params(self, req):
+        """
+        Extracts necessary query params from request.
+
+        :param req: the WSGI Request object
+        :retval dict of parameters that can be used by registry client
+        """
         params = {'filters': self._get_filters(req)}
 
         if 'limit' in req.str_params:
@@ -133,8 +137,13 @@ class Controller(wsgi.Controller):
         if 'marker' in req.str_params:
             params['marker'] = req.str_params.get('marker')
 
-        images = registry.get_images_detail(self.options, **params)
-        return dict(images=images)
+        if 'sort_key' in req.str_params:
+            params['sort_key'] = req.str_params.get('sort_key')
+
+        if 'sort_dir' in req.str_params:
+            params['sort_dir'] = req.str_params.get('sort_dir')
+
+        return params
 
     def _get_filters(self, req):
         """
