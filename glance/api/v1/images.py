@@ -130,19 +130,10 @@ class Controller(wsgi.Controller):
         :retval dict of parameters that can be used by registry client
         """
         params = {'filters': self._get_filters(req)}
-
-        if 'limit' in req.str_params:
-            params['limit'] = req.str_params.get('limit')
-
-        if 'marker' in req.str_params:
-            params['marker'] = req.str_params.get('marker')
-
-        if 'sort_key' in req.str_params:
-            params['sort_key'] = req.str_params.get('sort_key')
-
-        if 'sort_dir' in req.str_params:
-            params['sort_dir'] = req.str_params.get('sort_dir')
-
+        SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
+        for PARAM in SUPPORTED_PARAMS:
+            if PARAM in req.str_params:
+                params[PARAM] = req.str_params.get(PARAM)
         return params
 
     def _get_filters(self, req):
