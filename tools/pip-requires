@@ -6,7 +6,7 @@ anyjson
 eventlet>=0.9.12
 PasteDeploy
 routes
-webob>=1.0.7
+webob==1.0.8
 wsgiref
 nose
 sphinx
