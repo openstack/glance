@@ -47,6 +47,7 @@ class TestScrubber(functional.FunctionalTest):
         # NOTE(jkoelker): We go behind the scenes here to get raw access
         #                 to the database so we can check the status
         #                 of deletes.
+        db_api._MAKER = None
         db_api._ENGINE = create_engine(self.scrubber_daemon.sql_connection)
 
     def test_immediate_delete(self):
@@ -98,3 +99,4 @@ class TestScrubber(functional.FunctionalTest):
         db_meta = db_api.image_get({'deleted': True}, id)
         self.assertTrue(db_meta)
         self.assertEqual(db_meta['status'], 'deleted')
+        self.stop_servers()
