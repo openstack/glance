@@ -15,7 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Functional test case that utilizes cURL against the API server"""
+"""Functional test case that utilizes httplib2 against the API server"""
 
 import hashlib
 import httplib2
