@@ -43,24 +43,6 @@ def image_meta_to_http_headers(image_meta):
     return headers
 
 
-def inject_image_meta_into_headers(response, image_meta):
-    """
-    Given a response and mapping of image metadata, injects
-    the Response with a set of HTTP headers for the image
-    metadata. Each main image metadata field is injected
-    as a HTTP header with key 'x-image-meta-<FIELD>' except
-    for the properties field, which is further broken out
-    into a set of 'x-image-meta-property-<KEY>' headers
-
-    :param response: The Webob Response object
-    :param image_meta: Mapping of image metadata
-    """
-    headers = image_meta_to_http_headers(image_meta)
-
-    for k, v in headers.items():
-        response.headers.add(k, v)
-
-
 def get_image_meta_from_headers(response):
     """
     Processes HTTP headers from a supplied response that
