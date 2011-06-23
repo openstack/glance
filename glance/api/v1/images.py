@@ -509,7 +509,7 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
     def _deserialize(self, request):
         result = {}
         result['image_meta'] = utils.get_image_meta_from_headers(request)
-        data = request.body if self.has_body(request) else None
+        data = request.body_file if self.has_body(request) else None
         result['image_data'] = data
         return result
 
