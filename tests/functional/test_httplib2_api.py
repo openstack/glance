@@ -135,8 +135,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         expected_std_headers = {
             'content-length': str(FIVE_KB),
-            'content-type':
-                'text/html; charset=UTF-8, application/octet-stream'}
+            'content-type': 'application/octet-stream'}
 
         for expected_key, expected_value in expected_image_headers.items():
             self.assertEqual(response[expected_key], expected_value,
