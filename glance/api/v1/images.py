@@ -525,10 +525,10 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
 
     def _inject_location_header(self, response, image_meta):
         location = self._get_image_location(image_meta)
-        response.headers.add('Location', location)
+        response.headers['Location'] = location
 
     def _inject_checksum_header(self, response, image_meta):
-        response.headers.add('ETag', image_meta['checksum'])
+        response.headers['ETag'] = image_meta['checksum']
 
     def _inject_image_meta_headers(self, response, image_meta):
         """
@@ -545,7 +545,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
         headers = utils.image_meta_to_http_headers(image_meta)
 
         for k, v in headers.items():
-            response.headers.add(k, v)
+            response.headers[k] = v
 
     def _get_image_location(self, image_meta):
         """Build a relative url to reach the image defined by image_meta."""
@@ -563,8 +563,8 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
 
         response.app_iter = result['image_iterator']
         # Using app_iter blanks content-length, so we set it here...
-        response.headers.add('Content-Length', image_meta['size'])
-        response.headers.add('Content-Type', 'application/octet-stream')
+        response.headers['Content-Length'] = image_meta['size']
+        response.headers['Content-Type'] = 'application/octet-stream'
 
         self._inject_image_meta_headers(response, image_meta)
         self._inject_location_header(response, image_meta)
@@ -575,7 +575,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
     def update(self, response, result):
         image_meta = result['image_meta']
         response.body = self.to_json(dict(image=image_meta))
-        response.headers.add('Content-Type', 'application/json')
+        response.headers['Content-Type'] = 'application/json'
         self._inject_location_header(response, image_meta)
         self._inject_checksum_header(response, image_meta)
         return response
@@ -583,7 +583,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
     def create(self, response, result):
         image_meta = result['image_meta']
         response.status = httplib.CREATED
-        response.headers.add('Content-Type', 'application/json')
+        response.headers['Content-Type'] = 'application/json'
         response.body = self.to_json(dict(image=image_meta))
         self._inject_location_header(response, image_meta)
         self._inject_checksum_header(response, image_meta)

@@ -1148,6 +1148,8 @@ class TestGlanceAPI(unittest.TestCase):
     def test_show_image_basic(self):
         req = webob.Request.blank("/images/2")
         res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        self.assertEqual(res.content_type, 'application/octet-stream')
         self.assertEqual('chunk00000remainder', res.body)
 
     def test_show_non_exists_image(self):
