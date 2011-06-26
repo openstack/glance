@@ -1109,6 +1109,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -1137,6 +1138,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -1154,6 +1156,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -1170,6 +1173,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -1189,6 +1193,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -1203,6 +1208,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/2')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -1222,6 +1228,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/3')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -1235,6 +1242,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/2')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -1248,6 +1256,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/2')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -1261,6 +1270,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/2')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -1275,6 +1285,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/2')  # Image 2 has disk format 'vhd'
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -1402,6 +1413,21 @@ class TestGlanceAPI(unittest.TestCase):
 
         res_body = json.loads(res.body)['image']
         self.assertEquals('queued', res_body['status'])
+
+    def test_add_image_no_location_no_content_type(self):
+        """Tests creates a queued image for no body and no loc header"""
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        req.body = "chunk00000remainder"
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
 
     def test_add_image_bad_store(self):
         """Tests raises BadRequest for invalid store header"""
@@ -1592,6 +1618,8 @@ class TestGlanceAPI(unittest.TestCase):
     def test_show_image_basic(self):
         req = webob.Request.blank("/images/2")
         res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        self.assertEqual(res.content_type, 'application/octet-stream')
         self.assertEqual('chunk00000remainder', res.body)
 
     def test_show_non_exists_image(self):

@@ -84,10 +84,16 @@ class RegistryClient(BaseClient):
         """
         Tells registry about an image's metadata
         """
+        headers = {
+            'Content-Type': 'application/json',
+        }
+
         if 'image' not in image_metadata.keys():
             image_metadata = dict(image=image_metadata)
+
         body = json.dumps(image_metadata)
-        res = self.do_request("POST", "/images", body)
+
+        res = self.do_request("POST", "/images", body, headers=headers)
         # Registry returns a JSONified dict(image=image_info)
         data = json.loads(res.read())
         return data['image']
@@ -101,9 +107,13 @@ class RegistryClient(BaseClient):
 
         body = json.dumps(image_metadata)
 
-        headers = {}
+        headers = {
+            'Content-Type': 'application/json',
+        }
+
         if purge_props:
             headers["X-Glance-Registry-Purge-Props"] = "true"
+
         res = self.do_request("PUT", "/images/%s" % image_id, body, headers)
         data = json.loads(res.read())
         image = data['image']

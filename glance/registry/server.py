@@ -47,7 +47,7 @@ SUPPORTED_SORT_DIRS = ('asc', 'desc')
 MAX_ITEM_LIMIT = 25
 
 
-class Controller(wsgi.Controller):
+class Controller(object):
     """Controller for the reference implementation registry server"""
 
     def __init__(self, options):
@@ -198,7 +198,7 @@ class Controller(wsgi.Controller):
         """
         Deletes an existing image with the registry.
 
-        :param req: Request body.  Ignored.
+        :param req: wsgi Request object
         :param id:  The opaque internal identifier for the image
 
         :retval Returns 200 if delete was successful, a fault if not.
@@ -210,19 +210,19 @@ class Controller(wsgi.Controller):
         except exception.NotFound:
             return exc.HTTPNotFound()
 
-    def create(self, req):
+    def create(self, req, body):
         """
         Registers a new image with the registry.
 
-        :param req: Request body.  A JSON-ified dict of information about
-                    the image.
+        :param req: wsgi Request object
+        :param body: Dictionary of information about the image
 
         :retval Returns the newly-created image information as a mapping,
                 which will include the newly-created image's internal id
                 in the 'id' field
 
         """
-        image_data = json.loads(req.body)['image']
+        image_data = body['image']
 
         # Ensure the image has a status set
         image_data.setdefault('status', 'active')
@@ -240,18 +240,17 @@ class Controller(wsgi.Controller):
             logger.error(msg)
             return exc.HTTPBadRequest(msg)
 
-    def update(self, req, id):
+    def update(self, req, id, body):
         """Updates an existing image with the registry.
 
-        :param req: Request body.  A JSON-ified dict of information about
-                    the image.  This will replace the information in the
-                    registry about this image
+        :param req: wsgi Request object
+        :param body: Dictionary of information about the image
         :param id:  The opaque internal identifier for the image
 
         :retval Returns the updated image information as a mapping,
 
         """
-        image_data = json.loads(req.body)['image']
+        image_data = body['image']
 
         purge_props = req.headers.get("X-Glance-Registry-Purge-Props", "false")
         context = None
@@ -275,15 +274,22 @@ class Controller(wsgi.Controller):
                                content_type='text/plain')
 
 
+def create_resource(options):
+    """Images resource factory method."""
+    deserializer = wsgi.JSONRequestDeserializer()
+    serializer = wsgi.JSONResponseSerializer()
+    return wsgi.Resource(Controller(options), deserializer, serializer)
+
+
 class API(wsgi.Router):
     """WSGI entry point for all Registry requests."""
 
     def __init__(self, options):
         mapper = routes.Mapper()
-        controller = Controller(options)
-        mapper.resource("image", "images", controller=controller,
+        resource = create_resource(options)
+        mapper.resource("image", "images", controller=resource,
                        collection={'detail': 'GET'})
-        mapper.connect("/", controller=controller, action="index")
+        mapper.connect("/", controller=resource, action="index")
         super(API, self).__init__(mapper)
 
 

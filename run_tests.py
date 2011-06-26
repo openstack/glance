@@ -51,6 +51,7 @@ To run a single test module::
 """
 
 import gettext
+import logging
 import os
 import unittest
 import sys
@@ -269,6 +270,13 @@ class GlanceTestRunner(core.TextTestRunner):
 
 
 if __name__ == '__main__':
+    logger = logging.getLogger()
+    hdlr = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr)
+    logger.setLevel(logging.DEBUG)
+
     c = config.Config(stream=sys.stdout,
                       env=os.environ,
                       verbosity=3)
