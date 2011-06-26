@@ -130,7 +130,7 @@ def image_get(context, image_id, session=None):
 
 
 def image_get_all_public(context, filters=None, marker=None, limit=None,
-                         sort_key=None, sort_dir=None):
+                         sort_key='created_at', sort_dir='desc'):
     """Get all public images that match zero or more filters.
 
     :param filters: dict of filter keys and values. If a 'properties'
@@ -150,14 +150,12 @@ def image_get_all_public(context, filters=None, marker=None, limit=None,
                    filter_by(is_public=True).\
                    filter(models.Image.status != 'killed')
 
-    _sort_dir = sort_dir or 'desc'
     sort_dir_func = {
         'asc': asc,
         'desc': desc,
-    }[_sort_dir]
+    }[sort_dir]
 
-    _sort_key = sort_key or 'created_at'
-    sort_key_attr = getattr(models.Image, _sort_key)
+    sort_key_attr = getattr(models.Image, sort_key)
 
     query = query.order_by(sort_dir_func(sort_key_attr)).\
                   order_by(sort_dir_func(models.Image.id))

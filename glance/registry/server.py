@@ -120,6 +120,10 @@ class Controller(object):
             'marker': self._get_marker(req),
         }
 
+        for key, value in params.items():
+            if value is None:
+                del params[key]
+
         return params
 
     def _get_filters(self, req):
