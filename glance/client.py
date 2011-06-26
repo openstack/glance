@@ -19,189 +19,17 @@
 Client classes for callers of a Glance system
 """
 
-import httplib
 import json
-import logging
-import urlparse
-import socket
-import sys
-import urllib
 
-from glance import utils
+from glance.api.v1 import images as v1_images
+from glance.common import client as base_client
 from glance.common import exception
+from glance import utils
 
 #TODO(jaypipes) Allow a logger param for client classes
 
 
-# parameters accepted in get_images* methods
-SUPPORTED_GET_PARAMS = ('marker', 'limit', 'sort_key', 'sort_dir')
-
-
-class ClientConnectionError(Exception):
-    """Error resulting from a client connecting to a server"""
-    pass
-
-
-class ImageBodyIterator(object):
-
-    """
-    A class that acts as an iterator over an image file's
-    chunks of data.  This is returned as part of the result
-    tuple from `glance.client.Client.get_image`
-    """
-
-    CHUNKSIZE = 65536
-
-    def __init__(self, response):
-        """
-        Constructs the object from an HTTPResponse object
-        """
-        self.response = response
-
-    def __iter__(self):
-        """
-        Exposes an iterator over the chunks of data in the
-        image file.
-        """
-        while True:
-            chunk = self.response.read(ImageBodyIterator.CHUNKSIZE)
-            if chunk:
-                yield chunk
-            else:
-                break
-
-
-class BaseClient(object):
-
-    """A base client class"""
-
-    CHUNKSIZE = 65536
-
-    def __init__(self, host, port, use_ssl):
-        """
-        Creates a new client to some service.
-
-        :param host: The host where service resides
-        :param port: The port where service resides
-        :param use_ssl: Should we use HTTPS?
-        """
-        self.host = host
-        self.port = port
-        self.use_ssl = use_ssl
-        self.connection = None
-
-    def get_connection_type(self):
-        """
-        Returns the proper connection type
-        """
-        if self.use_ssl:
-            return httplib.HTTPSConnection
-        else:
-            return httplib.HTTPConnection
-
-    def do_request(self, method, action, body=None, headers=None,
-                   params=None):
-        """
-        Connects to the server and issues a request.  Handles converting
-        any returned HTTP error status codes to OpenStack/Glance exceptions
-        and closing the server connection. Returns the result data, or
-        raises an appropriate exception.
-
-        :param method: HTTP method ("GET", "POST", "PUT", etc...)
-        :param action: part of URL after root netloc
-        :param body: string of data to send, or None (default)
-        :param headers: mapping of key/value pairs to add as headers
-        :param params: dictionary of key/value pairs to add to append
-                             to action
-
-        :note
-
-        If the body param has a read attribute, and method is either
-        POST or PUT, this method will automatically conduct a chunked-transfer
-        encoding and use the body as a file object, transferring chunks
-        of data using the connection's send() method. This allows large
-        objects to be transferred efficiently without buffering the entire
-        body in memory.
-        """
-        if type(params) is dict:
-            action += '?' + urllib.urlencode(params)
-
-        try:
-            connection_type = self.get_connection_type()
-            headers = headers or {}
-            c = connection_type(self.host, self.port)
-
-            # Do a simple request or a chunked request, depending
-            # on whether the body param is a file-like object and
-            # the method is PUT or POST
-            if hasattr(body, 'read') and method.lower() in ('post', 'put'):
-                # Chunk it, baby...
-                c.putrequest(method, action)
-
-                for header, value in headers.items():
-                    c.putheader(header, value)
-                c.putheader('Transfer-Encoding', 'chunked')
-                c.endheaders()
-
-                chunk = body.read(self.CHUNKSIZE)
-                while chunk:
-                    c.send('%x\r\n%s\r\n' % (len(chunk), chunk))
-                    chunk = body.read(self.CHUNKSIZE)
-                c.send('0\r\n\r\n')
-            else:
-                # Simple request...
-                c.request(method, action, body, headers)
-            res = c.getresponse()
-            status_code = self.get_status_code(res)
-            if status_code in (httplib.OK,
-                               httplib.CREATED,
-                               httplib.ACCEPTED,
-                               httplib.NO_CONTENT):
-                return res
-            elif status_code == httplib.UNAUTHORIZED:
-                raise exception.NotAuthorized
-            elif status_code == httplib.FORBIDDEN:
-                raise exception.NotAuthorized
-            elif status_code == httplib.NOT_FOUND:
-                raise exception.NotFound
-            elif status_code == httplib.CONFLICT:
-                raise exception.Duplicate(res.read())
-            elif status_code == httplib.BAD_REQUEST:
-                raise exception.Invalid(res.read())
-            elif status_code == httplib.INTERNAL_SERVER_ERROR:
-                raise Exception("Internal Server error: %s" % res.read())
-            else:
-                raise Exception("Unknown error occurred! %s" % res.read())
-
-        except (socket.error, IOError), e:
-            raise ClientConnectionError("Unable to connect to "
-                                        "server. Got error: %s" % e)
-
-    def get_status_code(self, response):
-        """
-        Returns the integer status code from the response, which
-        can be either a Webob.Response (used in testing) or httplib.Response
-        """
-        if hasattr(response, 'status_int'):
-            return response.status_int
-        else:
-            return response.status
-
-    def _extract_get_params(self, params):
-        """
-        Attempts to extract a subset of keys from the input dictionary.
-
-        :param params: dict of values to filter
-        :retval subset of 'params' dict
-        """
-        result = params.get('filters', {})
-        for PARAM in SUPPORTED_GET_PARAMS:
-            if PARAM in params:
-                result[PARAM] = params[PARAM]
-        return result
-
-
-class V1Client(BaseClient):
+class V1Client(base_client.BaseClient):
 
     """Main client class for accessing Glance resources"""
 
@@ -237,8 +65,7 @@ class V1Client(BaseClient):
         :param sort_key: results will be ordered by this image attribute
         :param sort_dir: direction in which to to order results (asc, desc)
         """
-
-        params = self._extract_get_params(kwargs)
+        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images", params=params)
         data = json.loads(res.read())['images']
         return data
@@ -255,7 +82,7 @@ class V1Client(BaseClient):
         :param sort_dir: direction in which to to order results (asc, desc)
         """
 
-        params = self._extract_get_params(kwargs)
+        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images/detail", params=params)
         data = json.loads(res.read())['images']
         return data
@@ -273,7 +100,7 @@ class V1Client(BaseClient):
         res = self.do_request("GET", "/images/%s" % image_id)
 
         image = utils.get_image_meta_from_headers(res)
-        return image, ImageBodyIterator(res)
+        return image, base_client.ImageBodyIterator(res)
 
     def get_image_meta(self, image_id):
         """

@@ -46,6 +46,8 @@ SUPPORTED_SORT_DIRS = ('asc', 'desc')
 
 MAX_ITEM_LIMIT = 25
 
+SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
+
 
 class Controller(object):
     """Controller for the reference implementation registry server"""

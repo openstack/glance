@@ -28,6 +28,7 @@ import sys
 import stubout
 import webob
 
+import glance.common.client
 from glance.common import exception
 from glance.registry import server as rserver
 from glance.api import v1 as server
@@ -254,9 +255,9 @@ def stub_out_registry_and_store_server(stubs):
         for i in self.response.app_iter:
             yield i
 
-    stubs.Set(glance.client.BaseClient, 'get_connection_type',
+    stubs.Set(glance.common.client.BaseClient, 'get_connection_type',
               fake_get_connection_type)
-    stubs.Set(glance.client.ImageBodyIterator, '__iter__',
+    stubs.Set(glance.common.client.ImageBodyIterator, '__iter__',
               fake_image_iter)
 
 

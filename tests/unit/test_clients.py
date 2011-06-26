@@ -38,7 +38,7 @@ class TestBadClients(unittest.TestCase):
     def test_bad_address(self):
         """Test ClientConnectionError raised"""
         c = client.Client("127.999.1.1")
-        self.assertRaises(client.ClientConnectionError,
+        self.assertRaises(exception.ClientConnectionError,
                           c.get_image,
                           1)
 

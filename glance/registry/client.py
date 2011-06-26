@@ -23,7 +23,8 @@ the Glance Registry API
 import json
 import urllib
 
-from glance.client import BaseClient
+from glance.common.client import BaseClient
+from glance.registry import server
 
 
 class RegistryClient(BaseClient):
@@ -54,7 +55,7 @@ class RegistryClient(BaseClient):
         :param sort_key: results will be ordered by this image attribute
         :param sort_dir: direction in which to to order results (asc, desc)
         """
-        params = self._extract_get_params(kwargs)
+        params = self._extract_params(kwargs, server.SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images", params=params)
         data = json.loads(res.read())['images']
         return data
@@ -69,7 +70,7 @@ class RegistryClient(BaseClient):
         :param sort_key: results will be ordered by this image attribute
         :param sort_dir: direction in which to to order results (asc, desc)
         """
-        params = self._extract_get_params(kwargs)
+        params = self._extract_params(kwargs, server.SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images/detail", params=params)
         data = json.loads(res.read())['images']
         return data
