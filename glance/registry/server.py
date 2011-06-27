@@ -106,7 +106,8 @@ class Controller(object):
         return dict(images=image_dicts)
 
     def _get_query_params(self, req):
-        """Extract necessary query parameters from http request.
+        """
+        Extract necessary query parameters from http request.
 
         :param req: the Request object coming from the wsgi layer
         :retval dictionary of filters to apply to list of images

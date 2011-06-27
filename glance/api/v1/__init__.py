@@ -19,6 +19,7 @@ import logging
 
 import routes
 
+from glance.api.v1 import images
 from glance.common import wsgi
 
 logger = logging.getLogger('glance.api.v1')
@@ -29,7 +30,6 @@ class API(wsgi.Router):
     """WSGI router for Glance v1 API requests."""
 
     def __init__(self, options):
-        from glance.api.v1 import images
         self.options = options
         mapper = routes.Mapper()
         resource = images.create_resource(options)
