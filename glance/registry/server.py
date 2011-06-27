@@ -110,7 +110,6 @@ class Controller(object):
 
         :param req: the Request object coming from the wsgi layer
         :retval dictionary of filters to apply to list of images
-
         """
         params = {
             'filters': self._get_filters(req),
