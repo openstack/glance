@@ -551,7 +551,8 @@ def print_help(options, args):
 
 
 def user_confirm(prompt, default=False):
-    """Yes/No question dialog with user.
+    """
+    Yes/No question dialog with user.
 
     :param prompt: question/statement to present to user (string)
     :param default: boolean value to return if empty string
