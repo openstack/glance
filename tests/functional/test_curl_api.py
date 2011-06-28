@@ -773,7 +773,7 @@ class TestCurlApi(functional.FunctionalTest):
         with tempfile.NamedTemporaryFile() as test_data_file:
             test_data_file.write("XXX")
             test_data_file.flush()
-            cmd = ("curl -i -X POST --upload-file %s "
+            cmd = ("curl -i -X POST --upload-file %s -H 'Expect: ' "
                    "http://0.0.0.0:%d/v1/images") % (test_data_file.name,
                                                   api_port)
 
@@ -1117,3 +1117,118 @@ class TestCurlApi(functional.FunctionalTest):
         self.assertEqual(int(images[0]['id']), 2)
 
         self.stop_servers()
+
+    def test_ordered_images(self):
+        """
+        Set up three test images and ensure each query param filter works
+        """
+        self.cleanup()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 0. GET /images
+        # Verify no public images
+        cmd = "curl http://0.0.0.0:%d/v1/images" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('{"images": []}', out.strip())
+
+        # 1. POST /images with three public images with various attributes
+        cmd = ("curl -i -X POST "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'X-Image-Meta-Name: Image1' "
+               "-H 'X-Image-Meta-Status: active' "
+               "-H 'X-Image-Meta-Container-Format: ovf' "
+               "-H 'X-Image-Meta-Disk-Format: vdi' "
+               "-H 'X-Image-Meta-Size: 19' "
+               "-H 'X-Image-Meta-Is-Public: True' "
+               "http://0.0.0.0:%d/v1/images") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
+
+        cmd = ("curl -i -X POST "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'X-Image-Meta-Name: ASDF' "
+               "-H 'X-Image-Meta-Status: active' "
+               "-H 'X-Image-Meta-Container-Format: bare' "
+               "-H 'X-Image-Meta-Disk-Format: iso' "
+               "-H 'X-Image-Meta-Size: 2' "
+               "-H 'X-Image-Meta-Is-Public: True' "
+               "http://0.0.0.0:%d/v1/images") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
+        cmd = ("curl -i -X POST "
+               "-H 'Expect: ' "  # Necessary otherwise sends 100 Continue
+               "-H 'X-Image-Meta-Name: XYZ' "
+               "-H 'X-Image-Meta-Status: saving' "
+               "-H 'X-Image-Meta-Container-Format: ami' "
+               "-H 'X-Image-Meta-Disk-Format: ami' "
+               "-H 'X-Image-Meta-Size: 5' "
+               "-H 'X-Image-Meta-Is-Public: True' "
+               "http://0.0.0.0:%d/v1/images") % api_port
+
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 201 Created", status_line)
+
+        # 2. GET /images with no query params
+        # Verify three public images sorted by created_at desc
+        cmd = "curl http://0.0.0.0:%d/v1/images" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())['images']
+
+        self.assertEqual(len(images), 3)
+        self.assertEqual(images[0]['id'], 3)
+        self.assertEqual(images[1]['id'], 2)
+        self.assertEqual(images[2]['id'], 1)
+
+        # 3. GET /images sorted by name asc
+        params = 'sort_key=name&sort_dir=asc'
+        cmd = "curl 'http://0.0.0.0:%d/v1/images?%s'" % (api_port, params)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())['images']
+
+        self.assertEqual(len(images), 3)
+        self.assertEqual(images[0]['id'], 2)
+        self.assertEqual(images[1]['id'], 1)
+        self.assertEqual(images[2]['id'], 3)
+
+        # 4. GET /images sorted by size desc
+        params = 'sort_key=size&sort_dir=desc'
+        cmd = "curl 'http://0.0.0.0:%d/v1/images?%s'" % (api_port, params)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        images = json.loads(out.strip())['images']
+
+        self.assertEqual(len(images), 3)
+        self.assertEqual(images[0]['id'], 1)
+        self.assertEqual(images[1]['id'], 3)
+        self.assertEqual(images[2]['id'], 2)
