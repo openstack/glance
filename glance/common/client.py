@@ -88,6 +88,12 @@ class BaseClient(object):
         body in memory.
         """
         if type(params) is dict:
+
+            # remove any params that are None
+            for (key, value) in params.items():
+                if value is None:
+                    del params[key]
+
             action += '?' + urllib.urlencode(params)
 
         try:
