@@ -21,6 +21,7 @@ import hashlib
 import httplib2
 import json
 import os
+from pprint import pprint
 
 from tests import functional
 from tests.utils import execute
@@ -270,5 +271,123 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertEqual(len(data['properties']), 2)
         self.assertEqual(data['properties']['arch'], "x86_64")
         self.assertEqual(data['properties']['distro'], "Ubuntu")
+
+        self.stop_servers()
+
+    def  test_002_queued_process_flow(self):
+        """
+        We test the process flow where a user registers an image
+        with Glance but does not immediately upload an image file.
+        Later, the user uploads an image file using a PUT operation.
+        We track the changing of image status throughout this process.
+
+        0. GET /images
+        - Verify no public images
+        1. POST /images with public image named Image1 with no location
+           attribute and no image data.
+        - Verify 201 returned
+        2. GET /images
+        - Verify one public image
+        3. HEAD /images/1
+        - Verify image now in queued status
+        4. PUT /images/1 with image data
+        - Verify 200 returned
+        5. HEAD /images/1
+        - Verify image now in active status
+        6. GET /images
+        - Verify one public image
+        """
+
+        self.cleanup()
+        self.start_servers()
+
+        # 0. GET /images
+        # Verify no public images
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, '{"images": []}')
+
+        # 1. POST /images with public image named Image1
+        # with no location or image data
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        self.assertEqual(data['image']['checksum'], None)
+        self.assertEqual(data['image']['size'], 0)
+        self.assertEqual(data['image']['container_format'], None)
+        self.assertEqual(data['image']['disk_format'], None)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(data['image']['is_public'], True)
+
+        # 2. GET /images
+        # Verify 1 public image
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(data['images'][0]['id'], 1)
+        self.assertEqual(data['images'][0]['checksum'], None)
+        self.assertEqual(data['images'][0]['size'], 0)
+        self.assertEqual(data['images'][0]['container_format'], None)
+        self.assertEqual(data['images'][0]['disk_format'], None)
+        self.assertEqual(data['images'][0]['name'], "Image1")
+
+        # 3. HEAD /images
+        # Verify status is in queued
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['x-image-meta-name'], "Image1")
+        self.assertEqual(response['x-image-meta-status'], "queued")
+        self.assertEqual(response['x-image-meta-size'], '0')
+        self.assertEqual(response['x-image-meta-id'], '1')
+
+        # 4. PUT /images/1 with image data, verify 200 returned
+        image_data = "*" * FIVE_KB
+        headers = {'Content-Type': 'application/octet-stream'}
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT', headers=headers,
+                                         body=image_data)
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(data['image']['checksum'],
+                         hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_KB)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(data['image']['is_public'], True)
+
+        # 5. HEAD /images
+        # Verify status is in active
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['x-image-meta-name'], "Image1")
+        self.assertEqual(response['x-image-meta-status'], "active")
+
+        # 6. GET /images
+        # Verify 1 public image still...
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(data['images'][0]['checksum'],
+                         hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['images'][0]['id'], 1)
+        self.assertEqual(data['images'][0]['size'], FIVE_KB)
+        self.assertEqual(data['images'][0]['container_format'], None)
+        self.assertEqual(data['images'][0]['disk_format'], None)
+        self.assertEqual(data['images'][0]['name'], "Image1")
 
         self.stop_servers()
