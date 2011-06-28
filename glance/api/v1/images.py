@@ -45,6 +45,8 @@ logger = logging.getLogger('glance.api.v1.images')
 SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
                      'size_min', 'size_max']
 
+SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
+
 
 class Controller(object):
 
@@ -92,14 +94,7 @@ class Controller(object):
                  'size': <SIZE>}, ...
             ]}
         """
-        params = {'filters': self._get_filters(req)}
-
-        if 'limit' in req.str_params:
-            params['limit'] = req.str_params.get('limit')
-
-        if 'marker' in req.str_params:
-            params['marker'] = req.str_params.get('marker')
-
+        params = self._get_query_params(req)
         images = registry.get_images_list(self.options, **params)
         return dict(images=images)
 
@@ -125,16 +120,22 @@ class Controller(object):
                  'properties': {'distro': 'Ubuntu 10.04 LTS', ...}}, ...
             ]}
         """
-        params = {'filters': self._get_filters(req)}
-
-        if 'limit' in req.str_params:
-            params['limit'] = req.str_params.get('limit')
-
-        if 'marker' in req.str_params:
-            params['marker'] = req.str_params.get('marker')
-
+        params = self._get_query_params(req)
         images = registry.get_images_detail(self.options, **params)
         return dict(images=images)
+
+    def _get_query_params(self, req):
+        """
+        Extracts necessary query params from request.
+
+        :param req: the WSGI Request object
+        :retval dict of parameters that can be used by registry client
+        """
+        params = {'filters': self._get_filters(req)}
+        for PARAM in SUPPORTED_PARAMS:
+            if PARAM in req.str_params:
+                params[PARAM] = req.str_params.get(PARAM)
+        return params
 
     def _get_filters(self, req):
         """
