@@ -97,10 +97,10 @@ def image_create(context, values):
 
 
 def image_update(context, image_id, values, purge_props=False):
-    """Set the given properties on an image and update it.
+    """
+    Set the given properties on an image and update it.
 
-    Raises NotFound if image does not exist.
-
+    :raises NotFound if image does not exist.
     """
     return _image_update(context, values, image_id, purge_props)
 
@@ -131,7 +131,8 @@ def image_get(context, image_id, session=None):
 
 def image_get_all_public(context, filters=None, marker=None, limit=None,
                          sort_key='created_at', sort_dir='desc'):
-    """Get all public images that match zero or more filters.
+    """
+    Get all public images that match zero or more filters.
 
     :param filters: dict of filter keys and values. If a 'properties'
                     key is present, it is treated as a dict of key/value
@@ -189,7 +190,8 @@ def image_get_all_public(context, filters=None, marker=None, limit=None,
 
 
 def _drop_protected_attrs(model_class, values):
-    """Removed protected attributes from values dictionary using the models
+    """
+    Removed protected attributes from values dictionary using the models
     __protected_attributes__ field.
     """
     for attr in model_class.__protected_attributes__:
@@ -204,7 +206,6 @@ def validate_image(values):
 
     :param values: Mapping of image metadata to check
     """
-
     status = values.get('status')
     disk_format = values.get('disk_format')
     container_format = values.get('container_format')
@@ -237,13 +238,13 @@ def validate_image(values):
 
 
 def _image_update(context, values, image_id, purge_props=False):
-    """Used internally by image_create and image_update
+    """
+    Used internally by image_create and image_update
 
     :param context: Request context
     :param values: A dict of attributes to set
     :param image_id: If None, create the image, otherwise, find and update it
     """
-
     session = get_session()
     with session.begin():
 
@@ -325,7 +326,8 @@ def image_property_update(context, prop_ref, values, session=None):
 
 
 def _image_property_update(context, prop_ref, values, session=None):
-    """Used internally by image_property_create and image_property_update
+    """
+    Used internally by image_property_create and image_property_update
     """
     _drop_protected_attrs(models.ImageProperty, values)
     values["deleted"] = False
@@ -335,7 +337,8 @@ def _image_property_update(context, prop_ref, values, session=None):
 
 
 def image_property_delete(context, prop_ref, session=None):
-    """Used internally by image_property_create and image_property_update
+    """
+    Used internally by image_property_create and image_property_update
     """
     prop_ref.update(dict(deleted=True))
     prop_ref.save(session=session)
@@ -344,8 +347,8 @@ def image_property_delete(context, prop_ref, session=None):
 
 # pylint: disable-msg=C0111
 def _deleted(context):
-    """Calculates whether to include deleted objects based on context.
-
+    """
+    Calculates whether to include deleted objects based on context.
     Currently just looks for a flag called deleted in the context dict.
     """
     if not hasattr(context, 'get'):

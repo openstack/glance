@@ -44,14 +44,14 @@ DEBUG = False
 
 
 def stub_out_http_backend(stubs):
-    """Stubs out the httplib.HTTPRequest.getresponse to return
+    """
+    Stubs out the httplib.HTTPRequest.getresponse to return
     faked-out data instead of grabbing actual contents of a resource
 
     The stubbed getresponse() returns an iterator over
     the data "I am a teapot, short and stout\n"
 
     :param stubs: Set of stubout stubs
-
     """
 
     class FakeHTTPConnection(object):
@@ -95,7 +95,6 @@ def stub_out_filesystem_backend():
         //tmp/glance-tests/2 <-- file containing "chunk00000remainder"
 
     The stubbed service yields the data in the above files.
-
     """
 
     # Establish a clean faked filesystem with dummy images
@@ -109,13 +108,13 @@ def stub_out_filesystem_backend():
 
 
 def stub_out_s3_backend(stubs):
-    """ Stubs out the S3 Backend with fake data and calls.
+    """
+    Stubs out the S3 Backend with fake data and calls.
 
     The stubbed s3 backend provides back an iterator over
     the data ""
 
     :param stubs: Set of stubout stubs
-
     """
 
     class FakeSwiftAuth(object):
@@ -262,7 +261,8 @@ def stub_out_registry_and_store_server(stubs):
 
 
 def stub_out_registry_db_image_api(stubs):
-    """Stubs out the database set/fetch API calls for Registry
+    """
+    Stubs out the database set/fetch API calls for Registry
     so the calls are routed to an in-memory dict. This helps us
     avoid having to manually clear or flush the SQLite database.
 
@@ -270,6 +270,7 @@ def stub_out_registry_db_image_api(stubs):
 
     :param stubs: Set of stubout stubs
     """
+
     class FakeDatastore(object):
 
         FIXTURES = [

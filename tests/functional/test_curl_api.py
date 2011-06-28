@@ -63,7 +63,6 @@ class TestCurlApi(functional.FunctionalTest):
         11. PUT /images/1
         - Add a previously deleted property.
         """
-
         self.cleanup()
         self.start_servers()
 
@@ -382,7 +381,6 @@ class TestCurlApi(functional.FunctionalTest):
         6. GET /images
         - Verify one public image
         """
-
         self.cleanup()
         self.start_servers()
 
@@ -502,7 +500,6 @@ class TestCurlApi(functional.FunctionalTest):
         handled properly, and that usage of the Accept: header does
         content negotiation properly.
         """
-
         self.cleanup()
         self.start_servers()
 
@@ -693,7 +690,6 @@ class TestCurlApi(functional.FunctionalTest):
 
         :see https://bugs.launchpad.net/glance/+bug/739433
         """
-
         self.cleanup()
         self.start_servers()
 
@@ -760,7 +756,6 @@ class TestCurlApi(functional.FunctionalTest):
 
         :see https://bugs.launchpad.net/glance/+bug/755912
         """
-
         self.cleanup()
         self.start_servers()
 

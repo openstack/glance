@@ -63,7 +63,6 @@ class TestApiHttplib2(functional.FunctionalTest):
         11. PUT /images/1
         - Add a previously deleted property.
         """
-
         self.cleanup()
         self.start_servers()
 

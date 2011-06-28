@@ -33,7 +33,6 @@ class TestLogging(functional.FunctionalTest):
         Test logging output proper when verbose and debug
         is on.
         """
-
         self.cleanup()
         self.start_servers()
 
@@ -60,7 +59,6 @@ class TestLogging(functional.FunctionalTest):
         Test logging output proper when verbose and debug
         is off.
         """
-
         self.cleanup()
         self.start_servers(debug=False, verbose=False)
 

@@ -41,7 +41,6 @@ class RegistryClient(BaseClient):
         :param port: The port where Glance resides (defaults to 9191)
         :param use_ssl: Should we use HTTPS? (defaults to False)
         """
-
         port = port or self.DEFAULT_PORT
         super(RegistryClient, self).__init__(host, port, use_ssl)
 
