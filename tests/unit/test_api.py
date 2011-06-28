@@ -1478,7 +1478,6 @@ class TestGlanceAPI(unittest.TestCase):
         Tests that the /images registry API returns list of
         public images sorted alphabetically by name in
         ascending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
