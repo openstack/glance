@@ -83,6 +83,11 @@ class DatabaseMigrationError(Error):
     pass
 
 
+class ClientConnectionError(Exception):
+    """Error resulting from a client connecting to a server"""
+    pass
+
+
 def wrap_exception(f):
     def _wrap(*args, **kw):
         try:
