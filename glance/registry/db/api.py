@@ -23,7 +23,7 @@ Defines interface for DB access
 
 import logging
 
-from sqlalchemy import create_engine, desc
+from sqlalchemy import asc, create_engine, desc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import exc
 from sqlalchemy.orm import joinedload
@@ -129,7 +129,8 @@ def image_get(context, image_id, session=None):
         raise exception.NotFound("No image found with ID %s" % image_id)
 
 
-def image_get_all_public(context, filters=None, marker=None, limit=None):
+def image_get_all_public(context, filters=None, marker=None, limit=None,
+                         sort_key='created_at', sort_dir='desc'):
     """Get all public images that match zero or more filters.
 
     :param filters: dict of filter keys and values. If a 'properties'
@@ -137,7 +138,8 @@ def image_get_all_public(context, filters=None, marker=None, limit=None):
                     filters on the image properties attribute
     :param marker: image id after which to start page
     :param limit: maximum number of images to return
-
+    :param sort_key: image attribute by which results should be sorted
+    :param sort_dir: direction in which results should be sorted (asc, desc)
     """
     filters = filters or {}
 
@@ -146,9 +148,17 @@ def image_get_all_public(context, filters=None, marker=None, limit=None):
                    options(joinedload(models.Image.properties)).\
                    filter_by(deleted=_deleted(context)).\
                    filter_by(is_public=True).\
-                   filter(models.Image.status != 'killed').\
-                   order_by(desc(models.Image.created_at)).\
-                   order_by(desc(models.Image.id))
+                   filter(models.Image.status != 'killed')
+
+    sort_dir_func = {
+        'asc': asc,
+        'desc': desc,
+    }[sort_dir]
+
+    sort_key_attr = getattr(models.Image, sort_key)
+
+    query = query.order_by(sort_dir_func(sort_key_attr)).\
+                  order_by(sort_dir_func(models.Image.id))
 
     if 'size_min' in filters:
         query = query.filter(models.Image.size >= filters['size_min'])
