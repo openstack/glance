@@ -72,9 +72,9 @@ class TestRegistryClient(unittest.TestCase):
             self.assertEquals(v, images[0][k])
 
     def test_get_index_sort_id_desc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted by id in descending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -106,10 +106,10 @@ class TestRegistryClient(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 2)
 
     def test_get_index_sort_name_asc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted alphabetically by name in
         ascending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -141,10 +141,10 @@ class TestRegistryClient(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 4)
 
     def test_get_index_sort_status_desc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted alphabetically by status in
         descending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'killed',
@@ -176,10 +176,10 @@ class TestRegistryClient(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 2)
 
     def test_get_index_sort_disk_format_asc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted alphabetically by disk_format in
         ascending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -212,10 +212,10 @@ class TestRegistryClient(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 2)
 
     def test_get_index_sort_container_format_desc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted alphabetically by container_format in
         descending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -248,9 +248,9 @@ class TestRegistryClient(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 3)
 
     def test_get_index_sort_size_asc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted by size in ascending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -282,9 +282,9 @@ class TestRegistryClient(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 3)
 
     def test_get_index_sort_created_at_asc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted by created_at in ascending order.
-
         """
         now = datetime.datetime.utcnow()
         time1 = now + datetime.timedelta(seconds=5)
@@ -322,9 +322,9 @@ class TestRegistryClient(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 3)
 
     def test_get_index_sort_updated_at_desc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted by updated_at in descending order.
-
         """
         now = datetime.datetime.utcnow()
         time1 = now + datetime.timedelta(seconds=5)
@@ -655,10 +655,10 @@ class TestRegistryClient(unittest.TestCase):
             self.assertEquals('v a', image['properties']['p a'])
 
     def test_get_image_details_sort_disk_format_asc(self):
-        """Tests that a detailed call returns list of
+        """
+        Tests that a detailed call returns list of
         public images sorted alphabetically by disk_format in
         ascending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -896,10 +896,10 @@ class TestClient(unittest.TestCase):
                           3)
 
     def test_get_image_index_sort_container_format_desc(self):
-        """Tests that the client returns list of public images
+        """
+        Tests that the client returns list of public images
         sorted alphabetically by container_format in
         descending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',

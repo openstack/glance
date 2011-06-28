@@ -286,9 +286,9 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertEqual('new name! #123', image['name'])
 
     def test_get_index_sort_default_created_at_desc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images that conforms to a default sort key/dir
-
         """
         time1 = datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
         time2 = datetime.datetime.utcnow()
@@ -354,9 +354,9 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEqual(400, res.status_int)
 
     def test_get_index_sort_id_desc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted by id in descending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -392,10 +392,10 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 2)
 
     def test_get_index_sort_name_asc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted alphabetically by name in
         ascending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -431,10 +431,10 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 4)
 
     def test_get_index_sort_status_desc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted alphabetically by status in
         descending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'killed',
@@ -470,10 +470,10 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 2)
 
     def test_get_index_sort_disk_format_asc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted alphabetically by disk_format in
         ascending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -509,10 +509,10 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 2)
 
     def test_get_index_sort_container_format_desc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted alphabetically by container_format in
         descending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -549,9 +549,9 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 3)
 
     def test_get_index_sort_size_asc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted by size in ascending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -588,9 +588,9 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 3)
 
     def test_get_index_sort_created_at_asc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted by created_at in ascending order.
-
         """
         now = datetime.datetime.utcnow()
         time1 = now + datetime.timedelta(seconds=5)
@@ -632,9 +632,9 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 3)
 
     def test_get_index_sort_updated_at_desc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted by updated_at in descending order.
-
         """
         now = datetime.datetime.utcnow()
         time1 = now + datetime.timedelta(seconds=5)
@@ -1061,10 +1061,10 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertEqual('v a', image['properties']['prop_123'])
 
     def test_get_details_sort_name_asc(self):
-        """Tests that the /images/details registry API returns list of
+        """
+        Tests that the /images/details registry API returns list of
         public images sorted alphabetically by name in
         ascending order.
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -1474,7 +1474,8 @@ class TestGlanceAPI(unittest.TestCase):
         self.assertTrue('/images/3' in res.headers['location'])
 
     def test_get_index_sort_name_asc(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images sorted alphabetically by name in
         ascending order.
 
