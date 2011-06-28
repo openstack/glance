@@ -1191,6 +1191,23 @@ class TestClient(unittest.TestCase):
         for image in images:
             self.assertEquals('v a', image['properties']['p a'])
 
+    def test_get_image_bad_filters_with_other_params(self):
+        """Tests that a detailed call can be filtered by a property"""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None,
+                         'properties': {'p a': 'v a'}}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        images = self.client.get_images_detailed(filters=None, limit=1)
+        self.assertEquals(len(images), 1)
+
     def test_get_image_meta(self):
         """Tests that the detailed info about an image returned"""
         fixture = {'id': 2,
