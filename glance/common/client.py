@@ -168,8 +168,14 @@ class BaseClient(object):
                                reduced to
         :retval subset of 'params' dict
         """
-        result = actual_params.get('filters', {})
+        try:
+            # expect 'filters' param to be a dict here
+            result = dict(actual_params.get('filters'))
+        except TypeError:
+            result = {}
+
         for allowed_param in allowed_params:
             if allowed_param in actual_params:
                 result[allowed_param] = actual_params[allowed_param]
+
         return result
