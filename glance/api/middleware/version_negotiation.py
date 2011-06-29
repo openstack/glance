@@ -89,8 +89,8 @@ class VersionNegotiationFilter(wsgi.Middleware):
                                      req.environ['api.minor_version'])
                         return None
                     else:
-                        logger.debug("Unknown version in accept header: %s.%s..."
-                                     "returning version choices.",
+                        logger.debug("Unknown version in accept header: "
+                                     "%s.%s... returning version choices.",
                                      req.environ['api.major_version'],
                                      req.environ['api.minor_version'])
                         return self.versions_app
