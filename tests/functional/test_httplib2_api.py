@@ -547,6 +547,8 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertTrue('Unknown version in versioned URI'
                         in open(self.api_server.log_file).read())
 
+        self.stop_servers()
+
     def test_size_greater_2G_mysql(self):
         """
         A test against the actual datastore backend for the registry
@@ -587,3 +589,5 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertEqual(response['x-image-meta-size'], str(FIVE_GB))
         self.assertEqual(response['x-image-meta-name'], 'Image1')
         self.assertEqual(response['x-image-meta-is_public'], 'True')
+
+        self.stop_servers()
