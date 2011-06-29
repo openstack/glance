@@ -146,6 +146,15 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(int(images[1]['id']), 5)
         self.assertEquals(int(images[2]['id']), 2)
 
+    def test_get_index_invalid_marker(self):
+        """
+        Tests that the /images registry API returns a 400
+        when an invalid marker is provided
+        """
+        req = webob.Request.blank('/images?marker=10')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
     def test_get_index_limit(self):
         """
         Tests that the /images registry API returns list of
@@ -740,6 +749,15 @@ class TestRegistryAPI(unittest.TestCase):
 
         # expect list to be sorted by created_at desc
         self.assertEqual(int(images[0]['id']), 2)
+
+    def test_get_details_invalid_marker(self):
+        """
+        Tests that the /images/detail registry API returns a 400
+        when an invalid marker is provided
+        """
+        req = webob.Request.blank('/images/detail?marker=10')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
 
     def test_get_details_filter_name(self):
         """
@@ -1682,3 +1700,12 @@ class TestGlanceAPI(unittest.TestCase):
         req.method = 'DELETE'
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 200)
+
+    def test_get_details_invalid_marker(self):
+        """
+        Tests that the /images/detail registry API returns a 400
+        when an invalid marker is provided
+        """
+        req = webob.Request.blank('/images/detail?marker=10')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
