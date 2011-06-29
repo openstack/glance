@@ -412,23 +412,12 @@ class TestApiHttplib2(functional.FunctionalTest):
         images = {'images': []}
         images_json = json.dumps(images)
 
-        # def validate_versions(response, content):
-        #     """
-        #     Returns True if supplied response text contains an
-        #     appropriate 300 Multiple Choices and has the correct
-        #     versions output.
-        #     """
-        #     return (response.status == 300
-        #             and versions_json == content)
-
         # 0. GET / with no Accept: header
         # Verify version choices returned.
+        # Bug lp:803260  no Accept header causes a 500 in glance-api
         path = "http://%s:%d/" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
-        # Bug lp:803260  no Accept header causes a 500 in glance-api
-        headers = {'Accept': '*/*'}
-        response, content = http.request(path, 'GET', headers=headers)
-        # response, content = http.request(path, 'GET')
+        response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 300)
         self.assertEqual(content, versions_json)
 
@@ -436,9 +425,7 @@ class TestApiHttplib2(functional.FunctionalTest):
         # Verify version choices returned.
         path = "http://%s:%d/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
-        # Have to set Accept header, or else GLANCE returns a 500
-        headers = {'Accept': '*/*'}
-        response, content = http.request(path, 'GET', headers=headers)
+        response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 300)
         self.assertEqual(content, versions_json)
 
@@ -503,9 +490,7 @@ class TestApiHttplib2(functional.FunctionalTest):
         # Verify version choices returned
         path = "http://%s:%d/va.1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
-        # Have to set Accept header, or else GLANCE returns a 500
-        headers = {'Accept': '*/*'}
-        response, content = http.request(path, 'GET', headers=headers)
+        response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 300)
         self.assertEqual(content, versions_json)
 
