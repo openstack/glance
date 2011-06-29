@@ -34,7 +34,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
     """Functional tests using httplib2 against the API server"""
 
-    def test_001_get_head_simple_post(self):
+    def test_get_head_simple_post(self):
         """
         We test the following sequential series of actions:
 
@@ -274,7 +274,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         self.stop_servers()
 
-    def  test_002_queued_process_flow(self):
+    def  test_queued_process_flow(self):
         """
         We test the process flow where a user registers an image
         with Glance but does not immediately upload an image file.
@@ -392,7 +392,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         self.stop_servers()
 
-    def test_003_version_variations(self):
+    def test_version_variations(self):
         """
         We test that various calls to the images and root endpoints are
         handled properly, and that usage of the Accept: header does
@@ -548,7 +548,7 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertTrue('Unknown version in versioned URI'
                         in open(self.api_server.log_file).read())
 
-    def test_004_size_greater_2G_mysql(self):
+    def test_size_greater_2G_mysql(self):
         """
         A test against the actual datastore backend for the registry
         to ensure that the image size property is not truncated.
