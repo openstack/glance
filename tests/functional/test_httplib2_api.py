@@ -21,7 +21,6 @@ import hashlib
 import httplib2
 import json
 import os
-from pprint import pprint
 
 from tests import functional
 from tests.utils import execute
