@@ -44,7 +44,6 @@ class V1Client(base_client.BaseClient):
         :param use_ssl: Should we use HTTPS? (defaults to False)
         :param doc_root: Prefix for all URLs we request from host
         """
-
         port = port or self.DEFAULT_PORT
         self.doc_root = doc_root
         super(Client, self).__init__(host, port, use_ssl)
@@ -81,7 +80,6 @@ class V1Client(base_client.BaseClient):
         :param sort_key: results will be ordered by this image attribute
         :param sort_dir: direction in which to to order results (asc, desc)
         """
-
         params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images/detail", params=params)
         data = json.loads(res.read())['images']
@@ -126,7 +124,6 @@ class V1Client(base_client.BaseClient):
 
         :retval The newly-stored image's metadata.
         """
-
         headers = utils.image_meta_to_http_headers(image_meta or {})
 
         if image_data:

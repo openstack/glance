@@ -57,7 +57,8 @@ class Controller(object):
         db_api.configure_db(options)
 
     def index(self, req):
-        """Return a basic filtered list of public, non-deleted images
+        """
+        Return a basic filtered list of public, non-deleted images
 
         :param req: the Request object coming from the wsgi layer
         :retval a mapping of the following form::
@@ -74,7 +75,6 @@ class Controller(object):
             'container_format': <CONTAINER_FORMAT>,
             'checksum': <CHECKSUM>
             }
-
         """
         params = self._get_query_params(req)
         images = db_api.image_get_all_public(None, **params)
@@ -88,7 +88,8 @@ class Controller(object):
         return dict(images=results)
 
     def detail(self, req):
-        """Return a filtered list of public, non-deleted images in detail
+        """
+        Return a filtered list of public, non-deleted images in detail
 
         :param req: the Request object coming from the wsgi layer
         :retval a mapping of the following form::
@@ -97,7 +98,6 @@ class Controller(object):
 
         Where image_list is a sequence of mappings containing
         all image model fields.
-
         """
         params = self._get_query_params(req)
         images = db_api.image_get_all_public(None, **params)
@@ -127,11 +127,11 @@ class Controller(object):
         return params
 
     def _get_filters(self, req):
-        """Return a dictionary of query param filters from the request
+        """
+        Return a dictionary of query param filters from the request
 
         :param req: the Request object coming from the wsgi layer
         :retval a dict of key/value filters
-
         """
         filters = {}
         properties = {}
@@ -208,7 +208,6 @@ class Controller(object):
         :param id:  The opaque internal identifier for the image
 
         :retval Returns 200 if delete was successful, a fault if not.
-
         """
         context = None
         try:
@@ -226,7 +225,6 @@ class Controller(object):
         :retval Returns the newly-created image information as a mapping,
                 which will include the newly-created image's internal id
                 in the 'id' field
-
         """
         image_data = body['image']
 
@@ -247,14 +245,14 @@ class Controller(object):
             return exc.HTTPBadRequest(msg)
 
     def update(self, req, id, body):
-        """Updates an existing image with the registry.
+        """
+        Updates an existing image with the registry.
 
         :param req: wsgi Request object
         :param body: Dictionary of information about the image
         :param id:  The opaque internal identifier for the image
 
         :retval Returns the updated image information as a mapping,
-
         """
         image_data = body['image']
 
