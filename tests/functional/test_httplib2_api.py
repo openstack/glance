@@ -274,7 +274,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         self.stop_servers()
 
-    def  test_queued_process_flow(self):
+    def test_queued_process_flow(self):
         """
         We test the process flow where a user registers an image
         with Glance but does not immediately upload an image file.
