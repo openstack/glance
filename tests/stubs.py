@@ -447,6 +447,9 @@ def stub_out_registry_db_image_api(stubs):
                         start_index = i + 1
                         break
 
+            if start_index == -1:
+                raise exception.NotFound(marker)
+
             return images[start_index:start_index + limit]
 
     fake_datastore = FakeDatastore()

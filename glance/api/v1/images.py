@@ -95,7 +95,11 @@ class Controller(object):
             ]}
         """
         params = self._get_query_params(req)
-        images = registry.get_images_list(self.options, **params)
+        try:
+            images = registry.get_images_list(self.options, **params)
+        except exception.Invalid, e:
+            raise HTTPBadRequest(explanation=str(e))
+
         return dict(images=images)
 
     def detail(self, req):
@@ -121,7 +125,10 @@ class Controller(object):
             ]}
         """
         params = self._get_query_params(req)
-        images = registry.get_images_detail(self.options, **params)
+        try:
+            images = registry.get_images_detail(self.options, **params)
+        except exception.Invalid, e:
+            raise HTTPBadRequest(explanation=str(e))
         return dict(images=images)
 
     def _get_query_params(self, req):

@@ -393,6 +393,12 @@ class TestRegistryClient(unittest.TestCase):
         for image in images:
             self.assertTrue(image['id'] < 4)
 
+    def test_get_image_index_invalid_marker(self):
+        """Test exception is raised when marker is invalid"""
+        self.assertRaises(exception.Invalid,
+                          self.client.get_images,
+                          marker=4)
+
     def test_get_image_index_limit(self):
         """Test correct number of images returned with limit param."""
         extra_fixture = {'id': 3,
@@ -544,6 +550,12 @@ class TestRegistryClient(unittest.TestCase):
         self.assertEquals(len(images), 1)
 
         self.assertEquals(images[0]['id'], 2)
+
+    def test_get_image_details_invalid_marker(self):
+        """Test exception is raised when marker is invalid"""
+        self.assertRaises(exception.Invalid,
+                          self.client.get_images_detailed,
+                          marker=4)
 
     def test_get_image_details_by_name(self):
         """Tests that a detailed call can be filtered by name"""
@@ -996,6 +1008,12 @@ class TestClient(unittest.TestCase):
         for image in images:
             self.assertTrue(image['id'] < 4)
 
+    def test_get_image_index_invalid_marker(self):
+        """Test exception is raised when marker is invalid"""
+        self.assertRaises(exception.Invalid,
+                          self.client.get_images,
+                          marker=4)
+
     def test_get_image_index_limit(self):
         """Test correct number of public images returned with limit param."""
         extra_fixture = {'id': 3,
@@ -1147,6 +1165,12 @@ class TestClient(unittest.TestCase):
         self.assertEquals(len(images), 1)
 
         self.assertEquals(images[0]['id'], 2)
+
+    def test_get_image_details_invalid_marker(self):
+        """Test exception is raised when marker is invalid"""
+        self.assertRaises(exception.Invalid,
+                          self.client.get_images_detailed,
+                          marker=4)
 
     def test_get_image_details_by_base_attribute(self):
         """Tests that a detailed call can be filtered by a base attribute"""

@@ -77,7 +77,11 @@ class Controller(object):
             }
         """
         params = self._get_query_params(req)
-        images = db_api.image_get_all_public(None, **params)
+        try:
+            images = db_api.image_get_all_public(None, **params)
+        except exception.NotFound, e:
+            msg = "Invalid marker. Image could not be found."
+            raise exc.HTTPBadRequest(explanation=msg)
 
         results = []
         for image in images:
@@ -100,7 +104,11 @@ class Controller(object):
         all image model fields.
         """
         params = self._get_query_params(req)
-        images = db_api.image_get_all_public(None, **params)
+        try:
+            images = db_api.image_get_all_public(None, **params)
+        except exception.NotFound, e:
+            msg = "Invalid marker. Image could not be found."
+            raise exc.HTTPBadRequest(explanation=msg)
 
         image_dicts = [make_image_dict(i) for i in images]
         return dict(images=image_dicts)
