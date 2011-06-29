@@ -412,14 +412,14 @@ class TestApiHttplib2(functional.FunctionalTest):
         images = {'images': []}
         images_json = json.dumps(images)
 
-        def validate_versions(response, content):
-            """
-            Returns True if supplied response text contains an
-            appropriate 300 Multiple Choices and has the correct
-            versions output.
-            """
-            return (response.status == 300
-                    and versions_json == content)
+        # def validate_versions(response, content):
+        #     """
+        #     Returns True if supplied response text contains an
+        #     appropriate 300 Multiple Choices and has the correct
+        #     versions output.
+        #     """
+        #     return (response.status == 300
+        #             and versions_json == content)
 
         # 0. GET / with no Accept: header
         # Verify version choices returned.
@@ -562,3 +562,44 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertEqual(content, versions_json)
         self.assertTrue('Unknown version in versioned URI'
                         in open(self.api_server.log_file).read())
+
+    def test_004_size_greater_2G_mysql(self):
+        """
+        A test against the actual datastore backend for the registry
+        to ensure that the image size property is not truncated.
+
+        :see https://bugs.launchpad.net/glance/+bug/739433
+        """
+
+        self.cleanup()
+        self.start_servers()
+
+        # 1. POST /images with public image named Image1
+        # attribute and a size of 5G. Use the HTTP engine with an
+        # X-Image-Meta-Location attribute to make Glance forego
+        # "adding" the image data.
+        # Verify a 201 OK is returned
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Location': 'http://example.com/fakeimage',
+                   'X-Image-Meta-Size': str(FIVE_GB),
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+        new_image_url = response['location']
+        self.assertTrue(new_image_url is not None,
+                        "Could not find a new image URI!")
+        self.assertTrue("v1/images" in new_image_url,
+                        "v1/images no in %s" % new_image_url)
+
+        # 2. HEAD /images
+        # Verify image size is what was passed in, and not truncated
+        path = new_image_url
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['x-image-meta-size'], str(FIVE_GB))
+        self.assertEqual(response['x-image-meta-name'], 'Image1')
+        self.assertEqual(response['x-image-meta-is_public'], 'True')
