@@ -74,35 +74,30 @@ class VersionNegotiationFilter(wsgi.Middleware):
                              req.environ['api.minor_version'])
                 return self.versions_app
 
-        if 'Accept' in req.headers:
-            accept = req.headers['Accept']
-            if accept.startswith('application/vnd.openstack.images-'):
-                token_loc = len('application/vnd.openstack.images-')
-                accept_version = accept[token_loc:]
-                match = self._match_version_string(accept_version, req)
-                if match:
-                    if (req.environ['api.major_version'] == 1 and
-                        req.environ['api.minor_version'] == 0):
-                        logger.debug("Matched versioned media type. "
-                                     "Version: %d.%d",
-                                     req.environ['api.major_version'],
-                                     req.environ['api.minor_version'])
-                        return None
-                    else:
-                        logger.debug("Unknown version in accept header: "
-                                     "%s.%s... returning version choices.",
-                                     req.environ['api.major_version'],
-                                     req.environ['api.minor_version'])
-                        return self.versions_app
-            else:
-                if req.accept not in ('*/*', ''):
-                    logger.debug("Unknown accept header: %s..."
-                                 "returning version choices.", req.accept)
-                return self.versions_app
+        accept = str(req.accept)
+        # accept = req.headers['Accept']
+        if accept.startswith('application/vnd.openstack.images-'):
+            token_loc = len('application/vnd.openstack.images-')
+            accept_version = accept[token_loc:]
+            match = self._match_version_string(accept_version, req)
+            if match:
+                if (req.environ['api.major_version'] == 1 and
+                    req.environ['api.minor_version'] == 0):
+                    logger.debug("Matched versioned media type. "
+                                 "Version: %d.%d",
+                                 req.environ['api.major_version'],
+                                 req.environ['api.minor_version'])
+                    return None
+                else:
+                    logger.debug("Unknown version in accept header: %s.%s..."
+                                 "returning version choices.",
+                                 req.environ['api.major_version'],
+                                 req.environ['api.minor_version'])
+                    return self.versions_app
         else:
-            logger.debug("Unknown accept header: %s..."
-                         "returning version choices.",
-                         req.accept)
+            if req.accept not in ('*/*', ''):
+                logger.debug("Unknown accept header: %s..."
+                             "returning version choices.", req.accept)
             return self.versions_app
         return None
 
