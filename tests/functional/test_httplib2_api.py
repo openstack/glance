@@ -21,6 +21,7 @@ import hashlib
 import httplib2
 import json
 import os
+from pprint import pprint
 
 from tests import functional
 from tests.utils import execute
@@ -33,7 +34,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
     """Functional tests using httplib2 against the API server"""
 
-    def test_001_get_head_simple_post(self):
+    def test_get_head_simple_post(self):
         """
         We test the following sequential series of actions:
 
@@ -272,3 +273,318 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertEqual(data['properties']['distro'], "Ubuntu")
 
         self.stop_servers()
+
+    def  test_queued_process_flow(self):
+        """
+        We test the process flow where a user registers an image
+        with Glance but does not immediately upload an image file.
+        Later, the user uploads an image file using a PUT operation.
+        We track the changing of image status throughout this process.
+
+        0. GET /images
+        - Verify no public images
+        1. POST /images with public image named Image1 with no location
+           attribute and no image data.
+        - Verify 201 returned
+        2. GET /images
+        - Verify one public image
+        3. HEAD /images/1
+        - Verify image now in queued status
+        4. PUT /images/1 with image data
+        - Verify 200 returned
+        5. HEAD /images/1
+        - Verify image now in active status
+        6. GET /images
+        - Verify one public image
+        """
+
+        self.cleanup()
+        self.start_servers()
+
+        # 0. GET /images
+        # Verify no public images
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, '{"images": []}')
+
+        # 1. POST /images with public image named Image1
+        # with no location or image data
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        self.assertEqual(data['image']['checksum'], None)
+        self.assertEqual(data['image']['size'], 0)
+        self.assertEqual(data['image']['container_format'], None)
+        self.assertEqual(data['image']['disk_format'], None)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(data['image']['is_public'], True)
+
+        # 2. GET /images
+        # Verify 1 public image
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(data['images'][0]['id'], 1)
+        self.assertEqual(data['images'][0]['checksum'], None)
+        self.assertEqual(data['images'][0]['size'], 0)
+        self.assertEqual(data['images'][0]['container_format'], None)
+        self.assertEqual(data['images'][0]['disk_format'], None)
+        self.assertEqual(data['images'][0]['name'], "Image1")
+
+        # 3. HEAD /images
+        # Verify status is in queued
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['x-image-meta-name'], "Image1")
+        self.assertEqual(response['x-image-meta-status'], "queued")
+        self.assertEqual(response['x-image-meta-size'], '0')
+        self.assertEqual(response['x-image-meta-id'], '1')
+
+        # 4. PUT /images/1 with image data, verify 200 returned
+        image_data = "*" * FIVE_KB
+        headers = {'Content-Type': 'application/octet-stream'}
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT', headers=headers,
+                                         body=image_data)
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(data['image']['checksum'],
+                         hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_KB)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(data['image']['is_public'], True)
+
+        # 5. HEAD /images
+        # Verify status is in active
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['x-image-meta-name'], "Image1")
+        self.assertEqual(response['x-image-meta-status'], "active")
+
+        # 6. GET /images
+        # Verify 1 public image still...
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(data['images'][0]['checksum'],
+                         hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['images'][0]['id'], 1)
+        self.assertEqual(data['images'][0]['size'], FIVE_KB)
+        self.assertEqual(data['images'][0]['container_format'], None)
+        self.assertEqual(data['images'][0]['disk_format'], None)
+        self.assertEqual(data['images'][0]['name'], "Image1")
+
+        self.stop_servers()
+
+    def test_version_variations(self):
+        """
+        We test that various calls to the images and root endpoints are
+        handled properly, and that usage of the Accept: header does
+        content negotiation properly.
+        """
+
+        self.cleanup()
+        self.start_servers()
+
+        versions = {'versions': [{
+            "id": "v1.0",
+            "status": "CURRENT",
+            "links": [{
+                "rel": "self",
+                "href": "http://0.0.0.0:%d/v1/" % self.api_port}]}]}
+        versions_json = json.dumps(versions)
+        images = {'images': []}
+        images_json = json.dumps(images)
+
+        # 0. GET / with no Accept: header
+        # Verify version choices returned.
+        # Bug lp:803260  no Accept header causes a 500 in glance-api
+        path = "http://%s:%d/" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 300)
+        self.assertEqual(content, versions_json)
+
+        # 1. GET /images with no Accept: header
+        # Verify version choices returned.
+        path = "http://%s:%d/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 300)
+        self.assertEqual(content, versions_json)
+
+        # 2. GET /v1/images with no Accept: header
+        # Verify empty images list returned.
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, images_json)
+
+        # 3. GET / with Accept: unknown header
+        # Verify version choices returned. Verify message in API log about
+        # unknown accept header.
+        path = "http://%s:%d/" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        headers = {'Accept': 'unknown'}
+        response, content = http.request(path, 'GET', headers=headers)
+        self.assertEqual(response.status, 300)
+        self.assertEqual(content, versions_json)
+        self.assertTrue('Unknown accept header'
+                        in open(self.api_server.log_file).read())
+
+        # 4. GET / with an Accept: application/vnd.openstack.images-v1
+        # Verify empty image list returned
+        path = "http://%s:%d/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        headers = {'Accept': 'application/vnd.openstack.images-v1'}
+        response, content = http.request(path, 'GET', headers=headers)
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, images_json)
+
+        # 5. GET /images with a Accept: application/vnd.openstack.compute-v1
+        # header. Verify version choices returned. Verify message in API log
+        # about unknown accept header.
+        path = "http://%s:%d/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        headers = {'Accept': 'application/vnd.openstack.compute-v1'}
+        response, content = http.request(path, 'GET', headers=headers)
+        self.assertEqual(response.status, 300)
+        self.assertEqual(content, versions_json)
+        self.assertTrue('Unknown accept header'
+                        in open(self.api_server.log_file).read())
+
+        # 6. GET /v1.0/images with no Accept: header
+        # Verify empty image list returned
+        path = "http://%s:%d/v1.0/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, images_json)
+
+        # 7. GET /v1.a/images with no Accept: header
+        # Verify empty image list returned
+        path = "http://%s:%d/v1.a/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, images_json)
+
+        # 8. GET /va.1/images with no Accept: header
+        # Verify version choices returned
+        path = "http://%s:%d/va.1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 300)
+        self.assertEqual(content, versions_json)
+
+        # 9. GET /versions with no Accept: header
+        # Verify version choices returned
+        path = "http://%s:%d/versions" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 300)
+        self.assertEqual(content, versions_json)
+
+        # 10. GET /versions with a Accept: application/vnd.openstack.images-v1
+        # header. Verify version choices returned.
+        path = "http://%s:%d/versions" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        headers = {'Accept': 'application/vnd.openstack.images-v1'}
+        response, content = http.request(path, 'GET', headers=headers)
+        self.assertEqual(response.status, 300)
+        self.assertEqual(content, versions_json)
+
+        # 11. GET /v1/versions with no Accept: header
+        # Verify 404 returned
+        path = "http://%s:%d/v1/versions" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 404)
+
+        # 12. GET /v2/versions with no Accept: header
+        # Verify version choices returned
+        path = "http://%s:%d/v2/versions" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 300)
+        self.assertEqual(content, versions_json)
+
+        # 13. GET /images with a Accept: application/vnd.openstack.compute-v2
+        # header. Verify version choices returned. Verify message in API log
+        # about unknown version in accept header.
+        path = "http://%s:%d/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        headers = {'Accept': 'application/vnd.openstack.images-v2'}
+        response, content = http.request(path, 'GET', headers=headers)
+        self.assertEqual(response.status, 300)
+        self.assertEqual(content, versions_json)
+        self.assertTrue('Unknown accept header'
+                        in open(self.api_server.log_file).read())
+
+        # 14. GET /v1.2/images with no Accept: header
+        # Verify version choices returned
+        path = "http://%s:%d/v1.2/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 300)
+        self.assertEqual(content, versions_json)
+        self.assertTrue('Unknown version in versioned URI'
+                        in open(self.api_server.log_file).read())
+
+    def test_size_greater_2G_mysql(self):
+        """
+        A test against the actual datastore backend for the registry
+        to ensure that the image size property is not truncated.
+
+        :see https://bugs.launchpad.net/glance/+bug/739433
+        """
+
+        self.cleanup()
+        self.start_servers()
+
+        # 1. POST /images with public image named Image1
+        # attribute and a size of 5G. Use the HTTP engine with an
+        # X-Image-Meta-Location attribute to make Glance forego
+        # "adding" the image data.
+        # Verify a 201 OK is returned
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Location': 'http://example.com/fakeimage',
+                   'X-Image-Meta-Size': str(FIVE_GB),
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+        new_image_url = response['location']
+        self.assertTrue(new_image_url is not None,
+                        "Could not find a new image URI!")
+        self.assertTrue("v1/images" in new_image_url,
+                        "v1/images no in %s" % new_image_url)
+
+        # 2. HEAD /images
+        # Verify image size is what was passed in, and not truncated
+        path = new_image_url
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['x-image-meta-size'], str(FIVE_GB))
+        self.assertEqual(response['x-image-meta-name'], 'Image1')
+        self.assertEqual(response['x-image-meta-is_public'], 'True')
