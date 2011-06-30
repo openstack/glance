@@ -280,7 +280,8 @@ if __name__ == '__main__':
 
     c = config.Config(stream=sys.stdout,
                       env=os.environ,
-                      verbosity=3)
+                      verbosity=3,
+                      plugins=core.DefaultPluginManager())
 
     runner = GlanceTestRunner(stream=c.stream,
                             verbosity=c.verbosity,
