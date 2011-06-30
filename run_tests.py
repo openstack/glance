@@ -179,7 +179,8 @@ class GlanceTestResult(result.TextTestResult):
         self._last_case = None
         self.colorizer = None
         # NOTE(vish, tfukushima): reset stdout for the terminal check
-        stdout = sys.__stdout__
+        stdout = sys.stdout
+        sys.stdout = sys.__stdout__
         for colorizer in [_Win32Colorizer, _AnsiColorizer, _NullColorizer]:
             if colorizer.supported():
                 self.colorizer = colorizer(self.stream)
