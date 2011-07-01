@@ -567,7 +567,7 @@ class TestCurlApi(functional.FunctionalTest):
         self.assertTrue('Unknown accept header'
                         in open(self.api_server.log_file).read())
 
-        # 5. GET / with an Accept: application/vnd.openstack.images-v1
+        # 4. GET / with an Accept: application/vnd.openstack.images-v1
         # Verify empty image list returned
         cmd = ("curl -H 'Accept: application/vnd.openstack.images-v1' "
                "http://0.0.0.0:%d/images") % api_port
