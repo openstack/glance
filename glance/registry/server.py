@@ -39,7 +39,14 @@ DISPLAY_FIELDS_IN_INDEX = ['id', 'name', 'size',
 SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
                      'size_min', 'size_max']
 
+SUPPORTED_SORT_KEYS = ('name', 'status', 'container_format', 'disk_format',
+                       'size', 'id', 'created_at', 'updated_at')
+
+SUPPORTED_SORT_DIRS = ('asc', 'desc')
+
 MAX_ITEM_LIMIT = 25
+
+SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
 
 
 class Controller(object):
@@ -50,7 +57,8 @@ class Controller(object):
         db_api.configure_db(options)
 
     def index(self, req):
-        """Return a basic filtered list of public, non-deleted images
+        """
+        Return a basic filtered list of public, non-deleted images
 
         :param req: the Request object coming from the wsgi layer
         :retval a mapping of the following form::
@@ -67,17 +75,13 @@ class Controller(object):
             'container_format': <CONTAINER_FORMAT>,
             'checksum': <CHECKSUM>
             }
-
         """
-        params = {
-            'filters': self._get_filters(req),
-            'limit': self._get_limit(req),
-        }
-
-        if 'marker' in req.str_params:
-            params['marker'] = self._get_marker(req)
-
-        images = db_api.image_get_all_public(None, **params)
+        params = self._get_query_params(req)
+        try:
+            images = db_api.image_get_all_public(None, **params)
+        except exception.NotFound, e:
+            msg = "Invalid marker. Image could not be found."
+            raise exc.HTTPBadRequest(explanation=msg)
 
         results = []
         for image in images:
@@ -88,7 +92,8 @@ class Controller(object):
         return dict(images=results)
 
     def detail(self, req):
-        """Return a filtered list of public, non-deleted images in detail
+        """
+        Return a filtered list of public, non-deleted images in detail
 
         :param req: the Request object coming from the wsgi layer
         :retval a mapping of the following form::
@@ -97,27 +102,44 @@ class Controller(object):
 
         Where image_list is a sequence of mappings containing
         all image model fields.
-
         """
-        params = {
-            'filters': self._get_filters(req),
-            'limit': self._get_limit(req),
-        }
-
-        if 'marker' in req.str_params:
-            params['marker'] = self._get_marker(req)
-
-        images = db_api.image_get_all_public(None, **params)
+        params = self._get_query_params(req)
+        try:
+            images = db_api.image_get_all_public(None, **params)
+        except exception.NotFound, e:
+            msg = "Invalid marker. Image could not be found."
+            raise exc.HTTPBadRequest(explanation=msg)
 
         image_dicts = [make_image_dict(i) for i in images]
         return dict(images=image_dicts)
 
+    def _get_query_params(self, req):
+        """
+        Extract necessary query parameters from http request.
+
+        :param req: the Request object coming from the wsgi layer
+        :retval dictionary of filters to apply to list of images
+        """
+        params = {
+            'filters': self._get_filters(req),
+            'limit': self._get_limit(req),
+            'sort_key': self._get_sort_key(req),
+            'sort_dir': self._get_sort_dir(req),
+            'marker': self._get_marker(req),
+        }
+
+        for key, value in params.items():
+            if value is None:
+                del params[key]
+
+        return params
+
     def _get_filters(self, req):
-        """Return a dictionary of query param filters from the request
+        """
+        Return a dictionary of query param filters from the request
 
         :param req: the Request object coming from the wsgi layer
         :retval a dict of key/value filters
-
         """
         filters = {}
         properties = {}
@@ -148,11 +170,34 @@ class Controller(object):
 
     def _get_marker(self, req):
         """Parse a marker query param into something usable."""
+        marker = req.str_params.get('marker', None)
+
+        if marker is None:
+            return None
+
         try:
-            marker = int(req.str_params.get('marker', None))
+            marker = int(marker)
         except ValueError:
             raise exc.HTTPBadRequest("marker param must be an integer")
         return marker
+
+    def _get_sort_key(self, req):
+        """Parse a sort key query param from the request object."""
+        sort_key = req.str_params.get('sort_key', None)
+        if sort_key is not None and sort_key not in SUPPORTED_SORT_KEYS:
+            _keys = ', '.join(SUPPORTED_SORT_KEYS)
+            msg = "Unsupported sort_key. Acceptable values: %s" % (_keys,)
+            raise exc.HTTPBadRequest(explanation=msg)
+        return sort_key
+
+    def _get_sort_dir(self, req):
+        """Parse a sort direction query param from the request object."""
+        sort_dir = req.str_params.get('sort_dir', None)
+        if sort_dir is not None and sort_dir not in SUPPORTED_SORT_DIRS:
+            _keys = ', '.join(SUPPORTED_SORT_DIRS)
+            msg = "Unsupported sort_dir. Acceptable values: %s" % (_keys,)
+            raise exc.HTTPBadRequest(explanation=msg)
+        return sort_dir
 
     def show(self, req, id):
         """Return data about the given image id."""
@@ -171,7 +216,6 @@ class Controller(object):
         :param id:  The opaque internal identifier for the image
 
         :retval Returns 200 if delete was successful, a fault if not.
-
         """
         context = None
         try:
@@ -189,7 +233,6 @@ class Controller(object):
         :retval Returns the newly-created image information as a mapping,
                 which will include the newly-created image's internal id
                 in the 'id' field
-
         """
         image_data = body['image']
 
@@ -210,14 +253,14 @@ class Controller(object):
             return exc.HTTPBadRequest(msg)
 
     def update(self, req, id, body):
-        """Updates an existing image with the registry.
+        """
+        Updates an existing image with the registry.
 
         :param req: wsgi Request object
         :param body: Dictionary of information about the image
         :param id:  The opaque internal identifier for the image
 
         :retval Returns the updated image information as a mapping,
-
         """
         image_data = body['image']
 

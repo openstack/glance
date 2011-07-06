@@ -38,7 +38,8 @@
 #    OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 #    WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""Unittest runner for glance
+"""
+Unittest runner for glance
 
 To run all test::
     python run_tests.py
@@ -51,6 +52,7 @@ To run a single test module::
 """
 
 import gettext
+import logging
 import os
 import unittest
 import sys
@@ -210,7 +212,8 @@ class GlanceTestResult(result.TextTestResult):
 
     # NOTE(vish, tfukushima): copied from unittest with edit to add color
     def addError(self, test, err):
-        """Overrides normal addError to add support for errorClasses.
+        """
+        Overrides normal addError to add support for errorClasses.
         If the exception is a registered class, the error will be added
         to the list for that class, not errors.
         """
@@ -269,6 +272,13 @@ class GlanceTestRunner(core.TextTestRunner):
 
 
 if __name__ == '__main__':
+    logger = logging.getLogger()
+    hdlr = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr)
+    logger.setLevel(logging.DEBUG)
+
     c = config.Config(stream=sys.stdout,
                       env=os.environ,
                       verbosity=3)

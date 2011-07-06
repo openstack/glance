@@ -45,6 +45,8 @@ logger = logging.getLogger('glance.api.v1.images')
 SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
                      'size_min', 'size_max']
 
+SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
+
 
 class Controller(object):
 
@@ -92,15 +94,12 @@ class Controller(object):
                  'size': <SIZE>}, ...
             ]}
         """
-        params = {'filters': self._get_filters(req)}
+        params = self._get_query_params(req)
+        try:
+            images = registry.get_images_list(self.options, **params)
+        except exception.Invalid, e:
+            raise HTTPBadRequest(explanation=str(e))
 
-        if 'limit' in req.str_params:
-            params['limit'] = req.str_params.get('limit')
-
-        if 'marker' in req.str_params:
-            params['marker'] = req.str_params.get('marker')
-
-        images = registry.get_images_list(self.options, **params)
         return dict(images=images)
 
     def detail(self, req):
@@ -125,16 +124,25 @@ class Controller(object):
                  'properties': {'distro': 'Ubuntu 10.04 LTS', ...}}, ...
             ]}
         """
-        params = {'filters': self._get_filters(req)}
-
-        if 'limit' in req.str_params:
-            params['limit'] = req.str_params.get('limit')
-
-        if 'marker' in req.str_params:
-            params['marker'] = req.str_params.get('marker')
-
-        images = registry.get_images_detail(self.options, **params)
+        params = self._get_query_params(req)
+        try:
+            images = registry.get_images_detail(self.options, **params)
+        except exception.Invalid, e:
+            raise HTTPBadRequest(explanation=str(e))
         return dict(images=images)
+
+    def _get_query_params(self, req):
+        """
+        Extracts necessary query params from request.
+
+        :param req: the WSGI Request object
+        :retval dict of parameters that can be used by registry client
+        """
+        params = {'filters': self._get_filters(req)}
+        for PARAM in SUPPORTED_PARAMS:
+            if PARAM in req.str_params:
+                params[PARAM] = req.str_params.get(PARAM)
+        return params
 
     def _get_filters(self, req):
         """
@@ -517,7 +525,7 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
     def _deserialize(self, request):
         result = {}
         result['image_meta'] = utils.get_image_meta_from_headers(request)
-        data = request.body if self.has_body(request) else None
+        data = request.body_file if self.has_body(request) else None
         result['image_data'] = data
         return result
 
@@ -533,10 +541,10 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
 
     def _inject_location_header(self, response, image_meta):
         location = self._get_image_location(image_meta)
-        response.headers.add('Location', location)
+        response.headers['Location'] = location
 
     def _inject_checksum_header(self, response, image_meta):
-        response.headers.add('ETag', image_meta['checksum'])
+        response.headers['ETag'] = image_meta['checksum']
 
     def _inject_image_meta_headers(self, response, image_meta):
         """
@@ -553,7 +561,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
         headers = utils.image_meta_to_http_headers(image_meta)
 
         for k, v in headers.items():
-            response.headers.add(k, v)
+            response.headers[k] = v
 
     def _get_image_location(self, image_meta):
         """Build a relative url to reach the image defined by image_meta."""
@@ -571,8 +579,8 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
 
         response.app_iter = result['image_iterator']
         # Using app_iter blanks content-length, so we set it here...
-        response.headers.add('Content-Length', image_meta['size'])
-        response.headers.add('Content-Type', 'application/octet-stream')
+        response.headers['Content-Length'] = image_meta['size']
+        response.headers['Content-Type'] = 'application/octet-stream'
 
         self._inject_image_meta_headers(response, image_meta)
         self._inject_location_header(response, image_meta)
@@ -583,7 +591,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
     def update(self, response, result):
         image_meta = result['image_meta']
         response.body = self.to_json(dict(image=image_meta))
-        response.headers.add('Content-Type', 'application/json')
+        response.headers['Content-Type'] = 'application/json'
         self._inject_location_header(response, image_meta)
         self._inject_checksum_header(response, image_meta)
         return response
@@ -591,7 +599,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
     def create(self, response, result):
         image_meta = result['image_meta']
         response.status = httplib.CREATED
-        response.headers.add('Content-Type', 'application/json')
+        response.headers['Content-Type'] = 'application/json'
         response.body = self.to_json(dict(image=image_meta))
         self._inject_location_header(response, image_meta)
         self._inject_checksum_header(response, image_meta)
