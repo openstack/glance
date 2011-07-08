@@ -33,7 +33,6 @@ from sqlalchemy.sql import or_, and_
 from glance.common import config
 from glance.common import exception
 from glance.common import utils
-from glance.registry.db import migration
 from glance.registry.db import models
 
 _ENGINE = None
@@ -77,7 +76,7 @@ def configure_db(options):
         elif verbose:
             logger.setLevel(logging.INFO)
 
-        migration.db_sync(options)
+        models.register_models(_ENGINE)
 
 
 def get_session(autocommit=True, expire_on_commit=False):

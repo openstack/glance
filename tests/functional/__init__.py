@@ -175,11 +175,7 @@ class RegistryServer(Server):
         super(RegistryServer, self).__init__(test_dir, port)
         self.server_name = 'registry'
 
-        # NOTE(sirp): in-memory DBs don't play well with sqlalchemy migrate
-        # (see http://code.google.com/p/sqlalchemy-migrate/
-        #            issues/detail?id=72)
-        self.db_file = os.path.join(self.test_dir, 'test_glance_api.sqlite')
-        default_sql_connection = 'sqlite:///%s' % self.db_file
+        default_sql_connection = 'sqlite:///'
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
                                              default_sql_connection)
 
