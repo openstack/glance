@@ -28,6 +28,7 @@ import sys
 import stubout
 import webob
 
+import glance.common.client
 from glance.common import exception
 from glance.registry import server as rserver
 from glance.api import v1 as server
@@ -43,14 +44,14 @@ DEBUG = False
 
 
 def stub_out_http_backend(stubs):
-    """Stubs out the httplib.HTTPRequest.getresponse to return
+    """
+    Stubs out the httplib.HTTPRequest.getresponse to return
     faked-out data instead of grabbing actual contents of a resource
 
     The stubbed getresponse() returns an iterator over
     the data "I am a teapot, short and stout\n"
 
     :param stubs: Set of stubout stubs
-
     """
 
     class FakeHTTPConnection(object):
@@ -94,7 +95,6 @@ def stub_out_filesystem_backend():
         //tmp/glance-tests/2 <-- file containing "chunk00000remainder"
 
     The stubbed service yields the data in the above files.
-
     """
 
     # Establish a clean faked filesystem with dummy images
@@ -108,13 +108,13 @@ def stub_out_filesystem_backend():
 
 
 def stub_out_s3_backend(stubs):
-    """ Stubs out the S3 Backend with fake data and calls.
+    """
+    Stubs out the S3 Backend with fake data and calls.
 
     The stubbed s3 backend provides back an iterator over
     the data ""
 
     :param stubs: Set of stubout stubs
-
     """
 
     class FakeSwiftAuth(object):
@@ -254,14 +254,15 @@ def stub_out_registry_and_store_server(stubs):
         for i in self.response.app_iter:
             yield i
 
-    stubs.Set(glance.client.BaseClient, 'get_connection_type',
+    stubs.Set(glance.common.client.BaseClient, 'get_connection_type',
               fake_get_connection_type)
-    stubs.Set(glance.client.ImageBodyIterator, '__iter__',
+    stubs.Set(glance.common.client.ImageBodyIterator, '__iter__',
               fake_image_iter)
 
 
 def stub_out_registry_db_image_api(stubs):
-    """Stubs out the database set/fetch API calls for Registry
+    """
+    Stubs out the database set/fetch API calls for Registry
     so the calls are routed to an in-memory dict. This helps us
     avoid having to manually clear or flush the SQLite database.
 
@@ -269,6 +270,7 @@ def stub_out_registry_db_image_api(stubs):
 
     :param stubs: Set of stubout stubs
     """
+
     class FakeDatastore(object):
 
         FIXTURES = [
@@ -388,8 +390,8 @@ def stub_out_registry_db_image_api(stubs):
             else:
                 return images[0]
 
-        def image_get_all_public(self, _context, filters=None,
-                                 marker=None, limit=1000):
+        def image_get_all_public(self, _context, filters=None, marker=None,
+                                 limit=1000, sort_key=None, sort_dir=None):
             images = [f for f in self.images if f['is_public'] == True]
 
             if 'size_min' in filters:
@@ -414,16 +416,24 @@ def stub_out_registry_db_image_api(stubs):
             for k, v in filters.items():
                 images = [f for f in images if f[k] == v]
 
+            # sorted func expects func that compares in descending order
             def image_cmp(x, y):
-                if x['created_at'] > y['created_at']:
-                    return 1
-                elif x['created_at'] == y['created_at']:
+                _sort_dir = sort_dir or 'desc'
+                multiplier = {
+                    'asc': -1,
+                    'desc': 1,
+                }[_sort_dir]
+
+                _sort_key = sort_key or 'created_at'
+                if x[_sort_key] > y[_sort_key]:
+                    return 1 * multiplier
+                elif x[_sort_key] == y[_sort_key]:
                     if x['id'] > y['id']:
-                        return 1
+                        return 1 * multiplier
                     else:
-                        return -1
+                        return -1 * multiplier
                 else:
-                    return -1
+                    return -1 * multiplier
 
             images = sorted(images, cmp=image_cmp)
             images.reverse()
@@ -436,6 +446,9 @@ def stub_out_registry_db_image_api(stubs):
                     if image['id'] == marker:
                         start_index = i + 1
                         break
+
+            if start_index == -1:
+                raise exception.NotFound(marker)
 
             return images[start_index:start_index + limit]
 

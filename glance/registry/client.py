@@ -23,7 +23,8 @@ the Glance Registry API
 import json
 import urllib
 
-from glance.client import BaseClient
+from glance.common.client import BaseClient
+from glance.registry import server
 
 
 class RegistryClient(BaseClient):
@@ -40,46 +41,35 @@ class RegistryClient(BaseClient):
         :param port: The port where Glance resides (defaults to 9191)
         :param use_ssl: Should we use HTTPS? (defaults to False)
         """
-
         port = port or self.DEFAULT_PORT
         super(RegistryClient, self).__init__(host, port, use_ssl)
 
-    def get_images(self, filters=None, marker=None, limit=None):
+    def get_images(self, **kwargs):
         """
         Returns a list of image id/name mappings from Registry
 
         :param filters: dict of keys & expected values to filter results
         :param marker: image id after which to start page
         :param limit: max number of images to return
+        :param sort_key: results will be ordered by this image attribute
+        :param sort_dir: direction in which to to order results (asc, desc)
         """
-        params = filters or {}
-
-        if marker != None:
-            params['marker'] = marker
-
-        if limit != None:
-            params['limit'] = limit
-
+        params = self._extract_params(kwargs, server.SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images", params=params)
         data = json.loads(res.read())['images']
         return data
 
-    def get_images_detailed(self, filters=None, marker=None, limit=None):
+    def get_images_detailed(self, **kwargs):
         """
         Returns a list of detailed image data mappings from Registry
 
         :param filters: dict of keys & expected values to filter results
         :param marker: image id after which to start page
         :param limit: max number of images to return
+        :param sort_key: results will be ordered by this image attribute
+        :param sort_dir: direction in which to to order results (asc, desc)
         """
-        params = filters or {}
-
-        if marker != None:
-            params['marker'] = marker
-
-        if limit != None:
-            params['limit'] = limit
-
+        params = self._extract_params(kwargs, server.SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images/detail", params=params)
         data = json.loads(res.read())['images']
         return data

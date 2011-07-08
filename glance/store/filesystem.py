@@ -65,11 +65,11 @@ class ChunkedFile(object):
 class FilesystemBackend(glance.store.Backend):
     @classmethod
     def get(cls, parsed_uri, expected_size=None, options=None):
-        """ Filesystem-based backend
+        """
+        Filesystem-based backend
 
         file:///path/to/file.tar.gz.0
         """
-
         filepath = parsed_uri.path
         if not os.path.exists(filepath):
             raise exception.NotFound("Image file %s not found" % filepath)

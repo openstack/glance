@@ -194,7 +194,7 @@ EXAMPLES
                 print "Returned the following metadata for the new image:"
                 for k, v in sorted(image_meta.items()):
                     print " %(k)30s => %(v)s" % locals()
-        except client.ClientConnectionError, e:
+        except exception.ClientConnectionError, e:
             host = options.host
             port = options.port
             print ("Failed to connect to the Glance API server "
@@ -551,7 +551,8 @@ def print_help(options, args):
 
 
 def user_confirm(prompt, default=False):
-    """Yes/No question dialog with user.
+    """
+    Yes/No question dialog with user.
 
     :param prompt: question/statement to present to user (string)
     :param default: boolean value to return if empty string
