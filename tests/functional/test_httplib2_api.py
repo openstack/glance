@@ -21,6 +21,8 @@ import hashlib
 import httplib2
 import json
 import os
+from pprint import pprint
+import tempfile
 
 from tests import functional
 from tests.utils import execute
@@ -590,3 +592,118 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertEqual(response['x-image-meta-is_public'], 'True')
 
         self.stop_servers()
+
+    def test_traceback_not_consumed(self):
+        """
+        A test that errors coming from the POST API do not
+        get consumed and print the actual error message, and
+        not something like &lt;traceback object at 0x1918d40&gt;
+
+        :see https://bugs.launchpad.net/glance/+bug/755912
+        """
+        self.cleanup()
+        self.start_servers()
+
+        # POST /images with binary data, but not setting
+        # Content-Type to application/octet-stream, verify a
+        # 400 returned and that the error is readable.
+        with tempfile.NamedTemporaryFile() as test_data_file:
+            test_data_file.write("XXX")
+            test_data_file.flush()
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', body=test_data_file.name)
+        self.assertEqual(response.status, 400)
+        expected = "Content-Type must be application/octet-stream"
+        self.assertTrue(expected in content,
+                        "Could not find '%s' in '%s'" % (expected, content))
+
+        self.stop_servers()
+
+    def test_filtered_images(self):
+        """
+        Set up three test images and ensure each query param filter works
+        """
+        self.cleanup()
+        self.start_servers()
+
+        # 0. GET /images
+        # Verify no public images
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, '{"images": []}')
+
+        # 1. POST /images with three public images with various attributes
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Status': 'active',
+                   'X-Image-Meta-Container-Format': 'ovf',
+                   'X-Image-Meta-Disk-Format': 'vdi',
+                   'X-Image-Meta-Size': '19',
+                   'X-Image-Meta-Is-Public': 'True',
+                   'X-Image-Meta-Property-pants': 'are on'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        self.assertEqual(data['image']['properties']['pants'], "are on")
+        
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'My Image!',
+                   'X-Image-Meta-Status': 'active',
+                   'X-Image-Meta-Container-Format': 'ovf',
+                   'X-Image-Meta-Disk-Format': 'vdi',
+                   'X-Image-Meta-Size': '20',
+                   'X-Image-Meta-Is-Public': 'True',
+                   'X-Image-Meta-Property-pants': 'are on'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        self.assertEqual(data['image']['properties']['pants'], "are on")
+
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'My Image!',
+                   'X-Image-Meta-Status': 'saving',
+                   'X-Image-Meta-Container-Format': 'ami',
+                   'X-Image-Meta-Disk-Format': 'ami',
+                   'X-Image-Meta-Size': '21',
+                   'X-Image-Meta-Is-Public': 'True',
+                   'X-Image-Meta-Property-pants': 'are on'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        self.assertEqual(data['image']['properties']['pants'], "are on")
+
+        # 2. GET /images
+        # Verify three public images
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 3)
+
+        # 3. GET /images with name filter
+        # Verify correct images returned with name
+        path = "http://%s:%d/v1/images?name=My%%20Image!" % ("0.0.0.0", self.api_port)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 2)
+        for image in data['images']:
+            self.assertEqual(image['name'], "My Image!")
+
+        # 4. GET /images with status filter
+        # Verify correct images returned with status
+        path = "http://%s:%d/v1/images/detail?status=queued" %
+               ("0.0.0.0", self.api_port)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        pprint(response)
+        pprint(content)
