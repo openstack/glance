@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import hashlib
 import httplib
 import os
@@ -24,8 +25,9 @@ import unittest
 import stubout
 import webob
 
-from glance import server
+from glance.api import v1 as server
 from glance.registry import server as rserver
+import glance.registry.db.api
 from tests import stubs
 
 VERBOSE = False
@@ -48,9 +50,9 @@ class TestRegistryAPI(unittest.TestCase):
         self.stubs.UnsetAll()
 
     def test_get_root(self):
-        """Tests that the root registry API returns "index",
+        """
+        Tests that the root registry API returns "index",
         which is a list of public images
-
         """
         fixture = {'id': 2,
                    'name': 'fake image #2',
@@ -68,9 +70,9 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertEquals(v, images[0][k])
 
     def test_get_index(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images
-
         """
         fixture = {'id': 2,
                    'name': 'fake image #2',
@@ -87,10 +89,606 @@ class TestRegistryAPI(unittest.TestCase):
         for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
 
-    def test_get_details(self):
-        """Tests that the /images/detail registry API returns
-        a mapping containing a list of detailed image information
+    def test_get_index_marker(self):
+        """
+        Tests that the /images registry API returns list of
+        public images that conforms to a marker query param
+        """
+        time1 = datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
+        time2 = datetime.datetime.utcnow()
 
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None,
+                         'created_at': time1}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': time1}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 5,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': time2}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?marker=4')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        # should be sorted by created_at desc, id desc
+        # page should start after marker 4
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 5)
+        self.assertEquals(int(images[2]['id']), 2)
+
+    def test_get_index_invalid_marker(self):
+        """
+        Tests that the /images registry API returns a 400
+        when an invalid marker is provided
+        """
+        req = webob.Request.blank('/images?marker=10')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_get_index_limit(self):
+        """
+        Tests that the /images registry API returns list of
+        public images that conforms to a limit query param
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?limit=1')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        # expect list to be sorted by created_at desc
+        self.assertTrue(int(images[0]['id']), 4)
+
+    def test_get_index_limit_negative(self):
+        """
+        Tests that the /images registry API returns list of
+        public images that conforms to a limit query param
+        """
+        req = webob.Request.blank('/images?limit=-1')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_get_index_limit_non_int(self):
+        """
+        Tests that the /images registry API returns list of
+        public images that conforms to a limit query param
+        """
+        req = webob.Request.blank('/images?limit=a')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_get_index_limit_marker(self):
+        """
+        Tests that the /images registry API returns list of
+        public images that conforms to limit and marker query params
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?marker=3&limit=1')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        # expect list to be sorted by created_at desc
+        self.assertEqual(int(images[0]['id']), 2)
+
+    def test_get_index_filter_name(self):
+        """
+        Tests that the /images registry API returns list of
+        public images that have a specific name. This is really a sanity
+        check, filtering is tested more in-depth using /images/detail
+        """
+        fixture = {'id': 2,
+                   'name': 'fake image #2',
+                   'size': 19,
+                   'checksum': None}
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?name=new name! #123')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertEqual('new name! #123', image['name'])
+
+    def test_get_index_sort_default_created_at_desc(self):
+        """
+        Tests that the /images registry API returns list of
+        public images that conforms to a default sort key/dir
+        """
+        time1 = datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
+        time2 = datetime.datetime.utcnow()
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None,
+                         'created_at': time1}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': time1}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 5,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': time2}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 4)
+        self.assertEquals(int(images[0]['id']), 4)
+        self.assertEquals(int(images[1]['id']), 3)
+        self.assertEquals(int(images[2]['id']), 5)
+        self.assertEquals(int(images[3]['id']), 2)
+
+    def test_get_index_bad_sort_key(self):
+        """Ensure a 400 is returned when a bad sort_key is provided."""
+        req = webob.Request.blank('/images?sort_key=asdf')
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+
+    def test_get_index_bad_sort_dir(self):
+        """Ensure a 400 is returned when a bad sort_dir is provided."""
+        req = webob.Request.blank('/images?sort_dir=asdf')
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+
+    def test_get_index_sort_id_desc(self):
+        """
+        Tests that the /images registry API returns list of
+        public images sorted by id in descending order.
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?sort_key=id&sort_dir=desc')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 4)
+        self.assertEquals(int(images[1]['id']), 3)
+        self.assertEquals(int(images[2]['id']), 2)
+
+    def test_get_index_sort_name_asc(self):
+        """
+        Tests that the /images registry API returns list of
+        public images sorted alphabetically by name in
+        ascending order.
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?sort_key=name&sort_dir=asc')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 2)
+        self.assertEquals(int(images[2]['id']), 4)
+
+    def test_get_index_sort_status_desc(self):
+        """
+        Tests that the /images registry API returns list of
+        public images sorted alphabetically by status in
+        descending order.
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'killed',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?sort_key=status&sort_dir=desc')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 4)
+        self.assertEquals(int(images[2]['id']), 2)
+
+    def test_get_index_sort_disk_format_asc(self):
+        """
+        Tests that the /images registry API returns list of
+        public images sorted alphabetically by disk_format in
+        ascending order.
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vdi',
+                         'container_format': 'ovf',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?sort_key=disk_format&sort_dir=asc')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 4)
+        self.assertEquals(int(images[2]['id']), 2)
+
+    def test_get_index_sort_container_format_desc(self):
+        """
+        Tests that the /images registry API returns list of
+        public images sorted alphabetically by container_format in
+        descending order.
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'iso',
+                         'container_format': 'bare',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        url = '/images?sort_key=container_format&sort_dir=desc'
+        req = webob.Request.blank(url)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 2)
+        self.assertEquals(int(images[1]['id']), 4)
+        self.assertEquals(int(images[2]['id']), 3)
+
+    def test_get_index_sort_size_asc(self):
+        """
+        Tests that the /images registry API returns list of
+        public images sorted by size in ascending order.
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'asdf',
+                         'size': 100,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'iso',
+                         'container_format': 'bare',
+                         'name': 'xyz',
+                         'size': 2,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        url = '/images?sort_key=size&sort_dir=asc'
+        req = webob.Request.blank(url)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 4)
+        self.assertEquals(int(images[1]['id']), 2)
+        self.assertEquals(int(images[2]['id']), 3)
+
+    def test_get_index_sort_created_at_asc(self):
+        """
+        Tests that the /images registry API returns list of
+        public images sorted by created_at in ascending order.
+        """
+        now = datetime.datetime.utcnow()
+        time1 = now + datetime.timedelta(seconds=5)
+        time2 = now
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None,
+                         'created_at': time1}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': time2}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?sort_key=created_at&sort_dir=asc')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 2)
+        self.assertEquals(int(images[1]['id']), 4)
+        self.assertEquals(int(images[2]['id']), 3)
+
+    def test_get_index_sort_updated_at_desc(self):
+        """
+        Tests that the /images registry API returns list of
+        public images sorted by updated_at in descending order.
+        """
+        now = datetime.datetime.utcnow()
+        time1 = now + datetime.timedelta(seconds=5)
+        time2 = now
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None,
+                         'created_at': None,
+                         'created_at': time1}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': None,
+                         'updated_at': time2}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?sort_key=updated_at&sort_dir=desc')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 4)
+        self.assertEquals(int(images[2]['id']), 2)
+
+    def test_get_details(self):
+        """
+        Tests that the /images/detail registry API returns
+        a mapping containing a list of detailed image information
         """
         fixture = {'id': 2,
                    'name': 'fake image #2',
@@ -112,6 +710,412 @@ class TestRegistryAPI(unittest.TestCase):
         for k, v in fixture.iteritems():
             self.assertEquals(v, images[0][k])
 
+    def test_get_details_limit_marker(self):
+        """
+        Tests that the /images/details registry API returns list of
+        public images that conforms to limit and marker query params.
+        This functionality is tested more thoroughly on /images, this is
+        just a sanity check
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?marker=3&limit=1')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        # expect list to be sorted by created_at desc
+        self.assertEqual(int(images[0]['id']), 2)
+
+    def test_get_details_invalid_marker(self):
+        """
+        Tests that the /images/detail registry API returns a 400
+        when an invalid marker is provided
+        """
+        req = webob.Request.blank('/images/detail?marker=10')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_get_details_filter_name(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images that have a specific name
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?name=new name! #123')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertEqual('new name! #123', image['name'])
+
+    def test_get_details_filter_status(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images that have a specific status
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #4',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?status=saving')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEqual('saving', image['status'])
+
+    def test_get_details_filter_container_format(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images that have a specific container_format
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vdi',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?container_format=ovf')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertEqual('ovf', image['container_format'])
+
+    def test_get_details_filter_disk_format(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images that have a specific disk_format
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?disk_format=vhd')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertEqual('vhd', image['disk_format'])
+
+    def test_get_details_filter_size_min(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images that have a size greater than or equal to size_min
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?size_min=19')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertTrue(image['size'] >= 19)
+
+    def test_get_details_filter_size_max(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images that have a size less than or equal to size_max
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?size_max=19')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertTrue(image['size'] <= 19)
+
+    def test_get_details_filter_size_min_max(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images that have a size less than or equal to size_max
+        and greater than or equal to size_min
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 5,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #5',
+                         'size': 6,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?size_min=18&size_max=19')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertTrue(image['size'] <= 19 and image['size'] >= 18)
+
+    def test_get_details_filter_property(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images that have a specific custom property
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 19,
+                         'checksum': None,
+                         'properties': {'prop_123': 'v a'}}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 19,
+                         'checksum': None,
+                         'properties': {'prop_123': 'v b'}}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?property-prop_123=v%20a')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEqual('v a', image['properties']['prop_123'])
+
+    def test_get_details_sort_name_asc(self):
+        """
+        Tests that the /images/details registry API returns list of
+        public images sorted alphabetically by name in
+        ascending order.
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?sort_key=name&sort_dir=asc')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 2)
+        self.assertEquals(int(images[2]['id']), 4)
+
     def test_create_image(self):
         """Tests that the /images POST registry API creates the image"""
         fixture = {'name': 'fake public image',
@@ -122,6 +1126,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -150,6 +1155,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -167,6 +1173,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -174,8 +1181,10 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertTrue('Invalid disk format' in res.body)
 
     def test_create_image_with_mismatched_formats(self):
-        """Tests that exception raised for bad matching disk and container
-        formats"""
+        """
+        Tests that exception raised for bad matching disk and
+        container formats
+        """
         fixture = {'name': 'fake public image #3',
                    'container_format': 'aki',
                    'disk_format': 'ari'}
@@ -183,6 +1192,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -202,6 +1212,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images')
 
         req.method = 'POST'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -216,6 +1227,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/2')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -228,13 +1240,16 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertEquals(v, res_dict['image'][k])
 
     def test_update_image_not_existing(self):
-        """Tests proper exception is raised if attempt to update non-existing
-        image"""
+        """
+        Tests proper exception is raised if attempt to update
+        non-existing image
+        """
         fixture = {'status': 'killed'}
 
         req = webob.Request.blank('/images/3')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -248,6 +1263,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/2')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -261,6 +1277,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/2')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -274,6 +1291,7 @@ class TestRegistryAPI(unittest.TestCase):
         req = webob.Request.blank('/images/2')
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -281,13 +1299,16 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertTrue('Invalid container format' in res.body)
 
     def test_update_image_with_mismatched_formats(self):
-        """Tests that exception raised for bad matching disk and container
-        formats"""
+        """
+        Tests that exception raised for bad matching disk and
+        container formats
+        """
         fixture = {'container_format': 'ari'}
 
         req = webob.Request.blank('/images/2')  # Image 2 has disk format 'vhd'
 
         req.method = 'PUT'
+        req.content_type = 'application/json'
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
@@ -325,9 +1346,10 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(new_num_images, orig_num_images - 1)
 
     def test_delete_image_not_existing(self):
-        """Tests proper exception is raised if attempt to delete non-existing
-        image"""
-
+        """
+        Tests proper exception is raised if attempt to delete
+        non-existing image
+        """
         req = webob.Request.blank('/images/3')
 
         req.method = 'DELETE'
@@ -340,6 +1362,12 @@ class TestRegistryAPI(unittest.TestCase):
 class TestGlanceAPI(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
+        # NOTE(sirp): in-memory DBs don't play well with sqlalchemy migrate
+        # (see http://code.google.com/p/sqlalchemy-migrate/
+        #            issues/detail?id=72)
+        self.db_file = 'test_glance_api.sqlite'
+        os.environ['GLANCE_SQL_CONNECTION'] = 'sqlite:///%s' % self.db_file
+
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_registry_db_image_api(self.stubs)
@@ -358,6 +1386,8 @@ class TestGlanceAPI(unittest.TestCase):
         """Clear the test environment"""
         stubs.clean_out_fake_filesystem_backend()
         self.stubs.UnsetAll()
+        if os.path.exists(self.db_file):
+            os.unlink(self.db_file)
 
     def test_bad_disk_format(self):
         fixture_headers = {'x-image-meta-store': 'bad',
@@ -408,6 +1438,21 @@ class TestGlanceAPI(unittest.TestCase):
         res_body = json.loads(res.body)['image']
         self.assertEquals('queued', res_body['status'])
 
+    def test_add_image_no_location_no_content_type(self):
+        """Tests creates a queued image for no body and no loc header"""
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        req.body = "chunk00000remainder"
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
     def test_add_image_bad_store(self):
         """Tests raises BadRequest for invalid store header"""
         fixture_headers = {'x-image-meta-store': 'bad',
@@ -451,6 +1496,45 @@ class TestGlanceAPI(unittest.TestCase):
                         "'location' not in response headers.\n"
                         "res.headerlist = %r" % res.headerlist)
         self.assertTrue('/images/3' in res.headers['location'])
+
+    def test_get_index_sort_name_asc(self):
+        """
+        Tests that the /images registry API returns list of
+        public images sorted alphabetically by name in
+        ascending order.
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images?sort_key=name&sort_dir=asc')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+        self.assertEquals(int(images[0]['id']), 3)
+        self.assertEquals(int(images[1]['id']), 2)
+        self.assertEquals(int(images[2]['id']), 4)
 
     def test_image_is_checksummed(self):
         """Test that the image contents are checksummed properly"""
@@ -558,6 +1642,8 @@ class TestGlanceAPI(unittest.TestCase):
     def test_show_image_basic(self):
         req = webob.Request.blank("/images/2")
         res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        self.assertEqual(res.content_type, 'application/octet-stream')
         self.assertEqual('chunk00000remainder', res.body)
 
     def test_show_non_exists_image(self):
@@ -614,3 +1700,12 @@ class TestGlanceAPI(unittest.TestCase):
         req.method = 'DELETE'
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 200)
+
+    def test_get_details_invalid_marker(self):
+        """
+        Tests that the /images/detail registry API returns a 400
+        when an invalid marker is provided
+        """
+        req = webob.Request.blank('/images/detail?marker=10')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)

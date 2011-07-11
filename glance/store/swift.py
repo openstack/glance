@@ -32,9 +32,8 @@ logger = logging.getLogger('glance.store.swift')
 
 
 class SwiftBackend(glance.store.Backend):
-    """
-    An implementation of the swift backend adapter.
-    """
+    """An implementation of the swift backend adapter."""
+
     EXAMPLE_URL = "swift://<USER>:<KEY>@<AUTH_ADDRESS>/<CONTAINER>/<FILE>"
 
     CHUNKSIZE = 65536

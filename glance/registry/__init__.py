@@ -32,14 +32,14 @@ def get_registry_client(options):
     return client.RegistryClient(host, port)
 
 
-def get_images_list(options):
+def get_images_list(options, **kwargs):
     c = get_registry_client(options)
-    return c.get_images()
+    return c.get_images(**kwargs)
 
 
-def get_images_detail(options):
+def get_images_detail(options, **kwargs):
     c = get_registry_client(options)
-    return c.get_images_detailed()
+    return c.get_images_detailed(**kwargs)
 
 
 def get_image_metadata(options, image_id):

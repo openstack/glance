@@ -51,7 +51,8 @@ BigInteger = lambda: sqlalchemy.types.BigInteger()
 
 
 def from_migration_import(module_name, fromlist):
-    """Import a migration file and return the module
+    """
+    Import a migration file and return the module
 
     :param module_name: name of migration module to import from
         (ex: 001_add_images_table)
@@ -84,7 +85,6 @@ def from_migration_import(module_name, fromlist):
         images = define_images_table(meta)
 
         # Refer to images table
-
     """
     module_path = 'glance.registry.db.migrate_repo.versions.%s' % module_name
     module = __import__(module_path, globals(), locals(), fromlist, -1)

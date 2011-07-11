@@ -40,7 +40,7 @@ class TestConfig(unittest.TestCase):
         # of typed values
         parser = optparse.OptionParser()
         config.add_common_options(parser)
-        parsed_options, args = config.parse_options(parser)
+        parsed_options, args = config.parse_options(parser, [])
 
         expected_options = {'verbose': False, 'debug': False,
                             'config_file': None}

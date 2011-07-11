@@ -34,6 +34,8 @@ import routes.middleware
 import webob.dec
 import webob.exc
 
+from glance.common import exception
+
 
 class WritableLogger(object):
     """A thin wrapper that responds to `write` and logs."""
@@ -205,73 +207,55 @@ class Router(object):
         return app
 
 
-class Controller(object):
-    """
-    WSGI app that reads routing information supplied by RoutesMiddleware
-    and calls the requested action method upon itself.  All action methods
-    must, in addition to their normal parameters, accept a 'req' argument
-    which is the incoming webob.Request.  They raise a webob.exc exception,
-    or return a dict which will be serialized by requested content type.
-    """
+class Request(webob.Request):
+    """Add some Openstack API-specific logic to the base webob.Request."""
 
-    @webob.dec.wsgify
-    def __call__(self, req):
-        """
-        Call the method specified in req.environ by RoutesMiddleware.
-        """
-        arg_dict = req.environ['wsgiorg.routing_args'][1]
-        action = arg_dict['action']
-        method = getattr(self, action)
-        del arg_dict['controller']
-        del arg_dict['action']
-        arg_dict['req'] = req
-        result = method(**arg_dict)
-        if type(result) is dict:
-            return self._serialize(result, req)
+    def best_match_content_type(self):
+        """Determine the requested response content-type."""
+        supported = ('application/json',)
+        bm = self.accept.best_match(supported)
+        return bm or 'application/json'
+
+    def get_content_type(self, allowed_content_types):
+        """Determine content type of the request body."""
+        if not "Content-Type" in self.headers:
+            raise exception.InvalidContentType(content_type=None)
+
+        content_type = self.content_type
+
+        if content_type not in allowed_content_types:
+            raise exception.InvalidContentType(content_type=content_type)
         else:
-            return result
-
-    def _serialize(self, data, request):
-        """
-        Serialize the given dict to the response type requested in request.
-        Uses self._serialization_metadata if it exists, which is a dict mapping
-        MIME types to information needed to serialize to that type.
-        """
-        _metadata = getattr(type(self), "_serialization_metadata", {})
-        serializer = Serializer(request.environ, _metadata)
-        return serializer.to_content_type(data)
+            return content_type
 
 
-class Serializer(object):
-    """
-    Serializes a dictionary to a Content Type specified by a WSGI environment.
-    """
+class JSONRequestDeserializer(object):
+    def has_body(self, request):
+        """
+        Returns whether a Webob.Request object will possess an entity body.
 
-    def __init__(self, environ, metadata=None):
+        :param request:  Webob.Request object
         """
-        Create a serializer based on the given WSGI environment.
-        'metadata' is an optional dict mapping MIME types to information
-        needed to serialize a dictionary to that type.
-        """
-        self.environ = environ
-        self.metadata = metadata or {}
-        self._methods = {
-            'application/json': self._to_json,
-            'application/xml': self._to_xml}
+        if 'transfer-encoding' in request.headers:
+            return True
+        elif request.content_length > 0:
+            return True
 
-    def to_content_type(self, data):
-        """
-        Serialize a dictionary into a string.  The format of the string
-        will be decided based on the Content Type requested in self.environ:
-        by Accept: header, or by URL suffix.
-        """
-        # FIXME(sirp): for now, supporting json only
-        #mimetype = 'application/xml'
-        mimetype = 'application/json'
-        # TODO(gundlach): determine mimetype from request
-        return self._methods.get(mimetype, repr)(data)
+        return False
 
-    def _to_json(self, data):
+    def from_json(self, datastring):
+        return json.loads(datastring)
+
+    def default(self, request):
+        if self.has_body(request):
+            return {'body': self.from_json(request.body)}
+        else:
+            return {}
+
+
+class JSONResponseSerializer(object):
+
+    def to_json(self, data):
         def sanitizer(obj):
             if isinstance(obj, datetime.datetime):
                 return obj.isoformat()
@@ -279,37 +263,85 @@ class Serializer(object):
 
         return json.dumps(data, default=sanitizer)
 
-    def _to_xml(self, data):
-        metadata = self.metadata.get('application/xml', {})
-        # We expect data to contain a single key which is the XML root.
-        root_key = data.keys()[0]
-        from xml.dom import minidom
-        doc = minidom.Document()
-        node = self._to_xml_node(doc, metadata, root_key, data[root_key])
-        return node.toprettyxml(indent='    ')
+    def default(self, response, result):
+        response.headers.add('Content-Type', 'application/json')
+        response.body = self.to_json(result)
 
-    def _to_xml_node(self, doc, metadata, nodename, data):
-        """Recursive method to convert data members to XML nodes."""
-        result = doc.createElement(nodename)
-        if type(data) is list:
-            singular = metadata.get('plurals', {}).get(nodename, None)
-            if singular is None:
-                if nodename.endswith('s'):
-                    singular = nodename[:-1]
-                else:
-                    singular = 'item'
-            for item in data:
-                node = self._to_xml_node(doc, metadata, singular, item)
-                result.appendChild(node)
-        elif type(data) is dict:
-            attrs = metadata.get('attributes', {}).get(nodename, {})
-            for k, v in data.items():
-                if k in attrs:
-                    result.setAttribute(k, str(v))
-                else:
-                    node = self._to_xml_node(doc, metadata, k, v)
-                    result.appendChild(node)
-        else:  # atom
-            node = doc.createTextNode(str(data))
-            result.appendChild(node)
-        return result
+
+class Resource(object):
+    """
+    WSGI app that handles (de)serialization and controller dispatch.
+
+    Reads routing information supplied by RoutesMiddleware and calls
+    the requested action method upon its deserializer, controller,
+    and serializer. Those three objects may implement any of the basic
+    controller action methods (create, update, show, index, delete)
+    along with any that may be specified in the api router. A 'default'
+    method may also be implemented to be used in place of any
+    non-implemented actions. Deserializer methods must accept a request
+    argument and return a dictionary. Controller methods must accept a
+    request argument. Additionally, they must also accept keyword
+    arguments that represent the keys returned by the Deserializer. They
+    may raise a webob.exc exception or return a dict, which will be
+    serialized by requested content type.
+    """
+    def __init__(self, controller, deserializer, serializer):
+        """
+        :param controller: object that implement methods created by routes lib
+        :param deserializer: object that supports webob request deserialization
+                             through controller-like actions
+        :param serializer: object that supports webob response serialization
+                           through controller-like actions
+        """
+        self.controller = controller
+        self.serializer = serializer
+        self.deserializer = deserializer
+
+    @webob.dec.wsgify(RequestClass=Request)
+    def __call__(self, request):
+        """WSGI method that controls (de)serialization and method dispatch."""
+        action_args = self.get_action_args(request.environ)
+        action = action_args.pop('action', None)
+
+        deserialized_request = self.dispatch(self.deserializer,
+                                             action, request)
+        action_args.update(deserialized_request)
+
+        action_result = self.dispatch(self.controller, action,
+                                      request, **action_args)
+        try:
+            response = webob.Response()
+            self.dispatch(self.serializer, action, response, action_result)
+            return response
+
+        # return unserializable result (typically a webob exc)
+        except Exception:
+            return action_result
+
+    def dispatch(self, obj, action, *args, **kwargs):
+        """Find action-specific method on self and call it."""
+        try:
+            method = getattr(obj, action)
+        except AttributeError:
+            method = getattr(obj, 'default')
+
+        return method(*args, **kwargs)
+
+    def get_action_args(self, request_environment):
+        """Parse dictionary created by routes library."""
+        try:
+            args = request_environment['wsgiorg.routing_args'][1].copy()
+        except Exception:
+            return {}
+
+        try:
+            del args['controller']
+        except KeyError:
+            pass
+
+        try:
+            del args['format']
+        except KeyError:
+            pass
+
+        return args

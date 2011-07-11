@@ -1,12 +1,12 @@
 greenlet>=0.3.1
-SQLAlchemy>=0.6.3
+SQLAlchemy>=0.6.3,<0.7
 pep8==0.5.0
 pylint==0.19
 anyjson
 eventlet>=0.9.12
 PasteDeploy
 routes
-webob
+webob==1.0.8
 wsgiref
 nose
 sphinx
@@ -14,5 +14,7 @@ argparse
 mox==0.5.0
 swift
 -f http://pymox.googlecode.com/files/mox-0.5.0.tar.gz
-sqlalchemy-migrate>=0.6
+sqlalchemy-migrate>=0.6,<0.7
 bzr
+httplib2
+hashlib

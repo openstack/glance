@@ -23,11 +23,12 @@ Defines interface for DB access
 
 import logging
 
-from sqlalchemy import create_engine
+from sqlalchemy import asc, create_engine, desc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import exc
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import or_, and_
 
 from glance.common import config
 from glance.common import exception
@@ -47,7 +48,8 @@ IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size',
                                       'is_public', 'location', 'checksum'])
 
 CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
-DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi']
+DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi',
+               'iso']
 STATUSES = ['active', 'saving', 'queued', 'killed']
 
 
@@ -73,7 +75,8 @@ def configure_db(options):
             logger.setLevel(logging.DEBUG)
         elif verbose:
             logger.setLevel(logging.INFO)
-        register_models()
+
+        models.register_models(_ENGINE)
 
 
 def get_session(autocommit=True, expire_on_commit=False):
@@ -87,30 +90,16 @@ def get_session(autocommit=True, expire_on_commit=False):
     return _MAKER()
 
 
-def register_models():
-    """Register Models and create properties"""
-    global _ENGINE
-    assert _ENGINE
-    BASE.metadata.create_all(_ENGINE)
-
-
-def unregister_models():
-    """Unregister Models, useful clearing out data before testing"""
-    global _ENGINE
-    assert _ENGINE
-    BASE.metadata.drop_all(_ENGINE)
-
-
 def image_create(context, values):
     """Create an image from the values dictionary."""
     return _image_update(context, values, None, False)
 
 
 def image_update(context, image_id, values, purge_props=False):
-    """Set the given properties on an image and update it.
+    """
+    Set the given properties on an image and update it.
 
-    Raises NotFound if image does not exist.
-
+    :raises NotFound if image does not exist.
     """
     return _image_update(context, values, image_id, purge_props)
 
@@ -139,19 +128,69 @@ def image_get(context, image_id, session=None):
         raise exception.NotFound("No image found with ID %s" % image_id)
 
 
-def image_get_all_public(context):
-    """Get all public images."""
+def image_get_all_public(context, filters=None, marker=None, limit=None,
+                         sort_key='created_at', sort_dir='desc'):
+    """
+    Get all public images that match zero or more filters.
+
+    :param filters: dict of filter keys and values. If a 'properties'
+                    key is present, it is treated as a dict of key/value
+                    filters on the image properties attribute
+    :param marker: image id after which to start page
+    :param limit: maximum number of images to return
+    :param sort_key: image attribute by which results should be sorted
+    :param sort_dir: direction in which results should be sorted (asc, desc)
+    """
+    filters = filters or {}
+
     session = get_session()
-    return session.query(models.Image).\
+    query = session.query(models.Image).\
                    options(joinedload(models.Image.properties)).\
                    filter_by(deleted=_deleted(context)).\
                    filter_by(is_public=True).\
-                   filter(models.Image.status != 'killed').\
-                   all()
+                   filter(models.Image.status != 'killed')
+
+    sort_dir_func = {
+        'asc': asc,
+        'desc': desc,
+    }[sort_dir]
+
+    sort_key_attr = getattr(models.Image, sort_key)
+
+    query = query.order_by(sort_dir_func(sort_key_attr)).\
+                  order_by(sort_dir_func(models.Image.id))
+
+    if 'size_min' in filters:
+        query = query.filter(models.Image.size >= filters['size_min'])
+        del filters['size_min']
+
+    if 'size_max' in filters:
+        query = query.filter(models.Image.size <= filters['size_max'])
+        del filters['size_max']
+
+    for (k, v) in filters.pop('properties', {}).items():
+        query = query.filter(models.Image.properties.any(name=k, value=v))
+
+    for (k, v) in filters.items():
+        query = query.filter(getattr(models.Image, k) == v)
+
+    if marker != None:
+        # images returned should be created before the image defined by marker
+        marker_created_at = image_get(context, marker).created_at
+        query = query.filter(
+            or_(models.Image.created_at < marker_created_at,
+                and_(models.Image.created_at == marker_created_at,
+                     models.Image.id < marker)))
+
+    if limit != None:
+        query = query.limit(limit)
+
+    return query.all()
 
 
 def _drop_protected_attrs(model_class, values):
-    """Removed protected attributes from values dictionary using the models
+    """
+    Removed protected attributes from values dictionary using the models
     __protected_attributes__ field.
     """
     for attr in model_class.__protected_attributes__:
@@ -166,7 +205,6 @@ def validate_image(values):
 
     :param values: Mapping of image metadata to check
     """
-
     status = values.get('status')
     disk_format = values.get('disk_format')
     container_format = values.get('container_format')
@@ -199,13 +237,13 @@ def validate_image(values):
 
 
 def _image_update(context, values, image_id, purge_props=False):
-    """Used internally by image_create and image_update
+    """
+    Used internally by image_create and image_update
 
     :param context: Request context
     :param values: A dict of attributes to set
     :param image_id: If None, create the image, otherwise, find and update it
     """
-
     session = get_session()
     with session.begin():
 
@@ -287,7 +325,8 @@ def image_property_update(context, prop_ref, values, session=None):
 
 
 def _image_property_update(context, prop_ref, values, session=None):
-    """Used internally by image_property_create and image_property_update
+    """
+    Used internally by image_property_create and image_property_update
     """
     _drop_protected_attrs(models.ImageProperty, values)
     values["deleted"] = False
@@ -297,7 +336,8 @@ def _image_property_update(context, prop_ref, values, session=None):
 
 
 def image_property_delete(context, prop_ref, session=None):
-    """Used internally by image_property_create and image_property_update
+    """
+    Used internally by image_property_create and image_property_update
     """
     prop_ref.update(dict(deleted=True))
     prop_ref.save(session=session)
@@ -306,8 +346,8 @@ def image_property_delete(context, prop_ref, session=None):
 
 # pylint: disable-msg=C0111
 def _deleted(context):
-    """Calculates whether to include deleted objects based on context.
-
+    """
+    Calculates whether to include deleted objects based on context.
     Currently just looks for a flag called deleted in the context dict.
     """
     if not hasattr(context, 'get'):

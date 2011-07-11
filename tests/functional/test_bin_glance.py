@@ -40,9 +40,11 @@ class TestBinGlance(functional.FunctionalTest):
             3. Delete the image
             4. Verify no longer in index
         """
-
         self.cleanup()
-        api_port, reg_port, conf_file = self.start_servers()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
 
         # 0. Verify no public images
         cmd = "bin/glance --port=%d index" % api_port
@@ -103,9 +105,11 @@ class TestBinGlance(functional.FunctionalTest):
             5. Update the image's Name attribute
             6. Verify the updated name is shown
         """
-
         self.cleanup()
-        api_port, reg_port, conf_file = self.start_servers()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
 
         # 0. Verify no public images
         cmd = "bin/glance --port=%d index" % api_port
@@ -186,13 +190,15 @@ class TestBinGlance(functional.FunctionalTest):
             3. Verify the status of the image is displayed in the show output
                and is in status 'killed'
         """
-
         self.cleanup()
 
         # Start servers with a Swift backend and a bad auth URL
         options = {'default_store': 'swift',
                    'swift_store_auth_address': 'badurl'}
-        api_port, reg_port, conf_file = self.start_servers(**options)
+        self.start_servers(**options)
+
+        api_port = self.api_port
+        registry_port = self.registry_port
 
         # 0. Verify no public images
         cmd = "bin/glance --port=%d index" % api_port
@@ -244,9 +250,11 @@ class TestBinGlance(functional.FunctionalTest):
             3. Verify no public images found
             4. Run SQL against DB to verify no undeleted properties
         """
-
         self.cleanup()
-        api_port, reg_port, conf_file = self.start_servers()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
 
         # 1. Add some images
         for i in range(1, 5):
