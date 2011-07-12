@@ -29,6 +29,7 @@ from webob.exc import (HTTPNotFound,
                        HTTPConflict,
                        HTTPBadRequest)
 
+from glance.api import image_cache
 from glance.common import exception
 from glance.common import wsgi
 from glance.store import (get_from_backend,
@@ -185,16 +186,49 @@ class Controller(object):
         """
         image = self.get_image_meta_or_404(req, id)
 
-        def image_iterator():
-            chunks = get_from_backend(image['location'],
-                                      expected_size=image['size'],
-                                      options=self.options)
+        def get_from_store(image):
+            """Called if caching disabled"""
+            return get_from_backend(image['location'],
+                                    expected_size=image['size'],
+                                    options=self.options)
 
-            for chunk in chunks:
-                yield chunk
+        def get_from_cache(image, cache):
+            """Called if cache hit"""
+            with cache.open(image, "rb") as cache_file:
+                chunks = utils.chunkiter(cache_file)
+                for chunk in chunks:
+                    yield chunk
+
+        def get_from_store_tee_into_cache(image, cache):
+            """Called if cache miss"""
+            with cache.open(image, "wb") as cache_file:
+                chunks = get_from_store(image)
+                for chunk in chunks:
+                    cache_file.write(chunk)
+                    yield chunk
+            #TODO(sirp): call this from cron
+            cache.prune()
+
+        cache = image_cache.ImageCache(self.options)
+        if cache.enabled:
+            if cache.hit(image):
+                # hit
+                logger.debug("image cache HIT, retrieving image '%s'"
+                             " from cache" % id)
+                image_iterator = get_from_cache(image, cache)
+            else:
+                # miss
+                logger.debug("image cache MISS, retrieving image '%s'"
+                             " from store and tee'ing into cache" % id)
+                image_iterator = get_from_store_tee_into_cache(image, cache)
+        else:
+            # disabled
+            logger.debug("image cache DISABLED, retrieving image '%s'"
+                         " from store" % id)
+            image_iterator = get_from_store(image)
 
         return {
-            'image_iterator': image_iterator(),
+            'image_iterator': image_iterator,
             'image_meta': image,
         }
 
