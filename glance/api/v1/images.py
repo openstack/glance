@@ -132,6 +132,12 @@ class Controller(object):
             raise HTTPBadRequest(explanation=str(e))
         return dict(images=images)
 
+    # TODO(sirp): START ADMIN ONLY METHODS
+    #
+    # We currently don't have authentication setup in Glance, when we
+    # get Keystone integration, we're going to want to make these
+    # protected, admin-only methods
+
     def cached(self, req):
         cache = image_cache.ImageCache(self.options)
         entries = cache.entries()
@@ -141,6 +147,12 @@ class Controller(object):
         cache = image_cache.ImageCache(self.options)
         image_meta = {'id': int(id)}
         cache.purge(image_meta)
+
+    def purge_all(self, req):
+        cache = image_cache.ImageCache(self.options)
+        cache.purge_all()
+
+    # TODO(sirp): END ADMIN ONLY METHODS
 
     def _get_query_params(self, req):
         """

@@ -20,6 +20,7 @@ LRU Cache for Image Data
 """
 from contextlib import contextmanager
 import datetime
+import errno
 import logging
 import os
 
@@ -76,8 +77,13 @@ class ImageCache(object):
 
         entry_xattr = xattr.xattr(path)
         if 'w' in mode:
-            entry_xattr.set('image_name', image_meta['name'])
-
+            try:
+                entry_xattr.set('image_name', image_meta['name'])
+            except IOError as e:
+                if e.errno == errno.EOPNOTSUPP:
+                    logger.warn("xattrs not supported, skipping...")
+                else:
+                    raise
 
     def hit(self, image_meta):
         path = self.path_for_image(image_meta)
@@ -87,6 +93,11 @@ class ImageCache(object):
         path = self.path_for_image(image_meta)
         logger.debug("deleting image cache entry '%s'", path)
         if os.path.exists(path):
+            os.unlink(path)
+
+    def purge_all(self):
+        for fname in os.listdir(self.path):
+            path = os.path.join(self.path, fname)
             os.unlink(path)
 
     def entries(self):
