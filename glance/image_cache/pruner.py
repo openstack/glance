@@ -1,30 +1,37 @@
-from contextlib import contextmanager
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+
+# Copyright 2011 OpenStack LLC.
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+"""
+Prunes the Image Cache
+"""
 import logging
 import os
 import stat
-import types
 
 from glance.common import config
-from glance import utils
+from glance.image_cache import ImageCache
 
-logger = logging.getLogger('glance.api.image_cache')
+logger = logging.getLogger('glance.image_cache.pruner')
 
 
-class ImageCache(object):
+class Pruner(object):
     def __init__(self, options):
         self.options = options
-        self._make_cache_directory_if_needed()
-
-    def _make_cache_directory_if_needed(self):
-        if self.enabled and not os.path.exists(self.path):
-            logger.info("image cache directory doesn't exist, creating '%s'",
-                        self.path)
-            os.makedirs(self.path)
-
-    @property
-    def enabled(self):
-        return config.get_option(
-            self.options, 'image_cache_enabled', type='bool', default=False)
+        self.cache = ImageCache(options)
 
     @property
     def max_size(self):
@@ -34,39 +41,13 @@ class ImageCache(object):
             type='int', default=default)
 
     @property
-    def path(self):
-        """This is the base path for the image cache"""
-        datadir = self.options['image_cache_datadir']
-        return datadir
-
-    def path_for_image(self, image_meta):
-        """This crafts an absolute path to a specific entry"""
-        image_id = image_meta['id']
-        return os.path.join(self.path, str(image_id))
-
-    @contextmanager
-    def open(self, image_meta, mode="r"):
-        path = self.path_for_image(image_meta)
-        with open(path, mode) as cache_file:
-            yield cache_file
-
-    def hit(self, image_meta):
-        path = self.path_for_image(image_meta)
-        return os.path.exists(path)
-
-    def delete(self, image_meta):
-        path = self.path_for_image(image_meta)
-        logger.debug("deleting image cache entry '%s'", path)
-        if os.path.exists(path):
-            os.unlink(path)
-
-    @property
     def percent_extra_to_free(self):
         return config.get_option(
             self.options, 'image_cache_percent_extra_to_free',
             type='float', default=0.05)
 
-    def prune(self):
+
+    def run(self):
         """Prune the cache using an LRU strategy"""
 
         # NOTE(sirp): 'Recency' is determined via the filesystem, first using
@@ -80,9 +61,10 @@ class ImageCache(object):
         # times elsewhere (either as a separate file, in the DB, or as 
         # an xattr).
         def get_stats():
+            cache_path = self.cache.path
             stats = []
-            for fname in os.listdir(self.path):
-                path = os.path.join(self.path, fname)
+            for fname in os.listdir(cache_path):
+                path = os.path.join(cache_path, fname)
                 file_info = os.stat(path)
                 mode = file_info[stat.ST_MODE]
                 if not stat.S_ISREG(mode):
@@ -127,3 +109,9 @@ class ImageCache(object):
 
         freed = prune_lru(stats, to_free)
         logger.debug("finished pruning, freed %(freed)d bytes" % locals())
+
+
+def app_factory(global_config, **local_conf):
+    conf = global_config.copy()
+    conf.update(local_conf)
+    return Pruner(conf)

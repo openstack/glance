@@ -29,7 +29,7 @@ from webob.exc import (HTTPNotFound,
                        HTTPConflict,
                        HTTPBadRequest)
 
-from glance.api import image_cache
+from glance import image_cache
 from glance.common import exception
 from glance.common import wsgi
 from glance.store import (get_from_backend,
@@ -206,8 +206,6 @@ class Controller(object):
                 for chunk in chunks:
                     cache_file.write(chunk)
                     yield chunk
-            #TODO(sirp): call this from cron
-            cache.prune()
 
         cache = image_cache.ImageCache(self.options)
         if cache.enabled:
