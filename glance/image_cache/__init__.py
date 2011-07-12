@@ -19,8 +19,11 @@
 LRU Cache for Image Data
 """
 from contextlib import contextmanager
+import datetime
 import logging
 import os
+
+import xattr
 
 from glance.common import config
 
@@ -28,6 +31,17 @@ logger = logging.getLogger('glance.image_cache')
 
 
 class ImageCache(object):
+    """Cache Image Data locally.
+
+    ImageCache makes the following assumptions:
+
+        1. `noatime` is not enabled (access time is for LRU pruning)
+
+        2. `xattr` support by the filesystem (OPTIONAL, used to display image
+            name when /images/cached API request is made)
+    
+        3. `glance-pruner` is run periocally to keep cache size in check
+    """
     def __init__(self, options):
         self.options = options
         self._make_cache_directory_if_needed()
@@ -60,6 +74,11 @@ class ImageCache(object):
         with open(path, mode) as cache_file:
             yield cache_file
 
+        entry_xattr = xattr.xattr(path)
+        if 'w' in mode:
+            entry_xattr.set('image_name', image_meta['name'])
+
+
     def hit(self, image_meta):
         path = self.path_for_image(image_meta)
         return os.path.exists(path)
@@ -69,3 +88,32 @@ class ImageCache(object):
         logger.debug("deleting image cache entry '%s'", path)
         if os.path.exists(path):
             os.unlink(path)
+
+    def entries(self):
+        """Return cache info for each image that is cached"""
+        entries = []
+        for fname in os.listdir(self.path):
+            path = os.path.join(self.path, fname)
+            try:
+                image_id = int(fname)
+            except ValueError, TypeError:
+                continue
+            entry = {}
+            entry['id'] = image_id
+
+            entry_xattr = xattr.xattr(path)
+            try:
+                name = entry_xattr['image_name']
+            except KeyError:
+                name = "UNKNOWN"
+
+            entry['name'] = name
+            entry['size'] = os.path.getsize(path)
+            
+            accessed = os.path.getatime(path) or os.path.getmtime(path)
+            last_accessed = datetime.datetime.fromtimestamp(accessed)\
+                                             .isoformat()
+            entry['last_accessed'] = last_accessed
+
+            entries.append(entry)
+        return entries

@@ -132,6 +132,11 @@ class Controller(object):
             raise HTTPBadRequest(explanation=str(e))
         return dict(images=images)
 
+    def cached(self, req):
+        cache = image_cache.ImageCache(self.options)
+        entries = cache.entries()
+        return dict(images=entries)
+
     def _get_query_params(self, req):
         """
         Extracts necessary query params from request.
