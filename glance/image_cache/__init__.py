@@ -83,7 +83,7 @@ class ImageCache(object):
         path = self.path_for_image(image_meta)
         return os.path.exists(path)
 
-    def delete(self, image_meta):
+    def purge(self, image_meta):
         path = self.path_for_image(image_meta)
         logger.debug("deleting image cache entry '%s'", path)
         if os.path.exists(path):

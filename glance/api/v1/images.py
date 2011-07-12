@@ -137,6 +137,11 @@ class Controller(object):
         entries = cache.entries()
         return dict(images=entries)
 
+    def purge(self, req, id):
+        cache = image_cache.ImageCache(self.options)
+        image_meta = {'id': int(id)}
+        cache.purge(image_meta)
+
     def _get_query_params(self, req):
         """
         Extracts necessary query params from request.
