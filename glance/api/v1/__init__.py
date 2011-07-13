@@ -37,7 +37,8 @@ class API(wsgi.Router):
                         collection={'detail': 'GET',
                                     'cached': 'GET',
                                     'invalid': 'GET',
-                                    'purge_all': 'POST'},
+                                    'purge_all': 'POST',
+                                    'prefetching': 'GET'},
                         member={'purge': 'POST',
                                 'prefetch': 'POST'})
         mapper.connect("/", controller=resource, action="index")

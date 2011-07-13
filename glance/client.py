@@ -217,5 +217,22 @@ class V1Client(base_client.BaseClient):
         self.do_request("POST", "/images/%s/prefetch" % image_id)
         return True
 
+    def get_prefetching_cache_images(self, **kwargs):
+        """
+        Returns a list of images which are actively being prefetched or are
+        queued to be prefetched in the future.
+
+        :param filters: dictionary of attributes by which the resulting
+                        collection of images should be filtered
+        :param marker: id after which to start the page of images
+        :param limit: maximum number of items to return
+        :param sort_key: results will be ordered by this image attribute
+        :param sort_dir: direction in which to to order results (asc, desc)
+        """
+        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
+        res = self.do_request("GET", "/images/prefetching", params=params)
+        data = json.loads(res.read())['images']
+        return data
+
 
 Client = V1Client

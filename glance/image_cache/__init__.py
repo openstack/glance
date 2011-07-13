@@ -20,6 +20,7 @@ LRU Cache for Image Data
 """
 from contextlib import contextmanager
 import datetime
+import itertools
 import logging
 import os
 import sys
@@ -373,6 +374,18 @@ class ImageCache(object):
         for entry in self._base_entries(self.invalid_path):
             path = entry['path']
             entry['error'] = utils.get_xattr(path, 'error', default='UNKNOWN')
+            yield entry
+
+    def prefetch_entries(self):
+        """Cache info for both queued and in-progress prefetch jobs"""
+        both_entries = itertools.chain(
+                        self._base_entries(self.prefetch_path),
+                        self._base_entries(self.prefetching_path))
+
+        for entry in both_entries:
+            path = entry['path']
+            entry['status'] = 'in-progress' if 'prefetching' in path\
+                                            else 'queued'
             yield entry
 
     def entries(self):

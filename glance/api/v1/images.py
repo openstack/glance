@@ -164,6 +164,12 @@ class Controller(object):
         except exception.Invalid, e:
             raise HTTPBadRequest(explanation=str(e))
 
+    def prefetching(self, req):
+        """Lists images that are queued or actively being prefetched"""
+        cache = image_cache.ImageCache(self.options)
+        entries = list(cache.prefetch_entries())
+        return dict(images=entries)
+
     # TODO(sirp): END ADMIN ONLY METHODS
 
     def _get_query_params(self, req):
