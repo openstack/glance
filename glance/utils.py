@@ -196,10 +196,11 @@ def get_xattr(path, key, **kwargs):
         else:
             raise
 
+
 def set_xattr(path, key, value):
     """Set the value of a specified xattr.
 
-    If xattrs aren't supported by the file-system, this skips it.
+    If xattrs aren't supported by the file-system, we skip setting the value.
     """
     entry_xattr = xattr.xattr(path)
     try:
@@ -210,20 +211,19 @@ def set_xattr(path, key, value):
         else:
             raise
 
+
 def inc_xattr(path, key, n=1):
-    """Safely increment an xattr field.
+    """Increment the value of an xattr (assuming it is an integer).
 
-    NOTE(sirp): The 'safely', in this case, refers to the fact that the
-    code will skip this step if xattrs isn't supported by the filesystem.
-
-    Beware, this code *does* have a RACE CONDITION, since the
+    BEWARE, this code *does* have a RACE CONDITION, since the
     read/update/write sequence is not atomic.
 
-    For the most part, this is fine since we're just using this to collect
-    interesting stats and not using the value to make critical decisions.
+    This function is therefore suitable for collecting stats (where
+    perfection isn't required), but NOT for code that makes critical
+    decisions.
 
-    Given that assumption, the added complexity and overhead of
-    maintaining locks is not worth it.
+    For this use case, the trade-off of simple, lock-free code was worth an
+    occasional, harmless race.
     """
     try:
         count = int(get_xattr(path, key))
