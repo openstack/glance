@@ -21,6 +21,7 @@ Prunes the Image Cache
 import logging
 import os
 import stat
+import time
 
 from glance.common import config
 from glance.image_cache import ImageCache
@@ -46,7 +47,34 @@ class Pruner(object):
             self.options, 'image_cache_percent_extra_to_free',
             type='float', default=0.05)
 
+    @property
+    def image_cache_invalid_entry_grace_period(self):
+        return config.get_option(
+            self.options, 'image_cache_invalid_entry_grace_period',
+            type='int', default=3600)
+
     def run(self):
+        self.prune_cache()
+        self.prune_invalid_cache_entries()
+
+    def prune_invalid_cache_entries(self):
+        """Prune invalid cache entries that are older than the grace period"""
+        grace = self.image_cache_invalid_entry_grace_period
+        now = time.time()
+
+        pruned = 0
+        for path in self.cache.get_all_regular_files(self.cache.invalid_path):
+            mtime = os.path.getmtime(path)
+            age = now - mtime
+            if age > grace:
+                logger.debug("Cache entry '%(path)s' exceeds grace period, "
+                             "(%(age)i s > %(grace)i s)" % locals())
+                self.cache._delete_file(path)
+                pruned += 1
+
+        logger.info("Pruned %(pruned)s invalid cache entries" % locals())
+        
+    def prune_cache(self):
         """Prune the cache using an LRU strategy"""
 
         # NOTE(sirp): 'Recency' is determined via the filesystem, first using
@@ -60,14 +88,9 @@ class Pruner(object):
         # times elsewhere (either as a separate file, in the DB, or as
         # an xattr).
         def get_stats():
-            cache_path = self.cache.path
             stats = []
-            for fname in os.listdir(cache_path):
-                path = os.path.join(cache_path, fname)
+            for path in self.cache.get_all_regular_files(self.cache.path):
                 file_info = os.stat(path)
-                mode = file_info[stat.ST_MODE]
-                if not stat.S_ISREG(mode):
-                    continue
                 stats.append((file_info[stat.ST_ATIME],  # access time
                               file_info[stat.ST_MTIME],  # modification time
                               file_info[stat.ST_SIZE],   # size in bytes
