@@ -40,7 +40,7 @@ class ImageCache(object):
 
         2. `xattr` support by the filesystem (OPTIONAL, used to display image
             name when /images/cached API request is made)
-    
+
         3. `glance-pruner` is run periocally to keep cache size in check
     """
     def __init__(self, options):
@@ -48,10 +48,14 @@ class ImageCache(object):
         self._make_cache_directory_if_needed()
 
     def _make_cache_directory_if_needed(self):
-        if self.enabled and not os.path.exists(self.path):
+        """Creates main cache directory along with tmp subdirectory"""
+
+        if self.enabled and not os.path.exists(self.tmp_path):
             logger.info("image cache directory doesn't exist, creating '%s'",
                         self.path)
-            os.makedirs(self.path)
+            # NOTE(sirp): making the tmp_path will have the effect of creating
+            # the main cache path directory as well
+            os.makedirs(self.tmp_path)
 
     @property
     def enabled(self):
@@ -64,26 +68,143 @@ class ImageCache(object):
         datadir = self.options['image_cache_datadir']
         return datadir
 
+    @property
+    def tmp_path(self):
+        """This provides a temporary place to write our cache entries so that
+        we we're not storing incomplete objects in the cache directly.
+
+        When the file is finished writing to, it is moved from the tmp path
+        back out into the main cache directory.
+
+        The tmp_path is a subdirectory of the main cache path to ensure that
+        they both reside on the same filesystem and thus making moves cheap.
+        """
+        return os.path.join(self.path, 'tmp')
+
     def path_for_image(self, image_meta):
         """This crafts an absolute path to a specific entry"""
         image_id = image_meta['id']
         return os.path.join(self.path, str(image_id))
 
+    def tmp_path_for_image(self, image_meta):
+        """This crafts an absolute path to a specific entry in the tmp
+        directory
+        """
+        image_id = image_meta['id']
+        return os.path.join(self.tmp_path, str(image_id))
+
     @contextmanager
     def open(self, image_meta, mode="r"):
+        """Open a cache image for reading or writing.
+
+        We have two possible scenarios:
+
+            1. READ: if we should attempt to read the file from the cache's
+               main directory
+
+            2. WRITE: we should write to a file under the cache's tmp
+               directory, and when it's finished, move it out the main cache
+               directory.
+        """
+        if 'w' in mode:
+            with self._open_write(image_meta, mode) as cache_file:
+                yield cache_file
+        elif 'r' in mode:
+            with self._open_read(image_meta, mode) as cache_file:
+                yield cache_file
+        else:
+            raise Exception("mode '%s' not supported" % mode)
+
+    @contextmanager
+    def _open_write(self, image_meta, mode):
+        tmp_path = self.tmp_path_for_image(image_meta)
+        final_path = self.path_for_image(image_meta)
+
+        def commit():
+            os.rename(tmp_path, final_path)
+
+        def rollback():
+            # TODO(sirp): should we leave the file around for debugging
+            # purposes
+            os.unlink(tmp_path)
+
+        # wrap in a transaction to make write atomic
+        try:
+            with open(tmp_path, mode) as cache_file:
+                yield cache_file
+        except:
+            rollback()
+            raise
+        else:
+            self._safe_set_xattr(tmp_path, 'image_name', image_meta['name'])
+            #self._safe_set_xattr(tmp_path, 'hits', '0')
+            try:
+                commit()
+            except:
+                rollback()
+                raise
+
+    @contextmanager
+    def _open_read(self, image_meta, mode):
         path = self.path_for_image(image_meta)
         with open(path, mode) as cache_file:
             yield cache_file
 
+        #self._safe_increment_xattr(path, 'hits')
+
+    @staticmethod
+    def _safe_increment_xattr(path, key, n=1):
+        """Safely increment an xattr field.
+
+        NOTE(sirp): The 'safely', in this case, refers to the fact that the
+        code will skip this step if xattrs isn't supported by the filesystem.
+
+        Beware, this code *does* have a RACE CONDITION, since the
+        read/update/write sequence is not atomic.
+
+        For the most part, this is fine since we're just using this to collect
+        interesting stats and not using the value to make critical decisions.
+
+        Given that assumption, the added complexity and overhead of
+        maintaining locks is not worth it.
+        """
+        try:
+            count = int(self._safe_get_xattr(path, key))
+        except KeyError:
+            # NOTE(sirp): a KeyError is generated in two cases:
+            # 1) xattrs is not supported by the filesystem
+            # 2) the key is not present on the file
+            #
+            # In either case, just ignore it...
+            pass
+        else:
+            # NOTE(sirp): only try to bump the count if xattrs is supported
+            # and the key is present
+            count += n
+            self._safe_set_xattr(path, key, count)
+
+    @staticmethod
+    def _safe_set_xattr(path, key, value):
+        """Set a xattr on the given path, skip if xattrs aren't supported"""
         entry_xattr = xattr.xattr(path)
-        if 'w' in mode:
-            try:
-                entry_xattr.set('image_name', image_meta['name'])
-            except IOError as e:
-                if e.errno == errno.EOPNOTSUPP:
-                    logger.warn("xattrs not supported, skipping...")
-                else:
-                    raise
+        try:
+            entry_xattr.set(key, value)
+        except IOError as e:
+            if e.errno == errno.EOPNOTSUPP:
+                logger.warn("xattrs not supported, skipping...")
+            else:
+                raise
+
+    @staticmethod
+    def _safe_get_xattr(path, key, **kwargs):
+        entry_xattr = xattr.xattr(path)
+        try:
+            return entry_xattr[key]
+        except KeyError:
+            if 'default' in kwargs:
+                return kwargs['default']
+            else:
+                raise
 
     def hit(self, image_meta):
         path = self.path_for_image(image_meta)
@@ -96,31 +217,33 @@ class ImageCache(object):
             os.unlink(path)
 
     def purge_all(self):
+        for path in self.all_items():
+            os.unlink(path)
+
+    def all_items(self):
         for fname in os.listdir(self.path):
             path = os.path.join(self.path, fname)
-            os.unlink(path)
+            if os.path.isfile(path):
+                yield path
 
     def entries(self):
         """Return cache info for each image that is cached"""
         entries = []
-        for fname in os.listdir(self.path):
-            path = os.path.join(self.path, fname)
+        for path in self.all_items():
+            filename = os.path.basename(path)
             try:
-                image_id = int(fname)
+                image_id = int(filename)
             except ValueError, TypeError:
                 continue
+
             entry = {}
             entry['id'] = image_id
-
-            entry_xattr = xattr.xattr(path)
-            try:
-                name = entry_xattr['image_name']
-            except KeyError:
-                name = "UNKNOWN"
-
-            entry['name'] = name
+            entry['name'] = self._safe_get_xattr(
+                path, 'image_name', default='UNKNOWN')
+            #entry['hits'] = self._safe_get_xattr(
+            #    path, 'hits', default='UNKNOWN')
             entry['size'] = os.path.getsize(path)
-            
+
             accessed = os.path.getatime(path) or os.path.getmtime(path)
             last_accessed = datetime.datetime.fromtimestamp(accessed)\
                                              .isoformat()
