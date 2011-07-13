@@ -208,5 +208,14 @@ class V1Client(base_client.BaseClient):
         self.do_request("POST", "/images/purge_all")
         return True
 
+    def prefetch_cache_image(self, image_id):
+        """
+        Pre-fetch a specified image from the cache
+        """
+        res = self.do_request("HEAD", "/images/%s" % image_id)
+        image = utils.get_image_meta_from_headers(res)
+        self.do_request("POST", "/images/%s/prefetch" % image_id)
+        return True
+
 
 Client = V1Client

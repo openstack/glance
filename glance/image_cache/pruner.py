@@ -54,6 +54,10 @@ class Pruner(object):
             type='int', default=3600)
 
     def run(self):
+        if not self.cache.enabled:
+            logger.debug("Image caching is not enabled, going back to sleep...")
+            return
+
         self.prune_cache()
         self.prune_invalid_cache_entries()
 

@@ -20,7 +20,6 @@ LRU Cache for Image Data
 """
 from contextlib import contextmanager
 import datetime
-import errno
 import logging
 import os
 import sys
@@ -70,6 +69,8 @@ class ImageCache(object):
             ...
             tmp/
             invalid/
+            prefetch/
+            prefetching/
     """
     def __init__(self, options):
         self.options = options
@@ -82,7 +83,9 @@ class ImageCache(object):
 
         # NOTE(sirp): making the tmp_path will have the effect of creating
         # the main cache path directory as well
-        for path in (self.tmp_path, self.invalid_path):
+        paths = [self.tmp_path, self.invalid_path, self.prefetch_path,
+                 self.prefetching_path]
+        for path in paths:
             if os.path.exists(path):
                 continue
             logger.info("image cache directory doesn't exist, creating '%s'",
@@ -121,6 +124,18 @@ class ImageCache(object):
         tmp_path, we move the incomplete image to here.
         """
         return os.path.join(self.path, 'invalid')
+
+    @property
+    def prefetch_path(self):
+        """This contains a list of image ids that should be pre-fetched into
+        the cache
+        """
+        return os.path.join(self.path, 'prefetch')
+
+    @property
+    def prefetching_path(self):
+        """This contains image ids that currently being prefetched"""
+        return os.path.join(self.path, 'prefetching')
 
     def path_for_image(self, image_meta):
         """This crafts an absolute path to a specific entry"""
@@ -229,6 +244,84 @@ class ImageCache(object):
         # Also clear out any invalid images
         for path in self.get_all_regular_files(self.invalid_path):
             self._delete_file(path)
+  
+    def is_image_currently_being_written(self, image_id):
+        """Returns true if we're currently downloading an image"""
+        # FIXME(sirp): fix this hack
+        image_meta = {'id': image_id}
+        tmp_path = self.tmp_path_for_image(image_meta)
+        return os.path.exists(tmp_path)
+
+    def is_currently_prefetching_any_images(self):
+        """True if we are currently prefetching an image.
+
+        We only allow one prefetch to occur at a time.
+        """
+        return len(os.listdir(self.prefetching_path)) > 0
+
+    def is_image_queued_for_prefetch(self, image_id):
+        prefetch_path = os.path.join(self.prefetch_path, str(image_id))
+        return os.path.exists(prefetch_path)
+
+    def is_image_currently_prefetching(self, image_id):
+        prefetching_path = os.path.join(self.prefetching_path, str(image_id))
+        return os.path.exists(prefetching_path)
+
+    def queue_prefetch(self, image_meta):
+        """This adds a image to be prefetched to the queue directory.
+
+        If the image already exists in the queue directory or the
+        prefetching directory, we ignore it.
+        """
+        image_id  = image_meta['id']
+
+        if (self.is_image_currently_prefetching(image_id) or
+            self.is_image_queued_for_prefetch(image_id)):
+            logger.warn("Skipping prefetch, already exists: '%s'", path)
+            return
+
+        prefetch_path = os.path.join(self.prefetch_path, str(image_id))
+        with open(prefetch_path, "w") as f:
+            pass
+
+    def delete_queued_prefetch_image(self, image_id):
+        prefetch_path = os.path.join(self.prefetch_path, str(image_id))
+        self._delete_file(prefetch_path)
+
+    def delete_prefetching_image(self, image_id):
+        prefetching_path = os.path.join(self.prefetching_path, str(image_id))
+        self._delete_file(prefetching_path)
+
+    def pop_prefetch_item(self):
+        """This returns the next prefetch job.
+
+        The prefetch directory is treated like a FIFO; so we sort by modified
+        time and pick the oldest.
+        """
+        items = []
+        for path in self.get_all_regular_files(self.prefetch_path):
+            mtime = os.path.getmtime(path)
+            items.append((mtime, path))
+
+        if not items:
+            raise IndexError
+
+        # Sort oldest files to the end of the list
+        items.sort(reverse=True)
+
+        mtime, path = items.pop()
+        image_id = os.path.basename(path)
+        return image_id
+
+    def do_prefetch(self, image_id):
+        """This moves the file from the prefetch queue path to the in-progress
+        prefetching path (so we don't try to prefetch something twice).
+        """
+        prefetch_path = os.path.join(self.prefetch_path, str(image_id))
+        prefetching_path = os.path.join(self.prefetching_path, str(image_id))
+        os.rename(prefetch_path, prefetching_path)
+
+        # do download here?
 
     @staticmethod
     def get_all_regular_files(basepath):

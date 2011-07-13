@@ -38,7 +38,8 @@ class API(wsgi.Router):
                                     'cached': 'GET',
                                     'invalid': 'GET',
                                     'purge_all': 'POST'},
-                        member={'purge': 'POST'})
+                        member={'purge': 'POST',
+                                'prefetch': 'POST'})
         mapper.connect("/", controller=resource, action="index")
         mapper.connect("/images/{id}", controller=resource, action="meta",
                        conditions=dict(method=["HEAD"]))

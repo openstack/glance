@@ -580,6 +580,33 @@ Removes all images from the cache"""
     if options.verbose:
         print "done"
 
+@catch_error('prefetch the specified cached image')
+def cache_prefetch(options, args):
+    """
+%(prog)s prefetch [options]
+
+Pre-fetch an image list of images into the cache"""
+    image_ids = args
+    if not image_ids:
+        print "Please specify the ID or a list of image IDs of the images "\
+              "you wish to "
+        print "prefetch from the cache as the first argument"
+        return FAILURE
+
+    client = get_client(options)
+    for image_id in image_ids:
+        if options.verbose:
+            print "Prefetching image '%s'" % image_id
+
+        try:
+            client.prefetch_cache_image(image_id)
+        except exception.NotFound:
+            print "No image with ID %s was found" % image_id
+            continue
+
+    if options.verbose:
+        print "done"
+
 def get_client(options):
     """
     Returns a new client object to a Glance server
@@ -633,7 +660,8 @@ def parse_options(parser, cli_args):
                 'cached': cache_cached,
                 'invalid': cache_invalid,
                 'purge': cache_purge,
-                'purge_all': cache_purge_all}
+                'purge_all': cache_purge_all,
+                'prefetch': cache_prefetch}
 
     if not cli_args:
         cli_args.append('-h')  # Show options in usage output...
@@ -726,12 +754,14 @@ Commands:
 Cache Commands:
 
     cached         List images currently cached
-    
+
     invalid        List current invalid cache images
 
     purge          Deletes an image from the cache
 
     purge_all      Removes all images from the cache
+
+    prefetch       Pre-fetch an image list of images into the cache
 """
 
     oparser = optparse.OptionParser(version='%%prog %s'

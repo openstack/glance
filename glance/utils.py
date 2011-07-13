@@ -18,6 +18,7 @@
 """
 A few utility routines used throughout Glance
 """
+import errno
 import logging
 
 import xattr

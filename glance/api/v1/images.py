@@ -157,6 +157,11 @@ class Controller(object):
         cache = image_cache.ImageCache(self.options)
         cache.purge_all()
 
+    def prefetch(self, req, id):
+        cache = image_cache.ImageCache(self.options)
+        image_meta = {'id': int(id)}
+        cache.queue_prefetch(image_meta)
+
     # TODO(sirp): END ADMIN ONLY METHODS
 
     def _get_query_params(self, req):
@@ -245,7 +250,20 @@ class Controller(object):
                 # miss
                 logger.debug("image cache MISS, retrieving image '%s'"
                              " from store and tee'ing into cache" % id)
-                image_iterator = get_from_store_tee_into_cache(image, cache)
+
+                # We only want to tee-into the cache if we're not currently
+                # prefetching an image
+                image_id = image['id']
+                if cache.is_image_currently_prefetching(image_id):
+                    image_iterator = get_from_store(image)
+                else:
+                    # NOTE(sirp): If we're about to download and cache an
+                    # image which is currently in the prefetch queue, just
+                    # delete the queue items since we're caching it anyway
+                    if cache.is_image_queued_for_prefetch(image_id):
+                        cache.delete_queued_prefetch_image(image_id)
+
+                    image_iterator = get_from_store_tee_into_cache(image, cache)
         else:
             # disabled
             logger.debug("image cache DISABLED, retrieving image '%s'"
