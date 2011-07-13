@@ -484,7 +484,7 @@ List images currently cached"""
     client = get_client(options)
     images = client.get_cached_images()
     if not images:
-        print "Cache is empty."
+        print "No cached images."
         return SUCCESS
 
     print "Found %d cached images..." % len(images)
@@ -501,6 +501,23 @@ List images currently cached"""
                                image['name'],
                                image['size'])
 
+
+@catch_error('purge all cached images')
+def cache_purge_all(options, args):
+    """
+%(prog)s purge_all [options]
+
+Removes all images from the cache"""
+    if not options.force and \
+       not user_confirm("Purge all cached images?", default=False):
+        print 'Not purging any cached images.'
+        return FAILURE
+
+    client = get_client(options)
+    images = client.purge_all_cached_images()
+
+    if options.verbose:
+        print "done"
 
 def get_client(options):
     """
@@ -552,7 +569,8 @@ def parse_options(parser, cli_args):
                 'details': images_detailed,
                 'show': image_show,
                 'clear': images_clear,
-                'cached': cache_cached}
+                'cached': cache_cached,
+                'purge_all': cache_purge_all}
 
     if not cli_args:
         cli_args.append('-h')  # Show options in usage output...

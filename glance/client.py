@@ -178,4 +178,12 @@ class V1Client(base_client.BaseClient):
         data = json.loads(res.read())['images']
         return data
 
+    def purge_all_cached_images(self):
+        """
+        Purge all cached images
+        """
+        self.do_request("POST", "/images/purge_all")
+        return True
+
+
 Client = V1Client
