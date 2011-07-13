@@ -25,6 +25,7 @@ import os
 import sys
 
 from glance.common import config
+from glance.common import exception
 from glance import utils
 
 logger = logging.getLogger('glance.image_cache')
@@ -137,23 +138,20 @@ class ImageCache(object):
         """This contains image ids that currently being prefetched"""
         return os.path.join(self.path, 'prefetching')
 
-    def path_for_image(self, image_meta):
+    def path_for_image(self, image_id):
         """This crafts an absolute path to a specific entry"""
-        image_id = image_meta['id']
         return os.path.join(self.path, str(image_id))
 
-    def tmp_path_for_image(self, image_meta):
+    def tmp_path_for_image(self, image_id):
         """This crafts an absolute path to a specific entry in the tmp
         directory
         """
-        image_id = image_meta['id']
         return os.path.join(self.tmp_path, str(image_id))
 
-    def invalid_path_for_image(self, image_meta):
+    def invalid_path_for_image(self, image_id):
         """This crafts an absolute path to a specific entry in the invalid
         directory
         """
-        image_id = image_meta['id']
         return os.path.join(self.invalid_path, str(image_id))
 
     @contextmanager
@@ -180,13 +178,14 @@ class ImageCache(object):
 
     @contextmanager
     def _open_write(self, image_meta, mode):
-        tmp_path = self.tmp_path_for_image(image_meta)
+        image_id = image_meta['id']
+        tmp_path = self.tmp_path_for_image(image_id)
 
         def commit():
             utils.set_xattr(tmp_path, 'image_name', image_meta['name'])
             utils.set_xattr(tmp_path, 'hits', 0)
 
-            final_path = self.path_for_image(image_meta)
+            final_path = self.path_for_image(image_id)
             logger.debug("fetch finished, commiting by moving '%s' to '%s'" %
                          (tmp_path, final_path))
             os.rename(tmp_path, final_path)
@@ -195,7 +194,7 @@ class ImageCache(object):
             utils.set_xattr(tmp_path, 'image_name', image_meta['name'])
             utils.set_xattr(tmp_path, 'error', str(e))
 
-            invalid_path = self.invalid_path_for_image(image_meta)
+            invalid_path = self.invalid_path_for_image(image_id)
             logger.debug("fetch errored, rolling back by moving "
                          "'%s' to '%s'" % (tmp_path, invalid_path))
             os.rename(tmp_path, invalid_path)
@@ -213,15 +212,15 @@ class ImageCache(object):
 
     @contextmanager
     def _open_read(self, image_meta, mode):
-        path = self.path_for_image(image_meta)
+        image_id = image_meta['id']
+        path = self.path_for_image(image_id)
         with open(path, mode) as cache_file:
             yield cache_file
 
         utils.inc_xattr(path, 'hits')  # bump the hit count
 
-    def hit(self, image_meta):
-        path = self.path_for_image(image_meta)
-        return os.path.exists(path)
+    def hit(self, image_id):
+        return os.path.exists(self.path_for_image(image_id))
 
     @staticmethod
     def _delete_file(path):
@@ -229,8 +228,8 @@ class ImageCache(object):
             logger.debug("deleting image cache file '%s'", path)
             os.unlink(path)
 
-    def purge(self, image_meta):
-        path = self.path_for_image(image_meta)
+    def purge(self, image_id):
+        path = self.path_for_image(image_id)
         self._delete_file(path)
 
     def purge_all(self):
@@ -247,9 +246,7 @@ class ImageCache(object):
   
     def is_image_currently_being_written(self, image_id):
         """Returns true if we're currently downloading an image"""
-        # FIXME(sirp): fix this hack
-        image_meta = {'id': image_id}
-        tmp_path = self.tmp_path_for_image(image_meta)
+        tmp_path = self.tmp_path_for_image(image_id)
         return os.path.exists(tmp_path)
 
     def is_currently_prefetching_any_images(self):
@@ -275,14 +272,30 @@ class ImageCache(object):
         """
         image_id  = image_meta['id']
 
-        if (self.is_image_currently_prefetching(image_id) or
-            self.is_image_queued_for_prefetch(image_id)):
-            logger.warn("Skipping prefetch, already exists: '%s'", path)
-            return
+        if self.hit(image_id):
+            msg = "Skipping prefetch, image '%s' already cached" % image_id
+            logger.warn(msg)
+            raise exception.Invalid(msg)
+
+        if self.is_image_currently_prefetching(image_id):
+            msg = "Skipping prefetch, already prefetching image '%s'"\
+                  % image_id
+            logger.warn(msg)
+            raise exception.Invalid(msg)
+        
+        if self.is_image_queued_for_prefetch(image_id):
+            msg = "Skipping prefetch, image '%s' already queued for"\
+                  " prefetching" % image_id
+            logger.warn(msg)
+            raise exception.Invalid(msg)
 
         prefetch_path = os.path.join(self.prefetch_path, str(image_id))
+
+        # Touch the file to add it to the queue
         with open(prefetch_path, "w") as f:
             pass
+
+        utils.set_xattr(prefetch_path, 'image_name', image_meta['name'])
 
     def delete_queued_prefetch_image(self, image_id):
         prefetch_path = os.path.join(self.prefetch_path, str(image_id))

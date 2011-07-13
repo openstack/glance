@@ -150,8 +150,7 @@ class Controller(object):
 
     def purge(self, req, id):
         cache = image_cache.ImageCache(self.options)
-        image_meta = {'id': int(id)}
-        cache.purge(image_meta)
+        cache.purge(id)
 
     def purge_all(self, req):
         cache = image_cache.ImageCache(self.options)
@@ -159,8 +158,11 @@ class Controller(object):
 
     def prefetch(self, req, id):
         cache = image_cache.ImageCache(self.options)
-        image_meta = {'id': int(id)}
-        cache.queue_prefetch(image_meta)
+        image_meta = self.get_image_meta_or_404(req, id)
+        try:
+            cache.queue_prefetch(image_meta)
+        except exception.Invalid, e:
+            raise HTTPBadRequest(explanation=str(e))
 
     # TODO(sirp): END ADMIN ONLY METHODS
 
@@ -241,7 +243,7 @@ class Controller(object):
 
         cache = image_cache.ImageCache(self.options)
         if cache.enabled:
-            if cache.hit(image):
+            if cache.hit(id):
                 # hit
                 logger.debug("image cache HIT, retrieving image '%s'"
                              " from cache" % id)

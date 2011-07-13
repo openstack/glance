@@ -61,9 +61,7 @@ class Prefetcher(object):
             logger.debug("Nothing to prefetch, going back to sleep...")
             return
 
-        # FIXME(sirp): fix this hack
-        image_meta = {'id': image_id}
-        if self.cache.hit(image_meta):
+        if self.cache.hit(image_id):
             logger.warn("Image %s is already in the cache, deleting "
                         "prefetch job and going back to sleep...", image_id)
             self.cache.delete_queued_prefetch_image(image_id)
