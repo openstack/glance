@@ -137,16 +137,12 @@ class PrettyTable(object):
         """
         self.columns.append((width, label, just))
 
-    @staticmethod
-    def _justify(data, width, just):
-        return data.rjust(width) if just == 'r' else data.ljust(width)
-
     def print_header(self):
         label_parts = []
         break_parts = []
         for width, label, _ in self.columns:
             # NOTE(sirp): headers are always left justified
-            label_part = self._justify(label, width, 'l')
+            label_part = self._clip_and_justify(label, width, 'l')
             label_parts.append(label_part)
 
             break_part = '-' * width
@@ -159,7 +155,21 @@ class PrettyTable(object):
         row = args
         row_parts = []
         for data, (width, _, just) in zip(row, self.columns):
-            row_part = self._justify(str(data), width, just)
+            row_part = self._clip_and_justify(data, width, just)
             row_parts.append(row_part)
 
         print ' '.join(row_parts)
+   
+    @staticmethod
+    def _clip_and_justify(data, width, just):
+        # clip field to column width
+        clipped_data = str(data)[:width]
+
+        if just == 'r':
+            # right justify
+            justified = clipped_data.rjust(width)
+        else:
+            # left justify
+            justified = clipped_data.ljust(width)
+
+        return justified
