@@ -502,6 +502,31 @@ List images currently cached"""
                                image['size'])
 
 
+@catch_error('purge the specified cached image')
+def cache_purge(options, args):
+    """
+%(prog)s purge [options]
+
+Deletes an image from the cache"""
+    try:
+        image_id = args.pop()
+    except IndexError:
+        print "Please specify the ID of the image you wish to purge "
+        print "from the cache as the first argument"
+        return FAILURE
+
+    if not options.force and \
+       not user_confirm("Purge cached image %s?" % (image_id,), default=False):
+        print 'Not purging cached image %s' % (image_id,)
+        return FAILURE
+
+    client = get_client(options)
+    client.purge_cached_image(image_id)
+
+    if options.verbose:
+        print "done"
+
+
 @catch_error('purge all cached images')
 def cache_purge_all(options, args):
     """
@@ -514,7 +539,7 @@ Removes all images from the cache"""
         return FAILURE
 
     client = get_client(options)
-    images = client.purge_all_cached_images()
+    client.purge_all_cached_images()
 
     if options.verbose:
         print "done"
@@ -570,6 +595,7 @@ def parse_options(parser, cli_args):
                 'show': image_show,
                 'clear': images_clear,
                 'cached': cache_cached,
+                'purge': cache_purge,
                 'purge_all': cache_purge_all}
 
     if not cli_args:
