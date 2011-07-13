@@ -23,6 +23,7 @@ import datetime
 import errno
 import logging
 import os
+import sys
 
 from glance.common import config
 from glance import utils
@@ -175,8 +176,9 @@ class ImageCache(object):
                          (tmp_path, final_path))
             os.rename(tmp_path, final_path)
 
-        def rollback():
+        def rollback(e):
             utils.set_xattr(tmp_path, 'image_name', image_meta['name'])
+            utils.set_xattr(tmp_path, 'error', str(e))
 
             invalid_path = self.invalid_path_for_image(image_meta)
             logger.debug("fetch errored, rolling back by moving "
@@ -186,8 +188,11 @@ class ImageCache(object):
         try:
             with open(tmp_path, mode) as cache_file:
                 yield cache_file
-        except:
-            rollback()
+            raise Exception('got here')
+        except Exception as e:
+            # NOTE(sirp): can't use 'except Exception as e' here since some
+            # exceptions (unfortunately) don't subclass Exception.
+            rollback(e)
             raise
         else:
             commit()
@@ -261,6 +266,8 @@ class ImageCache(object):
     def invalid_entries(self):
         """Cache info for invalid cached images"""
         for entry in self._base_entries(self.invalid_path):
+            path = entry['path']
+            entry['error'] = utils.get_xattr(path, 'error', default='UNKNOWN')
             yield entry
 
     def entries(self):
