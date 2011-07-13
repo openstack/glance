@@ -128,12 +128,8 @@ def stub_out_s3_backend(stubs):
         DATA = 'I am a teapot, short and stout\n'
 
         @classmethod
-        def get(cls, parsed_uri, expected_size, conn_class=None):
+        def get(cls, location, expected_size, conn_class=None):
             S3Backend = glance.store.s3.S3Backend
-
-            # raise BackendException if URI is bad.
-            (user, key, authurl, container, obj) = \
-                S3Backend._parse_s3_tokens(parsed_uri)
 
             def chunk_it():
                 for i in xrange(0, len(cls.DATA), cls.CHUNK_SIZE):

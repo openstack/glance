@@ -54,6 +54,24 @@ class NotFound(Error):
     pass
 
 
+class UnknownScheme(Error):
+
+    msg = "Unknown scheme '%s' found in URI"
+
+    def __init__(self, scheme):
+        msg = self.__class__.msg % scheme
+        super(UnknownScheme, self).__init__(msg)
+
+
+class BadStoreUri(Error):
+
+    msg = "The Store URI %s was malformed. Reason: %s"
+
+    def __init__(self, uri, reason):
+        msg = self.__class__.msg % (uri, reason)
+        super(BadStoreUri, self).__init__(msg)
+
+
 class Duplicate(Error):
     pass
 

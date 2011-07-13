@@ -19,7 +19,6 @@ from StringIO import StringIO
 
 import stubout
 import unittest
-import urlparse
 
 from glance.store.s3 import S3Backend
 from glance.store import Backend, BackendException, get_from_backend

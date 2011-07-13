@@ -17,7 +17,97 @@
 
 """The s3 backend adapter"""
 
+import urlparse
+
+from glance.common import exception
 import glance.store
+import glance.store.location
+
+glance.store.location.add_scheme_map({'s3': 's3',
+                                      's3+http': 's3',
+                                      's3+https': 's3'})
+
+
+class StoreLocation(glance.store.location.StoreLocation):
+
+    """
+    Class describing an S3 URI. An S3 URI can look like any of
+    the following:
+
+        s3://accesskey:secretkey@s3service.com/bucket/key-id
+        s3+http://accesskey:secretkey@s3service.com/bucket/key-id
+        s3+https://accesskey:secretkey@s3service.com/bucket/key-id
+
+    The s3+https:// URIs indicate there is an HTTPS s3service URL
+    """
+
+    def process_specs(self):
+        self.scheme = self.specs.get('scheme', 's3')
+        self.accesskey = self.specs.get('accesskey')
+        self.secretkey = self.specs.get('secretkey')
+        self.s3serviceurl = self.specs.get('s3serviceurl')
+        self.bucket = self.specs.get('bucket')
+        self.key = self.specs.get('key')
+
+    def _get_credstring(self):
+        if self.accesskey:
+            return '%s:%s@' % (self.accesskey, self.secretkey)
+        return ''
+
+    def get_uri(self):
+        return "%s://%s%s/%s/%s" % (
+            self.scheme,
+            self._get_credstring(),
+            self.s3serviceurl,
+            self.bucket,
+            self.key)
+
+    def parse_uri(self, uri):
+        """
+        Parse URLs. This method fixes an issue where credentials specified
+        in the URL are interpreted differently in Python 2.6.1+ than prior
+        versions of Python.
+
+        Note that an Amazon AWS secret key can contain the forward slash,
+        which is entirely retarded, and breaks urlparse miserably.
+        This function works around that issue.
+        """
+        pieces = urlparse.urlparse(uri)
+        assert pieces.scheme in ('s3', 's3+http', 's3+https')
+        self.scheme = pieces.scheme
+        path = pieces.path
+        netloc = pieces.netloc
+        entire_path = netloc + path
+
+        if '@' in uri:
+            creds, path = entire_path.split('@')
+            cred_parts = creds.split(':')
+
+            try:
+                access_key = cred_parts[0]
+                secret_key = cred_parts[1]
+                # NOTE(jaypipes): Need to encode to UTF-8 here because of a
+                # bug in the HMAC library that boto uses.
+                # See: http://bugs.python.org/issue5285
+                # See: http://trac.edgewall.org/ticket/8083
+                access_key = access_key.encode('utf-8')
+                secret_key = secret_key.encode('utf-8')
+                self.accesskey = access_key
+                self.secretkey = secret_key
+            except IndexError:
+                reason = "Badly formed S3 credentials %s" % creds
+                raise exception.BadStoreUri(uri, reason)
+        else:
+            self.accesskey = None
+            path = entire_path
+        try:
+            path_parts = path.split('/')
+            self.key = path_parts.pop()
+            self.bucket = path_parts.pop()
+            self.s3serviceurl = '/'.join(path_parts)
+        except IndexError:
+            reason = "Badly formed S3 URI"
+            raise exception.BadStoreUri(uri, reason)
 
 
 class S3Backend(glance.store.Backend):
@@ -26,29 +116,30 @@ class S3Backend(glance.store.Backend):
     EXAMPLE_URL = "s3://ACCESS_KEY:SECRET_KEY@s3_url/bucket/file.gz.0"
 
     @classmethod
-    def get(cls, parsed_uri, expected_size, conn_class=None):
+    def get(cls, location, expected_size, conn_class=None):
         """
-        Takes a parsed_uri in the format of:
-        s3://access_key:secret_key@s3.amazonaws.com/bucket/file.gz.0, connects
-        to s3 and downloads the file. Returns the generator resp_body provided
-        by get_object.
-        """
+        Takes a `glance.store.location.Location` object that indicates
+        where to find the image file, and returns a generator from S3
+        provided by S3's key object
 
+        :location `glance.store.location.Location` object, supplied
+                  from glance.store.location.get_location_from_uri()
+        """
         if conn_class:
             pass
         else:
             import boto.s3.connection
             conn_class = boto.s3.connection.S3Connection
 
-        (access_key, secret_key, host, bucket, obj) = \
-            cls._parse_s3_tokens(parsed_uri)
+        loc = location.store_location
 
         # Close the connection when we're through.
-        with conn_class(access_key, secret_key, host=host) as s3_conn:
-            bucket = cls._get_bucket(s3_conn, bucket)
+        with conn_class(loc.accesskey, loc.secretkey,
+                        host=loc.s3serviceurl) as s3_conn:
+            bucket = cls._get_bucket(s3_conn, loc.bucket)
 
             # Close the key when we're through.
-            with cls._get_key(bucket, obj) as key:
+            with cls._get_key(bucket, loc.obj) as key:
                 if not key.size == expected_size:
                     raise glance.store.BackendException(
                         "Expected %s bytes, got %s" %
@@ -59,28 +150,28 @@ class S3Backend(glance.store.Backend):
                     yield chunk
 
     @classmethod
-    def delete(cls, parsed_uri, conn_class=None):
+    def delete(cls, location, conn_class=None):
         """
-        Takes a parsed_uri in the format of:
-        s3://access_key:secret_key@s3.amazonaws.com/bucket/file.gz.0, connects
-        to s3 and deletes the file. Returns whatever boto.s3.key.Key.delete()
-        returns.
-        """
+        Takes a `glance.store.location.Location` object that indicates
+        where to find the image file to delete
 
+        :location `glance.store.location.Location` object, supplied
+                  from glance.store.location.get_location_from_uri()
+        """
         if conn_class:
             pass
         else:
             conn_class = boto.s3.connection.S3Connection
 
-        (access_key, secret_key, host, bucket, obj) = \
-            cls._parse_s3_tokens(parsed_uri)
+        loc = location.store_location
 
         # Close the connection when we're through.
-        with conn_class(access_key, secret_key, host=host) as s3_conn:
-            bucket = cls._get_bucket(s3_conn, bucket)
+        with conn_class(loc.accesskey, loc.secretkey,
+                        host=loc.s3serviceurl) as s3_conn:
+            bucket = cls._get_bucket(s3_conn, loc.bucket)
 
             # Close the key when we're through.
-            with cls._get_key(bucket, obj) as key:
+            with cls._get_key(bucket, loc.obj) as key:
                 return key.delete()
 
     @classmethod
@@ -102,8 +193,3 @@ class S3Backend(glance.store.Backend):
         if not key:
             raise glance.store.BackendException("Could not get key: %s" % key)
         return key
-
-    @classmethod
-    def _parse_s3_tokens(cls, parsed_uri):
-        """Parse tokens from the parsed_uri"""
-        return glance.store.parse_uri_tokens(parsed_uri, cls.EXAMPLE_URL)
