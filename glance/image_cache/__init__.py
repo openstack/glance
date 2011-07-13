@@ -188,7 +188,6 @@ class ImageCache(object):
         try:
             with open(tmp_path, mode) as cache_file:
                 yield cache_file
-            raise Exception('got here')
         except Exception as e:
             # NOTE(sirp): can't use 'except Exception as e' here since some
             # exceptions (unfortunately) don't subclass Exception.
