@@ -493,13 +493,15 @@ List images currently cached"""
     pretty_table.add_column(16, label="ID")
     pretty_table.add_column(30, label="Name")
     pretty_table.add_column(14, label="Size", just="r")
+    pretty_table.add_column(20, label="Hits", just="r")
 
     pretty_table.print_header()
 
     for image in images:
         pretty_table.print_row(image['id'],
                                image['name'],
-                               image['size'])
+                               image['size'],
+                               image['hits'])
 
 
 @catch_error('purge the specified cached image')

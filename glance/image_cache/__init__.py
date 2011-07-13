@@ -188,7 +188,7 @@ class ImageCache(object):
             raise
         else:
             self._safe_set_xattr(tmp_path, 'image_name', image_meta['name'])
-            #self._safe_set_xattr(tmp_path, 'hits', '0')
+            self._safe_set_xattr(tmp_path, 'hits', '0')
             try:
                 commit()
             except:
@@ -201,10 +201,10 @@ class ImageCache(object):
         with open(path, mode) as cache_file:
             yield cache_file
 
-        #self._safe_increment_xattr(path, 'hits')
+        self._safe_increment_xattr(path, 'hits')
 
-    @staticmethod
-    def _safe_increment_xattr(path, key, n=1):
+    @classmethod
+    def _safe_increment_xattr(cls, path, key, n=1):
         """Safely increment an xattr field.
 
         NOTE(sirp): The 'safely', in this case, refers to the fact that the
@@ -220,7 +220,7 @@ class ImageCache(object):
         maintaining locks is not worth it.
         """
         try:
-            count = int(self._safe_get_xattr(path, key))
+            count = int(cls._safe_get_xattr(path, key))
         except KeyError:
             # NOTE(sirp): a KeyError is generated in two cases:
             # 1) xattrs is not supported by the filesystem
@@ -232,7 +232,7 @@ class ImageCache(object):
             # NOTE(sirp): only try to bump the count if xattrs is supported
             # and the key is present
             count += n
-            self._safe_set_xattr(path, key, count)
+            cls._safe_set_xattr(path, key, str(count))
 
     @staticmethod
     def _safe_set_xattr(path, key, value):
@@ -304,8 +304,8 @@ class ImageCache(object):
             entry['id'] = image_id
             entry['name'] = self._safe_get_xattr(
                 path, 'image_name', default='UNKNOWN')
-            #entry['hits'] = self._safe_get_xattr(
-            #    path, 'hits', default='UNKNOWN')
+            entry['hits'] = self._safe_get_xattr(
+                path, 'hits', default='UNKNOWN')
             entry['size'] = os.path.getsize(path)
 
             accessed = os.path.getatime(path) or os.path.getmtime(path)
