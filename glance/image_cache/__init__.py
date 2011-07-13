@@ -32,16 +32,44 @@ logger = logging.getLogger('glance.image_cache')
 
 
 class ImageCache(object):
-    """Cache Image Data locally.
+    """Provides an LRU cache for image data.
 
-    ImageCache makes the following assumptions:
+    Data is cached on READ not on WRITE; meaning if the cache is enabled, we
+    attempt to read from the cache first, if we don't find the data, we begin
+    streaming the data from the 'store' while simultaneously tee'ing the data
+    into the cache. Subsequent reads will generate cache HITs for this image.
 
-        1. `noatime` is not enabled (access time is for LRU pruning)
+    Assumptions
+    ===========
 
-        2. `xattr` support by the filesystem (OPTIONAL, used to display image
-            name when /images/cached API request is made)
+        1. Cache data directory exists on a filesytem that udpates atime on
+           reads ('noatime' should NOT be set)
 
-        3. `glance-pruner` is run periocally to keep cache size in check
+        2. Cache data directory exists on a filesystem that supports xattrs.
+           This is optional, but highly recommended since it allows us to
+           present ops with useful information pertaining to the cache, like
+           human readable filenames and statistics.
+
+        3. `glance-prune` is scheduled to run as a periodic job via cron. This
+            is needed to run the LRU prune strategy to keep the cache size
+            within the limits set by the config file.
+
+
+    Cache Directory Notes
+    =====================
+
+    The image cache data directory contains the main cache path, where the
+    active cache entries and two subdirectories for handling partial downloads
+    and errored-out cache images.
+
+    The layout looks like:
+        
+        image-cache/
+            entry1
+            entry2
+            ...
+            tmp/
+            invalid/
     """
     def __init__(self, options):
         self.options = options
@@ -99,7 +127,7 @@ class ImageCache(object):
 
         We have two possible scenarios:
 
-            1. READ: if we should attempt to read the file from the cache's
+            1. READ: we should attempt to read the file from the cache's
                main directory
 
             2. WRITE: we should write to a file under the cache's tmp
