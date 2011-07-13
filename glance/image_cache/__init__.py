@@ -77,13 +77,17 @@ class ImageCache(object):
 
     def _make_cache_directory_if_needed(self):
         """Creates main cache directory along with tmp subdirectory"""
+        if not self.enabled:
+            return
 
-        if self.enabled and not os.path.exists(self.tmp_path):
+        # NOTE(sirp): making the tmp_path will have the effect of creating
+        # the main cache path directory as well
+        for path in (self.tmp_path, self.invalid_path):
+            if os.path.exists(path):
+                continue
             logger.info("image cache directory doesn't exist, creating '%s'",
-                        self.path)
-            # NOTE(sirp): making the tmp_path will have the effect of creating
-            # the main cache path directory as well
-            os.makedirs(self.tmp_path)
+                        path)
+            os.makedirs(path)
 
     @property
     def enabled(self):
@@ -109,6 +113,15 @@ class ImageCache(object):
         """
         return os.path.join(self.path, 'tmp')
 
+    @property
+    def invalid_path(self):
+        """Place to move corrupted images
+
+        If an exception is raised while we're writing an image to the
+        tmp_path, we move the incomplete image to here.
+        """
+        return os.path.join(self.path, 'invalid')
+
     def path_for_image(self, image_meta):
         """This crafts an absolute path to a specific entry"""
         image_id = image_meta['id']
@@ -120,6 +133,13 @@ class ImageCache(object):
         """
         image_id = image_meta['id']
         return os.path.join(self.tmp_path, str(image_id))
+
+    def invalid_path_for_image(self, image_meta):
+        """This crafts an absolute path to a specific entry in the invalid
+        directory
+        """
+        image_id = image_meta['id']
+        return os.path.join(self.invalid_path, str(image_id))
 
     @contextmanager
     def open(self, image_meta, mode="r"):
@@ -146,15 +166,18 @@ class ImageCache(object):
     @contextmanager
     def _open_write(self, image_meta, mode):
         tmp_path = self.tmp_path_for_image(image_meta)
-        final_path = self.path_for_image(image_meta)
-
+    
         def commit():
+            final_path = self.path_for_image(image_meta)
+            logger.debug("fetch finished, commiting by moving '%s' to '%s'" %
+                         (tmp_path, final_path))
             os.rename(tmp_path, final_path)
 
         def rollback():
-            # TODO(sirp): should we leave the file around for debugging
-            # purposes
-            os.unlink(tmp_path)
+            invalid_path = self.invalid_path_for_image(image_meta)
+            logger.debug("fetch errored, rolling back by moving "
+                         "'%s' to '%s'" % (tmp_path, invalid_path))
+            os.rename(tmp_path, invalid_path)
 
         # wrap in a transaction to make write atomic
         try:
