@@ -35,7 +35,7 @@ class Pruner(object):
 
     @property
     def max_size(self):
-        default = 1 * 1024 * 1024 * 1024 # 1 GB
+        default = 1 * 1024 * 1024 * 1024  # 1 GB
         return config.get_option(
             self.options, 'image_cache_max_size_bytes',
             type='int', default=default)
@@ -45,7 +45,6 @@ class Pruner(object):
         return config.get_option(
             self.options, 'image_cache_percent_extra_to_free',
             type='float', default=0.05)
-
 
     def run(self):
         """Prune the cache using an LRU strategy"""
@@ -57,8 +56,8 @@ class Pruner(object):
         # the `noatime` option for the filesystem. `noatime` is NOT compatible
         # with this method.
         #
-        # If `noatime` needs to be supported, we will need to persist access 
-        # times elsewhere (either as a separate file, in the DB, or as 
+        # If `noatime` needs to be supported, we will need to persist access
+        # times elsewhere (either as a separate file, in the DB, or as
         # an xattr).
         def get_stats():
             cache_path = self.cache.path
