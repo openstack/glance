@@ -116,10 +116,25 @@ def chunkiter(fp, chunk_size=65536):
 
 
 class PrettyTable(object):
+    """Creates an ASCII art table for use in bin/glance
+    
+    Example:
+
+        ID  Name              Size         Hits                
+        --- ----------------- ------------ -----
+        122 image                       22     0
+    """
     def __init__(self):
         self.columns = []
 
     def add_column(self, width, label="", just='l'):
+        """Add a column to the table
+
+        :param width: number of characters wide the column should be
+        :param label: column heading
+        :param just: justification for the column, 'l' for left,
+                     'r' for right
+        """
         self.columns.append((width, label, just))
 
     @staticmethod
