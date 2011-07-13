@@ -42,7 +42,7 @@ class ImageCache(object):
     Assumptions
     ===========
 
-        1. Cache data directory exists on a filesytem that udpates atime on
+        1. Cache data directory exists on a filesytem that updates atime on
            reads ('noatime' should NOT be set)
 
         2. Cache data directory exists on a filesystem that supports xattrs.
