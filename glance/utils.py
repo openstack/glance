@@ -122,10 +122,10 @@ def chunkiter(fp, chunk_size=65536):
 
 class PrettyTable(object):
     """Creates an ASCII art table for use in bin/glance
-    
+
     Example:
 
-        ID  Name              Size         Hits                
+        ID  Name              Size         Hits
         --- ----------------- ------------ -----
         122 image                       22     0
     """
@@ -164,7 +164,7 @@ class PrettyTable(object):
             row_parts.append(row_part)
 
         print ' '.join(row_parts)
-   
+
     @staticmethod
     def _clip_and_justify(data, width, just):
         # clip field to column width

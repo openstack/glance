@@ -63,7 +63,7 @@ class ImageCache(object):
     and errored-out cache images.
 
     The layout looks like:
-        
+
         image-cache/
             entry1
             entry2
@@ -166,7 +166,7 @@ class ImageCache(object):
     @contextmanager
     def _open_write(self, image_meta, mode):
         tmp_path = self.tmp_path_for_image(image_meta)
-    
+
         def commit():
             utils.set_xattr(tmp_path, 'image_name', image_meta['name'])
             utils.set_xattr(tmp_path, 'hits', 0)
@@ -260,7 +260,7 @@ class ImageCache(object):
                                             default='UNKNOWN')
             entry['last_accessed'] = get_accessed_utc(path)
             entry['size'] = os.path.getsize(path)
-            
+
             yield entry
 
     def invalid_entries(self):

@@ -73,7 +73,7 @@ class Pruner(object):
                 pruned += 1
 
         logger.info("Pruned %(pruned)s invalid cache entries" % locals())
-        
+
     def prune_cache(self):
         """Prune the cache using an LRU strategy"""
 
