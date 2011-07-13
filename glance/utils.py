@@ -18,6 +18,11 @@
 """
 A few utility routines used throughout Glance
 """
+import logging
+
+import xattr
+
+logger = logging.getLogger('glance.utils')
 
 
 def image_meta_to_http_headers(image_meta):
@@ -173,3 +178,64 @@ class PrettyTable(object):
             justified = clipped_data.ljust(width)
 
         return justified
+
+
+def get_xattr(path, key, **kwargs):
+    """Return the value for a particular xattr
+
+    If the key doesn't not exist, or xattrs aren't supported by the file
+    system then a KeyError will be raised, that is, unless you specify a
+    default using kwargs.
+    """
+    entry_xattr = xattr.xattr(path)
+    try:
+        return entry_xattr[key]
+    except KeyError:
+        if 'default' in kwargs:
+            return kwargs['default']
+        else:
+            raise
+
+def set_xattr(path, key, value):
+    """Set the value of a specified xattr.
+
+    If xattrs aren't supported by the file-system, this skips it.
+    """
+    entry_xattr = xattr.xattr(path)
+    try:
+        entry_xattr.set(key, value)
+    except IOError as e:
+        if e.errno == errno.EOPNOTSUPP:
+            logger.warn("xattrs not supported, skipping...")
+        else:
+            raise
+
+def inc_xattr(path, key, n=1):
+    """Safely increment an xattr field.
+
+    NOTE(sirp): The 'safely', in this case, refers to the fact that the
+    code will skip this step if xattrs isn't supported by the filesystem.
+
+    Beware, this code *does* have a RACE CONDITION, since the
+    read/update/write sequence is not atomic.
+
+    For the most part, this is fine since we're just using this to collect
+    interesting stats and not using the value to make critical decisions.
+
+    Given that assumption, the added complexity and overhead of
+    maintaining locks is not worth it.
+    """
+    try:
+        count = int(get_xattr(path, key))
+    except KeyError:
+        # NOTE(sirp): a KeyError is generated in two cases:
+        # 1) xattrs is not supported by the filesystem
+        # 2) the key is not present on the file
+        #
+        # In either case, just ignore it...
+        pass
+    else:
+        # NOTE(sirp): only try to bump the count if xattrs is supported
+        # and the key is present
+        count += n
+        set_xattr(path, key, str(count))

@@ -24,9 +24,8 @@ import errno
 import logging
 import os
 
-import xattr
-
 from glance.common import config
+from glance import utils
 
 logger = logging.getLogger('glance.image_cache')
 
@@ -187,8 +186,8 @@ class ImageCache(object):
             rollback()
             raise
         else:
-            self._safe_set_xattr(tmp_path, 'image_name', image_meta['name'])
-            self._safe_set_xattr(tmp_path, 'hits', '0')
+            utils.set_xattr(tmp_path, 'image_name', image_meta['name'])
+            utils.set_xattr(tmp_path, 'hits', '0')
             try:
                 commit()
             except:
@@ -201,61 +200,7 @@ class ImageCache(object):
         with open(path, mode) as cache_file:
             yield cache_file
 
-        self._safe_increment_xattr(path, 'hits')
-
-    @classmethod
-    def _safe_increment_xattr(cls, path, key, n=1):
-        """Safely increment an xattr field.
-
-        NOTE(sirp): The 'safely', in this case, refers to the fact that the
-        code will skip this step if xattrs isn't supported by the filesystem.
-
-        Beware, this code *does* have a RACE CONDITION, since the
-        read/update/write sequence is not atomic.
-
-        For the most part, this is fine since we're just using this to collect
-        interesting stats and not using the value to make critical decisions.
-
-        Given that assumption, the added complexity and overhead of
-        maintaining locks is not worth it.
-        """
-        try:
-            count = int(cls._safe_get_xattr(path, key))
-        except KeyError:
-            # NOTE(sirp): a KeyError is generated in two cases:
-            # 1) xattrs is not supported by the filesystem
-            # 2) the key is not present on the file
-            #
-            # In either case, just ignore it...
-            pass
-        else:
-            # NOTE(sirp): only try to bump the count if xattrs is supported
-            # and the key is present
-            count += n
-            cls._safe_set_xattr(path, key, str(count))
-
-    @staticmethod
-    def _safe_set_xattr(path, key, value):
-        """Set a xattr on the given path, skip if xattrs aren't supported"""
-        entry_xattr = xattr.xattr(path)
-        try:
-            entry_xattr.set(key, value)
-        except IOError as e:
-            if e.errno == errno.EOPNOTSUPP:
-                logger.warn("xattrs not supported, skipping...")
-            else:
-                raise
-
-    @staticmethod
-    def _safe_get_xattr(path, key, **kwargs):
-        entry_xattr = xattr.xattr(path)
-        try:
-            return entry_xattr[key]
-        except KeyError:
-            if 'default' in kwargs:
-                return kwargs['default']
-            else:
-                raise
+        utils.inc_xattr(path, 'hits')  # bump the hit count
 
     def hit(self, image_meta):
         path = self.path_for_image(image_meta)
@@ -302,16 +247,16 @@ class ImageCache(object):
 
             entry = {}
             entry['id'] = image_id
-            entry['name'] = self._safe_get_xattr(
-                path, 'image_name', default='UNKNOWN')
-            entry['hits'] = self._safe_get_xattr(
-                path, 'hits', default='UNKNOWN')
-            entry['size'] = os.path.getsize(path)
+            entry['name'] = utils.get_xattr(path, 'image_name',
+                                            default='UNKNOWN')
 
             accessed = os.path.getatime(path) or os.path.getmtime(path)
             last_accessed = datetime.datetime.utcfromtimestamp(accessed)\
                                              .isoformat()
             entry['last_accessed'] = last_accessed
+
+            entry['hits'] = utils.get_xattr(path, 'hits', default='UNKNOWN')
+            entry['size'] = os.path.getsize(path)
 
             entries.append(entry)
         return entries
