@@ -113,3 +113,38 @@ def chunkiter(fp, chunk_size=65536):
             yield chunk
         else:
             break
+
+
+class PrettyTable(object):
+    def __init__(self):
+        self.columns = []
+
+    def add_column(self, width, label="", just='l'):
+        self.columns.append((width, label, just))
+
+    @staticmethod
+    def _justify(data, width, just):
+        return data.rjust(width) if just == 'r' else data.ljust(width)
+
+    def print_header(self):
+        label_parts = []
+        break_parts = []
+        for width, label, _ in self.columns:
+            # NOTE(sirp): headers are always left justified
+            label_part = self._justify(label, width, 'l')
+            label_parts.append(label_part)
+
+            break_part = '-' * width
+            break_parts.append(break_part)
+
+        print ' '.join(label_parts)
+        print ' '.join(break_parts)
+
+    def print_row(self, *args):
+        row = args
+        row_parts = []
+        for data, (width, _, just) in zip(row, self.columns):
+            row_part = self._justify(str(data), width, just)
+            row_parts.append(row_part)
+
+        print ' '.join(row_parts)

@@ -39,7 +39,8 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 from glance import client
 from glance import version
 from glance.common import exception
-from glance.common import utils
+from glance.common.utils import bool_from_string
+from glance import utils
 
 SUCCESS = 0
 FAILURE = 1
@@ -152,7 +153,7 @@ EXAMPLES
         return FAILURE
 
     image_meta = {'name': fields.pop('name'),
-                  'is_public': utils.bool_from_string(
+                  'is_public': bool_from_string(
                       fields.pop('is_public', False)),
                   'disk_format': fields.pop('disk_format', 'raw'),
                   'container_format': fields.pop('container_format', 'ovf')}
@@ -276,7 +277,7 @@ to spell field names correctly. :)"""
 
     # Have to handle "boolean" values specially...
     if 'is_public' in fields:
-        image_meta['is_public'] = utils.bool_from_string(
+        image_meta['is_public'] = bool_from_string(
             fields.pop('is_public'))
 
     # Add custom attributes, which are all the arguments remaining
@@ -458,6 +459,40 @@ Deletes all images from a Glance server"""
     return SUCCESS
 
 
+def cache_cached(options, args):
+    """
+%(prog)s cached [options]
+
+List images currently cached"""
+    c = get_client(options)
+    try:
+        images = c.get_cached_images()
+        if not images:
+            print "Cache is empty."
+            return SUCCESS
+
+        num_images = len(images)
+        print "Found %d cached images..." % num_images
+
+        pretty_table = utils.PrettyTable()
+        pretty_table.add_column(16, label="ID")
+        pretty_table.add_column(30, label="Name")
+        pretty_table.add_column(14, label="Size", just="r")
+        pretty_table.print_header()
+
+        for image in images:
+            pretty_table.print_row(image['id'],
+                                   image['name'],
+                                   image['size'])
+
+        return SUCCESS
+    except Exception, e:
+        print "Failed to show details. Got error:"
+        pieces = str(e).split('\n')
+        for piece in pieces:
+            print piece
+        return FAILURE
+
 def get_client(options):
     """
     Returns a new client object to a Glance server
@@ -507,7 +542,8 @@ def parse_options(parser, cli_args):
                 'index': images_index,
                 'details': images_detailed,
                 'show': image_show,
-                'clear': images_clear}
+                'clear': images_clear,
+                'cached': cache_cached}
 
     if not cli_args:
         cli_args.append('-h')  # Show options in usage output...
@@ -596,6 +632,14 @@ Commands:
 
     clear           Removes all images and metadata from Glance
 
+
+Cache Commands:
+
+    cached         List images currently cached
+
+    purge          Deletes an image from the cache
+
+    purge_all      Removes all images from the cache
 """
 
     oparser = optparse.OptionParser(version='%%prog %s'
