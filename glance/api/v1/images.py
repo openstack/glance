@@ -140,7 +140,12 @@ class Controller(object):
 
     def cached(self, req):
         cache = image_cache.ImageCache(self.options)
-        entries = cache.entries()
+        entries = list(cache.entries())
+        return dict(images=entries)
+
+    def invalid(self, req):
+        cache = image_cache.ImageCache(self.options)
+        entries = list(cache.invalid_entries())
         return dict(images=entries)
 
     def purge(self, req, id):

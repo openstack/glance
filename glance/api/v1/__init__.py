@@ -36,6 +36,7 @@ class API(wsgi.Router):
         mapper.resource("image", "images", controller=resource,
                         collection={'detail': 'GET',
                                     'cached': 'GET',
+                                    'invalid': 'GET',
                                     'purge_all': 'POST'},
                         member={'purge': 'POST'})
         mapper.connect("/", controller=resource, action="index")

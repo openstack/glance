@@ -233,10 +233,15 @@ class ImageCache(object):
             if os.path.isfile(path):
                 yield path
 
-    def entries(self):
-        """Return cache info for each image that is cached"""
-        entries = []
-        for path in self.get_all_regular_files(self.path):
+    def _base_entries(self, basepath):
+        def get_accessed_utc(path):
+            accessed = os.path.getatime(path) or os.path.getmtime(path)
+            last_accessed = datetime.datetime\
+                                    .utcfromtimestamp(accessed)\
+                                    .isoformat()
+            return last_accessed
+
+        for path in self.get_all_regular_files(basepath):
             filename = os.path.basename(path)
             try:
                 image_id = int(filename)
@@ -245,16 +250,22 @@ class ImageCache(object):
 
             entry = {}
             entry['id'] = image_id
+            entry['path'] = path
             entry['name'] = utils.get_xattr(path, 'image_name',
                                             default='UNKNOWN')
-
-            accessed = os.path.getatime(path) or os.path.getmtime(path)
-            last_accessed = datetime.datetime.utcfromtimestamp(accessed)\
-                                             .isoformat()
-            entry['last_accessed'] = last_accessed
-
-            entry['hits'] = utils.get_xattr(path, 'hits', default='UNKNOWN')
+            entry['last_accessed'] = get_accessed_utc(path)
             entry['size'] = os.path.getsize(path)
+            
+            yield entry
 
-            entries.append(entry)
-        return entries
+    def invalid_entries(self):
+        """Cache info for invalid cached images"""
+        for entry in self._base_entries(self.invalid_path):
+            yield entry
+
+    def entries(self):
+        """Cache info for currently cached images"""
+        for entry in self._base_entries(self.path):
+            path = entry['path']
+            entry['hits'] = utils.get_xattr(path, 'hits', default='UNKNOWN')
+            yield entry

@@ -178,6 +178,22 @@ class V1Client(base_client.BaseClient):
         data = json.loads(res.read())['images']
         return data
 
+    def get_invalid_cached_images(self, **kwargs):
+        """
+        Returns a list of invalid images stored in the image cache.
+
+        :param filters: dictionary of attributes by which the resulting
+                        collection of images should be filtered
+        :param marker: id after which to start the page of images
+        :param limit: maximum number of items to return
+        :param sort_key: results will be ordered by this image attribute
+        :param sort_dir: direction in which to to order results (asc, desc)
+        """
+        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
+        res = self.do_request("GET", "/images/invalid", params=params)
+        data = json.loads(res.read())['images']
+        return data
+
     def purge_cached_image(self, image_id):
         """
         Delete a specified image from the cache

@@ -506,6 +506,35 @@ List images currently cached"""
                                image['size'],
                                image['hits'])
 
+@catch_error('show invalid cache images')
+def cache_invalid(options, args):
+    """
+%(prog)s invalid [options]
+
+List current invalid cache images"""
+    client = get_client(options)
+    images = client.get_invalid_cached_images()
+    if not images:
+        print "No invalid cached images."
+        return SUCCESS
+
+    print "Found %d invalid cached images..." % len(images)
+
+    pretty_table = utils.PrettyTable()
+    pretty_table.add_column(16, label="ID")
+    pretty_table.add_column(30, label="Name")
+    pretty_table.add_column(19, label="Created (UTC)")
+    # 1 TB takes 13 characters to display: len(str(2**40)) == 13
+    pretty_table.add_column(14, label="Size", just="r")
+
+    pretty_table.print_header()
+
+    for image in images:
+        pretty_table.print_row(image['id'],
+                               image['name'],
+                               image['last_accessed'],
+                               image['size'])
+
 
 @catch_error('purge the specified cached image')
 def cache_purge(options, args):
@@ -600,6 +629,7 @@ def parse_options(parser, cli_args):
                 'show': image_show,
                 'clear': images_clear,
                 'cached': cache_cached,
+                'invalid': cache_invalid,
                 'purge': cache_purge,
                 'purge_all': cache_purge_all}
 
@@ -694,6 +724,8 @@ Commands:
 Cache Commands:
 
     cached         List images currently cached
+    
+    invalid        List current invalid cache images
 
     purge          Deletes an image from the cache
 
