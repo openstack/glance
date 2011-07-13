@@ -261,26 +261,39 @@ class ImageCache(object):
         path = self.path_for_image(image_meta)
         return os.path.exists(path)
 
+    @staticmethod
+    def _delete_file(path):
+        if os.path.exists(path):
+            logger.debug("deleting image cache file '%s'", path)
+            os.unlink(path)
+
     def purge(self, image_meta):
         path = self.path_for_image(image_meta)
-        logger.debug("deleting image cache entry '%s'", path)
-        if os.path.exists(path):
-            os.unlink(path)
+        self._delete_file(path)
 
     def purge_all(self):
-        for path in self.all_items():
-            os.unlink(path)
+        # Delete all of the 'active' cache entries
+        for path in self._get_all_regular_files(self.path):
+            self._delete_file(path)
 
-    def all_items(self):
-        for fname in os.listdir(self.path):
-            path = os.path.join(self.path, fname)
+        # NOTE(sirp): Don't clear out files in tmp since they are actively
+        # being used
+
+        # Also clear out any invalid images
+        for path in self._get_all_regular_files(self.invalid_path):
+            self._delete_file(path)
+
+    @staticmethod
+    def _get_all_regular_files(basepath):
+        for fname in os.listdir(basepath):
+            path = os.path.join(basepath, fname)
             if os.path.isfile(path):
                 yield path
 
     def entries(self):
         """Return cache info for each image that is cached"""
         entries = []
-        for path in self.all_items():
+        for path in self._get_all_regular_files(self.path):
             filename = os.path.basename(path)
             try:
                 image_id = int(filename)
