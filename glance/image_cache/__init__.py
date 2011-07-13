@@ -167,18 +167,22 @@ class ImageCache(object):
         tmp_path = self.tmp_path_for_image(image_meta)
     
         def commit():
+            utils.set_xattr(tmp_path, 'image_name', image_meta['name'])
+            utils.set_xattr(tmp_path, 'hits', 0)
+
             final_path = self.path_for_image(image_meta)
             logger.debug("fetch finished, commiting by moving '%s' to '%s'" %
                          (tmp_path, final_path))
             os.rename(tmp_path, final_path)
 
         def rollback():
+            utils.set_xattr(tmp_path, 'image_name', image_meta['name'])
+
             invalid_path = self.invalid_path_for_image(image_meta)
             logger.debug("fetch errored, rolling back by moving "
                          "'%s' to '%s'" % (tmp_path, invalid_path))
             os.rename(tmp_path, invalid_path)
 
-        # wrap in a transaction to make write atomic
         try:
             with open(tmp_path, mode) as cache_file:
                 yield cache_file
@@ -186,13 +190,7 @@ class ImageCache(object):
             rollback()
             raise
         else:
-            utils.set_xattr(tmp_path, 'image_name', image_meta['name'])
-            utils.set_xattr(tmp_path, 'hits', '0')
-            try:
-                commit()
-            except:
-                rollback()
-                raise
+            commit()
 
     @contextmanager
     def _open_read(self, image_meta, mode):

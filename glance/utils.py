@@ -203,7 +203,7 @@ def set_xattr(path, key, value):
     """
     entry_xattr = xattr.xattr(path)
     try:
-        entry_xattr.set(key, value)
+        entry_xattr.set(key, str(value))
     except IOError as e:
         if e.errno == errno.EOPNOTSUPP:
             logger.warn("xattrs not supported, skipping...")
