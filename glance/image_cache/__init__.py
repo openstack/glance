@@ -309,7 +309,7 @@ class ImageCache(object):
             entry['size'] = os.path.getsize(path)
 
             accessed = os.path.getatime(path) or os.path.getmtime(path)
-            last_accessed = datetime.datetime.fromtimestamp(accessed)\
+            last_accessed = datetime.datetime.utcfromtimestamp(accessed)\
                                              .isoformat()
             entry['last_accessed'] = last_accessed
 

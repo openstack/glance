@@ -492,14 +492,16 @@ List images currently cached"""
     pretty_table = utils.PrettyTable()
     pretty_table.add_column(16, label="ID")
     pretty_table.add_column(30, label="Name")
+    pretty_table.add_column(19, label="Last Accessed (UTC)")
     pretty_table.add_column(14, label="Size", just="r")
-    pretty_table.add_column(20, label="Hits", just="r")
+    pretty_table.add_column(10, label="Hits", just="r")
 
     pretty_table.print_header()
 
     for image in images:
         pretty_table.print_row(image['id'],
                                image['name'],
+                               image['last_accessed'],
                                image['size'],
                                image['hits'])
 
