@@ -204,8 +204,6 @@ class ImageCache(object):
             with open(tmp_path, mode) as cache_file:
                 yield cache_file
         except Exception as e:
-            # NOTE(sirp): can't use 'except Exception as e' here since some
-            # exceptions (unfortunately) don't subclass Exception.
             rollback(e)
             raise
         else:

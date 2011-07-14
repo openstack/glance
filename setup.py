@@ -89,5 +89,7 @@ setup(
              'bin/glance-api',
              'bin/glance-control',
              'bin/glance-manage',
+             'bin/glance-prefetcher',
+             'bin/glance-pruner',
              'bin/glance-registry',
              'bin/glance-upload'])

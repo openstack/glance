@@ -219,12 +219,9 @@ def inc_xattr(path, key, n=1):
     BEWARE, this code *does* have a RACE CONDITION, since the
     read/update/write sequence is not atomic.
 
-    This function is therefore suitable for collecting stats (where
-    perfection isn't required), but NOT for code that makes critical
-    decisions.
-
-    For this use case, the trade-off of simple, lock-free code was worth an
-    occasional, harmless race.
+    Since the use-case for this function is collecting stats--not critical--
+    the benefits of simple, lock-free code out-weighs the possibility of an
+    occasional hit not being counted.
     """
     try:
         count = int(get_xattr(path, key))
