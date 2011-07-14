@@ -143,7 +143,7 @@ class PrettyTable(object):
         """
         self.columns.append((width, label, just))
 
-    def print_header(self):
+    def make_header(self):
         label_parts = []
         break_parts = []
         for width, label, _ in self.columns:
@@ -154,17 +154,19 @@ class PrettyTable(object):
             break_part = '-' * width
             break_parts.append(break_part)
 
-        print ' '.join(label_parts)
-        print ' '.join(break_parts)
+        label_line = ' '.join(label_parts)
+        break_line = ' '.join(break_parts)
+        return '\n'.join([label_line, break_line])
 
-    def print_row(self, *args):
+    def make_row(self, *args):
         row = args
         row_parts = []
         for data, (width, _, just) in zip(row, self.columns):
             row_part = self._clip_and_justify(data, width, just)
             row_parts.append(row_part)
 
-        print ' '.join(row_parts)
+        row_line = ' '.join(row_parts)
+        return row_line
 
     @staticmethod
     def _clip_and_justify(data, width, just):

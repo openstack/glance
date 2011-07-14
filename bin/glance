@@ -407,14 +407,15 @@ a Glance server knows about"""
     pretty_table.add_column(20, label="Container Format")
     pretty_table.add_column(14, label="Size", just="r")
 
-    pretty_table.print_header()
+    print pretty_table.make_header()
 
     for image in images:
-        pretty_table.print_row(image['id'],
-                               image['name'],
-                               image['disk_format'],
-                               image['container_format'],
-                               image['size'])
+        print pretty_table.make_row(
+            image['id'],
+            image['name'],
+            image['disk_format'],
+            image['container_format'],
+            image['size'])
             
 
 def images_detailed(options, args):
@@ -497,14 +498,15 @@ List images currently cached"""
     pretty_table.add_column(14, label="Size", just="r")
     pretty_table.add_column(10, label="Hits", just="r")
 
-    pretty_table.print_header()
+    print pretty_table.make_header()
 
     for image in images:
-        pretty_table.print_row(image['id'],
-                               image['name'],
-                               image['last_accessed'],
-                               image['size'],
-                               image['hits'])
+        print pretty_table.make_row(
+            image['id'],
+            image['name'],
+            image['last_accessed'],
+            image['size'],
+            image['hits'])
 
 @catch_error('show invalid cache images')
 def cache_invalid(options, args):
@@ -528,14 +530,15 @@ List current invalid cache images"""
     # 1 TB takes 13 characters to display: len(str(2**40)) == 13
     pretty_table.add_column(14, label="Size", just="r")
 
-    pretty_table.print_header()
+    print pretty_table.make_header()
 
     for image in images:
-        pretty_table.print_row(image['id'],
-                               image['name'],
-                               image['error'],
-                               image['last_accessed'],
-                               image['size'])
+        print pretty_table.make_row(
+            image['id'],
+            image['name'],
+            image['error'],
+            image['last_accessed'],
+            image['size'])
 
 
 @catch_error('purge the specified cached image')
@@ -628,13 +631,14 @@ List images that are being prefetched"""
     pretty_table.add_column(19, label="Last Accessed (UTC)")
     pretty_table.add_column(20, label="Status")
 
-    pretty_table.print_header()
+    print pretty_table.make_header()
 
     for image in images:
-        pretty_table.print_row(image['id'],
-                               image['name'],
-                               image['last_accessed'],
-                               image['status'])
+        print pretty_table.make_row(
+            image['id'],
+            image['name'],
+            image['last_accessed'],
+            image['status'])
 
 
 def get_client(options):
