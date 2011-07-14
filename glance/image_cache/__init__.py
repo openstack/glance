@@ -335,8 +335,6 @@ class ImageCache(object):
         prefetching_path = os.path.join(self.prefetching_path, str(image_id))
         os.rename(prefetch_path, prefetching_path)
 
-        # do download here?
-
     @staticmethod
     def get_all_regular_files(basepath):
         for fname in os.listdir(basepath):
