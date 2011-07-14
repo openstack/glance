@@ -48,7 +48,8 @@ class Prefetcher(object):
 
     def run(self):
         if not self.cache.enabled:
-            logger.debug("Image caching is not enabled, going back to sleep...")
+            logger.debug(
+                "Image caching is not enabled, going back to sleep...")
             return
 
         if self.cache.is_currently_prefetching_any_images():

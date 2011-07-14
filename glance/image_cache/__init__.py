@@ -244,7 +244,7 @@ class ImageCache(object):
         # Also clear out any invalid images
         for path in self.get_all_regular_files(self.invalid_path):
             self._delete_file(path)
-  
+
     def is_image_currently_being_written(self, image_id):
         """Returns true if we're currently downloading an image"""
         tmp_path = self.tmp_path_for_image(image_id)
@@ -271,7 +271,7 @@ class ImageCache(object):
         If the image already exists in the queue directory or the
         prefetching directory, we ignore it.
         """
-        image_id  = image_meta['id']
+        image_id = image_meta['id']
 
         if self.hit(image_id):
             msg = "Skipping prefetch, image '%s' already cached" % image_id
@@ -283,7 +283,7 @@ class ImageCache(object):
                   % image_id
             logger.warn(msg)
             raise exception.Invalid(msg)
-        
+
         if self.is_image_queued_for_prefetch(image_id):
             msg = "Skipping prefetch, image '%s' already queued for"\
                   " prefetching" % image_id

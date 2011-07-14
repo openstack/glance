@@ -271,7 +271,8 @@ class Controller(object):
                     if cache.is_image_queued_for_prefetch(image_id):
                         cache.delete_queued_prefetch_image(image_id)
 
-                    image_iterator = get_from_store_tee_into_cache(image, cache)
+                    image_iterator = get_from_store_tee_into_cache(
+                        image, cache)
         else:
             # disabled
             logger.debug("image cache DISABLED, retrieving image '%s'"
