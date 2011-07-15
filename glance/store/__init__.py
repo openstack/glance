@@ -121,7 +121,6 @@ def parse_uri_tokens(parsed_uri, example_url):
         1) urlparse to split the tokens
         2) use RE to split on @ and /
         3) reassemble authurl
-
     """
     path = parsed_uri.path.lstrip('//')
     netloc = parsed_uri.netloc

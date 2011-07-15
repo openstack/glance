@@ -23,7 +23,7 @@ Defines interface for DB access
 
 import logging
 
-from sqlalchemy import create_engine, desc
+from sqlalchemy import asc, create_engine, desc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import exc
 from sqlalchemy.orm import joinedload
@@ -33,7 +33,6 @@ from sqlalchemy.sql import or_, and_
 from glance.common import config
 from glance.common import exception
 from glance.common import utils
-from glance.registry.db import migration
 from glance.registry.db import models
 
 _ENGINE = None
@@ -78,7 +77,7 @@ def configure_db(options):
         elif verbose:
             logger.setLevel(logging.INFO)
 
-        migration.db_sync(options)
+        models.register_models(_ENGINE)
 
 
 def get_session(autocommit=True, expire_on_commit=False):
@@ -98,10 +97,10 @@ def image_create(context, values):
 
 
 def image_update(context, image_id, values, purge_props=False):
-    """Set the given properties on an image and update it.
+    """
+    Set the given properties on an image and update it.
 
-    Raises NotFound if image does not exist.
-
+    :raises NotFound if image does not exist.
     """
     return _image_update(context, values, image_id, purge_props)
 
@@ -134,7 +133,6 @@ def image_get_all_pending_delete(context, delete_time=None, limit=None):
     """Get all images that are pending deletion
 
     :param limit: maximum number of images to return
-
     """
     session = get_session()
     query = session.query(models.Image).\
@@ -154,15 +152,18 @@ def image_get_all_pending_delete(context, delete_time=None, limit=None):
     return query.all()
 
 
-def image_get_all_public(context, filters=None, marker=None, limit=None):
+def image_get_all_public(context, filters=None, marker=None, limit=None,
+                         sort_key='created_at', sort_dir='desc'):
     """Get all public images that match zero or more filters.
+    Get all public images that match zero or more filters.
 
     :param filters: dict of filter keys and values. If a 'properties'
                     key is present, it is treated as a dict of key/value
                     filters on the image properties attribute
     :param marker: image id after which to start page
     :param limit: maximum number of images to return
-
+    :param sort_key: image attribute by which results should be sorted
+    :param sort_dir: direction in which results should be sorted (asc, desc)
     """
     filters = filters or {}
 
@@ -171,9 +172,17 @@ def image_get_all_public(context, filters=None, marker=None, limit=None):
                    options(joinedload(models.Image.properties)).\
                    filter_by(deleted=_deleted(context)).\
                    filter_by(is_public=True).\
-                   filter(models.Image.status != 'killed').\
-                   order_by(desc(models.Image.created_at)).\
-                   order_by(desc(models.Image.id))
+                   filter(models.Image.status != 'killed')
+
+    sort_dir_func = {
+        'asc': asc,
+        'desc': desc,
+    }[sort_dir]
+
+    sort_key_attr = getattr(models.Image, sort_key)
+
+    query = query.order_by(sort_dir_func(sort_key_attr)).\
+                  order_by(sort_dir_func(models.Image.id))
 
     if 'size_min' in filters:
         query = query.filter(models.Image.size >= filters['size_min'])
@@ -204,7 +213,8 @@ def image_get_all_public(context, filters=None, marker=None, limit=None):
 
 
 def _drop_protected_attrs(model_class, values):
-    """Removed protected attributes from values dictionary using the models
+    """
+    Removed protected attributes from values dictionary using the models
     __protected_attributes__ field.
     """
     for attr in model_class.__protected_attributes__:
@@ -219,7 +229,6 @@ def validate_image(values):
 
     :param values: Mapping of image metadata to check
     """
-
     status = values.get('status')
     disk_format = values.get('disk_format')
     container_format = values.get('container_format')
@@ -252,13 +261,13 @@ def validate_image(values):
 
 
 def _image_update(context, values, image_id, purge_props=False):
-    """Used internally by image_create and image_update
+    """
+    Used internally by image_create and image_update
 
     :param context: Request context
     :param values: A dict of attributes to set
     :param image_id: If None, create the image, otherwise, find and update it
     """
-
     session = get_session()
     with session.begin():
 
@@ -340,7 +349,8 @@ def image_property_update(context, prop_ref, values, session=None):
 
 
 def _image_property_update(context, prop_ref, values, session=None):
-    """Used internally by image_property_create and image_property_update
+    """
+    Used internally by image_property_create and image_property_update
     """
     _drop_protected_attrs(models.ImageProperty, values)
     values["deleted"] = False
@@ -350,7 +360,8 @@ def _image_property_update(context, prop_ref, values, session=None):
 
 
 def image_property_delete(context, prop_ref, session=None):
-    """Used internally by image_property_create and image_property_update
+    """
+    Used internally by image_property_create and image_property_update
     """
     prop_ref.update(dict(deleted=True))
     prop_ref.save(session=session)
@@ -359,8 +370,8 @@ def image_property_delete(context, prop_ref, session=None):
 
 # pylint: disable-msg=C0111
 def _deleted(context):
-    """Calculates whether to include deleted objects based on context.
-
+    """
+    Calculates whether to include deleted objects based on context.
     Currently just looks for a flag called deleted in the context dict.
     """
     if not hasattr(context, 'get'):

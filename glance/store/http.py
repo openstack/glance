@@ -25,10 +25,10 @@ class HTTPBackend(glance.store.Backend):
 
     @classmethod
     def get(cls, parsed_uri, expected_size, options=None, conn_class=None):
-        """Takes a parsed uri for an HTTP resource, fetches it, and yields the
-        data.
         """
-
+        Takes a parsed uri for an HTTP resource, fetches it, and
+        yields the data.
+        """
         if conn_class:
             pass  # use the conn_class passed in
         elif parsed_uri.scheme == "http":
