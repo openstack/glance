@@ -203,16 +203,13 @@ class ScrubberDaemon(Server):
     Server object that starts/stops/manages the Scrubber server
     """
 
-    def __init__(self, test_dir, daemon=False):
+    def __init__(self, test_dir, sql_connection, daemon=False):
         # NOTE(jkoelker): Set the port to 0 since we actually don't listen
         super(ScrubberDaemon, self).__init__(test_dir, 0)
         self.server_name = 'scrubber'
         self.daemon = daemon
 
-        self.db_file = os.path.join(self.test_dir, 'test_glance_api.sqlite')
-        default_sql_connection = 'sqlite:///%s' % self.db_file
-        self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
-                                             default_sql_connection)
+        self.sql_connection = sql_connection
 
         self.pid_file = os.path.join(self.test_dir, "scrubber.pid")
         self.log_file = os.path.join(self.test_dir, "scrubber.log")
@@ -238,10 +235,14 @@ class FunctionalTest(unittest.TestCase):
     servers and clients and not just the stubbed out interfaces
     """
 
+    def _set_environment(self):
+        pass
+
     def setUp(self):
 
         self.test_id = random.randint(0, 100000)
         self.test_dir = os.path.join("/", "tmp", "test.%d" % self.test_id)
+        self._set_environment()
 
         self.api_port = get_unused_port()
         self.registry_port = get_unused_port()
@@ -251,7 +252,10 @@ class FunctionalTest(unittest.TestCase):
                                     self.registry_port)
         self.registry_server = RegistryServer(self.test_dir,
                                               self.registry_port)
-        self.scrubber_daemon = ScrubberDaemon(self.test_dir)
+
+        registry_db = self.registry_server.sql_connection
+        self.scrubber_daemon = ScrubberDaemon(self.test_dir,
+                                              sql_connection=registry_db)
 
         self.pid_files = [self.api_server.pid_file,
                           self.registry_server.pid_file,

@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
 import time
 import unittest
 
@@ -40,6 +41,10 @@ class TestScrubber(functional.FunctionalTest):
 
     def _get_client(self):
         return client.Client("localhost", self.api_port)
+
+    def _set_environment(self):
+        db_connection = "sqlite:///" + self.test_dir + "/glance.db"
+        os.environ['GLANCE_TEST_SQL_CONNECTION'] = db_connection
 
     def setUp(self):
         super(TestScrubber, self).setUp()
