@@ -414,7 +414,8 @@ def stub_out_registry_db_image_api(stubs):
                 images = filter(_prop_filter(k, v), images)
 
             for k, v in filters.items():
-                images = [f for f in images if f[k] == v]
+                if v is not None:
+                    images = [f for f in images if f[k] == v]
 
             # sorted func expects func that compares in descending order
             def image_cmp(x, y):

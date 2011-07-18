@@ -171,7 +171,8 @@ def image_get_all(context, filters=None, marker=None, limit=None,
         query = query.filter(models.Image.properties.any(name=k, value=v))
 
     for (k, v) in filters.items():
-        query = query.filter(getattr(models.Image, k) == v)
+        if v is not None:
+            query = query.filter(getattr(models.Image, k) == v)
 
     if marker != None:
         # images returned should be created before the image defined by marker

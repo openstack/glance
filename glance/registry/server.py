@@ -58,11 +58,8 @@ class Controller(object):
 
     def _get_images(self, context, **params):
         """
-        Get images, adding is_public filter if not specified.
+        Get images, wrapping in exception if necessary.
         """
-        params['filters'] = params.get('filters', {})
-        if not 'is_public' in params['filters']:
-            params['filters']['is_public'] = True
         try:
             return db_api.image_get_all(None, **params)
         except exception.NotFound, e:
@@ -149,6 +146,7 @@ class Controller(object):
         filters = {}
         properties = {}
 
+        filters['is_public'] = self._get_is_public(req)
         for param in req.str_params:
             if param in SUPPORTED_FILTERS:
                 filters[param] = req.str_params.get(param)
@@ -203,6 +201,24 @@ class Controller(object):
             msg = "Unsupported sort_dir. Acceptable values: %s" % (_keys,)
             raise exc.HTTPBadRequest(explanation=msg)
         return sort_dir
+
+    def _get_is_public(self, req):
+        """Parse is_public into something usable."""
+        is_public = req.str_params.get('is_public', None)
+
+        if is_public is None:
+            # NOTE(vish): This preserves the default value of showing only
+            #             public images.
+            return True
+        is_public = is_public.lower()
+        if is_public == 'none':
+            return None
+        elif is_public == 'true' or is_public == '1':
+            return True
+        elif is_public == 'false' or is_public == '0':
+            return False
+        else:
+            raise exc.HTTPBadRequest("is_public must be None, True, or False")
 
     def show(self, req, id):
         """Return data about the given image id."""
