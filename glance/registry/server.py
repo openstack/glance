@@ -56,6 +56,19 @@ class Controller(object):
         self.options = options
         db_api.configure_db(options)
 
+    def _get_images(self, context, **params):
+        """
+        Get images, adding is_public filter if not specified.
+        """
+        params['filters'] = params.get('filters', {})
+        if not 'is_public' in params['filters']:
+            params['filters']['is_public'] = True
+        try:
+            return db_api.image_get_all(None, **params)
+        except exception.NotFound, e:
+            msg = "Invalid marker. Image could not be found."
+            raise exc.HTTPBadRequest(explanation=msg)
+
     def index(self, req):
         """
         Return a basic filtered list of public, non-deleted images
@@ -77,11 +90,7 @@ class Controller(object):
             }
         """
         params = self._get_query_params(req)
-        try:
-            images = db_api.image_get_all_public(None, **params)
-        except exception.NotFound, e:
-            msg = "Invalid marker. Image could not be found."
-            raise exc.HTTPBadRequest(explanation=msg)
+        images = self._get_images(None, **params)
 
         results = []
         for image in images:
@@ -104,12 +113,8 @@ class Controller(object):
         all image model fields.
         """
         params = self._get_query_params(req)
-        try:
-            images = db_api.image_get_all_public(None, **params)
-        except exception.NotFound, e:
-            msg = "Invalid marker. Image could not be found."
-            raise exc.HTTPBadRequest(explanation=msg)
 
+        images = self._get_images(None, **params)
         image_dicts = [make_image_dict(i) for i in images]
         return dict(images=image_dicts)
 

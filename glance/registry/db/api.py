@@ -128,10 +128,10 @@ def image_get(context, image_id, session=None):
         raise exception.NotFound("No image found with ID %s" % image_id)
 
 
-def image_get_all_public(context, filters=None, marker=None, limit=None,
-                         sort_key='created_at', sort_dir='desc'):
+def image_get_all(context, filters=None, marker=None, limit=None,
+                  sort_key='created_at', sort_dir='desc'):
     """
-    Get all public images that match zero or more filters.
+    Get all images that match zero or more filters.
 
     :param filters: dict of filter keys and values. If a 'properties'
                     key is present, it is treated as a dict of key/value
@@ -147,7 +147,6 @@ def image_get_all_public(context, filters=None, marker=None, limit=None,
     query = session.query(models.Image).\
                    options(joinedload(models.Image.properties)).\
                    filter_by(deleted=_deleted(context)).\
-                   filter_by(is_public=True).\
                    filter(models.Image.status != 'killed')
 
     sort_dir_func = {

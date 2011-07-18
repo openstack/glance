@@ -390,9 +390,9 @@ def stub_out_registry_db_image_api(stubs):
             else:
                 return images[0]
 
-        def image_get_all_public(self, _context, filters=None, marker=None,
-                                 limit=1000, sort_key=None, sort_dir=None):
-            images = [f for f in self.images if f['is_public'] == True]
+        def image_get_all(self, _context, filters=None, marker=None,
+                          limit=1000, sort_key=None, sort_dir=None):
+            images = self.images
 
             if 'size_min' in filters:
                 size_min = int(filters.pop('size_min'))
@@ -461,5 +461,5 @@ def stub_out_registry_db_image_api(stubs):
               fake_datastore.image_destroy)
     stubs.Set(glance.registry.db.api, 'image_get',
               fake_datastore.image_get)
-    stubs.Set(glance.registry.db.api, 'image_get_all_public',
-              fake_datastore.image_get_all_public)
+    stubs.Set(glance.registry.db.api, 'image_get_all',
+              fake_datastore.image_get_all)
