@@ -612,7 +612,8 @@ class TestApiHttplib2(functional.FunctionalTest):
             test_data_file.flush()
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
-        response, content = http.request(path, 'POST', body=test_data_file.name)
+        response, content = http.request(path, 'POST',
+                            body=test_data_file.name)
         self.assertEqual(response.status, 400)
         expected = "Content-Type must be application/octet-stream"
         self.assertTrue(expected in content,
@@ -650,12 +651,12 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertEqual(response.status, 201)
         data = json.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are on")
-        
+
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'My Image!',
                    'X-Image-Meta-Status': 'active',
                    'X-Image-Meta-Container-Format': 'ovf',
-                   'X-Image-Meta-Disk-Format': 'vdi',
+                   'X-Image-Meta-Disk-Format': 'vhd',
                    'X-Image-Meta-Size': '20',
                    'X-Image-Meta-Is-Public': 'True',
                    'X-Image-Meta-Property-pants': 'are on'}
@@ -673,13 +674,13 @@ class TestApiHttplib2(functional.FunctionalTest):
                    'X-Image-Meta-Disk-Format': 'ami',
                    'X-Image-Meta-Size': '21',
                    'X-Image-Meta-Is-Public': 'True',
-                   'X-Image-Meta-Property-pants': 'are on'}
+                   'X-Image-Meta-Property-pants': 'are off'}
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
         data = json.loads(content)
-        self.assertEqual(data['image']['properties']['pants'], "are on")
+        self.assertEqual(data['image']['properties']['pants'], "are off")
 
         # 2. GET /images
         # Verify three public images
@@ -691,7 +692,8 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         # 3. GET /images with name filter
         # Verify correct images returned with name
-        path = "http://%s:%d/v1/images?name=My%%20Image!" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images?name=%s" % (
+               "0.0.0.0", self.api_port, "My%20Image!")
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
         data = json.loads(content)
@@ -701,9 +703,108 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         # 4. GET /images with status filter
         # Verify correct images returned with status
-        path = "http://%s:%d/v1/images/detail?status=queued" %
-               ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images/detail?status=queued" % (
+               "0.0.0.0", self.api_port)
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 3)
+        for image in data['images']:
+            self.assertEqual(image['status'], "queued")
+
+        path = "http://%s:%d/v1/images/detail?status=active" % (
+               "0.0.0.0", self.api_port)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 0)
+
+        # 5. GET /images with container_format filter
+        # Verify correct images returned with container_format
+        path = "http://%s:%d/v1/images?container_format=ovf" % (
+               "0.0.0.0", self.api_port)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 2)
+        for image in data['images']:
+            self.assertEqual(image['container_format'], "ovf")
+
+        # 6. GET /images with disk_format filter
+        # Verify correct images returned with disk_format
+        path = "http://%s:%d/v1/images?disk_format=vdi" % (
+               "0.0.0.0", self.api_port)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 1)
+        for image in data['images']:
+            self.assertEqual(image['disk_format'], "vdi")
+
+        # 7. GET /images with size_max filter
+        # Verify correct images returned with size <= expected
+        path = "http://%s:%d/v1/images?size_max=20" % (
+               "0.0.0.0", self.api_port)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 2)
+        for image in data['images']:
+            self.assertTrue(image['size'] <= 20)
+
+        # 8. GET /images with size_min filter
+        # Verify correct images returned with size >= expected
+        path = "http://%s:%d/v1/images?size_min=20" % (
+               "0.0.0.0", self.api_port)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 2)
+        for image in data['images']:
+            self.assertTrue(image['size'] >= 20)
+
+        # 9. GET /images with property filter
+        # Verify correct images returned with property
+        path = "http://%s:%d/v1/images/detail?property-pants=%s" % (
+               "0.0.0.0", self.api_port, "are%20on")
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 2)
+        for image in data['images']:
+            self.assertEqual(image['properties']['pants'], "are on")
+
+        # 10. GET /images with property filter and name filter
+        # Verify correct images returned with property and name
+        # Make sure you quote the url when using more than one param!
+        path = "http://%s:%d/v1/images/detail?name=%s&property-pants=%s" % (
+                "0.0.0.0", self.api_port, "My%20Image!", "are%20on")
+        response, content = http.request(path, 'GET')
         pprint(response)
         pprint(content)
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 1)
+        for image in data['images']:
+            self.assertEqual(image['properties']['pants'], "are on")
+            self.assertEqual(image['name'], "My Image!")
+
+        self.stop_servers()
+
+    def test_limited_images(self):
+        """
+        Ensure marker and limit query params work
+        """
+        self.cleanup()
+        self.start_servers()
+
+        self.stop_servers()
+
+    def test_ordered_images(self):
+        """
+        Set up three test images and ensure each query param filter works
+        """
+        self.cleanup()
+        self.start_servers()
+
+        self.stop_servers()
