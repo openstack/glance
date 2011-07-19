@@ -692,8 +692,9 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         # 3. GET /images with name filter
         # Verify correct images returned with name
-        path = "http://%s:%d/v1/images?name=%s" % (
-               "0.0.0.0", self.api_port, "My%20Image!")
+        params = "name=My%20Image!"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
         data = json.loads(content)
@@ -703,8 +704,9 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         # 4. GET /images with status filter
         # Verify correct images returned with status
-        path = "http://%s:%d/v1/images/detail?status=queued" % (
-               "0.0.0.0", self.api_port)
+        params = "status=queued"
+        path = "http://%s:%d/v1/images/detail?%s" % (
+               "0.0.0.0", self.api_port, params)
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
         data = json.loads(content)
@@ -712,8 +714,9 @@ class TestApiHttplib2(functional.FunctionalTest):
         for image in data['images']:
             self.assertEqual(image['status'], "queued")
 
-        path = "http://%s:%d/v1/images/detail?status=active" % (
-               "0.0.0.0", self.api_port)
+        params = "status=active"
+        path = "http://%s:%d/v1/images/detail?%s" % (
+               "0.0.0.0", self.api_port, params)
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
         data = json.loads(content)
@@ -721,8 +724,9 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         # 5. GET /images with container_format filter
         # Verify correct images returned with container_format
-        path = "http://%s:%d/v1/images?container_format=ovf" % (
-               "0.0.0.0", self.api_port)
+        params = "container_format=ovf"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
         data = json.loads(content)
@@ -732,8 +736,9 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         # 6. GET /images with disk_format filter
         # Verify correct images returned with disk_format
-        path = "http://%s:%d/v1/images?disk_format=vdi" % (
-               "0.0.0.0", self.api_port)
+        params = "disk_format=vdi"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
         data = json.loads(content)
@@ -743,8 +748,9 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         # 7. GET /images with size_max filter
         # Verify correct images returned with size <= expected
-        path = "http://%s:%d/v1/images?size_max=20" % (
-               "0.0.0.0", self.api_port)
+        params = "size_max=20"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
         data = json.loads(content)
@@ -754,8 +760,9 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         # 8. GET /images with size_min filter
         # Verify correct images returned with size >= expected
-        path = "http://%s:%d/v1/images?size_min=20" % (
-               "0.0.0.0", self.api_port)
+        params = "size_min=20"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
         data = json.loads(content)
@@ -765,8 +772,9 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         # 9. GET /images with property filter
         # Verify correct images returned with property
-        path = "http://%s:%d/v1/images/detail?property-pants=%s" % (
-               "0.0.0.0", self.api_port, "are%20on")
+        params = "property-pants=are%20on"
+        path = "http://%s:%d/v1/images/detail?%s" % (
+               "0.0.0.0", self.api_port, params)
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
         data = json.loads(content)
@@ -777,11 +785,10 @@ class TestApiHttplib2(functional.FunctionalTest):
         # 10. GET /images with property filter and name filter
         # Verify correct images returned with property and name
         # Make sure you quote the url when using more than one param!
-        path = "http://%s:%d/v1/images/detail?name=%s&property-pants=%s" % (
-                "0.0.0.0", self.api_port, "My%20Image!", "are%20on")
+        params = "name=My%20Image!&property-pants=are%20on"
+        path = "http://%s:%d/v1/images/detail?%s" % (
+                "0.0.0.0", self.api_port, params)
         response, content = http.request(path, 'GET')
-        pprint(response)
-        pprint(content)
         self.assertEqual(response.status, 200)
         data = json.loads(content)
         self.assertEqual(len(data['images']), 1)
@@ -798,6 +805,85 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.cleanup()
         self.start_servers()
 
+        # 0. GET /images
+        # Verify no public images
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, '{"images": []}')
+
+        # 1. POST /images with three public images with various attributes
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image2',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image3',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+
+        # 2. GET /images with limit of 2
+        # Verify only two images were returned
+        params = "limit=2"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 2)
+        self.assertEqual(data['images'][0]['id'], 3)
+        self.assertEqual(data['images'][1]['id'], 2)
+
+        # 3. GET /images with marker
+        # Verify only two images were returned
+        params = "marker=3"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 2)
+        self.assertEqual(data['images'][0]['id'], 2)
+        self.assertEqual(data['images'][1]['id'], 1)
+
+        # 4. GET /images with marker and limit
+        # Verify only one image was returned with the correct id
+        params = "limit=1&marker=2"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 1)
+        self.assertEqual(data['images'][0]['id'], 1)
+
+        # 5. GET /images/detail with marker and limit
+        # Verify only one image was returned with the correct id
+        params = "limit=1&marker=3"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 1)
+        self.assertEqual(data['images'][0]['id'], 2)
+
         self.stop_servers()
 
     def test_ordered_images(self):
@@ -806,5 +892,86 @@ class TestApiHttplib2(functional.FunctionalTest):
         """
         self.cleanup()
         self.start_servers()
+
+        # 0. GET /images
+        # Verify no public images
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, '{"images": []}')
+
+        # 1. POST /images with three public images with various attributes
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Status': 'active',
+                   'X-Image-Meta-Container-Format': 'ovf',
+                   'X-Image-Meta-Disk-Format': 'vdi',
+                   'X-Image-Meta-Size': '19',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'ASDF',
+                   'X-Image-Meta-Status': 'active',
+                   'X-Image-Meta-Container-Format': 'bare',
+                   'X-Image-Meta-Disk-Format': 'iso',
+                   'X-Image-Meta-Size': '2',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'XYZ',
+                   'X-Image-Meta-Status': 'saving',
+                   'X-Image-Meta-Container-Format': 'ami',
+                   'X-Image-Meta-Disk-Format': 'ami',
+                   'X-Image-Meta-Size': '5',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+
+        # 2. GET /images with no query params
+        # Verify three public images sorted by created_at desc
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 3)
+        self.assertEqual(data['images'][0]['id'], 3)
+        self.assertEqual(data['images'][1]['id'], 2)
+        self.assertEqual(data['images'][2]['id'], 1)
+
+        # 3. GET /images sorted by name asc
+        params = 'sort_key=name&sort_dir=asc'
+        path = "http://%s:%d/v1/images?%s" % ("0.0.0.0", self.api_port, params)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 3)
+        self.assertEqual(data['images'][0]['id'], 2)
+        self.assertEqual(data['images'][1]['id'], 1)
+        self.assertEqual(data['images'][2]['id'], 3)
+
+        # 4. GET /images sorted by size desc
+        params = 'sort_key=size&sort_dir=desc'
+        path = "http://%s:%d/v1/images?%s" % ("0.0.0.0", self.api_port, params)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 3)
+        self.assertEqual(data['images'][0]['id'], 1)
+        self.assertEqual(data['images'][1]['id'], 3)
+        self.assertEqual(data['images'][2]['id'], 2)
 
         self.stop_servers()
