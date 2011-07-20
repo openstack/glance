@@ -258,9 +258,6 @@ def _image_update(context, values, image_id, purge_props=False):
         # not a dict.
         properties = values.pop('properties', {})
 
-        if 'id' in values:
-            image_id = values['id']
-
         if image_id:
             image_ref = image_get(context, image_id, session=session)
         else:
