@@ -635,7 +635,8 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertEqual(response.status, 200)
         self.assertEqual(content, '{"images": []}')
 
-        # 1. POST /images with three public images with various attributes
+        # 1. POST /images with three public images, and one private image
+        # with various attributes
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'Image1',
                    'X-Image-Meta-Status': 'active',
