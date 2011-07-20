@@ -92,7 +92,10 @@ def get_session(autocommit=True, expire_on_commit=False):
 
 def image_create(context, values):
     """Create an image from the values dictionary."""
-    return _image_update(context, values, None, False)
+    image_id = None
+    if 'id' in values:
+        image_id = values['id']
+    return _image_update(context, values, image_id, False)
 
 
 def image_update(context, image_id, values, purge_props=False):
@@ -254,6 +257,9 @@ def _image_update(context, values, image_id, purge_props=False):
         # properties attribute of an Image model to be a list and
         # not a dict.
         properties = values.pop('properties', {})
+
+        if 'id' in values:
+            image_id = values['id']
 
         if image_id:
             image_ref = image_get(context, image_id, session=session)
