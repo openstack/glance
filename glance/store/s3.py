@@ -77,7 +77,7 @@ class StoreLocation(glance.store.location.StoreLocation):
         self.scheme = pieces.scheme
         path = pieces.path.strip('/')
         netloc = pieces.netloc.strip('/')
-        entire_path = netloc + '/' + path
+        entire_path = (netloc + '/' + path).strip('/')
 
         if '@' in uri:
             creds, path = entire_path.split('@')
@@ -102,7 +102,6 @@ class StoreLocation(glance.store.location.StoreLocation):
             path = entire_path
         try:
             path_parts = path.split('/')
-            print path_parts
             self.key = path_parts.pop()
             self.bucket = path_parts.pop()
             if len(path_parts) > 0:
