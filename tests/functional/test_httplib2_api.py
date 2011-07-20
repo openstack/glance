@@ -1015,8 +1015,9 @@ class TestApiHttplib2(functional.FunctionalTest):
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
-        self.assertEqual(response.status, 201)
-        data = json.loads(content)
-        self.assertEqual(data['image']['name'], "Image1 Update")
+        self.assertEqual(response.status, 409)
+        expected = "An image with identifier 1 already exists"
+        self.assertTrue(expected in content,
+                        "Could not find '%s' in '%s'" % (expected, content))
 
         self.stop_servers()
