@@ -25,6 +25,7 @@ import json
 import webob.dec
 
 from glance.common import wsgi
+from glance import image_cache
 
 
 class Controller(object):
@@ -37,8 +38,9 @@ class Controller(object):
         self.options = options
 
     def index(self, req):
-        images = [dict(id=123, name='blah')]
-        return dict(images=images)
+        cache = image_cache.ImageCache(self.options)
+        entries = list(cache.entries())
+        return dict(cached_images=entries)
 
 
 class CachedImageDeserializer(wsgi.JSONRequestDeserializer):
