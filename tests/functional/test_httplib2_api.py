@@ -23,8 +23,6 @@ import json
 import os
 import tempfile
 
-from pprint import pprint
-
 from tests import functional
 from tests.utils import execute
 
@@ -652,6 +650,7 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertEqual(response.status, 201)
         data = json.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are on")
+        self.assertEqual(data['image']['is_public'], True)
 
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'My Image!',
@@ -667,6 +666,7 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertEqual(response.status, 201)
         data = json.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are on")
+        self.assertEqual(data['image']['is_public'], True)
 
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'My Image!',
@@ -682,6 +682,7 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertEqual(response.status, 201)
         data = json.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are off")
+        self.assertEqual(data['image']['is_public'], True)
 
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'My Private Image',
