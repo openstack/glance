@@ -23,6 +23,8 @@ import json
 import os
 import tempfile
 
+from pprint import pprint
+
 from tests import functional
 from tests.utils import execute
 
@@ -622,7 +624,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
     def test_filtered_images(self):
         """
-        Set up three test images and ensure each query param filter works
+        Set up four test images and ensure each query param filter works
         """
         self.cleanup()
         self.start_servers()
@@ -680,6 +682,20 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertEqual(response.status, 201)
         data = json.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are off")
+
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'My Private Image',
+                   'X-Image-Meta-Status': 'active',
+                   'X-Image-Meta-Container-Format': 'ami',
+                   'X-Image-Meta-Disk-Format': 'ami',
+                   'X-Image-Meta-Size': '22',
+                   'X-Image-Meta-Is-Public': 'False'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        self.assertEqual(data['image']['is_public'], False)
 
         # 2. GET /images
         # Verify three public images
@@ -769,7 +785,44 @@ class TestApiHttplib2(functional.FunctionalTest):
         for image in data['images']:
             self.assertTrue(image['size'] >= 20)
 
-        # 9. GET /images with property filter
+        # 9. Get /images with is_public=None filter
+        # Verify correct images returned with property
+        # Bug lp:803656  Support is_public in filtering
+        params = "is_public=None"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 4)
+
+        # 10. Get /images with is_public=False filter
+        # Verify correct images returned with property
+        # Bug lp:803656  Support is_public in filtering
+        params = "is_public=False"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 1)
+        for image in data['images']:
+            self.assertEqual(image['name'], "My Private Image")
+
+        # 11. Get /images with is_public=True filter
+        # Verify correct images returned with property
+        # Bug lp:803656  Support is_public in filtering
+        params = "is_public=True"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 3)
+        for image in data['images']:
+            self.assertNotEqual(image['name'], "My Private Image")
+
+        # 12. GET /images with property filter
         # Verify correct images returned with property
         params = "property-pants=are%20on"
         path = "http://%s:%d/v1/images/detail?%s" % (
@@ -781,7 +834,7 @@ class TestApiHttplib2(functional.FunctionalTest):
         for image in data['images']:
             self.assertEqual(image['properties']['pants'], "are on")
 
-        # 10. GET /images with property filter and name filter
+        # 13. GET /images with property filter and name filter
         # Verify correct images returned with property and name
         # Make sure you quote the url when using more than one param!
         params = "name=My%20Image!&property-pants=are%20on"
