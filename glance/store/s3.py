@@ -75,7 +75,7 @@ class StoreLocation(glance.store.location.StoreLocation):
         pieces = urlparse.urlparse(uri)
         assert pieces.scheme in ('s3', 's3+http', 's3+https')
         self.scheme = pieces.scheme
-        path = pieces.path
+        path = pieces.path.lstrip('/')
         netloc = pieces.netloc
         entire_path = netloc + path
 

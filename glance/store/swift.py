@@ -84,19 +84,22 @@ class StoreLocation(glance.store.location.StoreLocation):
         assert pieces.scheme in ('swift', 'swift+http', 'swift+https')
         self.scheme = pieces.scheme
         netloc = pieces.netloc
-        path = pieces.path
-        try:
+        path = pieces.path.lstrip('/')
+        if netloc != '':
+            # > Python 2.6.1
             if '@' in netloc:
                 creds, netloc = netloc.split('@')
             else:
                 creds = None
-        except ValueError:
+        else:
             # Python 2.6.1 compat
             # see lp659445 and Python issue7904
             if '@' in path:
                 creds, path = path.split('@')
             else:
                 creds = None
+            netloc = path[0:path.find('/')]
+            path = path[path.find('/'):]
         if creds:
             cred_parts = creds.split(':')
 
