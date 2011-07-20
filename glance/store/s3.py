@@ -75,9 +75,9 @@ class StoreLocation(glance.store.location.StoreLocation):
         pieces = urlparse.urlparse(uri)
         assert pieces.scheme in ('s3', 's3+http', 's3+https')
         self.scheme = pieces.scheme
-        path = pieces.path.lstrip('/')
-        netloc = pieces.netloc
-        entire_path = netloc + path
+        path = pieces.path.strip('/')
+        netloc = pieces.netloc.strip('/')
+        entire_path = netloc + '/' + path
 
         if '@' in uri:
             creds, path = entire_path.split('@')
@@ -102,9 +102,14 @@ class StoreLocation(glance.store.location.StoreLocation):
             path = entire_path
         try:
             path_parts = path.split('/')
+            print path_parts
             self.key = path_parts.pop()
             self.bucket = path_parts.pop()
-            self.s3serviceurl = '/'.join(path_parts)
+            if len(path_parts) > 0:
+                self.s3serviceurl = '/'.join(path_parts)
+            else:
+                reason = "Badly formed S3 URI. Missing s3 service URL."
+                raise exception.BadStoreUri(uri, reason)
         except IndexError:
             reason = "Badly formed S3 URI"
             raise exception.BadStoreUri(uri, reason)

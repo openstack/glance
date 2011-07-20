@@ -98,8 +98,8 @@ class StoreLocation(glance.store.location.StoreLocation):
                 creds, path = path.split('@')
             else:
                 creds = None
-            netloc = path[0:path.find('/')]
-            path = path[path.find('/'):]
+            netloc = path[0:path.find('/')].strip('/')
+            path = path[path.find('/'):].strip('/')
         if creds:
             cred_parts = creds.split(':')
 
@@ -122,7 +122,9 @@ class StoreLocation(glance.store.location.StoreLocation):
         try:
             self.obj = path_parts.pop()
             self.container = path_parts.pop()
-            self.authurl = (netloc + '/'.join(path_parts)).rstrip('/')
+            self.authurl = netloc
+            if len(path_parts) > 0:
+                self.authurl = netloc + '/' + '/'.join(path_parts).strip('/')
         except IndexError:
             reason = "Badly formed Swift URI"
             raise exception.BadStoreUri(uri, reason)
