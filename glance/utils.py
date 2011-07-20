@@ -183,6 +183,25 @@ class PrettyTable(object):
         return justified
 
 
+def _make_namespaced_xattr_key(key, namespace='user'):
+    """Create a fully-qualified xattr-key by including the intended namespace.
+
+    Namespacing differs among OSes[1]:
+
+        FreeBSD: user, system
+        Linux: user, system, trusted, security
+        MacOS X: not needed
+
+    Mac OS X won't break if we include a namespace qualifier, so, for
+    simplicity, we always include it.
+
+    --
+    [1] http://en.wikipedia.org/wiki/Extended_file_attributes
+    """
+    namespaced_key = ".".join([namespace, key])
+    return namespaced_key
+
+
 def get_xattr(path, key, **kwargs):
     """Return the value for a particular xattr
 
@@ -190,9 +209,10 @@ def get_xattr(path, key, **kwargs):
     system then a KeyError will be raised, that is, unless you specify a
     default using kwargs.
     """
+    namespaced_key = _make_namespaced_xattr_key(key)
     entry_xattr = xattr.xattr(path)
     try:
-        return entry_xattr[key]
+        return entry_xattr[namespaced_key]
     except KeyError:
         if 'default' in kwargs:
             return kwargs['default']
@@ -205,9 +225,10 @@ def set_xattr(path, key, value):
 
     If xattrs aren't supported by the file-system, we skip setting the value.
     """
+    namespaced_key = _make_namespaced_xattr_key(key)
     entry_xattr = xattr.xattr(path)
     try:
-        entry_xattr.set(key, str(value))
+        entry_xattr.set(namespaced_key, str(value))
     except IOError as e:
         if e.errno == errno.EOPNOTSUPP:
             logger.warn("xattrs not supported, skipping...")
