@@ -61,7 +61,7 @@ class Controller(object):
         Get images, wrapping in exception if necessary.
         """
         try:
-            return db_api.image_get_all(None, **params)
+            return db_api.image_get_all(context, **params)
         except exception.NotFound, e:
             msg = "Invalid marker. Image could not be found."
             raise exc.HTTPBadRequest(explanation=msg)
@@ -87,7 +87,7 @@ class Controller(object):
             }
         """
         params = self._get_query_params(req)
-        images = self._get_images(None, **params)
+        images = self._get_images(req.context, **params)
 
         results = []
         for image in images:
@@ -111,7 +111,7 @@ class Controller(object):
         """
         params = self._get_query_params(req)
 
-        images = self._get_images(None, **params)
+        images = self._get_images(req.context, **params)
         image_dicts = [make_image_dict(i) for i in images]
         return dict(images=image_dicts)
 
@@ -223,7 +223,7 @@ class Controller(object):
     def show(self, req, id):
         """Return data about the given image id."""
         try:
-            image = db_api.image_get(None, id)
+            image = db_api.image_get(req.context, id)
         except exception.NotFound:
             raise exc.HTTPNotFound()
 
@@ -238,9 +238,8 @@ class Controller(object):
 
         :retval Returns 200 if delete was successful, a fault if not.
         """
-        context = None
         try:
-            db_api.image_destroy(context, id)
+            db_api.image_destroy(req.context, id)
         except exception.NotFound:
             return exc.HTTPNotFound()
 
@@ -260,9 +259,8 @@ class Controller(object):
         # Ensure the image has a status set
         image_data.setdefault('status', 'active')
 
-        context = None
         try:
-            image_data = db_api.image_create(context, image_data)
+            image_data = db_api.image_create(req.context, image_data)
             return dict(image=make_image_dict(image_data))
         except exception.Duplicate:
             msg = ("Image with identifier %s already exists!" % id)
@@ -286,15 +284,15 @@ class Controller(object):
         image_data = body['image']
 
         purge_props = req.headers.get("X-Glance-Registry-Purge-Props", "false")
-        context = None
         try:
             logger.debug("Updating image %(id)s with metadata: %(image_data)r"
                          % locals())
             if purge_props == "true":
-                updated_image = db_api.image_update(context, id, image_data,
-                                                        True)
+                updated_image = db_api.image_update(req.context, id,
+                                                    image_data, True)
             else:
-                updated_image = db_api.image_update(context, id, image_data)
+                updated_image = db_api.image_update(req.context, id,
+                                                    image_data)
             return dict(image=make_image_dict(updated_image))
         except exception.Invalid, e:
             msg = ("Failed to update image metadata. "

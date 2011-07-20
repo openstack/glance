@@ -35,7 +35,8 @@ class V1Client(base_client.BaseClient):
 
     DEFAULT_PORT = 9292
 
-    def __init__(self, host, port=None, use_ssl=False, doc_root="/v1"):
+    def __init__(self, host, port=None, use_ssl=False, doc_root="/v1",
+                 auth_tok=None):
         """
         Creates a new client to a Glance API service.
 
@@ -43,10 +44,11 @@ class V1Client(base_client.BaseClient):
         :param port: The port where Glance resides (defaults to 9292)
         :param use_ssl: Should we use HTTPS? (defaults to False)
         :param doc_root: Prefix for all URLs we request from host
+        :param auth_tok: The auth token to pass to the server
         """
         port = port or self.DEFAULT_PORT
         self.doc_root = doc_root
-        super(Client, self).__init__(host, port, use_ssl)
+        super(Client, self).__init__(host, port, use_ssl, auth_tok)
 
     def do_request(self, method, action, body=None, headers=None, params=None):
         action = "%s/%s" % (self.doc_root, action.lstrip("/"))
