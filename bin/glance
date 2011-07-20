@@ -385,6 +385,7 @@ Shows image metadata for an image in Glance"""
             print piece
         return FAILURE
 
+
 @catch_error('show index')
 def images_index(options, args):
     """
@@ -416,7 +417,7 @@ a Glance server knows about"""
             image['disk_format'],
             image['container_format'],
             image['size'])
-            
+
 
 def images_detailed(options, args):
     """
@@ -508,6 +509,7 @@ List images currently cached"""
             image['size'],
             image['hits'])
 
+
 @catch_error('show invalid cache images')
 def cache_invalid(options, args):
     """
@@ -583,6 +585,7 @@ Removes all images from the cache"""
     if options.verbose:
         print "done"
 
+
 @catch_error('prefetch the specified cached image')
 def cache_prefetch(options, args):
     """
@@ -629,7 +632,7 @@ List images that are being prefetched"""
     pretty_table.add_column(16, label="ID")
     pretty_table.add_column(30, label="Name")
     pretty_table.add_column(19, label="Last Accessed (UTC)")
-    pretty_table.add_column(20, label="Status")
+    pretty_table.add_column(10, label="Status", just="r")
 
     print pretty_table.make_header()
 
