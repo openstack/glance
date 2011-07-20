@@ -1227,3 +1227,5 @@ class TestCurlApi(functional.FunctionalTest):
         self.assertEqual(images[0]['id'], 1)
         self.assertEqual(images[1]['id'], 3)
         self.assertEqual(images[2]['id'], 2)
+
+        self.stop_servers()
