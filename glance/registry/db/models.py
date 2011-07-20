@@ -105,6 +105,7 @@ class Image(BASE, ModelBase):
     is_public = Column(Boolean, nullable=False, default=False)
     location = Column(Text)
     checksum = Column(String(32))
+    owner = Column(String(255))
 
 
 class ImageProperty(BASE, ModelBase):
