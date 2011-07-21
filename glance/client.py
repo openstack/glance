@@ -215,7 +215,7 @@ class V1Client(base_client.BaseClient):
         """
         res = self.do_request("HEAD", "/images/%s" % image_id)
         image = utils.get_image_meta_from_headers(res)
-        self.do_request("POST", "/images/%s/prefetch" % image_id)
+        self.do_request("PUT", "/cached_images/%s" % image_id)
         return True
 
     def get_prefetching_cache_images(self, **kwargs):
