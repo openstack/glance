@@ -42,8 +42,7 @@ class TestStoreLocation(unittest.TestCase):
             's3://accesskey:secretwith/aslash@s3.amazonaws.com/bucket/key-id',
             's3+http://accesskey:secret@s3.amazonaws.com/bucket/key-id',
             's3+https://accesskey:secretkey@s3.amazonaws.com/bucket/key-id',
-            'file:///var/lib/glance/images/1'
-        ]
+            'file:///var/lib/glance/images/1']
 
         for uri in good_store_uris:
             loc = location.get_location_from_uri(uri)
