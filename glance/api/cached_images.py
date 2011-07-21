@@ -23,14 +23,16 @@ import httplib
 import json
 
 import webob.dec
+import webob.exc
 
 from glance.common import exception
 from glance.common import wsgi
+from glance import api
 from glance import image_cache
 from glance import registry
 
 
-class Controller(object):
+class Controller(api.BaseController):
     """
     A controller that produces information on the Glance API versions.
     """
@@ -62,26 +64,7 @@ class Controller(object):
         try:
             self.cache.queue_prefetch(image_meta)
         except exception.Invalid, e:
-            raise HTTPBadRequest(explanation=str(e))
-
-    # TODO(sirp): refactor this to common area?
-    def get_image_meta_or_404(self, request, id):
-        """
-        Grabs the image metadata for an image with a supplied
-        identifier or raises an HTTPNotFound (404) response
-
-        :param request: The WSGI/Webob Request object
-        :param id: The opaque image identifier
-
-        :raises HTTPNotFound if image does not exist
-        """
-        try:
-            return registry.get_image_metadata(self.options, id)
-        except exception.NotFound:
-            msg = "Image with identifier %s not found" % id
-            logger.debug(msg)
-            raise HTTPNotFound(msg, request=request,
-                               content_type='text/plain')
+            raise webob.exc.HTTPBadRequest(explanation=str(e))
 
 
 class CachedImageDeserializer(wsgi.JSONRequestDeserializer):

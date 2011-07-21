@@ -29,6 +29,7 @@ from webob.exc import (HTTPNotFound,
                        HTTPConflict,
                        HTTPBadRequest)
 
+from glance import api
 from glance import image_cache
 from glance.common import exception
 from glance.common import wsgi
@@ -49,8 +50,7 @@ SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
 SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
 
 
-class Controller(object):
-
+class Controller(api.BaseController):
     """
     WSGI controller for images resource in Glance v1 API
 
@@ -518,24 +518,6 @@ class Controller(object):
                 logger.error(msg % (image['location'],))
 
         registry.delete_image_metadata(self.options, id)
-
-    def get_image_meta_or_404(self, request, id):
-        """
-        Grabs the image metadata for an image with a supplied
-        identifier or raises an HTTPNotFound (404) response
-
-        :param request: The WSGI/Webob Request object
-        :param id: The opaque image identifier
-
-        :raises HTTPNotFound if image does not exist
-        """
-        try:
-            return registry.get_image_metadata(self.options, id)
-        except exception.NotFound:
-            msg = "Image with identifier %s not found" % id
-            logger.debug(msg)
-            raise HTTPNotFound(msg, request=request,
-                               content_type='text/plain')
 
     def get_store_or_400(self, request, store_name):
         """
