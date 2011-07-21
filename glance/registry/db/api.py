@@ -24,6 +24,7 @@ Defines interface for DB access
 import logging
 
 from sqlalchemy import asc, create_engine, desc
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import exc
 from sqlalchemy.orm import joinedload
@@ -274,7 +275,11 @@ def _image_update(context, values, image_id, purge_props=False):
         # idiotic.
         validate_image(image_ref.to_dict())
 
-        image_ref.save(session=session)
+        try:
+            image_ref.save(session=session)
+        except IntegrityError, e:
+            raise exception.Duplicate("Image ID %s already exists!"
+                                      % values['id'])
 
         _set_properties_for_image(context, image_ref, properties, purge_props,
                                   session)

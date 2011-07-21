@@ -1029,3 +1029,50 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertEqual(data['images'][2]['id'], 2)
 
         self.stop_servers()
+
+    def test_duplicate_image_upload(self):
+        """
+        Upload initial image, then attempt to upload duplicate image
+        """
+        self.cleanup()
+        self.start_servers()
+
+        # 0. GET /images
+        # Verify no public images
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, '{"images": []}')
+
+        # 1. POST /images with public image named Image1
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Status': 'active',
+                   'X-Image-Meta-Container-Format': 'ovf',
+                   'X-Image-Meta-Disk-Format': 'vdi',
+                   'X-Image-Meta-Size': '19',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+
+        # 2. POST /images with public image named Image1, and ID: 1
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image1 Update',
+                   'X-Image-Meta-Status': 'active',
+                   'X-Image-Meta-Container-Format': 'ovf',
+                   'X-Image-Meta-Disk-Format': 'vdi',
+                   'X-Image-Meta-Size': '19',
+                   'X-Image-Meta-Id': '1',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 409)
+        expected = "An image with identifier 1 already exists"
+        self.assertTrue(expected in content,
+                        "Could not find '%s' in '%s'" % (expected, content))
+
+        self.stop_servers()
