@@ -36,19 +36,21 @@ class Controller(object):
 
     def __init__(self, options):
         self.options = options
+        self.cache = image_cache.ImageCache(self.options)
 
     def index(self, req):
-        cache = image_cache.ImageCache(self.options)
-
         status = req.str_params.get('status')
         if status == 'invalid':
-            entries = list(cache.invalid_entries())
+            entries = list(self.cache.invalid_entries())
         elif status == 'prefetching':
-            entries = list(cache.prefetch_entries())
+            entries = list(self.cache.prefetch_entries())
         else:
-            entries = list(cache.entries())
+            entries = list(self.cache.entries())
 
         return dict(cached_images=entries)
+
+    def purge_all(self, req):
+        self.cache.purge_all()
 
 
 class CachedImageDeserializer(wsgi.JSONRequestDeserializer):

@@ -142,10 +142,6 @@ class Controller(object):
         cache = image_cache.ImageCache(self.options)
         cache.purge(id)
 
-    def purge_all(self, req):
-        cache = image_cache.ImageCache(self.options)
-        cache.purge_all()
-
     def prefetch(self, req, id):
         cache = image_cache.ImageCache(self.options)
         image_meta = self.get_image_meta_or_404(req, id)
@@ -153,12 +149,6 @@ class Controller(object):
             cache.queue_prefetch(image_meta)
         except exception.Invalid, e:
             raise HTTPBadRequest(explanation=str(e))
-
-    def prefetching(self, req):
-        """Lists images that are queued or actively being prefetched"""
-        cache = image_cache.ImageCache(self.options)
-        entries = list(cache.prefetch_entries())
-        return dict(images=entries)
 
     # TODO(sirp): END ADMIN ONLY METHODS
 

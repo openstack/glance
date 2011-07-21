@@ -206,7 +206,7 @@ class V1Client(base_client.BaseClient):
         """
         Purge all cached images
         """
-        self.do_request("POST", "/images/purge_all")
+        self.do_request("DELETE", "/cached_images")
         return True
 
     def prefetch_cache_image(self, image_id):

@@ -30,10 +30,16 @@ logger = logging.getLogger('glance.api.middleware.image_cache')
 class ImageCacheFilter(wsgi.Middleware):
     def __init__(self, app, options):
         super(ImageCacheFilter, self).__init__(app)
+
+        map = app.map
         resource = cached_images.create_resource(options)
-        app.map.resource("cached_image", "cached_images",
+        map.resource("cached_image", "cached_images",
                          controller=resource)
 
+        map.connect("/cached_images",
+                    controller=resource,
+                    action="purge_all",
+                    conditions=dict(method=["DELETE"]))
 
 def filter_factory(global_conf, **local_conf):
     """
