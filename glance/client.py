@@ -199,7 +199,7 @@ class V1Client(base_client.BaseClient):
         """
         Delete a specified image from the cache
         """
-        self.do_request("POST", "/images/%s/purge" % image_id)
+        self.do_request("DELETE", "/cached_images/%s" % image_id)
         return True
 
     def purge_all_cached_images(self):

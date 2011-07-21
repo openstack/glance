@@ -49,6 +49,9 @@ class Controller(object):
 
         return dict(cached_images=entries)
 
+    def delete(self, req, id):
+        self.cache.purge(id)
+
     def purge_all(self, req):
         self.cache.purge_all()
 

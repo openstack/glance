@@ -138,10 +138,6 @@ class Controller(object):
     # get Keystone integration, we're going to want to make these
     # protected, admin-only methods
 
-    def purge(self, req, id):
-        cache = image_cache.ImageCache(self.options)
-        cache.purge(id)
-
     def prefetch(self, req, id):
         cache = image_cache.ImageCache(self.options)
         image_meta = self.get_image_meta_or_404(req, id)
