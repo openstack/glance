@@ -34,9 +34,27 @@ class RequestContext(object):
         self.is_admin = is_admin
         self.read_only = read_only
 
+    def image_visible(self, image):
+        """Return True if the image is visible in this context."""
+        # Is admin == image visible
+        if self.is_admin:
+            return True
+
+        # No owner == image visible
+        if image.owner is None:
+            return True
+
+        # Image is_public == image visible
+        if image.is_public:
+            return True
+
+        # Private image
+        return self.tenant and self.tenant == image.owner
+
     def elevate(self):
         """Return a version of this context with admin flag set."""
-        return self.__class__(user, tenant, True)
+        return self.__class__(self.auth_tok, self.user, self.tenant,
+                              True, True)
 
 
 class ContextMiddleware(wsgi.Middleware):
@@ -49,8 +67,9 @@ class ContextMiddleware(wsgi.Middleware):
         Extract any authentication information in the request and
         construct an appropriate context from it.
         """
-        # Use the default empty context
-        req.context = RequestContext()
+        # Use the default empty context, with admin turned on for
+        # backwards compatibility
+        req.context = RequestContext(is_admin=True)
 
 
 def filter_factory(global_conf, **local_conf):

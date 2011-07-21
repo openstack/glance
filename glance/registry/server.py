@@ -146,7 +146,11 @@ class Controller(object):
         filters = {}
         properties = {}
 
-        filters['is_public'] = self._get_is_public(req)
+        if req.context.is_admin:
+            # Only admin gets to look for non-public images
+            filters['is_public'] = self._get_is_public(req)
+        else:
+            filters['is_public'] = True
         for param in req.str_params:
             if param in SUPPORTED_FILTERS:
                 filters[param] = req.str_params.get(param)
@@ -226,6 +230,10 @@ class Controller(object):
             image = db_api.image_get(req.context, id)
         except exception.NotFound:
             raise exc.HTTPNotFound()
+        except exception.NotAuthorized:
+            # If it's private and doesn't belong to them, don't let on
+            # that it exists
+            raise exc.HTTPNotFound()
 
         return dict(image=make_image_dict(image))
 
@@ -238,10 +246,18 @@ class Controller(object):
 
         :retval Returns 200 if delete was successful, a fault if not.
         """
+        # Is this a read-only context?
+        if req.context.read_only:
+            raise exc.HTTPForbidden()
+
         try:
             db_api.image_destroy(req.context, id)
         except exception.NotFound:
             return exc.HTTPNotFound()
+        except exception.NotAuthorized:
+            # If it's private and doesn't belong to them, don't let on
+            # that it exists
+            raise exc.HTTPNotFound()
 
     def create(self, req, body):
         """
@@ -254,10 +270,18 @@ class Controller(object):
                 which will include the newly-created image's internal id
                 in the 'id' field
         """
+        # Is this a read-only context?
+        if req.context.read_only:
+            raise exc.HTTPForbidden()
+
         image_data = body['image']
 
         # Ensure the image has a status set
         image_data.setdefault('status', 'active')
+
+        # Set up the image owner
+        if not req.context.is_admin or 'owner' not in image_data:
+            image_data['owner'] = req.context.tenant
 
         try:
             image_data = db_api.image_create(req.context, image_data)
@@ -281,7 +305,15 @@ class Controller(object):
 
         :retval Returns the updated image information as a mapping,
         """
+        # Is this a read-only context?
+        if req.context.read_only:
+            raise exc.HTTPForbidden()
+
         image_data = body['image']
+
+        # Prohibit modification of 'owner'
+        if not req.context.is_admin and 'owner' in image_data:
+            del image_data['owner']
 
         purge_props = req.headers.get("X-Glance-Registry-Purge-Props", "false")
         try:
@@ -300,6 +332,12 @@ class Controller(object):
             logger.error(msg)
             return exc.HTTPBadRequest(msg)
         except exception.NotFound:
+            raise exc.HTTPNotFound(body='Image not found',
+                               request=req,
+                               content_type='text/plain')
+        except exception.NotAuthorized:
+            # If it's private and doesn't belong to them, don't let on
+            # that it exists
             raise exc.HTTPNotFound(body='Image not found',
                                request=req,
                                content_type='text/plain')
