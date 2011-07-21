@@ -29,9 +29,8 @@ import swift.common.client
 
 from glance.common import exception
 from glance.store import BackendException
-from glance.store.swift import (SwiftBackend,
-                                format_swift_location,
-                                parse_swift_tokens)
+from glance.store.swift import SwiftBackend
+from glance.store.location import get_location_from_uri
 
 FIVE_KB = (5 * 1024)
 SWIFT_OPTIONS = {'verbose': True,
@@ -146,6 +145,18 @@ def stub_out_swift_common_client(stubs):
               'http_connection', fake_http_connection)
 
 
+def format_swift_location(user, key, authurl, container, obj):
+    """
+    Helper method that returns a Swift store URI given
+    the component pieces.
+    """
+    scheme = 'swift+https'
+    if authurl.startswith('http://'):
+        scheme = 'swift+http'
+    return "%s://%s:%s@%s/%s/%s" % (scheme, user, key, authurl,
+                                    container, obj)
+
+
 class TestSwiftBackend(unittest.TestCase):
 
     def setUp(self):
@@ -157,46 +168,27 @@ class TestSwiftBackend(unittest.TestCase):
         """Clear the test environment"""
         self.stubs.UnsetAll()
 
-    def test_parse_swift_tokens(self):
-        """
-        Test that the parse_swift_tokens function returns
-        user, key, authurl, container, and objname properly
-        """
-        uri = "swift://user:key@localhost/v1.0/container/objname"
-        url_pieces = urlparse.urlparse(uri)
-        user, key, authurl, container, objname =\
-                parse_swift_tokens(url_pieces)
-        self.assertEqual("user", user)
-        self.assertEqual("key", key)
-        self.assertEqual("https://localhost/v1.0", authurl)
-        self.assertEqual("container", container)
-        self.assertEqual("objname", objname)
-
-        uri = "swift://user:key@localhost:9090/v1.0/container/objname"
-        url_pieces = urlparse.urlparse(uri)
-        user, key, authurl, container, objname =\
-                parse_swift_tokens(url_pieces)
-        self.assertEqual("user", user)
-        self.assertEqual("key", key)
-        self.assertEqual("https://localhost:9090/v1.0", authurl)
-        self.assertEqual("container", container)
-        self.assertEqual("objname", objname)
-
-        uri = "swift://account:user:key@localhost:9090/v1.0/container/objname"
-        url_pieces = urlparse.urlparse(uri)
-        user, key, authurl, container, objname =\
-                parse_swift_tokens(url_pieces)
-        self.assertEqual("account:user", user)
-        self.assertEqual("key", key)
-        self.assertEqual("https://localhost:9090/v1.0", authurl)
-        self.assertEqual("container", container)
-        self.assertEqual("objname", objname)
-
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
-        url_pieces = urlparse.urlparse(
-            "swift://user:key@auth_address/glance/2")
-        image_swift = SwiftBackend.get(url_pieces)
+        loc = get_location_from_uri("swift://user:key@auth_address/glance/2")
+        image_swift = SwiftBackend.get(loc)
+
+        expected_data = "*" * FIVE_KB
+        data = ""
+
+        for chunk in image_swift:
+            data += chunk
+        self.assertEqual(expected_data, data)
+
+    def test_get_with_http_auth(self):
+        """
+        Test a retrieval from Swift with an HTTP authurl. This is
+        specified either via a Location header with swift+http:// or using
+        http:// in the swift_store_auth_address config value
+        """
+        loc = get_location_from_uri("swift+http://user:key@auth_address/"
+                                    "glance/2")
+        image_swift = SwiftBackend.get(loc)
 
         expected_data = "*" * FIVE_KB
         data = ""
@@ -210,11 +202,10 @@ class TestSwiftBackend(unittest.TestCase):
         Test retrieval of an image with wrong expected_size param
         raises an exception
         """
-        url_pieces = urlparse.urlparse(
-            "swift://user:key@auth_address/glance/2")
+        loc = get_location_from_uri("swift://user:key@auth_address/glance/2")
         self.assertRaises(BackendException,
                           SwiftBackend.get,
-                          url_pieces,
+                          loc,
                           {'expected_size': 42})
 
     def test_get_non_existing(self):
@@ -222,11 +213,10 @@ class TestSwiftBackend(unittest.TestCase):
         Test that trying to retrieve a swift that doesn't exist
         raises an error
         """
-        url_pieces = urlparse.urlparse(
-            "swift://user:key@auth_address/noexist")
+        loc = get_location_from_uri("swift://user:key@authurl/glance/noexist")
         self.assertRaises(exception.NotFound,
                           SwiftBackend.get,
-                          url_pieces)
+                          loc)
 
     def test_add(self):
         """Test that we can add an image via the swift backend"""
@@ -249,13 +239,61 @@ class TestSwiftBackend(unittest.TestCase):
         self.assertEquals(expected_swift_size, size)
         self.assertEquals(expected_checksum, checksum)
 
-        url_pieces = urlparse.urlparse(expected_location)
-        new_image_swift = SwiftBackend.get(url_pieces)
+        loc = get_location_from_uri(expected_location)
+        new_image_swift = SwiftBackend.get(loc)
         new_image_contents = new_image_swift.getvalue()
         new_image_swift_size = new_image_swift.len
 
         self.assertEquals(expected_swift_contents, new_image_contents)
         self.assertEquals(expected_swift_size, new_image_swift_size)
+
+    def test_add_auth_url_variations(self):
+        """
+        Test that we can add an image via the swift backend with
+        a variety of different auth_address values
+        """
+        variations = ['http://localhost:80',
+                      'http://localhost',
+                      'http://localhost/v1',
+                      'http://localhost/v1/',
+                      'https://localhost',
+                      'https://localhost:8080',
+                      'https://localhost/v1',
+                      'https://localhost/v1/',
+                      'localhost',
+                      'localhost:8080/v1']
+        i = 42
+        for variation in variations:
+            expected_image_id = i
+            expected_swift_size = FIVE_KB
+            expected_swift_contents = "*" * expected_swift_size
+            expected_checksum = \
+                    hashlib.md5(expected_swift_contents).hexdigest()
+            new_options = SWIFT_OPTIONS.copy()
+            new_options['swift_store_auth_address'] = variation
+            expected_location = format_swift_location(
+                new_options['swift_store_user'],
+                new_options['swift_store_key'],
+                new_options['swift_store_auth_address'],
+                new_options['swift_store_container'],
+                expected_image_id)
+            image_swift = StringIO.StringIO(expected_swift_contents)
+
+            location, size, checksum = SwiftBackend.add(i, image_swift,
+                                                        new_options)
+
+            self.assertEquals(expected_location, location)
+            self.assertEquals(expected_swift_size, size)
+            self.assertEquals(expected_checksum, checksum)
+
+            loc = get_location_from_uri(expected_location)
+            new_image_swift = SwiftBackend.get(loc)
+            new_image_contents = new_image_swift.getvalue()
+            new_image_swift_size = new_image_swift.len
+
+            self.assertEquals(expected_swift_contents, new_image_contents)
+            self.assertEquals(expected_swift_size, new_image_swift_size)
+            i = i + 1
 
     def test_add_no_container_no_create(self):
         """
@@ -306,8 +344,8 @@ class TestSwiftBackend(unittest.TestCase):
         self.assertEquals(expected_swift_size, size)
         self.assertEquals(expected_checksum, checksum)
 
-        url_pieces = urlparse.urlparse(expected_location)
-        new_image_swift = SwiftBackend.get(url_pieces)
+        loc = get_location_from_uri(expected_location)
+        new_image_swift = SwiftBackend.get(loc)
         new_image_contents = new_image_swift.getvalue()
         new_image_swift_size = new_image_swift.len
 
@@ -356,22 +394,20 @@ class TestSwiftBackend(unittest.TestCase):
         """
         Test we can delete an existing image in the swift store
         """
-        url_pieces = urlparse.urlparse(
-            "swift://user:key@auth_address/glance/2")
+        loc = get_location_from_uri("swift://user:key@authurl/glance/2")
 
-        SwiftBackend.delete(url_pieces)
+        SwiftBackend.delete(loc)
 
         self.assertRaises(exception.NotFound,
                           SwiftBackend.get,
-                          url_pieces)
+                          loc)
 
     def test_delete_non_existing(self):
         """
         Test that trying to delete a swift that doesn't exist
         raises an error
         """
-        url_pieces = urlparse.urlparse(
-            "swift://user:key@auth_address/noexist")
+        loc = get_location_from_uri("swift://user:key@authurl/glance/noexist")
         self.assertRaises(exception.NotFound,
                           SwiftBackend.delete,
-                          url_pieces)
+                          loc)

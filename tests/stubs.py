@@ -128,12 +128,8 @@ def stub_out_s3_backend(stubs):
         DATA = 'I am a teapot, short and stout\n'
 
         @classmethod
-        def get(cls, parsed_uri, expected_size, conn_class=None):
+        def get(cls, location, expected_size, conn_class=None):
             S3Backend = glance.store.s3.S3Backend
-
-            # raise BackendException if URI is bad.
-            (user, key, authurl, container, obj) = \
-                S3Backend._parse_s3_tokens(parsed_uri)
 
             def chunk_it():
                 for i in xrange(0, len(cls.DATA), cls.CHUNK_SIZE):
@@ -400,9 +396,9 @@ def stub_out_registry_db_image_api(stubs):
                          f['deleted_at'] <= delete_time]
             return images
 
-        def image_get_all_public(self, _context, filters=None, marker=None,
-                                 limit=1000, sort_key=None, sort_dir=None):
-            images = [f for f in self.images if f['is_public'] == True]
+        def image_get_all(self, _context, filters=None, marker=None,
+                          limit=1000, sort_key=None, sort_dir=None):
+            images = self.images
 
             if 'size_min' in filters:
                 size_min = int(filters.pop('size_min'))
@@ -424,7 +420,8 @@ def stub_out_registry_db_image_api(stubs):
                 images = filter(_prop_filter(k, v), images)
 
             for k, v in filters.items():
-                images = [f for f in images if f[k] == v]
+                if v is not None:
+                    images = [f for f in images if f[k] == v]
 
             # sorted func expects func that compares in descending order
             def image_cmp(x, y):
@@ -473,5 +470,5 @@ def stub_out_registry_db_image_api(stubs):
               fake_datastore.image_get)
     stubs.Set(glance.registry.db.api, 'image_get_all_pending_delete',
               fake_datastore.image_get_all_pending_delete)
-    stubs.Set(glance.registry.db.api, 'image_get_all_public',
-              fake_datastore.image_get_all_public)
+    stubs.Set(glance.registry.db.api, 'image_get_all',
+              fake_datastore.image_get_all)

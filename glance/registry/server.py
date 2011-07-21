@@ -56,6 +56,16 @@ class Controller(object):
         self.options = options
         db_api.configure_db(options)
 
+    def _get_images(self, context, **params):
+        """
+        Get images, wrapping in exception if necessary.
+        """
+        try:
+            return db_api.image_get_all(None, **params)
+        except exception.NotFound, e:
+            msg = "Invalid marker. Image could not be found."
+            raise exc.HTTPBadRequest(explanation=msg)
+
     def index(self, req):
         """
         Return a basic filtered list of public, non-deleted images
@@ -77,11 +87,7 @@ class Controller(object):
             }
         """
         params = self._get_query_params(req)
-        try:
-            images = db_api.image_get_all_public(None, **params)
-        except exception.NotFound, e:
-            msg = "Invalid marker. Image could not be found."
-            raise exc.HTTPBadRequest(explanation=msg)
+        images = self._get_images(None, **params)
 
         results = []
         for image in images:
@@ -104,12 +110,8 @@ class Controller(object):
         all image model fields.
         """
         params = self._get_query_params(req)
-        try:
-            images = db_api.image_get_all_public(None, **params)
-        except exception.NotFound, e:
-            msg = "Invalid marker. Image could not be found."
-            raise exc.HTTPBadRequest(explanation=msg)
 
+        images = self._get_images(None, **params)
         image_dicts = [make_image_dict(i) for i in images]
         return dict(images=image_dicts)
 
@@ -144,6 +146,7 @@ class Controller(object):
         filters = {}
         properties = {}
 
+        filters['is_public'] = self._get_is_public(req)
         for param in req.str_params:
             if param in SUPPORTED_FILTERS:
                 filters[param] = req.str_params.get(param)
@@ -198,6 +201,24 @@ class Controller(object):
             msg = "Unsupported sort_dir. Acceptable values: %s" % (_keys,)
             raise exc.HTTPBadRequest(explanation=msg)
         return sort_dir
+
+    def _get_is_public(self, req):
+        """Parse is_public into something usable."""
+        is_public = req.str_params.get('is_public', None)
+
+        if is_public is None:
+            # NOTE(vish): This preserves the default value of showing only
+            #             public images.
+            return True
+        is_public = is_public.lower()
+        if is_public == 'none':
+            return None
+        elif is_public == 'true' or is_public == '1':
+            return True
+        elif is_public == 'false' or is_public == '0':
+            return False
+        else:
+            raise exc.HTTPBadRequest("is_public must be None, True, or False")
 
     def show(self, req, id):
         """Return data about the given image id."""

@@ -24,6 +24,7 @@ Defines interface for DB access
 import logging
 
 from sqlalchemy import asc, create_engine, desc
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import exc
 from sqlalchemy.orm import joinedload
@@ -152,10 +153,10 @@ def image_get_all_pending_delete(context, delete_time=None, limit=None):
     return query.all()
 
 
-def image_get_all_public(context, filters=None, marker=None, limit=None,
-                         sort_key='created_at', sort_dir='desc'):
-    """Get all public images that match zero or more filters.
-    Get all public images that match zero or more filters.
+def image_get_all(context, filters=None, marker=None, limit=None,
+                  sort_key='created_at', sort_dir='desc'):
+    """
+    Get all images that match zero or more filters.
 
     :param filters: dict of filter keys and values. If a 'properties'
                     key is present, it is treated as a dict of key/value
@@ -171,7 +172,6 @@ def image_get_all_public(context, filters=None, marker=None, limit=None,
     query = session.query(models.Image).\
                    options(joinedload(models.Image.properties)).\
                    filter_by(deleted=_deleted(context)).\
-                   filter_by(is_public=True).\
                    filter(models.Image.status != 'killed')
 
     sort_dir_func = {
@@ -196,7 +196,8 @@ def image_get_all_public(context, filters=None, marker=None, limit=None,
         query = query.filter(models.Image.properties.any(name=k, value=v))
 
     for (k, v) in filters.items():
-        query = query.filter(getattr(models.Image, k) == v)
+        if v is not None:
+            query = query.filter(getattr(models.Image, k) == v)
 
     if marker != None:
         # images returned should be created before the image defined by marker
@@ -297,7 +298,11 @@ def _image_update(context, values, image_id, purge_props=False):
         # idiotic.
         validate_image(image_ref.to_dict())
 
-        image_ref.save(session=session)
+        try:
+            image_ref.save(session=session)
+        except IntegrityError, e:
+            raise exception.Duplicate("Image ID %s already exists!"
+                                      % values['id'])
 
         _set_properties_for_image(context, image_ref, properties, purge_props,
                                   session)
