@@ -43,6 +43,8 @@ class Controller(object):
         status = req.str_params.get('status')
         if status == 'invalid':
             entries = list(cache.invalid_entries())
+        elif status == 'prefetching':
+            entries = list(cache.prefetch_entries())
         else:
             entries = list(cache.entries())
 

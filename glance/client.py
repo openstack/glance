@@ -231,8 +231,9 @@ class V1Client(base_client.BaseClient):
         :param sort_dir: direction in which to to order results (asc, desc)
         """
         params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
-        res = self.do_request("GET", "/images/prefetching", params=params)
-        data = json.loads(res.read())['images']
+        params['status'] = 'prefetching'
+        res = self.do_request("GET", "/cached_images", params=params)
+        data = json.loads(res.read())['cached_images']
         return data
 
 
