@@ -39,7 +39,13 @@ class Controller(object):
 
     def index(self, req):
         cache = image_cache.ImageCache(self.options)
-        entries = list(cache.entries())
+
+        status = req.str_params.get('status')
+        if status == 'invalid':
+            entries = list(cache.invalid_entries())
+        else:
+            entries = list(cache.entries())
+
         return dict(cached_images=entries)
 
 

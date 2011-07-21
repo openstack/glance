@@ -138,11 +138,6 @@ class Controller(object):
     # get Keystone integration, we're going to want to make these
     # protected, admin-only methods
 
-    def invalid(self, req):
-        cache = image_cache.ImageCache(self.options)
-        entries = list(cache.invalid_entries())
-        return dict(images=entries)
-
     def purge(self, req, id):
         cache = image_cache.ImageCache(self.options)
         cache.purge(id)
