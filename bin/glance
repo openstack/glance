@@ -478,11 +478,11 @@ Deletes all images from a Glance server"""
 
 
 @catch_error('show cached images')
-def cache_cached(options, args):
+def cache_index(options, args):
     """
-%(prog)s cached [options]
+%(prog)s cache-index [options]
 
-List images currently cached"""
+List all images currently cached"""
     client = get_client(options)
     images = client.get_cached_images()
     if not images:
@@ -694,7 +694,7 @@ def parse_options(parser, cli_args):
                 'details': images_detailed,
                 'show': image_show,
                 'clear': images_clear,
-                'cached': cache_cached,
+                'cache-index': cache_index,
                 'invalid': cache_invalid,
                 'purge': cache_purge,
                 'purge_all': cache_purge_all,
@@ -791,7 +791,7 @@ Commands:
 
 Cache Commands:
 
-    cached         List images currently cached
+    cache-index    List all images currently cached  
 
     invalid        List current invalid cache images
 
