@@ -32,13 +32,8 @@ class Reaper(object):
         self.cache = ImageCache(options)
 
     def run(self):
-        if not self.cache.enabled:
-            logger.debug(
-                "Image caching is not enabled, going back to sleep...")
-            return
-
         invalid_grace = int(self.options.get(
-                           'image_cache_invalid_entry_grace_period',
+                            'image_cache_invalid_entry_grace_period',
                             3600))
         self.cache.reap_invalid(grace=invalid_grace)
         self.cache.reap_stalled()

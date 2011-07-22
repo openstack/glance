@@ -17,6 +17,7 @@
 import webob.exc
 
 from glance import registry
+from glance.common import exception
 
 
 class BaseController(object):

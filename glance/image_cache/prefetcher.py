@@ -47,11 +47,6 @@ class Prefetcher(object):
                 cache_file.write(chunk)
 
     def run(self):
-        if not self.cache.enabled:
-            logger.debug(
-                "Image caching is not enabled, going back to sleep...")
-            return
-
         if self.cache.is_currently_prefetching_any_images():
             logger.debug("Currently prefetching, going back to sleep...")
             return
