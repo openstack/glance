@@ -16,7 +16,7 @@
 #    under the License.
 
 """
-Controller that returns information on the Glance API versions
+Controller for Image Cache Management API
 """
 
 import httplib
