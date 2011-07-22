@@ -41,6 +41,7 @@ class ImageCacheFilter(wsgi.Middleware):
                     action="purge_all",
                     conditions=dict(method=["DELETE"]))
 
+
 def filter_factory(global_conf, **local_conf):
     """
     Factory method for paste.deploy

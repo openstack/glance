@@ -686,25 +686,18 @@ def parse_options(parser, cli_args):
 
     :param parser: The option parser
     """
-    COMMANDS = {'help': print_help,
-                'add': image_add,
-                'update': image_update,
-                'delete': image_delete,
-                'index': images_index,
-                'details': images_detailed,
-                'show': image_show,
-                'clear': images_clear,
-                'cache-index': cache_index,
-                'cache-invalid': cache_invalid,
-                'cache-purge': cache_purge,
-                'cache-purge-all': cache_purge_all,
-                'cache-prefetch': cache_prefetch,
-                'cache-prefetching': cache_prefetching}
+    COMMANDS = command_map()
 
     if not cli_args:
         cli_args.append('-h')  # Show options in usage output...
 
     (options, args) = parser.parse_args(cli_args)
+
+    # HACK(sirp): Make the parser available to the print_help method
+    # print_help is a command, so it only accepts (options, args); we could
+    # one-off have it take (parser, options, args), however, for now, I think
+    # this little hack will suffice
+    options.__parser = parser
 
     if not args:
         parser.print_usage()
@@ -722,7 +715,24 @@ def print_help(options, args):
     """
     Print help specific to a command
     """
-    COMMANDS = {'add': image_add,
+    COMMANDS = command_map()
+
+    if len(args) != 1:
+        sys.exit("Please specify a command")
+
+    command = args.pop()
+    if command not in COMMANDS.keys():
+        options.__parser.print_usage()
+        sys.exit("Unknown command: %s" % command)
+
+    print COMMANDS[command].__doc__ % {'prog': os.path.basename(sys.argv[0])}
+
+
+def command_map():
+    BASE_COMMANDS = {'help': print_help}
+
+    IMAGE_COMMANDS = {
+                'add': image_add,
                 'update': image_update,
                 'delete': image_delete,
                 'index': images_index,
@@ -730,17 +740,18 @@ def print_help(options, args):
                 'show': image_show,
                 'clear': images_clear}
 
-    if len(args) != 1:
-        sys.exit("Please specify a command")
+    CACHE_COMMANDS = {
+                'cache-index': cache_index,
+                'cache-invalid': cache_invalid,
+                'cache-purge': cache_purge,
+                'cache-purge-all': cache_purge_all,
+                'cache-prefetch': cache_prefetch,
+                'cache-prefetching': cache_prefetching}
 
-    command = args.pop()
-    if command not in COMMANDS.keys():
-        parser.print_usage()
-        if args:
-            sys.exit("Unknown command: %s" % command)
-
-    print COMMANDS[command].__doc__ % {'prog': os.path.basename(sys.argv[0])}
-
+    commands = {}
+    for command_set in (BASE_COMMANDS, IMAGE_COMMANDS, CACHE_COMMANDS):
+        commands.update(command_set)
+    return commands
 
 def user_confirm(prompt, default=False):
     """
