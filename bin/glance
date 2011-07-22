@@ -589,9 +589,9 @@ Removes all images from the cache"""
 @catch_error('prefetch the specified cached image')
 def cache_prefetch(options, args):
     """
-%(prog)s prefetch [options]
+%(prog)s cache-prefetch [options]
 
-Pre-fetch an image list of images into the cache"""
+Pre-fetch an image or list of images into the cache"""
     image_ids = args
     if not image_ids:
         print "Please specify the ID or a list of image IDs of the images "\
@@ -698,7 +698,7 @@ def parse_options(parser, cli_args):
                 'cache-invalid': cache_invalid,
                 'cache-purge': cache_purge,
                 'cache-purge-all': cache_purge_all,
-                'prefetch': cache_prefetch,
+                'cache-prefetch': cache_prefetch,
                 'prefetching': cache_prefetching}
 
     if not cli_args:
@@ -799,7 +799,7 @@ Cache Commands:
 
     cache-purge-all Removes all images from the cache
 
-    prefetch        Pre-fetch an image list of images into the cache
+    cache-prefetch  Pre-fetch an image or list of images into the cache
 
     prefetching     List images that are being prefetched
 """
