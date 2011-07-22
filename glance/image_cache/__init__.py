@@ -239,13 +239,11 @@ class ImageCache(object):
         self._delete_file(path)
 
     def clear(self):
-        # Delete all of the 'active' cache entries
+        purged = 0
         for path in self.get_all_regular_files(self.path):
             self._delete_file(path)
-
-        # Also clear out any invalid images
-        for path in self.get_all_regular_files(self.invalid_path):
-            self._delete_file(path)
+            purged += 1
+        return purged
 
     def is_image_currently_being_written(self, image_id):
         """Returns true if we're currently downloading an image"""

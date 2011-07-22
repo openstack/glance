@@ -223,8 +223,10 @@ class V1Client(base_client.BaseClient):
         """
         Clear all cached images
         """
-        self.do_request("DELETE", "/cached_images")
-        return True
+        res = self.do_request("DELETE", "/cached_images")
+        data = json.loads(res.read())
+        num_purged = data['num_purged']
+        return num_purged
 
     def reap_invalid_cached_images(self):
         """

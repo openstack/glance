@@ -58,7 +58,8 @@ class Controller(api.BaseController):
         self.cache.purge(id)
 
     def clear(self, req):
-        self.cache.clear()
+        num_purged = self.cache.clear()
+        return dict(num_purged=num_purged)
 
     def reap_invalid(self, req):
         """Reaps any invalid cached images"""

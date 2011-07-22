@@ -626,10 +626,10 @@ Removes all images from the cache"""
         return FAILURE
 
     client = get_client(options)
-    client.clear_cached_images()
+    num_purged = client.clear_cached_images()
 
     if options.verbose:
-        print "done"
+        print "Purged %(num_purged)s cached images" % locals()
 
 
 @catch_error('reap invalid images')
