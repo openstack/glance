@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from glance.common import utils
 from glance.common import wsgi
 
 
@@ -62,6 +63,18 @@ class ContextMiddleware(wsgi.Middleware):
         self.options = options
         super(ContextMiddleware, self).__init__(app)
 
+    def make_context(self, *args, **kwargs):
+        """
+        Create a context with the given arguments.
+        """
+
+        # Determine the context class to use
+        ctxcls = RequestContext
+        if 'context_class' in self.options:
+            ctxcls = utils.import_class(self.options['context_class'])
+
+        return ctxcls(*args, **kwargs)
+
     def process_request(self, req):
         """
         Extract any authentication information in the request and
@@ -69,7 +82,7 @@ class ContextMiddleware(wsgi.Middleware):
         """
         # Use the default empty context, with admin turned on for
         # backwards compatibility
-        req.context = RequestContext(is_admin=True)
+        req.context = self.make_context(is_admin=True)
 
 
 def filter_factory(global_conf, **local_conf):
