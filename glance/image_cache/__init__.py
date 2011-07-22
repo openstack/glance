@@ -359,7 +359,7 @@ class ImageCache(object):
             entry['path'] = path
             entry['name'] = utils.get_xattr(path, 'image_name',
                                             default='UNKNOWN')
-           
+
             mtime = os.path.getmtime(path)
             entry['last_modified'] = iso8601_from_timestamp(mtime)
 
@@ -429,7 +429,7 @@ class ImageCache(object):
 
     def reap_invalid(self, grace=None):
         """Remove any invalid cache entries
-       
+
         :param grace: Number of seconds to keep an invalid entry around for
                       debugging purposes. If None, then delete immediately.
         """
