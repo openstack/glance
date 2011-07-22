@@ -233,6 +233,8 @@ class Controller(object):
         except exception.NotAuthorized:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
+            logger.info("Access by %s to image %s denied" %
+                        (req.context.user, id))
             raise exc.HTTPNotFound()
 
         return dict(image=make_image_dict(image))
@@ -246,7 +248,6 @@ class Controller(object):
 
         :retval Returns 200 if delete was successful, a fault if not.
         """
-        # Is this a read-only context?
         if req.context.read_only:
             raise exc.HTTPForbidden()
 
@@ -257,6 +258,8 @@ class Controller(object):
         except exception.NotAuthorized:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
+            logger.info("Access by %s to image %s denied" %
+                        (req.context.user, id))
             raise exc.HTTPNotFound()
 
     def create(self, req, body):
@@ -270,7 +273,6 @@ class Controller(object):
                 which will include the newly-created image's internal id
                 in the 'id' field
         """
-        # Is this a read-only context?
         if req.context.read_only:
             raise exc.HTTPForbidden()
 
@@ -305,7 +307,6 @@ class Controller(object):
 
         :retval Returns the updated image information as a mapping,
         """
-        # Is this a read-only context?
         if req.context.read_only:
             raise exc.HTTPForbidden()
 
@@ -338,6 +339,8 @@ class Controller(object):
         except exception.NotAuthorized:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
+            logger.info("Access by %s to image %s denied" %
+                        (req.context.user, id))
             raise exc.HTTPNotFound(body='Image not found',
                                request=req,
                                content_type='text/plain')

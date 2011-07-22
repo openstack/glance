@@ -130,7 +130,7 @@ def image_get(context, image_id, session=None):
         raise exception.NotFound("No image found with ID %s" % image_id)
 
     # Make sure they can look at it
-    if not context.image_visible(image):
+    if not context.is_image_visible(image):
         raise exception.NotAuthorized("Image not visible to you")
 
     return image

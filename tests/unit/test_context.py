@@ -37,13 +37,13 @@ class TestContext(unittest.TestCase):
         Perform a context test.  Creates a (fake) image with the
         specified owner and is_public attributes, then creates a
         context with the given keyword arguments and expects exp_res
-        as the result of an image_visible() call on the context.
+        as the result of an is_image_visible() call on the context.
         """
 
         img = FakeImage(img_owner, img_public)
         ctx = context.RequestContext(**kwargs)
 
-        self.assertEqual(ctx.image_visible(img), exp_res)
+        self.assertEqual(ctx.is_image_visible(img), exp_res)
 
     def test_empty_public(self):
         """

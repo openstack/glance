@@ -423,7 +423,6 @@ class Controller(object):
                 and the request body is not application/octet-stream
                 image data.
         """
-        # Is this a read-only context?
         if req.context.read_only:
             msg = "Read-only access"
             logger.debug(msg)
@@ -451,7 +450,6 @@ class Controller(object):
 
         :retval Returns the updated image information as a mapping
         """
-        # Is this a read-only context?
         if req.context.read_only:
             msg = "Read-only access"
             logger.debug(msg)
@@ -491,7 +489,6 @@ class Controller(object):
         :raises HttpNotAuthorized if image or any chunk is not
                 deleteable by the requesting user
         """
-        # Is this a read-only context?
         if req.context.read_only:
             msg = "Read-only access"
             logger.debug(msg)

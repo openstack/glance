@@ -20,11 +20,9 @@ from glance.common import wsgi
 
 
 class RequestContext(object):
-    """Security context and request information.
-
+    """
     Stores information about the security context under which the user
     accesses the system, as well as additional request information.
-
     """
 
     def __init__(self, auth_tok=None, user=None, tenant=None, is_admin=False,
@@ -35,7 +33,7 @@ class RequestContext(object):
         self.is_admin = is_admin
         self.read_only = read_only
 
-    def image_visible(self, image):
+    def is_image_visible(self, image):
         """Return True if the image is visible in this context."""
         # Is admin == image visible
         if self.is_admin:
