@@ -40,7 +40,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 from glance import client as glance_client
 from glance import version
 from glance.common import exception
-from glance.common.utils import bool_from_string
+from glance.common import utils as common_utils
 from glance import utils
 
 SUCCESS = 0
@@ -182,7 +182,7 @@ EXAMPLES
         return FAILURE
 
     image_meta = {'name': fields.pop('name'),
-                  'is_public': bool_from_string(
+                  'is_public': common_utils.bool_from_string(
                       fields.pop('is_public', False)),
                   'disk_format': fields.pop('disk_format', 'raw'),
                   'container_format': fields.pop('container_format', 'ovf')}
@@ -306,7 +306,7 @@ to spell field names correctly. :)"""
 
     # Have to handle "boolean" values specially...
     if 'is_public' in fields:
-        image_meta['is_public'] = bool_from_string(
+        image_meta['is_public'] = common_utils.bool_from_string(
             fields.pop('is_public'))
 
     # Add custom attributes, which are all the arguments remaining
