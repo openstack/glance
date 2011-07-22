@@ -19,14 +19,9 @@
 #    under the License.
 
 """
-Glance Image Cache Invalid Cache Entry Reaper
+Glance Image Cache Pre-fetcher
 
 This is meant to be run as a periodic task from cron.
-
-If something goes wrong while we're caching an image (for example the fetch
-times out, or an exception is raised), we create an 'invalid' entry. These
-entires are left around for debugging purposes. However, after some period of
-time, we want to cleans these up, aka reap them.
 """
 
 import optparse
@@ -36,6 +31,7 @@ import sys
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...
 possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
+                                   os.pardir,
                                    os.pardir,
                                    os.pardir))
 if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
@@ -64,7 +60,7 @@ if __name__ == '__main__':
     (options, args) = config.parse_options(oparser)
 
     try:
-        conf, app = config.load_paste_app('glance-reaper', options, args)
+        conf, app = config.load_paste_app('glance-prefetcher', options, args)
         app.run()
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
