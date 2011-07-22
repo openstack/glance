@@ -546,7 +546,7 @@ List current invalid cache images"""
 @catch_error('purge the specified cached image')
 def cache_purge(options, args):
     """
-%(prog)s purge [options]
+%(prog)s cache-purge [options]
 
 Deletes an image from the cache"""
     try:
@@ -696,7 +696,7 @@ def parse_options(parser, cli_args):
                 'clear': images_clear,
                 'cache-index': cache_index,
                 'cache-invalid': cache_invalid,
-                'purge': cache_purge,
+                'cache-purge': cache_purge,
                 'purge_all': cache_purge_all,
                 'prefetch': cache_prefetch,
                 'prefetching': cache_prefetching}
@@ -795,7 +795,7 @@ Cache Commands:
 
     cache-invalid  List current invalid cache images
 
-    purge          Deletes an image from the cache
+    cache-purge    Deletes an image from the cache
 
     purge_all      Removes all images from the cache
 
