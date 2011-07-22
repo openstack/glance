@@ -49,12 +49,7 @@ class RequestContext(object):
             return True
 
         # Private image
-        return self.tenant and self.tenant == image.owner
-
-    def elevate(self):
-        """Return a version of this context with admin flag set."""
-        return self.__class__(self.auth_tok, self.user, self.tenant,
-                              True, True)
+        return self.tenant is not None and self.tenant == image.owner
 
 
 class ContextMiddleware(wsgi.Middleware):
