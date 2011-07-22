@@ -571,7 +571,7 @@ Deletes an image from the cache"""
 @catch_error('purge all cached images')
 def cache_purge_all(options, args):
     """
-%(prog)s purge_all [options]
+%(prog)s cache-purge-all [options]
 
 Removes all images from the cache"""
     if not options.force and \
@@ -697,7 +697,7 @@ def parse_options(parser, cli_args):
                 'cache-index': cache_index,
                 'cache-invalid': cache_invalid,
                 'cache-purge': cache_purge,
-                'purge_all': cache_purge_all,
+                'cache-purge-all': cache_purge_all,
                 'prefetch': cache_prefetch,
                 'prefetching': cache_prefetching}
 
@@ -791,17 +791,17 @@ Commands:
 
 Cache Commands:
 
-    cache-index    List all images currently cached  
+    cache-index     List all images currently cached  
 
-    cache-invalid  List current invalid cache images
+    cache-invalid   List current invalid cache images
 
-    cache-purge    Deletes an image from the cache
+    cache-purge     Deletes an image from the cache
 
-    purge_all      Removes all images from the cache
+    cache-purge-all Removes all images from the cache
 
-    prefetch       Pre-fetch an image list of images into the cache
+    prefetch        Pre-fetch an image list of images into the cache
 
-    prefetching    List images that are being prefetched
+    prefetching     List images that are being prefetched
 """
 
     oparser = optparse.OptionParser(version='%%prog %s'
