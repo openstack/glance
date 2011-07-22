@@ -87,10 +87,10 @@ setup(
     ],
     scripts=['bin/glance',
              'bin/glance-api',
+             'bin/glance-cache-prefetcher',
+             'bin/glance-cache-pruner',
+             'bin/glance-cache-reaper',
              'bin/glance-control',
              'bin/glance-manage',
              'bin/glance-registry',
-             'bin/glance-upload',
-             'bin/image_cache/glance-prefetcher',
-             'bin/image_cache/glance-pruner',
-             'bin/image_cache/glance-reaper'])
+             'bin/glance-upload'])
