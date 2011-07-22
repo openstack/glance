@@ -513,7 +513,7 @@ List all images currently cached"""
 @catch_error('show invalid cache images')
 def cache_invalid(options, args):
     """
-%(prog)s invalid [options]
+%(prog)s cache-invalid [options]
 
 List current invalid cache images"""
     client = get_client(options)
@@ -695,7 +695,7 @@ def parse_options(parser, cli_args):
                 'show': image_show,
                 'clear': images_clear,
                 'cache-index': cache_index,
-                'invalid': cache_invalid,
+                'cache-invalid': cache_invalid,
                 'purge': cache_purge,
                 'purge_all': cache_purge_all,
                 'prefetch': cache_prefetch,
@@ -793,7 +793,7 @@ Cache Commands:
 
     cache-index    List all images currently cached  
 
-    invalid        List current invalid cache images
+    cache-invalid  List current invalid cache images
 
     purge          Deletes an image from the cache
 
