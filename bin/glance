@@ -548,7 +548,7 @@ def cache_purge(options, args):
     """
 %(prog)s cache-purge [options]
 
-Deletes an image from the cache"""
+Purges an image from the cache"""
     try:
         image_id = args.pop()
     except IndexError:
@@ -807,7 +807,7 @@ Cache Commands:
 
     cache-invalid        List current invalid cache images
 
-    cache-purge          Deletes an image from the cache
+    cache-purge          Purges an image from the cache
 
     cache-clear          Removes all images from the cache
 

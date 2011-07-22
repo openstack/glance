@@ -60,7 +60,7 @@ class ImageCache(object):
     =====================
 
     The image cache data directory contains the main cache path, where the
-    active cache entries and two subdirectories for handling partial downloads
+    active cache entries and subdirectories for handling partial downloads
     and errored-out cache images.
 
     The layout looks like:
@@ -69,7 +69,7 @@ class ImageCache(object):
             entry1
             entry2
             ...
-            tmp/
+            incomplete/
             invalid/
             prefetch/
             prefetching/
@@ -79,14 +79,15 @@ class ImageCache(object):
         self._make_cache_directory_if_needed()
 
     def _make_cache_directory_if_needed(self):
-        """Creates main cache directory along with tmp subdirectory"""
+        """Creates main cache directory along with incomplete subdirectory"""
         if not self.enabled:
             return
 
-        # NOTE(sirp): making the tmp_path will have the effect of creating
-        # the main cache path directory as well
-        paths = [self.tmp_path, self.invalid_path, self.prefetch_path,
+        # NOTE(sirp): making the incomplete_path will have the effect of
+        # creating the main cache path directory as well
+        paths = [self.incomplete_path, self.invalid_path, self.prefetch_path,
                  self.prefetching_path]
+
         for path in paths:
             if os.path.exists(path):
                 continue
@@ -106,24 +107,25 @@ class ImageCache(object):
         return datadir
 
     @property
-    def tmp_path(self):
+    def incomplete_path(self):
         """This provides a temporary place to write our cache entries so that
         we we're not storing incomplete objects in the cache directly.
 
-        When the file is finished writing to, it is moved from the tmp path
-        back out into the main cache directory.
+        When the file is finished writing to, it is moved from the incomplete
+        path back out into the main cache directory.
 
-        The tmp_path is a subdirectory of the main cache path to ensure that
-        they both reside on the same filesystem and thus making moves cheap.
+        The incomplete_path is a subdirectory of the main cache path to ensure
+        that they both reside on the same filesystem and thus making moves
+        cheap.
         """
-        return os.path.join(self.path, 'tmp')
+        return os.path.join(self.path, 'incomplete')
 
     @property
     def invalid_path(self):
         """Place to move corrupted images
 
         If an exception is raised while we're writing an image to the
-        tmp_path, we move the incomplete image to here.
+        incomplete_path, we move the incomplete image to here.
         """
         return os.path.join(self.path, 'invalid')
 
@@ -143,11 +145,11 @@ class ImageCache(object):
         """This crafts an absolute path to a specific entry"""
         return os.path.join(self.path, str(image_id))
 
-    def tmp_path_for_image(self, image_id):
-        """This crafts an absolute path to a specific entry in the tmp
+    def incomplete_path_for_image(self, image_id):
+        """This crafts an absolute path to a specific entry in the incomplete
         directory
         """
-        return os.path.join(self.tmp_path, str(image_id))
+        return os.path.join(self.incomplete_path, str(image_id))
 
     def invalid_path_for_image(self, image_id):
         """This crafts an absolute path to a specific entry in the invalid
@@ -164,7 +166,7 @@ class ImageCache(object):
             1. READ: we should attempt to read the file from the cache's
                main directory
 
-            2. WRITE: we should write to a file under the cache's tmp
+            2. WRITE: we should write to a file under the cache's incomplete
                directory, and when it's finished, move it out the main cache
                directory.
         """
@@ -180,28 +182,28 @@ class ImageCache(object):
     @contextmanager
     def _open_write(self, image_meta, mode):
         image_id = image_meta['id']
-        tmp_path = self.tmp_path_for_image(image_id)
+        incomplete_path = self.incomplete_path_for_image(image_id)
 
         def commit():
-            utils.set_xattr(tmp_path, 'image_name', image_meta['name'])
-            utils.set_xattr(tmp_path, 'hits', 0)
+            utils.set_xattr(incomplete_path, 'image_name', image_meta['name'])
+            utils.set_xattr(incomplete_path, 'hits', 0)
 
             final_path = self.path_for_image(image_id)
             logger.debug("fetch finished, commiting by moving '%s' to '%s'" %
-                         (tmp_path, final_path))
-            os.rename(tmp_path, final_path)
+                         (incomplete_path, final_path))
+            os.rename(incomplete_path, final_path)
 
         def rollback(e):
-            utils.set_xattr(tmp_path, 'image_name', image_meta['name'])
-            utils.set_xattr(tmp_path, 'error', str(e))
+            utils.set_xattr(incomplete_path, 'image_name', image_meta['name'])
+            utils.set_xattr(incomplete_path, 'error', str(e))
 
             invalid_path = self.invalid_path_for_image(image_id)
             logger.debug("fetch errored, rolling back by moving "
-                         "'%s' to '%s'" % (tmp_path, invalid_path))
-            os.rename(tmp_path, invalid_path)
+                         "'%s' to '%s'" % (incomplete_path, invalid_path))
+            os.rename(incomplete_path, invalid_path)
 
         try:
-            with open(tmp_path, mode) as cache_file:
+            with open(incomplete_path, mode) as cache_file:
                 yield cache_file
         except Exception as e:
             rollback(e)
@@ -242,8 +244,8 @@ class ImageCache(object):
 
     def is_image_currently_being_written(self, image_id):
         """Returns true if we're currently downloading an image"""
-        tmp_path = self.tmp_path_for_image(image_id)
-        return os.path.exists(tmp_path)
+        incomplete_path = self.incomplete_path_for_image(image_id)
+        return os.path.exists(incomplete_path)
 
     def is_currently_prefetching_any_images(self):
         """True if we are currently prefetching an image.
