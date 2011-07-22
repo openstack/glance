@@ -202,9 +202,9 @@ class V1Client(base_client.BaseClient):
         self.do_request("DELETE", "/cached_images/%s" % image_id)
         return True
 
-    def purge_all_cached_images(self):
+    def clear_cached_images(self):
         """
-        Purge all cached images
+        Clear all cached images
         """
         self.do_request("DELETE", "/cached_images")
         return True

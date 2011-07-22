@@ -568,19 +568,19 @@ Deletes an image from the cache"""
         print "done"
 
 
-@catch_error('purge all cached images')
-def cache_purge_all(options, args):
+@catch_error('clear all cached images')
+def cache_clear(options, args):
     """
-%(prog)s cache-purge-all [options]
+%(prog)s cache-clear [options]
 
 Removes all images from the cache"""
     if not options.force and \
-       not user_confirm("Purge all cached images?", default=False):
+       not user_confirm("Clear all cached images?", default=False):
         print 'Not purging any cached images.'
         return FAILURE
 
     client = get_client(options)
-    client.purge_all_cached_images()
+    client.clear_cached_images()
 
     if options.verbose:
         print "done"
@@ -737,7 +737,7 @@ def lookup_command(parser, command_name):
                 'cache-index': cache_index,
                 'cache-invalid': cache_invalid,
                 'cache-purge': cache_purge,
-                'cache-purge-all': cache_purge_all,
+                'cache-clear': cache_clear,
                 'cache-prefetch': cache_prefetch,
                 'cache-prefetching': cache_prefetching}
 
@@ -809,7 +809,7 @@ Cache Commands:
 
     cache-purge          Deletes an image from the cache
 
-    cache-purge-all      Removes all images from the cache
+    cache-clear          Removes all images from the cache
 
     cache-prefetch       Pre-fetch an image or list of images into the cache
 

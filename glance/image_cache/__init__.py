@@ -231,13 +231,10 @@ class ImageCache(object):
         path = self.path_for_image(image_id)
         self._delete_file(path)
 
-    def purge_all(self):
+    def clear(self):
         # Delete all of the 'active' cache entries
         for path in self.get_all_regular_files(self.path):
             self._delete_file(path)
-
-        # NOTE(sirp): Don't clear out files in tmp since they are actively
-        # being used
 
         # Also clear out any invalid images
         for path in self.get_all_regular_files(self.invalid_path):

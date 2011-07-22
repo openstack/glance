@@ -55,8 +55,8 @@ class Controller(api.BaseController):
     def delete(self, req, id):
         self.cache.purge(id)
 
-    def purge_all(self, req):
-        self.cache.purge_all()
+    def clear(self, req):
+        self.cache.clear()
 
     def update(self, req, id):
         """PUT /cached_images/1 is used to prefetch an image into the cache"""

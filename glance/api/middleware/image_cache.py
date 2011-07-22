@@ -38,7 +38,7 @@ class ImageCacheFilter(wsgi.Middleware):
 
         map.connect("/cached_images",
                     controller=resource,
-                    action="purge_all",
+                    action="clear",
                     conditions=dict(method=["DELETE"]))
 
 
