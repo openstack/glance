@@ -26,6 +26,7 @@ import stubout
 import webob
 
 from glance.api import v1 as server
+from glance.common import context
 from glance.registry import server as rserver
 import glance.registry.db.api
 from tests import stubs
@@ -41,8 +42,9 @@ class TestRegistryAPI(unittest.TestCase):
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_filesystem_backend()
-        self.api = rserver.API({'verbose': VERBOSE,
-                                'debug': DEBUG})
+        options = {'verbose': VERBOSE,
+                   'debug': DEBUG}
+        self.api = context.ContextMiddleware(rserver.API(options), options)
 
     def tearDown(self):
         """Clear the test environment"""
@@ -1458,7 +1460,7 @@ class TestGlanceAPI(unittest.TestCase):
                    'sql_connection': sql_connection,
                    'default_store': 'file',
                    'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
-        self.api = server.API(options)
+        self.api = context.ContextMiddleware(server.API(options), options)
 
     def tearDown(self):
         """Clear the test environment"""

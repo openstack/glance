@@ -46,7 +46,8 @@ BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
 
 IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size',
                                       'disk_format', 'container_format',
-                                      'is_public', 'location', 'checksum'])
+                                      'is_public', 'location', 'checksum',
+                                      'owner'])
 
 CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
 DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi',
@@ -120,13 +121,19 @@ def image_get(context, image_id, session=None):
     """Get an image or raise if it does not exist."""
     session = session or get_session()
     try:
-        return session.query(models.Image).\
+        image = session.query(models.Image).\
                        options(joinedload(models.Image.properties)).\
                        filter_by(deleted=_deleted(context)).\
                        filter_by(id=image_id).\
                        one()
     except exc.NoResultFound:
         raise exception.NotFound("No image found with ID %s" % image_id)
+
+    # Make sure they can look at it
+    if not context.is_image_visible(image):
+        raise exception.NotAuthorized("Image not visible to you")
+
+    return image
 
 
 def image_get_all(context, filters=None, marker=None, limit=None,
@@ -167,6 +174,13 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     if 'size_max' in filters:
         query = query.filter(models.Image.size <= filters['size_max'])
         del filters['size_max']
+
+    if 'is_public' in filters and filters['is_public'] is not None:
+        the_filter = models.Image.is_public == filters['is_public']
+        if filters['is_public'] and context.owner is not None:
+            the_filter = or_(the_filter, models.Image.owner == context.owner)
+        query = query.filter(the_filter)
+        del filters['is_public']
 
     for (k, v) in filters.pop('properties', {}).items():
         query = query.filter(models.Image.properties.any(name=k, value=v))
