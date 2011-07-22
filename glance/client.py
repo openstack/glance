@@ -230,8 +230,10 @@ class V1Client(base_client.BaseClient):
         """
         Reaps any invalid cached images
         """
-        self.do_request("POST", "/cached_images/reap")
-        return True
+        res = self.do_request("POST", "/cached_images/reap_invalid")
+        data = json.loads(res.read())
+        num_reaped = data['num_reaped']
+        return num_reaped
 
     def prefetch_cache_image(self, image_id):
         """

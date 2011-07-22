@@ -430,3 +430,4 @@ class ImageCache(object):
                 reaped += 1
 
         logger.info("Reaped %(reaped)s invalid cache entries" % locals())
+        return reaped

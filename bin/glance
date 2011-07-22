@@ -645,10 +645,10 @@ debugging purposes"""
         return FAILURE
 
     client = get_client(options)
-    client.reap_invalid_cached_images()
+    num_reaped = client.reap_invalid_cached_images()
 
     if options.verbose:
-        print "done"
+        print "Reaped %(num_reaped)s invalid cached images" % locals()
 
 
 @catch_error('prefetch the specified cached image')

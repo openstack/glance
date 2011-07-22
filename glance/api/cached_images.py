@@ -60,9 +60,10 @@ class Controller(api.BaseController):
     def clear(self, req):
         self.cache.clear()
 
-    def reap(self, req):
+    def reap_invalid(self, req):
         """Reaps any invalid cached images"""
-        self.cache.reap_invalid()
+        num_reaped = self.cache.reap_invalid()
+        return dict(num_reaped=num_reaped)
 
     def update(self, req, id):
         """PUT /cached_images/1 is used to prefetch an image into the cache"""
