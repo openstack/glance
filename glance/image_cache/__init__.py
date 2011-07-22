@@ -404,16 +404,12 @@ class ImageCache(object):
             entry['hits'] = utils.get_xattr(path, 'hits', default='UNKNOWN')
             yield entry
 
-    def reap_invalid(self, grace=None):
-        """Remove any invalid cache entries
-       
-        :param grace: Number of seconds to keep an invalid entry around for
-                      debugging purposes. If None, then delete immediately.
+    def _reap_old_files(self, dirpath, entry_type, grace=None):
+        """
         """
         now = time.time()
-
         reaped = 0
-        for path in self.get_all_regular_files(self.invalid_path):
+        for path in self.get_all_regular_files(dirpath):
             mtime = os.path.getmtime(path)
             age = now - mtime
             if not grace:
@@ -427,5 +423,21 @@ class ImageCache(object):
                 self._delete_file(path)
                 reaped += 1
 
-        logger.info("Reaped %(reaped)s invalid cache entries" % locals())
+        logger.info("Reaped %(reaped)s %(entry_type)s cache entries"
+                    % locals())
         return reaped
+
+    def reap_invalid(self, grace=None):
+        """Remove any invalid cache entries
+       
+        :param grace: Number of seconds to keep an invalid entry around for
+                      debugging purposes. If None, then delete immediately.
+        """
+        return self._reap_old_files(self.invalid_path, 'invalid', grace=grace)
+
+    def reap_stalled(self):
+        """Remove any stalled cache entries"""
+        stall_timeout = int(self.options.get('image_cache_stall_timeout',
+                            86400))
+        return self._reap_old_files(self.incomplete_path, 'stalled',
+                                    grace=stall_timeout)

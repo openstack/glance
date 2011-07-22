@@ -20,7 +20,6 @@ Reaps any invalid cache entries that exceed the grace period
 """
 import logging
 
-from glance.common import config
 from glance.image_cache import ImageCache
 
 
@@ -32,20 +31,17 @@ class Reaper(object):
         self.options = options
         self.cache = ImageCache(options)
 
-    @property
-    def image_cache_invalid_entry_grace_period(self):
-        return config.get_option(
-            self.options, 'image_cache_invalid_entry_grace_period',
-            type='int', default=3600)
-
     def run(self):
         if not self.cache.enabled:
             logger.debug(
                 "Image caching is not enabled, going back to sleep...")
             return
 
-        grace = self.image_cache_invalid_entry_grace_period
-        self.cache.reap_invalid(grace=grace)
+        invalid_grace = int(self.options.get(
+                           'image_cache_invalid_entry_grace_period',
+                            3600))
+        self.cache.reap_invalid(grace=invalid_grace)
+        self.cache.reap_stalled()
 
 
 def app_factory(global_config, **local_conf):

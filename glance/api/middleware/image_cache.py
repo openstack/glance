@@ -35,7 +35,8 @@ class ImageCacheFilter(wsgi.Middleware):
         resource = cached_images.create_resource(options)
         map.resource("cached_image", "cached_images",
                      controller=resource,
-                     collection={'reap_invalid': 'POST'})
+                     collection={'reap_invalid': 'POST',
+                                 'reap_stalled': 'POST'})
 
         map.connect("/cached_images",
                     controller=resource,

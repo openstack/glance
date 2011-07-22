@@ -66,6 +66,11 @@ class Controller(api.BaseController):
         num_reaped = self.cache.reap_invalid()
         return dict(num_reaped=num_reaped)
 
+    def reap_stalled(self, req):
+        """Reaps any stalled incomplete cached images"""
+        num_reaped = self.cache.reap_stalled()
+        return dict(num_reaped=num_reaped)
+
     def update(self, req, id):
         """PUT /cached_images/1 is used to prefetch an image into the cache"""
         image_meta = self.get_image_meta_or_404(req, id)

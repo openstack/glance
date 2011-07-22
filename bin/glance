@@ -651,6 +651,24 @@ debugging purposes"""
         print "Reaped %(num_reaped)s invalid cached images" % locals()
 
 
+@catch_error('reap stalled images')
+def cache_reap_stalled(options, args):
+    """
+%(prog)s cache-reap-stalled [options]
+
+Reaps any stalled incomplete images"""
+    if not options.force and \
+       not user_confirm("Reap all stalled cached images?", default=False):
+        print 'Not reaping any stalled cached images.'
+        return FAILURE
+
+    client = get_client(options)
+    num_reaped = client.reap_stalled_cached_images()
+
+    if options.verbose:
+        print "Reaped %(num_reaped)s stalled cached images" % locals()
+
+
 @catch_error('prefetch the specified cached image')
 def cache_prefetch(options, args):
     """
@@ -806,7 +824,8 @@ def lookup_command(parser, command_name):
                 'cache-prefetch': cache_prefetch,
                 'cache-purge': cache_purge,
                 'cache-clear': cache_clear,
-                'cache-reap-invalid': cache_reap_invalid}
+                'cache-reap-invalid': cache_reap_invalid,
+                'cache-reap-stalled': cache_reap_stalled}
 
     commands = {}
     for command_set in (BASE_COMMANDS, IMAGE_COMMANDS, CACHE_COMMANDS):
@@ -886,6 +905,8 @@ Cache Commands:
 
     cache-reap-invalid   Reaps any invalid images that were left for
                          debugging purposes
+
+    cache-reap-stalled   Reaps any stalled incomplete images
 """
 
     oparser = optparse.OptionParser(version='%%prog %s'

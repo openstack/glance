@@ -237,6 +237,15 @@ class V1Client(base_client.BaseClient):
         num_reaped = data['num_reaped']
         return num_reaped
 
+    def reap_stalled_cached_images(self):
+        """
+        Reaps any stalled cached images
+        """
+        res = self.do_request("POST", "/cached_images/reap_stalled")
+        data = json.loads(res.read())
+        num_reaped = data['num_reaped']
+        return num_reaped
+
     def prefetch_cache_image(self, image_id):
         """
         Pre-fetch a specified image from the cache
