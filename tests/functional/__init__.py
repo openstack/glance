@@ -235,14 +235,10 @@ class FunctionalTest(unittest.TestCase):
     servers and clients and not just the stubbed out interfaces
     """
 
-    def _set_environment(self):
-        pass
-
     def setUp(self):
 
         self.test_id = random.randint(0, 100000)
         self.test_dir = os.path.join("/", "tmp", "test.%d" % self.test_id)
-        self._set_environment()
 
         self.api_port = get_unused_port()
         self.registry_port = get_unused_port()

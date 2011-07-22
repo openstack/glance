@@ -25,7 +25,6 @@ from tests import functional
 from tests.utils import execute
 
 from glance import client
-from glance.registry.db import api as db_api
 
 
 TEST_IMAGE_DATA = '*' * 5 * 1024
@@ -42,19 +41,7 @@ class TestScrubber(functional.FunctionalTest):
     def _get_client(self):
         return client.Client("localhost", self.api_port)
 
-    def _set_environment(self):
-        db_connection = "sqlite:///" + self.test_dir + "/glance.db"
-        os.environ['GLANCE_TEST_SQL_CONNECTION'] = db_connection
-
-    def setUp(self):
-        super(TestScrubber, self).setUp()
-
-        # NOTE(jkoelker): We go behind the scenes here to get raw access
-        #                 to the database so we can check the status
-        #                 of deletes.
-        db_api._MAKER = None
-        db_api._ENGINE = create_engine(self.scrubber_daemon.sql_connection)
-
+    @functional.runs_sql
     def test_immediate_delete(self):
         """
         test that images get deleted immediately by default
@@ -66,17 +53,24 @@ class TestScrubber(functional.FunctionalTest):
         client = self._get_client()
         meta = client.add_image(TEST_IMAGE_META, TEST_IMAGE_DATA)
         id = meta['id']
-        self.assertFalse(db_api.image_get_all_pending_delete(None))
+
+        sql = "SELECT * FROM images WHERE status = 'pending_delete'"
+        recs = list(self.run_sql_cmd(sql))
+        self.assertFalse(recs)
 
         client.delete_image(id)
-        self.assertFalse(db_api.image_get_all_pending_delete(None))
+        recs = list(self.run_sql_cmd(sql))
+        self.assertFalse(recs)
 
-        db_meta = db_api.image_get({'deleted': True}, id)
-        self.assertTrue(db_meta)
-        self.assertEqual(db_meta['status'], 'deleted')
+        sql = "SELECT * FROM images WHERE id = '%s'" % id
+        recs = list(self.run_sql_cmd(sql))
+        self.assertTrue(recs)
+        for rec in recs:
+            self.assertEqual(rec['status'], 'deleted')
 
         self.stop_servers()
 
+    @functional.runs_sql
     def test_delayed_delete(self):
         """
         test that images don't get deleted immediatly and that the scrubber
@@ -84,24 +78,34 @@ class TestScrubber(functional.FunctionalTest):
         """
 
         self.cleanup()
-        self.start_servers(delayed_delete=True, daemon=True)
+        registry_db = self.registry_server.sql_connection
+        self.start_servers(delayed_delete=True, sql_connection=registry_db,
+                           daemon=True)
 
         client = self._get_client()
         meta = client.add_image(TEST_IMAGE_META, TEST_IMAGE_DATA)
         id = meta['id']
-        self.assertFalse(db_api.image_get_all_pending_delete(None))
+
+        sql = "SELECT * FROM images WHERE status = 'pending_delete'"
+        recs = list(self.run_sql_cmd(sql))
+        self.assertFalse(recs)
 
         client.delete_image(id)
-        self.assertTrue(db_api.image_get_all_pending_delete(None))
+        recs = self.run_sql_cmd(sql)
+        self.assertTrue(recs)
 
-        db_meta = db_api.image_get({'deleted': True}, id)
-        self.assertTrue(db_meta)
-        self.assertEqual(db_meta['status'], 'pending_delete')
+        sql = "SELECT * FROM images WHERE id = '%s'" % id
+        recs = list(self.run_sql_cmd(sql))
+        self.assertTrue(recs)
+        for rec in recs:
+            self.assertEqual(rec['status'], 'pending_delete')
 
         # Wait 15 seconds for the scrubber to scrub
         time.sleep(15)
 
-        db_meta = db_api.image_get({'deleted': True}, id)
-        self.assertTrue(db_meta)
-        self.assertEqual(db_meta['status'], 'deleted')
+        recs = list(self.run_sql_cmd(sql))
+        self.assertTrue(recs)
+        for rec in recs:
+            self.assertEqual(rec['status'], 'deleted')
+
         self.stop_servers()
