@@ -22,8 +22,106 @@ import urlparse
 
 from glance.common import exception
 import glance.store
+import glance.store.location
 
 logger = logging.getLogger('glance.store.s3')
+
+glance.store.location.add_scheme_map({'s3': 's3',
+                                      's3+http': 's3',
+                                      's3+https': 's3'})
+
+
+class StoreLocation(glance.store.location.StoreLocation):
+
+    """
+    Class describing an S3 URI. An S3 URI can look like any of
+    the following:
+
+        s3://accesskey:secretkey@s3service.com/bucket/key-id
+        s3+http://accesskey:secretkey@s3service.com/bucket/key-id
+        s3+https://accesskey:secretkey@s3service.com/bucket/key-id
+
+    The s3+https:// URIs indicate there is an HTTPS s3service URL
+    """
+
+    def process_specs(self):
+        self.scheme = self.specs.get('scheme', 's3')
+        self.accesskey = self.specs.get('accesskey')
+        self.secretkey = self.specs.get('secretkey')
+        s3_host = self.specs.get('s3serviceurl')
+        self.bucket = self.specs.get('bucket')
+        self.key = self.specs.get('key')
+
+        if s3_host.startswith('https://'):
+            self.scheme = 's3+https'
+            s3_host = s3_host[8:].strip('/')
+        elif s3_host.startswith('http://'):
+            s3_host = s3_host[7:].strip('/')
+        self.s3serviceurl = s3_host
+
+    def _get_credstring(self):
+        if self.accesskey:
+            return '%s:%s@' % (self.accesskey, self.secretkey)
+        return ''
+
+    def get_uri(self):
+        return "%s://%s%s/%s/%s" % (
+            self.scheme,
+            self._get_credstring(),
+            self.s3serviceurl,
+            self.bucket,
+            self.key)
+
+    def parse_uri(self, uri):
+        """
+        Parse URLs. This method fixes an issue where credentials specified
+        in the URL are interpreted differently in Python 2.6.1+ than prior
+        versions of Python.
+
+        Note that an Amazon AWS secret key can contain the forward slash,
+        which is entirely retarded, and breaks urlparse miserably.
+        This function works around that issue.
+        """
+        pieces = urlparse.urlparse(uri)
+        assert pieces.scheme in ('s3', 's3+http', 's3+https')
+        self.scheme = pieces.scheme
+        path = pieces.path.strip('/')
+        netloc = pieces.netloc.strip('/')
+        entire_path = (netloc + '/' + path).strip('/')
+
+        if '@' in uri:
+            creds, path = entire_path.split('@')
+            cred_parts = creds.split(':')
+
+            try:
+                access_key = cred_parts[0]
+                secret_key = cred_parts[1]
+                # NOTE(jaypipes): Need to encode to UTF-8 here because of a
+                # bug in the HMAC library that boto uses.
+                # See: http://bugs.python.org/issue5285
+                # See: http://trac.edgewall.org/ticket/8083
+                access_key = access_key.encode('utf-8')
+                secret_key = secret_key.encode('utf-8')
+                self.accesskey = access_key
+                self.secretkey = secret_key
+            except IndexError:
+                reason = "Badly formed S3 credentials %s" % creds
+                raise exception.BadStoreUri(uri, reason)
+        else:
+            self.accesskey = None
+            path = entire_path
+        try:
+            path_parts = path.split('/')
+            self.key = path_parts.pop()
+            self.bucket = path_parts.pop()
+            if len(path_parts) > 0:
+                self.s3serviceurl = '/'.join(path_parts)
+            else:
+                reason = "Badly formed S3 URI. Missing s3 service URL."
+                raise exception.BadStoreUri(uri, reason)
+        except IndexError:
+            reason = "Badly formed S3 URI"
+            raise exception.BadStoreUri(uri, reason)
 
 
 class ChunkedFile(object):
@@ -72,32 +170,30 @@ class S3Backend(glance.store.Backend):
         return result
 
     @classmethod
-    def get(cls, parsed_uri, expected_size=None, options=None):
+    def get(cls, location, expected_size=None, options=None):
         """
-        Takes a parsed_uri in the format of:
-        s3://access_key:secret_key@s3.amazonaws.com/bucket/file.gz.0, connects
-        to s3 and downloads the file. Returns the generator resp_body provided
-        by get_object.
+        Takes a `glance.store.location.Location` object that indicates
+        where to find the image file, and returns a generator from S3
+        provided by S3's key object
+
+        :location `glance.store.location.Location` object, supplied
+                  from glance.store.location.get_location_from_uri()
         """
+        loc = location.store_location
         from boto.s3.connection import S3Connection
 
-        (access_key, secret_key, s3_host, bucket, obj_name) = \
-            parse_s3_tokens(parsed_uri)
+        s3_conn = S3Connection(loc.accesskey, loc.secretkey,
+                               host=loc.s3serviceurl)
+        bucket_obj = get_bucket(s3_conn, loc.bucket)
 
-        # This is annoying. If I pass http://s3.amazonaws.com to Boto, it
-        # dies. If I pass s3.amazonaws.com it works fine. :(
-        s3_host_only = urlparse.urlparse(s3_host).netloc
-
-        s3_conn = S3Connection(access_key, secret_key, host=s3_host_only)
-        bucket_obj = get_bucket(s3_conn, bucket)
-
-        key = get_key(bucket_obj, obj_name)
+        key = get_key(bucket_obj, loc.key)
 
         logger.debug("Retrieved image object from S3 using "
-                     "(s3_host=%(s3_host)s, access_key=%(access_key)s, "
-                     "bucket=%(bucket)s, key=%(obj_name)s)" % locals())
+                     "(s3_host=%s, access_key=%s, "
+                     "bucket=%s, key=%s)" % (loc.s3serviceurl, loc.accesskey,
+                                             loc.bucket, loc.key))
 
-        if expected_size and key.size != expected_size:
+        if expected_size and (key.size != expected_size):
             msg = "Expected %s bytes, got %s" % (expected_size, key.size)
             logger.error(msg)
             raise glance.store.BackendException(msg)
@@ -146,23 +242,33 @@ class S3Backend(glance.store.Backend):
         secret_key = secret_key.encode('utf-8')
         bucket = cls._option_get(options, 's3_store_bucket')
 
-        full_s3_host = s3_host
-        if not full_s3_host.startswith('http'):
-            full_s3_host = 'https://' + full_s3_host
+        scheme = 's3'
+        if s3_host.startswith('https://'):
+            scheme = 'swift+https'
+            full_s3_host = s3_host
+        elif s3_host.startswith('http://'):
+            full_s3_host = s3_host
+        else:
+            full_s3_host = 'http://' + s3_host  # Defaults http
 
-        s3_conn = S3Connection(access_key, secret_key, host=s3_host)
+        loc = StoreLocation({'scheme': scheme,
+                             'bucket': bucket,
+                             'key': id,
+                             's3serviceurl': full_s3_host,
+                             'accesskey': access_key,
+                             'secretkey': secret_key})
+
+        s3_conn = S3Connection(access_key, secret_key, host=loc.s3serviceurl)
 
         create_bucket_if_missing(bucket, s3_conn, options)
 
         bucket_obj = get_bucket(s3_conn, bucket)
         obj_name = str(id)
-        location = format_s3_location(access_key, secret_key, s3_host,
-                                      bucket, obj_name)
 
         key = bucket_obj.get_key(obj_name)
         if key and key.exists():
             raise exception.Duplicate("S3 already has an image at "
-                                      "location %(location)s" % locals())
+                                      "location %s" % loc.get_uri())
 
         logger.debug("Adding image object to S3 using "
                      "(s3_host=%(s3_host)s, access_key=%(access_key)s, "
@@ -175,35 +281,29 @@ class S3Backend(glance.store.Backend):
         key.set_contents_from_file(data, replace=False)
         size = key.size
 
-        return (location, size, obj_md5)
+        return (loc.get_uri(), size, obj_md5)
 
     @classmethod
-    def delete(cls, parsed_uri, options=None):
+    def delete(cls, location, options=None):
         """
-        Takes a parsed_uri in the format of:
-        s3://access_key:secret_key@s3.amazonaws.com/bucket/file.gz.0, connects
-        to s3 and deletes the file. Returns whatever boto.s3.key.Key.delete()
-        returns.
+        Delete an object in a specific location
+
+        :location `glance.store.location.Location` object, supplied
+                  from glance.store.location.get_location_from_uri()
         """
+        loc = location.store_location
         from boto.s3.connection import S3Connection
-
-        (access_key, secret_key, s3_host, bucket, obj_name) = \
-            parse_s3_tokens(parsed_uri)
-
-        # This is annoying. If I pass http://s3.amazonaws.com to Boto, it
-        # dies. If I pass s3.amazonaws.com it works fine. :(
-        s3_host_only = urlparse.urlparse(s3_host).netloc
-
-        # Close the connection when we're through.
-        s3_conn = S3Connection(access_key, secret_key, host=s3_host_only)
-        bucket_obj = get_bucket(s3_conn, bucket)
+        s3_conn = S3Connection(loc.accesskey, loc.secretkey,
+                               host=loc.s3serviceurl)
+        bucket_obj = get_bucket(s3_conn, loc.bucket)
 
         # Close the key when we're through.
-        key = get_key(bucket_obj, obj_name)
+        key = get_key(bucket_obj, loc.key)
 
         logger.debug("Deleting image object from S3 using "
-                     "(s3_host=%(s3_host)s, user=%(access_key)s, "
-                     "bucket=%(bucket)s, key=%(obj_name)s)" % locals())
+                     "(s3_host=%s, access_key=%s, "
+                     "bucket=%s, key=%s)" % (loc.s3serviceurl, loc.accesskey,
+                                             loc.bucket, loc.key))
 
         return key.delete()
 
@@ -257,8 +357,6 @@ def create_bucket_if_missing(bucket, s3_conn, options):
                        "to add bucket to S3 automatically."
                        % locals())
                 raise glance.store.BackendException(msg)
-        else:
-            raise
 
 
 def get_key(bucket, obj):
@@ -276,60 +374,3 @@ def get_key(bucket, obj):
         logger.error(msg)
         raise exception.NotFound(msg)
     return key
-
-
-def format_s3_location(user, key, s3_host, bucket, obj_name):
-    """
-    Returns the s3 URI in the format:
-        s3://<USER_KEY>:<SECRET_KEY>@<S3_HOST>/<BUCKET>/<OBJNAME>
-
-    :param user: The s3 user key to authenticate with
-    :param key: The s3 secret key for the authenticating user
-    :param s3_host: The base URL for the s3 service
-    :param bucket: The name of the bucket
-    :param obj_name: The name of the object
-    """
-    return "s3://%(user)s:%(key)s@%(s3_host)s/"\
-           "%(bucket)s/%(obj_name)s" % locals()
-
-
-def parse_s3_tokens(parsed_uri):
-    """
-    Return the various tokens used by S3.
-
-    Note that an Amazon AWS secret key can contain the forward slash,
-    which is entirely retarded, and breaks urlparse miserably.
-    This function works around that issue.
-
-    :param parsed_uri: The pieces of a URI returned by urlparse
-    :retval A tuple of (access_key, secret_key, s3_host, bucket, obj_name)
-    """
-
-    # TODO(jaypipes): Do parsing in the stores. Don't call urlparse in the
-    #                 base get_backend_class routine...
-    entire_path = "%s%s" % (parsed_uri.netloc, parsed_uri.path)
-
-    try:
-        creds, path = entire_path.split('@')
-        cred_parts = creds.split(':')
-
-        access_key = cred_parts[0]
-        secret_key = cred_parts[1]
-        path_parts = path.split('/')
-        obj = path_parts.pop()
-        bucket = path_parts.pop()
-    except (ValueError, IndexError):
-        raise glance.store.BackendException(
-             "Expected four values to unpack in: s3:%s. "
-             "Should have received something like: %s."
-             % (parsed_uri.path, S3Backend.EXAMPLE_URL))
-
-    # NOTE(jaypipes): Need to encode to UTF-8 here because of a
-    # bug in the HMAC library that boto uses.
-    # See: http://bugs.python.org/issue5285
-    # See: http://trac.edgewall.org/ticket/8083
-    access_key = access_key.encode('utf-8')
-    secret_key = secret_key.encode('utf-8')
-    s3_host = "https://%s" % '/'.join(path_parts)
-
-    return access_key, secret_key, s3_host, bucket, obj

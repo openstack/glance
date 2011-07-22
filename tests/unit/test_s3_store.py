@@ -29,9 +29,8 @@ import boto.s3.connection
 
 from glance.common import exception
 from glance.store import BackendException
-from glance.store.s3 import (S3Backend,
-                             format_s3_location,
-                             parse_s3_tokens)
+from glance.store.location import get_location_from_uri
+from glance.store.s3 import S3Backend
 
 FIVE_KB = (5 * 1024)
 S3_OPTIONS = {'verbose': True,
@@ -134,6 +133,18 @@ def stub_out_s3(stubs):
               'get_bucket', fake_get_bucket)
 
 
+def format_s3_location(user, key, authurl, bucket, obj):
+    """
+    Helper method that returns a S3 store URI given
+    the component pieces.
+    """
+    scheme = 's3'
+    if authurl.startswith('https://'):
+        scheme = 's3+https'
+    return "%s://%s:%s@%s/%s/%s" % (scheme, user, key, authurl,
+                                    bucket, obj)
+
+
 class TestS3Backend(unittest.TestCase):
 
     def setUp(self):
@@ -145,46 +156,11 @@ class TestS3Backend(unittest.TestCase):
         """Clear the test environment"""
         self.stubs.UnsetAll()
 
-    def test_parse_s3_tokens(self):
-        """
-        Test that the parse_s3_tokens function returns
-        user, key, authurl, bucket, and objname properly
-        """
-        uri = "s3://user:key@localhost/v1.0/bucket/objname"
-        url_pieces = urlparse.urlparse(uri)
-        user, key, authurl, bucket, objname =\
-                parse_s3_tokens(url_pieces)
-        self.assertEqual("user", user)
-        self.assertEqual("key", key)
-        self.assertEqual("https://localhost/v1.0", authurl)
-        self.assertEqual("bucket", bucket)
-        self.assertEqual("objname", objname)
-
-        uri = "s3://user:key@localhost:9090/v1.0/bucket/objname"
-        url_pieces = urlparse.urlparse(uri)
-        user, key, authurl, bucket, objname =\
-                parse_s3_tokens(url_pieces)
-        self.assertEqual("user", user)
-        self.assertEqual("key", key)
-        self.assertEqual("https://localhost:9090/v1.0", authurl)
-        self.assertEqual("bucket", bucket)
-        self.assertEqual("objname", objname)
-
-        uri = "s3://user:key/part@s3.amazonaws.com/bucket/objname"
-        url_pieces = urlparse.urlparse(uri)
-        user, key, authurl, bucket, objname =\
-                parse_s3_tokens(url_pieces)
-        self.assertEqual("user", user)
-        self.assertEqual("key/part", key)
-        self.assertEqual("https://s3.amazonaws.com", authurl)
-        self.assertEqual("bucket", bucket)
-        self.assertEqual("objname", objname)
-
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
-        url_pieces = urlparse.urlparse(
+        loc = get_location_from_uri(
             "s3://user:key@auth_address/glance/2")
-        image_s3 = S3Backend.get(url_pieces)
+        image_s3 = S3Backend.get(loc)
 
         expected_data = "*" * FIVE_KB
         data = ""
@@ -198,11 +174,11 @@ class TestS3Backend(unittest.TestCase):
         Test retrieval of an image with wrong expected_size param
         raises an exception
         """
-        url_pieces = urlparse.urlparse(
+        loc = get_location_from_uri(
             "s3://user:key@auth_address/glance/2")
         self.assertRaises(BackendException,
                           S3Backend.get,
-                          url_pieces,
+                          loc,
                           {'expected_size': 42})
 
     def test_get_non_existing(self):
@@ -210,17 +186,17 @@ class TestS3Backend(unittest.TestCase):
         Test that trying to retrieve a s3 that doesn't exist
         raises an error
         """
-        url_pieces = urlparse.urlparse(
-            "s3://user:key@auth_address/badbucket")
+        loc = get_location_from_uri(
+            "s3://user:key@auth_address/badbucket/2")
         self.assertRaises(exception.NotFound,
                           S3Backend.get,
-                          url_pieces)
+                          loc)
 
-        url_pieces = urlparse.urlparse(
+        loc = get_location_from_uri(
             "s3://user:key@auth_address/glance/noexist")
         self.assertRaises(exception.NotFound,
                           S3Backend.get,
-                          url_pieces)
+                          loc)
 
     def test_add(self):
         """Test that we can add an image via the s3 backend"""
@@ -242,8 +218,8 @@ class TestS3Backend(unittest.TestCase):
         self.assertEquals(expected_s3_size, size)
         self.assertEquals(expected_checksum, checksum)
 
-        url_pieces = urlparse.urlparse(expected_location)
-        new_image_s3 = S3Backend.get(url_pieces)
+        loc = get_location_from_uri(expected_location)
+        new_image_s3 = S3Backend.get(loc)
         new_image_contents = StringIO.StringIO()
         for chunk in new_image_s3:
             new_image_contents.write(chunk)
@@ -294,22 +270,22 @@ class TestS3Backend(unittest.TestCase):
         """
         Test we can delete an existing image in the s3 store
         """
-        url_pieces = urlparse.urlparse(
+        loc = get_location_from_uri(
             "s3://user:key@auth_address/glance/2")
 
-        S3Backend.delete(url_pieces)
+        S3Backend.delete(loc)
 
         self.assertRaises(exception.NotFound,
                           S3Backend.get,
-                          url_pieces)
+                          loc)
 
     def test_delete_non_existing(self):
         """
         Test that trying to delete a s3 that doesn't exist
         raises an error
         """
-        url_pieces = urlparse.urlparse(
-            "s3://user:key@auth_address/noexist")
+        loc = get_location_from_uri(
+            "s3://user:key@auth_address/glance/noexist")
         self.assertRaises(exception.NotFound,
                           S3Backend.delete,
-                          url_pieces)
+                          loc)
