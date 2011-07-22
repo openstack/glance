@@ -208,7 +208,6 @@ class ImageCache(object):
         try:
             with open(incomplete_path, mode) as cache_file:
                 set_xattr('expected_size', image_meta['size'])
-                raise Exception
                 yield cache_file
         except Exception as e:
             rollback(e)
