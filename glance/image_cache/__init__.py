@@ -184,9 +184,12 @@ class ImageCache(object):
         image_id = image_meta['id']
         incomplete_path = self.incomplete_path_for_image(image_id)
 
+        def set_xattr(key, value):
+            utils.set_xattr(incomplete_path, key, value)
+
         def commit():
-            utils.set_xattr(incomplete_path, 'image_name', image_meta['name'])
-            utils.set_xattr(incomplete_path, 'hits', 0)
+            set_xattr('image_name', image_meta['name'])
+            set_xattr('hits', 0)
 
             final_path = self.path_for_image(image_id)
             logger.debug("fetch finished, commiting by moving '%s' to '%s'" %
@@ -194,8 +197,8 @@ class ImageCache(object):
             os.rename(incomplete_path, final_path)
 
         def rollback(e):
-            utils.set_xattr(incomplete_path, 'image_name', image_meta['name'])
-            utils.set_xattr(incomplete_path, 'error', str(e))
+            set_xattr('image_name', image_meta['name'])
+            set_xattr('error', str(e))
 
             invalid_path = self.invalid_path_for_image(image_id)
             logger.debug("fetch errored, rolling back by moving "
@@ -204,6 +207,8 @@ class ImageCache(object):
 
         try:
             with open(incomplete_path, mode) as cache_file:
+                set_xattr('expected_size', image_meta['size'])
+                raise Exception
                 yield cache_file
         except Exception as e:
             rollback(e)
@@ -340,12 +345,9 @@ class ImageCache(object):
                 yield path
 
     def _base_entries(self, basepath):
-        def get_accessed_utc(path):
-            accessed = os.path.getatime(path) or os.path.getmtime(path)
-            last_accessed = datetime.datetime\
-                                    .utcfromtimestamp(accessed)\
+        def iso8601_from_timestamp(timestamp):
+            return datetime.datetime.utcfromtimestamp(timestamp)\
                                     .isoformat()
-            return last_accessed
 
         for path in self.get_all_regular_files(basepath):
             filename = os.path.basename(path)
@@ -359,8 +361,17 @@ class ImageCache(object):
             entry['path'] = path
             entry['name'] = utils.get_xattr(path, 'image_name',
                                             default='UNKNOWN')
-            entry['last_accessed'] = get_accessed_utc(path)
+           
+            mtime = os.path.getmtime(path)
+            entry['last_modified'] = iso8601_from_timestamp(mtime)
+
+            atime = os.path.getatime(path)
+            entry['last_accessed'] = iso8601_from_timestamp(atime)
+
             entry['size'] = os.path.getsize(path)
+
+            entry['expected_size'] = utils.get_xattr(
+                    path, 'expected_size', default='UNKNOWN')
 
             yield entry
 
@@ -369,6 +380,11 @@ class ImageCache(object):
         for entry in self._base_entries(self.invalid_path):
             path = entry['path']
             entry['error'] = utils.get_xattr(path, 'error', default='UNKNOWN')
+            yield entry
+
+    def incomplete_entries(self):
+        """Cache info for invalid cached images"""
+        for entry in self._base_entries(self.incomplete_path):
             yield entry
 
     def prefetch_entries(self):

@@ -45,6 +45,8 @@ class Controller(api.BaseController):
         status = req.str_params.get('status')
         if status == 'invalid':
             entries = list(self.cache.invalid_entries())
+        elif status == 'incomplete':
+            entries = list(self.cache.incomplete_entries())
         elif status == 'prefetching':
             entries = list(self.cache.prefetch_entries())
         else:
