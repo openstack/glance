@@ -686,8 +686,6 @@ def parse_options(parser, cli_args):
 
     :param parser: The option parser
     """
-    COMMANDS = command_map()
-
     if not cli_args:
         cli_args.append('-h')  # Show options in usage output...
 
@@ -702,11 +700,9 @@ def parse_options(parser, cli_args):
     if not args:
         parser.print_usage()
         sys.exit(0)
-    else:
-        command_name = args.pop(0)
-        if command_name not in COMMANDS.keys():
-            sys.exit("Unknown command: %s" % command_name)
-    command = COMMANDS[command_name]
+
+    command_name = args.pop(0)
+    command = lookup_command(parser, command_name)
 
     return (options, command, args)
 
@@ -715,20 +711,17 @@ def print_help(options, args):
     """
     Print help specific to a command
     """
-    COMMANDS = command_map()
-
     if len(args) != 1:
         sys.exit("Please specify a command")
 
-    command = args.pop()
-    if command not in COMMANDS.keys():
-        options.__parser.print_usage()
-        sys.exit("Unknown command: %s" % command)
+    parser = options.__parser
+    command_name = args.pop()
+    command = lookup_command(parser, command_name)
 
-    print COMMANDS[command].__doc__ % {'prog': os.path.basename(sys.argv[0])}
+    print command.__doc__ % {'prog': os.path.basename(sys.argv[0])}
 
 
-def command_map():
+def lookup_command(parser, command_name):
     BASE_COMMANDS = {'help': print_help}
 
     IMAGE_COMMANDS = {
@@ -751,7 +744,15 @@ def command_map():
     commands = {}
     for command_set in (BASE_COMMANDS, IMAGE_COMMANDS, CACHE_COMMANDS):
         commands.update(command_set)
-    return commands
+
+    try:
+        command = commands[command_name]
+    except KeyError:
+        parser.print_usage()
+        sys.exit("Unknown command: %s" % command_name)
+
+    return command
+
 
 def user_confirm(prompt, default=False):
     """
