@@ -177,8 +177,8 @@ def image_get_all(context, filters=None, marker=None, limit=None,
 
     if 'is_public' in filters and filters['is_public'] is not None:
         the_filter = models.Image.is_public == filters['is_public']
-        if filters['is_public'] and context.tenant is not None:
-            the_filter = or_(the_filter, models.Image.owner == context.tenant)
+        if filters['is_public'] and context.owner is not None:
+            the_filter = or_(the_filter, models.Image.owner == context.owner)
         query = query.filter(the_filter)
         del filters['is_public']
 

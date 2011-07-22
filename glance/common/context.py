@@ -49,7 +49,12 @@ class RequestContext(object):
             return True
 
         # Private image
-        return self.tenant is not None and self.tenant == image.owner
+        return self.owner is not None and self.owner == image.owner
+
+    @property
+    def owner(self):
+        """Return the owner to correlate with an image."""
+        return self.tenant
 
 
 class ContextMiddleware(wsgi.Middleware):

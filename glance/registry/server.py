@@ -281,7 +281,7 @@ class Controller(object):
 
         # Set up the image owner
         if not req.context.is_admin or 'owner' not in image_data:
-            image_data['owner'] = req.context.tenant
+            image_data['owner'] = req.context.owner
 
         try:
             image_data = db_api.image_create(req.context, image_data)
