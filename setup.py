@@ -91,5 +91,6 @@ setup(
              'bin/glance-manage',
              'bin/glance-prefetcher',
              'bin/glance-pruner',
+             'bin/glance-reaper',
              'bin/glance-registry',
              'bin/glance-upload'])

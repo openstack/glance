@@ -24,6 +24,7 @@ import itertools
 import logging
 import os
 import sys
+import time
 
 from glance.common import config
 from glance.common import exception
@@ -404,3 +405,28 @@ class ImageCache(object):
             path = entry['path']
             entry['hits'] = utils.get_xattr(path, 'hits', default='UNKNOWN')
             yield entry
+
+    def reap_invalid(self, grace=None):
+        """Remove any invalid cache entries
+       
+        :param grace: Number of seconds to keep an invalid entry around for
+                      debugging purposes. If None, then delete immediately.
+        """
+        now = time.time()
+
+        reaped = 0
+        for path in self.get_all_regular_files(self.invalid_path):
+            mtime = os.path.getmtime(path)
+            age = now - mtime
+            if not grace:
+                logger.debug("No grace period, reaping '%(path)s' immediately"
+                             % locals())
+                self._delete_file(path)
+                reaped += 1
+            elif age > grace:
+                logger.debug("Cache entry '%(path)s' exceeds grace period, "
+                             "(%(age)i s > %(grace)i s)" % locals())
+                self._delete_file(path)
+                reaped += 1
+
+        logger.info("Reaped %(reaped)s invalid cache entries" % locals())

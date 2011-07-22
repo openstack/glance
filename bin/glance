@@ -632,6 +632,25 @@ Removes all images from the cache"""
         print "done"
 
 
+@catch_error('reap invalid images')
+def cache_reap_invalid(options, args):
+    """
+%(prog)s cache-reap-invalid [options]
+
+Reaps any invalid images that were left for
+debugging purposes"""
+    if not options.force and \
+       not user_confirm("Reap all invalid cached images?", default=False):
+        print 'Not reaping any invalid cached images.'
+        return FAILURE
+
+    client = get_client(options)
+    client.reap_invalid_cached_images()
+
+    if options.verbose:
+        print "done"
+
+
 @catch_error('prefetch the specified cached image')
 def cache_prefetch(options, args):
     """
@@ -783,10 +802,11 @@ def lookup_command(parser, command_name):
                 'cache-index': cache_index,
                 'cache-invalid': cache_invalid,
                 'cache-incomplete': cache_incomplete,
+                'cache-prefetching': cache_prefetching,
+                'cache-prefetch': cache_prefetch,
                 'cache-purge': cache_purge,
                 'cache-clear': cache_clear,
-                'cache-prefetch': cache_prefetch,
-                'cache-prefetching': cache_prefetching}
+                'cache-reap-invalid': cache_reap_invalid}
 
     commands = {}
     for command_set in (BASE_COMMANDS, IMAGE_COMMANDS, CACHE_COMMANDS):
@@ -856,13 +876,16 @@ Cache Commands:
 
     cache-incomplete     List images currently being fetched
 
+    cache-prefetching    List images that are being prefetched
+
+    cache-prefetch       Pre-fetch an image or list of images into the cache
+
     cache-purge          Purges an image from the cache
 
     cache-clear          Removes all images from the cache
 
-    cache-prefetch       Pre-fetch an image or list of images into the cache
-
-    cache-prefetching    List images that are being prefetched
+    cache-reap-invalid   Reaps any invalid images that were left for
+                         debugging purposes
 """
 
     oparser = optparse.OptionParser(version='%%prog %s'

@@ -226,6 +226,13 @@ class V1Client(base_client.BaseClient):
         self.do_request("DELETE", "/cached_images")
         return True
 
+    def reap_invalid_cached_images(self):
+        """
+        Reaps any invalid cached images
+        """
+        self.do_request("POST", "/cached_images/reap")
+        return True
+
     def prefetch_cache_image(self, image_id):
         """
         Pre-fetch a specified image from the cache
