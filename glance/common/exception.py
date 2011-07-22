@@ -159,3 +159,7 @@ class StoreDeleteNotSupported(GlanceException):
 class StoreAddDisabled(GlanceException):
     message = _("Configuration for store failed. Adding images to this "
                "store is disabled.")
+
+
+class InvalidNotifierStrategy(GlanceException):
+    message = "'%(strategy)s' is not an available notifier strategy."

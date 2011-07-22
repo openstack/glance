@@ -34,6 +34,7 @@ from webob.exc import (HTTPNotFound,
 from glance import api
 from glance import image_cache
 from glance.common import exception
+from glance.common import notifier
 from glance.common import wsgi
 import glance.store
 import glance.store.filesystem
@@ -79,6 +80,7 @@ class Controller(api.BaseController):
     def __init__(self, options):
         self.options = options
         glance.store.create_stores(options)
+        self.notifier = notifier.Notifier(options)
 
     def index(self, req):
         """
@@ -365,6 +367,7 @@ class Controller(api.BaseController):
                                            image_id,
                                            {'checksum': checksum,
                                             'size': size})
+            self.notifier.info('image.upload', image_meta)
 
             return location
 
@@ -372,12 +375,14 @@ class Controller(api.BaseController):
             msg = ("Attempt to upload duplicate image: %s") % e
             logger.error(msg)
             self._safe_kill(req, image_id)
+            self.notifier.error('image.upload', msg)
             raise HTTPConflict(msg, request=req)
 
         except exception.NotAuthorized, e:
             msg = ("Unauthorized upload attempt: %s") % e
             logger.error(msg)
             self._safe_kill(req, image_id)
+            self.notifier.error('image.upload', msg)
             raise HTTPForbidden(msg, request=req,
                                 content_type='text/plain')
 
@@ -389,6 +394,8 @@ class Controller(api.BaseController):
 
             msg = ("Error uploading image: (%s): '%s") % (
                 e.__class__.__name__, str(e))
+
+            self.notifier.error('image.upload', msg)
             raise HTTPBadRequest(msg, request=req)
 
     def _activate(self, req, image_id, location):
@@ -539,7 +546,10 @@ class Controller(api.BaseController):
                    % locals())
             for line in msg.split('\n'):
                 logger.error(line)
+            self.notifier.error('image.update', msg)
             raise HTTPBadRequest(msg, request=req, content_type="text/plain")
+        else:
+            self.notifier.info('image.update', image_meta)
 
         return {'image_meta': image_meta}
 
@@ -571,6 +581,7 @@ class Controller(api.BaseController):
             schedule_delete_from_backend(image['location'], self.options,
                                          req.context, id)
         registry.delete_image_metadata(self.options, req.context, id)
+        self.notifier.info('image.delete', id)
 
     def get_store_or_400(self, request, store_name):
         """

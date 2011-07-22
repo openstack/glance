@@ -331,3 +331,60 @@ Can only be specified in configuration files.
 
 Sets the number of seconds after which SQLAlchemy should reconnect to the
 datastore if no activity has been made on the connection.
+
+Configuring Notifications
+-------------------------
+
+Glance can optionally generate notifications to be logged or sent to
+a RabbitMQ queue. The configuration options are specified in the
+``glance-api.conf`` config file in the section ``[DEFAULT]``.
+
+* ``notifier_strategy``
+
+Optional. Default: ``noop``
+
+Sets the strategy used for notifications. Options are ``logging``,
+``rabbit`` and ``noop``.
+For more information :doc:`Glance notifications <notifications>`
+
+* ``rabbit_host``
+
+Optional. Default: ``localhost``
+
+Host to connect to when using ``rabbit`` strategy.
+
+* ``rabbit_port``
+
+Optional. Default: ``5672``
+
+Port to connect to when using ``rabbit`` strategy.
+
+* ``rabbit_use_ssl``
+
+Optional. Default: ``false``
+
+Boolean to use SSL for connecting when using ``rabbit`` strategy.
+
+* ``rabbit_userid``
+
+Optional. Default: ``guest``
+
+Userid to use for connection when using ``rabbit`` strategy.
+
+* ``rabbit_password``
+
+Optional. Default: ``guest``
+
+Password to use for connection when using ``rabbit`` strategy.
+
+* ``rabbit_virtual_host``
+
+Optional. Default: ``/``
+
+Virtual host to use for connection when using ``rabbit`` strategy.
+
+* ``rabbit_notification_topic``
+
+Optional. Default: ``glance_notifications``
+
+Topic to use for connection when using ``rabbit`` strategy.
