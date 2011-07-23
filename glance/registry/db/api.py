@@ -393,6 +393,8 @@ def _deleted(context):
     Calculates whether to include deleted objects based on context.
     Currently just looks for a flag called deleted in the context dict.
     """
+    if hasattr(context, 'show_deleted'):
+        return context.show_deleted
     if not hasattr(context, 'get'):
         return False
     return context.get('deleted', False)

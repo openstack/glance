@@ -22,6 +22,7 @@ import logging
 from glance import registry
 from glance import store
 from glance.common import config
+from glance.common import context
 from glance.common import exception
 from glance.registry.db import api as db_api
 
@@ -59,7 +60,6 @@ class Scrubber(object):
         self.options = options
         scrub_time = config.get_option(options, 'scrub_time', type='int',
                                        default=0)
-        scrub_time = int(self.options.get('scrub_time', 0))
         logger.info("Scrub interval set to %s seconds" % scrub_time)
         self.scrub_time = datetime.timedelta(seconds=scrub_time)
         db_api.configure_db(options)
@@ -80,8 +80,8 @@ class Scrubber(object):
             msg = "Failed to delete image from store (%s). "
             logger.error(msg % uri)
 
-        context = {'deleted': True}
-        db_api.image_update(context, id, {'status': 'deleted'})
+        ctx = context.RequestContext(is_admin=True, show_deleted=True)
+        db_api.image_update(ctx, id, {'status': 'deleted'})
 
 
 def app_factory(global_config, **local_conf):

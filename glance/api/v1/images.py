@@ -502,7 +502,8 @@ class Controller(object):
         # to delete the image if the backend doesn't yet store it.
         # See https://bugs.launchpad.net/glance/+bug/747799
         if image['location']:
-            schedule_delete_from_backend(image['location'], self.options, id)
+            schedule_delete_from_backend(image['location'], self.options,
+                                         req.context, id)
         registry.delete_image_metadata(self.options, req.context, id)
 
     def get_image_meta_or_404(self, request, id):

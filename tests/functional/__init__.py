@@ -226,7 +226,7 @@ class ScrubberDaemon(Server):
 verbose = %(verbose)s
 debug = %(debug)s
 log_file = %(log_file)s
-scrub_time = 10
+scrub_time = 5
 daemon = %(daemon)s
 wakeup_time = 2
 sql_connection = %(sql_connection)s

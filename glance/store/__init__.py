@@ -108,18 +108,20 @@ def get_store_from_location(uri):
     return loc.store_name
 
 
-def schedule_delete_from_backend(uri, options, id, **kwargs):
+def schedule_delete_from_backend(uri, options, context, id, **kwargs):
     """
     Given a uri and a time, schedule the deletion of an image.
     """
     use_delay = config.get_option(options, 'delayed_delete', type='bool',
                                   default=False)
     if not use_delay:
-        registry.update_image_metadata(options, id, {'status': 'deleted'})
+        registry.update_image_metadata(options, context, id,
+                                       {'status': 'deleted'})
         try:
             return delete_from_backend(uri, **kwargs)
         except (UnsupportedBackend, exception.NotFound):
             msg = "Failed to delete image from store (%s). "
             logger.error(msg % uri)
 
-    registry.update_image_metadata(options, id, {'status': 'pending_delete'})
+    registry.update_image_metadata(options, context, id,
+                                   {'status': 'pending_delete'})
