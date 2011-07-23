@@ -33,7 +33,7 @@ from webob.exc import (HTTPNotFound,
 from glance.common import exception
 from glance.common import wsgi
 from glance.store import (get_from_backend,
-                          delete_from_backend,
+                          schedule_delete_from_backend,
                           get_store_from_location,
                           get_backend_class,
                           UnsupportedBackend)
@@ -502,13 +502,8 @@ class Controller(object):
         # to delete the image if the backend doesn't yet store it.
         # See https://bugs.launchpad.net/glance/+bug/747799
         if image['location']:
-            try:
-                delete_from_backend(image['location'])
-            except (UnsupportedBackend, exception.NotFound):
-                msg = "Failed to delete image from store (%s). " + \
-                      "Continuing with deletion from registry."
-                logger.error(msg % (image['location'],))
-
+            schedule_delete_from_backend(image['location'], self.options,
+                                         req.context, id)
         registry.delete_image_metadata(self.options, req.context, id)
 
     def get_image_meta_or_404(self, request, id):

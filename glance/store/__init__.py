@@ -15,12 +15,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import optparse
 import os
 import urlparse
 
-from glance.common import exception
+from glance import registry
+from glance.common import config, exception
 from glance.store import location
+
+
+logger = logging.getLogger('glance.store')
 
 
 # TODO(sirp): should this be moved out to common/utils.py ?
@@ -101,3 +106,22 @@ def get_store_from_location(uri):
     """
     loc = location.get_location_from_uri(uri)
     return loc.store_name
+
+
+def schedule_delete_from_backend(uri, options, context, id, **kwargs):
+    """
+    Given a uri and a time, schedule the deletion of an image.
+    """
+    use_delay = config.get_option(options, 'delayed_delete', type='bool',
+                                  default=False)
+    if not use_delay:
+        registry.update_image_metadata(options, context, id,
+                                       {'status': 'deleted'})
+        try:
+            return delete_from_backend(uri, **kwargs)
+        except (UnsupportedBackend, exception.NotFound):
+            msg = "Failed to delete image from store (%s). "
+            logger.error(msg % uri)
+
+    registry.update_image_metadata(options, context, id,
+                                   {'status': 'pending_delete'})

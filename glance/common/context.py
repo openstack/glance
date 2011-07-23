@@ -26,12 +26,13 @@ class RequestContext(object):
     """
 
     def __init__(self, auth_tok=None, user=None, tenant=None, is_admin=False,
-                 read_only=False):
+                 read_only=False, show_deleted=False):
         self.auth_tok = auth_tok
         self.user = user
         self.tenant = tenant
         self.is_admin = is_admin
         self.read_only = read_only
+        self.show_deleted = show_deleted
 
     def is_image_visible(self, image):
         """Return True if the image is visible in this context."""

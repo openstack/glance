@@ -52,7 +52,8 @@ IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size',
 CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
 DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi',
                'iso']
-STATUSES = ['active', 'saving', 'queued', 'killed']
+STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
+            'deleted']
 
 
 def configure_db(options):
@@ -134,6 +135,29 @@ def image_get(context, image_id, session=None):
         raise exception.NotAuthorized("Image not visible to you")
 
     return image
+
+
+def image_get_all_pending_delete(context, delete_time=None, limit=None):
+    """Get all images that are pending deletion
+
+    :param limit: maximum number of images to return
+    """
+    session = get_session()
+    query = session.query(models.Image).\
+                   options(joinedload(models.Image.properties)).\
+                   filter_by(deleted=True).\
+                   filter(models.Image.status == 'pending_delete')
+
+    if delete_time:
+        query = query.filter(models.Image.deleted_at <= delete_time)
+
+    query = query.order_by(desc(models.Image.deleted_at)).\
+                  order_by(desc(models.Image.id))
+
+    if limit:
+        query = query.limit(limit)
+
+    return query.all()
 
 
 def image_get_all(context, filters=None, marker=None, limit=None,
@@ -369,6 +393,8 @@ def _deleted(context):
     Calculates whether to include deleted objects based on context.
     Currently just looks for a flag called deleted in the context dict.
     """
+    if hasattr(context, 'show_deleted'):
+        return context.show_deleted
     if not hasattr(context, 'get'):
         return False
     return context.get('deleted', False)
