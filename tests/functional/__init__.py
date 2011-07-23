@@ -151,7 +151,7 @@ log_file = %(log_file)s
 delayed_delete = %(delayed_delete)s
 
 [pipeline:glance-api]
-pipeline = versionnegotiation apiv1app
+pipeline = versionnegotiation context apiv1app
 
 [pipeline:versions]
 pipeline = versionsapp
@@ -164,6 +164,9 @@ paste.app_factory = glance.api.v1:app_factory
 
 [filter:versionnegotiation]
 paste.filter_factory = glance.api.middleware.version_negotiation:filter_factory
+
+[filter:context]
+paste.filter_factory = glance.common.context:filter_factory
 """
 
 
@@ -193,8 +196,14 @@ log_file = %(log_file)s
 sql_connection = %(sql_connection)s
 sql_idle_timeout = 3600
 
-[app:glance-registry]
+[pipeline:glance-registry]
+pipeline = context registryapp
+
+[app:registryapp]
 paste.app_factory = glance.registry.server:app_factory
+
+[filter:context]
+paste.filter_factory = glance.common.context:filter_factory
 """
 
 

@@ -29,6 +29,7 @@ import stubout
 import webob
 
 import glance.common.client
+from glance.common import context
 from glance.common import exception
 from glance.registry import server as rserver
 from glance.api import v1 as server
@@ -172,7 +173,8 @@ def stub_out_registry_and_store_server(stubs):
                                             "sqlite://")
             options = {'sql_connection': sql_connection, 'verbose': VERBOSE,
                        'debug': DEBUG}
-            res = self.req.get_response(rserver.API(options))
+            api = context.ContextMiddleware(rserver.API(options), options)
+            res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():
@@ -223,7 +225,8 @@ def stub_out_registry_and_store_server(stubs):
                        'registry_port': '9191',
                        'default_store': 'file',
                        'filesystem_store_datadir': FAKE_FILESYSTEM_ROOTDIR}
-            res = self.req.get_response(server.API(options))
+            api = context.ContextMiddleware(server.API(options), options)
+            res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():
