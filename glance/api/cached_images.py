@@ -73,7 +73,7 @@ class Controller(api.BaseController):
 
     def update(self, req, id):
         """PUT /cached_images/1 is used to prefetch an image into the cache"""
-        image_meta = self.get_image_meta_or_404(req, id)
+        image_meta = self.get_active_image_meta_or_404(req, id)
         try:
             self.cache.queue_prefetch(image_meta)
         except exception.Invalid, e:

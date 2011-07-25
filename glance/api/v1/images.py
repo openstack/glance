@@ -187,7 +187,7 @@ class Controller(api.BaseController):
 
         :raises HTTPNotFound if image is not available to user
         """
-        image = self.get_image_meta_or_404(req, id)
+        image = self.get_active_image_meta_or_404(req, id)
 
         def get_from_store(image):
             """Called if caching disabled"""

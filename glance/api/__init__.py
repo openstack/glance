@@ -14,10 +14,14 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import logging
 import webob.exc
 
 from glance import registry
 from glance.common import exception
+
+
+logger = logging.getLogger('glance.api')
 
 
 class BaseController(object):
@@ -44,3 +48,16 @@ class BaseController(object):
             logger.debug(msg)
             raise webob.exc.HTTPForbidden(msg, request=request,
                                 content_type='text/plain')
+
+    def get_active_image_meta_or_404(self, request, id):
+        """
+        Same as get_image_meta_or_404 except that it will raise a 404 if the
+        image isn't 'active'.
+        """
+        image = self.get_image_meta_or_404(request, id)
+        if image['status'] != 'active':
+            msg = "Image %s is not active" % id
+            logger.debug(msg)
+            raise webob.exc.HTTPNotFound(
+                    msg, request=request, content_type='text/plain')
+        return image
