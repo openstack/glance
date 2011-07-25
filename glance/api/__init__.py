@@ -31,8 +31,9 @@ class BaseController(object):
 
         :raises HTTPNotFound if image does not exist
         """
+        context = request.context
         try:
-            return registry.get_image_metadata(self.options, id)
+            return registry.get_image_metadata(self.options, context, id)
         except exception.NotFound:
             msg = "Image with identifier %s not found" % id
             logger.debug(msg)

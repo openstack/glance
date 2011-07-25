@@ -24,6 +24,7 @@ import stat
 import time
 
 from glance.common import config
+from glance.common import context
 from glance.image_cache import ImageCache
 from glance import registry
 from glance.store import get_from_backend
@@ -38,7 +39,9 @@ class Prefetcher(object):
         self.cache = ImageCache(options)
 
     def fetch_image_into_cache(self, image_id):
-        image_meta = registry.get_image_metadata(self.options, image_id)
+        ctx = context.RequestContext(is_admin=True, show_deleted=True)
+        image_meta = registry.get_image_metadata(
+                    self.options, ctx, image_id)
         with self.cache.open(image_meta, "wb") as cache_file:
             chunks = get_from_backend(image_meta['location'],
                                       expected_size=image_meta['size'],
