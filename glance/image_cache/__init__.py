@@ -170,13 +170,15 @@ class ImageCache(object):
                directory, and when it's finished, move it out the main cache
                directory.
         """
-        if 'w' in mode:
+        if mode == 'w':
             with self._open_write(image_meta, mode) as cache_file:
                 yield cache_file
-        elif 'r' in mode:
+        elif mode == 'r':
             with self._open_read(image_meta, mode) as cache_file:
                 yield cache_file
         else:
+            # NOTE(sirp): `rw` and `a' modes are not supported since image
+            # data is immutable, we `w` it once, then `r` multiple times.
             raise Exception("mode '%s' not supported" % mode)
 
     @contextmanager
