@@ -21,6 +21,7 @@ import logging
 import httplib
 import urlparse
 
+from glance.common import config
 from glance.common import exception
 import glance.store
 import glance.store.location
