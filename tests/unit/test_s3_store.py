@@ -28,7 +28,7 @@ import stubout
 import boto.s3.connection
 
 from glance.common import exception
-from glance.store import BackendException
+from glance.store import BackendException, UnsupportedBackend
 from glance.store.location import get_location_from_uri
 from glance.store.s3 import S3Backend
 
@@ -119,7 +119,9 @@ def stub_out_s3(stubs):
     k.set_contents_from_file(StringIO.StringIO("*" * FIVE_KB))
 
     def fake_connection_constructor(self, *args, **kwargs):
-        pass
+        host = kwargs.get('host')
+        if host.startswith('http://') or host.startswith('https://'):
+            raise UnsupportedBackend(host)
 
     def fake_get_bucket(conn, bucket_id):
         bucket = fixture_buckets.get(bucket_id)

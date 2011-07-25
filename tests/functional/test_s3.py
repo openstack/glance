@@ -229,7 +229,7 @@ class TestS3(functional.FunctionalTest):
         lines = out.split("\r\n")
         status_line = lines[0]
 
-        self.assertEqual("HTTP/1.1 201 Created", status_line)
+        self.assertEqual("HTTP/1.1 201 Created", status_line, out)
 
         # 4. HEAD /images
         # Verify image found now

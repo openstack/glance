@@ -18,6 +18,7 @@
 """Storage backend for S3 or Storage Servers that follow the S3 Protocol"""
 
 import logging
+import httplib
 import urlparse
 
 from glance.common import exception
@@ -115,7 +116,7 @@ class StoreLocation(glance.store.location.StoreLocation):
             self.key = path_parts.pop()
             self.bucket = path_parts.pop()
             if len(path_parts) > 0:
-                self.s3serviceurl = '/'.join(path_parts)
+                self.s3serviceurl = '/'.join(path_parts).strip('/')
             else:
                 reason = "Badly formed S3 URI. Missing s3 service URL."
                 raise exception.BadStoreUri(uri, reason)
@@ -183,7 +184,8 @@ class S3Backend(glance.store.Backend):
         from boto.s3.connection import S3Connection
 
         s3_conn = S3Connection(loc.accesskey, loc.secretkey,
-                               host=loc.s3serviceurl)
+                               host=loc.s3serviceurl,
+                               is_secure=(loc.scheme == 's3+https'))
         bucket_obj = get_bucket(s3_conn, loc.bucket)
 
         key = get_key(bucket_obj, loc.key)
@@ -258,7 +260,9 @@ class S3Backend(glance.store.Backend):
                              'accesskey': access_key,
                              'secretkey': secret_key})
 
-        s3_conn = S3Connection(access_key, secret_key, host=loc.s3serviceurl)
+        s3_conn = S3Connection(loc.accesskey, loc.secretkey,
+                               host=loc.s3serviceurl,
+                               is_secure=(loc.scheme == 's3+https'))
 
         create_bucket_if_missing(bucket, s3_conn, options)
 
@@ -294,7 +298,8 @@ class S3Backend(glance.store.Backend):
         loc = location.store_location
         from boto.s3.connection import S3Connection
         s3_conn = S3Connection(loc.accesskey, loc.secretkey,
-                               host=loc.s3serviceurl)
+                               host=loc.s3serviceurl,
+                               is_secure=(loc.scheme == 's3+https'))
         bucket_obj = get_bucket(s3_conn, loc.bucket)
 
         # Close the key when we're through.

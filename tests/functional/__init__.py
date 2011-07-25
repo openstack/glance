@@ -127,7 +127,7 @@ class ApiServer(Server):
     Server object that starts/stops/manages the API server
     """
 
-    def __init__(self, test_dir, port, registry_port):
+    def __init__(self, test_dir, port, registry_port, delayed_delete=False):
         super(ApiServer, self).__init__(test_dir, port)
         self.server_name = 'api'
         self.default_store = 'file'
@@ -141,6 +141,7 @@ class ApiServer(Server):
         self.s3_store_access_key = ""
         self.s3_store_secret_key = ""
         self.s3_store_bucket = ""
+        self.delayed_delete = delayed_delete
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
@@ -155,9 +156,10 @@ s3_store_host = %(s3_store_host)s
 s3_store_access_key = %(s3_store_access_key)s
 s3_store_secret_key = %(s3_store_secret_key)s
 s3_store_bucket = %(s3_store_bucket)s
+delayed_delete = %(delayed_delete)s
 
 [pipeline:glance-api]
-pipeline = versionnegotiation apiv1app
+pipeline = versionnegotiation context apiv1app
 
 [pipeline:versions]
 pipeline = versionsapp
@@ -170,6 +172,9 @@ paste.app_factory = glance.api.v1:app_factory
 
 [filter:versionnegotiation]
 paste.filter_factory = glance.api.middleware.version_negotiation:filter_factory
+
+[filter:context]
+paste.filter_factory = glance.common.context:filter_factory
 """
 
 
@@ -199,8 +204,44 @@ log_file = %(log_file)s
 sql_connection = %(sql_connection)s
 sql_idle_timeout = 3600
 
-[app:glance-registry]
+[pipeline:glance-registry]
+pipeline = context registryapp
+
+[app:registryapp]
 paste.app_factory = glance.registry.server:app_factory
+
+[filter:context]
+paste.filter_factory = glance.common.context:filter_factory
+"""
+
+
+class ScrubberDaemon(Server):
+    """
+    Server object that starts/stops/manages the Scrubber server
+    """
+
+    def __init__(self, test_dir, sql_connection, daemon=False):
+        # NOTE(jkoelker): Set the port to 0 since we actually don't listen
+        super(ScrubberDaemon, self).__init__(test_dir, 0)
+        self.server_name = 'scrubber'
+        self.daemon = daemon
+
+        self.sql_connection = sql_connection
+
+        self.pid_file = os.path.join(self.test_dir, "scrubber.pid")
+        self.log_file = os.path.join(self.test_dir, "scrubber.log")
+        self.conf_base = """[DEFAULT]
+verbose = %(verbose)s
+debug = %(debug)s
+log_file = %(log_file)s
+scrub_time = 5
+daemon = %(daemon)s
+wakeup_time = 2
+sql_connection = %(sql_connection)s
+sql_idle_timeout = 3600
+
+[app:glance-scrubber]
+paste.app_factory = glance.store.scrubber:app_factory
 """
 
 
@@ -225,8 +266,13 @@ class FunctionalTest(unittest.TestCase):
         self.registry_server = RegistryServer(self.test_dir,
                                               self.registry_port)
 
+        registry_db = self.registry_server.sql_connection
+        self.scrubber_daemon = ScrubberDaemon(self.test_dir,
+                                              sql_connection=registry_db)
+
         self.pid_files = [self.api_server.pid_file,
-                          self.registry_server.pid_file]
+                          self.registry_server.pid_file,
+                          self.scrubber_daemon.pid_file]
         self.files_to_destroy = []
 
     def tearDown(self):
@@ -312,6 +358,13 @@ class FunctionalTest(unittest.TestCase):
                          "Got: %s" % err)
         self.assertTrue("Starting glance-registry with" in out)
 
+        exitcode, out, err = self.scrubber_daemon.start(**kwargs)
+
+        self.assertEqual(0, exitcode,
+                         "Failed to spin up the Scrubber daemon. "
+                         "Got: %s" % err)
+        self.assertTrue("Starting glance-scrubber with" in out)
+
         self.wait_for_servers()
 
     def ping_server(self, port):
@@ -369,6 +422,10 @@ class FunctionalTest(unittest.TestCase):
                          "Failed to spin down the Registry server. "
                          "Got: %s" % err)
 
+        exitcode, out, err = self.scrubber_daemon.stop()
+        self.assertEqual(0, exitcode,
+                         "Failed to spin down the Scrubber daemon. "
+                         "Got: %s" % err)
         # If all went well, then just remove the test directory.
         # We only want to check the logs and stuff if something
         # went wrong...

@@ -27,12 +27,13 @@ import sys
 import webob
 from webob.exc import (HTTPNotFound,
                        HTTPConflict,
-                       HTTPBadRequest)
+                       HTTPBadRequest,
+                       HTTPForbidden)
 
 from glance.common import exception
 from glance.common import wsgi
 from glance.store import (get_from_backend,
-                          delete_from_backend,
+                          schedule_delete_from_backend,
                           get_store_from_location,
                           get_backend_class,
                           UnsupportedBackend)
@@ -96,7 +97,8 @@ class Controller(object):
         """
         params = self._get_query_params(req)
         try:
-            images = registry.get_images_list(self.options, **params)
+            images = registry.get_images_list(self.options, req.context,
+                                              **params)
         except exception.Invalid, e:
             raise HTTPBadRequest(explanation=str(e))
 
@@ -126,7 +128,8 @@ class Controller(object):
         """
         params = self._get_query_params(req)
         try:
-            images = registry.get_images_detail(self.options, **params)
+            images = registry.get_images_detail(self.options, req.context,
+                                                **params)
         except exception.Invalid, e:
             raise HTTPBadRequest(explanation=str(e))
         return dict(images=images)
@@ -226,6 +229,7 @@ class Controller(object):
 
         try:
             image_meta = registry.add_image_metadata(self.options,
+                                                     req.context,
                                                      image_meta)
             return image_meta
         except exception.Duplicate:
@@ -238,6 +242,11 @@ class Controller(object):
             for line in msg.split('\n'):
                 logger.error(line)
             raise HTTPBadRequest(msg, request=req, content_type="text/plain")
+        except exception.NotAuthorized:
+            msg = "Not authorized to reserve image."
+            logger.error(msg)
+            raise HTTPForbidden(msg, request=req,
+                                content_type="text/plain")
 
     def _upload(self, req, image_meta):
         """
@@ -267,7 +276,7 @@ class Controller(object):
 
         image_id = image_meta['id']
         logger.debug("Setting image %s to status 'saving'" % image_id)
-        registry.update_image_metadata(self.options, image_id,
+        registry.update_image_metadata(self.options, req.context, image_id,
                                        {'status': 'saving'})
         try:
             logger.debug("Uploading image data for image %(image_id)s "
@@ -298,7 +307,8 @@ class Controller(object):
             logger.debug("Updating image %(image_id)s data. "
                          "Checksum set to %(checksum)s, size set "
                          "to %(size)d" % locals())
-            registry.update_image_metadata(self.options, image_id,
+            registry.update_image_metadata(self.options, req.context,
+                                           image_id,
                                            {'checksum': checksum,
                                             'size': size})
 
@@ -309,6 +319,13 @@ class Controller(object):
             logger.error(msg)
             self._safe_kill(req, image_id)
             raise HTTPConflict(msg, request=req)
+
+        except exception.NotAuthorized, e:
+            msg = ("Unauthorized upload attempt: %s") % str(e)
+            logger.error(msg)
+            self._safe_kill(req, image_id)
+            raise HTTPForbidden(msg, request=req,
+                                content_type='text/plain')
 
         except Exception, e:
             msg = ("Error uploading image: %s") % str(e)
@@ -329,6 +346,7 @@ class Controller(object):
         image_meta['location'] = location
         image_meta['status'] = 'active'
         return registry.update_image_metadata(self.options,
+                                       req.context,
                                        image_id,
                                        image_meta)
 
@@ -340,6 +358,7 @@ class Controller(object):
         :param image_id: Opaque image identifier
         """
         registry.update_image_metadata(self.options,
+                                       req.context,
                                        image_id,
                                        {'status': 'killed'})
 
@@ -412,6 +431,12 @@ class Controller(object):
                 and the request body is not application/octet-stream
                 image data.
         """
+        if req.context.read_only:
+            msg = "Read-only access"
+            logger.debug(msg)
+            raise HTTPForbidden(msg, request=req,
+                                content_type="text/plain")
+
         image_meta = self._reserve(req, image_meta)
         image_id = image_meta['id']
 
@@ -433,6 +458,12 @@ class Controller(object):
 
         :retval Returns the updated image information as a mapping
         """
+        if req.context.read_only:
+            msg = "Read-only access"
+            logger.debug(msg)
+            raise HTTPForbidden(msg, request=req,
+                                content_type="text/plain")
+
         orig_image_meta = self.get_image_meta_or_404(req, id)
         orig_status = orig_image_meta['status']
 
@@ -440,8 +471,9 @@ class Controller(object):
             raise HTTPConflict("Cannot upload to an unqueued image")
 
         try:
-            image_meta = registry.update_image_metadata(self.options, id,
-                                                         image_meta, True)
+            image_meta = registry.update_image_metadata(self.options,
+                                                        req.context, id,
+                                                        image_meta, True)
             if image_data is not None:
                 image_meta = self._upload_and_activate(req, image_meta)
         except exception.Invalid, e:
@@ -465,6 +497,12 @@ class Controller(object):
         :raises HttpNotAuthorized if image or any chunk is not
                 deleteable by the requesting user
         """
+        if req.context.read_only:
+            msg = "Read-only access"
+            logger.debug(msg)
+            raise HTTPForbidden(msg, request=req,
+                                content_type="text/plain")
+
         image = self.get_image_meta_or_404(req, id)
 
         # The image's location field may be None in the case
@@ -472,14 +510,9 @@ class Controller(object):
         # to delete the image if the backend doesn't yet store it.
         # See https://bugs.launchpad.net/glance/+bug/747799
         if image['location']:
-            try:
-                delete_from_backend(image['location'])
-            except (UnsupportedBackend, exception.NotFound):
-                msg = "Failed to delete image from store (%s). " + \
-                      "Continuing with deletion from registry."
-                logger.error(msg % (image['location'],))
-
-        registry.delete_image_metadata(self.options, id)
+            schedule_delete_from_backend(image['location'], self.options,
+                                         req.context, id)
+        registry.delete_image_metadata(self.options, req.context, id)
 
     def get_image_meta_or_404(self, request, id):
         """
@@ -492,12 +525,18 @@ class Controller(object):
         :raises HTTPNotFound if image does not exist
         """
         try:
-            return registry.get_image_metadata(self.options, id)
+            return registry.get_image_metadata(self.options,
+                                               request.context, id)
         except exception.NotFound:
             msg = "Image with identifier %s not found" % id
             logger.debug(msg)
             raise HTTPNotFound(msg, request=request,
                                content_type='text/plain')
+        except exception.NotAuthorized:
+            msg = "Unauthorized image access"
+            logger.debug(msg)
+            raise HTTPForbidden(msg, request=request,
+                                content_type='text/plain')
 
     def get_store_or_400(self, request, store_name):
         """
