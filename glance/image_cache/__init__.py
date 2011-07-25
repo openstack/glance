@@ -158,7 +158,7 @@ class ImageCache(object):
         return os.path.join(self.invalid_path, str(image_id))
 
     @contextmanager
-    def open(self, image_meta, mode="r"):
+    def open(self, image_meta, mode="rb"):
         """Open a cache image for reading or writing.
 
         We have two possible scenarios:
@@ -178,7 +178,7 @@ class ImageCache(object):
                 yield cache_file
         else:
             # NOTE(sirp): `rw` and `a' modes are not supported since image
-            # data is immutable, we `w` it once, then `r` multiple times.
+            # data is immutable, we `wb` it once, then `rb` multiple times.
             raise Exception("mode '%s' not supported" % mode)
 
     @contextmanager
@@ -206,7 +206,7 @@ class ImageCache(object):
 
             invalid_path = self.invalid_path_for_image(image_id)
             logger.debug("fetch errored, rolling back by moving "
-                         "'%(incomplete_path)s' to '%(final_path)s'",
+                         "'%(incomplete_path)s' to '%(invalid_path)s'",
                          dict(incomplete_path=incomplete_path,
                               invalid_path=invalid_path))
             os.rename(incomplete_path, invalid_path)

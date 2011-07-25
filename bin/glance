@@ -70,7 +70,8 @@ def catch_error(action):
 def get_percent_done(image):
     try:
         pct_done = image['size'] * 100 / int(image['expected_size'])
-    except ValueError:
+    except (ValueError, ZeroDivisionError):
+        # NOTE(sirp): Ignore if expected_size isn't a number, or if it's 0
         pct_done = "UNKNOWN"
     return pct_done
 
