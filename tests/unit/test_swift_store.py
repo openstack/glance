@@ -153,6 +153,9 @@ def format_swift_location(user, key, authurl, container, obj):
     scheme = 'swift+https'
     if authurl.startswith('http://'):
         scheme = 'swift+http'
+        authurl = authurl[7:]
+    if authurl.startswith('https://'):
+        authurl = authurl[8:]
     return "%s://%s:%s@%s/%s/%s" % (scheme, user, key, authurl,
                                     container, obj)
 

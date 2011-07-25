@@ -64,10 +64,15 @@ class StoreLocation(glance.store.location.StoreLocation):
         return ''
 
     def get_uri(self):
+        authurl = self.authurl
+        if authurl.startswith('http://'):
+            authurl = authurl[7:]
+        elif authurl.startswith('https://'):
+            authurl = authurl[8:]
         return "%s://%s%s/%s/%s" % (
             self.scheme,
             self._get_credstring(),
-            self.authurl,
+            authurl,
             self.container,
             self.obj)
 

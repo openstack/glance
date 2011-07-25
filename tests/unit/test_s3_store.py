@@ -143,6 +143,10 @@ def format_s3_location(user, key, authurl, bucket, obj):
     scheme = 's3'
     if authurl.startswith('https://'):
         scheme = 's3+https'
+        authurl = authurl[8:]
+    elif authurl.startswith('http://'):
+        authurl = authurl[7:]
+    authurl = authurl.strip('/')
     return "%s://%s:%s@%s/%s/%s" % (scheme, user, key, authurl,
                                     bucket, obj)
 
@@ -229,6 +233,54 @@ class TestS3Backend(unittest.TestCase):
 
         self.assertEquals(expected_s3_contents, new_image_contents.getvalue())
         self.assertEquals(expected_s3_size, new_image_s3_size)
+
+    def test_add_host_variations(self):
+        """
+        Test that having http(s):// in the s3serviceurl in config
+        options works as expected.
+        """
+        variations = ['http://localhost:80',
+                      'http://localhost',
+                      'http://localhost/v1',
+                      'http://localhost/v1/',
+                      'https://localhost',
+                      'https://localhost:8080',
+                      'https://localhost/v1',
+                      'https://localhost/v1/',
+                      'localhost',
+                      'localhost:8080/v1']
+        i = 42
+        for variation in variations:
+            expected_image_id = i
+            expected_s3_size = FIVE_KB
+            expected_s3_contents = "*" * expected_s3_size
+            expected_checksum = \
+                    hashlib.md5(expected_s3_contents).hexdigest()
+            new_options = S3_OPTIONS.copy()
+            new_options['s3_store_host'] = variation
+            expected_location = format_s3_location(
+                new_options['s3_store_access_key'],
+                new_options['s3_store_secret_key'],
+                new_options['s3_store_host'],
+                new_options['s3_store_bucket'],
+                expected_image_id)
+            image_s3 = StringIO.StringIO(expected_s3_contents)
+
+            location, size, checksum = S3Backend.add(i, image_s3,
+                                                        new_options)
+
+            self.assertEquals(expected_location, location)
+            self.assertEquals(expected_s3_size, size)
+            self.assertEquals(expected_checksum, checksum)
+
+            loc = get_location_from_uri(expected_location)
+            new_image_s3 = S3Backend.get(loc)
+            new_image_contents = new_image_s3.getvalue()
+            new_image_s3_size = new_image_s3.len
+
+            self.assertEquals(expected_s3_contents, new_image_contents)
+            self.assertEquals(expected_s3_size, new_image_s3_size)
+            i = i + 1
 
     def test_add_already_existing(self):
         """

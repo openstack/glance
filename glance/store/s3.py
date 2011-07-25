@@ -59,7 +59,7 @@ class StoreLocation(glance.store.location.StoreLocation):
             s3_host = s3_host[8:].strip('/')
         elif s3_host.startswith('http://'):
             s3_host = s3_host[7:].strip('/')
-        self.s3serviceurl = s3_host
+        self.s3serviceurl = s3_host.strip('/')
 
     def _get_credstring(self):
         if self.accesskey:
@@ -149,6 +149,16 @@ class ChunkedFile(object):
                     break
         finally:
             self.close()
+
+    def getvalue(self):
+        """Return entire string value... used in testing"""
+        data = ""
+        self.len = 0
+        for chunk in self:
+            read_bytes = len(chunk)
+            data = data + chunk
+            self.len = self.len + read_bytes
+        return data
 
     def close(self):
         """Close the internal file pointer"""
