@@ -170,10 +170,10 @@ class ImageCache(object):
                directory, and when it's finished, move it out the main cache
                directory.
         """
-        if mode == 'w':
+        if mode == 'wb':
             with self._open_write(image_meta, mode) as cache_file:
                 yield cache_file
-        elif mode == 'r':
+        elif mode == 'rb':
             with self._open_read(image_meta, mode) as cache_file:
                 yield cache_file
         else:
@@ -194,8 +194,10 @@ class ImageCache(object):
             set_xattr('hits', 0)
 
             final_path = self.path_for_image(image_id)
-            logger.debug("fetch finished, commiting by moving '%s' to '%s'" %
-                         (incomplete_path, final_path))
+            logger.debug("fetch finished, commiting by moving "
+                         "'%(incomplete_path)s' to '%(final_path)s'",
+                         dict(incomplete_path=incomplete_path,
+                              final_path=final_path))
             os.rename(incomplete_path, final_path)
 
         def rollback(e):
@@ -204,7 +206,9 @@ class ImageCache(object):
 
             invalid_path = self.invalid_path_for_image(image_id)
             logger.debug("fetch errored, rolling back by moving "
-                         "'%s' to '%s'" % (incomplete_path, invalid_path))
+                         "'%(incomplete_path)s' to '%(final_path)s'",
+                         dict(incomplete_path=incomplete_path,
+                              invalid_path=invalid_path))
             os.rename(incomplete_path, invalid_path)
 
         try:
@@ -414,18 +418,18 @@ class ImageCache(object):
             mtime = os.path.getmtime(path)
             age = now - mtime
             if not grace:
-                logger.debug("No grace period, reaping '%(path)s' immediately"
-                             % locals())
+                logger.debug("No grace period, reaping '%(path)s'"
+                             " immediately", locals())
                 self._delete_file(path)
                 reaped += 1
             elif age > grace:
                 logger.debug("Cache entry '%(path)s' exceeds grace period, "
-                             "(%(age)i s > %(grace)i s)" % locals())
+                             "(%(age)i s > %(grace)i s)", locals())
                 self._delete_file(path)
                 reaped += 1
 
-        logger.info("Reaped %(reaped)s %(entry_type)s cache entries"
-                    % locals())
+        logger.info("Reaped %(reaped)s %(entry_type)s cache entries",
+                    locals())
         return reaped
 
     def reap_invalid(self, grace=None):

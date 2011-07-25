@@ -215,12 +215,12 @@ class Controller(api.BaseController):
             if cache.hit(id):
                 # hit
                 logger.debug("image cache HIT, retrieving image '%s'"
-                             " from cache" % id)
+                             " from cache", id)
                 image_iterator = get_from_cache(image, cache)
             else:
                 # miss
                 logger.debug("image cache MISS, retrieving image '%s'"
-                             " from store and tee'ing into cache" % id)
+                             " from store and tee'ing into cache", id)
 
                 # We only want to tee-into the cache if we're not currently
                 # prefetching an image
@@ -239,7 +239,7 @@ class Controller(api.BaseController):
         else:
             # disabled
             logger.debug("image cache DISABLED, retrieving image '%s'"
-                         " from store" % id)
+                         " from store", id)
             image_iterator = get_from_store(image)
 
         return {
@@ -321,12 +321,12 @@ class Controller(api.BaseController):
         store = self.get_store_or_400(req, store_name)
 
         image_id = image_meta['id']
-        logger.debug("Setting image %s to status 'saving'" % image_id)
+        logger.debug("Setting image %s to status 'saving'", image_id)
         registry.update_image_metadata(self.options, req.context, image_id,
                                        {'status': 'saving'})
         try:
             logger.debug("Uploading image data for image %(image_id)s "
-                         "to %(store_name)s store" % locals())
+                         "to %(store_name)s store", locals())
             location, size, checksum = store.add(image_meta['id'],
                                                  req.body_file,
                                                  self.options)
@@ -348,7 +348,7 @@ class Controller(api.BaseController):
             # from the backend store
             logger.debug("Updating image %(image_id)s data. "
                          "Checksum set to %(checksum)s, size set "
-                         "to %(size)d" % locals())
+                         "to %(size)d", locals())
             registry.update_image_metadata(self.options, req.context,
                                            image_id,
                                            {'checksum': checksum,

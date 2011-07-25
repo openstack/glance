@@ -75,7 +75,7 @@ class Prefetcher(object):
             self.cache.delete_queued_prefetch_image(image_id)
             return
 
-        logger.debug("Prefetching '%s'" % image_id)
+        logger.debug("Prefetching '%s'", image_id)
         self.cache.do_prefetch(image_id)
 
         try:
