@@ -230,20 +230,24 @@ class V1Client(base_client.BaseClient):
         num_purged = data['num_purged']
         return num_purged
 
-    def reap_invalid_cached_images(self):
+    def reap_invalid_cached_images(self, **kwargs):
         """
         Reaps any invalid cached images
         """
-        res = self.do_request("POST", "/cached_images/reap_invalid")
+        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
+        params['status'] = 'invalid'
+        res = self.do_request("DELETE", "/cached_images", params=params)
         data = json.loads(res.read())
         num_reaped = data['num_reaped']
         return num_reaped
 
-    def reap_stalled_cached_images(self):
+    def reap_stalled_cached_images(self, **kwargs):
         """
         Reaps any stalled cached images
         """
-        res = self.do_request("POST", "/cached_images/reap_stalled")
+        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
+        params['status'] = 'incomplete'
+        res = self.do_request("DELETE", "/cached_images", params=params)
         data = json.loads(res.read())
         num_reaped = data['num_reaped']
         return num_reaped

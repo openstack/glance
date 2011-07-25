@@ -57,19 +57,22 @@ class Controller(api.BaseController):
     def delete(self, req, id):
         self.cache.purge(id)
 
-    def clear(self, req):
-        num_purged = self.cache.clear()
-        return dict(num_purged=num_purged)
-
-    def reap_invalid(self, req):
-        """Reaps any invalid cached images"""
-        num_reaped = self.cache.reap_invalid()
-        return dict(num_reaped=num_reaped)
-
-    def reap_stalled(self, req):
-        """Reaps any stalled incomplete cached images"""
-        num_reaped = self.cache.reap_stalled()
-        return dict(num_reaped=num_reaped)
+    def delete_collection(self, req):
+        """
+        DELETE /cached_images - Clear all active cached images
+        DELETE /cached_images?status=invalid - Reap invalid cached images
+        DELETE /cached_images?status=incomplete - Reap stalled cached images
+        """
+        status = req.str_params.get('status')
+        if status == 'invalid':
+            num_reaped = self.cache.reap_invalid()
+            return dict(num_reaped=num_reaped)
+        elif status == 'incomplete':
+            num_reaped = self.cache.reap_stalled()
+            return dict(num_reaped=num_reaped)
+        else:
+            num_purged = self.cache.clear()
+            return dict(num_purged=num_purged)
 
     def update(self, req, id):
         """PUT /cached_images/1 is used to prefetch an image into the cache"""
