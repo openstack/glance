@@ -238,6 +238,9 @@ class ImageCache(object):
         if os.path.exists(path):
             logger.debug("deleting image cache file '%s'", path)
             os.unlink(path)
+        else:
+            logger.warn("image cache file '%s' doesn't exist, unable to"
+                        " delete", path)
 
     def purge(self, image_id):
         path = self.path_for_image(image_id)
