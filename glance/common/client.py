@@ -56,6 +56,12 @@ class BaseClient(object):
         self.auth_tok = auth_tok
         self.connection = None
 
+    def set_auth_token(self, auth_tok):
+        """
+        Updates the authentication token for this client connection.
+        """
+        self.auth_tok = auth_tok
+
     def get_connection_type(self):
         """
         Returns the proper connection type
