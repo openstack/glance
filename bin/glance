@@ -590,6 +590,7 @@ List images currently being fetched"""
             image['expected_size'],
             get_percent_done(image))
 
+
 @catch_error('purge the specified cached image')
 def cache_purge(options, args):
     """
@@ -890,7 +891,7 @@ Commands:
 
 Cache Commands:
 
-    cache-index          List all images currently cached  
+    cache-index          List all images currently cached
 
     cache-invalid        List current invalid cache images
 
