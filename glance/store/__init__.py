@@ -74,7 +74,11 @@ def get_backend_class(backend):
     try:
         return BACKENDS[backend]
     except KeyError:
-        raise UnsupportedBackend("No backend found for '%s'" % backend)
+        # Total hack... this will go away with refactor-stores
+        try:
+            return BACKENDS[location.SCHEME_TO_STORE_MAP[backend]]
+        except KeyError:
+            raise UnsupportedBackend("No backend found for '%s'" % backend)
 
 
 def get_from_backend(uri, **kwargs):
