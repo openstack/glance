@@ -29,6 +29,7 @@ import stubout
 import webob
 
 import glance.common.client
+from glance.common import context
 from glance.common import exception
 from glance.registry import server as rserver
 from glance.api import v1 as server
@@ -128,12 +129,8 @@ def stub_out_s3_backend(stubs):
         DATA = 'I am a teapot, short and stout\n'
 
         @classmethod
-        def get(cls, parsed_uri, expected_size, conn_class=None):
+        def get(cls, location, expected_size, conn_class=None):
             S3Backend = glance.store.s3.S3Backend
-
-            # raise BackendException if URI is bad.
-            (user, key, authurl, container, obj) = \
-                S3Backend._parse_s3_tokens(parsed_uri)
 
             def chunk_it():
                 for i in xrange(0, len(cls.DATA), cls.CHUNK_SIZE):
@@ -176,7 +173,8 @@ def stub_out_registry_and_store_server(stubs):
                                             "sqlite://")
             options = {'sql_connection': sql_connection, 'verbose': VERBOSE,
                        'debug': DEBUG}
-            res = self.req.get_response(rserver.API(options))
+            api = context.ContextMiddleware(rserver.API(options), options)
+            res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():
@@ -227,7 +225,8 @@ def stub_out_registry_and_store_server(stubs):
                        'registry_port': '9191',
                        'default_store': 'file',
                        'filesystem_store_datadir': FAKE_FILESYSTEM_ROOTDIR}
-            res = self.req.get_response(server.API(options))
+            api = context.ContextMiddleware(server.API(options), options)
+            res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out
             def fake_reader():
@@ -307,6 +306,7 @@ def stub_out_registry_db_image_api(stubs):
 
         def __init__(self):
             self.images = FakeDatastore.FIXTURES
+            self.deleted_images = []
             self.next_id = 3
 
         def image_create(self, _context, values):
@@ -379,6 +379,8 @@ def stub_out_registry_db_image_api(stubs):
         def image_destroy(self, _context, image_id):
             image = self.image_get(_context, image_id)
             self.images.remove(image)
+            image['deleted_at'] = datetime.datetime.utcnow()
+            self.deleted_images.append(image)
 
         def image_get(self, _context, image_id):
 
@@ -390,9 +392,16 @@ def stub_out_registry_db_image_api(stubs):
             else:
                 return images[0]
 
-        def image_get_all_public(self, _context, filters=None, marker=None,
-                                 limit=1000, sort_key=None, sort_dir=None):
-            images = [f for f in self.images if f['is_public'] == True]
+        def image_get_all_pending_delete(self, _context, delete_time=None,
+                                         limit=None):
+            images = [f for f in self.deleted_images \
+                      if f['status'] == 'pending_delete' and \
+                         f['deleted_at'] <= delete_time]
+            return images
+
+        def image_get_all(self, _context, filters=None, marker=None,
+                          limit=1000, sort_key=None, sort_dir=None):
+            images = self.images
 
             if 'size_min' in filters:
                 size_min = int(filters.pop('size_min'))
@@ -414,7 +423,8 @@ def stub_out_registry_db_image_api(stubs):
                 images = filter(_prop_filter(k, v), images)
 
             for k, v in filters.items():
-                images = [f for f in images if f[k] == v]
+                if v is not None:
+                    images = [f for f in images if f[k] == v]
 
             # sorted func expects func that compares in descending order
             def image_cmp(x, y):
@@ -461,5 +471,7 @@ def stub_out_registry_db_image_api(stubs):
               fake_datastore.image_destroy)
     stubs.Set(glance.registry.db.api, 'image_get',
               fake_datastore.image_get)
-    stubs.Set(glance.registry.db.api, 'image_get_all_public',
-              fake_datastore.image_get_all_public)
+    stubs.Set(glance.registry.db.api, 'image_get_all_pending_delete',
+              fake_datastore.image_get_all_pending_delete)
+    stubs.Set(glance.registry.db.api, 'image_get_all',
+              fake_datastore.image_get_all)

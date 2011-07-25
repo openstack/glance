@@ -21,14 +21,113 @@ from __future__ import absolute_import
 
 import httplib
 import logging
+import urlparse
 
 from glance.common import config
 from glance.common import exception
 import glance.store
+import glance.store.location
 
 DEFAULT_SWIFT_CONTAINER = 'glance'
 
 logger = logging.getLogger('glance.store.swift')
+
+glance.store.location.add_scheme_map({'swift': 'swift',
+                                      'swift+http': 'swift',
+                                      'swift+https': 'swift'})
+
+
+class StoreLocation(glance.store.location.StoreLocation):
+
+    """
+    Class describing a Swift URI. A Swift URI can look like any of
+    the following:
+
+        swift://user:pass@authurl.com/container/obj-id
+        swift+http://user:pass@authurl.com/container/obj-id
+        swift+https://user:pass@authurl.com/container/obj-id
+
+    The swift+https:// URIs indicate there is an HTTPS authentication URL
+    """
+
+    def process_specs(self):
+        self.scheme = self.specs.get('scheme', 'swift+https')
+        self.user = self.specs.get('user')
+        self.key = self.specs.get('key')
+        self.authurl = self.specs.get('authurl')
+        self.container = self.specs.get('container')
+        self.obj = self.specs.get('obj')
+
+    def _get_credstring(self):
+        if self.user:
+            return '%s:%s@' % (self.user, self.key)
+        return ''
+
+    def get_uri(self):
+        return "%s://%s%s/%s/%s" % (
+            self.scheme,
+            self._get_credstring(),
+            self.authurl,
+            self.container,
+            self.obj)
+
+    def parse_uri(self, uri):
+        """
+        Parse URLs. This method fixes an issue where credentials specified
+        in the URL are interpreted differently in Python 2.6.1+ than prior
+        versions of Python. It also deals with the peculiarity that new-style
+        Swift URIs have where a username can contain a ':', like so:
+
+            swift://account:user:pass@authurl.com/container/obj
+        """
+        pieces = urlparse.urlparse(uri)
+        assert pieces.scheme in ('swift', 'swift+http', 'swift+https')
+        self.scheme = pieces.scheme
+        netloc = pieces.netloc
+        path = pieces.path.lstrip('/')
+        if netloc != '':
+            # > Python 2.6.1
+            if '@' in netloc:
+                creds, netloc = netloc.split('@')
+            else:
+                creds = None
+        else:
+            # Python 2.6.1 compat
+            # see lp659445 and Python issue7904
+            if '@' in path:
+                creds, path = path.split('@')
+            else:
+                creds = None
+            netloc = path[0:path.find('/')].strip('/')
+            path = path[path.find('/'):].strip('/')
+        if creds:
+            cred_parts = creds.split(':')
+
+            # User can be account:user, in which case cred_parts[0:2] will be
+            # the account and user. Combine them into a single username of
+            # account:user
+            if len(cred_parts) == 1:
+                reason = "Badly formed credentials '%s' in Swift URI" % creds
+                raise exception.BadStoreUri(uri, reason)
+            elif len(cred_parts) == 3:
+                user = ':'.join(cred_parts[0:2])
+            else:
+                user = cred_parts[0]
+            key = cred_parts[-1]
+            self.user = user
+            self.key = key
+        else:
+            self.user = None
+        path_parts = path.split('/')
+        try:
+            self.obj = path_parts.pop()
+            self.container = path_parts.pop()
+            self.authurl = netloc
+            if len(path_parts) > 0:
+                self.authurl = netloc + '/' + '/'.join(path_parts).strip('/')
+        except IndexError:
+            reason = "Badly formed Swift URI"
+            raise exception.BadStoreUri(uri, reason)
 
 
 class SwiftBackend(glance.store.Backend):
@@ -39,31 +138,33 @@ class SwiftBackend(glance.store.Backend):
     CHUNKSIZE = 65536
 
     @classmethod
-    def get(cls, parsed_uri, expected_size=None, options=None):
+    def get(cls, location, expected_size=None, options=None):
         """
-        Takes a parsed_uri in the format of:
-        swift://user:password@auth_url/container/file.gz.0, connects to the
-        swift instance at auth_url and downloads the file. Returns the
-        generator resp_body provided by get_object.
+        Takes a `glance.store.location.Location` object that indicates
+        where to find the image file, and returns a generator from Swift
+        provided by Swift client's get_object() method.
+
+        :location `glance.store.location.Location` object, supplied
+                  from glance.store.location.get_location_from_uri()
         """
         from swift.common import client as swift_client
-        (user, key, authurl, container, obj) = parse_swift_tokens(parsed_uri)
 
         # TODO(sirp): snet=False for now, however, if the instance of
         # swift we're talking to is within our same region, we should set
         # snet=True
+        loc = location.store_location
         swift_conn = swift_client.Connection(
-            authurl=authurl, user=user, key=key, snet=False)
+            authurl=loc.authurl, user=loc.user, key=loc.key, snet=False)
 
         try:
             (resp_headers, resp_body) = swift_conn.get_object(
-                container=container, obj=obj, resp_chunk_size=cls.CHUNKSIZE)
+                container=loc.container, obj=loc.obj,
+                resp_chunk_size=cls.CHUNKSIZE)
         except swift_client.ClientException, e:
             if e.http_status == httplib.NOT_FOUND:
-                location = format_swift_location(user, key, authurl,
-                                                 container, obj)
+                uri = location.get_store_uri()
                 raise exception.NotFound("Swift could not find image at "
-                                         "location %(location)s" % locals())
+                                         "uri %(uri)s" % locals())
 
         if expected_size:
             obj_size = int(resp_headers['content-length'])
@@ -98,6 +199,10 @@ class SwiftBackend(glance.store.Backend):
             <CONTAINER> = ``swift_store_container``
             <ID> = The id of the image being added
 
+        :note Swift auth URLs by default use HTTPS. To specify an HTTP
+              auth URL, you can specify http://someurl.com for the
+              swift_store_auth_address config option
+
         :param id: The opaque image identifier
         :param data: The image data to write, as a file-like object
         :param options: Conf mapping
@@ -119,9 +224,14 @@ class SwiftBackend(glance.store.Backend):
         user = cls._option_get(options, 'swift_store_user')
         key = cls._option_get(options, 'swift_store_key')
 
-        full_auth_address = auth_address
-        if not full_auth_address.startswith('http'):
-            full_auth_address = 'https://' + full_auth_address
+        scheme = 'swift+https'
+        if auth_address.startswith('http://'):
+            scheme = 'swift+http'
+            full_auth_address = auth_address
+        elif auth_address.startswith('https://'):
+            full_auth_address = auth_address
+        else:
+            full_auth_address = 'https://' + auth_address  # Defaults https
 
         swift_conn = swift_client.Connection(
             authurl=full_auth_address, user=user, key=key, snet=False)
@@ -133,8 +243,13 @@ class SwiftBackend(glance.store.Backend):
         create_container_if_missing(container, swift_conn, options)
 
         obj_name = str(id)
-        location = format_swift_location(user, key, auth_address,
-                                         container, obj_name)
+        location = StoreLocation({'scheme': scheme,
+                                  'container': container,
+                                  'obj': obj_name,
+                                  'authurl': auth_address,
+                                  'user': user,
+                                  'key': key})
+
         try:
             obj_etag = swift_conn.put_object(container, obj_name, data)
 
@@ -152,7 +267,7 @@ class SwiftBackend(glance.store.Backend):
             # header keys are lowercased by Swift
             if 'content-length' in resp_headers:
                 size = int(resp_headers['content-length'])
-            return (location, size, obj_etag)
+            return (location.get_uri(), size, obj_etag)
         except swift_client.ClientException, e:
             if e.http_status == httplib.CONFLICT:
                 raise exception.Duplicate("Swift already has an image at "
@@ -162,87 +277,32 @@ class SwiftBackend(glance.store.Backend):
             raise glance.store.BackendException(msg)
 
     @classmethod
-    def delete(cls, parsed_uri):
+    def delete(cls, location):
         """
-        Deletes the swift object(s) at the parsed_uri location
+        Takes a `glance.store.location.Location` object that indicates
+        where to find the image file to delete
+
+        :location `glance.store.location.Location` object, supplied
+                  from glance.store.location.get_location_from_uri()
         """
         from swift.common import client as swift_client
-        (user, key, authurl, container, obj) = parse_swift_tokens(parsed_uri)
 
         # TODO(sirp): snet=False for now, however, if the instance of
         # swift we're talking to is within our same region, we should set
         # snet=True
+        loc = location.store_location
         swift_conn = swift_client.Connection(
-            authurl=authurl, user=user, key=key, snet=False)
+            authurl=loc.authurl, user=loc.user, key=loc.key, snet=False)
 
         try:
-            swift_conn.delete_object(container, obj)
+            swift_conn.delete_object(loc.container, loc.obj)
         except swift_client.ClientException, e:
             if e.http_status == httplib.NOT_FOUND:
-                location = format_swift_location(user, key, authurl,
-                                                 container, obj)
+                uri = location.get_store_uri()
                 raise exception.NotFound("Swift could not find image at "
-                                         "location %(location)s" % locals())
+                                         "uri %(uri)s" % locals())
             else:
                 raise
-
-
-def parse_swift_tokens(parsed_uri):
-    """
-    Return the various tokens used by Swift.
-
-    :param parsed_uri: The pieces of a URI returned by urlparse
-    :retval A tuple of (user, key, auth_address, container, obj_name)
-    """
-    path = parsed_uri.path.lstrip('//')
-    netloc = parsed_uri.netloc
-
-    try:
-        try:
-            creds, netloc = netloc.split('@')
-            path = '/'.join([netloc, path])
-        except ValueError:
-            # Python 2.6.1 compat
-            # see lp659445 and Python issue7904
-            creds, path = path.split('@')
-
-        cred_parts = creds.split(':')
-
-        # User can be account:user, in which case cred_parts[0:2] will be
-        # the account and user. Combine them into a single username of
-        # account:user
-        if len(cred_parts) == 3:
-            user = ':'.join(cred_parts[0:2])
-        else:
-            user = cred_parts[0]
-        key = cred_parts[-1]
-        path_parts = path.split('/')
-        obj = path_parts.pop()
-        container = path_parts.pop()
-    except (ValueError, IndexError):
-        raise glance.store.BackendException(
-             "Expected four values to unpack in: swift:%s. "
-             "Should have received something like: %s."
-             % (parsed_uri.path, SwiftBackend.EXAMPLE_URL))
-
-    authurl = "https://%s" % '/'.join(path_parts)
-
-    return user, key, authurl, container, obj
-
-
-def format_swift_location(user, key, auth_address, container, obj_name):
-    """
-    Returns the swift URI in the format:
-        swift://<USER>:<KEY>@<AUTH_ADDRESS>/<CONTAINER>/<OBJNAME>
-
-    :param user: The swift user to authenticate with
-    :param key: The auth key for the authenticating user
-    :param auth_address: The base URL for the authentication service
-    :param container: The name of the container
-    :param obj_name: The name of the object
-    """
-    return "swift://%(user)s:%(key)s@%(auth_address)s/"\
-           "%(container)s/%(obj_name)s" % locals()
 
 
 def create_container_if_missing(container, swift_conn, options):

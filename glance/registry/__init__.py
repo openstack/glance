@@ -26,33 +26,33 @@ from glance.registry import client
 logger = logging.getLogger('glance.registry')
 
 
-def get_registry_client(options):
+def get_registry_client(options, cxt):
     host = options['registry_host']
     port = int(options['registry_port'])
-    return client.RegistryClient(host, port)
+    return client.RegistryClient(host, port, auth_tok=cxt.auth_tok)
 
 
-def get_images_list(options, **kwargs):
-    c = get_registry_client(options)
+def get_images_list(options, context, **kwargs):
+    c = get_registry_client(options, context)
     return c.get_images(**kwargs)
 
 
-def get_images_detail(options, **kwargs):
-    c = get_registry_client(options)
+def get_images_detail(options, context, **kwargs):
+    c = get_registry_client(options, context)
     return c.get_images_detailed(**kwargs)
 
 
-def get_image_metadata(options, image_id):
-    c = get_registry_client(options)
+def get_image_metadata(options, context, image_id):
+    c = get_registry_client(options, context)
     return c.get_image(image_id)
 
 
-def add_image_metadata(options, image_meta):
+def add_image_metadata(options, context, image_meta):
     if options['debug']:
         logger.debug("Adding image metadata...")
         _debug_print_metadata(image_meta)
 
-    c = get_registry_client(options)
+    c = get_registry_client(options, context)
     new_image_meta = c.add_image(image_meta)
 
     if options['debug']:
@@ -63,12 +63,13 @@ def add_image_metadata(options, image_meta):
     return new_image_meta
 
 
-def update_image_metadata(options, image_id, image_meta, purge_props=False):
+def update_image_metadata(options, context, image_id, image_meta,
+                          purge_props=False):
     if options['debug']:
         logger.debug("Updating image metadata for image %s...", image_id)
         _debug_print_metadata(image_meta)
 
-    c = get_registry_client(options)
+    c = get_registry_client(options, context)
     new_image_meta = c.update_image(image_id, image_meta, purge_props)
 
     if options['debug']:
@@ -79,9 +80,9 @@ def update_image_metadata(options, image_id, image_meta, purge_props=False):
     return new_image_meta
 
 
-def delete_image_metadata(options, image_id):
+def delete_image_metadata(options, context, image_id):
     logger.debug("Deleting image metadata for image %s...", image_id)
-    c = get_registry_client(options)
+    c = get_registry_client(options, context)
     return c.delete_image(image_id)
 
 

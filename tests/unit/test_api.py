@@ -26,6 +26,7 @@ import stubout
 import webob
 
 from glance.api import v1 as server
+from glance.common import context
 from glance.registry import server as rserver
 import glance.registry.db.api
 from tests import stubs
@@ -41,8 +42,9 @@ class TestRegistryAPI(unittest.TestCase):
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_filesystem_backend()
-        self.api = rserver.API({'verbose': VERBOSE,
-                                'debug': DEBUG})
+        options = {'verbose': VERBOSE,
+                   'debug': DEBUG}
+        self.api = context.ContextMiddleware(rserver.API(options), options)
 
     def tearDown(self):
         """Clear the test environment"""
@@ -1077,6 +1079,84 @@ class TestRegistryAPI(unittest.TestCase):
         for image in images:
             self.assertEqual('v a', image['properties']['prop_123'])
 
+    def test_get_details_filter_public_none(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        all images if is_public none is passed
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?is_public=None')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+
+    def test_get_details_filter_public_false(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        private images if is_public false is passed
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?is_public=False')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertEqual(False, image['is_public'])
+
+    def test_get_details_filter_public_true(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images if is_public true is passed (same as default)
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?is_public=True')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEqual(True, image['is_public'])
+
     def test_get_details_sort_name_asc(self):
         """
         Tests that the /images/details registry API returns list of
@@ -1380,7 +1460,7 @@ class TestGlanceAPI(unittest.TestCase):
                    'sql_connection': sql_connection,
                    'default_store': 'file',
                    'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
-        self.api = server.API(options)
+        self.api = context.ContextMiddleware(server.API(options), options)
 
     def tearDown(self):
         """Clear the test environment"""

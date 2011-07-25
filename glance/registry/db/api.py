@@ -24,6 +24,7 @@ Defines interface for DB access
 import logging
 
 from sqlalchemy import asc, create_engine, desc
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import exc
 from sqlalchemy.orm import joinedload
@@ -45,12 +46,14 @@ BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
 
 IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size',
                                       'disk_format', 'container_format',
-                                      'is_public', 'location', 'checksum'])
+                                      'is_public', 'location', 'checksum',
+                                      'owner'])
 
 CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
 DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi',
                'iso']
-STATUSES = ['active', 'saving', 'queued', 'killed']
+STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
+            'deleted']
 
 
 def configure_db(options):
@@ -119,7 +122,7 @@ def image_get(context, image_id, session=None):
     """Get an image or raise if it does not exist."""
     session = session or get_session()
     try:
-        return session.query(models.Image).\
+        image = session.query(models.Image).\
                        options(joinedload(models.Image.properties)).\
                        filter_by(deleted=_deleted(context)).\
                        filter_by(id=image_id).\
@@ -127,11 +130,40 @@ def image_get(context, image_id, session=None):
     except exc.NoResultFound:
         raise exception.NotFound("No image found with ID %s" % image_id)
 
+    # Make sure they can look at it
+    if not context.is_image_visible(image):
+        raise exception.NotAuthorized("Image not visible to you")
 
-def image_get_all_public(context, filters=None, marker=None, limit=None,
-                         sort_key='created_at', sort_dir='desc'):
+    return image
+
+
+def image_get_all_pending_delete(context, delete_time=None, limit=None):
+    """Get all images that are pending deletion
+
+    :param limit: maximum number of images to return
     """
-    Get all public images that match zero or more filters.
+    session = get_session()
+    query = session.query(models.Image).\
+                   options(joinedload(models.Image.properties)).\
+                   filter_by(deleted=True).\
+                   filter(models.Image.status == 'pending_delete')
+
+    if delete_time:
+        query = query.filter(models.Image.deleted_at <= delete_time)
+
+    query = query.order_by(desc(models.Image.deleted_at)).\
+                  order_by(desc(models.Image.id))
+
+    if limit:
+        query = query.limit(limit)
+
+    return query.all()
+
+
+def image_get_all(context, filters=None, marker=None, limit=None,
+                  sort_key='created_at', sort_dir='desc'):
+    """
+    Get all images that match zero or more filters.
 
     :param filters: dict of filter keys and values. If a 'properties'
                     key is present, it is treated as a dict of key/value
@@ -147,7 +179,6 @@ def image_get_all_public(context, filters=None, marker=None, limit=None,
     query = session.query(models.Image).\
                    options(joinedload(models.Image.properties)).\
                    filter_by(deleted=_deleted(context)).\
-                   filter_by(is_public=True).\
                    filter(models.Image.status != 'killed')
 
     sort_dir_func = {
@@ -168,11 +199,19 @@ def image_get_all_public(context, filters=None, marker=None, limit=None,
         query = query.filter(models.Image.size <= filters['size_max'])
         del filters['size_max']
 
+    if 'is_public' in filters and filters['is_public'] is not None:
+        the_filter = models.Image.is_public == filters['is_public']
+        if filters['is_public'] and context.owner is not None:
+            the_filter = or_(the_filter, models.Image.owner == context.owner)
+        query = query.filter(the_filter)
+        del filters['is_public']
+
     for (k, v) in filters.pop('properties', {}).items():
         query = query.filter(models.Image.properties.any(name=k, value=v))
 
     for (k, v) in filters.items():
-        query = query.filter(getattr(models.Image, k) == v)
+        if v is not None:
+            query = query.filter(getattr(models.Image, k) == v)
 
     if marker != None:
         # images returned should be created before the image defined by marker
@@ -273,7 +312,11 @@ def _image_update(context, values, image_id, purge_props=False):
         # idiotic.
         validate_image(image_ref.to_dict())
 
-        image_ref.save(session=session)
+        try:
+            image_ref.save(session=session)
+        except IntegrityError, e:
+            raise exception.Duplicate("Image ID %s already exists!"
+                                      % values['id'])
 
         _set_properties_for_image(context, image_ref, properties, purge_props,
                                   session)
@@ -350,6 +393,8 @@ def _deleted(context):
     Calculates whether to include deleted objects based on context.
     Currently just looks for a flag called deleted in the context dict.
     """
+    if hasattr(context, 'show_deleted'):
+        return context.show_deleted
     if not hasattr(context, 'get'):
         return False
     return context.get('deleted', False)

@@ -20,11 +20,11 @@
 import StringIO
 import hashlib
 import unittest
-import urlparse
 
 import stubout
 
 from glance.common import exception
+from glance.store.location import get_location_from_uri
 from glance.store.filesystem import FilesystemBackend, ChunkedFile
 from tests import stubs
 
@@ -51,8 +51,8 @@ class TestFilesystemBackend(unittest.TestCase):
 
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
-        url_pieces = urlparse.urlparse("file:///tmp/glance-tests/2")
-        image_file = FilesystemBackend.get(url_pieces)
+        loc = get_location_from_uri("file:///tmp/glance-tests/2")
+        image_file = FilesystemBackend.get(loc)
 
         expected_data = "chunk00000remainder"
         expected_num_chunks = 2
@@ -70,10 +70,10 @@ class TestFilesystemBackend(unittest.TestCase):
         Test that trying to retrieve a file that doesn't exist
         raises an error
         """
-        url_pieces = urlparse.urlparse("file:///tmp/glance-tests/non-existing")
+        loc = get_location_from_uri("file:///tmp/glance-tests/non-existing")
         self.assertRaises(exception.NotFound,
                           FilesystemBackend.get,
-                          url_pieces)
+                          loc)
 
     def test_add(self):
         """Test that we can add an image via the filesystem backend"""
@@ -93,8 +93,8 @@ class TestFilesystemBackend(unittest.TestCase):
         self.assertEquals(expected_file_size, size)
         self.assertEquals(expected_checksum, checksum)
 
-        url_pieces = urlparse.urlparse("file:///tmp/glance-tests/42")
-        new_image_file = FilesystemBackend.get(url_pieces)
+        loc = get_location_from_uri("file:///tmp/glance-tests/42")
+        new_image_file = FilesystemBackend.get(loc)
         new_image_contents = ""
         new_image_file_size = 0
 
@@ -122,20 +122,19 @@ class TestFilesystemBackend(unittest.TestCase):
         """
         Test we can delete an existing image in the filesystem store
         """
-        url_pieces = urlparse.urlparse("file:///tmp/glance-tests/2")
-
-        FilesystemBackend.delete(url_pieces)
+        loc = get_location_from_uri("file:///tmp/glance-tests/2")
+        FilesystemBackend.delete(loc)
 
         self.assertRaises(exception.NotFound,
                           FilesystemBackend.get,
-                          url_pieces)
+                          loc)
 
     def test_delete_non_existing(self):
         """
         Test that trying to delete a file that doesn't exist
         raises an error
         """
-        url_pieces = urlparse.urlparse("file:///tmp/glance-tests/non-existing")
+        loc = get_location_from_uri("file:///tmp/glance-tests/non-existing")
         self.assertRaises(exception.NotFound,
                           FilesystemBackend.delete,
-                          url_pieces)
+                          loc)

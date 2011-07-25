@@ -56,6 +56,16 @@ class Controller(object):
         self.options = options
         db_api.configure_db(options)
 
+    def _get_images(self, context, **params):
+        """
+        Get images, wrapping in exception if necessary.
+        """
+        try:
+            return db_api.image_get_all(context, **params)
+        except exception.NotFound, e:
+            msg = "Invalid marker. Image could not be found."
+            raise exc.HTTPBadRequest(explanation=msg)
+
     def index(self, req):
         """
         Return a basic filtered list of public, non-deleted images
@@ -77,11 +87,7 @@ class Controller(object):
             }
         """
         params = self._get_query_params(req)
-        try:
-            images = db_api.image_get_all_public(None, **params)
-        except exception.NotFound, e:
-            msg = "Invalid marker. Image could not be found."
-            raise exc.HTTPBadRequest(explanation=msg)
+        images = self._get_images(req.context, **params)
 
         results = []
         for image in images:
@@ -104,12 +110,8 @@ class Controller(object):
         all image model fields.
         """
         params = self._get_query_params(req)
-        try:
-            images = db_api.image_get_all_public(None, **params)
-        except exception.NotFound, e:
-            msg = "Invalid marker. Image could not be found."
-            raise exc.HTTPBadRequest(explanation=msg)
 
+        images = self._get_images(req.context, **params)
         image_dicts = [make_image_dict(i) for i in images]
         return dict(images=image_dicts)
 
@@ -144,6 +146,11 @@ class Controller(object):
         filters = {}
         properties = {}
 
+        if req.context.is_admin:
+            # Only admin gets to look for non-public images
+            filters['is_public'] = self._get_is_public(req)
+        else:
+            filters['is_public'] = True
         for param in req.str_params:
             if param in SUPPORTED_FILTERS:
                 filters[param] = req.str_params.get(param)
@@ -199,11 +206,35 @@ class Controller(object):
             raise exc.HTTPBadRequest(explanation=msg)
         return sort_dir
 
+    def _get_is_public(self, req):
+        """Parse is_public into something usable."""
+        is_public = req.str_params.get('is_public', None)
+
+        if is_public is None:
+            # NOTE(vish): This preserves the default value of showing only
+            #             public images.
+            return True
+        is_public = is_public.lower()
+        if is_public == 'none':
+            return None
+        elif is_public == 'true' or is_public == '1':
+            return True
+        elif is_public == 'false' or is_public == '0':
+            return False
+        else:
+            raise exc.HTTPBadRequest("is_public must be None, True, or False")
+
     def show(self, req, id):
         """Return data about the given image id."""
         try:
-            image = db_api.image_get(None, id)
+            image = db_api.image_get(req.context, id)
         except exception.NotFound:
+            raise exc.HTTPNotFound()
+        except exception.NotAuthorized:
+            # If it's private and doesn't belong to them, don't let on
+            # that it exists
+            logger.info("Access by %s to image %s denied" %
+                        (req.context.user, id))
             raise exc.HTTPNotFound()
 
         return dict(image=make_image_dict(image))
@@ -217,11 +248,19 @@ class Controller(object):
 
         :retval Returns 200 if delete was successful, a fault if not.
         """
-        context = None
+        if req.context.read_only:
+            raise exc.HTTPForbidden()
+
         try:
-            db_api.image_destroy(context, id)
+            db_api.image_destroy(req.context, id)
         except exception.NotFound:
             return exc.HTTPNotFound()
+        except exception.NotAuthorized:
+            # If it's private and doesn't belong to them, don't let on
+            # that it exists
+            logger.info("Access by %s to image %s denied" %
+                        (req.context.user, id))
+            raise exc.HTTPNotFound()
 
     def create(self, req, body):
         """
@@ -234,14 +273,20 @@ class Controller(object):
                 which will include the newly-created image's internal id
                 in the 'id' field
         """
+        if req.context.read_only:
+            raise exc.HTTPForbidden()
+
         image_data = body['image']
 
         # Ensure the image has a status set
         image_data.setdefault('status', 'active')
 
-        context = None
+        # Set up the image owner
+        if not req.context.is_admin or 'owner' not in image_data:
+            image_data['owner'] = req.context.owner
+
         try:
-            image_data = db_api.image_create(context, image_data)
+            image_data = db_api.image_create(req.context, image_data)
             return dict(image=make_image_dict(image_data))
         except exception.Duplicate:
             msg = ("Image with identifier %s already exists!" % id)
@@ -262,18 +307,25 @@ class Controller(object):
 
         :retval Returns the updated image information as a mapping,
         """
+        if req.context.read_only:
+            raise exc.HTTPForbidden()
+
         image_data = body['image']
 
+        # Prohibit modification of 'owner'
+        if not req.context.is_admin and 'owner' in image_data:
+            del image_data['owner']
+
         purge_props = req.headers.get("X-Glance-Registry-Purge-Props", "false")
-        context = None
         try:
             logger.debug("Updating image %(id)s with metadata: %(image_data)r"
                          % locals())
             if purge_props == "true":
-                updated_image = db_api.image_update(context, id, image_data,
-                                                        True)
+                updated_image = db_api.image_update(req.context, id,
+                                                    image_data, True)
             else:
-                updated_image = db_api.image_update(context, id, image_data)
+                updated_image = db_api.image_update(req.context, id,
+                                                    image_data)
             return dict(image=make_image_dict(updated_image))
         except exception.Invalid, e:
             msg = ("Failed to update image metadata. "
@@ -281,6 +333,14 @@ class Controller(object):
             logger.error(msg)
             return exc.HTTPBadRequest(msg)
         except exception.NotFound:
+            raise exc.HTTPNotFound(body='Image not found',
+                               request=req,
+                               content_type='text/plain')
+        except exception.NotAuthorized:
+            # If it's private and doesn't belong to them, don't let on
+            # that it exists
+            logger.info("Access by %s to image %s denied" %
+                        (req.context.user, id))
             raise exc.HTTPNotFound(body='Image not found',
                                request=req,
                                content_type='text/plain')
