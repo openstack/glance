@@ -22,6 +22,7 @@ interface for adding, modifying, and retrieving information about the images
 stored in one or more Glance nodes.
 """
 
+import functools
 import optparse
 import os
 import re
@@ -36,13 +37,43 @@ possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
 if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
-from glance import client
+from glance import client as glance_client
 from glance import version
 from glance.common import exception
-from glance.common import utils
+from glance.common import utils as common_utils
+from glance import utils
 
 SUCCESS = 0
 FAILURE = 1
+
+
+#TODO(sirp): make more of the actions use this decorator
+def catch_error(action):
+    """Decorator to provide sensible default error handling for actions."""
+    def wrap(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                ret = func(*args, **kwargs)
+                return SUCCESS if ret is None else ret
+            except Exception, e:
+                print "Failed to %s. Got error:" % action
+                pieces = str(e).split('\n')
+                for piece in pieces:
+                    print piece
+                return FAILURE
+
+        return wrapper
+    return wrap
+
+
+def get_percent_done(image):
+    try:
+        pct_done = image['size'] * 100 / int(image['expected_size'])
+    except (ValueError, ZeroDivisionError):
+        # NOTE(sirp): Ignore if expected_size isn't a number, or if it's 0
+        pct_done = "UNKNOWN"
+    return pct_done
 
 
 def get_image_fields_from_args(args):
@@ -152,7 +183,7 @@ EXAMPLES
         return FAILURE
 
     image_meta = {'name': fields.pop('name'),
-                  'is_public': utils.bool_from_string(
+                  'is_public': common_utils.bool_from_string(
                       fields.pop('is_public', False)),
                   'disk_format': fields.pop('disk_format', 'raw'),
                   'container_format': fields.pop('container_format', 'ovf')}
@@ -276,7 +307,7 @@ to spell field names correctly. :)"""
 
     # Have to handle "boolean" values specially...
     if 'is_public' in fields:
-        image_meta['is_public'] = utils.bool_from_string(
+        image_meta['is_public'] = common_utils.bool_from_string(
             fields.pop('is_public'))
 
     # Add custom attributes, which are all the arguments remaining
@@ -364,40 +395,37 @@ Shows image metadata for an image in Glance"""
         return FAILURE
 
 
+@catch_error('show index')
 def images_index(options, args):
     """
 %(prog)s index [options]
 
 Returns basic information for all public images
 a Glance server knows about"""
-    c = get_client(options)
-    try:
-        images = c.get_images()
-        if len(images) == 0:
-            print "No public images found."
-            return SUCCESS
-
-        print "Found %d public images..." % len(images)
-        print "%-16s %-30s %-20s %-20s %-14s" % (("ID"),
-                                           ("Name"),
-                                           ("Disk Format"),
-                                           ("Container Format"),
-                                           ("Size"))
-        print ('-' * 16) + " " + ('-' * 30) + " "\
-              + ('-' * 20) + " " + ('-' * 20) + " " + ('-' * 14)
-        for image in images:
-            print "%-16s %-30s %-20s %-20s %14d" % (image['id'],
-                                              image['name'],
-                                              image['disk_format'],
-                                              image['container_format'],
-                                              int(image['size']))
+    client = get_client(options)
+    images = client.get_images()
+    if not images:
+        print "No public images found."
         return SUCCESS
-    except Exception, e:
-        print "Failed to show index. Got error:"
-        pieces = str(e).split('\n')
-        for piece in pieces:
-            print piece
-        return FAILURE
+
+    print "Found %d public images..." % len(images)
+
+    pretty_table = utils.PrettyTable()
+    pretty_table.add_column(16, label="ID")
+    pretty_table.add_column(30, label="Name")
+    pretty_table.add_column(20, label="Disk Format")
+    pretty_table.add_column(20, label="Container Format")
+    pretty_table.add_column(14, label="Size", just="r")
+
+    print pretty_table.make_header()
+
+    for image in images:
+        print pretty_table.make_row(
+            image['id'],
+            image['name'],
+            image['disk_format'],
+            image['container_format'],
+            image['size'])
 
 
 def images_detailed(options, args):
@@ -458,13 +486,256 @@ Deletes all images from a Glance server"""
     return SUCCESS
 
 
+@catch_error('show cached images')
+def cache_index(options, args):
+    """
+%(prog)s cache-index [options]
+
+List all images currently cached"""
+    client = get_client(options)
+    images = client.get_cached_images()
+    if not images:
+        print "No cached images."
+        return SUCCESS
+
+    print "Found %d cached images..." % len(images)
+
+    pretty_table = utils.PrettyTable()
+    pretty_table.add_column(16, label="ID")
+    pretty_table.add_column(30, label="Name")
+    pretty_table.add_column(19, label="Last Accessed (UTC)")
+    # 1 TB takes 13 characters to display: len(str(2**40)) == 13
+    pretty_table.add_column(14, label="Size", just="r")
+    pretty_table.add_column(10, label="Hits", just="r")
+
+    print pretty_table.make_header()
+
+    for image in images:
+        print pretty_table.make_row(
+            image['id'],
+            image['name'],
+            image['last_accessed'],
+            image['size'],
+            image['hits'])
+
+
+@catch_error('show invalid cache images')
+def cache_invalid(options, args):
+    """
+%(prog)s cache-invalid [options]
+
+List current invalid cache images"""
+    client = get_client(options)
+    images = client.get_invalid_cached_images()
+    if not images:
+        print "No invalid cached images."
+        return SUCCESS
+
+    print "Found %d invalid cached images..." % len(images)
+
+    pretty_table = utils.PrettyTable()
+    pretty_table.add_column(16, label="ID")
+    pretty_table.add_column(30, label="Name")
+    pretty_table.add_column(30, label="Error")
+    pretty_table.add_column(19, label="Last Modified (UTC)")
+    # 1 TB takes 13 characters to display: len(str(2**40)) == 13
+    pretty_table.add_column(14, label="Size", just="r")
+    pretty_table.add_column(14, label="Expected Size", just="r")
+    pretty_table.add_column(7, label="% Done", just="r")
+
+    print pretty_table.make_header()
+
+    for image in images:
+        print pretty_table.make_row(
+            image['id'],
+            image['name'],
+            image['error'],
+            image['last_accessed'],
+            image['size'],
+            image['expected_size'],
+            get_percent_done(image))
+
+
+@catch_error('show incomplete cache images')
+def cache_incomplete(options, args):
+    """
+%(prog)s cache-incomplete [options]
+
+List images currently being fetched"""
+    client = get_client(options)
+    images = client.get_incomplete_cached_images()
+    if not images:
+        print "No incomplete cached images."
+        return SUCCESS
+
+    print "Found %d incomplete cached images..." % len(images)
+
+    pretty_table = utils.PrettyTable()
+    pretty_table.add_column(16, label="ID")
+    pretty_table.add_column(30, label="Name")
+    pretty_table.add_column(19, label="Last Modified (UTC)")
+    # 1 TB takes 13 characters to display: len(str(2**40)) == 13
+    pretty_table.add_column(14, label="Size", just="r")
+    pretty_table.add_column(14, label="Expected Size", just="r")
+    pretty_table.add_column(7, label="% Done", just="r")
+
+    print pretty_table.make_header()
+
+    for image in images:
+        print pretty_table.make_row(
+            image['id'],
+            image['name'],
+            image['last_modified'],
+            image['size'],
+            image['expected_size'],
+            get_percent_done(image))
+
+
+@catch_error('purge the specified cached image')
+def cache_purge(options, args):
+    """
+%(prog)s cache-purge [options]
+
+Purges an image from the cache"""
+    try:
+        image_id = args.pop()
+    except IndexError:
+        print "Please specify the ID of the image you wish to purge "
+        print "from the cache as the first argument"
+        return FAILURE
+
+    if not options.force and \
+       not user_confirm("Purge cached image %s?" % (image_id,), default=False):
+        print 'Not purging cached image %s' % (image_id,)
+        return FAILURE
+
+    client = get_client(options)
+    client.purge_cached_image(image_id)
+
+    if options.verbose:
+        print "done"
+
+
+@catch_error('clear all cached images')
+def cache_clear(options, args):
+    """
+%(prog)s cache-clear [options]
+
+Removes all images from the cache"""
+    if not options.force and \
+       not user_confirm("Clear all cached images?", default=False):
+        print 'Not purging any cached images.'
+        return FAILURE
+
+    client = get_client(options)
+    num_purged = client.clear_cached_images()
+
+    if options.verbose:
+        print "Purged %(num_purged)s cached images" % locals()
+
+
+@catch_error('reap invalid images')
+def cache_reap_invalid(options, args):
+    """
+%(prog)s cache-reap-invalid [options]
+
+Reaps any invalid images that were left for
+debugging purposes"""
+    if not options.force and \
+       not user_confirm("Reap all invalid cached images?", default=False):
+        print 'Not reaping any invalid cached images.'
+        return FAILURE
+
+    client = get_client(options)
+    num_reaped = client.reap_invalid_cached_images()
+
+    if options.verbose:
+        print "Reaped %(num_reaped)s invalid cached images" % locals()
+
+
+@catch_error('reap stalled images')
+def cache_reap_stalled(options, args):
+    """
+%(prog)s cache-reap-stalled [options]
+
+Reaps any stalled incomplete images"""
+    if not options.force and \
+       not user_confirm("Reap all stalled cached images?", default=False):
+        print 'Not reaping any stalled cached images.'
+        return FAILURE
+
+    client = get_client(options)
+    num_reaped = client.reap_stalled_cached_images()
+
+    if options.verbose:
+        print "Reaped %(num_reaped)s stalled cached images" % locals()
+
+
+@catch_error('prefetch the specified cached image')
+def cache_prefetch(options, args):
+    """
+%(prog)s cache-prefetch [options]
+
+Pre-fetch an image or list of images into the cache"""
+    image_ids = args
+    if not image_ids:
+        print "Please specify the ID or a list of image IDs of the images "\
+              "you wish to "
+        print "prefetch from the cache as the first argument"
+        return FAILURE
+
+    client = get_client(options)
+    for image_id in image_ids:
+        if options.verbose:
+            print "Prefetching image '%s'" % image_id
+
+        try:
+            client.prefetch_cache_image(image_id)
+        except exception.NotFound:
+            print "No image with ID %s was found" % image_id
+            continue
+
+    if options.verbose:
+        print "done"
+
+
+@catch_error('show prefetching images')
+def cache_prefetching(options, args):
+    """
+%(prog)s cache-prefetching [options]
+
+List images that are being prefetched"""
+    client = get_client(options)
+    images = client.get_prefetching_cache_images()
+    if not images:
+        print "No images being prefetched."
+        return SUCCESS
+
+    print "Found %d images being prefetched..." % len(images)
+
+    pretty_table = utils.PrettyTable()
+    pretty_table.add_column(16, label="ID")
+    pretty_table.add_column(30, label="Name")
+    pretty_table.add_column(19, label="Last Accessed (UTC)")
+    pretty_table.add_column(10, label="Status", just="r")
+
+    print pretty_table.make_header()
+
+    for image in images:
+        print pretty_table.make_row(
+            image['id'],
+            image['name'],
+            image['last_accessed'],
+            image['status'])
+
+
 def get_client(options):
     """
     Returns a new client object to a Glance server
     specified by the --host and --port options
     supplied to the CLI
     """
-    return client.Client(host=options.host,
+    return glance_client.Client(host=options.host,
                          port=options.port)
 
 
@@ -500,28 +771,23 @@ def parse_options(parser, cli_args):
 
     :param parser: The option parser
     """
-    COMMANDS = {'help': print_help,
-                'add': image_add,
-                'update': image_update,
-                'delete': image_delete,
-                'index': images_index,
-                'details': images_detailed,
-                'show': image_show,
-                'clear': images_clear}
-
     if not cli_args:
         cli_args.append('-h')  # Show options in usage output...
 
     (options, args) = parser.parse_args(cli_args)
 
+    # HACK(sirp): Make the parser available to the print_help method
+    # print_help is a command, so it only accepts (options, args); we could
+    # one-off have it take (parser, options, args), however, for now, I think
+    # this little hack will suffice
+    options.__parser = parser
+
     if not args:
         parser.print_usage()
         sys.exit(0)
-    else:
-        command_name = args.pop(0)
-        if command_name not in COMMANDS.keys():
-            sys.exit("Unknown command: %s" % command_name)
-    command = COMMANDS[command_name]
+
+    command_name = args.pop(0)
+    command = lookup_command(parser, command_name)
 
     return (options, command, args)
 
@@ -530,7 +796,21 @@ def print_help(options, args):
     """
     Print help specific to a command
     """
-    COMMANDS = {'add': image_add,
+    if len(args) != 1:
+        sys.exit("Please specify a command")
+
+    parser = options.__parser
+    command_name = args.pop()
+    command = lookup_command(parser, command_name)
+
+    print command.__doc__ % {'prog': os.path.basename(sys.argv[0])}
+
+
+def lookup_command(parser, command_name):
+    BASE_COMMANDS = {'help': print_help}
+
+    IMAGE_COMMANDS = {
+                'add': image_add,
                 'update': image_update,
                 'delete': image_delete,
                 'index': images_index,
@@ -538,16 +818,28 @@ def print_help(options, args):
                 'show': image_show,
                 'clear': images_clear}
 
-    if len(args) != 1:
-        sys.exit("Please specify a command")
+    CACHE_COMMANDS = {
+                'cache-index': cache_index,
+                'cache-invalid': cache_invalid,
+                'cache-incomplete': cache_incomplete,
+                'cache-prefetching': cache_prefetching,
+                'cache-prefetch': cache_prefetch,
+                'cache-purge': cache_purge,
+                'cache-clear': cache_clear,
+                'cache-reap-invalid': cache_reap_invalid,
+                'cache-reap-stalled': cache_reap_stalled}
 
-    command = args.pop()
-    if command not in COMMANDS.keys():
+    commands = {}
+    for command_set in (BASE_COMMANDS, IMAGE_COMMANDS, CACHE_COMMANDS):
+        commands.update(command_set)
+
+    try:
+        command = commands[command_name]
+    except KeyError:
         parser.print_usage()
-        if args:
-            sys.exit("Unknown command: %s" % command)
+        sys.exit("Unknown command: %s" % command_name)
 
-    print COMMANDS[command].__doc__ % {'prog': os.path.basename(sys.argv[0])}
+    return command
 
 
 def user_confirm(prompt, default=False):
@@ -596,6 +888,27 @@ Commands:
 
     clear           Removes all images and metadata from Glance
 
+
+Cache Commands:
+
+    cache-index          List all images currently cached
+
+    cache-invalid        List current invalid cache images
+
+    cache-incomplete     List images currently being fetched
+
+    cache-prefetching    List images that are being prefetched
+
+    cache-prefetch       Pre-fetch an image or list of images into the cache
+
+    cache-purge          Purges an image from the cache
+
+    cache-clear          Removes all images from the cache
+
+    cache-reap-invalid   Reaps any invalid images that were left for
+                         debugging purposes
+
+    cache-reap-stalled   Reaps any stalled incomplete images
 """
 
     oparser = optparse.OptionParser(version='%%prog %s'
