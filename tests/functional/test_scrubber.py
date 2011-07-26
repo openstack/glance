@@ -100,10 +100,29 @@ class TestScrubber(functional.FunctionalTest):
         for rec in recs:
             self.assertEqual(rec['status'], 'pending_delete')
 
-        # Wait 15 seconds for the scrubber to scrub
-        time.sleep(15)
+        # NOTE(jkoelker) The build servers sometimes take longer than
+        #                15 seconds to scrub. Give it up to 5 min, checking
+        #                checking every 15 seconds. When/if it flips to
+        #                deleted, bail immediatly.
+        deleted = set()
+        recs = []
+        for _ in xrange(20):
+            time.sleep(15)
 
-        recs = list(self.run_sql_cmd(sql))
+            recs = list(self.run_sql_cmd(sql))
+            self.assertTrue(recs)
+
+            # NOTE(jkoelker) Reset the deleted set for this loop
+            deleted = set()
+            for rec in recs:
+                if rec['status'] == 'deleted':
+                    deleted.add(True)
+                else:
+                    deleted.add(False)
+
+            if False not in deleted:
+                break
+
         self.assertTrue(recs)
         for rec in recs:
             self.assertEqual(rec['status'], 'deleted')
