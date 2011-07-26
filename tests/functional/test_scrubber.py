@@ -115,10 +115,7 @@ class TestScrubber(functional.FunctionalTest):
             # NOTE(jkoelker) Reset the deleted set for this loop
             deleted = set()
             for rec in recs:
-                if rec['status'] == 'deleted':
-                    deleted.add(True)
-                else:
-                    deleted.add(False)
+                deleted.add(rec['status'] == 'deleted')
 
             if False not in deleted:
                 break
