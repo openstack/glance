@@ -280,7 +280,7 @@ Sets the name of the bucket to use for Glance images in S3.
 Note that the namespace for S3 buckets is **global**, and
 therefore you must use a name for the bucket that is unique. It
 is recommended that you use a combination of your AWS access key,
-**lowercased** with "+glance".
+**lowercased** with "glance".
 
 For instance if your Amazon AWS access key is:
 
@@ -288,7 +288,7 @@ For instance if your Amazon AWS access key is:
 
 then make your bucket value be:
 
-``abcdefghijklmnopqrst+glance``
+``abcdefghijklmnopqrstglance``
 
 * ``s3_store_create_bucket_on_put``
 

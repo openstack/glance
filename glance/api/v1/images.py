@@ -30,6 +30,8 @@ from webob.exc import (HTTPNotFound,
                        HTTPBadRequest,
                        HTTPForbidden)
 
+from glance import api
+from glance import image_cache
 from glance.common import exception
 from glance.common import wsgi
 from glance.store import (get_from_backend,
@@ -49,8 +51,7 @@ SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
 SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
 
 
-class Controller(object):
-
+class Controller(api.BaseController):
     """
     WSGI controller for images resource in Glance v1 API
 
@@ -186,18 +187,63 @@ class Controller(object):
 
         :raises HTTPNotFound if image is not available to user
         """
-        image = self.get_image_meta_or_404(req, id)
+        image = self.get_active_image_meta_or_404(req, id)
 
-        def image_iterator():
-            chunks = get_from_backend(image['location'],
-                                      expected_size=image['size'],
-                                      options=self.options)
+        def get_from_store(image):
+            """Called if caching disabled"""
+            return get_from_backend(image['location'],
+                                    expected_size=image['size'],
+                                    options=self.options)
 
-            for chunk in chunks:
-                yield chunk
+        def get_from_cache(image, cache):
+            """Called if cache hit"""
+            with cache.open(image, "rb") as cache_file:
+                chunks = utils.chunkiter(cache_file)
+                for chunk in chunks:
+                    yield chunk
+
+        def get_from_store_tee_into_cache(image, cache):
+            """Called if cache miss"""
+            with cache.open(image, "wb") as cache_file:
+                chunks = get_from_store(image)
+                for chunk in chunks:
+                    cache_file.write(chunk)
+                    yield chunk
+
+        cache = image_cache.ImageCache(self.options)
+        if cache.enabled:
+            if cache.hit(id):
+                # hit
+                logger.debug("image cache HIT, retrieving image '%s'"
+                             " from cache", id)
+                image_iterator = get_from_cache(image, cache)
+            else:
+                # miss
+                logger.debug("image cache MISS, retrieving image '%s'"
+                             " from store and tee'ing into cache", id)
+
+                # We only want to tee-into the cache if we're not currently
+                # prefetching an image
+                image_id = image['id']
+                if cache.is_image_currently_prefetching(image_id):
+                    image_iterator = get_from_store(image)
+                else:
+                    # NOTE(sirp): If we're about to download and cache an
+                    # image which is currently in the prefetch queue, just
+                    # delete the queue items since we're caching it anyway
+                    if cache.is_image_queued_for_prefetch(image_id):
+                        cache.delete_queued_prefetch_image(image_id)
+
+                    image_iterator = get_from_store_tee_into_cache(
+                        image, cache)
+        else:
+            # disabled
+            logger.debug("image cache DISABLED, retrieving image '%s'"
+                         " from store", id)
+            image_iterator = get_from_store(image)
 
         return {
-            'image_iterator': image_iterator(),
+            'image_iterator': image_iterator,
             'image_meta': image,
         }
 
@@ -275,15 +321,12 @@ class Controller(object):
         store = self.get_store_or_400(req, store_name)
 
         image_id = image_meta['id']
-        logger.debug("Setting image %s to status 'saving'" % image_id)
+        logger.debug("Setting image %s to status 'saving'", image_id)
         registry.update_image_metadata(self.options, req.context, image_id,
                                        {'status': 'saving'})
         try:
             logger.debug("Uploading image data for image %(image_id)s "
-                         "to %(store_name)s store" % locals())
-            # NOTE(jaypipes): webob 1.0.3 has body_file_seekable attr
-            # but webob 0.9.8 does not; it has the make_body_seekable() method
-            # which newer versions have also, so we use the old method
+                         "to %(store_name)s store", locals())
             req.make_body_seekable()
             location, size, checksum = store.add(image_meta['id'],
                                                  req.body_file,
@@ -306,7 +349,7 @@ class Controller(object):
             # from the backend store
             logger.debug("Updating image %(image_id)s data. "
                          "Checksum set to %(checksum)s, size set "
-                         "to %(size)d" % locals())
+                         "to %(size)d", locals())
             registry.update_image_metadata(self.options, req.context,
                                            image_id,
                                            {'checksum': checksum,
@@ -513,30 +556,6 @@ class Controller(object):
             schedule_delete_from_backend(image['location'], self.options,
                                          req.context, id)
         registry.delete_image_metadata(self.options, req.context, id)
-
-    def get_image_meta_or_404(self, request, id):
-        """
-        Grabs the image metadata for an image with a supplied
-        identifier or raises an HTTPNotFound (404) response
-
-        :param request: The WSGI/Webob Request object
-        :param id: The opaque image identifier
-
-        :raises HTTPNotFound if image does not exist
-        """
-        try:
-            return registry.get_image_metadata(self.options,
-                                               request.context, id)
-        except exception.NotFound:
-            msg = "Image with identifier %s not found" % id
-            logger.debug(msg)
-            raise HTTPNotFound(msg, request=request,
-                               content_type='text/plain')
-        except exception.NotAuthorized:
-            msg = "Unauthorized image access"
-            logger.debug(msg)
-            raise HTTPForbidden(msg, request=request,
-                                content_type='text/plain')
 
     def get_store_or_400(self, request, store_name):
         """
