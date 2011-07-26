@@ -44,15 +44,16 @@ from glance.common import config
 
 ALL_COMMANDS = ['start', 'stop', 'shutdown', 'restart',
                 'reload', 'force-reload']
-ALL_SERVERS = ['glance-api', 'glance-registry']
-GRACEFUL_SHUTDOWN_SERVERS = ['glance-api', 'glance-registry']
+ALL_SERVERS = ['glance-api', 'glance-registry', 'glance-scrubber']
+GRACEFUL_SHUTDOWN_SERVERS = ['glance-api', 'glance-registry',
+                             'glance-scrubber']
 MAX_DESCRIPTORS = 32768
 MAX_MEMORY = (1024 * 1024 * 1024) * 2  # 2 GB
 USAGE = """%prog [options] <SERVER> <COMMAND> [CONFPATH]
 
 Where <SERVER> is one of:
 
-    all, api, registry
+    all, api, registry, scrubber
 
 And command is one of:
 

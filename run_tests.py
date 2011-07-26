@@ -38,7 +38,8 @@
 #    OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 #    WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""Unittest runner for glance
+"""
+Unittest runner for glance
 
 To run all test::
     python run_tests.py
@@ -179,7 +180,8 @@ class GlanceTestResult(result.TextTestResult):
         self._last_case = None
         self.colorizer = None
         # NOTE(vish, tfukushima): reset stdout for the terminal check
-        stdout = sys.__stdout__
+        stdout = sys.stdout
+        sys.stdout = sys.__stdout__
         for colorizer in [_Win32Colorizer, _AnsiColorizer, _NullColorizer]:
             if colorizer.supported():
                 self.colorizer = colorizer(self.stream)
@@ -211,7 +213,8 @@ class GlanceTestResult(result.TextTestResult):
 
     # NOTE(vish, tfukushima): copied from unittest with edit to add color
     def addError(self, test, err):
-        """Overrides normal addError to add support for errorClasses.
+        """
+        Overrides normal addError to add support for errorClasses.
         If the exception is a registered class, the error will be added
         to the list for that class, not errors.
         """
@@ -279,7 +282,8 @@ if __name__ == '__main__':
 
     c = config.Config(stream=sys.stdout,
                       env=os.environ,
-                      verbosity=3)
+                      verbosity=3,
+                      plugins=core.DefaultPluginManager())
 
     runner = GlanceTestRunner(stream=c.stream,
                             verbosity=c.verbosity,

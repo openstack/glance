@@ -14,3 +14,50 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import logging
+import webob.exc
+
+from glance import registry
+from glance.common import exception
+
+
+logger = logging.getLogger('glance.api')
+
+
+class BaseController(object):
+    def get_image_meta_or_404(self, request, id):
+        """
+        Grabs the image metadata for an image with a supplied
+        identifier or raises an HTTPNotFound (404) response
+
+        :param request: The WSGI/Webob Request object
+        :param id: The opaque image identifier
+
+        :raises HTTPNotFound if image does not exist
+        """
+        context = request.context
+        try:
+            return registry.get_image_metadata(self.options, context, id)
+        except exception.NotFound:
+            msg = "Image with identifier %s not found" % id
+            logger.debug(msg)
+            raise webob.exc.HTTPNotFound(
+                    msg, request=request, content_type='text/plain')
+        except exception.NotAuthorized:
+            msg = "Unauthorized image access"
+            logger.debug(msg)
+            raise webob.exc.HTTPForbidden(msg, request=request,
+                                content_type='text/plain')
+
+    def get_active_image_meta_or_404(self, request, id):
+        """
+        Same as get_image_meta_or_404 except that it will raise a 404 if the
+        image isn't 'active'.
+        """
+        image = self.get_image_meta_or_404(request, id)
+        if image['status'] != 'active':
+            msg = "Image %s is not active" % id
+            logger.debug(msg)
+            raise webob.exc.HTTPNotFound(
+                    msg, request=request, content_type='text/plain')
+        return image

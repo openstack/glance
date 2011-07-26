@@ -41,17 +41,19 @@ class BaseClient(object):
 
     CHUNKSIZE = 65536
 
-    def __init__(self, host, port, use_ssl):
+    def __init__(self, host, port, use_ssl, auth_tok):
         """
         Creates a new client to some service.
 
         :param host: The host where service resides
         :param port: The port where service resides
         :param use_ssl: Should we use HTTPS?
+        :param auth_tok: The auth token to pass to the server
         """
         self.host = host
         self.port = port
         self.use_ssl = use_ssl
+        self.auth_tok = auth_tok
         self.connection = None
 
     def get_connection_type(self):
@@ -99,6 +101,8 @@ class BaseClient(object):
         try:
             connection_type = self.get_connection_type()
             headers = headers or {}
+            if 'x-auth-token' not in headers and self.auth_tok:
+                headers['x-auth-token'] = self.auth_tok
             c = connection_type(self.host, self.port)
 
             # Do a simple request or a chunked request, depending

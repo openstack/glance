@@ -105,6 +105,7 @@ class Image(BASE, ModelBase):
     is_public = Column(Boolean, nullable=False, default=False)
     location = Column(Text)
     checksum = Column(String(32))
+    owner = Column(String(255))
 
 
 class ImageProperty(BASE, ModelBase):
@@ -118,3 +119,12 @@ class ImageProperty(BASE, ModelBase):
 
     name = Column(String(255), index=True, nullable=False)
     value = Column(Text)
+
+
+def register_models(engine):
+    """
+    Creates database tables for all models with the given engine
+    """
+    models = (Image, ImageProperty)
+    for model in models:
+        model.metadata.create_all(engine)
