@@ -35,7 +35,8 @@ class V1Client(base_client.BaseClient):
 
     DEFAULT_PORT = 9292
 
-    def __init__(self, host, port=None, use_ssl=False, doc_root="/v1"):
+    def __init__(self, host, port=None, use_ssl=False, doc_root="/v1",
+                 auth_tok=None):
         """
         Creates a new client to a Glance API service.
 
@@ -43,11 +44,11 @@ class V1Client(base_client.BaseClient):
         :param port: The port where Glance resides (defaults to 9292)
         :param use_ssl: Should we use HTTPS? (defaults to False)
         :param doc_root: Prefix for all URLs we request from host
+        :param auth_tok: The auth token to pass to the server
         """
-
         port = port or self.DEFAULT_PORT
         self.doc_root = doc_root
-        super(Client, self).__init__(host, port, use_ssl)
+        super(Client, self).__init__(host, port, use_ssl, auth_tok)
 
     def do_request(self, method, action, body=None, headers=None, params=None):
         action = "%s/%s" % (self.doc_root, action.lstrip("/"))
@@ -81,7 +82,6 @@ class V1Client(base_client.BaseClient):
         :param sort_key: results will be ordered by this image attribute
         :param sort_dir: direction in which to to order results (asc, desc)
         """
-
         params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images/detail", params=params)
         data = json.loads(res.read())['images']
@@ -126,7 +126,6 @@ class V1Client(base_client.BaseClient):
 
         :retval The newly-stored image's metadata.
         """
-
         headers = utils.image_meta_to_http_headers(image_meta or {})
 
         if image_data:
@@ -164,6 +163,121 @@ class V1Client(base_client.BaseClient):
         """
         self.do_request("DELETE", "/images/%s" % image_id)
         return True
+
+    def get_cached_images(self, **kwargs):
+        """
+        Returns a list of images stored in the image cache.
+
+        :param filters: dictionary of attributes by which the resulting
+                        collection of images should be filtered
+        :param marker: id after which to start the page of images
+        :param limit: maximum number of items to return
+        :param sort_key: results will be ordered by this image attribute
+        :param sort_dir: direction in which to to order results (asc, desc)
+        """
+        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
+        res = self.do_request("GET", "/cached_images", params=params)
+        data = json.loads(res.read())['cached_images']
+        return data
+
+    def get_invalid_cached_images(self, **kwargs):
+        """
+        Returns a list of invalid images stored in the image cache.
+
+        :param filters: dictionary of attributes by which the resulting
+                        collection of images should be filtered
+        :param marker: id after which to start the page of images
+        :param limit: maximum number of items to return
+        :param sort_key: results will be ordered by this image attribute
+        :param sort_dir: direction in which to to order results (asc, desc)
+        """
+        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
+        params['status'] = 'invalid'
+        res = self.do_request("GET", "/cached_images", params=params)
+        data = json.loads(res.read())['cached_images']
+        return data
+
+    def get_incomplete_cached_images(self, **kwargs):
+        """
+        Returns a list of incomplete images being fetched into cache
+
+        :param filters: dictionary of attributes by which the resulting
+                        collection of images should be filtered
+        :param marker: id after which to start the page of images
+        :param limit: maximum number of items to return
+        :param sort_key: results will be ordered by this image attribute
+        :param sort_dir: direction in which to to order results (asc, desc)
+        """
+        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
+        params['status'] = 'incomplete'
+        res = self.do_request("GET", "/cached_images", params=params)
+        data = json.loads(res.read())['cached_images']
+        return data
+
+    def purge_cached_image(self, image_id):
+        """
+        Delete a specified image from the cache
+        """
+        self.do_request("DELETE", "/cached_images/%s" % image_id)
+        return True
+
+    def clear_cached_images(self):
+        """
+        Clear all cached images
+        """
+        res = self.do_request("DELETE", "/cached_images")
+        data = json.loads(res.read())
+        num_purged = data['num_purged']
+        return num_purged
+
+    def reap_invalid_cached_images(self, **kwargs):
+        """
+        Reaps any invalid cached images
+        """
+        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
+        params['status'] = 'invalid'
+        res = self.do_request("DELETE", "/cached_images", params=params)
+        data = json.loads(res.read())
+        num_reaped = data['num_reaped']
+        return num_reaped
+
+    def reap_stalled_cached_images(self, **kwargs):
+        """
+        Reaps any stalled cached images
+        """
+        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
+        params['status'] = 'incomplete'
+        res = self.do_request("DELETE", "/cached_images", params=params)
+        data = json.loads(res.read())
+        num_reaped = data['num_reaped']
+        return num_reaped
+
+    def prefetch_cache_image(self, image_id):
+        """
+        Pre-fetch a specified image from the cache
+        """
+        res = self.do_request("HEAD", "/images/%s" % image_id)
+        image = utils.get_image_meta_from_headers(res)
+        self.do_request("PUT", "/cached_images/%s" % image_id)
+        return True
+
+    def get_prefetching_cache_images(self, **kwargs):
+        """
+        Returns a list of images which are actively being prefetched or are
+        queued to be prefetched in the future.
+
+        :param filters: dictionary of attributes by which the resulting
+                        collection of images should be filtered
+        :param marker: id after which to start the page of images
+        :param limit: maximum number of items to return
+        :param sort_key: results will be ordered by this image attribute
+        :param sort_dir: direction in which to to order results (asc, desc)
+        """
+        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
+        params['status'] = 'prefetching'
+        res = self.do_request("GET", "/cached_images", params=params)
+        data = json.loads(res.read())['cached_images']
+        return data
 
 
 Client = V1Client

@@ -77,7 +77,8 @@ def check_dependencies():
 
 
 def create_virtualenv(venv=VENV):
-    """Creates the virtual environment and installs PIP only into the
+    """
+    Creates the virtual environment and installs PIP only into the
     virtual environment
     """
     print 'Creating venv...',

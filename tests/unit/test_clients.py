@@ -393,6 +393,12 @@ class TestRegistryClient(unittest.TestCase):
         for image in images:
             self.assertTrue(image['id'] < 4)
 
+    def test_get_image_index_invalid_marker(self):
+        """Test exception is raised when marker is invalid"""
+        self.assertRaises(exception.Invalid,
+                          self.client.get_images,
+                          marker=4)
+
     def test_get_image_index_limit(self):
         """Test correct number of images returned with limit param."""
         extra_fixture = {'id': 3,
@@ -477,8 +483,10 @@ class TestRegistryClient(unittest.TestCase):
         self.assertEquals(len(images), 3)
 
     def test_get_image_index_by_name(self):
-        """Test correct set of public, name-filtered image returned. This
-        is just a sanity check, we test the details call more in-depth."""
+        """
+        Test correct set of public, name-filtered image returned. This
+        is just a sanity check, we test the details call more in-depth.
+        """
         extra_fixture = {'id': 3,
                          'status': 'active',
                          'is_public': True,
@@ -542,6 +550,12 @@ class TestRegistryClient(unittest.TestCase):
         self.assertEquals(len(images), 1)
 
         self.assertEquals(images[0]['id'], 2)
+
+    def test_get_image_details_invalid_marker(self):
+        """Test exception is raised when marker is invalid"""
+        self.assertRaises(exception.Invalid,
+                          self.client.get_images_detailed,
+                          marker=4)
 
     def test_get_image_details_by_name(self):
         """Tests that a detailed call can be filtered by name"""
@@ -739,7 +753,6 @@ class TestRegistryClient(unittest.TestCase):
 
     def test_get_image_non_existing(self):
         """Tests that NotFound is raised when getting a non-existing image"""
-
         self.assertRaises(exception.NotFound,
                           self.client.get_image,
                           42)
@@ -853,7 +866,6 @@ class TestRegistryClient(unittest.TestCase):
 
     def test_delete_image(self):
         """Tests that image metadata is deleted properly"""
-
         # Grab the original number of images
         orig_num_images = len(self.client.get_images())
 
@@ -867,7 +879,6 @@ class TestRegistryClient(unittest.TestCase):
 
     def test_delete_image_not_existing(self):
         """Tests cannot delete non-existing image"""
-
         self.assertRaises(exception.NotFound,
                           self.client.delete_image,
                           3)
@@ -917,7 +928,6 @@ class TestClient(unittest.TestCase):
 
     def test_get_image_not_existing(self):
         """Test retrieval of a non-existing image returns a 404"""
-
         self.assertRaises(exception.NotFound,
                           self.client.get_image,
                           3)
@@ -997,6 +1007,12 @@ class TestClient(unittest.TestCase):
 
         for image in images:
             self.assertTrue(image['id'] < 4)
+
+    def test_get_image_index_invalid_marker(self):
+        """Test exception is raised when marker is invalid"""
+        self.assertRaises(exception.Invalid,
+                          self.client.get_images,
+                          marker=4)
 
     def test_get_image_index_limit(self):
         """Test correct number of public images returned with limit param."""
@@ -1150,6 +1166,12 @@ class TestClient(unittest.TestCase):
 
         self.assertEquals(images[0]['id'], 2)
 
+    def test_get_image_details_invalid_marker(self):
+        """Test exception is raised when marker is invalid"""
+        self.assertRaises(exception.Invalid,
+                          self.client.get_images_detailed,
+                          marker=4)
+
     def test_get_image_details_by_base_attribute(self):
         """Tests that a detailed call can be filtered by a base attribute"""
         extra_fixture = {'id': 3,
@@ -1251,7 +1273,6 @@ class TestClient(unittest.TestCase):
 
     def test_get_image_non_existing(self):
         """Tests that NotFound is raised when getting a non-existing image"""
-
         self.assertRaises(exception.NotFound,
                           self.client.get_image,
                           42)
@@ -1345,9 +1366,11 @@ class TestClient(unittest.TestCase):
         self.assertEquals('active', data['status'])
 
     def test_add_image_with_bad_iso_properties(self):
-        """Verify that ISO with invalid container format is rejected.
+        """
+        Verify that ISO with invalid container format is rejected.
         Intended to exercise error path once rather than be exhaustive
-        set of mismatches"""
+        set of mismatches
+        """
         fixture = {'name': 'fake public iso',
                    'is_public': True,
                    'disk_format': 'iso',
@@ -1530,7 +1553,6 @@ class TestClient(unittest.TestCase):
 
     def test_delete_image(self):
         """Tests that image metadata is deleted properly"""
-
         # Grab the original number of images
         orig_num_images = len(self.client.get_images())
 
@@ -1544,7 +1566,6 @@ class TestClient(unittest.TestCase):
 
     def test_delete_image_not_existing(self):
         """Tests cannot delete non-existing image"""
-
         self.assertRaises(exception.NotFound,
                           self.client.delete_image,
                           3)

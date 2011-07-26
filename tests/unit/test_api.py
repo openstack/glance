@@ -26,6 +26,7 @@ import stubout
 import webob
 
 from glance.api import v1 as server
+from glance.common import context
 from glance.registry import server as rserver
 import glance.registry.db.api
 from tests import stubs
@@ -41,8 +42,9 @@ class TestRegistryAPI(unittest.TestCase):
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_filesystem_backend()
-        self.api = rserver.API({'verbose': VERBOSE,
-                                'debug': DEBUG})
+        options = {'verbose': VERBOSE,
+                   'debug': DEBUG}
+        self.api = context.ContextMiddleware(rserver.API(options), options)
 
     def tearDown(self):
         """Clear the test environment"""
@@ -50,9 +52,9 @@ class TestRegistryAPI(unittest.TestCase):
         self.stubs.UnsetAll()
 
     def test_get_root(self):
-        """Tests that the root registry API returns "index",
+        """
+        Tests that the root registry API returns "index",
         which is a list of public images
-
         """
         fixture = {'id': 2,
                    'name': 'fake image #2',
@@ -70,9 +72,9 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertEquals(v, images[0][k])
 
     def test_get_index(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images
-
         """
         fixture = {'id': 2,
                    'name': 'fake image #2',
@@ -90,11 +92,10 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertEquals(v, images[0][k])
 
     def test_get_index_marker(self):
-        """Tests that the /images registry API returns list of
-        public images that conforms to a marker query param
-
         """
-
+        Tests that the /images registry API returns list of
+        public images that conforms to a marker query param
+        """
         time1 = datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
         time2 = datetime.datetime.utcnow()
 
@@ -147,10 +148,19 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(int(images[1]['id']), 5)
         self.assertEquals(int(images[2]['id']), 2)
 
-    def test_get_index_limit(self):
-        """Tests that the /images registry API returns list of
-        public images that conforms to a limit query param
+    def test_get_index_invalid_marker(self):
+        """
+        Tests that the /images registry API returns a 400
+        when an invalid marker is provided
+        """
+        req = webob.Request.blank('/images?marker=10')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
 
+    def test_get_index_limit(self):
+        """
+        Tests that the /images registry API returns list of
+        public images that conforms to a limit query param
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -186,27 +196,27 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertTrue(int(images[0]['id']), 4)
 
     def test_get_index_limit_negative(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images that conforms to a limit query param
-
         """
         req = webob.Request.blank('/images?limit=-1')
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 400)
 
     def test_get_index_limit_non_int(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images that conforms to a limit query param
-
         """
         req = webob.Request.blank('/images?limit=a')
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 400)
 
     def test_get_index_limit_marker(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images that conforms to limit and marker query params
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -242,10 +252,10 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEqual(int(images[0]['id']), 2)
 
     def test_get_index_filter_name(self):
-        """Tests that the /images registry API returns list of
+        """
+        Tests that the /images registry API returns list of
         public images that have a specific name. This is really a sanity
         check, filtering is tested more in-depth using /images/detail
-
         """
         fixture = {'id': 2,
                    'name': 'fake image #2',
@@ -678,9 +688,9 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(int(images[2]['id']), 2)
 
     def test_get_details(self):
-        """Tests that the /images/detail registry API returns
+        """
+        Tests that the /images/detail registry API returns
         a mapping containing a list of detailed image information
-
         """
         fixture = {'id': 2,
                    'name': 'fake image #2',
@@ -703,11 +713,11 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertEquals(v, images[0][k])
 
     def test_get_details_limit_marker(self):
-        """Tests that the /images/details registry API returns list of
+        """
+        Tests that the /images/details registry API returns list of
         public images that conforms to limit and marker query params.
         This functionality is tested more thoroughly on /images, this is
         just a sanity check
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -742,10 +752,19 @@ class TestRegistryAPI(unittest.TestCase):
         # expect list to be sorted by created_at desc
         self.assertEqual(int(images[0]['id']), 2)
 
-    def test_get_details_filter_name(self):
-        """Tests that the /images/detail registry API returns list of
-        public images that have a specific name
+    def test_get_details_invalid_marker(self):
+        """
+        Tests that the /images/detail registry API returns a 400
+        when an invalid marker is provided
+        """
+        req = webob.Request.blank('/images/detail?marker=10')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
 
+    def test_get_details_filter_name(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images that have a specific name
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -781,9 +800,9 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertEqual('new name! #123', image['name'])
 
     def test_get_details_filter_status(self):
-        """Tests that the /images/detail registry API returns list of
+        """
+        Tests that the /images/detail registry API returns list of
         public images that have a specific status
-
         """
         extra_fixture = {'id': 3,
                          'status': 'saving',
@@ -819,9 +838,9 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertEqual('saving', image['status'])
 
     def test_get_details_filter_container_format(self):
-        """Tests that the /images/detail registry API returns list of
+        """
+        Tests that the /images/detail registry API returns list of
         public images that have a specific container_format
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -857,9 +876,9 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertEqual('ovf', image['container_format'])
 
     def test_get_details_filter_disk_format(self):
-        """Tests that the /images/detail registry API returns list of
+        """
+        Tests that the /images/detail registry API returns list of
         public images that have a specific disk_format
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -895,9 +914,9 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertEqual('vhd', image['disk_format'])
 
     def test_get_details_filter_size_min(self):
-        """Tests that the /images/detail registry API returns list of
+        """
+        Tests that the /images/detail registry API returns list of
         public images that have a size greater than or equal to size_min
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -933,9 +952,9 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertTrue(image['size'] >= 19)
 
     def test_get_details_filter_size_max(self):
-        """Tests that the /images/detail registry API returns list of
+        """
+        Tests that the /images/detail registry API returns list of
         public images that have a size less than or equal to size_max
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -971,10 +990,10 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertTrue(image['size'] <= 19)
 
     def test_get_details_filter_size_min_max(self):
-        """Tests that the /images/detail registry API returns list of
+        """
+        Tests that the /images/detail registry API returns list of
         public images that have a size less than or equal to size_max
         and greater than or equal to size_min
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -1021,9 +1040,9 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertTrue(image['size'] <= 19 and image['size'] >= 18)
 
     def test_get_details_filter_property(self):
-        """Tests that the /images/detail registry API returns list of
+        """
+        Tests that the /images/detail registry API returns list of
         public images that have a specific custom property
-
         """
         extra_fixture = {'id': 3,
                          'status': 'active',
@@ -1059,6 +1078,84 @@ class TestRegistryAPI(unittest.TestCase):
 
         for image in images:
             self.assertEqual('v a', image['properties']['prop_123'])
+
+    def test_get_details_filter_public_none(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        all images if is_public none is passed
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?is_public=None')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+
+    def test_get_details_filter_public_false(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        private images if is_public false is passed
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?is_public=False')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+
+        for image in images:
+            self.assertEqual(False, image['is_public'])
+
+    def test_get_details_filter_public_true(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images if is_public true is passed (same as default)
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        glance.registry.db.api.image_create(None, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?is_public=True')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEqual(True, image['is_public'])
 
     def test_get_details_sort_name_asc(self):
         """
@@ -1164,8 +1261,10 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertTrue('Invalid disk format' in res.body)
 
     def test_create_image_with_mismatched_formats(self):
-        """Tests that exception raised for bad matching disk and container
-        formats"""
+        """
+        Tests that exception raised for bad matching disk and
+        container formats
+        """
         fixture = {'name': 'fake public image #3',
                    'container_format': 'aki',
                    'disk_format': 'ari'}
@@ -1221,8 +1320,10 @@ class TestRegistryAPI(unittest.TestCase):
             self.assertEquals(v, res_dict['image'][k])
 
     def test_update_image_not_existing(self):
-        """Tests proper exception is raised if attempt to update non-existing
-        image"""
+        """
+        Tests proper exception is raised if attempt to update
+        non-existing image
+        """
         fixture = {'status': 'killed'}
 
         req = webob.Request.blank('/images/3')
@@ -1278,8 +1379,10 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertTrue('Invalid container format' in res.body)
 
     def test_update_image_with_mismatched_formats(self):
-        """Tests that exception raised for bad matching disk and container
-        formats"""
+        """
+        Tests that exception raised for bad matching disk and
+        container formats
+        """
         fixture = {'container_format': 'ari'}
 
         req = webob.Request.blank('/images/2')  # Image 2 has disk format 'vhd'
@@ -1323,9 +1426,10 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(new_num_images, orig_num_images - 1)
 
     def test_delete_image_not_existing(self):
-        """Tests proper exception is raised if attempt to delete non-existing
-        image"""
-
+        """
+        Tests proper exception is raised if attempt to delete
+        non-existing image
+        """
         req = webob.Request.blank('/images/3')
 
         req.method = 'DELETE'
@@ -1356,7 +1460,7 @@ class TestGlanceAPI(unittest.TestCase):
                    'sql_connection': sql_connection,
                    'default_store': 'file',
                    'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
-        self.api = server.API(options)
+        self.api = context.ContextMiddleware(server.API(options), options)
 
     def tearDown(self):
         """Clear the test environment"""
@@ -1676,3 +1780,12 @@ class TestGlanceAPI(unittest.TestCase):
         req.method = 'DELETE'
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 200)
+
+    def test_get_details_invalid_marker(self):
+        """
+        Tests that the /images/detail registry API returns a 400
+        when an invalid marker is provided
+        """
+        req = webob.Request.blank('/images/detail?marker=10')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)

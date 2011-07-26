@@ -63,7 +63,6 @@ class TestCurlApi(functional.FunctionalTest):
         11. PUT /images/1
         - Add a previously deleted property.
         """
-
         self.cleanup()
         self.start_servers()
 
@@ -382,7 +381,6 @@ class TestCurlApi(functional.FunctionalTest):
         6. GET /images
         - Verify one public image
         """
-
         self.cleanup()
         self.start_servers()
 
@@ -502,7 +500,6 @@ class TestCurlApi(functional.FunctionalTest):
         handled properly, and that usage of the Accept: header does
         content negotiation properly.
         """
-
         self.cleanup()
         self.start_servers()
 
@@ -570,7 +567,7 @@ class TestCurlApi(functional.FunctionalTest):
         self.assertTrue('Unknown accept header'
                         in open(self.api_server.log_file).read())
 
-        # 5. GET / with an Accept: application/vnd.openstack.images-v1
+        # 4. GET / with an Accept: application/vnd.openstack.images-v1
         # Verify empty image list returned
         cmd = ("curl -H 'Accept: application/vnd.openstack.images-v1' "
                "http://0.0.0.0:%d/images") % api_port
@@ -693,7 +690,6 @@ class TestCurlApi(functional.FunctionalTest):
 
         :see https://bugs.launchpad.net/glance/+bug/739433
         """
-
         self.cleanup()
         self.start_servers()
 
@@ -760,7 +756,6 @@ class TestCurlApi(functional.FunctionalTest):
 
         :see https://bugs.launchpad.net/glance/+bug/755912
         """
-
         self.cleanup()
         self.start_servers()
 
@@ -1232,3 +1227,5 @@ class TestCurlApi(functional.FunctionalTest):
         self.assertEqual(images[0]['id'], 1)
         self.assertEqual(images[1]['id'], 3)
         self.assertEqual(images[2]['id'], 2)
+
+        self.stop_servers()

@@ -27,12 +27,15 @@ import sys
 import webob
 from webob.exc import (HTTPNotFound,
                        HTTPConflict,
-                       HTTPBadRequest)
+                       HTTPBadRequest,
+                       HTTPForbidden)
 
+from glance import api
+from glance import image_cache
 from glance.common import exception
 from glance.common import wsgi
 from glance.store import (get_from_backend,
-                          delete_from_backend,
+                          schedule_delete_from_backend,
                           get_store_from_location,
                           get_backend_class,
                           UnsupportedBackend)
@@ -43,13 +46,12 @@ from glance import utils
 logger = logging.getLogger('glance.api.v1.images')
 
 SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
-                     'size_min', 'size_max']
+                     'size_min', 'size_max', 'is_public']
 
 SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
 
 
-class Controller(object):
-
+class Controller(api.BaseController):
     """
     WSGI controller for images resource in Glance v1 API
 
@@ -95,7 +97,12 @@ class Controller(object):
             ]}
         """
         params = self._get_query_params(req)
-        images = registry.get_images_list(self.options, **params)
+        try:
+            images = registry.get_images_list(self.options, req.context,
+                                              **params)
+        except exception.Invalid, e:
+            raise HTTPBadRequest(explanation=str(e))
+
         return dict(images=images)
 
     def detail(self, req):
@@ -121,7 +128,11 @@ class Controller(object):
             ]}
         """
         params = self._get_query_params(req)
-        images = registry.get_images_detail(self.options, **params)
+        try:
+            images = registry.get_images_detail(self.options, req.context,
+                                                **params)
+        except exception.Invalid, e:
+            raise HTTPBadRequest(explanation=str(e))
         return dict(images=images)
 
     def _get_query_params(self, req):
@@ -176,18 +187,63 @@ class Controller(object):
 
         :raises HTTPNotFound if image is not available to user
         """
-        image = self.get_image_meta_or_404(req, id)
+        image = self.get_active_image_meta_or_404(req, id)
 
-        def image_iterator():
-            chunks = get_from_backend(image['location'],
-                                      expected_size=image['size'],
-                                      options=self.options)
+        def get_from_store(image):
+            """Called if caching disabled"""
+            return get_from_backend(image['location'],
+                                    expected_size=image['size'],
+                                    options=self.options)
 
-            for chunk in chunks:
-                yield chunk
+        def get_from_cache(image, cache):
+            """Called if cache hit"""
+            with cache.open(image, "rb") as cache_file:
+                chunks = utils.chunkiter(cache_file)
+                for chunk in chunks:
+                    yield chunk
+
+        def get_from_store_tee_into_cache(image, cache):
+            """Called if cache miss"""
+            with cache.open(image, "wb") as cache_file:
+                chunks = get_from_store(image)
+                for chunk in chunks:
+                    cache_file.write(chunk)
+                    yield chunk
+
+        cache = image_cache.ImageCache(self.options)
+        if cache.enabled:
+            if cache.hit(id):
+                # hit
+                logger.debug("image cache HIT, retrieving image '%s'"
+                             " from cache", id)
+                image_iterator = get_from_cache(image, cache)
+            else:
+                # miss
+                logger.debug("image cache MISS, retrieving image '%s'"
+                             " from store and tee'ing into cache", id)
+
+                # We only want to tee-into the cache if we're not currently
+                # prefetching an image
+                image_id = image['id']
+                if cache.is_image_currently_prefetching(image_id):
+                    image_iterator = get_from_store(image)
+                else:
+                    # NOTE(sirp): If we're about to download and cache an
+                    # image which is currently in the prefetch queue, just
+                    # delete the queue items since we're caching it anyway
+                    if cache.is_image_queued_for_prefetch(image_id):
+                        cache.delete_queued_prefetch_image(image_id)
+
+                    image_iterator = get_from_store_tee_into_cache(
+                        image, cache)
+        else:
+            # disabled
+            logger.debug("image cache DISABLED, retrieving image '%s'"
+                         " from store", id)
+            image_iterator = get_from_store(image)
 
         return {
-            'image_iterator': image_iterator(),
+            'image_iterator': image_iterator,
             'image_meta': image,
         }
 
@@ -219,6 +275,7 @@ class Controller(object):
 
         try:
             image_meta = registry.add_image_metadata(self.options,
+                                                     req.context,
                                                      image_meta)
             return image_meta
         except exception.Duplicate:
@@ -231,6 +288,11 @@ class Controller(object):
             for line in msg.split('\n'):
                 logger.error(line)
             raise HTTPBadRequest(msg, request=req, content_type="text/plain")
+        except exception.NotAuthorized:
+            msg = "Not authorized to reserve image."
+            logger.error(msg)
+            raise HTTPForbidden(msg, request=req,
+                                content_type="text/plain")
 
     def _upload(self, req, image_meta):
         """
@@ -259,12 +321,12 @@ class Controller(object):
         store = self.get_store_or_400(req, store_name)
 
         image_id = image_meta['id']
-        logger.debug("Setting image %s to status 'saving'" % image_id)
-        registry.update_image_metadata(self.options, image_id,
+        logger.debug("Setting image %s to status 'saving'", image_id)
+        registry.update_image_metadata(self.options, req.context, image_id,
                                        {'status': 'saving'})
         try:
             logger.debug("Uploading image data for image %(image_id)s "
-                         "to %(store_name)s store" % locals())
+                         "to %(store_name)s store", locals())
             location, size, checksum = store.add(image_meta['id'],
                                                  req.body_file,
                                                  self.options)
@@ -286,8 +348,9 @@ class Controller(object):
             # from the backend store
             logger.debug("Updating image %(image_id)s data. "
                          "Checksum set to %(checksum)s, size set "
-                         "to %(size)d" % locals())
-            registry.update_image_metadata(self.options, image_id,
+                         "to %(size)d", locals())
+            registry.update_image_metadata(self.options, req.context,
+                                           image_id,
                                            {'checksum': checksum,
                                             'size': size})
 
@@ -298,6 +361,13 @@ class Controller(object):
             logger.error(msg)
             self._safe_kill(req, image_id)
             raise HTTPConflict(msg, request=req)
+
+        except exception.NotAuthorized, e:
+            msg = ("Unauthorized upload attempt: %s") % str(e)
+            logger.error(msg)
+            self._safe_kill(req, image_id)
+            raise HTTPForbidden(msg, request=req,
+                                content_type='text/plain')
 
         except Exception, e:
             msg = ("Error uploading image: %s") % str(e)
@@ -318,6 +388,7 @@ class Controller(object):
         image_meta['location'] = location
         image_meta['status'] = 'active'
         return registry.update_image_metadata(self.options,
+                                       req.context,
                                        image_id,
                                        image_meta)
 
@@ -329,6 +400,7 @@ class Controller(object):
         :param image_id: Opaque image identifier
         """
         registry.update_image_metadata(self.options,
+                                       req.context,
                                        image_id,
                                        {'status': 'killed'})
 
@@ -397,6 +469,12 @@ class Controller(object):
                 and the request body is not application/octet-stream
                 image data.
         """
+        if req.context.read_only:
+            msg = "Read-only access"
+            logger.debug(msg)
+            raise HTTPForbidden(msg, request=req,
+                                content_type="text/plain")
+
         image_meta = self._reserve(req, image_meta)
         image_id = image_meta['id']
 
@@ -418,6 +496,12 @@ class Controller(object):
 
         :retval Returns the updated image information as a mapping
         """
+        if req.context.read_only:
+            msg = "Read-only access"
+            logger.debug(msg)
+            raise HTTPForbidden(msg, request=req,
+                                content_type="text/plain")
+
         orig_image_meta = self.get_image_meta_or_404(req, id)
         orig_status = orig_image_meta['status']
 
@@ -425,8 +509,9 @@ class Controller(object):
             raise HTTPConflict("Cannot upload to an unqueued image")
 
         try:
-            image_meta = registry.update_image_metadata(self.options, id,
-                                                         image_meta, True)
+            image_meta = registry.update_image_metadata(self.options,
+                                                        req.context, id,
+                                                        image_meta, True)
             if image_data is not None:
                 image_meta = self._upload_and_activate(req, image_meta)
         except exception.Invalid, e:
@@ -450,6 +535,12 @@ class Controller(object):
         :raises HttpNotAuthorized if image or any chunk is not
                 deleteable by the requesting user
         """
+        if req.context.read_only:
+            msg = "Read-only access"
+            logger.debug(msg)
+            raise HTTPForbidden(msg, request=req,
+                                content_type="text/plain")
+
         image = self.get_image_meta_or_404(req, id)
 
         # The image's location field may be None in the case
@@ -457,32 +548,9 @@ class Controller(object):
         # to delete the image if the backend doesn't yet store it.
         # See https://bugs.launchpad.net/glance/+bug/747799
         if image['location']:
-            try:
-                delete_from_backend(image['location'])
-            except (UnsupportedBackend, exception.NotFound):
-                msg = "Failed to delete image from store (%s). " + \
-                      "Continuing with deletion from registry."
-                logger.error(msg % (image['location'],))
-
-        registry.delete_image_metadata(self.options, id)
-
-    def get_image_meta_or_404(self, request, id):
-        """
-        Grabs the image metadata for an image with a supplied
-        identifier or raises an HTTPNotFound (404) response
-
-        :param request: The WSGI/Webob Request object
-        :param id: The opaque image identifier
-
-        :raises HTTPNotFound if image does not exist
-        """
-        try:
-            return registry.get_image_metadata(self.options, id)
-        except exception.NotFound:
-            msg = "Image with identifier %s not found" % id
-            logger.debug(msg)
-            raise HTTPNotFound(msg, request=request,
-                               content_type='text/plain')
+            schedule_delete_from_backend(image['location'], self.options,
+                                         req.context, id)
+        registry.delete_image_metadata(self.options, req.context, id)
 
     def get_store_or_400(self, request, store_name):
         """
