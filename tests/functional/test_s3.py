@@ -480,3 +480,45 @@ class TestS3(functional.FunctionalTest):
         self.assertEqual('Ubuntu', image['properties']['distro'])
 
         self.stop_servers()
+
+    def test_delete_not_existing(self):
+        """
+        We test the following:
+
+        0. GET /images/1
+        - Verify 404
+        1. DELETE /images/1
+        - Verify 404
+        """
+        if self.skip_tests:
+            return True
+
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 0. GET /images/1
+        # Verify 404 returned
+        cmd = "curl -i http://0.0.0.0:%d/v1/images/1" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 404 Not Found", status_line)
+
+        # 1. DELETE /images/1
+        # Verify 404 returned
+        cmd = "curl -i -X DELETE http://0.0.0.0:%d/v1/images/1" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        lines = out.split("\r\n")
+        status_line = lines[0]
+
+        self.assertEqual("HTTP/1.1 404 Not Found", status_line)
+
+        self.stop_servers()

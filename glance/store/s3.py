@@ -385,7 +385,7 @@ def get_key(bucket, obj):
     """
 
     key = bucket.get_key(obj)
-    if not key.exists():
+    if not key or not key.exists():
         msg = ("Could not find key %(obj)s in bucket %(bucket)s") % locals()
         logger.error(msg)
         raise exception.NotFound(msg)
