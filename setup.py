@@ -93,4 +93,5 @@ setup(
              'bin/glance-control',
              'bin/glance-manage',
              'bin/glance-registry',
+             'bin/glance-scrubber',
              'bin/glance-upload'])
