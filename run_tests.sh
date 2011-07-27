@@ -7,6 +7,7 @@ function usage {
   echo "  -V, --virtual-env        Always use virtualenv.  Install automatically if not present"
   echo "  -N, --no-virtual-env     Don't use virtualenv.  Run tests in local environment"
   echo "  -f, --force              Force a clean re-build of the virtual environment. Useful when dependencies have been added."
+  echo "  -p, --pep8               Just run pep8"
   echo "  -h, --help               Print this usage message"
   echo ""
   echo "Note: with no options specified, the script will try to run the tests in a virtual environment,"
@@ -20,6 +21,7 @@ function process_option {
     -h|--help) usage;;
     -V|--virtual-env) let always_venv=1; let never_venv=0;;
     -N|--no-virtual-env) let always_venv=0; let never_venv=1;;
+    -p|--pep8) let just_pep8=1;;
     -f|--force) let force=1;;
     *) noseargs="$noseargs $1"
   esac
@@ -32,6 +34,7 @@ never_venv=0
 force=0
 noseargs=
 wrapper=""
+just_pep8=0
 
 for arg in "$@"; do
   process_option $arg
@@ -42,6 +45,21 @@ function run_tests {
   ${wrapper} rm -f tests.sqlite
   ${wrapper} $NOSETESTS 2> run_tests.err.log
 }
+
+function run_pep8 {
+  echo "Running pep8 ..."
+  # FIXME(sirp): bzr version-info is not currently pep-8. This was fixed with
+  # lp701898 [1], however, until that version of bzr becomes standard, I'm just
+  # excluding the vcsversion.py file
+  #
+  # [1] https://bugs.launchpad.net/bzr/+bug/701898
+  #
+  PEP8_EXCLUDE=vcsversion.py
+  PEP8_OPTIONS="--exclude=$PEP8_EXCLUDE --repeat --show-pep8 --show-source"
+  PEP8_INCLUDE="bin/* glance tests tools setup.py run_tests.py"
+  pep8 $PEP8_OPTIONS $PEP8_INCLUDE
+}
+
 
 NOSETESTS="python run_tests.py $noseargs"
 
@@ -71,13 +89,13 @@ then
   fi
 fi
 
-# FIXME(sirp): bzr version-info is not currently pep-8. This was fixed with
-# lp701898 [1], however, until that version of bzr becomes standard, I'm just
-# excluding the vcsversion.py file
-#
-# [1] https://bugs.launchpad.net/bzr/+bug/701898
-#
-PEP8_EXCLUDE=vcsversion.py
-PEP8_OPTIONS="--exclude=$PEP8_EXCLUDE --repeat --show-pep8 --show-source"
-PEP8_INCLUDE="bin/* glance tests tools setup.py run_tests.py"
-run_tests && pep8 $PEP8_OPTIONS $PEP8_INCLUDE || exit 1
+if [ $just_pep8 -eq 1 ]; then
+    run_pep8
+    exit
+fi
+
+run_tests || exit
+
+if [ -z "$noseargs" ]; then
+  run_pep8
+fi
