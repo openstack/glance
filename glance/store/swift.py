@@ -135,7 +135,7 @@ class StoreLocation(glance.store.location.StoreLocation):
         Creates a fully-qualified auth url that the Swift client library can
         use. The scheme for the auth_url is determined using the scheme
         included in the `location` field.
-        
+
         HTTPS is assumed, unless 'swift+http' is specified.
         """
         if self.scheme.startswith('swift+http'):
