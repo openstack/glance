@@ -129,6 +129,29 @@ class StoreLocation(glance.store.location.StoreLocation):
             reason = "Badly formed Swift URI"
             raise exception.BadStoreUri(uri, reason)
 
+    @property
+    def swift_auth_url(self):
+        """
+        Creates a fully-qualified auth url that the Swift client library can
+        use. The scheme for the auth_url is determined using the scheme
+        included in the `location` field.
+
+        HTTPS is assumed, unless 'swift+http' is specified.
+        """
+        if self.scheme.startswith('swift+http'):
+            auth_scheme = 'http://'
+        elif self.scheme.startswith('swift+https'):
+            auth_scheme = 'https://'
+        elif self.scheme.startswith('swift'):
+            auth_scheme = 'https://'
+        else:
+            logger.warn("Unrecognized scheme '%s', defaulting auth url"
+                        " to https", self.scheme)
+            auth_scheme = 'https://'
+
+        full_url = ''.join([auth_scheme, self.authurl])
+        return full_url
+
 
 class SwiftBackend(glance.store.Backend):
     """An implementation of the swift backend adapter."""
@@ -154,7 +177,7 @@ class SwiftBackend(glance.store.Backend):
         # snet=True
         loc = location.store_location
         swift_conn = swift_client.Connection(
-            authurl=loc.authurl, user=loc.user, key=loc.key, snet=False)
+            authurl=loc.swift_auth_url, user=loc.user, key=loc.key, snet=False)
 
         try:
             (resp_headers, resp_body) = swift_conn.get_object(
@@ -165,6 +188,8 @@ class SwiftBackend(glance.store.Backend):
                 uri = location.get_store_uri()
                 raise exception.NotFound("Swift could not find image at "
                                          "uri %(uri)s" % locals())
+            else:
+                raise
 
         if expected_size:
             obj_size = int(resp_headers['content-length'])
@@ -292,7 +317,7 @@ class SwiftBackend(glance.store.Backend):
         # snet=True
         loc = location.store_location
         swift_conn = swift_client.Connection(
-            authurl=loc.authurl, user=loc.user, key=loc.key, snet=False)
+            authurl=loc.swift_auth_url, user=loc.user, key=loc.key, snet=False)
 
         try:
             swift_conn.delete_object(loc.container, loc.obj)
