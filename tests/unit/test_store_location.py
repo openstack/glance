@@ -267,3 +267,10 @@ class TestStoreLocation(unittest.TestCase):
 
         for scheme, store in good_results.items():
             self.assertEqual(glance.store.get_backend_class(scheme), store)
+
+        bad_results = ['fil', 'swift+h', 'unknown']
+
+        for store in bad_results:
+            self.assertRaises(glance.store.UnsupportedBackend,
+                              glance.store.get_backend_class,
+                              store)
