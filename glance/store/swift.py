@@ -44,10 +44,13 @@ class StoreLocation(glance.store.location.StoreLocation):
     the following:
 
         swift://user:pass@authurl.com/container/obj-id
+        swift://account:user:pass@authurl.com/container/obj-id
         swift+http://user:pass@authurl.com/container/obj-id
         swift+https://user:pass@authurl.com/container/obj-id
 
-    The swift+https:// URIs indicate there is an HTTPS authentication URL
+    The swift+http:// URIs indicate there is an HTTP authentication URL.
+    The default for Swift is an HTTPS authentication URL, so swift:// and
+    swift+https:// are the same...
     """
 
     def process_specs(self):
@@ -80,6 +83,18 @@ class StoreLocation(glance.store.location.StoreLocation):
 
             swift://account:user:pass@authurl.com/container/obj
         """
+        # Make sure that URIs that contain multiple schemes, such as:
+        # swift://user:pass@http://authurl.com/v1/container/obj
+        # are immediately rejected.
+        if uri.count('://') != 1:
+            reason = ("URI Cannot contain more than one occurrence of a "
+                      "scheme. If you have specified a "
+                      "URI like swift://user:pass@http://authurl.com/v1/"
+                      "container/obj, you need to change it to use the "
+                      "swift+http:// scheme, like so: "
+                      "swift+http://user:pass@authurl.com/v1/container/obj")
+            raise exception.BadStoreUri(uri, reason)
+
         pieces = urlparse.urlparse(uri)
         assert pieces.scheme in ('swift', 'swift+http', 'swift+https')
         self.scheme = pieces.scheme

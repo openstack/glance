@@ -30,7 +30,8 @@ import glance.store.location
 
 logger = logging.getLogger('glance.store.filesystem')
 
-glance.store.location.add_scheme_map({'file': 'filesystem'})
+glance.store.location.add_scheme_map({'file': 'filesystem',
+                                      'filesystem': 'filesystem'})
 
 
 class StoreLocation(glance.store.location.StoreLocation):
@@ -51,7 +52,7 @@ class StoreLocation(glance.store.location.StoreLocation):
         versions of Python.
         """
         pieces = urlparse.urlparse(uri)
-        assert pieces.scheme == 'file'
+        assert pieces.scheme in ('file', 'filesystem')
         self.scheme = pieces.scheme
         path = (pieces.netloc + pieces.path).strip()
         if path == '':

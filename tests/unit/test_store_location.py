@@ -185,6 +185,9 @@ class TestStoreLocation(unittest.TestCase):
         bad_uri = 'swift://user@example.com:8080/images/1'
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
 
+        bad_uri = 'swift://user:pass@http://example.com:8080/images/1'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
     def test_s3_store_location(self):
         """
         Test the specific StoreLocation for the S3 store
@@ -233,7 +236,7 @@ class TestStoreLocation(unittest.TestCase):
         self.assertEqual("pass/withslash", loc.secretkey)
         self.assertEqual(uri, loc.get_uri())
 
-        bad_uri = 'swif://'
+        bad_uri = 's://'
         self.assertRaises(Exception, loc.parse_uri, bad_uri)
 
         bad_uri = 's3://'
@@ -241,3 +244,26 @@ class TestStoreLocation(unittest.TestCase):
 
         bad_uri = 's3://accesskey@example.com:8080/images/1'
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = 's3://user:pass@http://example.com:8080/images/1'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+    def test_get_backend_class(self):
+        """
+        Test that the backend returned by glance.store.get_backend_class
+        is correct or raises an appropriate error.
+        """
+        good_results = {
+            'swift': glance.store.swift.SwiftBackend,
+            'swift+http': glance.store.swift.SwiftBackend,
+            'swift+https': glance.store.swift.SwiftBackend,
+            's3': glance.store.s3.S3Backend,
+            's3+http': glance.store.s3.S3Backend,
+            's3+https': glance.store.s3.S3Backend,
+            'file': glance.store.filesystem.FilesystemBackend,
+            'filesystem': glance.store.filesystem.FilesystemBackend,
+            'http': glance.store.http.HTTPBackend,
+            'https': glance.store.http.HTTPBackend}
+
+        for scheme, store in good_results.items():
+            self.assertEqual(glance.store.get_backend_class(scheme), store)

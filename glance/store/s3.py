@@ -72,6 +72,18 @@ class StoreLocation(glance.store.location.StoreLocation):
         which is entirely retarded, and breaks urlparse miserably.
         This function works around that issue.
         """
+        # Make sure that URIs that contain multiple schemes, such as:
+        # swift://user:pass@http://authurl.com/v1/container/obj
+        # are immediately rejected.
+        if uri.count('://') != 1:
+            reason = ("URI Cannot contain more than one occurrence of a "
+                      "scheme. If you have specified a "
+                      "URI like s3://user:pass@https://s3.amazonaws.com/"
+                      "bucket/key, you need to change it to use the "
+                      "s3+https:// scheme, like so: "
+                      "s3+https://user:pass@s3.amazonaws.com/bucket/key")
+            raise exception.BadStoreUri(uri, reason)
+
         pieces = urlparse.urlparse(uri)
         assert pieces.scheme in ('s3', 's3+http', 's3+https')
         self.scheme = pieces.scheme
