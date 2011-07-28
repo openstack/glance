@@ -138,6 +138,7 @@ class TestStoreLocation(unittest.TestCase):
 
         self.assertEqual("swift", loc.scheme)
         self.assertEqual("example.com", loc.authurl)
+        self.assertEqual("https://example.com", loc.swift_auth_url)
         self.assertEqual("images", loc.container)
         self.assertEqual("1", loc.obj)
         self.assertEqual(None, loc.user)
@@ -148,6 +149,7 @@ class TestStoreLocation(unittest.TestCase):
 
         self.assertEqual("swift+https", loc.scheme)
         self.assertEqual("authurl.com", loc.authurl)
+        self.assertEqual("https://authurl.com", loc.swift_auth_url)
         self.assertEqual("images", loc.container)
         self.assertEqual("1", loc.obj)
         self.assertEqual("user", loc.user)
@@ -159,17 +161,19 @@ class TestStoreLocation(unittest.TestCase):
 
         self.assertEqual("swift+https", loc.scheme)
         self.assertEqual("authurl.com/v1", loc.authurl)
+        self.assertEqual("https://authurl.com/v1", loc.swift_auth_url)
         self.assertEqual("container", loc.container)
         self.assertEqual("12345", loc.obj)
         self.assertEqual("user", loc.user)
         self.assertEqual("pass", loc.key)
         self.assertEqual(uri, loc.get_uri())
 
-        uri = 'swift://account:user:pass@authurl.com/v1/container/12345'
+        uri = 'swift+http://account:user:pass@authurl.com/v1/container/12345'
         loc.parse_uri(uri)
 
-        self.assertEqual("swift", loc.scheme)
+        self.assertEqual("swift+http", loc.scheme)
         self.assertEqual("authurl.com/v1", loc.authurl)
+        self.assertEqual("http://authurl.com/v1", loc.swift_auth_url)
         self.assertEqual("container", loc.container)
         self.assertEqual("12345", loc.obj)
         self.assertEqual("account:user", loc.user)

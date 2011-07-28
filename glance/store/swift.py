@@ -142,14 +142,10 @@ class StoreLocation(glance.store.location.StoreLocation):
         try:
             self.obj = path_parts.pop()
             self.container = path_parts.pop()
-            if self.scheme == 'swift+http':
-                self.authurl = 'http://'
-            else:
-                self.authurl = ''  # default is https anyway
             if not netloc.startswith('http'):
                 # push hostname back into the remaining to build full authurl
                 path_parts.insert(0, netloc)
-                self.authurl += '/'.join(path_parts)
+                self.authurl = '/'.join(path_parts)
         except IndexError:
             reason = "Badly formed Swift URI"
             raise exception.BadStoreUri(uri, reason)
@@ -163,16 +159,10 @@ class StoreLocation(glance.store.location.StoreLocation):
 
         HTTPS is assumed, unless 'swift+http' is specified.
         """
-        if self.scheme.startswith('swift+http'):
-            auth_scheme = 'http://'
-        elif self.scheme.startswith('swift+https'):
-            auth_scheme = 'https://'
-        elif self.scheme.startswith('swift'):
+        if self.scheme in ('swift+https', 'swift'):
             auth_scheme = 'https://'
         else:
-            logger.warn("Unrecognized scheme '%s', defaulting auth url"
-                        " to https", self.scheme)
-            auth_scheme = 'https://'
+            auth_scheme = 'http://'
 
         full_url = ''.join([auth_scheme, self.authurl])
         return full_url
