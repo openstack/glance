@@ -138,6 +138,7 @@ class TestStoreLocation(unittest.TestCase):
 
         self.assertEqual("swift", loc.scheme)
         self.assertEqual("example.com", loc.authurl)
+        self.assertEqual("https://example.com", loc.swift_auth_url)
         self.assertEqual("images", loc.container)
         self.assertEqual("1", loc.obj)
         self.assertEqual(None, loc.user)
@@ -148,6 +149,7 @@ class TestStoreLocation(unittest.TestCase):
 
         self.assertEqual("swift+https", loc.scheme)
         self.assertEqual("authurl.com", loc.authurl)
+        self.assertEqual("https://authurl.com", loc.swift_auth_url)
         self.assertEqual("images", loc.container)
         self.assertEqual("1", loc.obj)
         self.assertEqual("user", loc.user)
@@ -159,17 +161,19 @@ class TestStoreLocation(unittest.TestCase):
 
         self.assertEqual("swift+https", loc.scheme)
         self.assertEqual("authurl.com/v1", loc.authurl)
+        self.assertEqual("https://authurl.com/v1", loc.swift_auth_url)
         self.assertEqual("container", loc.container)
         self.assertEqual("12345", loc.obj)
         self.assertEqual("user", loc.user)
         self.assertEqual("pass", loc.key)
         self.assertEqual(uri, loc.get_uri())
 
-        uri = 'swift://account:user:pass@authurl.com/v1/container/12345'
+        uri = 'swift+http://account:user:pass@authurl.com/v1/container/12345'
         loc.parse_uri(uri)
 
-        self.assertEqual("swift", loc.scheme)
+        self.assertEqual("swift+http", loc.scheme)
         self.assertEqual("authurl.com/v1", loc.authurl)
+        self.assertEqual("http://authurl.com/v1", loc.swift_auth_url)
         self.assertEqual("container", loc.container)
         self.assertEqual("12345", loc.obj)
         self.assertEqual("account:user", loc.user)
@@ -183,6 +187,9 @@ class TestStoreLocation(unittest.TestCase):
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
 
         bad_uri = 'swift://user@example.com:8080/images/1'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = 'swift://user:pass@http://example.com:8080/images/1'
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
 
     def test_s3_store_location(self):
@@ -233,7 +240,7 @@ class TestStoreLocation(unittest.TestCase):
         self.assertEqual("pass/withslash", loc.secretkey)
         self.assertEqual(uri, loc.get_uri())
 
-        bad_uri = 'swif://'
+        bad_uri = 's://'
         self.assertRaises(Exception, loc.parse_uri, bad_uri)
 
         bad_uri = 's3://'
@@ -241,3 +248,33 @@ class TestStoreLocation(unittest.TestCase):
 
         bad_uri = 's3://accesskey@example.com:8080/images/1'
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = 's3://user:pass@http://example.com:8080/images/1'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+    def test_get_backend_class(self):
+        """
+        Test that the backend returned by glance.store.get_backend_class
+        is correct or raises an appropriate error.
+        """
+        good_results = {
+            'swift': glance.store.swift.SwiftBackend,
+            'swift+http': glance.store.swift.SwiftBackend,
+            'swift+https': glance.store.swift.SwiftBackend,
+            's3': glance.store.s3.S3Backend,
+            's3+http': glance.store.s3.S3Backend,
+            's3+https': glance.store.s3.S3Backend,
+            'file': glance.store.filesystem.FilesystemBackend,
+            'filesystem': glance.store.filesystem.FilesystemBackend,
+            'http': glance.store.http.HTTPBackend,
+            'https': glance.store.http.HTTPBackend}
+
+        for scheme, store in good_results.items():
+            self.assertEqual(glance.store.get_backend_class(scheme), store)
+
+        bad_results = ['fil', 'swift+h', 'unknown']
+
+        for store in bad_results:
+            self.assertRaises(glance.store.UnsupportedBackend,
+                              glance.store.get_backend_class,
+                              store)
