@@ -213,6 +213,8 @@ class SwiftBackend(glance.store.Backend):
                 uri = location.get_store_uri()
                 raise exception.NotFound("Swift could not find image at "
                                          "uri %(uri)s" % locals())
+            else:
+                raise
 
         if expected_size:
             obj_size = int(resp_headers['content-length'])
