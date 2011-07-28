@@ -124,7 +124,9 @@ def stub_out_swift_common_client(stubs):
     def fake_http_connection(*args, **kwargs):
         return None
 
-    def fake_get_auth(*args, **kwargs):
+    def fake_get_auth(url, *args, **kwargs):
+        if 'http' in url and '://' not in url:
+            raise ValueError('Invalid url %s' % url)
         return None, None
 
     stubs.Set(swift.common.client,
@@ -153,6 +155,9 @@ def format_swift_location(user, key, authurl, container, obj):
     scheme = 'swift+https'
     if authurl.startswith('http://'):
         scheme = 'swift+http'
+        authurl = authurl[7:]
+    if authurl.startswith('https://'):
+        authurl = authurl[8:]
     return "%s://%s:%s@%s/%s/%s" % (scheme, user, key, authurl,
                                     container, obj)
 

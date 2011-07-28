@@ -67,10 +67,15 @@ class StoreLocation(glance.store.location.StoreLocation):
         return ''
 
     def get_uri(self):
+        authurl = self.authurl
+        if authurl.startswith('http://'):
+            authurl = authurl[7:]
+        elif authurl.startswith('https://'):
+            authurl = authurl[8:]
         return "%s://%s%s/%s/%s" % (
             self.scheme,
             self._get_credstring(),
-            self.authurl,
+            authurl,
             self.container,
             self.obj)
 
@@ -137,9 +142,14 @@ class StoreLocation(glance.store.location.StoreLocation):
         try:
             self.obj = path_parts.pop()
             self.container = path_parts.pop()
-            self.authurl = netloc
-            if len(path_parts) > 0:
-                self.authurl = netloc + '/' + '/'.join(path_parts).strip('/')
+            if self.scheme == 'swift+http':
+                self.authurl = 'http://'
+            else:
+                self.authurl = ''  # default is https anyway
+            if not netloc.startswith('http'):
+                # push hostname back into the remaining to build full authurl
+                path_parts.insert(0, netloc)
+                self.authurl += '/'.join(path_parts)
         except IndexError:
             reason = "Badly formed Swift URI"
             raise exception.BadStoreUri(uri, reason)
@@ -203,8 +213,6 @@ class SwiftBackend(glance.store.Backend):
                 uri = location.get_store_uri()
                 raise exception.NotFound("Swift could not find image at "
                                          "uri %(uri)s" % locals())
-            else:
-                raise
 
         if expected_size:
             obj_size = int(resp_headers['content-length'])
