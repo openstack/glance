@@ -59,17 +59,16 @@ def get_backend_class(backend):
     :param backend: Name of backend to create
     """
     # NOTE(sirp): avoiding circular import
-    from glance.store.http import HTTPBackend
-    from glance.store.s3 import S3Backend
-    from glance.store.swift import SwiftBackend
-    from glance.store.filesystem import FilesystemBackend
+    import glance.store.http
+    import glance.store.s3
+    import glance.store.swift
+    import glance.store.filesystem
 
     BACKENDS = {
-        "file": FilesystemBackend,
-        "http": HTTPBackend,
-        "https": HTTPBackend,
-        "swift": SwiftBackend,
-        "s3": S3Backend}
+        "filesystem": glance.store.filesystem.FilesystemBackend,
+        "http": glance.store.http.HTTPBackend,
+        "swift": glance.store.swift.SwiftBackend,
+        "s3": glance.store.s3.S3Backend}
 
     try:
         return BACKENDS[backend]

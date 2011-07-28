@@ -214,26 +214,30 @@ class Controller(api.BaseController):
         if cache.enabled:
             if cache.hit(id):
                 # hit
-                logger.debug("image cache HIT, retrieving image '%s'"
-                             " from cache", id)
+                logger.debug("image '%s' is a cache HIT", id)
                 image_iterator = get_from_cache(image, cache)
             else:
                 # miss
-                logger.debug("image cache MISS, retrieving image '%s'"
-                             " from store and tee'ing into cache", id)
+                logger.debug("image '%s' is a cache MISS", id)
 
-                # We only want to tee-into the cache if we're not currently
-                # prefetching an image
-                image_id = image['id']
-                if cache.is_image_currently_prefetching(image_id):
+                # Make sure we're not already prefetching or caching the image
+                # that just generated the miss
+                if cache.is_image_currently_prefetching(id):
+                    logger.debug("image '%s' is already being prefetched,"
+                                 " not tee'ing into the cache", id)
+                    image_iterator = get_from_store(image)
+                elif cache.is_image_currently_being_written(id):
+                    logger.debug("image '%s' is already being cached,"
+                                 " not tee'ing into the cache", id)
                     image_iterator = get_from_store(image)
                 else:
                     # NOTE(sirp): If we're about to download and cache an
                     # image which is currently in the prefetch queue, just
                     # delete the queue items since we're caching it anyway
-                    if cache.is_image_queued_for_prefetch(image_id):
-                        cache.delete_queued_prefetch_image(image_id)
+                    if cache.is_image_queued_for_prefetch(id):
+                        cache.delete_queued_prefetch_image(id)
 
+                    logger.debug("tee'ing image '%s' into cache", id)
                     image_iterator = get_from_store_tee_into_cache(
                         image, cache)
         else:

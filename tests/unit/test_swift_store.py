@@ -124,7 +124,9 @@ def stub_out_swift_common_client(stubs):
     def fake_http_connection(*args, **kwargs):
         return None
 
-    def fake_get_auth(*args, **kwargs):
+    def fake_get_auth(url, *args, **kwargs):
+        if 'http' in url and '://' not in url:
+            raise ValueError('Invalid url %s' % url)
         return None, None
 
     stubs.Set(swift.common.client,
