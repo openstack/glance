@@ -108,6 +108,14 @@ class TestS3(functional.FunctionalTest):
             self.inited = True
             super(TestS3, self).setUp()
             return
+        except TypeError, e:
+            # This hack is necessary because of a bug in boto 1.9b:
+            # http://code.google.com/p/boto/issues/detail?id=540
+            print ("Failed to connect to S3 with credentials. "
+                   "Got error: %s" % e)
+            self.inited = True
+            super(TestS3, self).setUp()
+            return
 
         self.s3_conn = s3_conn
 
