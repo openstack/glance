@@ -150,6 +150,9 @@ Can only be specified in configuration files.
 Sets the storage backend to use by default when storing images in Glance.
 Available options for this option are (``file``, ``swift``, or ``s3``).
 
+Configuring the Filesystem Storage Backend
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 * ``filesystem_store_datadir=PATH``
 
 Optional. Default: ``/var/lib/glance/images/``
@@ -162,6 +165,9 @@ Sets the path where the filesystem storage backend write disk images. Note that
 the filesystem storage backend will attempt to create this directory if it does
 not exist. Ensure that the user that ``glance-api`` runs under has write
 permissions to this directory.
+
+Configuring the Swift Storage Backend
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * ``swift_store_auth_address=URL``
 
@@ -217,6 +223,82 @@ Can only be specified in configuration files.
 `This option is specific to the Swift storage backend.`
 
 If true, Glance will attempt to create the container ``swift_store_container``
+if it does not exist.
+
+Configuring the S3 Storage Backend
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``s3_store_host=URL``
+
+Required when using the S3 storage backend.
+
+Can only be specified in configuration files.
+
+`This option is specific to the S3 storage backend.`
+
+Default: s3.amazonaws.com
+
+Sets the main service URL supplied to S3 when making calls to its storage
+system. For more information about the S3 authentication system, please
+see the `S3 documentation <http://aws.amazon.com/documentation/s3/>`_ 
+
+* ``s3_store_access_key=ACCESS_KEY``
+
+Required when using the S3 storage backend.
+
+Can only be specified in configuration files.
+
+`This option is specific to the S3 storage backend.`
+
+Sets the access key to authenticate against the ``s3_store_host`` with.
+
+You should set this to your 20-character Amazon AWS access key.
+
+* ``s3_store_secret_key=SECRET_KEY``
+
+Required when using the S3 storage backend.
+
+Can only be specified in configuration files.
+
+`This option is specific to the S3 storage backend.`
+
+Sets the secret key to authenticate against the
+``s3_store_host`` with for the access key ``s3_store_access_key``.
+
+You should set this to your 40-character Amazon AWS secret key.
+
+* ``s3_store_bucket=BUCKET``
+
+Required when using the S3 storage backend.
+
+Can only be specified in configuration files.
+
+`This option is specific to the S3 storage backend.`
+
+Sets the name of the bucket to use for Glance images in S3.
+
+Note that the namespace for S3 buckets is **global**, and
+therefore you must use a name for the bucket that is unique. It
+is recommended that you use a combination of your AWS access key,
+**lowercased** with "glance".
+
+For instance if your Amazon AWS access key is:
+
+``ABCDEFGHIJKLMNOPQRST``
+
+then make your bucket value be:
+
+``abcdefghijklmnopqrstglance``
+
+* ``s3_store_create_bucket_on_put``
+
+Optional. Default: ``False``
+
+Can only be specified in configuration files.
+
+`This option is specific to the S3 storage backend.`
+
+If true, Glance will attempt to create the bucket ``s3_store_bucket``
 if it does not exist.
 
 Configuring the Glance Registry

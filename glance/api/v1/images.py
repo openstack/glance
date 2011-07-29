@@ -331,6 +331,7 @@ class Controller(api.BaseController):
         try:
             logger.debug("Uploading image data for image %(image_id)s "
                          "to %(store_name)s store", locals())
+            req.make_body_seekable()
             location, size, checksum = store.add(image_meta['id'],
                                                  req.body_file,
                                                  self.options)
@@ -436,6 +437,10 @@ class Controller(api.BaseController):
         :retval Mapping of updated image data
         """
         image_id = image_meta['id']
+        # This is necessary because of a bug in Webob 1.0.2 - 1.0.7
+        # See: https://bitbucket.org/ianb/webob/
+        # issue/12/fix-for-issue-6-broke-chunked-transfer
+        req.is_body_readable = True
         location = self._upload(req, image_meta)
         return self._activate(req, image_id, location)
 
