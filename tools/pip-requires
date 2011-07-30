@@ -9,6 +9,7 @@ routes
 webob==1.0.8
 wsgiref
 nose
+nose-exclude
 sphinx
 argparse
 mox==0.5.0
