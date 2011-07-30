@@ -101,7 +101,7 @@ class Controller(api.BaseController):
             images = registry.get_images_list(self.options, req.context,
                                               **params)
         except exception.Invalid, e:
-            raise HTTPBadRequest(explanation=str(e))
+            raise HTTPBadRequest(explanation="%s" % e)
 
         return dict(images=images)
 
@@ -132,7 +132,7 @@ class Controller(api.BaseController):
             images = registry.get_images_detail(self.options, req.context,
                                                 **params)
         except exception.Invalid, e:
-            raise HTTPBadRequest(explanation=str(e))
+            raise HTTPBadRequest(explanation="%s" % e)
         return dict(images=images)
 
     def _get_query_params(self, req):
@@ -362,20 +362,20 @@ class Controller(api.BaseController):
             return location
 
         except exception.Duplicate, e:
-            msg = ("Attempt to upload duplicate image: %s") % str(e)
+            msg = ("Attempt to upload duplicate image: %s") % e
             logger.error(msg)
             self._safe_kill(req, image_id)
             raise HTTPConflict(msg, request=req)
 
         except exception.NotAuthorized, e:
-            msg = ("Unauthorized upload attempt: %s") % str(e)
+            msg = ("Unauthorized upload attempt: %s") % e
             logger.error(msg)
             self._safe_kill(req, image_id)
             raise HTTPForbidden(msg, request=req,
                                 content_type='text/plain')
 
         except Exception, e:
-            msg = ("Error uploading image: %s") % str(e)
+            msg = ("Error uploading image: %s") % e
             logger.error(msg)
             self._safe_kill(req, image_id)
             raise HTTPBadRequest(msg, request=req)

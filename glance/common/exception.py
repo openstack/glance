@@ -115,7 +115,7 @@ def wrap_exception(f):
                 #exc_type, exc_value, exc_traceback = sys.exc_info()
                 logging.exception('Uncaught exception')
                 #logging.error(traceback.extract_stack(exc_traceback))
-                raise Error(str(e))
+                raise Error("%s" % e)
             raise
     _wrap.func_name = f.func_name
     return _wrap

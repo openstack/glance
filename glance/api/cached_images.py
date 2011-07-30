@@ -80,7 +80,7 @@ class Controller(api.BaseController):
         try:
             self.cache.queue_prefetch(image_meta)
         except exception.Invalid, e:
-            raise webob.exc.HTTPBadRequest(explanation=str(e))
+            raise webob.exc.HTTPBadRequest(explanation="%s" % e)
 
 
 class CachedImageDeserializer(wsgi.JSONRequestDeserializer):
