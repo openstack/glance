@@ -73,25 +73,25 @@ def parse_args():
     parser.add_argument('filename', help='file to upload into Glance')
     parser.add_argument('name', help='name of image')
     parser.add_argument('--host', metavar='HOST', default='127.0.0.1',
-                        help='Location of Glance Server (default: %default)')
+               help='Location of Glance Server (default: %(default)s)')
     parser.add_argument('--port', metavar='PORT', type=int, default=9292,
-                        help='Port of Glance Server (default: %default)')
+               help='Port of Glance Server (default: %(default)s)')
     parser.add_argument('--type', metavar='TYPE', default='raw',
-                        help='Type of Image [kernel, ramdisk, machine, raw] '
-                             '(default: %default)')
+               help='Type of Image [kernel, ramdisk, machine, raw] '
+                    '(default: %(default)s)')
     parser.add_argument('--disk-format', metavar='DISK_FORMAT', default=None,
-                        choices=DISK_FORMATS,
-                        help='Disk format of Image [%s] '
-                             '(default: %%default)' % ','.join(DISK_FORMATS))
+               choices=DISK_FORMATS,
+               help='Disk format of Image [%s] '
+                    '(default: %%(default)s)' % ','.join(DISK_FORMATS))
     parser.add_argument('--container-format', metavar='CONTAINER_FORMAT',
-                        default=None, choices=CONTAINER_FORMATS,
-                        help='Disk format of Image [%s] '
-                        '(default: %%default)' % ','.join(CONTAINER_FORMATS))
+               default=None, choices=CONTAINER_FORMATS,
+               help='Disk format of Image [%s] '
+                    '(default: %%(default)s)' % ','.join(CONTAINER_FORMATS))
     parser.add_argument('--kernel', metavar='KERNEL',
-                        help='ID of kernel associated with this machine image')
+               help='ID of kernel associated with this machine image')
     parser.add_argument('--ramdisk', metavar='RAMDISK',
-                        help='ID of ramdisk associated with this machine '
-                             'image')
+               help='ID of ramdisk associated with this machine '
+                    'image')
     args = parser.parse_args()
     return args
 
