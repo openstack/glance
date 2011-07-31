@@ -7,6 +7,7 @@ function usage {
   echo "  -V, --virtual-env        Always use virtualenv.  Install automatically if not present"
   echo "  -N, --no-virtual-env     Don't use virtualenv.  Run tests in local environment"
   echo "  -f, --force              Force a clean re-build of the virtual environment. Useful when dependencies have been added."
+  echo "  --unittests-only         Run unit tests only, exclude functional tests."
   echo "  -p, --pep8               Just run pep8"
   echo "  -h, --help               Print this usage message"
   echo ""
@@ -23,6 +24,7 @@ function process_option {
     -N|--no-virtual-env) let always_venv=0; let never_venv=1;;
     -p|--pep8) let just_pep8=1;;
     -f|--force) let force=1;;
+    --unittests-only) noseargs="$noseargs --exclude-dir=tests/functional";;
     *) noseargs="$noseargs $1"
   esac
 }
