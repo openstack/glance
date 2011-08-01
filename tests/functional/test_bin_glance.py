@@ -395,7 +395,9 @@ class TestBinGlance(functional.FunctionalTest):
         self.cleanup()
         self.start_servers()
 
-        index_cmd = "bin/glance --port=%d index" % self.api_port
+        _base_cmd = "bin/glance --port=%d" % self.api_port
+        index_cmd = "%s index" % _base_cmd
+        details_cmd = "%s details" % _base_cmd
 
         # 1. Add some images
         _add_cmd = "bin/glance --port=%d add is_public=True" % self.api_port
@@ -457,5 +459,16 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(2, len(image_lines))
         self.assertTrue(image_lines[0].startswith('3'))
         self.assertTrue(image_lines[1].startswith('1'))
+
+        # 5. Pagination params with filtered results in a details call
+        cmd = "-f --marker=4 --limit=1 container_format=ami"
+        exitcode, out, err = execute("%s %s" % (details_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[1:-1]
+        self.assertEqual(20, len(image_lines))
+        self.assertTrue(image_lines[1].startswith('Id: 3'))
+        self.assertTrue(image_lines[11].startswith('Id: 1'))
+
 
 

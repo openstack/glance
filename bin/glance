@@ -415,6 +415,7 @@ Shows image metadata for an image in Glance"""
 
 
 def _images_index(client, filters, limit, marker=None, print_header=False):
+    """Driver function for images_index"""
     kwargs = {
         "filters": filters,
         "limit": limit,
@@ -445,7 +446,6 @@ def _images_index(client, filters, limit, marker=None, print_header=False):
                                     image['container_format'],
                                     image['size'])
 
-    # Halt pagination of user 
     if not options.force and not user_confirm("Fetch next page?", True):
         return SUCCESS
 
@@ -475,7 +475,38 @@ fields are treated as image metadata properties"""
                          marker=marker,
                          print_header=True)
 
-def images_detailed(options, args):
+
+def _images_details(client, filters, limit, marker=None, print_header=False):
+    """Driver function for images_details"""
+    kwargs = {
+        "filters": filters,
+        "limit": limit,
+    }
+
+    if marker is not None:
+        kwargs["marker"] = marker
+
+    images = client.get_images_detailed(**kwargs)
+
+    if len(images) == 0:
+        return SUCCESS
+
+    if print_header:
+        print "=" * 80
+
+    for image in images:
+        print_image_formatted(client, image)
+        print "=" * 80
+
+    if not options.force and not user_confirm("Fetch next page?", True):
+        return SUCCESS
+
+    next_marker = images[-1]['id']
+    return _images_details(client, filters, limit, marker=next_marker)
+
+
+@catch_error('show details')
+def images_details(options, args):
     """
 %(prog)s details [options]
 
@@ -485,32 +516,16 @@ handled as query filters. Supported filters
 include 'name', 'disk_format', 'container_format',
 'status', 'size_min', and 'size_max.' Any extra
 fields are treated as image metadata properties"""
+    client = get_client(options)
     filters = get_image_filters_from_args(args)
+    limit = options.limit
+    marker = options.marker
 
-    c = get_client(options)
-    try:
-        images = c.get_images_detailed(filters=filters)
-        if len(images) == 0:
-            print "No public images found."
-            return SUCCESS
-
-        num_images = len(images)
-        print "Found %d public images..." % num_images
-        cur_image = 1
-        for image in images:
-            print "=" * 80
-            print_image_formatted(c, image)
-            if cur_image == num_images:
-                print "=" * 80
-            cur_image += 1
-
-        return SUCCESS
-    except Exception, e:
-        print "Failed to show details. Got error:"
-        pieces = str(e).split('\n')
-        for piece in pieces:
-            print piece
-        return FAILURE
+    return _images_details(client,
+                           filters,
+                           limit,
+                           marker=marker,
+                           print_header=True)
 
 
 def images_clear(options, args):
@@ -872,7 +887,7 @@ def lookup_command(parser, command_name):
                 'update': image_update,
                 'delete': image_delete,
                 'index': images_index,
-                'details': images_detailed,
+                'details': images_details,
                 'show': image_show,
                 'clear': images_clear}
 
