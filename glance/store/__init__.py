@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2010 OpenStack, LLC
+# Copyright 2010-2011 OpenStack, LLC
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -21,22 +21,39 @@ import os
 import urlparse
 
 from glance import registry
-from glance.common import config, exception
+from glance.common import config
+from glance.common import exception
+from glance.common import utils
 from glance.store import location
-
 
 logger = logging.getLogger('glance.store')
 
+# Set of known store modules
+REGISTERED_STORE_MODULES = []
 
-# TODO(sirp): should this be moved out to common/utils.py ?
-def _file_iter(f, size):
+# Set of store objects, constructed in create_stores()
+STORES = {}
+
+
+class ImageAddResult(object):
+
     """
-    Return an iterator for a file-like object
+    Class that represents the succesful result of adding
+    an image to a backend store.
     """
-    chunk = f.read(size)
-    while chunk:
-        yield chunk
-        chunk = f.read(size)
+
+    def __init__(self, location, bytes_written, checksum=None):
+        """
+        Initialize the object
+
+        :param location: `glance.store.StoreLocation` object representing
+                         the location of the image in the backend store
+        :param bytes_written: Number of bytes written to store
+        :param checksum: Optional checksum of the image data
+        """
+        self.location = location
+        self.bytes_written = bytes_written
+        self.checksum = checksum
 
 
 class BackendException(Exception):
@@ -47,56 +64,81 @@ class UnsupportedBackend(BackendException):
     pass
 
 
-class Backend(object):
-    CHUNKSIZE = 4096
-
-
-def get_backend_class(backend):
+def register_store(store_module, schemes):
     """
-    Returns the backend class as designated in the
-    backend name
+    Registers a store module and a set of schemes
+    for which a particular URI request should be routed.
 
-    :param backend: Name of backend to create
+    :param store_module: String representing the store module
+    :param schemes: List of strings representing schemes for
+                    which this store should be used in routing
     """
-    # NOTE(sirp): avoiding circular import
-    import glance.store.http
-    import glance.store.s3
-    import glance.store.swift
-    import glance.store.filesystem
-
-    BACKENDS = {
-        "filesystem": glance.store.filesystem.FilesystemBackend,
-        "http": glance.store.http.HTTPBackend,
-        "swift": glance.store.swift.SwiftBackend,
-        "s3": glance.store.s3.S3Backend}
-
     try:
-        return BACKENDS[backend]
-    except KeyError:
-        # Total hack... this will go away with refactor-stores
+        utils.import_class(store_module + '.Store')
+    except exception.NotFound:
+        raise BackendException('Unable to register store. Could not find '
+                               'a class named Store in module %s.'
+                               % store_module)
+    REGISTERED_STORE_MODULES.append(store_module)
+    scheme_map = {}
+    for scheme in schemes:
+        scheme_map[scheme] = store_module
+    location.register_scheme_map(scheme_map)
+
+
+def create_stores(options):
+    """
+    Construct the store objects with supplied configuration options
+    """
+    for store_module in REGISTERED_STORE_MODULES:
         try:
-            return BACKENDS[location.SCHEME_TO_STORE_MAP[backend]]
-        except KeyError:
-            raise UnsupportedBackend("No backend found for '%s'" % backend)
+            store_class = utils.import_class(store_module + '.Store')
+        except exception.NotFound:
+            raise BackendException('Unable to create store. Could not find '
+                                   'a class named Store in module %s.'
+                                   % store_module)
+        STORES[store_module] = store_class(options)
+
+
+def get_store_from_scheme(scheme):
+    """
+    Given a scheme, return the appropriate store object
+    for handling that scheme
+    """
+    if scheme not in location.SCHEME_TO_STORE_MAP:
+        raise exception.UnknownScheme(scheme)
+    return STORES[location.SCHEME_TO_STORE_MAP[scheme]]
+
+
+def get_store_from_uri(uri):
+    """
+    Given a URI, return the store object that would handle
+    operations on the URI.
+
+    :param uri: URI to analyze
+    """
+    scheme = uri[0:uri.find('/') - 1]
+    return get_store_from_scheme(scheme)
 
 
 def get_from_backend(uri, **kwargs):
     """Yields chunks of data from backend specified by uri"""
 
+    store = get_store_from_uri(uri)
     loc = location.get_location_from_uri(uri)
-    backend_class = get_backend_class(loc.store_name)
 
-    return backend_class.get(loc, **kwargs)
+    return store.get(loc)
 
 
 def delete_from_backend(uri, **kwargs):
     """Removes chunks of data from backend specified by uri"""
-
+    store = get_store_from_uri(uri)
     loc = location.get_location_from_uri(uri)
-    backend_class = get_backend_class(loc.store_name)
 
-    if hasattr(backend_class, 'delete'):
-        return backend_class.delete(loc, **kwargs)
+    try:
+        return store.delete(loc)
+    except NotImplementedError:
+        pass  # Just ignore it...
 
 
 def get_store_from_location(uri):

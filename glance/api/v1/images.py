@@ -34,10 +34,15 @@ from glance import api
 from glance import image_cache
 from glance.common import exception
 from glance.common import wsgi
+import glance.store
+import glance.store.filesystem
+import glance.store.http
+import glance.store.s3
+import glance.store.swift
 from glance.store import (get_from_backend,
                           schedule_delete_from_backend,
                           get_store_from_location,
-                          get_backend_class,
+                          get_store_from_scheme,
                           UnsupportedBackend)
 from glance import registry
 from glance import utils
@@ -72,6 +77,7 @@ class Controller(api.BaseController):
 
     def __init__(self, options):
         self.options = options
+        glance.store.create_stores(options)
 
     def index(self, req):
         """
@@ -333,8 +339,7 @@ class Controller(api.BaseController):
                          "to %(store_name)s store", locals())
             req.make_body_seekable()
             location, size, checksum = store.add(image_meta['id'],
-                                                 req.body_file,
-                                                 self.options)
+                                                 req.body_file)
 
             # Verify any supplied checksum value matches checksum
             # returned from store when adding image
@@ -572,8 +577,8 @@ class Controller(api.BaseController):
         :raises HTTPNotFound if image does not exist
         """
         try:
-            return get_backend_class(store_name)
-        except UnsupportedBackend:
+            return get_store_from_scheme(store_name)
+        except exception.UnknownScheme:
             msg = ("Requested store %s not available on this Glance server"
                    % store_name)
             logger.error(msg)

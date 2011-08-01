@@ -26,12 +26,10 @@ import urlparse
 
 from glance.common import exception
 import glance.store
+import glance.store.base
 import glance.store.location
 
 logger = logging.getLogger('glance.store.filesystem')
-
-glance.store.location.add_scheme_map({'file': 'filesystem',
-                                      'filesystem': 'filesystem'})
 
 
 class StoreLocation(glance.store.location.StoreLocation):
@@ -93,18 +91,17 @@ class ChunkedFile(object):
             self.fp = None
 
 
-class FilesystemBackend(glance.store.Backend):
-    @classmethod
-    def get(cls, location, expected_size=None, options=None):
+class Store(glance.store.base.Store):
+
+    def get(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates
-        where to find the image file, and returns a generator to use in
-        reading the image file.
+        where to find the image file, and returns a generator for reading
+        the image file
 
-        :location `glance.store.location.Location` object, supplied
-                  from glance.store.location.get_location_from_uri()
-
-        :raises NotFound if file does not exist
+        :param location `glance.store.location.Location` object, supplied
+                        from glance.store.location.get_location_from_uri()
+        :raises `glance.exception.NotFound` if image does not exist
         """
         loc = location.store_location
         filepath = loc.path
@@ -115,8 +112,7 @@ class FilesystemBackend(glance.store.Backend):
                          filepath)
             return ChunkedFile(filepath)
 
-    @classmethod
-    def delete(cls, location):
+    def delete(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates
         where to find the image file to delete
@@ -124,7 +120,7 @@ class FilesystemBackend(glance.store.Backend):
         :location `glance.store.location.Location` object, supplied
                   from glance.store.location.get_location_from_uri()
 
-        :raises NotFound if file does not exist
+        :raises NotFound if image does not exist
         :raises NotAuthorized if cannot delete because of permissions
         """
         loc = location.store_location
@@ -138,31 +134,32 @@ class FilesystemBackend(glance.store.Backend):
         else:
             raise exception.NotFound("Image file %s does not exist" % fn)
 
-    @classmethod
-    def add(cls, id, data, options):
+    def add(self, image_id, image_file):
         """
-        Stores image data to disk and returns a location that the image was
-        written to. By default, the backend writes the image data to a file
-        `/<DATADIR>/<ID>`, where <DATADIR> is the value of
-        options['filesystem_store_datadir'] and <ID> is the supplied image ID.
+        Stores an image file with supplied identifier to the backend
+        storage system and returns an `glance.store.ImageAddResult` object
+        containing information about the stored image.
 
-        :param id: The opaque image identifier
-        :param data: The image data to write, as a file-like object
-        :param options: Conf mapping
+        :param image_id: The opaque image identifier
+        :param image_file: The image data to write, as a file-like object
 
-        :retval Tuple with (location, size, checksum)
-                The location that was written, with file:// scheme prepended,
-                the size in bytes of the data written, and the checksum of
-                the image added.
+        :retval `glance.store.ImageAddResult` object
+        :raises `glance.common.exception.Duplicate` if the image already
+                existed
+
+        :note By default, the backend writes the image data to a file
+              `/<DATADIR>/<ID>`, where <DATADIR> is the value of
+              the filesystem_store_datadir configuration option and <ID>
+              is the supplied image ID.
         """
-        datadir = options['filesystem_store_datadir']
+        datadir = self.options['filesystem_store_datadir']
 
         if not os.path.exists(datadir):
             logger.info("Directory to write image files does not exist "
                         "(%s). Creating.", datadir)
             os.makedirs(datadir)
 
-        filepath = os.path.join(datadir, str(id))
+        filepath = os.path.join(datadir, str(image_id))
 
         if os.path.exists(filepath):
             raise exception.Duplicate("Image file %s already exists!"
@@ -172,7 +169,7 @@ class FilesystemBackend(glance.store.Backend):
         bytes_written = 0
         with open(filepath, 'wb') as f:
             while True:
-                buf = data.read(ChunkedFile.CHUNKSIZE)
+                buf = image_file.read(ChunkedFile.CHUNKSIZE)
                 if not buf:
                     break
                 bytes_written += len(buf)
@@ -184,3 +181,6 @@ class FilesystemBackend(glance.store.Backend):
         logger.debug("Wrote %(bytes_written)d bytes to %(filepath)s with "
                      "checksum %(checksum_hex)s" % locals())
         return ('file://%s' % filepath, bytes_written, checksum_hex)
+
+
+glance.store.register_store(__name__, ['filesystem', 'file'])

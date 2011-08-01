@@ -25,7 +25,7 @@ import stubout
 
 from glance.common import exception
 from glance.store.location import get_location_from_uri
-from glance.store.filesystem import FilesystemBackend, ChunkedFile
+from glance.store.filesystem import Store, ChunkedFile
 from tests import stubs
 
 FILESYSTEM_OPTIONS = {
@@ -34,7 +34,7 @@ FILESYSTEM_OPTIONS = {
     'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
 
 
-class TestFilesystemBackend(unittest.TestCase):
+class TestStore(unittest.TestCase):
 
     def setUp(self):
         """Establish a clean test environment"""
@@ -42,6 +42,7 @@ class TestFilesystemBackend(unittest.TestCase):
         stubs.stub_out_filesystem_backend()
         self.orig_chunksize = ChunkedFile.CHUNKSIZE
         ChunkedFile.CHUNKSIZE = 10
+        self.store = Store(FILESYSTEM_OPTIONS)
 
     def tearDown(self):
         """Clear the test environment"""
@@ -52,7 +53,7 @@ class TestFilesystemBackend(unittest.TestCase):
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
         loc = get_location_from_uri("file:///tmp/glance-tests/2")
-        image_file = FilesystemBackend.get(loc)
+        image_file = self.store.get(loc)
 
         expected_data = "chunk00000remainder"
         expected_num_chunks = 2
@@ -72,7 +73,7 @@ class TestFilesystemBackend(unittest.TestCase):
         """
         loc = get_location_from_uri("file:///tmp/glance-tests/non-existing")
         self.assertRaises(exception.NotFound,
-                          FilesystemBackend.get,
+                          self.store.get,
                           loc)
 
     def test_add(self):
@@ -86,15 +87,14 @@ class TestFilesystemBackend(unittest.TestCase):
                                               expected_image_id)
         image_file = StringIO.StringIO(expected_file_contents)
 
-        location, size, checksum = FilesystemBackend.add(42, image_file,
-                                                         FILESYSTEM_OPTIONS)
+        location, size, checksum = self.store.add(42, image_file)
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_file_size, size)
         self.assertEquals(expected_checksum, checksum)
 
         loc = get_location_from_uri("file:///tmp/glance-tests/42")
-        new_image_file = FilesystemBackend.get(loc)
+        new_image_file = self.store.get(loc)
         new_image_contents = ""
         new_image_file_size = 0
 
@@ -115,18 +115,18 @@ class TestFilesystemBackend(unittest.TestCase):
                    'debug': True,
                    'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
         self.assertRaises(exception.Duplicate,
-                          FilesystemBackend.add,
-                          2, image_file, FILESYSTEM_OPTIONS)
+                          self.store.add,
+                          2, image_file)
 
     def test_delete(self):
         """
         Test we can delete an existing image in the filesystem store
         """
         loc = get_location_from_uri("file:///tmp/glance-tests/2")
-        FilesystemBackend.delete(loc)
+        self.store.delete(loc)
 
         self.assertRaises(exception.NotFound,
-                          FilesystemBackend.get,
+                          self.store.get,
                           loc)
 
     def test_delete_non_existing(self):
@@ -136,5 +136,5 @@ class TestFilesystemBackend(unittest.TestCase):
         """
         loc = get_location_from_uri("file:///tmp/glance-tests/non-existing")
         self.assertRaises(exception.NotFound,
-                          FilesystemBackend.delete,
+                          self.store.delete,
                           loc)

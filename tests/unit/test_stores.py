@@ -20,11 +20,9 @@ from StringIO import StringIO
 import stubout
 import unittest
 
-from glance.store.s3 import S3Backend
-from glance.store import Backend, BackendException, get_from_backend
+from glance.store import BackendException, get_from_backend
+from glance.store import http
 from tests import stubs
-
-Backend.CHUNKSIZE = 2
 
 
 class TestBackend(unittest.TestCase):
@@ -43,13 +41,13 @@ class TestHTTPBackend(TestBackend):
     def setUp(self):
         super(TestHTTPBackend, self).setUp()
         stubs.stub_out_http_backend(self.stubs)
+        http.Store.CHUNKSIZE = 2
 
     def test_http_get(self):
         url = "http://netloc/path/to/file.tar.gz"
         expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s',
                             'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
-        fetcher = get_from_backend(url,
-                                   expected_size=8)
+        fetcher = get_from_backend(url)
 
         chunks = [c for c in fetcher]
         self.assertEqual(chunks, expected_returns)
@@ -58,8 +56,7 @@ class TestHTTPBackend(TestBackend):
         url = "https://netloc/path/to/file.tar.gz"
         expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s',
                             'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
-        fetcher = get_from_backend(url,
-                                   expected_size=8)
+        fetcher = get_from_backend(url)
 
         chunks = [c for c in fetcher]
         self.assertEqual(chunks, expected_returns)

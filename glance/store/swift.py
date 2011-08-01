@@ -26,15 +26,12 @@ import urlparse
 from glance.common import config
 from glance.common import exception
 import glance.store
+import glance.store.base
 import glance.store.location
 
 DEFAULT_SWIFT_CONTAINER = 'glance'
 
 logger = logging.getLogger('glance.store.swift')
-
-glance.store.location.add_scheme_map({'swift': 'swift',
-                                      'swift+http': 'swift',
-                                      'swift+https': 'swift'})
 
 
 class StoreLocation(glance.store.location.StoreLocation):
@@ -168,22 +165,22 @@ class StoreLocation(glance.store.location.StoreLocation):
         return full_url
 
 
-class SwiftBackend(glance.store.Backend):
+class Store(glance.store.base.Store):
     """An implementation of the swift backend adapter."""
 
     EXAMPLE_URL = "swift://<USER>:<KEY>@<AUTH_ADDRESS>/<CONTAINER>/<FILE>"
 
     CHUNKSIZE = 65536
 
-    @classmethod
-    def get(cls, location, expected_size=None, options=None):
+    def get(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates
-        where to find the image file, and returns a generator from Swift
-        provided by Swift client's get_object() method.
+        where to find the image file, and returns a generator for reading
+        the image file
 
-        :location `glance.store.location.Location` object, supplied
-                  from glance.store.location.get_location_from_uri()
+        :param location `glance.store.location.Location` object, supplied
+                        from glance.store.location.get_location_from_uri()
+        :raises `glance.exception.NotFound` if image does not exist
         """
         from swift.common import client as swift_client
 
@@ -197,7 +194,7 @@ class SwiftBackend(glance.store.Backend):
         try:
             (resp_headers, resp_body) = swift_conn.get_object(
                 container=loc.container, obj=loc.obj,
-                resp_chunk_size=cls.CHUNKSIZE)
+                resp_chunk_size=self.CHUNKSIZE)
         except swift_client.ClientException, e:
             if e.http_status == httplib.NOT_FOUND:
                 uri = location.get_store_uri()
@@ -206,29 +203,35 @@ class SwiftBackend(glance.store.Backend):
             else:
                 raise
 
-        if expected_size:
-            obj_size = int(resp_headers['content-length'])
-            if  obj_size != expected_size:
-                raise glance.store.BackendException(
-                    "Expected %s byte file, Swift has %s bytes" %
-                    (expected_size, obj_size))
+        #if expected_size:
+        #    obj_size = int(resp_headers['content-length'])
+        #    if  obj_size != expected_size:
+        #        raise glance.store.BackendException(
+        #            "Expected %s byte file, Swift has %s bytes" %
+        #            (expected_size, obj_size))
 
         return resp_body
 
-    @classmethod
-    def _option_get(cls, options, param):
-        result = options.get(param)
+    def _option_get(self, param):
+        result = self.options.get(param)
         if not result:
             msg = ("Could not find %s in configuration options." % param)
             logger.error(msg)
             raise glance.store.BackendException(msg)
         return result
 
-    @classmethod
-    def add(cls, id, data, options):
+    def add(self, image_id, image_file):
         """
-        Stores image data to Swift and returns a location that the image was
-        written to.
+        Stores an image file with supplied identifier to the backend
+        storage system and returns an `glance.store.ImageAddResult` object
+        containing information about the stored image.
+
+        :param image_id: The opaque image identifier
+        :param image_file: The image data to write, as a file-like object
+
+        :retval `glance.store.ImageAddResult` object
+        :raises `glance.common.exception.Duplicate` if the image already
+                existed
 
         Swift writes the image data using the scheme:
             ``swift://<USER>:<KEY>@<AUTH_ADDRESS>/<CONTAINER>/<ID>`
@@ -242,17 +245,9 @@ class SwiftBackend(glance.store.Backend):
         :note Swift auth URLs by default use HTTPS. To specify an HTTP
               auth URL, you can specify http://someurl.com for the
               swift_store_auth_address config option
-
-        :param id: The opaque image identifier
-        :param data: The image data to write, as a file-like object
-        :param options: Conf mapping
-
-        :retval Tuple with (location, size)
-                The location that was written,
-                and the size in bytes of the data written
         """
         from swift.common import client as swift_client
-        container = options.get('swift_store_container',
+        container = self.options.get('swift_store_container',
                                 DEFAULT_SWIFT_CONTAINER)
 
         # TODO(jaypipes): This needs to be checked every time
@@ -260,9 +255,9 @@ class SwiftBackend(glance.store.Backend):
         # interface all @classmethods. This is inefficient. Backend
         # should be a stateful object with options parsed once in
         # a constructor.
-        auth_address = cls._option_get(options, 'swift_store_auth_address')
-        user = cls._option_get(options, 'swift_store_user')
-        key = cls._option_get(options, 'swift_store_key')
+        auth_address = self._option_get('swift_store_auth_address')
+        user = self._option_get('swift_store_user')
+        key = self._option_get('swift_store_key')
 
         scheme = 'swift+https'
         if auth_address.startswith('http://'):
@@ -280,9 +275,9 @@ class SwiftBackend(glance.store.Backend):
                      "(auth_address=%(auth_address)s, user=%(user)s, "
                      "key=%(key)s)" % locals())
 
-        create_container_if_missing(container, swift_conn, options)
+        create_container_if_missing(container, swift_conn, self.options)
 
-        obj_name = str(id)
+        obj_name = str(image_id)
         location = StoreLocation({'scheme': scheme,
                                   'container': container,
                                   'obj': obj_name,
@@ -291,7 +286,7 @@ class SwiftBackend(glance.store.Backend):
                                   'key': key})
 
         try:
-            obj_etag = swift_conn.put_object(container, obj_name, data)
+            obj_etag = swift_conn.put_object(container, obj_name, image_file)
 
             # NOTE: We return the user and key here! Have to because
             # location is used by the API server to return the actual
@@ -316,14 +311,15 @@ class SwiftBackend(glance.store.Backend):
                    "Got error from Swift: %(e)s" % locals())
             raise glance.store.BackendException(msg)
 
-    @classmethod
-    def delete(cls, location):
+    def delete(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates
         where to find the image file to delete
 
         :location `glance.store.location.Location` object, supplied
                   from glance.store.location.get_location_from_uri()
+
+        :raises NotFound if image does not exist
         """
         from swift.common import client as swift_client
 
@@ -378,3 +374,6 @@ def create_container_if_missing(container, swift_conn, options):
                 raise glance.store.BackendException(msg)
         else:
             raise
+
+
+glance.store.register_store(__name__, ['swift', 'swift+http', 'swift+https'])
