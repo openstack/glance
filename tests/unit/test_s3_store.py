@@ -294,34 +294,34 @@ class TestStore(unittest.TestCase):
                           self.store.add,
                           2, image_s3)
 
-    def _assertOptionRequiredForS3(self, key):
-        image_s3 = StringIO.StringIO("nevergonnamakeit")
+    def _option_required(self, key):
         options = S3_OPTIONS.copy()
         del options[key]
-        self.store = Store(options)
-        self.assertRaises(BackendException, self.store.add,
-                          2, image_s3)
 
-    def test_add_no_user(self):
-        """
-        Tests that adding options without user raises
-        an appropriate exception
-        """
-        self._assertOptionRequiredForS3('s3_store_access_key')
+        try:
+            self.store = Store(options)
+            return self.store.add == self.store.add_disabled
+        except:
+            return False
+        return False
 
-    def test_no_key(self):
+    def test_no_access_key(self):
         """
-        Tests that adding options without key raises
-        an appropriate exception
+        Tests that options without access key disables the add method
         """
-        self._assertOptionRequiredForS3('s3_store_secret_key')
+        self.assertTrue(self._option_required('s3_store_access_key'))
 
-    def test_add_no_host(self):
+    def test_no_secret_key(self):
         """
-        Tests that adding options without host raises
-        an appropriate exception
+        Tests that options without secret key disables the add method
         """
-        self._assertOptionRequiredForS3('s3_store_host')
+        self.assertTrue(self._option_required('s3_store_secret_key'))
+
+    def test_no_host(self):
+        """
+        Tests that options without host disables the add method
+        """
+        self.assertTrue(self._option_required('s3_store_host'))
 
     def test_delete(self):
         """

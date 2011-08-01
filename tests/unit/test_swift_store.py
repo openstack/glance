@@ -368,7 +368,7 @@ class TestStore(unittest.TestCase):
                           self.store.add,
                           2, image_swift)
 
-    def _option_required_for_swift(self, key):
+    def _option_required(self, key):
         options = SWIFT_OPTIONS.copy()
         del options[key]
 
@@ -383,20 +383,19 @@ class TestStore(unittest.TestCase):
         """
         Tests that options without user disables the add method
         """
-        self.assertTrue(self._option_required_for_swift('swift_store_user'))
+        self.assertTrue(self._option_required('swift_store_user'))
 
     def test_no_key(self):
         """
         Tests that options without key disables the add method
         """
-        self.assertTrue(self._option_required_for_swift('swift_store_key'))
+        self.assertTrue(self._option_required('swift_store_key'))
 
     def test_no_auth_address(self):
         """
         Tests that options without auth address disables the add method
         """
-        self.assertTrue(self._option_required_for_swift(
-            'swift_store_auth_address'))
+        self.assertTrue(self._option_required('swift_store_auth_address'))
 
     def test_delete(self):
         """
