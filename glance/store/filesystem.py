@@ -26,8 +26,39 @@ import urlparse
 
 from glance.common import exception
 import glance.store
+import glance.store.location
 
 logger = logging.getLogger('glance.store.filesystem')
+
+glance.store.location.add_scheme_map({'file': 'filesystem',
+                                      'filesystem': 'filesystem'})
+
+
+class StoreLocation(glance.store.location.StoreLocation):
+
+    """Class describing a Filesystem URI"""
+
+    def process_specs(self):
+        self.scheme = self.specs.get('scheme', 'file')
+        self.path = self.specs.get('path')
+
+    def get_uri(self):
+        return "file://%s" % self.path
+
+    def parse_uri(self, uri):
+        """
+        Parse URLs. This method fixes an issue where credentials specified
+        in the URL are interpreted differently in Python 2.6.1+ than prior
+        versions of Python.
+        """
+        pieces = urlparse.urlparse(uri)
+        assert pieces.scheme in ('file', 'filesystem')
+        self.scheme = pieces.scheme
+        path = (pieces.netloc + pieces.path).strip()
+        if path == '':
+            reason = "No path specified"
+            raise exception.BadStoreUri(uri, reason)
+        self.path = path
 
 
 class ChunkedFile(object):
@@ -64,13 +95,19 @@ class ChunkedFile(object):
 
 class FilesystemBackend(glance.store.Backend):
     @classmethod
-    def get(cls, parsed_uri, expected_size=None, options=None):
-        """ Filesystem-based backend
-
-        file:///path/to/file.tar.gz.0
+    def get(cls, location, expected_size=None, options=None):
         """
+        Takes a `glance.store.location.Location` object that indicates
+        where to find the image file, and returns a generator to use in
+        reading the image file.
 
-        filepath = parsed_uri.path
+        :location `glance.store.location.Location` object, supplied
+                  from glance.store.location.get_location_from_uri()
+
+        :raises NotFound if file does not exist
+        """
+        loc = location.store_location
+        filepath = loc.path
         if not os.path.exists(filepath):
             raise exception.NotFound("Image file %s not found" % filepath)
         else:
@@ -79,17 +116,19 @@ class FilesystemBackend(glance.store.Backend):
             return ChunkedFile(filepath)
 
     @classmethod
-    def delete(cls, parsed_uri):
+    def delete(cls, location):
         """
-        Removes a file from the filesystem backend.
+        Takes a `glance.store.location.Location` object that indicates
+        where to find the image file to delete
 
-        :param parsed_uri: Parsed pieces of URI in form of::
-            file:///path/to/filename.ext
+        :location `glance.store.location.Location` object, supplied
+                  from glance.store.location.get_location_from_uri()
 
         :raises NotFound if file does not exist
         :raises NotAuthorized if cannot delete because of permissions
         """
-        fn = parsed_uri.path
+        loc = location.store_location
+        fn = loc.path
         if os.path.exists(fn):
             try:
                 logger.debug("Deleting image at %s", fn)

@@ -40,7 +40,6 @@ class TestBinGlance(functional.FunctionalTest):
             3. Delete the image
             4. Verify no longer in index
         """
-
         self.cleanup()
         self.start_servers()
 
@@ -106,7 +105,6 @@ class TestBinGlance(functional.FunctionalTest):
             5. Update the image's Name attribute
             6. Verify the updated name is shown
         """
-
         self.cleanup()
         self.start_servers()
 
@@ -192,7 +190,6 @@ class TestBinGlance(functional.FunctionalTest):
             3. Verify the status of the image is displayed in the show output
                and is in status 'killed'
         """
-
         self.cleanup()
 
         # Start servers with a Swift backend and a bad auth URL
@@ -253,7 +250,6 @@ class TestBinGlance(functional.FunctionalTest):
             3. Verify no public images found
             4. Run SQL against DB to verify no undeleted properties
         """
-
         self.cleanup()
         self.start_servers()
 

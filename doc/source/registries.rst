@@ -83,6 +83,20 @@ list details these query parameters.
 
   Filters images having a ``size`` attribute less than or equal to ``BYTES``
 
+These two resources also accept sort parameters:
+
+* ``sort_key=KEY``
+
+  Results will be ordered by the specified image attribute ``KEY``. Accepted
+  values include ``id``, ``name``, ``status``, ``disk_format``,
+  ``container_format``, ``size``, ``created_at`` (default) and ``updated_at``.
+
+* ``sort_dir=DIR``
+
+  Results will be sorted in the direction ``DIR``. Accepted values are ``asc``
+  for ascending or ``desc`` (default) for descending.
+  
+
 ``POST /images``
 ----------------
 

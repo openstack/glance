@@ -32,11 +32,11 @@ class API(wsgi.Router):
     def __init__(self, options):
         self.options = options
         mapper = routes.Mapper()
-        controller = images.Controller(options)
-        mapper.resource("image", "images", controller=controller,
-                       collection={'detail': 'GET'})
-        mapper.connect("/", controller=controller, action="index")
-        mapper.connect("/images/{id}", controller=controller, action="meta",
+        resource = images.create_resource(options)
+        mapper.resource("image", "images", controller=resource,
+                        collection={'detail': 'GET'})
+        mapper.connect("/", controller=resource, action="index")
+        mapper.connect("/images/{id}", controller=resource, action="meta",
                        conditions=dict(method=["HEAD"]))
         super(API, self).__init__(mapper)
 

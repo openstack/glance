@@ -39,7 +39,6 @@ class TestMiscellaneous(functional.FunctionalTest):
         We also fire the glance-upload tool against the API server
         and verify that glance-upload doesn't eat the exception either...
         """
-
         self.cleanup()
         self.start_servers()
 

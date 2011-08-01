@@ -15,11 +15,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import optparse
 import os
 import urlparse
 
-from glance.common import exception
+from glance import registry
+from glance.common import config, exception
+from glance.store import location
+
+
+logger = logging.getLogger('glance.store')
 
 
 # TODO(sirp): should this be moved out to common/utils.py ?
@@ -53,91 +59,72 @@ def get_backend_class(backend):
     :param backend: Name of backend to create
     """
     # NOTE(sirp): avoiding circular import
-    from glance.store.http import HTTPBackend
-    from glance.store.s3 import S3Backend
-    from glance.store.swift import SwiftBackend
-    from glance.store.filesystem import FilesystemBackend
+    import glance.store.http
+    import glance.store.s3
+    import glance.store.swift
+    import glance.store.filesystem
 
     BACKENDS = {
-        "file": FilesystemBackend,
-        "http": HTTPBackend,
-        "https": HTTPBackend,
-        "swift": SwiftBackend,
-        "s3": S3Backend}
+        "filesystem": glance.store.filesystem.FilesystemBackend,
+        "http": glance.store.http.HTTPBackend,
+        "swift": glance.store.swift.SwiftBackend,
+        "s3": glance.store.s3.S3Backend}
 
     try:
         return BACKENDS[backend]
     except KeyError:
-        raise UnsupportedBackend("No backend found for '%s'" % backend)
+        # Total hack... this will go away with refactor-stores
+        try:
+            return BACKENDS[location.SCHEME_TO_STORE_MAP[backend]]
+        except KeyError:
+            raise UnsupportedBackend("No backend found for '%s'" % backend)
 
 
 def get_from_backend(uri, **kwargs):
     """Yields chunks of data from backend specified by uri"""
 
-    parsed_uri = urlparse.urlparse(uri)
-    scheme = parsed_uri.scheme
+    loc = location.get_location_from_uri(uri)
+    backend_class = get_backend_class(loc.store_name)
 
-    backend_class = get_backend_class(scheme)
-
-    return backend_class.get(parsed_uri, **kwargs)
+    return backend_class.get(loc, **kwargs)
 
 
 def delete_from_backend(uri, **kwargs):
     """Removes chunks of data from backend specified by uri"""
 
-    parsed_uri = urlparse.urlparse(uri)
-    scheme = parsed_uri.scheme
-
-    backend_class = get_backend_class(scheme)
+    loc = location.get_location_from_uri(uri)
+    backend_class = get_backend_class(loc.store_name)
 
     if hasattr(backend_class, 'delete'):
-        return backend_class.delete(parsed_uri, **kwargs)
+        return backend_class.delete(loc, **kwargs)
 
 
-def get_store_from_location(location):
+def get_store_from_location(uri):
     """
     Given a location (assumed to be a URL), attempt to determine
     the store from the location.  We use here a simple guess that
     the scheme of the parsed URL is the store...
 
-    :param location: Location to check for the store
+    :param uri: Location to check for the store
     """
-    loc_pieces = urlparse.urlparse(location)
-    return loc_pieces.scheme
+    loc = location.get_location_from_uri(uri)
+    return loc.store_name
 
 
-def parse_uri_tokens(parsed_uri, example_url):
+def schedule_delete_from_backend(uri, options, context, id, **kwargs):
     """
-    Given a URI and an example_url, attempt to parse the uri to assemble an
-    authurl. This method returns the user, key, authurl, referenced container,
-    and the object we're looking for in that container.
-
-    Parsing the uri is three phases:
-        1) urlparse to split the tokens
-        2) use RE to split on @ and /
-        3) reassemble authurl
-
+    Given a uri and a time, schedule the deletion of an image.
     """
-    path = parsed_uri.path.lstrip('//')
-    netloc = parsed_uri.netloc
-
-    try:
+    use_delay = config.get_option(options, 'delayed_delete', type='bool',
+                                  default=False)
+    if not use_delay:
+        registry.update_image_metadata(options, context, id,
+                                       {'status': 'deleted'})
         try:
-            creds, netloc = netloc.split('@')
-        except ValueError:
-            # Python 2.6.1 compat
-            # see lp659445 and Python issue7904
-            creds, path = path.split('@')
-        user, key = creds.split(':')
-        path_parts = path.split('/')
-        obj = path_parts.pop()
-        container = path_parts.pop()
-    except (ValueError, IndexError):
-        raise BackendException(
-             "Expected four values to unpack in: %s:%s. "
-             "Should have received something like: %s."
-             % (parsed_uri.scheme, parsed_uri.path, example_url))
+            return delete_from_backend(uri, **kwargs)
+        except (UnsupportedBackend, exception.NotFound):
+            msg = "Failed to delete image from store (%s). "
+            logger.error(msg % uri)
 
-    authurl = "https://%s" % '/'.join(path_parts)
-
-    return user, key, authurl, container, obj
+    registry.update_image_metadata(options, context, id,
+                                   {'status': 'pending_delete'})
