@@ -93,6 +93,35 @@ class ChunkedFile(object):
 
 class Store(glance.store.base.Store):
 
+    def configure(self):
+        """
+        Configure the Store to use the stored configuration options
+        Any store that needs special configuration should implement
+        this method. If the store was not able to successfully configure
+        itself, it should raise `exception.BadStoreConfiguration`
+        """
+        self.datadir = self._option_get('filesystem_store_datadir')
+
+        if not os.path.exists(self.datadir):
+            logger.info("Directory to write image files does not exist "
+                        "(%s). Creating.", self.datadir)
+            try:
+                os.makedirs(self.datadir)
+            except IOError:
+                reason = "Unable to create datadir: %s" % self.datadir
+                logger.error(reason)
+                raise exception.BadStoreConfiguration(store_name="filesystem",
+                                                      reason=reason)
+
+    def _option_get(self, param):
+        result = self.options.get(param)
+        if not result:
+            reason = ("Could not find %s in configuration options." % param)
+            logger.error(reason)
+            raise exception.BadStoreConfiguration(store_name="filesystem",
+                                                  reason=reason)
+        return result
+
     def get(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates
@@ -152,14 +181,8 @@ class Store(glance.store.base.Store):
               the filesystem_store_datadir configuration option and <ID>
               is the supplied image ID.
         """
-        datadir = self.options['filesystem_store_datadir']
 
-        if not os.path.exists(datadir):
-            logger.info("Directory to write image files does not exist "
-                        "(%s). Creating.", datadir)
-            os.makedirs(datadir)
-
-        filepath = os.path.join(datadir, str(image_id))
+        filepath = os.path.join(self.datadir, str(image_id))
 
         if os.path.exists(filepath):
             raise exception.Duplicate("Image file %s already exists!"
