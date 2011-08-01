@@ -390,3 +390,72 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertTrue(image_lines[12].startswith('Id: 1'))
 
         self.stop_servers()
+
+    def test_results_pagination(self):
+        self.cleanup()
+        self.start_servers()
+
+        index_cmd = "bin/glance --port=%d index" % self.api_port
+
+        # 1. Add some images
+        _add_cmd = "bin/glance --port=%d add is_public=True" % self.api_port
+        _add_args = [
+            "name=Name1 disk_format=ami container_format=ami",
+            "name=Name2 disk_format=vhd container_format=ovf",
+            "name=Name3 disk_format=ami container_format=ami",
+            "name=Name4 disk_format=ami container_format=ami",
+            "name=Name5 disk_format=vhd container_format=ovf",
+        ]
+
+        for i, args in enumerate(_add_args):
+            cmd = "%s %s" % (_add_cmd, args)
+            exitcode, out, err = execute(cmd)
+            self.assertEqual(0, exitcode)
+            expected_out = 'Added new image with ID: %d' % (i + 1,)
+            self.assertEqual(expected_out, out.strip())
+
+        # 2. Limit less than total
+        cmd = "-f --limit=3"
+        exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(5, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('5'))
+        self.assertTrue(image_lines[1].startswith('4'))
+        self.assertTrue(image_lines[2].startswith('3'))
+        self.assertTrue(image_lines[3].startswith('2'))
+        self.assertTrue(image_lines[4].startswith('1'))
+
+        # 3. With a marker
+        cmd = "-f --marker=4"
+        exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(3, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('3'))
+        self.assertTrue(image_lines[1].startswith('2'))
+        self.assertTrue(image_lines[2].startswith('1'))
+
+        # 3. With a marker and limit
+        cmd = "-f --marker=3 --limit=1"
+        exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(2, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('2'))
+        self.assertTrue(image_lines[1].startswith('1'))
+
+        # 4. Pagination params with filtered results
+        cmd = "-f --marker=4 --limit=1 container_format=ami"
+        exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(2, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('3'))
+        self.assertTrue(image_lines[1].startswith('1'))
+
+

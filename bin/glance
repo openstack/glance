@@ -414,6 +414,45 @@ Shows image metadata for an image in Glance"""
         return FAILURE
 
 
+def _images_index(client, filters, limit, marker=None, print_header=False):
+    kwargs = {
+        "filters": filters,
+        "limit": limit,
+    }
+
+    if marker is not None:
+        kwargs["marker"] = marker
+
+    images = client.get_images(**kwargs)
+
+    if not images:
+        return SUCCESS
+
+    pretty_table = utils.PrettyTable()
+    pretty_table.add_column(16, label="ID")
+    pretty_table.add_column(30, label="Name")
+    pretty_table.add_column(20, label="Disk Format")
+    pretty_table.add_column(20, label="Container Format")
+    pretty_table.add_column(14, label="Size", just="r")
+
+    if print_header:
+        print pretty_table.make_header()
+
+    for image in images:
+        print pretty_table.make_row(image['id'],
+                                    image['name'],
+                                    image['disk_format'],
+                                    image['container_format'],
+                                    image['size'])
+
+    # Halt pagination of user 
+    if not options.force and not user_confirm("Fetch next page?", True):
+        return SUCCESS
+
+    next_marker = images[-1]['id']
+    return _images_index(client, filters, limit, marker=next_marker)
+
+
 @catch_error('show index')
 def images_index(options, args):
     """
@@ -425,32 +464,16 @@ handled as query filters. Supported filters
 include 'name', 'disk_format', 'container_format',
 'status', 'size_min', and 'size_max.' Any extra
 fields are treated as image metadata properties"""
-    filters = get_image_filters_from_args(args)
     client = get_client(options)
-    images = client.get_images(filters=filters)
-    if not images:
-        print "No public images found."
-        return SUCCESS
+    filters = get_image_filters_from_args(args)
+    limit = options.limit
+    marker = options.marker
 
-    print "Found %d public images..." % len(images)
-
-    pretty_table = utils.PrettyTable()
-    pretty_table.add_column(16, label="ID")
-    pretty_table.add_column(30, label="Name")
-    pretty_table.add_column(20, label="Disk Format")
-    pretty_table.add_column(20, label="Container Format")
-    pretty_table.add_column(14, label="Size", just="r")
-
-    print pretty_table.make_header()
-
-    for image in images:
-        print pretty_table.make_row(
-            image['id'],
-            image['name'],
-            image['disk_format'],
-            image['container_format'],
-            image['size'])
-
+    return _images_index(client,
+                         filters,
+                         limit,
+                         marker=marker,
+                         print_header=True)
 
 def images_detailed(options, args):
     """
@@ -785,6 +808,11 @@ def create_options(parser):
                       type=int, default=9292,
                       help="Port the Glance API host listens on. "
                            "Default: %default")
+    parser.add_option('--limit', dest="limit", metavar="LIMIT", default=10,
+                      help="Page size to use while requesting image metadata")
+    parser.add_option('--marker', dest="marker", metavar="MARKER",
+                      default=None, help="Image index after which to "
+                                         "begin pagination")
     parser.add_option('-f', '--force', dest="force", metavar="FORCE",
                       default=False, action="store_true",
                       help="Prevent select actions from requesting "
