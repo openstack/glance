@@ -17,6 +17,12 @@
 
 """Base class for all storage backends"""
 
+import logging
+
+from glance.common import exception
+
+logger = logging.getLogger('glance.store.base')
+
 
 class Store(object):
 
@@ -29,6 +35,21 @@ class Store(object):
         :param options: Optional dictionary of configuration options
         """
         self.options = options or {}
+        try:
+            self.configure()
+        except exception.BadStoreConfiguration:
+            logger.error("Failed to configure store correctly. Disabling "
+                         "add method.")
+            self.add = self.add_disabled
+
+    def configure(self):
+        """
+        Configure the Store to use the stored configuration options
+        Any store that needs special configuration should implement
+        this method. If the store was not able to successfully configure
+        itself, it should raise `exception.BadStoreConfiguration`
+        """
+        pass
 
     def get(self, location):
         """
@@ -41,6 +62,14 @@ class Store(object):
         :raises `glance.exception.NotFound` if image does not exist
         """
         raise NotImplementedError
+
+    def add_disabled(self, *args, **kwargs):
+        """
+        Add method that raises an exception because the Store was
+        not able to be configured properly and therefore the add()
+        method would error out.
+        """
+        raise exception.StoreAddDisabled
 
     def add(self, image_id, image_file):
         """

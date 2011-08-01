@@ -368,34 +368,35 @@ class TestStore(unittest.TestCase):
                           self.store.add,
                           2, image_swift)
 
-    def _assertOptionRequiredForSwift(self, key):
-        image_swift = StringIO.StringIO("nevergonnamakeit")
+    def _option_required_for_swift(self, key):
         options = SWIFT_OPTIONS.copy()
         del options[key]
-        self.store = Store(options)
-        self.assertRaises(BackendException, self.store.add,
-                          2, image_swift)
 
-    def test_add_no_user(self):
+        try:
+            self.store = Store(options)
+            return self.store.add == self.store.add_disabled
+        except:
+            return False
+        return False
+
+    def test_no_user(self):
         """
-        Tests that adding options without user raises
-        an appropriate exception
+        Tests that options without user disables the add method
         """
-        self._assertOptionRequiredForSwift('swift_store_user')
+        self.assertTrue(self._option_required_for_swift('swift_store_user'))
 
     def test_no_key(self):
         """
-        Tests that adding options without key raises
-        an appropriate exception
+        Tests that options without key disables the add method
         """
-        self._assertOptionRequiredForSwift('swift_store_key')
+        self.assertTrue(self._option_required_for_swift('swift_store_key'))
 
-    def test_add_no_auth_address(self):
+    def test_no_auth_address(self):
         """
-        Tests that adding options without auth address raises
-        an appropriate exception
+        Tests that options without auth address disables the add method
         """
-        self._assertOptionRequiredForSwift('swift_store_auth_address')
+        self.assertTrue(self._option_required_for_swift(
+            'swift_store_auth_address'))
 
     def test_delete(self):
         """

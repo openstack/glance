@@ -172,6 +172,28 @@ class Store(glance.store.base.Store):
 
     CHUNKSIZE = 65536
 
+    def configure(self):
+        """
+        Configure the Store to use the stored configuration options
+        Any store that needs special configuration should implement
+        this method. If the store was not able to successfully configure
+        itself, it should raise `exception.BadStoreConfiguration`
+        """
+        self.auth_address = self._option_get('swift_store_auth_address')
+        self.user = self._option_get('swift_store_user')
+        self.key = self._option_get('swift_store_key')
+        self.container = self.options.get('swift_store_container',
+                                DEFAULT_SWIFT_CONTAINER)
+
+        self.scheme = 'swift+https'
+        if self.auth_address.startswith('http://'):
+            self.scheme = 'swift+http'
+            self.full_auth_address = self.auth_address
+        elif self.auth_address.startswith('https://'):
+            self.full_auth_address = self.auth_address
+        else:  # Defaults https
+            self.full_auth_address = 'https://' + self.auth_address
+
     def get(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates
@@ -215,9 +237,10 @@ class Store(glance.store.base.Store):
     def _option_get(self, param):
         result = self.options.get(param)
         if not result:
-            msg = ("Could not find %s in configuration options." % param)
-            logger.error(msg)
-            raise glance.store.BackendException(msg)
+            reason = ("Could not find %s in configuration options." % param)
+            logger.error(reason)
+            raise exception.BadStoreConfiguration(store_name="swift",
+                                                  reason=reason)
         return result
 
     def add(self, image_id, image_file):
@@ -247,46 +270,28 @@ class Store(glance.store.base.Store):
               swift_store_auth_address config option
         """
         from swift.common import client as swift_client
-        container = self.options.get('swift_store_container',
-                                DEFAULT_SWIFT_CONTAINER)
-
-        # TODO(jaypipes): This needs to be checked every time
-        # because of the decision to make glance.store.Backend's
-        # interface all @classmethods. This is inefficient. Backend
-        # should be a stateful object with options parsed once in
-        # a constructor.
-        auth_address = self._option_get('swift_store_auth_address')
-        user = self._option_get('swift_store_user')
-        key = self._option_get('swift_store_key')
-
-        scheme = 'swift+https'
-        if auth_address.startswith('http://'):
-            scheme = 'swift+http'
-            full_auth_address = auth_address
-        elif auth_address.startswith('https://'):
-            full_auth_address = auth_address
-        else:
-            full_auth_address = 'https://' + auth_address  # Defaults https
 
         swift_conn = swift_client.Connection(
-            authurl=full_auth_address, user=user, key=key, snet=False)
+            authurl=self.full_auth_address, user=self.user,
+            key=self.key, snet=False)
 
         logger.debug("Adding image object to Swift using "
                      "(auth_address=%(auth_address)s, user=%(user)s, "
-                     "key=%(key)s)" % locals())
+                     "key=%(key)s)" % self.__dict__)
 
-        create_container_if_missing(container, swift_conn, self.options)
+        create_container_if_missing(self.container, swift_conn, self.options)
 
         obj_name = str(image_id)
-        location = StoreLocation({'scheme': scheme,
-                                  'container': container,
+        location = StoreLocation({'scheme': self.scheme,
+                                  'container': self.container,
                                   'obj': obj_name,
-                                  'authurl': auth_address,
-                                  'user': user,
-                                  'key': key})
+                                  'authurl': self.auth_address,
+                                  'user': self.user,
+                                  'key': self.key})
 
         try:
-            obj_etag = swift_conn.put_object(container, obj_name, image_file)
+            obj_etag = swift_conn.put_object(self.container, obj_name,
+                                             image_file)
 
             # NOTE: We return the user and key here! Have to because
             # location is used by the API server to return the actual
@@ -297,7 +302,7 @@ class Store(glance.store.base.Store):
             # We do a HEAD on the newly-added image to determine the size
             # of the image. A bit slow, but better than taking the word
             # of the user adding the image with size attribute in the metadata
-            resp_headers = swift_conn.head_object(container, obj_name)
+            resp_headers = swift_conn.head_object(self.container, obj_name)
             size = 0
             # header keys are lowercased by Swift
             if 'content-length' in resp_headers:
@@ -306,9 +311,10 @@ class Store(glance.store.base.Store):
         except swift_client.ClientException, e:
             if e.http_status == httplib.CONFLICT:
                 raise exception.Duplicate("Swift already has an image at "
-                                          "location %(location)s" % locals())
+                                          "location %s" % location.get_uri())
             msg = ("Failed to add object to Swift.\n"
                    "Got error from Swift: %(e)s" % locals())
+            logger.error(msg)
             raise glance.store.BackendException(msg)
 
     def delete(self, location):
