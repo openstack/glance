@@ -464,3 +464,42 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(20, len(image_lines))
         self.assertTrue(image_lines[1].startswith('Id: 3'))
         self.assertTrue(image_lines[11].startswith('Id: 1'))
+
+    def test_results_sorting(self):
+        self.cleanup()
+        self.start_servers()
+
+        _base_cmd = "bin/glance --port=%d" % self.api_port
+        index_cmd = "%s index -f" % _base_cmd
+        details_cmd = "%s details -f" % _base_cmd
+
+        # 1. Add some images
+        _add_cmd = "bin/glance --port=%d add is_public=True" % self.api_port
+        _add_args = [
+            "name=Name1 disk_format=ami container_format=ami",
+            "name=Name2 disk_format=vhd container_format=ovf",
+            "name=Name3 disk_format=ami container_format=ami",
+            "name=Name4 disk_format=ami container_format=ami",
+            "name=Name5 disk_format=vhd container_format=ovf",
+        ]
+
+        for i, args in enumerate(_add_args):
+            cmd = "%s %s" % (_add_cmd, args)
+            exitcode, out, err = execute(cmd)
+            self.assertEqual(0, exitcode)
+            expected_out = 'Added new image with ID: %d' % (i + 1,)
+            self.assertEqual(expected_out, out.strip())
+
+        # 2. Sort by name asc
+        cmd = "--sort_key=name --sort_dir=asc"
+        exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        print out
+        self.assertEqual(5, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('1'))
+        self.assertTrue(image_lines[1].startswith('2'))
+        self.assertTrue(image_lines[2].startswith('3'))
+        self.assertTrue(image_lines[3].startswith('4'))
+        self.assertTrue(image_lines[4].startswith('5'))

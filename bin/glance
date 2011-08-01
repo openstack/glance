@@ -414,17 +414,20 @@ Shows image metadata for an image in Glance"""
         return FAILURE
 
 
-def _images_index(client, filters, limit, marker=None, print_header=False):
+def _images_index(client, filters, limit, print_header=False, **kwargs):
     """Driver function for images_index"""
-    kwargs = {
+    parameters = {
         "filters": filters,
         "limit": limit,
     }
 
-    if marker is not None:
-        kwargs["marker"] = marker
+    optional_kwargs = ['marker', 'sort_key', 'sort_dir']
+    for kwarg in optional_kwargs:
+        if kwarg in kwargs:
+            parameters[kwarg] = kwargs[kwarg]
 
-    images = client.get_images(**kwargs)
+
+    images = client.get_images(**parameters)
 
     if not images:
         return SUCCESS
@@ -450,8 +453,9 @@ def _images_index(client, filters, limit, marker=None, print_header=False):
        not user_confirm("Fetch next page?", True):
         return SUCCESS
 
-    next_marker = images[-1]['id']
-    return _images_index(client, filters, limit, marker=next_marker)
+    parameters['marker'] = images[-1]['id']
+    print parameters
+    return _images_index(client, **parameters)
 
 
 @catch_error('show index')
@@ -469,11 +473,15 @@ fields are treated as image metadata properties"""
     filters = get_image_filters_from_args(args)
     limit = options.limit
     marker = options.marker
+    sort_key = options.sort_key
+    sort_dir = options.sort_dir
 
     return _images_index(client,
                          filters,
                          limit,
                          marker=marker,
+                         sort_key=sort_key,
+                         sort_dir=sort_dir,
                          print_header=True)
 
 
@@ -831,6 +839,10 @@ def create_options(parser):
     parser.add_option('--marker', dest="marker", metavar="MARKER",
                       default=None, help="Image index after which to "
                                          "begin pagination")
+    parser.add_option('--sort_key', dest="sort_key", metavar="KEY",
+                      help="Sort results by this image attribute.")
+    parser.add_option('--sort_dir', dest="sort_dir", metavar="[desc|asc]",
+                      help="Sort results in this direction.")
     parser.add_option('-f', '--force', dest="force", metavar="FORCE",
                       default=False, action="store_true",
                       help="Prevent select actions from requesting "
