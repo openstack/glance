@@ -446,7 +446,8 @@ def _images_index(client, filters, limit, marker=None, print_header=False):
                                     image['container_format'],
                                     image['size'])
 
-    if not options.force and not user_confirm("Fetch next page?", True):
+    if not options.force and len(images) == limit and \
+       not user_confirm("Fetch next page?", True):
         return SUCCESS
 
     next_marker = images[-1]['id']
@@ -498,7 +499,8 @@ def _images_details(client, filters, limit, marker=None, print_header=False):
         print_image_formatted(client, image)
         print "=" * 80
 
-    if not options.force and not user_confirm("Fetch next page?", True):
+    if not options.force and len(images) == limit and \
+       not user_confirm("Fetch next page?", True):
         return SUCCESS
 
     next_marker = images[-1]['id']

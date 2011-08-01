@@ -52,7 +52,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('No public images found.', out.strip())
+        self.assertEqual('', out.strip())
 
         # 1. Add public image
         cmd = "bin/glance --port=%d add is_public=True name=MyImage" % api_port
@@ -68,11 +68,9 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        lines = out.split("\n")
-        first_line = lines[0]
-        image_data_line = lines[3]
-        self.assertEqual('Found 1 public images...', first_line)
-        self.assertTrue('MyImage' in image_data_line)
+        lines = out.split("\n")[2:-1]
+        self.assertEqual(1, len(lines))
+        self.assertTrue('MyImage' in lines[0])
 
         # 3. Delete the image
         cmd = "bin/glance --port=%d --force delete 1" % api_port
@@ -88,7 +86,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('No public images found.', out.strip())
+        self.assertEqual('', out.strip())
 
         self.stop_servers()
 
@@ -117,7 +115,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('No public images found.', out.strip())
+        self.assertEqual('', out.strip())
 
         # 1. Add public image
         cmd = "bin/glance --port=%d add name=MyImage" % api_port
@@ -133,7 +131,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('No public images found.', out.strip())
+        self.assertEqual('', out.strip())
 
         # 3. Update the image to make it public
         cmd = "bin/glance --port=%d update 1 is_public=True" % api_port
@@ -149,12 +147,9 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        lines = out.split("\n")
-        first_line = lines[0]
-        self.assertEqual('Found 1 public images...', first_line)
-
-        image_data_line = lines[3]
-        self.assertTrue('MyImage' in image_data_line)
+        lines = out.split("\n")[2:-1]
+        self.assertEqual(len(lines), 1)
+        self.assertTrue('MyImage' in lines[0])
 
         # 5. Update the image's Name attribute
         updated_image_name = "Updated image name"
@@ -206,7 +201,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('No public images found.', out.strip())
+        self.assertEqual('', out.strip())
 
         # 1. Attempt to add an image
         with tempfile.NamedTemporaryFile() as image_file:
@@ -228,7 +223,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('No public images found.', out.strip())
+        self.assertEqual('', out.strip())
 
         # 3. Verify image status in show is 'killed'
         cmd = "bin/glance --port=%d show 1" % api_port
@@ -278,7 +273,7 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         lines = out.split("\n")
         first_line = lines[0]
-        self.assertEqual('No public images found.', first_line)
+        self.assertEqual('', first_line)
 
         # 4. Lastly we manually verify with SQL that image properties are
         # also getting marked as deleted.
@@ -312,14 +307,14 @@ class TestBinGlance(functional.FunctionalTest):
             self.assertEqual(expected_out, out.strip())
 
         _base_cmd = "bin/glance --port=%d" % api_port
-        _index_cmd = "%s index" % (_base_cmd,)
+        _index_cmd = "%s index -f" % (_base_cmd,)
 
         # 2. Check name filter
         cmd = "name=Name2"
         exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
-        image_lines = out.split("\n")[3:-1]
+        image_lines = out.split("\n")[2:-1]
         self.assertEqual(1, len(image_lines))
         self.assertTrue(image_lines[0].startswith('2'))
 
@@ -328,7 +323,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
-        image_lines = out.split("\n")[3:-1]
+        image_lines = out.split("\n")[2:-1]
         self.assertEqual(2, len(image_lines))
         self.assertTrue(image_lines[0].startswith('3'))
         self.assertTrue(image_lines[1].startswith('1'))
@@ -338,7 +333,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
-        image_lines = out.split("\n")[3:-1]
+        image_lines = out.split("\n")[2:-1]
         self.assertEqual(1, len(image_lines))
         self.assertTrue(image_lines[0].startswith('2'))
 
@@ -347,7 +342,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
-        image_lines = out.split("\n")[3:-1]
+        image_lines = out.split("\n")[2:-1]
         self.assertEqual(1, len(image_lines))
         self.assertTrue(image_lines[0].startswith('2'))
 
@@ -356,7 +351,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
-        image_lines = out.split("\n")[3:-1]
+        image_lines = out.split("\n")[2:-1]
         self.assertEqual(0, len(image_lines))
 
         # 7. Check property filter
@@ -364,7 +359,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
-        image_lines = out.split("\n")[3:-1]
+        image_lines = out.split("\n")[2:-1]
         self.assertEqual(2, len(image_lines))
         self.assertTrue(image_lines[0].startswith('2'))
         self.assertTrue(image_lines[1].startswith('1'))
@@ -374,7 +369,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
-        image_lines = out.split("\n")[3:-1]
+        image_lines = out.split("\n")[2:-1]
         self.assertEqual(1, len(image_lines))
         self.assertTrue(image_lines[0].startswith('2'))
 
@@ -384,7 +379,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute("%s %s" % (_details_cmd, cmd))
 
         self.assertEqual(0, exitcode)
-        image_lines = out.split("\n")[2:-1]
+        image_lines = out.split("\n")[1:-1]
         self.assertEqual(22, len(image_lines))
         self.assertTrue(image_lines[1].startswith('Id: 2'))
         self.assertTrue(image_lines[12].startswith('Id: 1'))
@@ -396,8 +391,8 @@ class TestBinGlance(functional.FunctionalTest):
         self.start_servers()
 
         _base_cmd = "bin/glance --port=%d" % self.api_port
-        index_cmd = "%s index" % _base_cmd
-        details_cmd = "%s details" % _base_cmd
+        index_cmd = "%s index -f" % _base_cmd
+        details_cmd = "%s details -f" % _base_cmd
 
         # 1. Add some images
         _add_cmd = "bin/glance --port=%d add is_public=True" % self.api_port
@@ -417,7 +412,7 @@ class TestBinGlance(functional.FunctionalTest):
             self.assertEqual(expected_out, out.strip())
 
         # 2. Limit less than total
-        cmd = "-f --limit=3"
+        cmd = "--limit=3"
         exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
@@ -430,7 +425,7 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertTrue(image_lines[4].startswith('1'))
 
         # 3. With a marker
-        cmd = "-f --marker=4"
+        cmd = "--marker=4"
         exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
@@ -441,7 +436,7 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertTrue(image_lines[2].startswith('1'))
 
         # 3. With a marker and limit
-        cmd = "-f --marker=3 --limit=1"
+        cmd = "--marker=3 --limit=1"
         exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
@@ -451,7 +446,7 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertTrue(image_lines[1].startswith('1'))
 
         # 4. Pagination params with filtered results
-        cmd = "-f --marker=4 --limit=1 container_format=ami"
+        cmd = "--marker=4 --limit=1 container_format=ami"
         exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
@@ -461,7 +456,7 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertTrue(image_lines[1].startswith('1'))
 
         # 5. Pagination params with filtered results in a details call
-        cmd = "-f --marker=4 --limit=1 container_format=ami"
+        cmd = "--marker=4 --limit=1 container_format=ami"
         exitcode, out, err = execute("%s %s" % (details_cmd, cmd))
 
         self.assertEqual(0, exitcode)
@@ -469,6 +464,3 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(20, len(image_lines))
         self.assertTrue(image_lines[1].startswith('Id: 3'))
         self.assertTrue(image_lines[11].startswith('Id: 1'))
-
-
-
