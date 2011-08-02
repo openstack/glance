@@ -98,6 +98,9 @@ a brief help message, like so::
     -p PORT, --port=PORT  Port the Glance API host listens on. Default: 9292
     --limit=LIMIT         Page size to use while requesting image metadata
     --marker=MARKER       Image index after which to begin pagination
+    --sort_key=KEY        Sort results by this image attribute.
+    --sort_dir=[desc|asc]
+                          Sort results in this direction.
     -f, --force           Prevent select actions from requesting user
                           confirmation
     --dry-run             Don't actually execute the command, just print output
@@ -325,6 +328,11 @@ ID. The 'limit' param indicates the page size. Each request to the api will be
 restricted to returning a maximum number of results. Without the 'force'
 option, the user will be prompted before each page of results is fetched 
 from the API.
+
+Results from index and details commands may be ordered using the 'sort_key'
+and 'sort_dir' options. Any image attribute may be used for 'sort_key',
+while  only 'asc' or 'desc' are allowed for 'sort_dir'.
+
 
 The ``details`` command
 -----------------------
