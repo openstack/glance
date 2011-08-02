@@ -1028,6 +1028,26 @@ class TestApiHttplib2(functional.FunctionalTest):
         self.assertEqual(data['images'][1]['id'], 3)
         self.assertEqual(data['images'][2]['id'], 2)
 
+        # 5. GET /images sorted by size desc with a marker
+        params = 'sort_key=size&sort_dir=desc&marker=1'
+        path = "http://%s:%d/v1/images?%s" % ("0.0.0.0", self.api_port, params)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 2)
+        self.assertEqual(data['images'][0]['id'], 3)
+        self.assertEqual(data['images'][1]['id'], 2)
+
+        # 6. GET /images sorted by name asc with a marker
+        params = 'sort_key=name&sort_dir=asc&marker=3'
+        path = "http://%s:%d/v1/images?%s" % ("0.0.0.0", self.api_port, params)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 0)
+
         self.stop_servers()
 
     def test_duplicate_image_upload(self):
