@@ -145,3 +145,17 @@ class GlanceException(Exception):
 
 class InvalidContentType(GlanceException):
     message = "Invalid content type %(content_type)s"
+
+
+class BadStoreConfiguration(GlanceException):
+    message = ("Store %(store_name)s could not be configured correctly. "
+               "Reason: %(reason)s")
+
+
+class StoreDeleteNotSupported(GlanceException):
+    message = ("Deleting images from this store is not supported.")
+
+
+class StoreAddDisabled(GlanceException):
+    message = ("Configuration for store failed. Adding images to this "
+               "store is disabled.")

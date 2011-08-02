@@ -30,7 +30,7 @@ import boto.s3.connection
 from glance.common import exception
 from glance.store import BackendException, UnsupportedBackend
 from glance.store.location import get_location_from_uri
-from glance.store.s3 import S3Backend
+from glance.store.s3 import Store
 
 FIVE_KB = (5 * 1024)
 S3_OPTIONS = {'verbose': True,
@@ -72,7 +72,8 @@ def stub_out_s3(stubs):
             while chunk:
                 checksum.update(chunk)
                 chunk = data.read(self.BufferSize)
-            return checksum.hexdigest(), None
+            checksum_hex = checksum.hexdigest()
+            return checksum_hex, None
 
         def set_contents_from_file(self, fp, replace=False, **kwargs):
             self.data = StringIO.StringIO()
@@ -151,12 +152,13 @@ def format_s3_location(user, key, authurl, bucket, obj):
                                     bucket, obj)
 
 
-class TestS3Backend(unittest.TestCase):
+class TestStore(unittest.TestCase):
 
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
         stub_out_s3(self.stubs)
+        self.store = Store(S3_OPTIONS)
 
     def tearDown(self):
         """Clear the test environment"""
@@ -166,7 +168,7 @@ class TestS3Backend(unittest.TestCase):
         """Test a "normal" retrieval of an image in chunks"""
         loc = get_location_from_uri(
             "s3://user:key@auth_address/glance/2")
-        image_s3 = S3Backend.get(loc)
+        image_s3 = self.store.get(loc)
 
         expected_data = "*" * FIVE_KB
         data = ""
@@ -174,18 +176,6 @@ class TestS3Backend(unittest.TestCase):
         for chunk in image_s3:
             data += chunk
         self.assertEqual(expected_data, data)
-
-    def test_get_mismatched_expected_size(self):
-        """
-        Test retrieval of an image with wrong expected_size param
-        raises an exception
-        """
-        loc = get_location_from_uri(
-            "s3://user:key@auth_address/glance/2")
-        self.assertRaises(BackendException,
-                          S3Backend.get,
-                          loc,
-                          {'expected_size': 42})
 
     def test_get_non_existing(self):
         """
@@ -195,13 +185,13 @@ class TestS3Backend(unittest.TestCase):
         loc = get_location_from_uri(
             "s3://user:key@auth_address/badbucket/2")
         self.assertRaises(exception.NotFound,
-                          S3Backend.get,
+                          self.store.get,
                           loc)
 
         loc = get_location_from_uri(
             "s3://user:key@auth_address/glance/noexist")
         self.assertRaises(exception.NotFound,
-                          S3Backend.get,
+                          self.store.get,
                           loc)
 
     def test_add(self):
@@ -218,14 +208,14 @@ class TestS3Backend(unittest.TestCase):
             expected_image_id)
         image_s3 = StringIO.StringIO(expected_s3_contents)
 
-        location, size, checksum = S3Backend.add(42, image_s3, S3_OPTIONS)
+        location, size, checksum = self.store.add(42, image_s3)
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_s3_size, size)
         self.assertEquals(expected_checksum, checksum)
 
         loc = get_location_from_uri(expected_location)
-        new_image_s3 = S3Backend.get(loc)
+        new_image_s3 = self.store.get(loc)
         new_image_contents = StringIO.StringIO()
         for chunk in new_image_s3:
             new_image_contents.write(chunk)
@@ -266,15 +256,15 @@ class TestS3Backend(unittest.TestCase):
                 expected_image_id)
             image_s3 = StringIO.StringIO(expected_s3_contents)
 
-            location, size, checksum = S3Backend.add(i, image_s3,
-                                                        new_options)
+            self.store = Store(new_options)
+            location, size, checksum = self.store.add(i, image_s3)
 
             self.assertEquals(expected_location, location)
             self.assertEquals(expected_s3_size, size)
             self.assertEquals(expected_checksum, checksum)
 
             loc = get_location_from_uri(expected_location)
-            new_image_s3 = S3Backend.get(loc)
+            new_image_s3 = self.store.get(loc)
             new_image_contents = new_image_s3.getvalue()
             new_image_s3_size = new_image_s3.len
 
@@ -289,36 +279,37 @@ class TestS3Backend(unittest.TestCase):
         """
         image_s3 = StringIO.StringIO("nevergonnamakeit")
         self.assertRaises(exception.Duplicate,
-                          S3Backend.add,
-                          2, image_s3, S3_OPTIONS)
+                          self.store.add,
+                          2, image_s3)
 
-    def _assertOptionRequiredForS3(self, key):
-        image_s3 = StringIO.StringIO("nevergonnamakeit")
+    def _option_required(self, key):
         options = S3_OPTIONS.copy()
         del options[key]
-        self.assertRaises(BackendException, S3Backend.add,
-                          2, image_s3, options)
 
-    def test_add_no_user(self):
-        """
-        Tests that adding options without user raises
-        an appropriate exception
-        """
-        self._assertOptionRequiredForS3('s3_store_access_key')
+        try:
+            self.store = Store(options)
+            return self.store.add == self.store.add_disabled
+        except:
+            return False
+        return False
 
-    def test_no_key(self):
+    def test_no_access_key(self):
         """
-        Tests that adding options without key raises
-        an appropriate exception
+        Tests that options without access key disables the add method
         """
-        self._assertOptionRequiredForS3('s3_store_secret_key')
+        self.assertTrue(self._option_required('s3_store_access_key'))
 
-    def test_add_no_host(self):
+    def test_no_secret_key(self):
         """
-        Tests that adding options without host raises
-        an appropriate exception
+        Tests that options without secret key disables the add method
         """
-        self._assertOptionRequiredForS3('s3_store_host')
+        self.assertTrue(self._option_required('s3_store_secret_key'))
+
+    def test_no_host(self):
+        """
+        Tests that options without host disables the add method
+        """
+        self.assertTrue(self._option_required('s3_store_host'))
 
     def test_delete(self):
         """
@@ -327,10 +318,10 @@ class TestS3Backend(unittest.TestCase):
         loc = get_location_from_uri(
             "s3://user:key@auth_address/glance/2")
 
-        S3Backend.delete(loc)
+        self.store.delete(loc)
 
         self.assertRaises(exception.NotFound,
-                          S3Backend.get,
+                          self.store.get,
                           loc)
 
     def test_delete_non_existing(self):
@@ -341,5 +332,5 @@ class TestS3Backend(unittest.TestCase):
         loc = get_location_from_uri(
             "s3://user:key@auth_address/glance/noexist")
         self.assertRaises(exception.NotFound,
-                          S3Backend.delete,
+                          self.store.delete,
                           loc)

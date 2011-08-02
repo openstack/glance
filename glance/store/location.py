@@ -67,14 +67,6 @@ def get_location_from_uri(uri):
         s3+https://accesskey:secretkey@s3.amazonaws.com/bucket/key-id
         file:///var/lib/glance/images/1
     """
-    # Add known stores to mapping... this gets past circular import
-    # issues. There's a better way to do this, but that's for another
-    # patch...
-    # TODO(jaypipes) Clear up these imports in refactor-stores blueprint
-    import glance.store.filesystem
-    import glance.store.http
-    import glance.store.s3
-    import glance.store.swift
     pieces = urlparse.urlparse(uri)
     if pieces.scheme not in SCHEME_TO_STORE_MAP.keys():
         raise exception.UnknownScheme(pieces.scheme)
@@ -82,7 +74,7 @@ def get_location_from_uri(uri):
     return loc
 
 
-def add_scheme_map(scheme_map):
+def register_scheme_map(scheme_map):
     """
     Given a mapping of 'scheme' to store_name, adds the mapping to the
     known list of schemes.
@@ -124,7 +116,7 @@ class Location(object):
         StoreLocation class which handles store-specific location information
         """
         try:
-            cls = utils.import_class('glance.store.%s.StoreLocation'
+            cls = utils.import_class('%s.StoreLocation'
                                      % SCHEME_TO_STORE_MAP[self.store_name])
             return cls(self.store_specs)
         except exception.NotFound:

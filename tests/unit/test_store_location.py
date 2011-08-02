@@ -18,11 +18,14 @@
 import unittest
 
 from glance.common import exception
+import glance.store
 import glance.store.location as location
 import glance.store.http
 import glance.store.filesystem
 import glance.store.swift
 import glance.store.s3
+
+glance.store.create_stores({})
 
 
 class TestStoreLocation(unittest.TestCase):
@@ -252,29 +255,30 @@ class TestStoreLocation(unittest.TestCase):
         bad_uri = 's3://user:pass@http://example.com:8080/images/1'
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
 
-    def test_get_backend_class(self):
+    def test_get_store_from_scheme(self):
         """
         Test that the backend returned by glance.store.get_backend_class
         is correct or raises an appropriate error.
         """
         good_results = {
-            'swift': glance.store.swift.SwiftBackend,
-            'swift+http': glance.store.swift.SwiftBackend,
-            'swift+https': glance.store.swift.SwiftBackend,
-            's3': glance.store.s3.S3Backend,
-            's3+http': glance.store.s3.S3Backend,
-            's3+https': glance.store.s3.S3Backend,
-            'file': glance.store.filesystem.FilesystemBackend,
-            'filesystem': glance.store.filesystem.FilesystemBackend,
-            'http': glance.store.http.HTTPBackend,
-            'https': glance.store.http.HTTPBackend}
+            'swift': glance.store.swift.Store,
+            'swift+http': glance.store.swift.Store,
+            'swift+https': glance.store.swift.Store,
+            's3': glance.store.s3.Store,
+            's3+http': glance.store.s3.Store,
+            's3+https': glance.store.s3.Store,
+            'file': glance.store.filesystem.Store,
+            'filesystem': glance.store.filesystem.Store,
+            'http': glance.store.http.Store,
+            'https': glance.store.http.Store}
 
         for scheme, store in good_results.items():
-            self.assertEqual(glance.store.get_backend_class(scheme), store)
+            store_obj = glance.store.get_store_from_scheme(scheme)
+            self.assertEqual(store_obj.__class__, store)
 
         bad_results = ['fil', 'swift+h', 'unknown']
 
         for store in bad_results:
-            self.assertRaises(glance.store.UnsupportedBackend,
-                              glance.store.get_backend_class,
+            self.assertRaises(exception.UnknownScheme,
+                              glance.store.get_store_from_scheme,
                               store)

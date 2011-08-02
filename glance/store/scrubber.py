@@ -21,6 +21,10 @@ import logging
 
 from glance import registry
 from glance import store
+import glance.store.filesystem
+import glance.store.http
+import glance.store.s3
+import glance.store.swift
 from glance.common import config
 from glance.common import context
 from glance.common import exception
@@ -63,6 +67,7 @@ class Scrubber(object):
         logger.info("Scrub interval set to %s seconds" % scrub_time)
         self.scrub_time = datetime.timedelta(seconds=scrub_time)
         db_api.configure_db(options)
+        store.create_stores(options)
 
     def run(self, pool, event=None):
         delete_time = datetime.datetime.utcnow() - self.scrub_time
