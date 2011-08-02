@@ -138,7 +138,7 @@ def delete_from_backend(uri, **kwargs):
     try:
         return store.delete(loc)
     except NotImplementedError:
-        pass  # Just ignore it...
+        raise exception.StoreDeleteNotSupported
 
 
 def get_store_from_location(uri):

@@ -152,6 +152,10 @@ class BadStoreConfiguration(GlanceException):
                "Reason: %(reason)s")
 
 
+class StoreDeleteNotSupported(GlanceException):
+    message = ("Deleting images from this store is not supported.")
+
+
 class StoreAddDisabled(GlanceException):
     message = ("Configuration for store failed. Adding images to this "
                "store is disabled.")
