@@ -58,7 +58,7 @@ def catch_error(action):
                 return SUCCESS if ret is None else ret
             except Exception, e:
                 print "Failed to %s. Got error:" % action
-                pieces = str(e).split('\n')
+                pieces = unicode(e).split('\n')
                 for piece in pieces:
                     print piece
                 return FAILURE
@@ -231,13 +231,13 @@ EXAMPLES
             print ("Failed to connect to the Glance API server "
                    "%(host)s:%(port)d. Is the server running?" % locals())
             if options.verbose:
-                pieces = str(e).split('\n')
+                pieces = unicode(e).split('\n')
                 for piece in pieces:
                     print piece
             return FAILURE
         except Exception, e:
             print "Failed to add image. Got error:"
-            pieces = str(e).split('\n')
+            pieces = unicode(e).split('\n')
             for piece in pieces:
                 print piece
             print ("Note: Your image metadata may still be in the registry, "
@@ -326,7 +326,7 @@ to spell field names correctly. :)"""
             return FAILURE
         except Exception, e:
             print "Failed to update image. Got error:"
-            pieces = str(e).split('\n')
+            pieces = unicode(e).split('\n')
             for piece in pieces:
                 print piece
             return FAILURE
@@ -389,7 +389,7 @@ Shows image metadata for an image in Glance"""
         return FAILURE
     except Exception, e:
         print "Failed to show image. Got error:"
-        pieces = str(e).split('\n')
+        pieces = unicode(e).split('\n')
         for piece in pieces:
             print piece
         return FAILURE
@@ -454,7 +454,7 @@ a Glance server knows about"""
         return SUCCESS
     except Exception, e:
         print "Failed to show details. Got error:"
-        pieces = str(e).split('\n')
+        pieces = unicode(e).split('\n')
         for piece in pieces:
             print piece
         return FAILURE

@@ -125,7 +125,7 @@ def do_start(server, options, args):
                 os.execlp('%s' % server, server, ini_file)
             except OSError, e:
                 sys.exit('unable to launch %s. Got error: %s'
-                         % (server, str(e)))
+                         % (server, "%s" % e))
             sys.exit(0)
         else:
             write_pid_file(pid_file, pid)

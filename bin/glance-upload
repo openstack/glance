@@ -122,7 +122,7 @@ def main():
         try:
             new_meta = client.add_image(meta, f)
         except Exception, e:
-            print "Failed to add new image. Got error: ", str(e)
+            print "Failed to add new image. Got error: %s" % e
             return 1
 
     print 'Stored image. Got identifier: %s' % pprint.pformat(new_meta)
