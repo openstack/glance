@@ -177,18 +177,6 @@ class TestStore(unittest.TestCase):
             data += chunk
         self.assertEqual(expected_data, data)
 
-    #def test_get_mismatched_expected_size(self):
-        #    """
-        #Test retrieval of an image with wrong expected_size param
-        #raises an exception
-        #"""
-        #loc = get_location_from_uri(
-        #    "s3://user:key@auth_address/glance/2")
-        #self.assertRaises(BackendException,
-        #                  self.store.get,
-        #                  loc,
-        #                  {'expected_size': 42})
-
     def test_get_non_existing(self):
         """
         Test that trying to retrieve a s3 that doesn't exist
