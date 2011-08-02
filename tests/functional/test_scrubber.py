@@ -106,8 +106,8 @@ class TestScrubber(functional.FunctionalTest):
         #                deleted, bail immediatly.
         deleted = set()
         recs = []
-        for _ in xrange(20):
-            time.sleep(15)
+        for _ in xrange(3):
+            time.sleep(5)
 
             recs = list(self.run_sql_cmd(sql))
             self.assertTrue(recs)

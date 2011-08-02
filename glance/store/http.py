@@ -19,11 +19,8 @@ import httplib
 import urlparse
 
 from glance.common import exception
-import glance.store
+import glance.store.base
 import glance.store.location
-
-glance.store.location.add_scheme_map({'http': 'http',
-                                      'https': 'http'})
 
 
 class StoreLocation(glance.store.location.StoreLocation):
@@ -88,34 +85,48 @@ class StoreLocation(glance.store.location.StoreLocation):
         self.path = path
 
 
-class HTTPBackend(glance.store.Backend):
-    """ An implementation of the HTTP Backend Adapter """
+def http_response_iterator(f, size):
+    """
+    Return an iterator for a file-like object
+    """
+    chunk = f.read(size)
+    while chunk:
+        yield chunk
+        chunk = f.read(size)
 
-    @classmethod
-    def get(cls, location, expected_size, options=None, conn_class=None):
+
+class Store(glance.store.base.Store):
+
+    """An implementation of the HTTP(S) Backend Adapter"""
+
+    def get(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates
-        where to find the image file, and returns a generator from Swift
-        provided by Swift client's get_object() method.
+        where to find the image file, and returns a generator for reading
+        the image file
 
-        :location `glance.store.location.Location` object, supplied
-                  from glance.store.location.get_location_from_uri()
+        :param location `glance.store.location.Location` object, supplied
+                        from glance.store.location.get_location_from_uri()
+        :raises `glance.exception.NotFound` if image does not exist
         """
         loc = location.store_location
-        if conn_class:
-            pass  # use the conn_class passed in
-        elif loc.scheme == "http":
-            conn_class = httplib.HTTPConnection
-        elif loc.scheme == "https":
-            conn_class = httplib.HTTPSConnection
-        else:
-            raise glance.store.BackendException(
-                "scheme '%s' not supported for HTTPBackend")
 
+        conn_class = self._get_conn_class(loc)
         conn = conn_class(loc.netloc)
         conn.request("GET", loc.path, "", {})
 
         try:
-            return glance.store._file_iter(conn.getresponse(), cls.CHUNKSIZE)
+            return http_response_iterator(conn.getresponse(), self.CHUNKSIZE)
         finally:
             conn.close()
+
+    def _get_conn_class(self, loc):
+        """
+        Returns connection class for accessing the resource. Useful
+        for dependency injection and stubouts in testing...
+        """
+        return {'http': httplib.HTTPConnection,
+                'https': httplib.HTTPSConnection}[loc.scheme]
+
+
+glance.store.register_store(__name__, ['http', 'https'])

@@ -202,7 +202,7 @@ class ImageCache(object):
 
         def rollback(e):
             set_xattr('image_name', image_meta['name'])
-            set_xattr('error', str(e))
+            set_xattr('error', "%s" % e)
 
             invalid_path = self.invalid_path_for_image(image_id)
             logger.debug("fetch errored, rolling back by moving "
