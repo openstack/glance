@@ -35,7 +35,7 @@ import time
 import unittest
 import urlparse
 
-from tests.utils import execute, get_unused_port
+from glance.tests.utils import execute, get_unused_port
 
 from sqlalchemy import create_engine
 

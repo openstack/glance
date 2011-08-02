@@ -22,8 +22,8 @@ import os
 import tempfile
 import unittest
 
-from tests import functional
-from tests.utils import execute
+from glance.tests import functional
+from glance.tests.utils import execute
 
 FIVE_KB = 5 * 1024
 FIVE_GB = 5 * 1024 * 1024 * 1024

@@ -29,7 +29,7 @@ from glance.api import v1 as server
 from glance.common import context
 from glance.registry import server as rserver
 import glance.registry.db.api
-from tests import stubs
+from glance.tests import stubs
 
 VERBOSE = False
 DEBUG = False

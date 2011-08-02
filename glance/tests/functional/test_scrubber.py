@@ -21,8 +21,8 @@ import unittest
 
 from sqlalchemy import create_engine
 
-from tests import functional
-from tests.utils import execute
+from glance.tests import functional
+from glance.tests.utils import execute
 
 from glance import client
 

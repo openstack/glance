@@ -28,7 +28,7 @@ from glance import client
 from glance.common import exception
 import glance.registry.db.api
 from glance.registry import client as rclient
-from tests import stubs
+from glance.tests import stubs
 
 
 class TestBadClients(unittest.TestCase):
