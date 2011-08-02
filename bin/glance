@@ -95,6 +95,25 @@ def get_image_fields_from_args(args):
     return fields
 
 
+def get_image_filters_from_args(args):
+    """Build a dictionary of query filters based on the supplied args."""
+    try:
+        fields = get_image_fields_from_args(args)
+    except RuntimeError, e:
+        print e
+        return FAILURE
+
+    SUPPORTED_FILTERS = ['name', 'disk_format', 'container_format', 'status',
+                         'size_min', 'size_max']
+    filters = {}
+    for (key, value) in fields.items():
+        if key not in SUPPORTED_FILTERS:
+            key = 'property-%s' % (key,)
+        filters[key] = value
+
+    return filters
+
+
 def print_image_formatted(client, image):
     """
     Formatted print of image metadata.
@@ -395,20 +414,22 @@ Shows image metadata for an image in Glance"""
         return FAILURE
 
 
-@catch_error('show index')
-def images_index(options, args):
-    """
-%(prog)s index [options]
+def _images_index(client, filters, limit, print_header=False, **kwargs):
+    """Driver function for images_index"""
+    parameters = {
+        "filters": filters,
+        "limit": limit,
+    }
 
-Returns basic information for all public images
-a Glance server knows about"""
-    client = get_client(options)
-    images = client.get_images()
+    optional_kwargs = ['marker', 'sort_key', 'sort_dir']
+    for kwarg in optional_kwargs:
+        if kwarg in kwargs:
+            parameters[kwarg] = kwargs[kwarg]
+
+    images = client.get_images(**parameters)
+
     if not images:
-        print "No public images found."
         return SUCCESS
-
-    print "Found %d public images..." % len(images)
 
     pretty_table = utils.PrettyTable()
     pretty_table.add_column(16, label="ID")
@@ -417,47 +438,108 @@ a Glance server knows about"""
     pretty_table.add_column(20, label="Container Format")
     pretty_table.add_column(14, label="Size", just="r")
 
-    print pretty_table.make_header()
+    if print_header:
+        print pretty_table.make_header()
 
     for image in images:
-        print pretty_table.make_row(
-            image['id'],
-            image['name'],
-            image['disk_format'],
-            image['container_format'],
-            image['size'])
+        print pretty_table.make_row(image['id'],
+                                    image['name'],
+                                    image['disk_format'],
+                                    image['container_format'],
+                                    image['size'])
+
+    if not options.force and len(images) == limit and \
+       not user_confirm("Fetch next page?", True):
+        return SUCCESS
+
+    parameters['marker'] = images[-1]['id']
+    return _images_index(client, **parameters)
 
 
-def images_detailed(options, args):
+@catch_error('show index')
+def images_index(options, args):
+    """
+%(prog)s index [options] <field1=value1 field2=value2 ...>
+
+Returns basic information for all public images
+a Glance server knows about. Provided fields are
+handled as query filters. Supported filters
+include 'name', 'disk_format', 'container_format',
+'status', 'size_min', and 'size_max.' Any extra
+fields are treated as image metadata properties"""
+    client = get_client(options)
+    filters = get_image_filters_from_args(args)
+    limit = options.limit
+    marker = options.marker
+    sort_key = options.sort_key
+    sort_dir = options.sort_dir
+
+    return _images_index(client,
+                         filters,
+                         limit,
+                         marker=marker,
+                         sort_key=sort_key,
+                         sort_dir=sort_dir,
+                         print_header=True)
+
+
+def _images_details(client, filters, limit, print_header=False, **kwargs):
+    """Driver function for images_details"""
+    parameters = {
+        "filters": filters,
+        "limit": limit,
+    }
+
+    optional_kwargs = ['marker', 'sort_key', 'sort_dir']
+    for kwarg in optional_kwargs:
+        if kwarg in kwargs:
+            parameters[kwarg] = kwargs[kwarg]
+
+    images = client.get_images_detailed(**parameters)
+
+    if len(images) == 0:
+        return SUCCESS
+
+    if print_header:
+        print "=" * 80
+
+    for image in images:
+        print_image_formatted(client, image)
+        print "=" * 80
+
+    if not options.force and len(images) == limit and \
+       not user_confirm("Fetch next page?", True):
+        return SUCCESS
+
+    parameters["marker"] = images[-1]['id']
+    return _images_details(client, **parameters)
+
+
+@catch_error('show details')
+def images_details(options, args):
     """
 %(prog)s details [options]
 
 Returns detailed information for all public images
-a Glance server knows about"""
-    c = get_client(options)
-    try:
-        images = c.get_images_detailed()
-        if len(images) == 0:
-            print "No public images found."
-            return SUCCESS
+a Glance server knows about. Provided fields are
+handled as query filters. Supported filters
+include 'name', 'disk_format', 'container_format',
+'status', 'size_min', and 'size_max.' Any extra
+fields are treated as image metadata properties"""
+    client = get_client(options)
+    filters = get_image_filters_from_args(args)
+    limit = options.limit
+    marker = options.marker
+    sort_key = options.sort_key
+    sort_dir = options.sort_dir
 
-        num_images = len(images)
-        print "Found %d public images..." % num_images
-        cur_image = 1
-        for image in images:
-            print "=" * 80
-            print_image_formatted(c, image)
-            if cur_image == num_images:
-                print "=" * 80
-            cur_image += 1
-
-        return SUCCESS
-    except Exception, e:
-        print "Failed to show details. Got error:"
-        pieces = unicode(e).split('\n')
-        for piece in pieces:
-            print piece
-        return FAILURE
+    return _images_details(client,
+                           filters,
+                           limit,
+                           marker=marker,
+                           sort_key=sort_key,
+                           sort_dir=sort_dir,
+                           print_header=True)
 
 
 def images_clear(options, args):
@@ -755,6 +837,16 @@ def create_options(parser):
                       type=int, default=9292,
                       help="Port the Glance API host listens on. "
                            "Default: %default")
+    parser.add_option('--limit', dest="limit", metavar="LIMIT", default=10,
+                      type="int", help="Page size to use while "
+                                       "requesting image metadata")
+    parser.add_option('--marker', dest="marker", metavar="MARKER",
+                      default=None, help="Image index after which to "
+                                         "begin pagination")
+    parser.add_option('--sort_key', dest="sort_key", metavar="KEY",
+                      help="Sort results by this image attribute.")
+    parser.add_option('--sort_dir', dest="sort_dir", metavar="[desc|asc]",
+                      help="Sort results in this direction.")
     parser.add_option('-f', '--force', dest="force", metavar="FORCE",
                       default=False, action="store_true",
                       help="Prevent select actions from requesting "
@@ -814,7 +906,7 @@ def lookup_command(parser, command_name):
                 'update': image_update,
                 'delete': image_delete,
                 'index': images_index,
-                'details': images_detailed,
+                'details': images_details,
                 'show': image_show,
                 'clear': images_clear}
 

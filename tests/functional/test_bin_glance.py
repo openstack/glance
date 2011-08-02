@@ -52,7 +52,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('No public images found.', out.strip())
+        self.assertEqual('', out.strip())
 
         # 1. Add public image
         cmd = "bin/glance --port=%d add is_public=True name=MyImage" % api_port
@@ -68,11 +68,9 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        lines = out.split("\n")
-        first_line = lines[0]
-        image_data_line = lines[3]
-        self.assertEqual('Found 1 public images...', first_line)
-        self.assertTrue('MyImage' in image_data_line)
+        lines = out.split("\n")[2:-1]
+        self.assertEqual(1, len(lines))
+        self.assertTrue('MyImage' in lines[0])
 
         # 3. Delete the image
         cmd = "bin/glance --port=%d --force delete 1" % api_port
@@ -88,7 +86,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('No public images found.', out.strip())
+        self.assertEqual('', out.strip())
 
         self.stop_servers()
 
@@ -117,7 +115,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('No public images found.', out.strip())
+        self.assertEqual('', out.strip())
 
         # 1. Add public image
         cmd = "bin/glance --port=%d add name=MyImage" % api_port
@@ -133,7 +131,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('No public images found.', out.strip())
+        self.assertEqual('', out.strip())
 
         # 3. Update the image to make it public
         cmd = "bin/glance --port=%d update 1 is_public=True" % api_port
@@ -149,12 +147,9 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        lines = out.split("\n")
-        first_line = lines[0]
-        self.assertEqual('Found 1 public images...', first_line)
-
-        image_data_line = lines[3]
-        self.assertTrue('MyImage' in image_data_line)
+        lines = out.split("\n")[2:-1]
+        self.assertEqual(len(lines), 1)
+        self.assertTrue('MyImage' in lines[0])
 
         # 5. Update the image's Name attribute
         updated_image_name = "Updated image name"
@@ -206,7 +201,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('No public images found.', out.strip())
+        self.assertEqual('', out.strip())
 
         # 1. Attempt to add an image
         with tempfile.NamedTemporaryFile() as image_file:
@@ -228,7 +223,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('No public images found.', out.strip())
+        self.assertEqual('', out.strip())
 
         # 3. Verify image status in show is 'killed'
         cmd = "bin/glance --port=%d show 1" % api_port
@@ -278,7 +273,7 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         lines = out.split("\n")
         first_line = lines[0]
-        self.assertEqual('No public images found.', first_line)
+        self.assertEqual('', first_line)
 
         # 4. Lastly we manually verify with SQL that image properties are
         # also getting marked as deleted.
@@ -288,3 +283,257 @@ class TestBinGlance(functional.FunctionalTest):
             self.assertEqual(0, rec[0])
 
         self.stop_servers()
+
+    def test_results_filtering(self):
+        self.cleanup()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 1. Add some images
+        _add_cmd = "bin/glance --port=%d add is_public=True" % api_port
+        _add_args = [
+            "name=Name1 disk_format=vhd container_format=ovf foo=bar",
+            "name=Name2 disk_format=ami container_format=ami foo=bar",
+            "name=Name3 disk_format=vhd container_format=ovf foo=baz",
+        ]
+
+        for i, args in enumerate(_add_args):
+            cmd = "%s %s" % (_add_cmd, args)
+            exitcode, out, err = execute(cmd)
+            self.assertEqual(0, exitcode)
+            expected_out = 'Added new image with ID: %d' % (i + 1,)
+            self.assertEqual(expected_out, out.strip())
+
+        _base_cmd = "bin/glance --port=%d" % api_port
+        _index_cmd = "%s index -f" % (_base_cmd,)
+
+        # 2. Check name filter
+        cmd = "name=Name2"
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(1, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('2'))
+
+        # 3. Check disk_format filter
+        cmd = "disk_format=vhd"
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(2, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('3'))
+        self.assertTrue(image_lines[1].startswith('1'))
+
+        # 4. Check container_format filter
+        cmd = "container_format=ami"
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(1, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('2'))
+
+        # 5. Check container_format filter
+        cmd = "container_format=ami"
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(1, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('2'))
+
+        # 6. Check status filter
+        cmd = "status=killed"
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(0, len(image_lines))
+
+        # 7. Check property filter
+        cmd = "foo=bar"
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(2, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('2'))
+        self.assertTrue(image_lines[1].startswith('1'))
+
+        # 8. Check multiple filters
+        cmd = "name=Name2 foo=bar"
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(1, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('2'))
+
+        # 9. Ensure details call also respects filters
+        _details_cmd = "%s details" % (_base_cmd,)
+        cmd = "foo=bar"
+        exitcode, out, err = execute("%s %s" % (_details_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[1:-1]
+        self.assertEqual(22, len(image_lines))
+        self.assertTrue(image_lines[1].startswith('Id: 2'))
+        self.assertTrue(image_lines[12].startswith('Id: 1'))
+
+        self.stop_servers()
+
+    def test_results_pagination(self):
+        self.cleanup()
+        self.start_servers()
+
+        _base_cmd = "bin/glance --port=%d" % self.api_port
+        index_cmd = "%s index -f" % _base_cmd
+        details_cmd = "%s details -f" % _base_cmd
+
+        # 1. Add some images
+        _add_cmd = "bin/glance --port=%d add is_public=True" % self.api_port
+        _add_args = [
+            "name=Name1 disk_format=ami container_format=ami",
+            "name=Name2 disk_format=vhd container_format=ovf",
+            "name=Name3 disk_format=ami container_format=ami",
+            "name=Name4 disk_format=ami container_format=ami",
+            "name=Name5 disk_format=vhd container_format=ovf",
+        ]
+
+        for i, args in enumerate(_add_args):
+            cmd = "%s %s" % (_add_cmd, args)
+            exitcode, out, err = execute(cmd)
+            self.assertEqual(0, exitcode)
+            expected_out = 'Added new image with ID: %d' % (i + 1,)
+            self.assertEqual(expected_out, out.strip())
+
+        # 2. Limit less than total
+        cmd = "--limit=3"
+        exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(5, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('5'))
+        self.assertTrue(image_lines[1].startswith('4'))
+        self.assertTrue(image_lines[2].startswith('3'))
+        self.assertTrue(image_lines[3].startswith('2'))
+        self.assertTrue(image_lines[4].startswith('1'))
+
+        # 3. With a marker
+        cmd = "--marker=4"
+        exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(3, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('3'))
+        self.assertTrue(image_lines[1].startswith('2'))
+        self.assertTrue(image_lines[2].startswith('1'))
+
+        # 3. With a marker and limit
+        cmd = "--marker=3 --limit=1"
+        exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(2, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('2'))
+        self.assertTrue(image_lines[1].startswith('1'))
+
+        # 4. Pagination params with filtered results
+        cmd = "--marker=4 --limit=1 container_format=ami"
+        exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(2, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('3'))
+        self.assertTrue(image_lines[1].startswith('1'))
+
+        # 5. Pagination params with filtered results in a details call
+        cmd = "--marker=4 --limit=1 container_format=ami"
+        exitcode, out, err = execute("%s %s" % (details_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[1:-1]
+        self.assertEqual(20, len(image_lines))
+        self.assertTrue(image_lines[1].startswith('Id: 3'))
+        self.assertTrue(image_lines[11].startswith('Id: 1'))
+
+    def test_results_sorting(self):
+        self.cleanup()
+        self.start_servers()
+
+        _base_cmd = "bin/glance --port=%d" % self.api_port
+        index_cmd = "%s index -f" % _base_cmd
+        details_cmd = "%s details -f" % _base_cmd
+
+        # 1. Add some images
+        _add_cmd = "bin/glance --port=%d add is_public=True" % self.api_port
+        _add_args = [
+            "name=Name1 disk_format=ami container_format=ami",
+            "name=Name4 disk_format=vhd container_format=ovf",
+            "name=Name3 disk_format=ami container_format=ami",
+            "name=Name2 disk_format=ami container_format=ami",
+            "name=Name5 disk_format=vhd container_format=ovf",
+        ]
+
+        for i, args in enumerate(_add_args):
+            cmd = "%s %s" % (_add_cmd, args)
+            exitcode, out, err = execute(cmd)
+            self.assertEqual(0, exitcode)
+            expected_out = 'Added new image with ID: %d' % (i + 1,)
+            self.assertEqual(expected_out, out.strip())
+
+        # 2. Sort by name asc
+        cmd = "--sort_key=name --sort_dir=asc"
+        exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(5, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('1'))
+        self.assertTrue(image_lines[1].startswith('4'))
+        self.assertTrue(image_lines[2].startswith('3'))
+        self.assertTrue(image_lines[3].startswith('2'))
+        self.assertTrue(image_lines[4].startswith('5'))
+
+        # 3. Sort by name asc with a marker
+        cmd = "--sort_key=name --sort_dir=asc --marker=4"
+        exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(3, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('3'))
+        self.assertTrue(image_lines[1].startswith('2'))
+        self.assertTrue(image_lines[2].startswith('5'))
+
+        # 4. Sort by container_format desc
+        cmd = "--sort_key=container_format --sort_dir=desc"
+        exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(5, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('5'))
+        self.assertTrue(image_lines[1].startswith('2'))
+        self.assertTrue(image_lines[2].startswith('4'))
+        self.assertTrue(image_lines[3].startswith('3'))
+        self.assertTrue(image_lines[4].startswith('1'))
+
+        # 5. Sort by name asc with a marker (details)
+        cmd = "--sort_key=name --sort_dir=asc --marker=4"
+        exitcode, out, err = execute("%s %s" % (details_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[1:-1]
+        self.assertEqual(30, len(image_lines))
+        self.assertTrue(image_lines[1].startswith('Id: 3'))
+        self.assertTrue(image_lines[11].startswith('Id: 2'))
+        self.assertTrue(image_lines[21].startswith('Id: 5'))

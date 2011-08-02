@@ -96,6 +96,13 @@ a brief help message, like so::
     -H ADDRESS, --host=ADDRESS
                           Address of Glance API host. Default: example.com
     -p PORT, --port=PORT  Port the Glance API host listens on. Default: 9292
+    --limit=LIMIT         Page size to use while requesting image metadata
+    --marker=MARKER       Image index after which to begin pagination
+    --sort_key=KEY        Sort results by this image attribute.
+    --sort_dir=[desc|asc]
+                          Sort results in this direction.
+    -f, --force           Prevent select actions from requesting user
+                          confirmation
     --dry-run             Don't actually execute the command, just print output
                           showing what WOULD happen.
 
@@ -301,13 +308,31 @@ The ``index`` command displays brief information about the *public* images
 available in Glance, as shown below::
 
   $> glance index --host=65.114.169.29
-  Found 4 public images...
   ID               Name                           Disk Format          Container Format     Size          
   ---------------- ------------------------------ -------------------- -------------------- --------------
   1                Ubuntu 10.10                   vhd                  ovf                        58520278
   2                Ubuntu 10.04                   ami                  ami                        58520278
   3                Fedora 9                       vdi                  bare                           3040
   4                Vanilla Linux 2.6.22           qcow2                bare                              0
+
+Image metadata such as 'name', 'disk_format', 'container_format' and 'status'
+may be used to filter the results of an index or details command. These
+commands also accept 'size_min' and 'size_max' as lower and upper bounds
+of the image metadata 'size.' Any unrecognized fields are handled as
+custom image properties.
+
+The 'limit' and 'marker' options are used by the index and details commands
+to  control pagination. The 'marker' indicates the last record that was seen
+by the user. The page of results returned will begin after the provided image
+ID. The 'limit' param indicates the page size. Each request to the api will be 
+restricted to returning a maximum number of results. Without the 'force'
+option, the user will be prompted before each page of results is fetched 
+from the API.
+
+Results from index and details commands may be ordered using the 'sort_key'
+and 'sort_dir' options. Any image attribute may be used for 'sort_key',
+while  only 'asc' or 'desc' are allowed for 'sort_dir'.
+
 
 The ``details`` command
 -----------------------
@@ -316,7 +341,6 @@ The ``details`` command displays detailed information about the *public* images
 available in Glance, as shown below::
 
   $> glance details --host=65.114.169.29
-  Found 4 public images...
   ================================================================================
   URI: http://example.com/images/1
   Id: 1
