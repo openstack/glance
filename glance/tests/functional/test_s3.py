@@ -50,7 +50,8 @@ class TestS3(functional.FunctionalTest):
     # Test machines can set the GLANCE_TEST_MIGRATIONS_CONF variable
     # to override the location of the config file for migration testing
     CONFIG_FILE_PATH = os.environ.get('GLANCE_TEST_S3_CONF',
-                                      os.path.join('tests', 'functional',
+                                      os.path.join('glance', 'tests',
+                                                   'functional',
                                                    'test_s3.conf'))
 
     def setUp(self):
