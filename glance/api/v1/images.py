@@ -335,7 +335,6 @@ class Controller(api.BaseController):
         try:
             logger.debug("Uploading image data for image %(image_id)s "
                          "to %(store_name)s store", locals())
-            req.make_body_seekable()
             location, size, checksum = store.add(image_meta['id'],
                                                  req.body_file)
 

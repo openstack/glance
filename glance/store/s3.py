@@ -18,7 +18,9 @@
 """Storage backend for S3 or Storage Servers that follow the S3 Protocol"""
 
 import logging
+import hashlib
 import httplib
+import tempfile
 import urlparse
 
 from glance.common import config
@@ -305,12 +307,40 @@ class Store(glance.store.base.Store):
 
         key = bucket_obj.new_key(obj_name)
 
-        # OK, now upload the data into the key
-        obj_md5, _base64_digest = key.compute_md5(image_file)
-        key.set_contents_from_file(image_file, replace=False)
-        size = key.size
+        # We need to wrap image_file, which is a reference to the
+        # webob.Request.body_file, with a seekable file-like object,
+        # otherwise the call to set_contents_from_file() will die
+        # with an error about Input object has no method 'seek'. We
+        # might want to call webob.Request.make_body_seekable(), but
+        # unfortunately, that method copies the entire image into
+        # memory and results in LP Bug #818292 occurring. So, here
+        # we write temporary file in as memory-efficient manner as
+        # possible and then supply the temporary file to S3. We also
+        # take this opportunity to calculate the image checksum while
+        # writing the tempfile, so we don't need to call key.compute_md5()
 
-        return (loc.get_uri(), size, obj_md5)
+        logger.debug("Writing request body file to temporary "
+                     "file for %s", loc.get_uri())
+        temp_file = tempfile.NamedTemporaryFile()
+
+        checksum = hashlib.md5()
+        chunk = image_file.read(self.CHUNKSIZE)
+        while chunk:
+            checksum.update(chunk)
+            temp_file.write(chunk)
+            chunk = image_file.read(self.CHUNKSIZE)
+
+        logger.debug("Uploading temporary file to S3 for %s", loc.get_uri())
+
+        # OK, now upload the data into the key
+        key.set_contents_from_file(temp_file, replace=False)
+        size = key.size
+        checksum_hex = checksum.hexdigest()
+
+        logger.debug("Wrote %(size)d bytes to S3 key named %(obj_name)s with "
+                     "checksum %(checksum_hex)s" % locals())
+
+        return (loc.get_uri(), size, checksum_hex)
 
     def delete(self, location):
         """
