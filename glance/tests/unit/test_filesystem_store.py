@@ -26,7 +26,7 @@ import stubout
 from glance.common import exception
 from glance.store.location import get_location_from_uri
 from glance.store.filesystem import Store, ChunkedFile
-from tests import stubs
+from glance.tests import stubs
 
 FILESYSTEM_OPTIONS = {
     'verbose': True,

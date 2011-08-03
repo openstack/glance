@@ -20,8 +20,8 @@
 import os
 import unittest
 
-from tests import functional
-from tests.utils import execute
+from glance.tests import functional
+from glance.tests.utils import execute
 
 
 class TestLogging(functional.FunctionalTest):
