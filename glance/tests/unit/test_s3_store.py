@@ -77,7 +77,8 @@ def stub_out_s3(stubs):
 
         def set_contents_from_file(self, fp, replace=False, **kwargs):
             self.data = StringIO.StringIO()
-            self.data.write(fp.getvalue())
+            for bytes in fp:
+                self.data.write(bytes)
             self.size = self.data.len
             # Reset the buffer to start
             self.data.seek(0)

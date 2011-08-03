@@ -329,11 +329,12 @@ class Store(glance.store.base.Store):
             checksum.update(chunk)
             temp_file.write(chunk)
             chunk = image_file.read(self.CHUNKSIZE)
+        temp_file.flush()
 
         logger.debug("Uploading temporary file to S3 for %s", loc.get_uri())
 
         # OK, now upload the data into the key
-        key.set_contents_from_file(temp_file, replace=False)
+        key.set_contents_from_file(open(temp_file.name, 'r+b'), replace=False)
         size = key.size
         checksum_hex = checksum.hexdigest()
 
