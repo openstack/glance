@@ -1,9 +1,6 @@
 include run_tests.sh ChangeLog
 include README builddeb.sh
 include MANIFEST.in pylintrc
-include tests/__init__.py
-include tests/stubs.py
-include tests/utils.py
 include run_tests.py
 include glance/registry/db/migrate_repo/migrate.cfg
 include glance/registry/db/migrate_repo/versions/*.sql

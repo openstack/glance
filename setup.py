@@ -74,7 +74,7 @@ setup(
     author='OpenStack',
     author_email='openstack@lists.launchpad.net',
     url='http://glance.openstack.org/',
-    packages=find_packages(exclude=['tests', 'bin']),
+    packages=find_packages(exclude=['bin']),
     test_suite='nose.collector',
     cmdclass=cmdclass,
     include_package_data=True,
