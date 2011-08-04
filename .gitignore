@@ -1,0 +1,4 @@
+*.pyc
+*.log
+.glance-venv
+tests.sqlite
