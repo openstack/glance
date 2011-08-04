@@ -29,6 +29,11 @@ import glance.store
 import glance.store.base
 import glance.store.location
 
+try:
+    from swift.common import client as swift_client
+except ImportError:
+    pass
+
 DEFAULT_SWIFT_CONTAINER = 'glance'
 
 logger = logging.getLogger('glance.store.swift')
@@ -194,6 +199,9 @@ class Store(glance.store.base.Store):
         else:  # Defaults https
             self.full_auth_address = 'https://' + self.auth_address
 
+        self.snet = config.get_option(
+            self.options, 'swift_enable_snet', type='bool', default=False)
+
     def get(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates
@@ -204,14 +212,9 @@ class Store(glance.store.base.Store):
                         from glance.store.location.get_location_from_uri()
         :raises `glance.exception.NotFound` if image does not exist
         """
-        from swift.common import client as swift_client
-
-        # TODO(sirp): snet=False for now, however, if the instance of
-        # swift we're talking to is within our same region, we should set
-        # snet=True
         loc = location.store_location
-        swift_conn = swift_client.Connection(
-            authurl=loc.swift_auth_url, user=loc.user, key=loc.key, snet=False)
+        swift_conn = self._make_swift_connection(
+            auth_url=loc.swift_auth_url, user=loc.user, key=loc.key)
 
         try:
             (resp_headers, resp_body) = swift_conn.get_object(
@@ -233,6 +236,17 @@ class Store(glance.store.base.Store):
         #            (expected_size, obj_size))
 
         return resp_body
+
+    def _make_swift_connection(self, auth_url, user, key):
+        """
+        Creates a connection using the Swift client library.
+        """
+        snet = self.snet
+        logger.debug("Creating Swift connection with "
+                     "(auth_address=%(auth_url)s, user=%(user)s, "
+                     "key=%(key)s, snet=%(snet)s)" % locals())
+        return swift_client.Connection(
+            authurl=auth_url, user=user, key=key, snet=snet)
 
     def _option_get(self, param):
         result = self.options.get(param)
@@ -269,15 +283,8 @@ class Store(glance.store.base.Store):
               auth URL, you can specify http://someurl.com for the
               swift_store_auth_address config option
         """
-        from swift.common import client as swift_client
-
-        swift_conn = swift_client.Connection(
-            authurl=self.full_auth_address, user=self.user,
-            key=self.key, snet=False)
-
-        logger.debug("Adding image object to Swift using "
-                     "(auth_address=%(auth_address)s, user=%(user)s, "
-                     "key=%(key)s)" % self.__dict__)
+        swift_conn = self._make_swift_connection(
+            auth_url=self.full_auth_address, user=self.user, key=self.key)
 
         create_container_if_missing(self.container, swift_conn, self.options)
 
@@ -289,6 +296,7 @@ class Store(glance.store.base.Store):
                                   'user': self.user,
                                   'key': self.key})
 
+        logger.debug("Adding image object '%(obj_name)s' to Swift" % locals())
         try:
             obj_etag = swift_conn.put_object(self.container, obj_name,
                                              image_file)
@@ -327,14 +335,9 @@ class Store(glance.store.base.Store):
 
         :raises NotFound if image does not exist
         """
-        from swift.common import client as swift_client
-
-        # TODO(sirp): snet=False for now, however, if the instance of
-        # swift we're talking to is within our same region, we should set
-        # snet=True
         loc = location.store_location
-        swift_conn = swift_client.Connection(
-            authurl=loc.swift_auth_url, user=loc.user, key=loc.key, snet=False)
+        swift_conn = self._make_swift_connection(
+            auth_url=loc.swift_auth_url, user=loc.user, key=loc.key)
 
         try:
             swift_conn.delete_object(loc.container, loc.obj)
@@ -356,7 +359,6 @@ def create_container_if_missing(container, swift_conn, options):
     :param swift_conn: Connection to Swift
     :param options: Option mapping
     """
-    from swift.common import client as swift_client
     try:
         swift_conn.head_container(container)
     except swift_client.ClientException, e:
