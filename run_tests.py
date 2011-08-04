@@ -234,7 +234,7 @@ class GlanceTestResult(result.TextTestResult):
                 if stream is not None:
                     if self.showAll:
                         message = [label]
-                        detail = result._exception_details(err[1])
+                        detail = result._exception_detail(err[1])
                         if detail:
                             message.append(detail)
                         stream.writeln(": ".join(message))

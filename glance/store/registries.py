@@ -79,5 +79,5 @@ def lookup_by_registry(registry, image_id):
         adapter = REGISTRY_ADAPTERS[registry]
     except KeyError:
         raise UnknownImageRegistry("'%s' not found" % registry)
-    
+
     return adapter.lookup(image_id)
