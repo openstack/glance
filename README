@@ -12,9 +12,9 @@ component.
 Quick Start
 -----------
 
-If you'd like to run trunk, you can fetch from the bzr repo::
+If you'd like to run trunk, you can clone the git repo:
 
-    bzr branch lp:glance
+    git clone git@github.com:openstack/glance.git
 
 
 Install Glance by running::
