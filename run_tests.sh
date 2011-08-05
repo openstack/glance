@@ -24,7 +24,7 @@ function process_option {
     -N|--no-virtual-env) let always_venv=0; let never_venv=1;;
     -p|--pep8) let just_pep8=1;;
     -f|--force) let force=1;;
-    --unittests-only) noseargs="$noseargs --exclude-dir=tests/functional";;
+    --unittests-only) noseargs="$noseargs --exclude-dir=glance/tests/functional";;
     *) noseargs="$noseargs $1"
   esac
 }
