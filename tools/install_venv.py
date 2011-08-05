@@ -100,10 +100,18 @@ def install_dependencies(venv=VENV):
                 redirect_output=False)
 
     # Tell the virtual env how to "import glance"
-    pthfile = os.path.join(venv, "lib", "python2.6", "site-packages",
-                                 "glance.pth")
+    py_ver = _detect_python_version(venv)
+    pthfile = os.path.join(venv, "lib", py_ver, "site-packages", "glance.pth")
     f = open(pthfile, 'w')
     f.write("%s\n" % ROOT)
+
+
+def _detect_python_version(venv):
+    lib_dir = os.path.join(venv, "lib")
+    for pathname in os.listdir(lib_dir):
+        if pathname.startswith('python'):
+            return pathname
+    raise Exception('Unable to detect Python version')
 
 
 def print_help():
