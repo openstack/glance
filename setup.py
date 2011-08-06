@@ -14,11 +14,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import gettext
 import os
 import subprocess
 
 from setuptools import setup, find_packages
 from setuptools.command.sdist import sdist
+
+# In order to run the i18n commands for compiling and
+# installing message catalogs, we use DistUtilsExtra.
+# Don't make this a hard requirement, but warn that
+# i18n commands won't be available if DistUtilsExtra is
+# not installed...
+try:
+    from DistUtilsExtra.auto import setup
+except ImportError:
+    from setuptools import setup
+    print "Warning: DistUtilsExtra required to use i18n builders. "
+    print "To build glance with support for message catalogs, you need "
+    print "  https://launchpad.net/python-distutils-extra >= 2.18"
+
+gettext.install('glance', unicode=1)
 
 from glance import version
 
@@ -110,4 +126,5 @@ setup(
              'bin/glance-manage',
              'bin/glance-registry',
              'bin/glance-scrubber',
-             'bin/glance-upload'])
+             'bin/glance-upload'],
+    py_modules=[])
