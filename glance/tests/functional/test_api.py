@@ -1105,3 +1105,36 @@ class TestApi(functional.FunctionalTest):
                         "Could not find '%s' in '%s'" % (expected, content))
 
         self.stop_servers()
+
+    @skip_if_disabled
+    def test_delete_not_existing(self):
+        """
+        We test the following:
+
+        0. GET /images/1
+        - Verify 404
+        1. DELETE /images/1
+        - Verify 404
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 0. GET /images
+        # Verify no public images
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, '{"images": []}')
+
+        # 1. DELETE /images/1
+        # Verify 404 returned
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 404)
+
+        self.stop_servers()
