@@ -17,6 +17,7 @@
 
 """Common utilities used in testing"""
 
+import functools
 import os
 import socket
 import subprocess
@@ -39,7 +40,7 @@ class skip_test(object):
 
 
 class skip_if(object):
-    """Decorator that skips a test if contition is true."""
+    """Decorator that skips a test if condition is true."""
     def __init__(self, condition, msg):
         self.condition = condition
         self.message = msg
@@ -70,6 +71,20 @@ class skip_unless(object):
         _skipper.__name__ = func.__name__
         _skipper.__doc__ = func.__doc__
         return _skipper
+
+
+def skip_if_disabled(func):
+    """Decorator that skips a test if test case is disabled."""
+    @functools.wraps(func)
+    def wrapped(*a, **kwargs):
+        func.__test__ = False
+        test_obj = a[0]
+        message = getattr(test_obj, 'disabled_message',
+                          'Test disabled')
+        if test_obj.disabled:
+            raise nose.SkipTest(message)
+        func(*a, **kwargs)
+    return wrapped
 
 
 def execute(cmd, raise_error=True):

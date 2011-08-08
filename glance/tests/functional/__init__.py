@@ -254,6 +254,8 @@ class FunctionalTest(unittest.TestCase):
     servers and clients and not just the stubbed out interfaces
     """
 
+    disabled = False
+
     def setUp(self):
 
         self.test_id = random.randint(0, 100000)
@@ -278,11 +280,12 @@ class FunctionalTest(unittest.TestCase):
         self.files_to_destroy = []
 
     def tearDown(self):
-        self.cleanup()
-        # We destroy the test data store between each test case,
-        # and recreate it, which ensures that we have no side-effects
-        # from the tests
-        self._reset_database()
+        if not self.disabled:
+            self.cleanup()
+            # We destroy the test data store between each test case,
+            # and recreate it, which ensures that we have no side-effects
+            # from the tests
+            self._reset_database()
 
     def _reset_database(self):
         conn_string = self.registry_server.sql_connection

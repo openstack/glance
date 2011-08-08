@@ -24,16 +24,17 @@ import os
 import tempfile
 
 from glance.tests import functional
-from glance.tests.utils import execute
+from glance.tests.utils import execute, skip_if_disabled
 
 FIVE_KB = 5 * 1024
 FIVE_GB = 5 * 1024 * 1024 * 1024
 
 
-class TestApiHttplib2(functional.FunctionalTest):
+class TestApi(functional.FunctionalTest):
 
     """Functional tests using httplib2 against the API server"""
 
+    @skip_if_disabled
     def test_get_head_simple_post(self):
         """
         We test the following sequential series of actions:
@@ -273,6 +274,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         self.stop_servers()
 
+    @skip_if_disabled
     def test_queued_process_flow(self):
         """
         We test the process flow where a user registers an image
@@ -391,6 +393,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         self.stop_servers()
 
+    @skip_if_disabled
     def test_version_variations(self):
         """
         We test that various calls to the images and root endpoints are
@@ -549,6 +552,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         self.stop_servers()
 
+    @skip_if_disabled
     def test_size_greater_2G_mysql(self):
         """
         A test against the actual datastore backend for the registry
@@ -592,6 +596,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         self.stop_servers()
 
+    @skip_if_disabled
     def test_traceback_not_consumed(self):
         """
         A test that errors coming from the POST API do not
@@ -620,6 +625,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         self.stop_servers()
 
+    @skip_if_disabled
     def test_filtered_images(self):
         """
         Set up four test images and ensure each query param filter works
@@ -852,6 +858,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         self.stop_servers()
 
+    @skip_if_disabled
     def test_limited_images(self):
         """
         Ensure marker and limit query params work
@@ -940,6 +947,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         self.stop_servers()
 
+    @skip_if_disabled
     def test_ordered_images(self):
         """
         Set up three test images and ensure each query param filter works
@@ -1050,6 +1058,7 @@ class TestApiHttplib2(functional.FunctionalTest):
 
         self.stop_servers()
 
+    @skip_if_disabled
     def test_duplicate_image_upload(self):
         """
         Upload initial image, then attempt to upload duplicate image
