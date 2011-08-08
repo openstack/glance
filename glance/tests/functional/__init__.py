@@ -203,6 +203,8 @@ bind_port = %(bind_port)s
 log_file = %(log_file)s
 sql_connection = %(sql_connection)s
 sql_idle_timeout = 3600
+api_limit_max = 1000
+limit_param_default = 25
 
 [pipeline:glance-registry]
 pipeline = context registryapp

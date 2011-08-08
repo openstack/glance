@@ -44,8 +44,6 @@ SUPPORTED_SORT_KEYS = ('name', 'status', 'container_format', 'disk_format',
 
 SUPPORTED_SORT_DIRS = ('asc', 'desc')
 
-MAX_ITEM_LIMIT = 25
-
 SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
 
 
@@ -166,14 +164,30 @@ class Controller(object):
     def _get_limit(self, req):
         """Parse a limit query param into something usable."""
         try:
-            limit = int(req.str_params.get('limit', MAX_ITEM_LIMIT))
+            default = self.options['limit_param_default']
+        except KeyError:
+            # if no value is configured, provide a sane default
+            default = 25
+            msg = "Failed to read limit_param_default from config. " + \
+                  "Defaulting to %s"
+            logger.debug(msg % default)
+
+        try:
+            limit = int(req.str_params.get('limit', default))
         except ValueError:
             raise exc.HTTPBadRequest("limit param must be an integer")
 
         if limit < 0:
             raise exc.HTTPBadRequest("limit param must be positive")
 
-        return min(MAX_ITEM_LIMIT, limit)
+        try:
+            api_limit_max = int(self.options['api_limit_max'])
+        except (KeyError, ValueError):
+            api_limit_max = 1000
+            msg = "Failed to read api_limit_max from config. Defaulting to %s"
+            logger.debug(msg % api_limit_max)
+
+        return min(api_limit_max, limit)
 
     def _get_marker(self, req):
         """Parse a marker query param into something usable."""
