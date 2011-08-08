@@ -1,4 +1,5 @@
 *.pyc
+*.swp
 *.log
 .glance-venv
 tests.sqlite
