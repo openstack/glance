@@ -15,15 +15,69 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
+import hashlib
+import httplib2
+import json
+import os
 
 from glance.tests import functional
 from glance.tests.utils import execute
+
+FIVE_KB = 5 * 1024
+FIVE_GB = 5 * 1024 * 1024 * 1024
 
 
 class TestMiscellaneous(functional.FunctionalTest):
 
     """Some random tests for various bugs and stuff"""
+
+    def test_api_response_when_image_deleted_from_filesystem(self):
+        """
+        A test for LP bug #781410 -- glance should fail more gracefully
+        on requests for images that have been removed from the fs
+        """
+
+        self.cleanup()
+        self.start_servers()
+
+        # 1. POST /images with public image named Image1
+        # attribute and no custom properties. Verify a 200 OK is returned
+        image_data = "*" * FIVE_KB
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=image_data)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        self.assertEqual(data['image']['checksum'],
+                         hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_KB)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(data['image']['is_public'], True)
+
+        # 2. REMOVE the image from the filesystem
+        image_path = "%s/images/%s" % (self.test_dir, data['image']['id'])
+        os.remove(image_path)
+
+        # 3. HEAD /images/1
+        # Verify image found now
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['x-image-meta-name'], "Image1")
+
+        # 4. GET /images/1
+        # Verify the api throws the apropriate 404 error
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 404)
+
+        self.stop_servers()
 
     def test_exception_not_eaten_from_registry_to_api(self):
         """

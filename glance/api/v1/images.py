@@ -197,7 +197,11 @@ class Controller(api.BaseController):
 
         def get_from_store(image):
             """Called if caching disabled"""
-            return get_from_backend(image['location'])
+            try:
+                image = get_from_backend(image['location'])
+            except exception.NotFound, e:
+                raise HTTPNotFound(explanation="%s" % e)
+            return image
 
         def get_from_cache(image, cache):
             """Called if cache hit"""
