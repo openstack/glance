@@ -122,6 +122,13 @@ def image_get(context, image_id, session=None):
     """Get an image or raise if it does not exist."""
     session = session or get_session()
     try:
+        #NOTE(bcwaldon): this is to prevent false matches when mysql compares
+        # an integer to a string that begins with that integer
+        image_id = int(image_id)
+    except (TypeError, ValueError):
+        raise exception.NotFound("No image found")
+
+    try:
         image = session.query(models.Image).\
                        options(joinedload(models.Image.properties)).\
                        filter_by(deleted=_deleted(context)).\

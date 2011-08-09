@@ -97,6 +97,41 @@ class TestRegistryAPI(unittest.TestCase):
         db_models.unregister_models(db_api._ENGINE)
         db_models.register_models(db_api._ENGINE)
 
+    def test_show(self):
+        """
+        Tests that the /images/<id> registry API endpoint
+        returns the expected image
+        """
+        fixture = {'id': 2,
+                   'name': 'fake image #2',
+                   'size': 19,
+                   'checksum': None}
+        req = webob.Request.blank('/images/2')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        image = res_dict['image']
+        for k, v in fixture.iteritems():
+            self.assertEquals(v, image[k])
+
+    def test_show_unknown(self):
+        """
+        Tests that the /images/<id> registry API endpoint
+        returns a 404 for an unknown image id
+        """
+        req = webob.Request.blank('/images/3')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 404)
+
+    def test_show_invalid(self):
+        """
+        Tests that the /images/<id> registry API endpoint
+        returns a 404 for an invalid (therefore unknown) image id
+        """
+        req = webob.Request.blank('/images/2a')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 404)
+
     def test_get_root(self):
         """
         Tests that the root registry API returns "index",
