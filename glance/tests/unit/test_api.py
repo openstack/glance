@@ -28,11 +28,17 @@ import webob
 from glance.api import v1 as server
 from glance.common import context
 from glance.registry import server as rserver
-import glance.registry.db.api
+from glance.registry.db import api as db_api
+from glance.registry.db import models as db_models
 from glance.tests import stubs
 
-VERBOSE = False
-DEBUG = False
+OPTIONS = {'sql_connection': 'sqlite://',
+           'verbose': False,
+           'debug': False,
+           'registry_host': '0.0.0.0',
+           'registry_port': '9191',
+           'default_store': 'file',
+           'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
 
 
 class TestRegistryAPI(unittest.TestCase):
@@ -40,16 +46,56 @@ class TestRegistryAPI(unittest.TestCase):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_and_store_server(self.stubs)
-        stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_filesystem_backend()
-        options = {'verbose': VERBOSE,
-                   'debug': DEBUG}
-        self.api = context.ContextMiddleware(rserver.API(options), options)
+        self.api = context.ContextMiddleware(rserver.API(OPTIONS), OPTIONS)
+        self.FIXTURES = [
+            {'id': 1,
+             'name': 'fake image #1',
+             'status': 'active',
+             'disk_format': 'ami',
+             'container_format': 'ami',
+             'is_public': False,
+             'created_at': datetime.datetime.utcnow(),
+             'updated_at': datetime.datetime.utcnow(),
+             'deleted_at': None,
+             'deleted': False,
+             'checksum': None,
+             'size': 13,
+             'location': "swift://user:passwd@acct/container/obj.tar.0",
+             'properties': {'type': 'kernel'}},
+            {'id': 2,
+             'name': 'fake image #2',
+             'status': 'active',
+             'disk_format': 'vhd',
+             'container_format': 'ovf',
+             'is_public': True,
+             'created_at': datetime.datetime.utcnow(),
+             'updated_at': datetime.datetime.utcnow(),
+             'deleted_at': None,
+             'deleted': False,
+             'checksum': None,
+             'size': 19,
+             'location': "file:///tmp/glance-tests/2",
+             'properties': {}}]
+        self.context = context.RequestContext(is_admin=True)
+        db_api.configure_db(OPTIONS)
+        self.destroy_fixtures()
+        self.create_fixtures()
 
     def tearDown(self):
         """Clear the test environment"""
         stubs.clean_out_fake_filesystem_backend()
         self.stubs.UnsetAll()
+        self.destroy_fixtures()
+
+    def create_fixtures(self):
+        for fixture in self.FIXTURES:
+            db_api.image_create(self.context, fixture)
+
+    def destroy_fixtures(self):
+        # Easiest to just drop the models and re-create them...
+        db_models.unregister_models(db_api._ENGINE)
+        db_models.register_models(db_api._ENGINE)
 
     def test_get_root(self):
         """
@@ -109,7 +155,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'checksum': None,
                          'created_at': time1}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -121,7 +167,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'checksum': None,
                          'created_at': time1}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 5,
                          'status': 'active',
@@ -133,7 +179,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'checksum': None,
                          'created_at': time2}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images?marker=4')
         res = req.get_response(self.api)
@@ -171,7 +217,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -182,7 +228,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images?limit=1')
         res = req.get_response(self.api)
@@ -227,7 +273,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -238,7 +284,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images?marker=3&limit=1')
         res = req.get_response(self.api)
@@ -271,7 +317,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -282,7 +328,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images?name=new name! #123')
         res = req.get_response(self.api)
@@ -313,7 +359,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'checksum': None,
                          'created_at': time1}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -325,7 +371,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'checksum': None,
                          'created_at': time1}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 5,
                          'status': 'active',
@@ -337,7 +383,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'checksum': None,
                          'created_at': time2}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images')
         res = req.get_response(self.api)
@@ -377,7 +423,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -388,7 +434,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images?sort_key=id&sort_dir=desc')
         res = req.get_response(self.api)
@@ -416,7 +462,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -427,7 +473,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images?sort_key=name&sort_dir=asc')
         res = req.get_response(self.api)
@@ -447,7 +493,7 @@ class TestRegistryAPI(unittest.TestCase):
         descending order.
         """
         extra_fixture = {'id': 3,
-                         'status': 'killed',
+                         'status': 'queued',
                          'is_public': True,
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
@@ -455,7 +501,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -466,7 +512,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images?sort_key=status&sort_dir=desc')
         res = req.get_response(self.api)
@@ -494,7 +540,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -505,7 +551,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images?sort_key=disk_format&sort_dir=asc')
         res = req.get_response(self.api)
@@ -533,7 +579,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -544,7 +590,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         url = '/images?sort_key=container_format&sort_dir=desc'
         req = webob.Request.blank(url)
@@ -572,7 +618,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 100,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -583,7 +629,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 2,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         url = '/images?sort_key=size&sort_dir=asc'
         req = webob.Request.blank(url)
@@ -616,7 +662,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'checksum': None,
                          'created_at': time1}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -628,7 +674,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'checksum': None,
                          'created_at': time2}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images?sort_key=created_at&sort_dir=asc')
         res = req.get_response(self.api)
@@ -659,9 +705,9 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None,
                          'created_at': None,
-                         'created_at': time1}
+                         'updated_at': time1}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -674,7 +720,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'created_at': None,
                          'updated_at': time2}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images?sort_key=updated_at&sort_dir=desc')
         res = req.get_response(self.api)
@@ -728,7 +774,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -739,7 +785,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images/detail?marker=3&limit=1')
         res = req.get_response(self.api)
@@ -775,7 +821,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -786,7 +832,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images/detail?name=new name! #123')
         res = req.get_response(self.api)
@@ -813,7 +859,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -824,7 +870,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images/detail?status=saving')
         res = req.get_response(self.api)
@@ -851,7 +897,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -862,7 +908,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images/detail?container_format=ovf')
         res = req.get_response(self.api)
@@ -889,7 +935,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -900,7 +946,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images/detail?disk_format=vhd')
         res = req.get_response(self.api)
@@ -927,7 +973,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 18,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -938,7 +984,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images/detail?size_min=19')
         res = req.get_response(self.api)
@@ -965,7 +1011,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 18,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -976,7 +1022,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images/detail?size_max=19')
         res = req.get_response(self.api)
@@ -1004,7 +1050,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 18,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -1015,7 +1061,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 5,
                          'status': 'active',
@@ -1026,7 +1072,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 6,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images/detail?size_min=18&size_max=19')
         res = req.get_response(self.api)
@@ -1054,7 +1100,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'checksum': None,
                          'properties': {'prop_123': 'v a'}}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -1066,7 +1112,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'checksum': None,
                          'properties': {'prop_123': 'v b'}}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images/detail?property-prop_123=v%20a')
         res = req.get_response(self.api)
@@ -1093,7 +1139,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 18,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images/detail?is_public=None')
         res = req.get_response(self.api)
@@ -1117,7 +1163,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 18,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images/detail?is_public=False')
         res = req.get_response(self.api)
@@ -1144,7 +1190,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 18,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images/detail?is_public=True')
         res = req.get_response(self.api)
@@ -1172,7 +1218,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -1183,7 +1229,7 @@ class TestRegistryAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images/detail?sort_key=name&sort_dir=asc')
         res = req.get_response(self.api)
@@ -1442,32 +1488,60 @@ class TestRegistryAPI(unittest.TestCase):
 class TestGlanceAPI(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
-        # NOTE(sirp): in-memory DBs don't play well with sqlalchemy migrate
-        # (see http://code.google.com/p/sqlalchemy-migrate/
-        #            issues/detail?id=72)
-        self.db_file = 'test_glance_api.sqlite'
-        os.environ['GLANCE_SQL_CONNECTION'] = 'sqlite:///%s' % self.db_file
 
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_and_store_server(self.stubs)
-        stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_filesystem_backend()
         sql_connection = os.environ.get('GLANCE_SQL_CONNECTION', "sqlite://")
-        options = {'verbose': VERBOSE,
-                   'debug': DEBUG,
-                   'registry_host': '0.0.0.0',
-                   'registry_port': '9191',
-                   'sql_connection': sql_connection,
-                   'default_store': 'file',
-                   'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
-        self.api = context.ContextMiddleware(server.API(options), options)
+        self.api = context.ContextMiddleware(server.API(OPTIONS), OPTIONS)
+        self.FIXTURES = [
+            {'id': 1,
+             'name': 'fake image #1',
+             'status': 'active',
+             'disk_format': 'ami',
+             'container_format': 'ami',
+             'is_public': False,
+             'created_at': datetime.datetime.utcnow(),
+             'updated_at': datetime.datetime.utcnow(),
+             'deleted_at': None,
+             'deleted': False,
+             'checksum': None,
+             'size': 13,
+             'location': "swift://user:passwd@acct/container/obj.tar.0",
+             'properties': {'type': 'kernel'}},
+            {'id': 2,
+             'name': 'fake image #2',
+             'status': 'active',
+             'disk_format': 'vhd',
+             'container_format': 'ovf',
+             'is_public': True,
+             'created_at': datetime.datetime.utcnow(),
+             'updated_at': datetime.datetime.utcnow(),
+             'deleted_at': None,
+             'deleted': False,
+             'checksum': None,
+             'size': 19,
+             'location': "file:///tmp/glance-tests/2",
+             'properties': {}}]
+        self.context = context.RequestContext(is_admin=True)
+        db_api.configure_db(OPTIONS)
+        self.destroy_fixtures()
+        self.create_fixtures()
 
     def tearDown(self):
         """Clear the test environment"""
         stubs.clean_out_fake_filesystem_backend()
         self.stubs.UnsetAll()
-        if os.path.exists(self.db_file):
-            os.unlink(self.db_file)
+        self.destroy_fixtures()
+
+    def create_fixtures(self):
+        for fixture in self.FIXTURES:
+            db_api.image_create(self.context, fixture)
+
+    def destroy_fixtures(self):
+        # Easiest to just drop the models and re-create them...
+        db_models.unregister_models(db_api._ENGINE)
+        db_models.register_models(db_api._ENGINE)
 
     def test_bad_disk_format(self):
         fixture_headers = {'x-image-meta-store': 'bad',
@@ -1592,7 +1666,7 @@ class TestGlanceAPI(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -1603,7 +1677,7 @@ class TestGlanceAPI(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/images?sort_key=name&sort_dir=asc')
         res = req.get_response(self.api)

@@ -25,10 +25,14 @@ import unittest
 import webob
 
 from glance import client
+from glance.common import context
 from glance.common import exception
-import glance.registry.db.api
+from glance.registry.db import api as db_api
+from glance.registry.db import models as db_models
 from glance.registry import client as rclient
 from glance.tests import stubs
+
+OPTIONS = {'sql_connection': 'sqlite://'}
 
 
 class TestBadClients(unittest.TestCase):
@@ -53,13 +57,55 @@ class TestRegistryClient(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_registry_and_store_server(self.stubs)
+        db_api.configure_db(OPTIONS)
+        self.context = context.RequestContext(is_admin=True)
+        self.FIXTURES = [
+            {'id': 1,
+             'name': 'fake image #1',
+             'status': 'active',
+             'disk_format': 'ami',
+             'container_format': 'ami',
+             'is_public': False,
+             'created_at': datetime.datetime.utcnow(),
+             'updated_at': datetime.datetime.utcnow(),
+             'deleted_at': None,
+             'deleted': False,
+             'checksum': None,
+             'size': 13,
+             'location': "swift://user:passwd@acct/container/obj.tar.0",
+             'properties': {'type': 'kernel'}},
+            {'id': 2,
+             'name': 'fake image #2',
+             'status': 'active',
+             'disk_format': 'vhd',
+             'container_format': 'ovf',
+             'is_public': True,
+             'created_at': datetime.datetime.utcnow(),
+             'updated_at': datetime.datetime.utcnow(),
+             'deleted_at': None,
+             'deleted': False,
+             'checksum': None,
+             'size': 19,
+             'location': "file:///tmp/glance-tests/2",
+             'properties': {}}]
+        self.destroy_fixtures()
+        self.create_fixtures()
         self.client = rclient.RegistryClient("0.0.0.0")
 
     def tearDown(self):
         """Clear the test environment"""
         self.stubs.UnsetAll()
+        self.destroy_fixtures()
+
+    def create_fixtures(self):
+        for fixture in self.FIXTURES:
+            db_api.image_create(self.context, fixture)
+
+    def destroy_fixtures(self):
+        # Easiest to just drop the models and re-create them...
+        db_models.unregister_models(db_api._ENGINE)
+        db_models.register_models(db_api._ENGINE)
 
     def test_get_image_index(self):
         """Test correct set of public image returned"""
@@ -85,7 +131,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -96,7 +142,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(sort_key='id', sort_dir='desc')
 
@@ -120,7 +166,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -131,7 +177,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(sort_key='name', sort_dir='asc')
 
@@ -147,7 +193,7 @@ class TestRegistryClient(unittest.TestCase):
         descending order.
         """
         extra_fixture = {'id': 3,
-                         'status': 'killed',
+                         'status': 'queued',
                          'is_public': True,
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
@@ -155,7 +201,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -166,7 +212,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(sort_key='status', sort_dir='desc')
 
@@ -190,7 +236,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -201,7 +247,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(sort_key='disk_format',
                                         sort_dir='asc')
@@ -226,7 +272,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -237,7 +283,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(sort_key='container_format',
                                         sort_dir='desc')
@@ -261,7 +307,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 100,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -272,7 +318,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 2,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(sort_key='size', sort_dir='asc')
 
@@ -300,7 +346,7 @@ class TestRegistryClient(unittest.TestCase):
                          'checksum': None,
                          'created_at': time1}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -312,7 +358,7 @@ class TestRegistryClient(unittest.TestCase):
                          'checksum': None,
                          'created_at': time2}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(sort_key='created_at', sort_dir='asc')
 
@@ -339,9 +385,9 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None,
                          'created_at': None,
-                         'created_at': time1}
+                         'updated_at': time1}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -354,7 +400,7 @@ class TestRegistryClient(unittest.TestCase):
                          'created_at': None,
                          'updated_at': time2}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(sort_key='updated_at', sort_dir='desc')
 
@@ -374,7 +420,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'saving',
@@ -385,7 +431,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(marker=4)
         self.assertEquals(len(images), 2)
@@ -410,7 +456,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'saving',
@@ -421,7 +467,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(limit=2)
         self.assertEquals(len(images), 2)
@@ -437,7 +483,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'saving',
@@ -448,7 +494,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(marker=3, limit=1)
         self.assertEquals(len(images), 1)
@@ -466,7 +512,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'saving',
@@ -477,7 +523,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(limit=None)
         self.assertEquals(len(images), 3)
@@ -496,7 +542,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(filters={'name': 'new name! #123'})
         self.assertEquals(len(images), 1)
@@ -533,7 +579,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'saving',
@@ -544,7 +590,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images_detailed(marker=3, limit=1)
         self.assertEquals(len(images), 1)
@@ -568,7 +614,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         filters = {'name': 'new name! #123'}
         images = self.client.get_images_detailed(filters=filters)
@@ -588,7 +634,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images_detailed(filters={'status': 'saving'})
         self.assertEquals(len(images), 1)
@@ -607,7 +653,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         filters = {'container_format': 'ovf'}
         images = self.client.get_images_detailed(filters=filters)
@@ -627,7 +673,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         filters = {'disk_format': 'vhd'}
         images = self.client.get_images_detailed(filters=filters)
@@ -647,7 +693,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 21,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images_detailed(filters={'size_max': 20})
         self.assertEquals(len(images), 1)
@@ -666,7 +712,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images_detailed(filters={'size_min': 20})
         self.assertEquals(len(images), 1)
@@ -686,7 +732,7 @@ class TestRegistryClient(unittest.TestCase):
                          'checksum': None,
                          'properties': {'p a': 'v a'}}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         filters = {'property-p a': 'v a'}
         images = self.client.get_images_detailed(filters=filters)
@@ -710,7 +756,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -721,7 +767,7 @@ class TestRegistryClient(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images_detailed(sort_key='disk_format',
                                                  sort_dir='asc')
@@ -811,7 +857,6 @@ class TestRegistryClient(unittest.TestCase):
                    'is_public': True,
                    'disk_format': 'vmdk',
                    'container_format': 'ovf',
-                   'status': 'bad status',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                   }
@@ -894,15 +939,57 @@ class TestClient(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_registry_db_image_api(self.stubs)
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_filesystem_backend()
+        db_api.configure_db(OPTIONS)
         self.client = client.Client("0.0.0.0", doc_root="")
+        self.FIXTURES = [
+            {'id': 1,
+             'name': 'fake image #1',
+             'status': 'active',
+             'disk_format': 'ami',
+             'container_format': 'ami',
+             'is_public': False,
+             'created_at': datetime.datetime.utcnow(),
+             'updated_at': datetime.datetime.utcnow(),
+             'deleted_at': None,
+             'deleted': False,
+             'checksum': None,
+             'size': 13,
+             'location': "swift://user:passwd@acct/container/obj.tar.0",
+             'properties': {'type': 'kernel'}},
+            {'id': 2,
+             'name': 'fake image #2',
+             'status': 'active',
+             'disk_format': 'vhd',
+             'container_format': 'ovf',
+             'is_public': True,
+             'created_at': datetime.datetime.utcnow(),
+             'updated_at': datetime.datetime.utcnow(),
+             'deleted_at': None,
+             'deleted': False,
+             'checksum': None,
+             'size': 19,
+             'location': "file:///tmp/glance-tests/2",
+             'properties': {}}]
+        self.context = context.RequestContext(is_admin=True)
+        self.destroy_fixtures()
+        self.create_fixtures()
 
     def tearDown(self):
         """Clear the test environment"""
         stubs.clean_out_fake_filesystem_backend()
         self.stubs.UnsetAll()
+        self.destroy_fixtures()
+
+    def create_fixtures(self):
+        for fixture in self.FIXTURES:
+            db_api.image_create(self.context, fixture)
+
+    def destroy_fixtures(self):
+        # Easiest to just drop the models and re-create them...
+        db_models.unregister_models(db_api._ENGINE)
+        db_models.register_models(db_api._ENGINE)
 
     def test_get_image(self):
         """Test a simple file backend retrieval works as expected"""
@@ -947,7 +1034,7 @@ class TestClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'active',
@@ -958,7 +1045,7 @@ class TestClient(unittest.TestCase):
                          'size': 20,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(sort_key='container_format',
                                         sort_dir='desc')
@@ -989,7 +1076,7 @@ class TestClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'saving',
@@ -1000,7 +1087,7 @@ class TestClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(marker=4)
         self.assertEquals(len(images), 2)
@@ -1025,7 +1112,7 @@ class TestClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'saving',
@@ -1036,7 +1123,7 @@ class TestClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(limit=2)
         self.assertEquals(len(images), 2)
@@ -1052,7 +1139,7 @@ class TestClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'saving',
@@ -1063,7 +1150,7 @@ class TestClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(marker=3, limit=1)
         self.assertEquals(len(images), 1)
@@ -1081,7 +1168,7 @@ class TestClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         filters = {'name': 'new name! #123'}
         images = self.client.get_images(filters=filters)
@@ -1101,7 +1188,7 @@ class TestClient(unittest.TestCase):
                          'checksum': None,
                          'properties': {'p a': 'v a'}}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         filters = {'property-p a': 'v a'}
         images = self.client.get_images(filters=filters)
@@ -1148,7 +1235,7 @@ class TestClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         extra_fixture = {'id': 4,
                          'status': 'saving',
@@ -1159,7 +1246,7 @@ class TestClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images_detailed(marker=3, limit=1)
         self.assertEquals(len(images), 1)
@@ -1183,7 +1270,7 @@ class TestClient(unittest.TestCase):
                          'size': 19,
                          'checksum': None}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         filters = {'name': 'new name! #123'}
         images = self.client.get_images_detailed(filters=filters)
@@ -1204,7 +1291,7 @@ class TestClient(unittest.TestCase):
                          'checksum': None,
                          'properties': {'p a': 'v a'}}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         filters = {'property-p a': 'v a'}
         images = self.client.get_images_detailed(filters=filters)
@@ -1225,7 +1312,7 @@ class TestClient(unittest.TestCase):
                          'checksum': None,
                          'properties': {'p a': 'v a'}}
 
-        glance.registry.db.api.image_create(None, extra_fixture)
+        db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images_detailed(filters=None, limit=1)
         self.assertEquals(len(images), 1)

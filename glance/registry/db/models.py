@@ -128,3 +128,12 @@ def register_models(engine):
     models = (Image, ImageProperty)
     for model in models:
         model.metadata.create_all(engine)
+
+
+def unregister_models(engine):
+    """
+    Drops database tables for all models with the given engine
+    """
+    models = (Image, ImageProperty)
+    for model in models:
+        model.metadata.drop_all(engine)
