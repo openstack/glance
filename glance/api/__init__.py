@@ -37,7 +37,7 @@ class BaseController(object):
         """
         context = request.context
         try:
-            return registry.get_image_metadata(self.options, context, image_id)
+            return registry.get_image_metadata(context, image_id)
         except exception.NotFound:
             msg = _("Image with identifier %s not found") % image_id
             logger.debug(msg)

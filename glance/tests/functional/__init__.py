@@ -146,6 +146,8 @@ class ApiServer(Server):
         super(ApiServer, self).__init__(test_dir, port)
         self.server_name = 'api'
         self.default_store = 'file'
+        self.key_file = ""
+        self.cert_file = ""
         self.image_dir = os.path.join(self.test_dir,
                                          "images")
         self.pid_file = os.path.join(self.test_dir,
@@ -177,6 +179,8 @@ filesystem_store_datadir=%(image_dir)s
 default_store = %(default_store)s
 bind_host = 0.0.0.0
 bind_port = %(bind_port)s
+key_file = %(key_file)s
+cert_file = %(cert_file)s
 registry_host = 0.0.0.0
 registry_port = %(registry_port)s
 log_file = %(log_file)s
@@ -306,6 +310,7 @@ class FunctionalTest(unittest.TestCase):
         self.test_id = random.randint(0, 100000)
         self.test_dir = os.path.join("/", "tmp", "test.%d" % self.test_id)
 
+        self.api_protocol = 'http'
         self.api_port = get_unused_port()
         self.registry_port = get_unused_port()
 

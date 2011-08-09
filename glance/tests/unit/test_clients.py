@@ -19,6 +19,7 @@ import datetime
 import json
 import os
 import StringIO
+import tempfile
 import unittest
 
 import stubout
@@ -47,6 +48,78 @@ class TestBadClients(unittest.TestCase):
         self.assertRaises(exception.ClientConnectionError,
                           c.get_image,
                           1)
+
+    def test_ssl_no_key_file(self):
+        """
+        Test that when doing SSL connection, a key file is
+        required
+        """
+        try:
+            c = client.Client("0.0.0.0", use_ssl=True)
+        except exception.ClientConnectionError:
+            return
+        self.fail("Did not raise ClientConnectionError")
+
+    def test_ssl_non_existing_key_file(self):
+        """
+        Test that when doing SSL connection, a key file is
+        required to exist
+        """
+        try:
+            c = client.Client("0.0.0.0", use_ssl=True,
+                              key_file='nonexistingfile')
+        except exception.ClientConnectionError:
+            return
+        self.fail("Did not raise ClientConnectionError")
+
+    def test_ssl_no_cert_file(self):
+        """
+        Test that when doing SSL connection, a cert file is
+        required
+        """
+        try:
+            with tempfile.NamedTemporaryFile() as key_file:
+                key_file.write("bogus")
+                key_file.flush()
+                c = client.Client("0.0.0.0", use_ssl=True,
+                                  key_file=key_file.name)
+        except exception.ClientConnectionError:
+            return
+        self.fail("Did not raise ClientConnectionError")
+
+    def test_ssl_non_existing_cert_file(self):
+        """
+        Test that when doing SSL connection, a cert file is
+        required to exist
+        """
+        try:
+            with tempfile.NamedTemporaryFile() as key_file:
+                key_file.write("bogus")
+                key_file.flush()
+                c = client.Client("0.0.0.0", use_ssl=True,
+                                  key_file=key_file.name,
+                                  cert_file='nonexistingfile')
+        except exception.ClientConnectionError:
+            return
+        self.fail("Did not raise ClientConnectionError")
+
+    def test_ssl_optional_ca_file(self):
+        """
+        Test that when doing SSL connection, a cert file and key file are
+        required to exist, but a CA file is optional.
+        """
+        try:
+            with tempfile.NamedTemporaryFile() as key_file:
+                key_file.write("bogus")
+                key_file.flush()
+                with tempfile.NamedTemporaryFile() as cert_file:
+                    cert_file.write("bogus")
+                    cert_file.flush()
+                    c = client.Client("0.0.0.0", use_ssl=True,
+                                      key_file=key_file.name,
+                                      cert_file=cert_file.name)
+        except exception.ClientConnectionError:
+            self.fail("Raised ClientConnectionError when it should not")
 
 
 class TestRegistryClient(unittest.TestCase):

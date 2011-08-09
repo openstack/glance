@@ -82,6 +82,7 @@ class Controller(api.BaseController):
         self.options = options
         glance.store.create_stores(options)
         self.notifier = notifier.Notifier(options)
+        registry.configure_registry_client(options)
 
     def index(self, req):
         """
@@ -108,8 +109,7 @@ class Controller(api.BaseController):
         """
         params = self._get_query_params(req)
         try:
-            images = registry.get_images_list(self.options, req.context,
-                                              **params)
+            images = registry.get_images_list(req.context, **params)
         except exception.Invalid, e:
             raise HTTPBadRequest(explanation="%s" % e)
 
@@ -141,8 +141,7 @@ class Controller(api.BaseController):
         """
         params = self._get_query_params(req)
         try:
-            images = registry.get_images_detail(self.options, req.context,
-                                                **params)
+            images = registry.get_images_detail(req.context, **params)
             # Strip out the Location attribute. Temporary fix for
             # LP Bug #755916. This information is still coming back
             # from the registry, since the API server still needs access
@@ -304,9 +303,7 @@ class Controller(api.BaseController):
         image_meta['size'] = image_meta.get('size', 0)
 
         try:
-            image_meta = registry.add_image_metadata(self.options,
-                                                     req.context,
-                                                     image_meta)
+            image_meta = registry.add_image_metadata(req.context, image_meta)
             return image_meta
         except exception.Duplicate:
             msg = (_("An image with identifier %s already exists")
@@ -352,7 +349,7 @@ class Controller(api.BaseController):
 
         image_id = image_meta['id']
         logger.debug(_("Setting image %s to status 'saving'"), image_id)
-        registry.update_image_metadata(self.options, req.context, image_id,
+        registry.update_image_metadata(req.context, image_id,
                                        {'status': 'saving'})
         try:
             logger.debug(_("Uploading image data for image %(image_id)s "
@@ -387,8 +384,7 @@ class Controller(api.BaseController):
             logger.debug(_("Updating image %(image_id)s data. "
                          "Checksum set to %(checksum)s, size set "
                          "to %(size)d"), locals())
-            registry.update_image_metadata(self.options, req.context,
-                                           image_id,
+            registry.update_image_metadata(req.context, image_id,
                                            {'checksum': checksum,
                                             'size': size})
             self.notifier.info('image.upload', image_meta)
@@ -435,10 +431,8 @@ class Controller(api.BaseController):
         image_meta = {}
         image_meta['location'] = location
         image_meta['status'] = 'active'
-        return registry.update_image_metadata(self.options,
-                                       req.context,
-                                       image_id,
-                                       image_meta)
+        return registry.update_image_metadata(req.context, image_id,
+                                              image_meta)
 
     def _kill(self, req, image_id):
         """
@@ -447,9 +441,7 @@ class Controller(api.BaseController):
         :param req: The WSGI/Webob Request object
         :param image_id: Opaque image identifier
         """
-        registry.update_image_metadata(self.options,
-                                       req.context,
-                                       image_id,
+        registry.update_image_metadata(req.context, image_id,
                                        {'status': 'killed'})
 
     def _safe_kill(self, req, image_id):
@@ -562,8 +554,7 @@ class Controller(api.BaseController):
             raise HTTPConflict(_("Cannot upload to an unqueued image"))
 
         try:
-            image_meta = registry.update_image_metadata(self.options,
-                                                        req.context, id,
+            image_meta = registry.update_image_metadata(req.context, id,
                                                         image_meta, True)
             if image_data is not None:
                 image_meta = self._upload_and_activate(req, image_meta)
@@ -613,7 +604,7 @@ class Controller(api.BaseController):
             if image['location']:
                 schedule_delete_from_backend(image['location'], self.options,
                                              req.context, id)
-            registry.delete_image_metadata(self.options, req.context, id)
+            registry.delete_image_metadata(req.context, id)
         except exception.NotFound, e:
             msg = ("Failed to find image to delete: %(e)s" % locals())
             for line in msg.split('\n'):

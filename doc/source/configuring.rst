@@ -88,6 +88,80 @@ The filename that is searched for depends on the server application name. So,
 if you are starting up the API server, ``glance-api.conf`` is searched for,
 otherwise ``glance-registry.conf``.
 
+Configuring Server Startup Options
+----------------------------------
+
+You can put the following options in the ``glance-api.conf`` and
+``glance-registry.conf`` files, under the ``[DEFAULT]`` section. They enable
+startup and binding behaviour for the API and registry servers, respectively.
+
+* ``bind_host=ADDRESS``
+
+The address of the host to bind to.
+
+Optional. Default: ``0.0.0.0``
+
+* ``bind_port=PORT``
+
+The port the server should bind to.
+
+Optional. Default: ``9191`` for the registry server, ``9292`` for the API server
+
+* ``backlog=REQUESTS``
+
+Number of backlog requests to configure the socket with.
+
+Optional. Default: ``4096``
+
+Configurating SSL Support
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``cert_file=PATH``
+
+Path to the the certificate file the server should use when binding to an
+SSL-wrapped socket.
+
+Optional. Default: not enabled.
+
+* ``key_file=PATH``
+
+Path to the the private key file the server should use when binding to an
+SSL-wrapped socket.
+
+Optional. Default: not enabled.
+
+* ``registry_client_protocol=PROTOCOL``
+
+If you run a secure Registry server, you need to set this value to ``https``
+and also set ``registry_client_key_file`` and optionally
+``registry_client_cert_file``.
+
+Optional. Default: http
+
+* ``registry_client_key_file=PATH``
+
+The path to the key file to use in SSL connections to the
+registry server, if any. Alternately, you may set the
+``GLANCE_CLIENT_KEY_FILE`` environ variable to a filepath of the key file
+
+Optional. Default: Not set.
+
+* ``registry_client_cert_file=PATH``
+
+Optional. Default: Not set.
+
+The path to the cert file to use in SSL connections to the
+registry server, if any. Alternately, you may set the
+``GLANCE_CLIENT_CERT_FILE`` environ variable to a filepath of the cert file
+
+* ``registry_client_ca_file=PATH``
+
+Optional. Default: Not set.
+
+The path to a Certifying Authority's cert file to use in SSL connections to the
+registry server, if any. Alternately, you may set the
+``GLANCE_CLIENT_CA_FILE`` environ variable to a filepath of the CA cert file
+
 Configuring Logging in Glance
 -----------------------------
 
@@ -131,6 +205,12 @@ The format string for timestamps in the log output.
 Defaults to ``%Y-%m-%d %H:%M:%S``. See the
 `logging module <http://docs.python.org/library/logging.html>`_ documentation for
 more information on setting this format string.
+
+* ``log_use_syslog``
+
+Use syslog logging functionality.
+
+Defaults to False.
 
 Configuring Glance Storage Backends
 -----------------------------------
