@@ -310,7 +310,9 @@ def _image_update(context, values, image_id, purge_props=False):
             values['is_public'] = bool(values.get('is_public', False))
             image_ref = models.Image()
 
-        _drop_protected_attrs(models.Image, values)
+        if image_id:
+            # Don't drop created_at if we're passing it in...
+            _drop_protected_attrs(models.Image, values)
         image_ref.update(values)
 
         # Validate the attributes before we go any further. From my

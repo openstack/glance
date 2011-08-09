@@ -19,8 +19,8 @@
 Tests a Glance API server which uses an S3 backend by default
 
 This test requires that a real S3 account is available. It looks
-in a file /tests/functional/test_s3.conf for the credentials to
-use.
+in a file specified in the GLANCE_TEST_S3_CONF environ variable
+for the credentials to use.
 
 Note that this test clears the entire bucket from the S3 account
 for use by the test case, so make sure you supply credentials for
@@ -37,11 +37,7 @@ import tempfile
 import unittest
 
 from glance.tests.functional import test_api
-from glance.tests.utils import execute
-from glance.tests import utils
-
-FIVE_KB = 5 * 1024
-FIVE_GB = 5 * 1024 * 1024 * 1024
+from glance.tests.utils import execute, skip_if_disabled
 
 
 class TestS3(test_api.TestApi):
@@ -49,7 +45,7 @@ class TestS3(test_api.TestApi):
     """Functional tests for the S3 backend"""
 
     # Test machines can set the GLANCE_TEST_S3_CONF variable
-    # to override the location of the config file for migration testing
+    # to override the location of the config file for S3 testing
     CONFIG_FILE_PATH = os.environ.get('GLANCE_TEST_S3_CONF')
 
     def setUp(self):
@@ -79,7 +75,6 @@ class TestS3(test_api.TestApi):
             except ConfigParser.ParsingError, e:
                 self.disabled_message = ("Failed to read test_s3.conf config "
                                          "file. Got error: %s" % e)
-                super(TestS3, self).setUp()
                 self.inited = True
                 return
 
@@ -95,7 +90,6 @@ class TestS3(test_api.TestApi):
             self.disabled_message = ("Failed to find required configuration "
                                      "options for S3 store. Got error: %s" % e)
             self.inited = True
-            super(TestS3, self).setUp()
             return
 
         s3_conn = S3Connection(access_key, secret_key, host=s3_host)
@@ -111,7 +105,6 @@ class TestS3(test_api.TestApi):
                                      "credentials, to find bucket. "
                                      "Got error: %s" % e)
             self.inited = True
-            super(TestS3, self).setUp()
             return
         except TypeError, e:
             # This hack is necessary because of a bug in boto 1.9b:
@@ -119,7 +112,6 @@ class TestS3(test_api.TestApi):
             self.disabled_message = ("Failed to connect to S3 with "
                                      "credentials. Got error: %s" % e)
             self.inited = True
-            super(TestS3, self).setUp()
             return
 
         self.s3_conn = s3_conn
@@ -131,7 +123,6 @@ class TestS3(test_api.TestApi):
                 self.disabled_message = ("Failed to create bucket. "
                                          "Got error: %s" % e)
                 self.inited = True
-                super(TestS3, self).setUp()
                 return
         else:
             self.clear_bucket()
@@ -154,43 +145,3 @@ class TestS3(test_api.TestApi):
         keys = self.bucket.list()
         for key in keys:
             key.delete()
-
-    @utils.skip_if_disabled
-    def test_delete_not_existing(self):
-        """
-        We test the following:
-
-        0. GET /images/1
-        - Verify 404
-        1. DELETE /images/1
-        - Verify 404
-        """
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
-
-        api_port = self.api_port
-        registry_port = self.registry_port
-
-        # 0. GET /images/1
-        # Verify 404 returned
-        cmd = "curl -i http://0.0.0.0:%d/v1/images/1" % api_port
-
-        exitcode, out, err = execute(cmd)
-
-        lines = out.split("\r\n")
-        status_line = lines[0]
-
-        self.assertEqual("HTTP/1.1 404 Not Found", status_line)
-
-        # 1. DELETE /images/1
-        # Verify 404 returned
-        cmd = "curl -i -X DELETE http://0.0.0.0:%d/v1/images/1" % api_port
-
-        exitcode, out, err = execute(cmd)
-
-        lines = out.split("\r\n")
-        status_line = lines[0]
-
-        self.assertEqual("HTTP/1.1 404 Not Found", status_line)
-
-        self.stop_servers()
