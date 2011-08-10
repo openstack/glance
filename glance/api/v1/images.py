@@ -23,6 +23,7 @@ import httplib
 import json
 import logging
 import sys
+import traceback
 
 import webob
 from webob.exc import (HTTPNotFound,
@@ -381,9 +382,13 @@ class Controller(api.BaseController):
                                 content_type='text/plain')
 
         except Exception, e:
-            msg = ("Error uploading image: %s") % e
-            logger.error(msg)
+            tb_info = traceback.format_exc()
+            logger.error(tb_info)
+
             self._safe_kill(req, image_id)
+
+            msg = ("Error uploading image: (%s): '%s") % (
+                e.__class__.__name__, str(e))
             raise HTTPBadRequest(msg, request=req)
 
     def _activate(self, req, image_id, location):

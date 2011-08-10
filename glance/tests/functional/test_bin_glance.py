@@ -55,7 +55,8 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual('', out.strip())
 
         # 1. Add public image
-        cmd = "bin/glance --port=%d add is_public=True name=MyImage" % api_port
+        cmd = "echo testdata | bin/glance --port=%d add is_public=True"\
+              " name=MyImage" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -70,7 +71,16 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         lines = out.split("\n")[2:-1]
         self.assertEqual(1, len(lines))
-        self.assertTrue('MyImage' in lines[0])
+
+        line = lines[0]
+
+        image_id, name, disk_format, container_format, size = \
+            [c.strip() for c in line.split()]
+        self.assertEqual('MyImage', name)
+
+        self.assertEqual('9', size,
+                         "Expected image to be 9 bytes in size.  Make sure"
+                         " you're running the correct version of webob.")
 
         # 3. Delete the image
         cmd = "bin/glance --port=%d --force delete 1" % api_port
