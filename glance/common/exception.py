@@ -33,8 +33,8 @@ class ProcessExecutionError(IOError):
             description = "Unexpected error while running command."
         if exit_code is None:
             exit_code = '-'
-        message = "%s\nCommand: %s\nExit code: %s\nStdout: %r\nStderr: %r" % (
-                  description, cmd, exit_code, stdout, stderr)
+        message = _("%s\nCommand: %s\nExit code: %s\nStdout: %r\nStderr: %r")\
+                    % (description, cmd, exit_code, stdout, stderr)
         IOError.__init__(self, message)
 
 
@@ -56,7 +56,7 @@ class NotFound(Error):
 
 class UnknownScheme(Error):
 
-    msg = "Unknown scheme '%s' found in URI"
+    msg = _("Unknown scheme '%s' found in URI")
 
     def __init__(self, scheme):
         msg = self.__class__.msg % scheme
@@ -65,7 +65,7 @@ class UnknownScheme(Error):
 
 class BadStoreUri(Error):
 
-    msg = "The Store URI %s was malformed. Reason: %s"
+    msg = _("The Store URI %s was malformed. Reason: %s")
 
     def __init__(self, uri, reason):
         msg = self.__class__.msg % (uri, reason)
@@ -129,7 +129,7 @@ class GlanceException(Exception):
     a 'message' property. That message will get printf'd
     with the keyword arguments provided to the constructor.
     """
-    message = "An unknown exception occurred"
+    message = _("An unknown exception occurred")
 
     def __init__(self, **kwargs):
         try:
@@ -144,18 +144,18 @@ class GlanceException(Exception):
 
 
 class InvalidContentType(GlanceException):
-    message = "Invalid content type %(content_type)s"
+    message = _("Invalid content type %(content_type)s")
 
 
 class BadStoreConfiguration(GlanceException):
-    message = ("Store %(store_name)s could not be configured correctly. "
+    message = _("Store %(store_name)s could not be configured correctly. "
                "Reason: %(reason)s")
 
 
 class StoreDeleteNotSupported(GlanceException):
-    message = ("Deleting images from this store is not supported.")
+    message = _("Deleting images from this store is not supported.")
 
 
 class StoreAddDisabled(GlanceException):
-    message = ("Configuration for store failed. Adding images to this "
+    message = _("Configuration for store failed. Adding images to this "
                "store is disabled.")

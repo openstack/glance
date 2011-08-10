@@ -57,6 +57,8 @@ import os
 import unittest
 import sys
 
+gettext.install('glance', unicode=1)
+
 from nose import config
 from nose import result
 from nose import core
