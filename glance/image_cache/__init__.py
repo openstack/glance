@@ -98,7 +98,8 @@ class ImageCache(object):
 
     @property
     def enabled(self):
-        return self.options.get('image_cache_enabled', False)
+        return config.get_option(
+            self.options, 'image_cache_enabled', type='bool', default=False)
 
     @property
     def path(self):
