@@ -113,6 +113,9 @@ def add_log_options(parser):
     group.add_option("--log-dir", default=None,
                       help="(Optional) The directory to keep log files in "
                            "(will be prepended to --logfile)")
+    group.add_option('--use-syslog', default=False, dest="use_syslog",
+                     action="store_true",
+                     help="Use syslog for logging.")
     parser.add_option_group(group)
 
 
@@ -159,20 +162,23 @@ def setup_logging(options, conf):
     if not logfile:
         logfile = conf.get('log_file')
 
-    if logfile:
+    use_syslog = options.get('use_syslog') or \
+                get_option(conf, 'use_syslog', type='bool', default=False)
+
+    if use_syslog:
+        handler = logging.handlers.SysLogHandler(address='/dev/log')
+    elif logfile:
         logdir = options.get('log_dir')
         if not logdir:
             logdir = conf.get('log_dir')
         if logdir:
             logfile = os.path.join(logdir, logfile)
-        logfile = logging.FileHandler(logfile)
-        logfile.setFormatter(formatter)
-        logfile.setFormatter(formatter)
-        root_logger.addHandler(logfile)
+        handler = logging.FileHandler(logfile)
     else:
         handler = logging.StreamHandler(sys.stdout)
-        handler.setFormatter(formatter)
-        root_logger.addHandler(handler)
+
+    handler.setFormatter(formatter)
+    root_logger.addHandler(handler)
 
 
 def find_config_file(app_name, options, args):
