@@ -3,6 +3,12 @@ import logging
 import socket
 import urllib
 
+# See http://code.google.com/p/python-nose/issues/detail?id=373
+# The code below enables glance.client standalone to work with i18n _() blocks
+import __builtin__
+if not hasattr(__builtin__, '_'):
+    setattr(__builtin__, '_', lambda x: x)
+
 from glance.common import exception
 
 
