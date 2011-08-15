@@ -30,6 +30,7 @@ from glance.common import exception
 from glance.registry.db import api as db_api
 from glance.registry.db import models as db_models
 from glance.registry import client as rclient
+from glance.registry import context as rcontext
 from glance.tests import stubs
 
 OPTIONS = {'sql_connection': 'sqlite://'}
@@ -59,7 +60,7 @@ class TestRegistryClient(unittest.TestCase):
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_and_store_server(self.stubs)
         db_api.configure_db(OPTIONS)
-        self.context = context.RequestContext(is_admin=True)
+        self.context = rcontext.RequestContext(is_admin=True)
         self.FIXTURES = [
             {'id': 1,
              'name': 'fake image #1',
@@ -928,6 +929,40 @@ class TestRegistryClient(unittest.TestCase):
                           self.client.delete_image,
                           3)
 
+    def test_get_image_members(self):
+        """Tests getting image members"""
+        memb_list = self.client.get_image_members(2)
+        num_members = len(memb_list)
+        self.assertEquals(num_members, 0)
+
+    def test_get_image_members_not_existing(self):
+        """Tests getting non-existant image members"""
+        self.assertRaises(exception.NotFound,
+                          self.client.get_image_members,
+                          3)
+
+    def test_get_member_images(self):
+        """Tests getting member images"""
+        memb_list = self.client.get_member_images('pattieblack')
+        num_members = len(memb_list)
+        self.assertEquals(num_members, 0)
+
+    def test_replace_members(self):
+        """Tests replacing image members"""
+        self.assertRaises(exception.NotAuthorized,
+                          self.client.replace_members, 2,
+                          dict(member_id='pattieblack'))
+
+    def test_add_member(self):
+        """Tests adding image members"""
+        self.assertRaises(exception.NotAuthorized,
+                          self.client.add_member, 2, 'pattieblack')
+
+    def test_delete_member(self):
+        """Tests deleting image members"""
+        self.assertRaises(exception.NotAuthorized,
+                          self.client.delete_member, 2, 'pattieblack')
+
 
 class TestClient(unittest.TestCase):
 
@@ -972,7 +1007,7 @@ class TestClient(unittest.TestCase):
              'size': 19,
              'location': "file:///tmp/glance-tests/2",
              'properties': {}}]
-        self.context = context.RequestContext(is_admin=True)
+        self.context = rcontext.RequestContext(is_admin=True)
         self.destroy_fixtures()
         self.create_fixtures()
 
@@ -1656,3 +1691,37 @@ class TestClient(unittest.TestCase):
         self.assertRaises(exception.NotFound,
                           self.client.delete_image,
                           3)
+
+    def test_get_member_images(self):
+        """Tests getting image members"""
+        memb_list = self.client.get_image_members(2)
+        num_members = len(memb_list)
+        self.assertEquals(num_members, 0)
+
+    def test_get_image_members_not_existing(self):
+        """Tests getting non-existant image members"""
+        self.assertRaises(exception.NotFound,
+                          self.client.get_image_members,
+                          3)
+
+    def test_get_member_images(self):
+        """Tests getting member images"""
+        memb_list = self.client.get_member_images('pattieblack')
+        num_members = len(memb_list)
+        self.assertEquals(num_members, 0)
+
+    def test_replace_members(self):
+        """Tests replacing image members"""
+        self.assertRaises(exception.NotAuthorized,
+                          self.client.replace_members, 2,
+                          dict(member_id='pattieblack'))
+
+    def test_add_member(self):
+        """Tests adding image members"""
+        self.assertRaises(exception.NotAuthorized,
+                          self.client.add_member, 2, 'pattieblack')
+
+    def test_delete_member(self):
+        """Tests deleting image members"""
+        self.assertRaises(exception.NotAuthorized,
+                          self.client.delete_member, 2, 'pattieblack')

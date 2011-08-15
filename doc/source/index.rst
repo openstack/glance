@@ -65,6 +65,7 @@ Using Glance
    glance
    glanceapi
    client
+   authentication
 
 Developer Docs
 ==============

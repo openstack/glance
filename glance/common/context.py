@@ -15,8 +15,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from glance.common import config
+from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
+from glance.registry.db import api as db_api
 
 
 class RequestContext(object):
@@ -26,35 +29,19 @@ class RequestContext(object):
     """
 
     def __init__(self, auth_tok=None, user=None, tenant=None, is_admin=False,
-                 read_only=False, show_deleted=False):
+                 read_only=False, show_deleted=False, owner_is_tenant=True):
         self.auth_tok = auth_tok
         self.user = user
         self.tenant = tenant
         self.is_admin = is_admin
         self.read_only = read_only
         self.show_deleted = show_deleted
-
-    def is_image_visible(self, image):
-        """Return True if the image is visible in this context."""
-        # Is admin == image visible
-        if self.is_admin:
-            return True
-
-        # No owner == image visible
-        if image.owner is None:
-            return True
-
-        # Image is_public == image visible
-        if image.is_public:
-            return True
-
-        # Private image
-        return self.owner is not None and self.owner == image.owner
+        self.owner_is_tenant = owner_is_tenant
 
     @property
     def owner(self):
         """Return the owner to correlate with an image."""
-        return self.tenant
+        return self.tenant if self.owner_is_tenant else self.user
 
 
 class ContextMiddleware(wsgi.Middleware):
@@ -71,6 +58,11 @@ class ContextMiddleware(wsgi.Middleware):
         ctxcls = RequestContext
         if 'context_class' in self.options:
             ctxcls = utils.import_class(self.options['context_class'])
+
+        # Determine whether to use tenant or owner
+        owner_is_tenant = config.get_option(self.options, 'owner_is_tenant',
+                                            type='bool', default=True)
+        kwargs.setdefault('owner_is_tenant', owner_is_tenant)
 
         return ctxcls(*args, **kwargs)
 

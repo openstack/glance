@@ -86,6 +86,31 @@ def delete_image_metadata(options, context, image_id):
     return c.delete_image(image_id)
 
 
+def get_image_members(options, context, image_id):
+    c = get_registry_client(options, context)
+    return c.get_image_members(image_id)
+
+
+def get_member_images(options, context, member_id):
+    c = get_registry_client(options, context)
+    return c.get_member_images(member_id)
+
+
+def replace_members(options, context, image_id, member_data):
+    c = get_registry_client(options, context)
+    return c.replace_members(image_id, member_data)
+
+
+def add_member(options, context, image_id, member_id, can_share=None):
+    c = get_registry_client(options, context)
+    return c.add_member(image_id, member_id, can_share=can_share)
+
+
+def delete_member(options, context, image_id, member_id):
+    c = get_registry_client(options, context)
+    return c.delete_member(image_id, member_id)
+
+
 def _debug_print_metadata(image_meta):
     data = image_meta.copy()
     properties = data.pop('properties', None)

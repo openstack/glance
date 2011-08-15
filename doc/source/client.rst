@@ -325,3 +325,129 @@ Glance
   new_meta = c.add_image(meta, open('/path/to/image.tar.gz'))
 
   print 'Stored image. Got identifier: %s' % new_meta['id']
+
+Requesting Image Memberships
+----------------------------
+
+We want to see a list of the other system tenants that may access a given
+virtual machine image that the Glance server knows about.
+
+Continuing from the example above, in order to get the memberships for the
+image with ID 1, we can use the following code
+
+.. code-block:: python
+
+  from glance.client import Client
+
+  c = Client("glance.example.com", 9292)
+
+  members = c.get_image_members(1)
+
+.. note::
+
+  The return from Client.get_image_members() is a list of dictionaries.  Each
+  dictionary has a `member_id` key, mapping to the tenant the image is shared
+  with, and a `can_share` key, mapping to a boolean value that identifies
+  whether the member can further share the image.
+
+Requesting Member Images
+------------------------
+
+We want to see a list of the virtual machine images a given system tenant may
+access.
+
+Continuing from the example above, in order to get the images shared with
+'tenant1', we can use the following code
+
+.. code-block:: python
+
+  from glance.client import Client
+
+  c = Client("glance.example.com", 9292)
+
+  images = c.get_member_images('tenant1')
+
+.. note::
+
+  The return from Client.get_member_images() is a list of dictionaries.  Each
+  dictionary has an `image_id` key, mapping to an image shared with the member,
+  and a `can_share` key, mapping to a boolean value that identifies whether
+  the member can further share the image.
+
+Adding a Member To an Image
+---------------------------
+
+We want to authorize a tenant to access a private image.
+
+Continuing from the example above, in order to share the image with ID 1
+with 'tenant1', and to allow 'tenant2' to not only access the image but to also
+share it with other tenants, we can use the following code
+
+.. code-block:: python
+
+  from glance.client import Client
+
+  c = Client("glance.example.com", 9292)
+
+  c.add_member(1, 'tenant1')
+  c.add_member(1, 'tenant2', True)
+
+.. note::
+
+  The Client.add_member() function takes one optional argument, the `can_share`
+  value.  If one is not provided and the membership already exists, its current
+  `can_share` setting is left alone.  If the membership does not already exist,
+  then the `can_share` setting will default to `False`, and the membership will
+  be created.  In all other cases, existing memberships will be modified to use
+  the specified `can_share` setting, and new memberships will be created with
+  it.  The return value of Client.add_member() is not significant.
+
+Removing a Member From an Image
+-------------------------------
+
+We want to revoke a tenant's authorization to access a private image.
+
+Continuing from the example above, in order to revoke the access of 'tenant1'
+to the image with ID 1, we can use the following code
+
+.. code-block:: python
+
+  from glance.client import Client
+
+  c = Client("glance.example.com", 9292)
+
+  c.delete_member(1, 'tenant1')
+
+.. note::
+
+  The return value of Client.delete_member() is not significant.
+
+Replacing a Membership List For an Image
+----------------------------------------
+
+All existing image memberships may be revoked and replaced in a single
+operation.
+
+Continuing from the example above, in order to replace the membership list
+of the image with ID 1 with two entries--the first allowing 'tenant1' to
+access the image, and the second allowing 'tenant2' to access and further
+share the image, we can use the following code
+
+.. code-block:: python
+
+  from glance.client import Client
+
+  c = Client("glance.example.com", 9292)
+
+  c.replace_members(1, {'member_id': 'tenant1', 'can_share': False},
+                    {'member_id': 'tenant2', 'can_share': True})
+
+.. note::
+
+  The first argument to Client.replace_members() is the opaque identifier of
+  the image; the remaining arguments are dictionaries with the keys
+  `member_id` (mapping to a tenant name) and `can_share`.  Note that
+  `can_share` may be omitted, in which case any existing membership for the
+  specified member will be preserved through the replace operation.
+
+  The return value of Client.replace_members() is not significant.

@@ -41,8 +41,15 @@ class VersionsTest(unittest.TestCase):
         results = json.loads(res.body)["versions"]
         expected = [
             {
-                "id": "v1.0",
+                "id": "v1.1",
                 "status": "CURRENT",
+                "links": [
+                    {
+                        "rel": "self",
+                        "href": "http://0.0.0.0:9292/v1/"}]},
+            {
+                "id": "v1.0",
+                "status": "SUPPORTED",
                 "links": [
                     {
                         "rel": "self",

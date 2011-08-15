@@ -41,8 +41,15 @@ class Controller(object):
         """Respond to a request for all OpenStack API versions."""
         version_objs = [
             {
-                "id": "v1.0",
+                "id": "v1.1",
                 "status": "CURRENT",
+                "links": [
+                    {
+                        "rel": "self",
+                        "href": self.get_href()}]},
+            {
+                "id": "v1.0",
+                "status": "SUPPORTED",
                 "links": [
                     {
                         "rel": "self",
