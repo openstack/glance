@@ -145,11 +145,11 @@ class BaseClient(object):
                                httplib.NO_CONTENT):
                 return res
             elif status_code == httplib.UNAUTHORIZED:
-                raise exception.NotAuthorized
+                raise exception.NotAuthorized(res.read())
             elif status_code == httplib.FORBIDDEN:
-                raise exception.NotAuthorized
+                raise exception.NotAuthorized(res.read())
             elif status_code == httplib.NOT_FOUND:
-                raise exception.NotFound
+                raise exception.NotFound(res.read())
             elif status_code == httplib.CONFLICT:
                 raise exception.Duplicate(res.read())
             elif status_code == httplib.BAD_REQUEST:

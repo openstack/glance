@@ -359,12 +359,237 @@ class Controller(object):
                                request=req,
                                content_type='text/plain')
 
+    def members(self, req, image_id):
+        """
+        Get the members of an image.
+        """
+        try:
+            image = db_api.image_get(req.context, image_id)
+        except exception.NotFound:
+            raise exc.HTTPNotFound()
+        except exception.NotAuthorized:
+            # If it's private and doesn't belong to them, don't let on
+            # that it exists
+            logger.info("Access by %s to image %s denied" %
+                        (req.context.user, image_id))
+            raise exc.HTTPNotFound()
 
-def create_resource(options):
+        return dict(members=make_member_list(image['members'],
+                                             member_id='member',
+                                             can_share='can_share'))
+
+    def shared_images(self, req, member):
+        """
+        Retrieves images shared with the given member.
+        """
+        params = {}
+        try:
+            memberships = db_api.image_member_get_memberships(req.context,
+                                                              member,
+                                                              **params)
+        except exception.NotFound, e:
+            msg = "Invalid marker. Membership could not be found."
+            raise exc.HTTPBadRequest(explanation=msg)
+
+        return dict(shared_images=make_member_list(memberships,
+                                                   image_id='image_id',
+                                                   can_share='can_share'))
+
+    def replace_members(self, req, image_id, body):
+        """
+        Replaces the members of the image with those specified in the
+        body.  The body is a dict with the following format::
+
+            {"memberships": [
+                {"member_id": <MEMBER_ID>,
+                 ["can_share": [True|False]]}, ...
+            ]}
+        """
+        if req.context.read_only:
+            raise exc.HTTPForbidden()
+        elif req.context.owner is None:
+            raise exc.HTTPUnauthorized("No authenticated user")
+
+        # Make sure the image exists
+        try:
+            image = db_api.image_get(req.context, image_id)
+        except exception.NotFound:
+            raise exc.HTTPNotFound()
+        except exception.NotAuthorized:
+            # If it's private and doesn't belong to them, don't let on
+            # that it exists
+            logger.info("Access by %s to image %s denied" %
+                        (req.context.user, image_id))
+            raise exc.HTTPNotFound()
+
+        # Can they manipulate the membership?
+        if not req.context.is_image_sharable(image):
+            raise exc.HTTPForbidden("No permission to share that image")
+
+        # Get the membership list
+        try:
+            memb_list = body['memberships']
+        except Exception, e:
+            # Malformed entity...
+            msg = "Invalid membership association: %s" % e
+            raise exc.HTTPBadRequest(explanation=msg)
+
+        add = []
+        existing = {}
+        # Walk through the incoming memberships
+        for memb in memb_list:
+            try:
+                datum = dict(image_id=image['id'],
+                             member=memb['member_id'],
+                             can_share=None)
+            except Exception, e:
+                # Malformed entity...
+                msg = "Invalid membership association: %s" % e
+                raise exc.HTTPBadRequest(explanation=msg)
+
+            # Figure out what can_share should be
+            if 'can_share' in memb:
+                datum['can_share'] = bool(memb['can_share'])
+
+            # Try to find the corresponding membership
+            try:
+                membership = db_api.image_member_find(req.context,
+                                                      datum['image_id'],
+                                                      datum['member_id'])
+
+                # Are we overriding can_share?
+                if datum['can_share'] is None:
+                    datum['can_share'] = membership['can_share']
+
+                existing[membership['id']] = {
+                    'values': datum,
+                    'membership': membership,
+                    }
+            except exception.NotFound:
+                # Default can_share
+                datum['can_share'] = bool(datum['can_share'])
+                add.append(datum)
+
+        # We now have a filtered list of memberships to add and
+        # memberships to modify.  Let's start by walking through all
+        # the existing image memberships...
+        for memb in image['members']:
+            if memb['id'] in existing:
+                # Just update the membership in place
+                update = existing[memb['id']]['values']
+                db_api.image_member_update(req.context, memb, update)
+            else:
+                # Outdated one; needs to be deleted
+                db_api.image_member_delete(memb)
+
+        # Now add the non-existant ones
+        for memb in add:
+            db_api.image_member_create(req.context, memb)
+
+        # Make an appropriate result
+        return exc.HTTPNoContent()
+
+    def add_member(self, req, image_id, member, body=None):
+        """
+        Adds a membership to the image, or updates an existing one.
+        If a body is present, it is a dict with the following format::
+
+            {"member": {
+                "can_share": [True|False]
+            }}
+
+        If "can_share" is provided, the member's ability to share is
+        set accordingly.  If it is not provided, existing memberships
+        remain unchanged and new memberships default to False.
+        """
+        if req.context.read_only:
+            raise exc.HTTPForbidden()
+        elif req.context.owner is None:
+            raise exc.HTTPUnauthorized("No authenticated user")
+
+        # Make sure the image exists
+        try:
+            image = db_api.image_get(req.context, image_id)
+        except exception.NotFound:
+            raise exc.HTTPNotFound()
+        except exception.NotAuthorized:
+            # If it's private and doesn't belong to them, don't let on
+            # that it exists
+            logger.info("Access by %s to image %s denied" %
+                        (req.context.user, image_id))
+            raise exc.HTTPNotFound()
+
+        # Can they manipulate the membership?
+        if not req.context.is_image_sharable(image):
+            raise exc.HTTPForbidden("No permission to share that image")
+
+        # Determine the applicable can_share value
+        can_share = None
+        if body:
+            try:
+                can_share = bool(body['member']['can_share'])
+            except Exception, e:
+                # Malformed entity...
+                msg = "Invalid membership association: %s" % e
+                raise exc.HTTPBadRequest(explanation=msg)
+
+        # Look up an existing membership...
+        try:
+            membership = db_api.image_member_find(req.context,
+                                                  image_id, member)
+            if can_share is not None:
+                values = dict(can_share=can_share)
+                db_api.image_member_update(req.context, membership, values)
+        except exception.NotFound:
+            values = dict(image_id=image['id'], member=member,
+                          can_share=bool(can_share))
+            db_api.image_member_create(req.context, values)
+
+        # Make an appropriate result
+        return exc.HTTPNoContent()
+
+    def delete_member(self, req, image_id, member):
+        """
+        Removes a membership from the image.
+        """
+        if req.context.read_only:
+            raise exc.HTTPForbidden()
+        elif req.context.owner is None:
+            raise exc.HTTPUnauthorized("No authenticated user")
+
+        # Make sure the image exists
+        try:
+            image = db_api.image_get(req.context, image_id)
+        except exception.NotFound:
+            raise exc.HTTPNotFound()
+        except exception.NotAuthorized:
+            # If it's private and doesn't belong to them, don't let on
+            # that it exists
+            logger.info("Access by %s to image %s denied" %
+                        (req.context.user, image_id))
+            raise exc.HTTPNotFound()
+
+        # Can they manipulate the membership?
+        if not req.context.is_image_sharable(image):
+            raise exc.HTTPForbidden("No permission to share that image")
+
+        # Look up an existing membership
+        try:
+            membership = db_api.image_member_find(req.context,
+                                                  image_id, member)
+            db_api.image_member_delete(req.context, membership)
+        except exception.NotFound:
+            pass
+
+        # Make an appropriate result
+        return exc.HTTPNoContent()
+
+
+def create_resource(controller):
     """Images resource factory method."""
     deserializer = wsgi.JSONRequestDeserializer()
     serializer = wsgi.JSONResponseSerializer()
-    return wsgi.Resource(Controller(options), deserializer, serializer)
+    return wsgi.Resource(controller, deserializer, serializer)
 
 
 class API(wsgi.Router):
@@ -372,10 +597,24 @@ class API(wsgi.Router):
 
     def __init__(self, options):
         mapper = routes.Mapper()
-        resource = create_resource(options)
+        resource = create_resource(Controller(options))
         mapper.resource("image", "images", controller=resource,
-                       collection={'detail': 'GET'})
+                        collection={'detail': 'GET'})
         mapper.connect("/", controller=resource, action="index")
+        mapper.connect("/shared-images/{member}",
+                       controller=resource, action="shared_images")
+        mapper.connect("/images/{image_id}/members",
+                       controller=resource, action="members",
+                       conditions=dict(method=["GET"]))
+        mapper.connect("/images/{image_id}/members",
+                       controller=resource, action="replace_members",
+                       conditions=dict(method=["PUT"]))
+        mapper.connect("/images/{image_id}/members/{member}",
+                       controller=resource, action="add_member",
+                       conditions=dict(method=["PUT"]))
+        mapper.connect("/images/{image_id}/members/{member}",
+                       controller=resource, action="delete_member",
+                       conditions=dict(method=["DELETE"]))
         super(API, self).__init__(mapper)
 
 
@@ -399,6 +638,20 @@ def make_image_dict(image):
 
     image_dict['properties'] = properties
     return image_dict
+
+
+def make_member_list(members, **attr_map):
+    """
+    Create a dict representation of a list of members which we can use
+    to serialize the members list.  Keyword arguments map the names of
+    optional attributes to include to the database attribute.
+    """
+
+    def _fetch_memb(memb, attr_map):
+        return dict([(k, memb[v]) for k, v in attr_map if v in memb.keys()])
+
+    # Return the list of members with the given attribute mapping
+    return [_fetch_memb(memb, attr_map) for memb in members]
 
 
 def app_factory(global_conf, **local_conf):

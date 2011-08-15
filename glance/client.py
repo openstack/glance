@@ -279,5 +279,93 @@ class V1Client(base_client.BaseClient):
         data = json.loads(res.read())['cached_images']
         return data
 
+    def get_image_members(self, image_id):
+        """Returns a mapping of image memberships from Registry"""
+        res = self.do_request("GET", "/images/%s/members" % image_id)
+        data = json.loads(res.read())['members']
+        return data
+
+    def get_member_images(self, member_id):
+        """Returns a mapping of image memberships from Registry"""
+        res = self.do_request("GET", "/shared-images/%s" % member_id)
+        data = json.loads(res.read())['shared_images']
+        return data
+
+    def _validate_assocs(self, assocs):
+        """
+        Validates membership associations and returns an appropriate
+        list of associations to send to the server.
+        """
+        validated = []
+        for assoc in assocs:
+            assoc_data = dict(member_id=assoc['member_id'])
+            if 'can_share' in assoc:
+                assoc_data['can_share'] = bool(assoc['can_share'])
+            validated.append(assoc_data)
+        return validated
+
+    def replace_members(self, image_id, *assocs):
+        """
+        Replaces the membership associations for a given image_id.
+        Each subsequent argument is a dictionary mapping containing a
+        'member_id' that should have access to the image_id.  A
+        'can_share' boolean can also be specified to allow the member
+        to further share the image.  An example invocation allowing
+        'rackspace' to access image 1 and 'google' to access image 1
+        with permission to share::
+
+            c = glance.client.Client(...)
+            c.update_members(1, {'member_id': 'rackspace'},
+                             {'member_id': 'google', 'can_share': True})
+        """
+        # Understand the associations
+        body = json.dumps(self._validate_assocs(assocs))
+        self.do_request("PUT", "/images/%s/members" % image_id, body,
+                        {'content-type': 'application/json'})
+        return True
+
+    def add_member(self, image_id, member_id, can_share=None):
+        """
+        Adds a membership association between image_id and member_id.
+        If can_share is not specified and the association already
+        exists, no change is made; if the association does not already
+        exist, one is created with can_share defaulting to False.
+        When can_share is specified, the association is created if it
+        doesn't already exist, and the can_share attribute is set
+        accordingly.  Example invocations allowing 'rackspace' to
+        access image 1 and 'google' to access image 1 with permission
+        to share::
+
+            c = glance.client.Client(...)
+            c.add_member(1, 'rackspace')
+            c.add_member(1, 'google', True)
+        """
+        body = None
+        headers = {}
+        # Generate the body if appropriate
+        if can_share is not None:
+            body = json.dumps(dict(member=dict(can_share=bool(can_share))))
+            headers['content-type'] = 'application/json'
+
+        self.do_request("PUT", "/images/%s/members/%s" %
+                        (image_id, member_id), body, headers)
+        return True
+
+    def delete_member(self, image_id, member_id):
+        """
+        Deletes the membership assocation.  If the
+        association does not exist, no action is taken; otherwise, the
+        indicated association is deleted.  An example invocation
+        removing the accesses of 'rackspace' to image 1 and 'google'
+        to image 2::
+
+            c = glance.client.Client(...)
+            c.delete_member(1, 'rackspace')
+            c.delete_member(2, 'google')
+        """
+        self.do_request("DELETE", "/images/%s/members/%s" %
+                        (image_id, member_id))
+        return True
+
 
 Client = V1Client

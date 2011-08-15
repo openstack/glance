@@ -213,6 +213,7 @@ pipeline = context registryapp
 paste.app_factory = glance.registry.server:app_factory
 
 [filter:context]
+context_class = glance.registry.context.RequestContext
 paste.filter_factory = glance.common.context:filter_factory
 """
 

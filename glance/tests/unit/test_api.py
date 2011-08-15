@@ -27,6 +27,7 @@ import webob
 
 from glance.api import v1 as server
 from glance.common import context
+from glance.registry import context as rcontext
 from glance.registry import server as rserver
 from glance.registry.db import api as db_api
 from glance.registry.db import models as db_models
@@ -38,7 +39,8 @@ OPTIONS = {'sql_connection': 'sqlite://',
            'registry_host': '0.0.0.0',
            'registry_port': '9191',
            'default_store': 'file',
-           'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
+           'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR,
+           'context_class': 'glance.registry.context.RequestContext'}
 
 
 class TestRegistryAPI(unittest.TestCase):
@@ -77,7 +79,7 @@ class TestRegistryAPI(unittest.TestCase):
              'size': 19,
              'location': "file:///tmp/glance-tests/2",
              'properties': {}}]
-        self.context = context.RequestContext(is_admin=True)
+        self.context = rcontext.RequestContext(is_admin=True)
         db_api.configure_db(OPTIONS)
         self.destroy_fixtures()
         self.create_fixtures()
@@ -1519,6 +1521,86 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(res.status_int,
                           webob.exc.HTTPNotFound.code)
 
+    def test_get_image_members(self):
+        """
+        Tests members listing for existing images
+        """
+        req = webob.Request.blank('/images/2/members')
+
+        req.method = 'GET'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        memb_list = json.loads(res.body)
+        num_members = len(memb_list['members'])
+        self.assertEquals(num_members, 0)
+
+    def test_get_image_members_not_existing(self):
+        """
+        Tests proper exception is raised if attempt to get members of
+        non-existing image
+        """
+        req = webob.Request.blank('/images/3/members')
+
+        req.method = 'GET'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int,
+                          webob.exc.HTTPNotFound.code)
+
+    def test_get_member_images(self):
+        """
+        Tests image listing for members
+        """
+        req = webob.Request.blank('/shared-images/pattieblack')
+
+        req.method = 'GET'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        memb_list = json.loads(res.body)
+        num_members = len(memb_list['shared_images'])
+        self.assertEquals(num_members, 0)
+
+    def test_replace_members(self):
+        """
+        Tests replacing image members raises right exception
+        """
+        fixture = dict(member_id='pattieblack')
+
+        req = webob.Request.blank('/images/2/members')
+
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(image_memberships=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
+
+    def test_add_member(self):
+        """
+        Tests adding image members raises right exception
+        """
+        req = webob.Request.blank('/images/2/members/pattieblack')
+
+        req.method = 'PUT'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
+
+    def test_delete_member(self):
+        """
+        Tests deleting image members raises right exception
+        """
+        req = webob.Request.blank('/images/2/members/pattieblack')
+
+        req.method = 'DELETE'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
+
 
 class TestGlanceAPI(unittest.TestCase):
     def setUp(self):
@@ -1558,7 +1640,7 @@ class TestGlanceAPI(unittest.TestCase):
              'size': 19,
              'location': "file:///tmp/glance-tests/2",
              'properties': {}}]
-        self.context = context.RequestContext(is_admin=True)
+        self.context = rcontext.RequestContext(is_admin=True)
         db_api.configure_db(OPTIONS)
         self.destroy_fixtures()
         self.create_fixtures()
@@ -1898,3 +1980,83 @@ class TestGlanceAPI(unittest.TestCase):
         req = webob.Request.blank('/images/detail?marker=10')
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 400)
+
+    def test_get_image_members(self):
+        """
+        Tests members listing for existing images
+        """
+        req = webob.Request.blank('/images/2/members')
+
+        req.method = 'GET'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        memb_list = json.loads(res.body)
+        num_members = len(memb_list['members'])
+        self.assertEquals(num_members, 0)
+
+    def test_get_image_members_not_existing(self):
+        """
+        Tests proper exception is raised if attempt to get members of
+        non-existing image
+        """
+        req = webob.Request.blank('/images/3/members')
+
+        req.method = 'GET'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int,
+                          webob.exc.HTTPNotFound.code)
+
+    def test_get_member_images(self):
+        """
+        Tests image listing for members
+        """
+        req = webob.Request.blank('/shared-images/pattieblack')
+
+        req.method = 'GET'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        memb_list = json.loads(res.body)
+        num_members = len(memb_list['shared_images'])
+        self.assertEquals(num_members, 0)
+
+    def test_replace_members(self):
+        """
+        Tests replacing image members raises right exception
+        """
+        fixture = dict(member_id='pattieblack')
+
+        req = webob.Request.blank('/images/2/members')
+
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(image_memberships=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
+
+    def test_add_member(self):
+        """
+        Tests adding image members raises right exception
+        """
+        req = webob.Request.blank('/images/2/members/pattieblack')
+
+        req.method = 'PUT'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
+
+    def test_delete_member(self):
+        """
+        Tests deleting image members raises right exception
+        """
+        req = webob.Request.blank('/images/2/members/pattieblack')
+
+        req.method = 'DELETE'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)

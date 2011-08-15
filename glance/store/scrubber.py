@@ -26,7 +26,7 @@ import glance.store.http
 import glance.store.s3
 import glance.store.swift
 from glance.common import config
-from glance.common import context
+from glance.registry import context
 from glance.common import exception
 from glance.registry.db import api as db_api
 

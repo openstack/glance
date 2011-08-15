@@ -814,6 +814,149 @@ List images that are being prefetched"""
             image['status'])
 
 
+@catch_error('show image members')
+def image_members(options, args):
+    """
+%(prog)s image-members [options] <ID>
+
+Displays a list of members with which an image is shared"""
+    try:
+        image_id = args.pop()
+    except IndexError:
+        print "Please specify the ID of the image as the first argument"
+        return FAILURE
+
+    c = get_client(options)
+
+    members = c.get_image_members(image_id)
+    sharers = 0
+    # Output the list of members
+    for memb in members:
+        can_share = ''
+        if 'can_share' in memb and memb['can_share']:
+            can_share = ' *'
+            sharers += 1
+        print "%s%s" % (memb['member_id'], can_share)
+
+    # Emit a footnote
+    if sharers > 0:
+        print "\n(*: Can share image)"
+
+
+@catch_error('show member images')
+def member_images(options, args):
+    """
+%(prog)s member-images [options] <MEMBER>
+
+Displays a list of images shared with a given member"""
+    try:
+        member_id = args.pop()
+    except IndexError:
+        print "Please specify the ID of the member as the first argument"
+        return FAILURE
+
+    c = get_client(options)
+
+    try:
+        images = c.get_member_images(member_id)
+    except exception.NotFound:
+        print "No images shared with member %s" % member_id
+        return SUCCESS
+
+    sharers = 0
+    # Output the list of images
+    for memb in members:
+        can_share = ''
+        if 'can_share' in memb and memb['can_share']:
+            can_share = ' *'
+            sharers += 1
+        print "%s%s" % (memb['image_id'], can_share)
+
+    # Emit a footnote
+    if sharers > 0:
+        print "\n(*: Can share image)"
+
+
+@catch_error('update image members')
+def members_replace(options, args):
+    """
+%(prog)s members-replace [options] <ID> <MEMBER>
+
+Replaces the members of the image <ID> to be solely <MEMBER>.  If the
+"--can-share" option is given, <MEMBER> will be able to further share
+the image."""
+    try:
+        image_id = args.pop()
+        member_id = args.pop()
+    except IndexError:
+        print "Please specify the image ID and the member name"
+        return FAILURE
+
+    c = get_client(options)
+
+    # Update members
+    if not options.dry_run:
+        c.replace_members(image_id, dict(member_id=member_id,
+                                         can_share=options.can_share))
+    else:
+        print "Dry run. We would have done the following:"
+        print ('Replace members of image %(image_id)s with "%(member_id)s"'
+               % locals())
+        if options.can_share:
+            print "New member would have been able to further share image."
+
+
+@catch_error('add image member')
+def member_add(options, args):
+    """
+%(prog)s member-add [options] <ID> <MEMBER>
+
+Adds the member <MEMBER> to the image <ID>.  If the "--can-share"
+option is given, <MEMBER> will be able to further share the image."""
+    try:
+        image_id = args.pop()
+        member_id = args.pop()
+    except IndexError:
+        print "Please specify the image ID and the member name"
+        return FAILURE
+
+    c = get_client(options)
+
+    # Replace members
+    if not options.dry_run:
+        c.add_member(image_id, member_id, options.can_share)
+    else:
+        print "Dry run. We would have done the following:"
+        print ('Add "%(member_id)" to membership of image %(image_id)s'
+               % locals())
+        if options.can_share:
+            print "New member would have been able to further share image."
+
+
+@catch_error('delete image member')
+def member_delete(options, args):
+    """
+%(prog)s member-delete [options] <ID> <MEMBER>
+
+Deletes the specified member of the image <ID>."""
+    try:
+        image_id = args.pop()
+        member_id = args.pop()
+    except IndexError:
+        print "Please specify the image ID and the member name"
+        return FAILURE
+
+    c = get_client(options)
+
+    # Delete member
+    if not options.dry_run:
+        c.delete_member(image_id, member_id)
+    else:
+        print "Dry run. We would have done the following:"
+        print ('Remove "%(member_id)s" from the member list of image '
+               '"%(image_id)s"' % locals())
+
+
 def get_client(options):
     """
     Returns a new client object to a Glance server
@@ -821,7 +964,8 @@ def get_client(options):
     supplied to the CLI
     """
     return glance_client.Client(host=options.host,
-                         port=options.port)
+                         port=options.port,
+                         auth_tok=options.auth_token)
 
 
 def create_options(parser):
@@ -840,6 +984,10 @@ def create_options(parser):
                       type=int, default=9292,
                       help="Port the Glance API host listens on. "
                            "Default: %default")
+    parser.add_option('-A', '--auth_token', dest="auth_token",
+                      metavar="TOKEN", default=None,
+                      help="Authentication token to use to identify the "
+                           "client to the glance server")
     parser.add_option('--limit', dest="limit", metavar="LIMIT", default=10,
                       type="int", help="Page size to use while "
                                        "requesting image metadata")
@@ -857,6 +1005,8 @@ def create_options(parser):
     parser.add_option('--dry-run', default=False, action="store_true",
                       help="Don't actually execute the command, just print "
                            "output showing what WOULD happen.")
+    parser.add_option('--can-share', default=False, action="store_true",
+                      help="Allow member to further share image.")
 
 
 def parse_options(parser, cli_args):
@@ -924,8 +1074,16 @@ def lookup_command(parser, command_name):
                 'cache-reap-invalid': cache_reap_invalid,
                 'cache-reap-stalled': cache_reap_stalled}
 
+    MEMBER_COMMANDS = {
+                'image-members': image_members,
+                'member-images': member_images,
+                'members-replace': members_replace,
+                'member-add': member_add,
+                'member-delete': member_delete}
+
     commands = {}
-    for command_set in (BASE_COMMANDS, IMAGE_COMMANDS, CACHE_COMMANDS):
+    for command_set in (BASE_COMMANDS, IMAGE_COMMANDS, CACHE_COMMANDS,
+                        MEMBER_COMMANDS):
         commands.update(command_set)
 
     try:
@@ -1004,6 +1162,19 @@ Cache Commands:
                          debugging purposes
 
     cache-reap-stalled   Reaps any stalled incomplete images
+
+
+Member Commands:
+
+    image-members    List members an image is shared with
+
+    member-images    List images shared with a member
+
+    member-add       Grants a member access to an image
+
+    member-delete    Revokes a member's access to an image
+
+    members-replace  Replaces all membership for an image
 """
 
     oparser = optparse.OptionParser(version='%%prog %s'

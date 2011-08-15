@@ -73,7 +73,8 @@ JSON-encoded mapping in the following format::
      'updated_at': '2010-02-03 09:34:01',
      'deleted_at': '',
      'status': 'active',
-     'is_public': True,
+     'is_public': true,
+     'owner': null,
      'properties': {'distro': 'Ubuntu 10.04 LTS'}},
     ...]}
 
@@ -91,6 +92,12 @@ JSON-encoded mapping in the following format::
   have been saved with the image metadata
 
   The `checksum` field is an MD5 checksum of the image file data
+
+  The `is_public` field is a boolean indicating whether the image is
+  publically available
+
+  The `owner` field is a string which may either be null or which will
+  indicate the owner of the image
 
 Filtering Images Returned via ``GET /images`` and ``GET /images/detail``
 ------------------------------------------------------------------------
@@ -175,7 +182,8 @@ following shows an example of the HTTP headers returned from the above
   x-image-meta-updated_at       2010-02-03 09:34:01
   x-image-meta-deleted_at
   x-image-meta-status           available
-  x-image-meta-is-public        True
+  x-image-meta-is-public        true
+  x-image-meta-owner            null
   x-image-meta-property-distro  Ubuntu 10.04 LTS
 
 .. note::
@@ -193,6 +201,12 @@ following shows an example of the HTTP headers returned from the above
 
   The response's `ETag` header will always be equal to the
   `x-image-meta-checksum` value
+
+  The response's `x-image-meta-is-public` value is a boolean indicating
+  whether the image is publically available
+
+  The response's `x-image-meta-owner` value is a string which may either
+  be null or which will indicate the owner of the image
 
 
 Retrieving a Virtual Machine Image
@@ -229,7 +243,8 @@ returned from the above ``GET`` request::
   x-image-meta-updated_at       2010-02-03 09:34:01
   x-image-meta-deleted_at
   x-image-meta-status           available
-  x-image-meta-is-public        True
+  x-image-meta-is-public        true
+  x-image-meta-owner            null
   x-image-meta-property-distro  Ubuntu 10.04 LTS
 
 .. note::
@@ -250,6 +265,12 @@ returned from the above ``GET`` request::
 
   The response's `ETag` header will always be equal to the
   `x-image-meta-checksum` value
+
+  The response's `x-image-meta-is-public` value is a boolean indicating
+  whether the image is publically available
+
+  The response's `x-image-meta-owner` value is a string which may either
+  be null or which will indicate the owner of the image
 
   The image data itself will be the body of the HTTP response returned
   from the request, which will have content-type of
@@ -365,6 +386,16 @@ The list of metadata headers that Glance accepts are listed below.
   When not present, the image is assumed to be *not public* and specific to
   a user.
 
+* ``x-image-meta-owner``
+
+  This header is optional and only meaningful for admins.
+
+  Glance normally sets the owner of an image to be the tenant or user
+  (depending on the "owner_is_tenant" configuration option) of the
+  authenticated user issuing the request.  However, if the authenticated user
+  has the Admin role, this default may be overridden by setting this header to
+  null or to a string identifying the owner of the image.
+
 * ``x-image-meta-property-*``
 
   When Glance receives any HTTP header whose key begins with the string prefix
@@ -402,3 +433,88 @@ On success, the ``PUT`` request will return the image metadata encoded as HTTP
 headers.
 
 See more about image statuses here: :doc:`Image Statuses <statuses>`
+
+
+Requesting Image Memberships
+----------------------------
+
+We want to see a list of the other system tenants (or users, if
+"owner_is_tenant" is False) that may access a given virtual machine image that
+the Glance server knows about.  We take the `uri` field of the image data,
+append ``/members`` to it, and issue a ``GET`` request on the resulting URL.
+
+Continuing from the example above, in order to get the memberships for the
+first public image returned, we can issue a ``GET`` request to the Glance
+server for ``http://glance.example.com/images/1/members``.  What we will
+get back is JSON data such as the following::
+
+  {'members': [
+   {'member_id': 'tenant1',
+    'can_share': false}
+   ...]}
+
+The `member_id` field identifies a tenant with which the image is shared.  If
+that tenant is authorized to further share the image, the `can_share` field is
+`true`.
+
+
+Requesting Shared Images
+------------------------
+
+We want to see a list of images which are shared with a given tenant.  We issue
+a ``GET`` request to ``http://glance.example.com/shared-images/tenant1``.  We
+will get back JSON data such as the following::
+
+  {'shared_images': [
+   {'image_id': 1,
+    'can_share': false}
+   ...]}
+
+The `image_id` field identifies an image shared with the tenant named by
+*member_id*.  If the tenant is authorized to further share the image, the
+`can_share` field is `true`.
+
+
+Adding a Member to an Image
+---------------------------
+
+We want to authorize a tenant to access a private image.  We issue a ``PUT``
+request to ``http://glance.example.com/images/1/members/tenant1``.  With no
+body, this will add the membership to the image, leaving existing memberships
+unmodified and defaulting new memberships to have `can_share` set to `false`.
+We may also optionally attach a body of the following form::
+
+  {'member':
+   {'can_share': true}
+  }
+
+If such a body is provided, both existing and new memberships will have
+`can_share` set to the provided value (either `true` or `false`).  This query
+will return a 204 ("No Content") status code.
+
+
+Removing a Member from an Image
+-------------------------------
+
+We want to revoke a tenant's right to access a private image.  We issue a
+``DELETE`` request to ``http://glance.example.com/images/1/members/tenant1``.
+This query will return a 204 ("No Content") status code.
+
+
+Replacing a Membership List for an Image
+----------------------------------------
+
+The full membership list for a given image may be replaced.  We issue a ``PUT``
+request to ``http://glance.example.com/images/1/members`` with a body of the
+following form::
+
+  {'memberships': [
+   {'member_id': 'tenant1',
+    'can_share': false}
+   ...]}
+
+All existing memberships which are not named in the replacement body are
+removed, and those which are named have their `can_share` settings changed as
+specified.  (The `can_share` setting may be omitted, which will cause that
+setting to remain unchanged in the existing memberships.)  All new memberships
+will be created, with `can_share` defaulting to `false` if it is not specified.

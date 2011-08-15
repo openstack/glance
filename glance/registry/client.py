@@ -126,3 +126,47 @@ class RegistryClient(BaseClient):
         """
         self.do_request("DELETE", "/images/%s" % image_id)
         return True
+
+    def get_image_members(self, image_id):
+        """Returns a list of membership associations from Registry"""
+        res = self.do_request("GET", "/images/%s/members" % image_id)
+        data = json.loads(res.read())['members']
+        return data
+
+    def get_member_images(self, member_id):
+        """Returns a list of membership associations from Registry"""
+        res = self.do_request("GET", "/shared-images/%s" % member_id)
+        data = json.loads(res.read())['shared_images']
+        return data
+
+    def replace_members(self, image_id, member_data):
+        """Replaces Registry's information about image membership"""
+        if 'memberships' not in member_data.keys():
+            member_data = dict(memberships=[member_data])
+
+        body = json.dumps(member_data)
+
+        headers = {'Content-Type': 'application/json', }
+
+        res = self.do_request("PUT", "/images/%s/members" % image_id,
+                              body, headers)
+        return res.status == 204
+
+    def add_member(self, image_id, member_id, can_share=None):
+        """Adds to Registry's information about image membership"""
+        body = None
+        headers = {}
+        # Build up a body if can_share is specified
+        if can_share is not None:
+            body = json.dumps(dict(member=dict(can_share=can_share)))
+            headers['Content-Type'] = 'application/json'
+
+        res = self.do_request("PUT", "/images/%s/members/%s" %
+                              (image_id, member_id), body, headers)
+        return res.status == 204
+
+    def delete_member(self, image_id, member_id):
+        """Deletes Registry's information about image membership"""
+        res = self.do_request("DELETE", "/images/%s/members/%s" %
+                              (image_id, member_id))
+        return res.status == 204

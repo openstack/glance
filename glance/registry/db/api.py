@@ -117,6 +117,9 @@ def image_destroy(context, image_id):
         for prop_ref in image_ref.properties:
             image_property_delete(context, prop_ref, session=session)
 
+        for memb_ref in image_ref.members:
+            image_member_delete(context, memb_ref, session=session)
+
 
 def image_get(context, image_id, session=None):
     """Get an image or raise if it does not exist."""
@@ -131,6 +134,7 @@ def image_get(context, image_id, session=None):
     try:
         image = session.query(models.Image).\
                        options(joinedload(models.Image.properties)).\
+                       options(joinedload(models.Image.members)).\
                        filter_by(deleted=_deleted(context)).\
                        filter_by(id=image_id).\
                        one()
@@ -152,6 +156,7 @@ def image_get_all_pending_delete(context, delete_time=None, limit=None):
     session = get_session()
     query = session.query(models.Image).\
                    options(joinedload(models.Image.properties)).\
+                   options(joinedload(models.Image.members)).\
                    filter_by(deleted=True).\
                    filter(models.Image.status == 'pending_delete')
 
@@ -185,6 +190,7 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     session = get_session()
     query = session.query(models.Image).\
                    options(joinedload(models.Image.properties)).\
+                   options(joinedload(models.Image.members)).\
                    filter_by(deleted=_deleted(context)).\
                    filter(models.Image.status != 'killed')
 
@@ -207,10 +213,14 @@ def image_get_all(context, filters=None, marker=None, limit=None,
         del filters['size_max']
 
     if 'is_public' in filters and filters['is_public'] is not None:
-        the_filter = models.Image.is_public == filters['is_public']
+        the_filter = [models.Image.is_public == filters['is_public']]
         if filters['is_public'] and context.owner is not None:
-            the_filter = or_(the_filter, models.Image.owner == context.owner)
-        query = query.filter(the_filter)
+            the_filter.extend([(models.Image.owner == context.owner),
+                               models.Image.members.any(member=context.owner)])
+        if len(the_filter) > 1:
+            query = query.filter(or_(*the_filter))
+        else:
+            query = query.filter(the_filter[0])
         del filters['is_public']
 
     for (k, v) in filters.pop('properties', {}).items():
@@ -401,6 +411,122 @@ def image_property_delete(context, prop_ref, session=None):
     prop_ref.update(dict(deleted=True))
     prop_ref.save(session=session)
     return prop_ref
+
+
+def image_member_create(context, values, session=None):
+    """Create an ImageMember object"""
+    memb_ref = models.ImageMember()
+    return _image_member_update(context, memb_ref, values, session=session)
+
+
+def image_member_update(context, memb_ref, values, session=None):
+    """Update an ImageMember object"""
+    return _image_member_update(context, memb_ref, values, session=session)
+
+
+def _image_member_update(context, memb_ref, values, session=None):
+    """
+    Used internally by image_member_create and image_member_update
+    """
+    _drop_protected_attrs(models.ImageMember, values)
+    values["deleted"] = False
+    values.setdefault('can_share', False)
+    memb_ref.update(values)
+    memb_ref.save(session=session)
+    return memb_ref
+
+
+def image_member_delete(context, memb_ref, session=None):
+    """Delete an ImageMember object"""
+    memb_ref.update(dict(deleted=True))
+    memb_ref.save(session=session)
+    return memb_ref
+
+
+def image_member_get(context, member_id, session=None):
+    """Get an image member or raise if it does not exist."""
+    session = session or get_session()
+    try:
+        member = session.query(models.ImageMember).\
+                        options(joinedload(models.ImageMember.image)).\
+                        filter_by(deleted=_deleted(context)).\
+                        filter_by(id=member_id).\
+                        one()
+    except exc.NoResultFound:
+        raise exception.NotFound("No membership found with ID %s" % member_id)
+
+    # Make sure they can look at it
+    if not context.is_image_visible(member.image):
+        raise exception.NotAuthorized("Image not visible to you")
+
+    return member
+
+
+def image_member_find(context, image_id, member, session=None):
+    """Find a membership association between image and member."""
+    session = session or get_session()
+    try:
+        # Note lack of permissions check; this function is called from
+        # RequestContext.is_image_visible(), so avoid recursive calls
+        return session.query(models.ImageMember).\
+                        options(joinedload(models.ImageMember.image)).\
+                        filter_by(deleted=_deleted(context)).\
+                        filter_by(image_id=image_id).\
+                        filter_by(member=member).\
+                        one()
+    except exc.NoResultFound:
+        raise exception.NotFound("No membership found for image %s member %s" %
+                                 (image_id, member))
+
+
+def image_member_get_memberships(context, member, marker=None, limit=None,
+                                 sort_key='created_at', sort_dir='desc'):
+    """
+    Get all image memberships for the given member.
+
+    :param member: the member to look up memberships for
+    :param marker: membership id after which to start page
+    :param limit: maximum number of memberships to return
+    :param sort_key: membership attribute by which results should be sorted
+    :param sort_dir: direction in which results should be sorted (asc, desc)
+    """
+
+    session = get_session()
+    query = session.query(models.ImageMember).\
+                   options(joinedload(models.ImageMember.image)).\
+                   filter_by(deleted=_deleted(context)).\
+                   filter_by(member=member)
+
+    sort_dir_func = {
+        'asc': asc,
+        'desc': desc,
+    }[sort_dir]
+
+    sort_key_attr = getattr(models.ImageMember, sort_key)
+
+    query = query.order_by(sort_dir_func(sort_key_attr)).\
+                  order_by(sort_dir_func(models.ImageMember.id))
+
+    if marker != None:
+        # memberships returned should be created before the membership
+        # defined by marker
+        marker_membership = image_member_get(context, marker)
+        marker_value = getattr(marker_membership, sort_key)
+        if sort_dir == 'desc':
+            query = query.filter(
+                or_(sort_key_attr < marker_value,
+                    and_(sort_key_attr == marker_value,
+                         models.ImageMember.id < marker)))
+        else:
+            query = query.filter(
+                or_(sort_key_attr > marker_value,
+                    and_(sort_key_attr == marker_value,
+                         models.ImageMember.id > marker)))
+
+    if limit != None:
+        query = query.limit(limit)
+
+    return query.all()
 
 
 # pylint: disable-msg=C0111

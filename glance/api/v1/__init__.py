@@ -36,8 +36,22 @@ class API(wsgi.Router):
         mapper.resource("image", "images", controller=resource,
                         collection={'detail': 'GET'})
         mapper.connect("/", controller=resource, action="index")
-        mapper.connect("/images/{id}", controller=resource, action="meta",
-                       conditions=dict(method=["HEAD"]))
+        mapper.connect("/images/{id}", controller=resource,
+                       action="meta", conditions=dict(method=["HEAD"]))
+        mapper.connect("/shared-images/{member}",
+                       controller=resource, action="shared_images")
+        mapper.connect("/images/{image_id}/members",
+                       controller=resource, action="members",
+                       conditions=dict(method=["GET"]))
+        mapper.connect("/images/{image_id}/members",
+                       controller=resource, action="replace_members",
+                       conditions=dict(method=["PUT"]))
+        mapper.connect("/images/{image_id}/members/{member}",
+                       controller=resource, action="add_member",
+                       conditions=dict(method=["PUT"]))
+        mapper.connect("/images/{image_id}/members/{member}",
+                       controller=resource, action="delete_member",
+                       conditions=dict(method=["DELETE"]))
         super(API, self).__init__(mapper)
 
 

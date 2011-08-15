@@ -121,11 +121,24 @@ class ImageProperty(BASE, ModelBase):
     value = Column(Text)
 
 
+class ImageMember(BASE, ModelBase):
+    """Represents an image members in the datastore"""
+    __tablename__ = 'image_members'
+    __table_args__ = (UniqueConstraint('image_id', 'member'), {})
+
+    id = Column(Integer, primary_key=True)
+    image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
+    image = relationship(Image, backref=backref('members'))
+
+    member = Column(String(255), nullable=False)
+    can_share = Column(Boolean, nullable=False, default=False)
+
+
 def register_models(engine):
     """
     Creates database tables for all models with the given engine
     """
-    models = (Image, ImageProperty)
+    models = (Image, ImageProperty, ImageMember)
     for model in models:
         model.metadata.create_all(engine)
 

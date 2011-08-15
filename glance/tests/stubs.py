@@ -105,8 +105,9 @@ def stub_out_registry_and_store_server(stubs):
         def getresponse(self):
             sql_connection = os.environ.get('GLANCE_SQL_CONNECTION',
                                             "sqlite://")
+            context_class = 'glance.registry.context.RequestContext'
             options = {'sql_connection': sql_connection, 'verbose': VERBOSE,
-                       'debug': DEBUG}
+                       'debug': DEBUG, 'context_class': context_class}
             api = context.ContextMiddleware(rserver.API(options), options)
             res = self.req.get_response(api)
 

@@ -419,3 +419,59 @@ information about all the images that were deleted, as shown below::
   Deleting image 1 "Some web image" ... done
   Deleting image 2 "Some other web image" ... done
   Completed in 0.0328 sec.
+
+The ``image-members`` Command
+-----------------------------
+
+The ``image-members`` command displays the list of members with which a
+specific image, specified with ``<ID>``, is shared, as shown below::
+
+  $> glance image-members 3 --host=65.114.169.29
+  tenant1
+  tenant2 *
+
+  (*: Can share image)
+
+The ``member-images`` Command
+-----------------------------
+
+The ``member-images`` command displays the list of images which are shared
+with a specific member, specified with ``<MEMBER>``, as shown below::
+
+  $> glance member-images tenant1 --host=65.114.169.29
+  1
+  2 *
+
+  (*: Can share image)
+
+The ``member-add`` Command
+--------------------------
+
+The ``member-add`` command grants a member, specified with ``<MEMBER>``, access
+to a private image, specified with ``<ID>``.  The ``--can-share`` flag can be
+given to allow the member to share the image, as shown below::
+
+  $> glance member-add 1 tenant1 --host=65.114.169.29
+  $> glance member-add 1 tenant2 --can-share --host=65.114.169.29
+
+The ``member-delete`` Command
+-----------------------------
+
+The ``member-delete`` command revokes the access of a member, specified with
+``<MEMBER>``, to a private image, specified with ``<ID>``, as shown below::
+
+  $> glance member-delete 1 tenant1
+  $> glance member-delete 1 tenant2
+
+The ``members-replace`` Command
+-------------------------------
+
+The ``members-replace`` command revokes all existing memberships on a private
+image, specified with ``<ID>``, and replaces them with a membership for one
+member, specified with ``<MEMBER>``.  The ``--can-share`` flag can be given to
+allow the member to share the image, as shown below::
+
+  $> glance members-replace 1 tenant1 --can-share --host=65.114.169.29
+
+The command is given in plural form to make it clear that all existing
+memberships are affected by the command.

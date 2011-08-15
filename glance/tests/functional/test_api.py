@@ -405,8 +405,13 @@ class TestApi(functional.FunctionalTest):
         self.start_servers()
 
         versions = {'versions': [{
-            "id": "v1.0",
+            "id": "v1.1",
             "status": "CURRENT",
+            "links": [{
+                "rel": "self",
+                "href": "http://0.0.0.0:%d/v1/" % self.api_port}]}, {
+            "id": "v1.0",
+            "status": "SUPPORTED",
             "links": [{
                 "rel": "self",
                 "href": "http://0.0.0.0:%d/v1/" % self.api_port}]}]}
