@@ -150,6 +150,8 @@ class ApiServer(Server):
                                          "images")
         self.pid_file = os.path.join(self.test_dir,
                                          "api.pid")
+        self.scrubber_datadir = os.path.join(self.test_dir,
+                                             "scrubber")
         self.log_file = os.path.join(self.test_dir, "api.log")
         self.registry_port = registry_port
         self.s3_store_host = "s3.amazonaws.com"
@@ -186,6 +188,8 @@ swift_store_large_object_size = %(swift_store_large_object_size)s
 swift_store_large_object_chunk_size = %(swift_store_large_object_chunk_size)s
 delayed_delete = %(delayed_delete)s
 owner_is_tenant = %(owner_is_tenant)s
+scrub_time = 5
+scrubber_datadir = %(scrubber_datadir)s
 
 [pipeline:glance-api]
 pipeline = versionnegotiation context apiv1app
@@ -254,25 +258,26 @@ class ScrubberDaemon(Server):
     Server object that starts/stops/manages the Scrubber server
     """
 
-    def __init__(self, test_dir, sql_connection, daemon=False):
+    def __init__(self, test_dir, registry_port, daemon=False):
         # NOTE(jkoelker): Set the port to 0 since we actually don't listen
         super(ScrubberDaemon, self).__init__(test_dir, 0)
         self.server_name = 'scrubber'
         self.daemon = daemon
 
-        self.sql_connection = sql_connection
-
+        self.registry_port = registry_port
+        self.scrubber_datadir = os.path.join(self.test_dir,
+                                             "scrubber")
         self.pid_file = os.path.join(self.test_dir, "scrubber.pid")
         self.log_file = os.path.join(self.test_dir, "scrubber.log")
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
 log_file = %(log_file)s
-scrub_time = 5
 daemon = %(daemon)s
 wakeup_time = 2
-sql_connection = %(sql_connection)s
-sql_idle_timeout = 3600
+scrubber_datadir = %(scrubber_datadir)s
+registry_host = 0.0.0.0
+registry_port = %(registry_port)s
 
 [app:glance-scrubber]
 paste.app_factory = glance.store.scrubber:app_factory
@@ -302,9 +307,8 @@ class FunctionalTest(unittest.TestCase):
         self.registry_server = RegistryServer(self.test_dir,
                                               self.registry_port)
 
-        registry_db = self.registry_server.sql_connection
         self.scrubber_daemon = ScrubberDaemon(self.test_dir,
-                                              sql_connection=registry_db)
+                                              self.registry_port)
 
         self.pid_files = [self.api_server.pid_file,
                           self.registry_server.pid_file,

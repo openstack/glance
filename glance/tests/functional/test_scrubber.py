@@ -19,12 +19,11 @@ import os
 import time
 import unittest
 
-from sqlalchemy import create_engine
-
 from glance.tests import functional
 from glance.tests.utils import execute
 
 from glance import client
+from glance.registry import client as registry_client
 
 
 TEST_IMAGE_DATA = '*' * 5 * 1024
@@ -41,7 +40,10 @@ class TestScrubber(functional.FunctionalTest):
     def _get_client(self):
         return client.Client("localhost", self.api_port)
 
-    @functional.runs_sql
+    def _get_registry_client(self):
+        return registry_client.RegistryClient('localhost',
+                                              self.registry_port)
+
     def test_immediate_delete(self):
         """
         test that images get deleted immediately by default
@@ -51,26 +53,27 @@ class TestScrubber(functional.FunctionalTest):
         self.start_servers()
 
         client = self._get_client()
+        registry = self._get_registry_client()
         meta = client.add_image(TEST_IMAGE_META, TEST_IMAGE_DATA)
         id = meta['id']
 
-        sql = "SELECT * FROM images WHERE status = 'pending_delete'"
-        recs = list(self.run_sql_cmd(sql))
+        filters = {'deleted': True, 'is_public': 'none',
+                   'status': 'pending_delete'}
+        recs = registry.get_images_detailed(filters=filters)
         self.assertFalse(recs)
 
         client.delete_image(id)
-        recs = list(self.run_sql_cmd(sql))
+        recs = registry.get_images_detailed(filters=filters)
         self.assertFalse(recs)
 
-        sql = "SELECT * FROM images WHERE id = '%s'" % id
-        recs = list(self.run_sql_cmd(sql))
+        filters = {'deleted': True, 'is_public': 'none', 'status': 'deleted'}
+        recs = registry.get_images_detailed(filters=filters)
         self.assertTrue(recs)
         for rec in recs:
             self.assertEqual(rec['status'], 'deleted')
 
         self.stop_servers()
 
-    @functional.runs_sql
     def test_delayed_delete(self):
         """
         test that images don't get deleted immediatly and that the scrubber
@@ -78,24 +81,24 @@ class TestScrubber(functional.FunctionalTest):
         """
 
         self.cleanup()
-        registry_db = self.registry_server.sql_connection
-        self.start_servers(delayed_delete=True, sql_connection=registry_db,
-                           daemon=True)
+        self.start_servers(delayed_delete=True, daemon=True)
 
         client = self._get_client()
+        registry = self._get_registry_client()
         meta = client.add_image(TEST_IMAGE_META, TEST_IMAGE_DATA)
         id = meta['id']
 
-        sql = "SELECT * FROM images WHERE status = 'pending_delete'"
-        recs = list(self.run_sql_cmd(sql))
+        filters = {'deleted': True, 'is_public': 'none',
+                   'status': 'pending_delete'}
+        recs = registry.get_images_detailed(filters=filters)
         self.assertFalse(recs)
 
         client.delete_image(id)
-        recs = self.run_sql_cmd(sql)
+        recs = registry.get_images_detailed(filters=filters)
         self.assertTrue(recs)
 
-        sql = "SELECT * FROM images WHERE id = '%s'" % id
-        recs = list(self.run_sql_cmd(sql))
+        filters = {'deleted': True, 'is_public': 'none'}
+        recs = registry.get_images_detailed(filters=filters)
         self.assertTrue(recs)
         for rec in recs:
             self.assertEqual(rec['status'], 'pending_delete')
@@ -109,7 +112,7 @@ class TestScrubber(functional.FunctionalTest):
         for _ in xrange(3):
             time.sleep(5)
 
-            recs = list(self.run_sql_cmd(sql))
+            recs = registry.get_images_detailed(filters=filters)
             self.assertTrue(recs)
 
             # NOTE(jkoelker) Reset the deleted set for this loop

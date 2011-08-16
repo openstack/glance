@@ -21,6 +21,7 @@ System-level utilities and helper functions.
 """
 
 import datetime
+import errno
 import inspect
 import logging
 import os
@@ -131,6 +132,22 @@ def isotime(at=None):
 
 def parse_isotime(timestr):
     return datetime.datetime.strptime(timestr, TIME_FORMAT)
+
+
+def safe_mkdirs(path):
+    try:
+        os.makedirs(path)
+    except OSError, e:
+        if e.errno != errno.EEXIST:
+            raise
+
+
+def safe_remove(path):
+    try:
+        os.remove(path)
+    except OSError, e:
+        if e.errno != errno.ENOENT:
+            raise
 
 
 class LazyPluggable(object):
