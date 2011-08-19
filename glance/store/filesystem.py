@@ -54,7 +54,7 @@ class StoreLocation(glance.store.location.StoreLocation):
         self.scheme = pieces.scheme
         path = (pieces.netloc + pieces.path).strip()
         if path == '':
-            reason = "No path specified"
+            reason = _("No path specified")
             raise exception.BadStoreUri(uri, reason)
         self.path = path
 
@@ -103,12 +103,13 @@ class Store(glance.store.base.Store):
         self.datadir = self._option_get('filesystem_store_datadir')
 
         if not os.path.exists(self.datadir):
-            logger.info("Directory to write image files does not exist "
-                        "(%s). Creating.", self.datadir)
+            msg = _("Directory to write image files does not exist "
+                    "(%s). Creating.") % self.datadir
+            logger.info(msg)
             try:
                 os.makedirs(self.datadir)
             except IOError:
-                reason = "Unable to create datadir: %s" % self.datadir
+                reason = _("Unable to create datadir: %s") % self.datadir
                 logger.error(reason)
                 raise exception.BadStoreConfiguration(store_name="filesystem",
                                                       reason=reason)
@@ -116,7 +117,7 @@ class Store(glance.store.base.Store):
     def _option_get(self, param):
         result = self.options.get(param)
         if not result:
-            reason = ("Could not find %s in configuration options." % param)
+            reason = _("Could not find %s in configuration options.") % param
             logger.error(reason)
             raise exception.BadStoreConfiguration(store_name="filesystem",
                                                   reason=reason)
@@ -135,10 +136,10 @@ class Store(glance.store.base.Store):
         loc = location.store_location
         filepath = loc.path
         if not os.path.exists(filepath):
-            raise exception.NotFound("Image file %s not found" % filepath)
+            raise exception.NotFound(_("Image file %s not found") % filepath)
         else:
-            logger.debug("Found image at %s. Returning in ChunkedFile.",
-                         filepath)
+            msg = _("Found image at %s. Returning in ChunkedFile.") % filepath
+            logger.debug(msg)
             return ChunkedFile(filepath)
 
     def delete(self, location):
@@ -156,12 +157,13 @@ class Store(glance.store.base.Store):
         fn = loc.path
         if os.path.exists(fn):
             try:
-                logger.debug("Deleting image at %s", fn)
+                logger.debug(_("Deleting image at %(fn)s") % locals())
                 os.unlink(fn)
             except OSError:
-                raise exception.NotAuthorized("You cannot delete file %s" % fn)
+                raise exception.NotAuthorized(_("You cannot delete file %s")
+                                                % fn)
         else:
-            raise exception.NotFound("Image file %s does not exist" % fn)
+            raise exception.NotFound(_("Image file %s does not exist") % fn)
 
     def add(self, image_id, image_file):
         """
@@ -185,7 +187,7 @@ class Store(glance.store.base.Store):
         filepath = os.path.join(self.datadir, str(image_id))
 
         if os.path.exists(filepath):
-            raise exception.Duplicate("Image file %s already exists!"
+            raise exception.Duplicate(_("Image file %s already exists!")
                                       % filepath)
 
         checksum = hashlib.md5()
@@ -201,8 +203,8 @@ class Store(glance.store.base.Store):
 
         checksum_hex = checksum.hexdigest()
 
-        logger.debug("Wrote %(bytes_written)d bytes to %(filepath)s with "
-                     "checksum %(checksum_hex)s" % locals())
+        logger.debug(_("Wrote %(bytes_written)d bytes to %(filepath)s with "
+                     "checksum %(checksum_hex)s") % locals())
         return ('file://%s' % filepath, bytes_written, checksum_hex)
 
 

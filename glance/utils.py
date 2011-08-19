@@ -231,7 +231,7 @@ def set_xattr(path, key, value):
         entry_xattr.set(namespaced_key, str(value))
     except IOError as e:
         if e.errno == errno.EOPNOTSUPP:
-            logger.warn("xattrs not supported, skipping...")
+            logger.warn(_("xattrs not supported, skipping..."))
         else:
             raise
 

@@ -120,8 +120,9 @@ class Location(object):
                                      % SCHEME_TO_STORE_MAP[self.store_name])
             return cls(self.store_specs)
         except exception.NotFound:
-            logger.error("Unable to find StoreLocation class in store %s",
-                         self.store_name)
+            msg = _("Unable to find StoreLocation class in store "
+                    "%s") % self.store_name
+            logger.error(msg)
             return None
 
     def get_store_uri(self):

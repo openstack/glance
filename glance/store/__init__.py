@@ -165,8 +165,8 @@ def schedule_delete_from_backend(uri, options, context, id, **kwargs):
         try:
             return delete_from_backend(uri, **kwargs)
         except (UnsupportedBackend, exception.NotFound):
-            msg = "Failed to delete image from store (%s). "
-            logger.error(msg % uri)
+            msg = _("Failed to delete image from store (%(uri)s).") % locals()
+            logger.error(msg)
 
     registry.update_image_metadata(options, context, id,
                                    {'status': 'pending_delete'})

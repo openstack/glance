@@ -36,8 +36,8 @@ logger = logging.getLogger('glance.store.scrubber')
 
 class Daemon(object):
     def __init__(self, wakeup_time=300, threads=1000):
-        logger.info("Starting Daemon: " +
-                    "wakeup_time=%s threads=%s" % (wakeup_time, threads))
+        logger.info(_("Starting Daemon: wakeup_time=%(wakeup_time)s "
+                      "threads=%(threads)s") % locals())
         self.wakeup_time = wakeup_time
         self.event = eventlet.event.Event()
         self.pool = eventlet.greenpool.GreenPool(threads)
@@ -49,41 +49,43 @@ class Daemon(object):
         try:
             self.event.wait()
         except KeyboardInterrupt:
-            logger.info("Daemon Shutdown on KeyboardInterrupt")
+            msg = _("Daemon Shutdown on KeyboardInterrupt")
+            logger.info(msg)
 
     def _run(self, application):
-        logger.debug("Runing application")
+        logger.debug(_("Runing application"))
         self.pool.spawn_n(application.run, self.pool, self.event)
         eventlet.spawn_after(self.wakeup_time, self._run, application)
-        logger.debug("Next run scheduled in %s seconds" % self.wakeup_time)
+        logger.debug(_("Next run scheduled in %s seconds") % self.wakeup_time)
 
 
 class Scrubber(object):
     def __init__(self, options):
-        logger.info("Initializing scrubber with options: %s" % options)
+        logger.info(_("Initializing scrubber with options: %s") % options)
         self.options = options
         scrub_time = config.get_option(options, 'scrub_time', type='int',
                                        default=0)
-        logger.info("Scrub interval set to %s seconds" % scrub_time)
+        logger.info(_("Scrub interval set to %s seconds") % scrub_time)
         self.scrub_time = datetime.timedelta(seconds=scrub_time)
         db_api.configure_db(options)
         store.create_stores(options)
 
     def run(self, pool, event=None):
         delete_time = datetime.datetime.utcnow() - self.scrub_time
-        logger.info("Getting images deleted before %s" % delete_time)
+        logger.info(_("Getting images deleted before %s") % delete_time)
         pending = db_api.image_get_all_pending_delete(None, delete_time)
-        logger.info("Deleting %s images" % len(pending))
+        num_pending = len(pending)
+        logger.info(_("Deleting %(num_pending)s images") % locals())
         delete_work = [(p['id'], p['location']) for p in pending]
         pool.starmap(self._delete, delete_work)
 
     def _delete(self, id, location):
         try:
-            logger.debug("Deleting %s" % location)
+            logger.debug(_("Deleting %(location)s") % locals())
             store.delete_from_backend(location)
         except (store.UnsupportedBackend, exception.NotFound):
-            msg = "Failed to delete image from store (%s). "
-            logger.error(msg % uri)
+            msg = _("Failed to delete image from store (%(uri)s).") % locals()
+            logger.error(msg)
 
         ctx = context.RequestContext(is_admin=True, show_deleted=True)
         db_api.image_update(ctx, id, {'status': 'deleted'})
