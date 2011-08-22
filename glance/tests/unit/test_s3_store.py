@@ -209,7 +209,8 @@ class TestStore(unittest.TestCase):
             expected_image_id)
         image_s3 = StringIO.StringIO(expected_s3_contents)
 
-        location, size, checksum = self.store.add(42, image_s3)
+        location, size, checksum = self.store.add(42, image_s3,
+                                                  expected_s3_size)
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_s3_size, size)
@@ -258,7 +259,8 @@ class TestStore(unittest.TestCase):
             image_s3 = StringIO.StringIO(expected_s3_contents)
 
             self.store = Store(new_options)
-            location, size, checksum = self.store.add(i, image_s3)
+            location, size, checksum = self.store.add(i, image_s3,
+                                                      expected_s3_size)
 
             self.assertEquals(expected_location, location)
             self.assertEquals(expected_s3_size, size)
@@ -281,7 +283,7 @@ class TestStore(unittest.TestCase):
         image_s3 = StringIO.StringIO("nevergonnamakeit")
         self.assertRaises(exception.Duplicate,
                           self.store.add,
-                          2, image_s3)
+                          2, image_s3, 0)
 
     def _option_required(self, key):
         options = S3_OPTIONS.copy()

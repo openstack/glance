@@ -87,7 +87,8 @@ class TestStore(unittest.TestCase):
                                               expected_image_id)
         image_file = StringIO.StringIO(expected_file_contents)
 
-        location, size, checksum = self.store.add(42, image_file)
+        location, size, checksum = self.store.add(42, image_file,
+                                                  expected_file_size)
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_file_size, size)
@@ -116,7 +117,7 @@ class TestStore(unittest.TestCase):
                    'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
         self.assertRaises(exception.Duplicate,
                           self.store.add,
-                          2, image_file)
+                          2, image_file, 0)
 
     def test_delete(self):
         """

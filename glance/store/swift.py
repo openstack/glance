@@ -19,8 +19,11 @@
 
 from __future__ import absolute_import
 
+import hashlib
 import httplib
 import logging
+import math
+import tempfile
 import urlparse
 
 from glance.common import config
@@ -34,7 +37,9 @@ try:
 except ImportError:
     pass
 
-DEFAULT_SWIFT_CONTAINER = 'glance'
+DEFAULT_CONTAINER = 'glance'
+DEFAULT_LARGE_OBJECT_SIZE = 5 * 1024 * 1024 * 1024  # 5GB
+DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 200 * 1024 * 1024  # 200M
 
 logger = logging.getLogger('glance.store.swift')
 
@@ -189,7 +194,26 @@ class Store(glance.store.base.Store):
         self.user = self._option_get('swift_store_user')
         self.key = self._option_get('swift_store_key')
         self.container = self.options.get('swift_store_container',
-                                DEFAULT_SWIFT_CONTAINER)
+                                          DEFAULT_CONTAINER)
+        try:
+            if self.options.get('swift_store_large_object_size'):
+                self.large_object_size = int(
+                    self.options.get('swift_store_large_object_size')
+                    ) * (1024 * 1024)  # Size specified in MB in conf files
+            else:
+                self.large_object_size = DEFAULT_LARGE_OBJECT_SIZE
+
+            if self.options.get('swift_store_large_object_chunk_size'):
+                self.large_object_chunk_size = int(
+                    self.options.get('swift_store_large_object_chunk_size')
+                    ) * (1024 * 1024)  # Size specified in MB in conf files
+            else:
+                self.large_object_chunk_size = DEFAULT_LARGE_OBJECT_CHUNK_SIZE
+        except Exception, e:
+            reason = _("Error in configuration options: %s") % e
+            logger.error(reason)
+            raise exception.BadStoreConfiguration(store_name="swift",
+                                                  reason=reason)
 
         self.scheme = 'swift+https'
         if self.auth_address.startswith('http://'):
@@ -259,7 +283,7 @@ class Store(glance.store.base.Store):
                                                   reason=reason)
         return result
 
-    def add(self, image_id, image_file):
+    def add(self, image_id, image_file, image_size):
         """
         Stores an image file with supplied identifier to the backend
         storage system and returns an `glance.store.ImageAddResult` object
@@ -267,6 +291,7 @@ class Store(glance.store.base.Store):
 
         :param image_id: The opaque image identifier
         :param image_file: The image data to write, as a file-like object
+        :param image_size: The size of the image data to write, in bytes
 
         :retval `glance.store.ImageAddResult` object
         :raises `glance.common.exception.Duplicate` if the image already
@@ -284,6 +309,11 @@ class Store(glance.store.base.Store):
         :note Swift auth URLs by default use HTTPS. To specify an HTTP
               auth URL, you can specify http://someurl.com for the
               swift_store_auth_address config option
+
+        :note Swift cannot natively/transparently handle objects >5GB
+              in size. So, if the image is greater than 5GB, we write
+              chunks of image data to Swift and then write an manifest
+              to Swift that contains information about the chunks.
         """
         swift_conn = self._make_swift_connection(
             auth_url=self.full_auth_address, user=self.user, key=self.key)
@@ -301,8 +331,67 @@ class Store(glance.store.base.Store):
         logger.debug(_("Adding image object '%(obj_name)s' "
                        "to Swift") % locals())
         try:
-            obj_etag = swift_conn.put_object(self.container, obj_name,
-                                             image_file)
+            if image_size < self.large_object_size:
+                # image_size == 0 is when we don't know the size
+                # of the image. This can occur with older clients
+                # that don't inspect the payload size, and we simply
+                # try to put the object into Swift and hope for the
+                # best...
+                obj_etag = swift_conn.put_object(self.container, obj_name,
+                                                 image_file)
+            else:
+                # Write the image into Swift in chunks. We cannot
+                # stream chunks of the webob.Request.body_file, unfortunately,
+                # so we must write chunks of the body_file into a temporary
+                # disk buffer, and then pass this disk buffer to Swift.
+                bytes_left = image_size
+                chunk_id = 1
+                total_chunks = int(math.ceil(
+                    float(image_size) / float(self.large_object_chunk_size)))
+                checksum = hashlib.md5()
+                while bytes_left > 0:
+                    with tempfile.NamedTemporaryFile() as disk_buffer:
+                        chunk_size = min(self.large_object_chunk_size,
+                                         bytes_left)
+                        logger.debug(_("Writing %(chunk_size)d bytes for "
+                                       "chunk %(chunk_id)d/"
+                                       "%(total_chunks)d to disk buffer "
+                                       "for image %(image_id)s")
+                                     % locals())
+                        chunk = image_file.read(chunk_size)
+                        checksum.update(chunk)
+                        disk_buffer.write(chunk)
+                        disk_buffer.flush()
+                        logger.debug(_("Writing chunk %(chunk_id)d/"
+                                       "%(total_chunks)d to Swift "
+                                       "for image %(image_id)s")
+                                     % locals())
+                        chunk_etag = swift_conn.put_object(
+                            self.container,
+                            "%s-%05d" % (obj_name, chunk_id),
+                            open(disk_buffer.name, 'rb'))
+                        logger.debug(_("Wrote chunk %(chunk_id)d/"
+                                       "%(total_chunks)d to Swift "
+                                       "returning MD5 of content: "
+                                       "%(chunk_etag)s")
+                                     % locals())
+                    bytes_left -= self.large_object_chunk_size
+                    chunk_id += 1
+
+                # Now we write the object manifest and return the
+                # manifest's etag...
+                manifest = "%s/%s" % (self.container, obj_name)
+                headers = {'ETag': hashlib.md5("").hexdigest(),
+                           'X-Object-Manifest': manifest}
+
+                # The ETag returned for the manifest is actually the
+                # MD5 hash of the concatenated checksums of the strings
+                # of each chunk...so we ignore this result in favour of
+                # the MD5 of the entire image file contents, so that
+                # users can verify the image file contents accordingly
+                _ignored = swift_conn.put_object(self.container, obj_name,
+                                                 None, headers=headers)
+                obj_etag = checksum.hexdigest()
 
             # NOTE: We return the user and key here! Have to because
             # location is used by the API server to return the actual
@@ -310,15 +399,7 @@ class Store(glance.store.base.Store):
             # the location attribute from GET /images/<ID> and
             # GET /images/details
 
-            # We do a HEAD on the newly-added image to determine the size
-            # of the image. A bit slow, but better than taking the word
-            # of the user adding the image with size attribute in the metadata
-            resp_headers = swift_conn.head_object(self.container, obj_name)
-            size = 0
-            # header keys are lowercased by Swift
-            if 'content-length' in resp_headers:
-                size = int(resp_headers['content-length'])
-            return (location.get_uri(), size, obj_etag)
+            return (location.get_uri(), image_size, obj_etag)
         except swift_client.ClientException, e:
             if e.http_status == httplib.CONFLICT:
                 raise exception.Duplicate(_("Swift already has an image at "
