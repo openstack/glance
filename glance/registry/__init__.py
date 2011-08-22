@@ -49,15 +49,15 @@ def get_image_metadata(options, context, image_id):
 
 def add_image_metadata(options, context, image_meta):
     if options['debug']:
-        logger.debug("Adding image metadata...")
+        logger.debug(_("Adding image metadata..."))
         _debug_print_metadata(image_meta)
 
     c = get_registry_client(options, context)
     new_image_meta = c.add_image(image_meta)
 
     if options['debug']:
-        logger.debug("Returned image metadata from call to "
-                     "RegistryClient.add_image():")
+        logger.debug(_("Returned image metadata from call to "
+                     "RegistryClient.add_image():"))
         _debug_print_metadata(new_image_meta)
 
     return new_image_meta
@@ -66,22 +66,22 @@ def add_image_metadata(options, context, image_meta):
 def update_image_metadata(options, context, image_id, image_meta,
                           purge_props=False):
     if options['debug']:
-        logger.debug("Updating image metadata for image %s...", image_id)
+        logger.debug(_("Updating image metadata for image %s..."), image_id)
         _debug_print_metadata(image_meta)
 
     c = get_registry_client(options, context)
     new_image_meta = c.update_image(image_id, image_meta, purge_props)
 
     if options['debug']:
-        logger.debug("Returned image metadata from call to "
-                     "RegistryClient.update_image():")
+        logger.debug(_("Returned image metadata from call to "
+                     "RegistryClient.update_image():"))
         _debug_print_metadata(new_image_meta)
 
     return new_image_meta
 
 
 def delete_image_metadata(options, context, image_id):
-    logger.debug("Deleting image metadata for image %s...", image_id)
+    logger.debug(_("Deleting image metadata for image %s..."), image_id)
     c = get_registry_client(options, context)
     return c.delete_image(image_id)
 
@@ -117,7 +117,7 @@ def _debug_print_metadata(image_meta):
     for key, value in sorted(data.items()):
         logger.debug(" %(key)20s: %(value)s" % locals())
     if properties:
-        logger.debug(" %d custom properties...",
+        logger.debug(_(" %d custom properties..."),
                      len(properties))
         for key, value in properties.items():
             logger.debug(" %(key)20s: %(value)s" % locals())

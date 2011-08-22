@@ -51,18 +51,18 @@ class Prefetcher(object):
 
     def run(self):
         if self.cache.is_currently_prefetching_any_images():
-            logger.debug("Currently prefetching, going back to sleep...")
+            logger.debug(_("Currently prefetching, going back to sleep..."))
             return
 
         try:
             image_id = self.cache.pop_prefetch_item()
         except IndexError:
-            logger.debug("Nothing to prefetch, going back to sleep...")
+            logger.debug(_("Nothing to prefetch, going back to sleep..."))
             return
 
         if self.cache.hit(image_id):
-            logger.warn("Image %s is already in the cache, deleting "
-                        "prefetch job and going back to sleep...", image_id)
+            logger.warn(_("Image %s is already in the cache, deleting "
+                        "prefetch job and going back to sleep..."), image_id)
             self.cache.delete_queued_prefetch_image(image_id)
             return
 
@@ -70,12 +70,12 @@ class Prefetcher(object):
         # the prefetch queue, then go ahead and delete that item and try to
         # prefetch another
         if self.cache.is_image_currently_being_written(image_id):
-            logger.warn("Image %s is already being cached, deleting "
-                        "prefetch job and going back to sleep...", image_id)
+            logger.warn(_("Image %s is already being cached, deleting "
+                        "prefetch job and going back to sleep..."), image_id)
             self.cache.delete_queued_prefetch_image(image_id)
             return
 
-        logger.debug("Prefetching '%s'", image_id)
+        logger.debug(_("Prefetching '%s'"), image_id)
         self.cache.do_prefetch(image_id)
 
         try:

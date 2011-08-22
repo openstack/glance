@@ -39,12 +39,12 @@ class BaseController(object):
         try:
             return registry.get_image_metadata(self.options, context, id)
         except exception.NotFound:
-            msg = "Image with identifier %s not found" % id
+            msg = _("Image with identifier %s not found") % id
             logger.debug(msg)
             raise webob.exc.HTTPNotFound(
                     msg, request=request, content_type='text/plain')
         except exception.NotAuthorized:
-            msg = "Unauthorized image access"
+            msg = _("Unauthorized image access")
             logger.debug(msg)
             raise webob.exc.HTTPForbidden(msg, request=request,
                                 content_type='text/plain')
@@ -56,7 +56,7 @@ class BaseController(object):
         """
         image = self.get_image_meta_or_404(request, id)
         if image['status'] != 'active':
-            msg = "Image %s is not active" % id
+            msg = _("Image %s is not active") % id
             logger.debug(msg)
             raise webob.exc.HTTPNotFound(
                     msg, request=request, content_type='text/plain')

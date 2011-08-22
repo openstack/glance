@@ -50,8 +50,10 @@ class VersionNegotiationFilter(wsgi.Middleware):
         # See if a version identifier is in the URI passed to
         # us already. If so, simply return the right version
         # API controller
-        logger.debug("Processing request: %s %s Accept: %s",
-                     req.method, req.path, req.accept)
+        msg = _("Processing request: %(method)s %(path)s Accept: "
+                "%(accept)s") % ({'method': req.method,
+                'path': req.path, 'accept': req.accept})
+        logger.debug(msg)
 
         # If the request is for /versions, just return the versions container
         if req.path_info_peek() == "versions":
@@ -61,15 +63,15 @@ class VersionNegotiationFilter(wsgi.Middleware):
         if match:
             if (req.environ['api.major_version'] == 1 and
                 req.environ['api.minor_version'] == 0):
-                logger.debug("Matched versioned URI. Version: %d.%d",
+                logger.debug(_("Matched versioned URI. Version: %d.%d"),
                              req.environ['api.major_version'],
                              req.environ['api.minor_version'])
                 # Strip the version from the path
                 req.path_info_pop()
                 return None
             else:
-                logger.debug("Unknown version in versioned URI: %d.%d. "
-                             "Returning version choices.",
+                logger.debug(_("Unknown version in versioned URI: %d.%d. "
+                             "Returning version choices."),
                              req.environ['api.major_version'],
                              req.environ['api.minor_version'])
                 return self.versions_app
@@ -82,21 +84,21 @@ class VersionNegotiationFilter(wsgi.Middleware):
             if match:
                 if (req.environ['api.major_version'] == 1 and
                     req.environ['api.minor_version'] == 0):
-                    logger.debug("Matched versioned media type. "
-                                 "Version: %d.%d",
+                    logger.debug(_("Matched versioned media type. "
+                                 "Version: %d.%d"),
                                  req.environ['api.major_version'],
                                  req.environ['api.minor_version'])
                     return None
                 else:
-                    logger.debug("Unknown version in accept header: %s.%s..."
-                                 "returning version choices.",
+                    logger.debug(_("Unknown version in accept header: %d.%d..."
+                                 "returning version choices."),
                                  req.environ['api.major_version'],
                                  req.environ['api.minor_version'])
                     return self.versions_app
         else:
             if req.accept not in ('*/*', ''):
-                logger.debug("Unknown accept header: %s..."
-                             "returning version choices.", req.accept)
+                logger.debug(_("Unknown accept header: %s..."
+                             "returning version choices."), req.accept)
             return self.versions_app
         return None
 

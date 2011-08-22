@@ -92,8 +92,8 @@ class ImageCache(object):
         for path in paths:
             if os.path.exists(path):
                 continue
-            logger.info("image cache directory doesn't exist, creating '%s'",
-                        path)
+            logger.info(_("image cache directory doesn't exist, "
+                          "creating '%s'"), path)
             os.makedirs(path)
 
     @property
@@ -180,7 +180,7 @@ class ImageCache(object):
         else:
             # NOTE(sirp): `rw` and `a' modes are not supported since image
             # data is immutable, we `wb` it once, then `rb` multiple times.
-            raise Exception("mode '%s' not supported" % mode)
+            raise Exception(_("mode '%s' not supported") % mode)
 
     @contextmanager
     def _open_write(self, image_meta, mode):
@@ -195,8 +195,8 @@ class ImageCache(object):
             set_xattr('hits', 0)
 
             final_path = self.path_for_image(image_id)
-            logger.debug("fetch finished, commiting by moving "
-                         "'%(incomplete_path)s' to '%(final_path)s'",
+            logger.debug(_("fetch finished, commiting by moving "
+                         "'%(incomplete_path)s' to '%(final_path)s'"),
                          dict(incomplete_path=incomplete_path,
                               final_path=final_path))
             os.rename(incomplete_path, final_path)
@@ -206,8 +206,8 @@ class ImageCache(object):
             set_xattr('error', "%s" % e)
 
             invalid_path = self.invalid_path_for_image(image_id)
-            logger.debug("fetch errored, rolling back by moving "
-                         "'%(incomplete_path)s' to '%(invalid_path)s'",
+            logger.debug(_("fetch errored, rolling back by moving "
+                         "'%(incomplete_path)s' to '%(invalid_path)s'"),
                          dict(incomplete_path=incomplete_path,
                               invalid_path=invalid_path))
             os.rename(incomplete_path, invalid_path)
@@ -237,11 +237,11 @@ class ImageCache(object):
     @staticmethod
     def _delete_file(path):
         if os.path.exists(path):
-            logger.debug("deleting image cache file '%s'", path)
+            logger.debug(_("deleting image cache file '%s'"), path)
             os.unlink(path)
         else:
-            logger.warn("image cache file '%s' doesn't exist, unable to"
-                        " delete", path)
+            logger.warn(_("image cache file '%s' doesn't exist, unable to"
+                        " delete"), path)
 
     def purge(self, image_id):
         path = self.path_for_image(image_id)
@@ -283,19 +283,19 @@ class ImageCache(object):
         image_id = image_meta['id']
 
         if self.hit(image_id):
-            msg = "Skipping prefetch, image '%s' already cached" % image_id
+            msg = _("Skipping prefetch, image '%s' already cached") % image_id
             logger.warn(msg)
             raise exception.Invalid(msg)
 
         if self.is_image_currently_prefetching(image_id):
-            msg = "Skipping prefetch, already prefetching image '%s'"\
-                  % image_id
+            msg = _("Skipping prefetch, already prefetching "
+                    "image '%s'") % image_id
             logger.warn(msg)
             raise exception.Invalid(msg)
 
         if self.is_image_queued_for_prefetch(image_id):
-            msg = "Skipping prefetch, image '%s' already queued for"\
-                  " prefetching" % image_id
+            msg = _("Skipping prefetch, image '%s' already queued for"
+                    " prefetching") % image_id
             logger.warn(msg)
             raise exception.Invalid(msg)
 
@@ -422,17 +422,17 @@ class ImageCache(object):
             mtime = os.path.getmtime(path)
             age = now - mtime
             if not grace:
-                logger.debug("No grace period, reaping '%(path)s'"
-                             " immediately", locals())
+                logger.debug(_("No grace period, reaping '%(path)s'"
+                             " immediately"), locals())
                 self._delete_file(path)
                 reaped += 1
             elif age > grace:
-                logger.debug("Cache entry '%(path)s' exceeds grace period, "
-                             "(%(age)i s > %(grace)i s)", locals())
+                logger.debug(_("Cache entry '%(path)s' exceeds grace period, "
+                             "(%(age)i s > %(grace)i s)"), locals())
                 self._delete_file(path)
                 reaped += 1
 
-        logger.info("Reaped %(reaped)s %(entry_type)s cache entries",
+        logger.info(_("Reaped %(reaped)s %(entry_type)s cache entries"),
                     locals())
         return reaped
 

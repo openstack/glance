@@ -226,21 +226,21 @@ class Controller(api.BaseController):
         if cache.enabled:
             if cache.hit(id):
                 # hit
-                logger.debug("image '%s' is a cache HIT", id)
+                logger.debug(_("image '%s' is a cache HIT"), id)
                 image_iterator = get_from_cache(image, cache)
             else:
                 # miss
-                logger.debug("image '%s' is a cache MISS", id)
+                logger.debug(_("image '%s' is a cache MISS"), id)
 
                 # Make sure we're not already prefetching or caching the image
                 # that just generated the miss
                 if cache.is_image_currently_prefetching(id):
-                    logger.debug("image '%s' is already being prefetched,"
-                                 " not tee'ing into the cache", id)
+                    logger.debug(_("image '%s' is already being prefetched,"
+                                 " not tee'ing into the cache"), id)
                     image_iterator = get_from_store(image)
                 elif cache.is_image_currently_being_written(id):
-                    logger.debug("image '%s' is already being cached,"
-                                 " not tee'ing into the cache", id)
+                    logger.debug(_("image '%s' is already being cached,"
+                                 " not tee'ing into the cache"), id)
                     image_iterator = get_from_store(image)
                 else:
                     # NOTE(sirp): If we're about to download and cache an
@@ -249,13 +249,13 @@ class Controller(api.BaseController):
                     if cache.is_image_queued_for_prefetch(id):
                         cache.delete_queued_prefetch_image(id)
 
-                    logger.debug("tee'ing image '%s' into cache", id)
+                    logger.debug(_("tee'ing image '%s' into cache"), id)
                     image_iterator = get_from_store_tee_into_cache(
                         image, cache)
         else:
             # disabled
-            logger.debug("image cache DISABLED, retrieving image '%s'"
-                         " from store", id)
+            logger.debug(_("image cache DISABLED, retrieving image '%s'"
+                         " from store"), id)
             image_iterator = get_from_store(image)
 
         return {
@@ -295,17 +295,17 @@ class Controller(api.BaseController):
                                                      image_meta)
             return image_meta
         except exception.Duplicate:
-            msg = "An image with identifier %s already exists"\
-                  % image_meta['id']
+            msg = (_("An image with identifier %s already exists")
+                  % image_meta['id'])
             logger.error(msg)
             raise HTTPConflict(msg, request=req, content_type="text/plain")
         except exception.Invalid, e:
-            msg = ("Failed to reserve image. Got error: %(e)s" % locals())
+            msg = (_("Failed to reserve image. Got error: %(e)s") % locals())
             for line in msg.split('\n'):
                 logger.error(line)
             raise HTTPBadRequest(msg, request=req, content_type="text/plain")
         except exception.NotAuthorized:
-            msg = "Not authorized to reserve image."
+            msg = _("Not authorized to reserve image.")
             logger.error(msg)
             raise HTTPForbidden(msg, request=req,
                                 content_type="text/plain")
@@ -327,7 +327,7 @@ class Controller(api.BaseController):
             req.get_content_type('application/octet-stream')
         except exception.InvalidContentType:
             self._safe_kill(req, image_meta['id'])
-            msg = "Content-Type must be application/octet-stream"
+            msg = _("Content-Type must be application/octet-stream")
             logger.error(msg)
             raise HTTPBadRequest(explanation=msg)
 
@@ -337,12 +337,12 @@ class Controller(api.BaseController):
         store = self.get_store_or_400(req, store_name)
 
         image_id = image_meta['id']
-        logger.debug("Setting image %s to status 'saving'", image_id)
+        logger.debug(_("Setting image %s to status 'saving'"), image_id)
         registry.update_image_metadata(self.options, req.context, image_id,
                                        {'status': 'saving'})
         try:
-            logger.debug("Uploading image data for image %(image_id)s "
-                         "to %(store_name)s store", locals())
+            logger.debug(_("Uploading image data for image %(image_id)s "
+                         "to %(store_name)s store"), locals())
             location, size, checksum = store.add(image_meta['id'],
                                                  req.body_file)
 
@@ -350,7 +350,7 @@ class Controller(api.BaseController):
             # returned from store when adding image
             supplied_checksum = image_meta.get('checksum')
             if supplied_checksum and supplied_checksum != checksum:
-                msg = ("Supplied checksum (%(supplied_checksum)s) and "
+                msg = _("Supplied checksum (%(supplied_checksum)s) and "
                        "checksum generated from uploaded image "
                        "(%(checksum)s) did not match. Setting image "
                        "status to 'killed'.") % locals()
@@ -361,9 +361,9 @@ class Controller(api.BaseController):
 
             # Update the database with the checksum returned
             # from the backend store
-            logger.debug("Updating image %(image_id)s data. "
+            logger.debug(_("Updating image %(image_id)s data. "
                          "Checksum set to %(checksum)s, size set "
-                         "to %(size)d", locals())
+                         "to %(size)d"), locals())
             registry.update_image_metadata(self.options, req.context,
                                            image_id,
                                            {'checksum': checksum,
@@ -373,14 +373,14 @@ class Controller(api.BaseController):
             return location
 
         except exception.Duplicate, e:
-            msg = ("Attempt to upload duplicate image: %s") % e
+            msg = _("Attempt to upload duplicate image: %s") % e
             logger.error(msg)
             self._safe_kill(req, image_id)
             self.notifier.error('image.upload', msg)
             raise HTTPConflict(msg, request=req)
 
         except exception.NotAuthorized, e:
-            msg = ("Unauthorized upload attempt: %s") % e
+            msg = _("Unauthorized upload attempt: %s") % e
             logger.error(msg)
             self._safe_kill(req, image_id)
             self.notifier.error('image.upload', msg)
@@ -393,8 +393,9 @@ class Controller(api.BaseController):
 
             self._safe_kill(req, image_id)
 
-            msg = ("Error uploading image: (%s): '%s") % (
-                e.__class__.__name__, str(e))
+            msg = _("Error uploading image: (%(class_name)s): "
+                    "%(exc)s") % ({'class_name': e.__class__.__name__,
+                    'exc': str(e)})
 
             self.notifier.error('image.upload', msg)
             raise HTTPBadRequest(msg, request=req)
@@ -441,8 +442,9 @@ class Controller(api.BaseController):
         try:
             self._kill(req, image_id)
         except Exception, e:
-            logger.error("Unable to kill image %s: %s",
-                          image_id, repr(e))
+            logger.error(_("Unable to kill image %(id)s: "
+                           "%(exc)s") % ({'id': image_id,
+                           'exc': repr(e)}))
 
     def _upload_and_activate(self, req, image_meta):
         """
@@ -498,7 +500,7 @@ class Controller(api.BaseController):
                 image data.
         """
         if req.context.read_only:
-            msg = "Read-only access"
+            msg = _("Read-only access")
             logger.debug(msg)
             raise HTTPForbidden(msg, request=req,
                                 content_type="text/plain")
@@ -525,7 +527,7 @@ class Controller(api.BaseController):
         :retval Returns the updated image information as a mapping
         """
         if req.context.read_only:
-            msg = "Read-only access"
+            msg = _("Read-only access")
             logger.debug(msg)
             raise HTTPForbidden(msg, request=req,
                                 content_type="text/plain")
@@ -534,7 +536,7 @@ class Controller(api.BaseController):
         orig_status = orig_image_meta['status']
 
         if image_data is not None and orig_status != 'queued':
-            raise HTTPConflict("Cannot upload to an unqueued image")
+            raise HTTPConflict(_("Cannot upload to an unqueued image"))
 
         try:
             image_meta = registry.update_image_metadata(self.options,
@@ -543,7 +545,7 @@ class Controller(api.BaseController):
             if image_data is not None:
                 image_meta = self._upload_and_activate(req, image_meta)
         except exception.Invalid, e:
-            msg = ("Failed to update image metadata. Got error: %(e)s"
+            msg = (_("Failed to update image metadata. Got error: %(e)s")
                    % locals())
             for line in msg.split('\n'):
                 logger.error(line)
@@ -567,7 +569,7 @@ class Controller(api.BaseController):
                 deleteable by the requesting user
         """
         if req.context.read_only:
-            msg = "Read-only access"
+            msg = _("Read-only access")
             logger.debug(msg)
             raise HTTPForbidden(msg, request=req,
                                 content_type="text/plain")
@@ -602,11 +604,11 @@ class Controller(api.BaseController):
             members = registry.get_image_members(self.options, req.context,
                                                  image_id)
         except exception.NotFound:
-            msg = "Image with identifier %s not found" % image_id
+            msg = _("Image with identifier %s not found") % image_id
             logger.debug(msg)
             raise HTTPNotFound(msg, request=req, content_type='text/plain')
         except exception.NotAuthorized:
-            msg = "Unauthorized image access"
+            msg = _("Unauthorized image access")
             logger.debug(msg)
             raise HTTPForbidden(msg, request=req, content_type='text/plain')
         return dict(members=members)
@@ -628,11 +630,11 @@ class Controller(api.BaseController):
             members = registry.get_member_images(self.options, req.context,
                                                  member)
         except exception.NotFound, e:
-            msg = str(e)
+            msg = "%s" % e
             logger.debug(msg)
             raise HTTPNotFound(msg, request=req, content_type='text/plain')
         except exception.NotAuthorized, e:
-            msg = str(e)
+            msg = "%s" % e
             logger.debug(msg)
             raise HTTPForbidden(msg, request=req, content_type='text/plain')
         return dict(shared_images=members)
@@ -650,7 +652,7 @@ class Controller(api.BaseController):
         try:
             return get_store_from_scheme(store_name)
         except exception.UnknownScheme:
-            msg = ("Requested store %s not available on this Glance server"
+            msg = (_("Requested store %s not available on this Glance server")
                    % store_name)
             logger.error(msg)
             raise HTTPBadRequest(msg, request=request,
@@ -669,17 +671,17 @@ class Controller(api.BaseController):
         if req.context.read_only:
             raise HTTPForbidden()
         elif req.context.owner is None:
-            raise HTTPUnauthorized("No authenticated user")
+            raise HTTPUnauthorized(_("No authenticated user"))
 
         try:
             registry.replace_members(self.options, req.context,
                                      image_id, body)
         except exception.NotFound, e:
-            msg = str(e)
+            msg = "%s" % e
             logger.debug(msg)
             raise HTTPNotFound(msg, request=req, content_type='text/plain')
         except exception.NotAuthorized, e:
-            msg = str(e)
+            msg = "%s" % e
             logger.debug(msg)
             raise HTTPNotFound(msg, request=req, content_type='text/plain')
 
@@ -701,7 +703,7 @@ class Controller(api.BaseController):
         if req.context.read_only:
             raise HTTPForbidden()
         elif req.context.owner is None:
-            raise HTTPUnauthorized("No authenticated user")
+            raise HTTPUnauthorized(_("No authenticated user"))
 
         # Figure out can_share
         can_share = None
@@ -712,11 +714,11 @@ class Controller(api.BaseController):
             registry.add_member(self.options, req.context, image_id, member,
                                 can_share)
         except exception.NotFound, e:
-            msg = str(e)
+            msg = "%s" % e
             logger.debug(msg)
             raise HTTPNotFound(msg, request=req, content_type='text/plain')
         except exception.NotAuthorized, e:
-            msg = str(e)
+            msg = "%s" % e
             logger.debug(msg)
             raise HTTPNotFound(msg, request=req, content_type='text/plain')
 
@@ -729,17 +731,17 @@ class Controller(api.BaseController):
         if req.context.read_only:
             raise HTTPForbidden()
         elif req.context.owner is None:
-            raise HTTPUnauthorized("No authenticated user")
+            raise HTTPUnauthorized(_("No authenticated user"))
 
         try:
             registry.delete_member(self.options, req.context,
                                    image_id, member)
         except exception.NotFound, e:
-            msg = str(e)
+            msg = "%s" % e
             logger.debug(msg)
             raise HTTPNotFound(msg, request=req, content_type='text/plain')
         except exception.NotAuthorized, e:
-            msg = str(e)
+            msg = "%s" % e
             logger.debug(msg)
             raise HTTPNotFound(msg, request=req, content_type='text/plain')
 

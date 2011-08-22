@@ -80,7 +80,7 @@ class Pruner(object):
             freed = 0
             while to_free > 0:
                 atime, mtime, size, path = stats.pop()
-                logger.debug("deleting '%(path)s' to free %(size)d B",
+                logger.debug(_("deleting '%(path)s' to free %(size)d B"),
                              locals())
                 os.unlink(path)
                 to_free -= size
@@ -93,20 +93,20 @@ class Pruner(object):
         # Check for overage
         cur_size = sum(s[2] for s in stats)
         max_size = self.max_size
-        logger.debug("cur_size=%(cur_size)d B max_size=%(max_size)d B",
+        logger.debug(_("cur_size=%(cur_size)d B max_size=%(max_size)d B"),
                      locals())
         if cur_size <= max_size:
-            logger.debug("cache has free space, skipping prune...")
+            logger.debug(_("cache has free space, skipping prune..."))
             return
 
         overage = cur_size - max_size
         extra = max_size * self.percent_extra_to_free
         to_free = overage + extra
-        logger.debug("overage=%(overage)d B extra=%(extra)d B"
-                     " total=%(to_free)d B", locals())
+        logger.debug(_("overage=%(overage)d B extra=%(extra)d B"
+                     " total=%(to_free)d B"), locals())
 
         freed = prune_lru(stats, to_free)
-        logger.debug("finished pruning, freed %(freed)d bytes", locals())
+        logger.debug(_("finished pruning, freed %(freed)d bytes"), locals())
 
 
 def app_factory(global_config, **local_conf):

@@ -44,8 +44,8 @@ def db_version(options):
     try:
         return versioning_api.db_version(sql_connection, repo_path)
     except versioning_exceptions.DatabaseNotControlledError, e:
-        msg = ("database '%(sql_connection)s' is not under migration control"
-               % locals())
+        msg = (_("database '%(sql_connection)s' is not under "
+                 "migration control") % locals())
         raise exception.DatabaseMigrationError(msg)
 
 
@@ -61,7 +61,7 @@ def upgrade(options, version=None):
     repo_path = get_migrate_repo_path()
     sql_connection = options['sql_connection']
     version_str = version or 'latest'
-    logger.info("Upgrading %(sql_connection)s to version %(version_str)s" %
+    logger.info(_("Upgrading %(sql_connection)s to version %(version_str)s") %
                 locals())
     return versioning_api.upgrade(sql_connection, repo_path, version)
 
@@ -77,7 +77,7 @@ def downgrade(options, version):
     db_version(options)  # Ensure db is under migration control
     repo_path = get_migrate_repo_path()
     sql_connection = options['sql_connection']
-    logger.info("Downgrading %(sql_connection)s to version %(version)s" %
+    logger.info(_("Downgrading %(sql_connection)s to version %(version)s") %
                 locals())
     return versioning_api.downgrade(sql_connection, repo_path, version)
 
@@ -92,8 +92,8 @@ def version_control(options):
     try:
         _version_control(options)
     except versioning_exceptions.DatabaseAlreadyControlledError, e:
-        msg = ("database '%(sql_connection)s' is already under migration "
-               "control" % locals())
+        msg = (_("database '%(sql_connection)s' is already under migration "
+               "control") % locals())
         raise exception.DatabaseMigrationError(msg)
 
 

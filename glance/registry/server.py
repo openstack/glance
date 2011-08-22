@@ -61,7 +61,7 @@ class Controller(object):
         try:
             return db_api.image_get_all(context, **params)
         except exception.NotFound, e:
-            msg = "Invalid marker. Image could not be found."
+            msg = _("Invalid marker. Image could not be found.")
             raise exc.HTTPBadRequest(explanation=msg)
 
     def index(self, req):
@@ -168,24 +168,25 @@ class Controller(object):
         except KeyError:
             # if no value is configured, provide a sane default
             default = 25
-            msg = "Failed to read limit_param_default from config. " + \
-                  "Defaulting to %s"
-            logger.debug(msg % default)
+            msg = _("Failed to read limit_param_default from config. "
+                    "Defaulting to %s") % default
+            logger.debug(msg)
 
         try:
             limit = int(req.str_params.get('limit', default))
         except ValueError:
-            raise exc.HTTPBadRequest("limit param must be an integer")
+            raise exc.HTTPBadRequest(_("limit param must be an integer"))
 
         if limit < 0:
-            raise exc.HTTPBadRequest("limit param must be positive")
+            raise exc.HTTPBadRequest(_("limit param must be positive"))
 
         try:
             api_limit_max = int(self.options['api_limit_max'])
         except (KeyError, ValueError):
             api_limit_max = 1000
-            msg = "Failed to read api_limit_max from config. Defaulting to %s"
-            logger.debug(msg % api_limit_max)
+            msg = _("Failed to read api_limit_max from config. "
+                    "Defaulting to %s") % api_limit_max
+            logger.debug(msg)
 
         return min(api_limit_max, limit)
 
@@ -199,7 +200,7 @@ class Controller(object):
         try:
             marker = int(marker)
         except ValueError:
-            raise exc.HTTPBadRequest("marker param must be an integer")
+            raise exc.HTTPBadRequest(_("marker param must be an integer"))
         return marker
 
     def _get_sort_key(self, req):
@@ -207,7 +208,7 @@ class Controller(object):
         sort_key = req.str_params.get('sort_key', None)
         if sort_key is not None and sort_key not in SUPPORTED_SORT_KEYS:
             _keys = ', '.join(SUPPORTED_SORT_KEYS)
-            msg = "Unsupported sort_key. Acceptable values: %s" % (_keys,)
+            msg = _("Unsupported sort_key. Acceptable values: %s") % (_keys,)
             raise exc.HTTPBadRequest(explanation=msg)
         return sort_key
 
@@ -216,7 +217,7 @@ class Controller(object):
         sort_dir = req.str_params.get('sort_dir', None)
         if sort_dir is not None and sort_dir not in SUPPORTED_SORT_DIRS:
             _keys = ', '.join(SUPPORTED_SORT_DIRS)
-            msg = "Unsupported sort_dir. Acceptable values: %s" % (_keys,)
+            msg = _("Unsupported sort_dir. Acceptable values: %s") % (_keys,)
             raise exc.HTTPBadRequest(explanation=msg)
         return sort_dir
 
@@ -236,7 +237,8 @@ class Controller(object):
         elif is_public == 'false' or is_public == '0':
             return False
         else:
-            raise exc.HTTPBadRequest("is_public must be None, True, or False")
+            raise exc.HTTPBadRequest(_("is_public must be None, True, "
+                                       "or False"))
 
     def show(self, req, id):
         """Return data about the given image id."""
@@ -247,8 +249,10 @@ class Controller(object):
         except exception.NotAuthorized:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            logger.info("Access by %s to image %s denied" %
-                        (req.context.user, id))
+            msg = _("Access by %(user)s to image %(id)s "
+                    "denied") % ({'user': req.context.user,
+                    'id': id})
+            logger.info(msg)
             raise exc.HTTPNotFound()
 
         return dict(image=make_image_dict(image))
@@ -272,8 +276,10 @@ class Controller(object):
         except exception.NotAuthorized:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            logger.info("Access by %s to image %s denied" %
-                        (req.context.user, id))
+            msg = _("Access by %(user)s to image %(id)s "
+                    "denied") % ({'user': req.context.user,
+                    'id': id})
+            logger.info(msg)
             raise exc.HTTPNotFound()
 
     def create(self, req, body):
@@ -303,11 +309,12 @@ class Controller(object):
             image_data = db_api.image_create(req.context, image_data)
             return dict(image=make_image_dict(image_data))
         except exception.Duplicate:
-            msg = ("Image with identifier %s already exists!" % id)
+            msg = (_("Image with identifier %s already exists!") % id)
             logger.error(msg)
             return exc.HTTPConflict(msg)
         except exception.Invalid, e:
-            msg = ("Failed to add image metadata. Got error: %(e)s" % locals())
+            msg = (_("Failed to add image metadata. "
+                     "Got error: %(e)s") % locals())
             logger.error(msg)
             return exc.HTTPBadRequest(msg)
 
@@ -332,8 +339,8 @@ class Controller(object):
 
         purge_props = req.headers.get("X-Glance-Registry-Purge-Props", "false")
         try:
-            logger.debug("Updating image %(id)s with metadata: %(image_data)r"
-                         % locals())
+            logger.debug(_("Updating image %(id)s with metadata: "
+                           "%(image_data)r") % locals())
             if purge_props == "true":
                 updated_image = db_api.image_update(req.context, id,
                                                     image_data, True)
@@ -342,8 +349,8 @@ class Controller(object):
                                                     image_data)
             return dict(image=make_image_dict(updated_image))
         except exception.Invalid, e:
-            msg = ("Failed to update image metadata. "
-                   "Got error: %(e)s" % locals())
+            msg = (_("Failed to update image metadata. "
+                     "Got error: %(e)s") % locals())
             logger.error(msg)
             return exc.HTTPBadRequest(msg)
         except exception.NotFound:
@@ -353,8 +360,10 @@ class Controller(object):
         except exception.NotAuthorized:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            logger.info("Access by %s to image %s denied" %
-                        (req.context.user, id))
+            msg = _("Access by %(user)s to image %(id)s "
+                    "denied") % ({'user': req.context.user,
+                    'id': id})
+            logger.info(msg)
             raise exc.HTTPNotFound(body='Image not found',
                                request=req,
                                content_type='text/plain')
@@ -370,8 +379,10 @@ class Controller(object):
         except exception.NotAuthorized:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            logger.info("Access by %s to image %s denied" %
-                        (req.context.user, image_id))
+            msg = _("Access by %(user)s to image %(id)s "
+                    "denied") % ({'user': req.context.user,
+                    'id': image_id})
+            logger.info(msg)
             raise exc.HTTPNotFound()
 
         return dict(members=make_member_list(image['members'],
@@ -388,7 +399,7 @@ class Controller(object):
                                                               member,
                                                               **params)
         except exception.NotFound, e:
-            msg = "Invalid marker. Membership could not be found."
+            msg = _("Invalid marker. Membership could not be found.")
             raise exc.HTTPBadRequest(explanation=msg)
 
         return dict(shared_images=make_member_list(memberships,
@@ -408,7 +419,7 @@ class Controller(object):
         if req.context.read_only:
             raise exc.HTTPForbidden()
         elif req.context.owner is None:
-            raise exc.HTTPUnauthorized("No authenticated user")
+            raise exc.HTTPUnauthorized(_("No authenticated user"))
 
         # Make sure the image exists
         try:
@@ -418,20 +429,22 @@ class Controller(object):
         except exception.NotAuthorized:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            logger.info("Access by %s to image %s denied" %
-                        (req.context.user, image_id))
+            msg = _("Access by %(user)s to image %(id)s "
+                    "denied") % ({'user': req.context.user,
+                    'id': image_id})
+            logger.info(msg)
             raise exc.HTTPNotFound()
 
         # Can they manipulate the membership?
         if not req.context.is_image_sharable(image):
-            raise exc.HTTPForbidden("No permission to share that image")
+            raise exc.HTTPForbidden(_("No permission to share that image"))
 
         # Get the membership list
         try:
             memb_list = body['memberships']
         except Exception, e:
             # Malformed entity...
-            msg = "Invalid membership association: %s" % e
+            msg = _("Invalid membership association: %s") % e
             raise exc.HTTPBadRequest(explanation=msg)
 
         add = []
@@ -444,7 +457,7 @@ class Controller(object):
                              can_share=None)
             except Exception, e:
                 # Malformed entity...
-                msg = "Invalid membership association: %s" % e
+                msg = _("Invalid membership association: %s") % e
                 raise exc.HTTPBadRequest(explanation=msg)
 
             # Figure out what can_share should be
@@ -505,7 +518,7 @@ class Controller(object):
         if req.context.read_only:
             raise exc.HTTPForbidden()
         elif req.context.owner is None:
-            raise exc.HTTPUnauthorized("No authenticated user")
+            raise exc.HTTPUnauthorized(_("No authenticated user"))
 
         # Make sure the image exists
         try:
@@ -515,13 +528,15 @@ class Controller(object):
         except exception.NotAuthorized:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            logger.info("Access by %s to image %s denied" %
-                        (req.context.user, image_id))
+            msg = _("Access by %(user)s to image %(id)s "
+                    "denied") % ({'user': req.context.user,
+                    'id': image_id})
+            logger.info(msg)
             raise exc.HTTPNotFound()
 
         # Can they manipulate the membership?
         if not req.context.is_image_sharable(image):
-            raise exc.HTTPForbidden("No permission to share that image")
+            raise exc.HTTPForbidden(_("No permission to share that image"))
 
         # Determine the applicable can_share value
         can_share = None
@@ -530,7 +545,7 @@ class Controller(object):
                 can_share = bool(body['member']['can_share'])
             except Exception, e:
                 # Malformed entity...
-                msg = "Invalid membership association: %s" % e
+                msg = _("Invalid membership association: %s") % e
                 raise exc.HTTPBadRequest(explanation=msg)
 
         # Look up an existing membership...
@@ -555,7 +570,7 @@ class Controller(object):
         if req.context.read_only:
             raise exc.HTTPForbidden()
         elif req.context.owner is None:
-            raise exc.HTTPUnauthorized("No authenticated user")
+            raise exc.HTTPUnauthorized(_("No authenticated user"))
 
         # Make sure the image exists
         try:
@@ -565,13 +580,15 @@ class Controller(object):
         except exception.NotAuthorized:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            logger.info("Access by %s to image %s denied" %
-                        (req.context.user, image_id))
+            msg = _("Access by %(user)s to image %(id)s "
+                    "denied") % ({'user': req.context.user,
+                    'id': image_id})
+            logger.info(msg)
             raise exc.HTTPNotFound()
 
         # Can they manipulate the membership?
         if not req.context.is_image_sharable(image):
-            raise exc.HTTPForbidden("No permission to share that image")
+            raise exc.HTTPForbidden(_("No permission to share that image"))
 
         # Look up an existing membership
         try:
