@@ -31,6 +31,9 @@ skipped.
 """
 
 import ConfigParser
+import hashlib
+import httplib
+import httplib2
 import json
 import os
 import tempfile
@@ -38,6 +41,8 @@ import unittest
 
 from glance.tests.functional import test_api
 from glance.tests.utils import execute, skip_if_disabled
+
+FIVE_MB = 5 * 1024 * 1024
 
 
 class TestSwift(test_api.TestApi):
@@ -137,5 +142,192 @@ class TestSwift(test_api.TestApi):
         super(TestSwift, self).tearDown()
 
     def clear_container(self):
-        self.swift_conn.delete_container(self.swift_store_container)
+        from swift.common import client as swift_client
+        try:
+            self.swift_conn.delete_container(self.swift_store_container)
+        except swift_client.ClientException, e:
+            if e.http_status == httplib.CONFLICT:
+                pass
+            else:
+                raise
         self.swift_conn.put_container(self.swift_store_container)
+
+    @skip_if_disabled
+    def test_add_large_object_manifest(self):
+        """
+        We test the large object manifest code path in the Swift driver.
+        In the case where an image file is bigger than the config variable
+        swift_store_large_object_size, then we chunk the image into
+        Swift, and add a manifest put_object at the end.
+        """
+        self.cleanup()
+
+        self.swift_store_large_object_size = 2  # In MB
+        self.swift_store_large_object_chunk_size = 1  # In MB
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 0. GET /images
+        # Verify no public images
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, '{"images": []}')
+
+        # 1. POST /images with public image named Image1
+        # attribute and no custom properties. Verify a 200 OK is returned
+        image_data = "*" * FIVE_MB
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=image_data)
+        self.assertEqual(response.status, 201, content)
+        data = json.loads(content)
+        self.assertEqual(data['image']['checksum'],
+                         hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_MB)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(data['image']['is_public'], True)
+
+        # 4. HEAD /images/1
+        # Verify image found now
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['x-image-meta-name'], "Image1")
+
+        # 5. GET /images/1
+        # Verify all information on image we just added is correct
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        expected_image_headers = {
+            'x-image-meta-id': '1',
+            'x-image-meta-name': 'Image1',
+            'x-image-meta-is_public': 'True',
+            'x-image-meta-status': 'active',
+            'x-image-meta-disk_format': '',
+            'x-image-meta-container_format': '',
+            'x-image-meta-size': str(FIVE_MB)
+        }
+
+        expected_std_headers = {
+            'content-length': str(FIVE_MB),
+            'content-type': 'application/octet-stream'}
+
+        for expected_key, expected_value in expected_image_headers.items():
+            self.assertEqual(response[expected_key], expected_value,
+                            "For key '%s' expected header value '%s'. Got '%s'"
+                            % (expected_key, expected_value,
+                               response[expected_key]))
+
+        for expected_key, expected_value in expected_std_headers.items():
+            self.assertEqual(response[expected_key], expected_value,
+                            "For key '%s' expected header value '%s'. Got '%s'"
+                            % (expected_key,
+                               expected_value,
+                               response[expected_key]))
+
+        self.assertEqual(content, "*" * FIVE_MB)
+        self.assertEqual(hashlib.md5(content).hexdigest(),
+                         hashlib.md5("*" * FIVE_MB).hexdigest())
+
+        self.stop_servers()
+
+    @skip_if_disabled
+    def test_add_large_object_manifest_uneven_size(self):
+        """
+        Test when large object manifest in scenario where
+        image size % chunk size != 0
+        """
+        self.cleanup()
+
+        self.swift_store_large_object_size = 3  # In MB
+        self.swift_store_large_object_chunk_size = 2  # In MB
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 0. GET /images
+        # Verify no public images
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(content, '{"images": []}')
+
+        # 1. POST /images with public image named Image1
+        # attribute and no custom properties. Verify a 200 OK is returned
+        image_data = "*" * FIVE_MB
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=image_data)
+        self.assertEqual(response.status, 201, content)
+        data = json.loads(content)
+        self.assertEqual(data['image']['checksum'],
+                         hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_MB)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(data['image']['is_public'], True)
+
+        # 4. HEAD /images/1
+        # Verify image found now
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['x-image-meta-name'], "Image1")
+
+        # 5. GET /images/1
+        # Verify all information on image we just added is correct
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        expected_image_headers = {
+            'x-image-meta-id': '1',
+            'x-image-meta-name': 'Image1',
+            'x-image-meta-is_public': 'True',
+            'x-image-meta-status': 'active',
+            'x-image-meta-disk_format': '',
+            'x-image-meta-container_format': '',
+            'x-image-meta-size': str(FIVE_MB)
+        }
+
+        expected_std_headers = {
+            'content-length': str(FIVE_MB),
+            'content-type': 'application/octet-stream'}
+
+        for expected_key, expected_value in expected_image_headers.items():
+            self.assertEqual(response[expected_key], expected_value,
+                            "For key '%s' expected header value '%s'. Got '%s'"
+                            % (expected_key, expected_value,
+                               response[expected_key]))
+
+        for expected_key, expected_value in expected_std_headers.items():
+            self.assertEqual(response[expected_key], expected_value,
+                            "For key '%s' expected header value '%s'. Got '%s'"
+                            % (expected_key,
+                               expected_value,
+                               response[expected_key]))
+
+        self.assertEqual(content, "*" * FIVE_MB)
+        self.assertEqual(hashlib.md5(content).hexdigest(),
+                         hashlib.md5("*" * FIVE_MB).hexdigest())
+
+        self.stop_servers()

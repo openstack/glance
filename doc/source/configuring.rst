@@ -225,6 +225,31 @@ Can only be specified in configuration files.
 If true, Glance will attempt to create the container ``swift_store_container``
 if it does not exist.
 
+* ``swift_store_large_object_size=SIZE_IN_MB``
+
+Optional. Default: ``5120``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Swift storage backend.`
+
+What size, in MB, should Glance start chunking image files
+and do a large object manifest in Swift? By default, this is
+the maximum object size in Swift, which is 5GB
+
+* ``swift_store_large_object_chunk_size=SIZE_IN_MB``
+
+Optional. Default: ``200``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Swift storage backend.`
+
+When doing a large object manifest, what size, in MB, should
+Glance write chunks to Swift? This amount of data is written
+to a temporary disk buffer during the process of chunking
+the image file, and the default is 200MB
+
 Configuring the S3 Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

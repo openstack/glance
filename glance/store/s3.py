@@ -255,7 +255,7 @@ class Store(glance.store.base.Store):
         key.BufferSize = self.CHUNKSIZE
         return ChunkedFile(key)
 
-    def add(self, image_id, image_file):
+    def add(self, image_id, image_file, image_size):
         """
         Stores an image file with supplied identifier to the backend
         storage system and returns an `glance.store.ImageAddResult` object
@@ -263,6 +263,7 @@ class Store(glance.store.base.Store):
 
         :param image_id: The opaque image identifier
         :param image_file: The image data to write, as a file-like object
+        :param image_size: The size of the image data to write, in bytes
 
         :retval `glance.store.ImageAddResult` object
         :raises `glance.common.exception.Duplicate` if the image already

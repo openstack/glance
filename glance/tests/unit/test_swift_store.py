@@ -29,9 +29,10 @@ import swift.common.client
 
 from glance.common import exception
 from glance.store import BackendException
-from glance.store.swift import Store
+import glance.store.swift
 from glance.store.location import get_location_from_uri
 
+Store = glance.store.swift.Store
 FIVE_KB = (5 * 1024)
 SWIFT_OPTIONS = {'verbose': True,
                  'debug': True,
@@ -64,7 +65,13 @@ def stub_out_swift_common_client(stubs):
 
     def fake_put_object(url, token, container, name, contents, **kwargs):
         # PUT returns the ETag header for the newly-added object
+        # Large object manifest...
         fixture_key = "%s/%s" % (container, name)
+        if kwargs.get('headers'):
+            etag = kwargs['headers']['ETag']
+            fixture_headers[fixture_key] = {'manifest': True,
+                                            'etag': etag}
+            return etag
         if not fixture_key in fixture_headers.keys():
             if hasattr(contents, 'read'):
                 fixture_object = StringIO.StringIO()
@@ -83,7 +90,7 @@ def stub_out_swift_common_client(stubs):
             fixture_headers[fixture_key] = {
                 'content-length': read_len,
                 'etag': etag}
-            return fixture_headers[fixture_key]['etag']
+            return etag
         else:
             msg = ("Object PUT failed - Object with key %s already exists"
                    % fixture_key)
@@ -92,13 +99,26 @@ def stub_out_swift_common_client(stubs):
 
     def fake_get_object(url, token, container, name, **kwargs):
         # GET returns the tuple (list of headers, file object)
-        try:
-            fixture_key = "%s/%s" % (container, name)
-            return fixture_headers[fixture_key], fixture_objects[fixture_key]
-        except KeyError:
+        fixture_key = "%s/%s" % (container, name)
+        if not fixture_key in fixture_headers:
             msg = "Object GET failed"
             raise swift.common.client.ClientException(msg,
                         http_status=httplib.NOT_FOUND)
+
+        fixture = fixture_headers[fixture_key]
+        if 'manifest' in fixture:
+            # Large object manifest... we return a file containing
+            # all objects with prefix of this fixture key
+            chunk_keys = sorted([k for k in fixture_headers.keys()
+                                 if k.startswith(fixture_key) and
+                                 k != fixture_key])
+            result = StringIO.StringIO()
+            for key in chunk_keys:
+                result.write(fixture_objects[key].getvalue())
+            return fixture_headers[fixture_key], result
+
+        else:
+            return fixture_headers[fixture_key], fixture_objects[fixture_key]
 
     def fake_head_object(url, token, container, name, **kwargs):
         # HEAD returns the list of headers for an object
@@ -227,7 +247,8 @@ class TestStore(unittest.TestCase):
             expected_image_id)
         image_swift = StringIO.StringIO(expected_swift_contents)
 
-        location, size, checksum = self.store.add(42, image_swift)
+        location, size, checksum = self.store.add(42, image_swift,
+                                                  expected_swift_size)
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_swift_size, size)
@@ -274,7 +295,8 @@ class TestStore(unittest.TestCase):
             image_swift = StringIO.StringIO(expected_swift_contents)
 
             self.store = Store(new_options)
-            location, size, checksum = self.store.add(i, image_swift)
+            location, size, checksum = self.store.add(i, image_swift,
+                                                      expected_swift_size)
 
             self.assertEquals(expected_location, location)
             self.assertEquals(expected_swift_size, size)
@@ -305,7 +327,7 @@ class TestStore(unittest.TestCase):
         # simply used self.assertRaises here
         exception_caught = False
         try:
-            self.store.add(3, image_swift)
+            self.store.add(3, image_swift, 0)
         except BackendException, e:
             exception_caught = True
             self.assertTrue("container noexist does not exist "
@@ -333,7 +355,53 @@ class TestStore(unittest.TestCase):
         image_swift = StringIO.StringIO(expected_swift_contents)
 
         self.store = Store(options)
-        location, size, checksum = self.store.add(42, image_swift)
+        location, size, checksum = self.store.add(42, image_swift,
+                                                  expected_swift_size)
+
+        self.assertEquals(expected_location, location)
+        self.assertEquals(expected_swift_size, size)
+        self.assertEquals(expected_checksum, checksum)
+
+        loc = get_location_from_uri(expected_location)
+        new_image_swift = self.store.get(loc)
+        new_image_contents = new_image_swift.getvalue()
+        new_image_swift_size = new_image_swift.len
+
+        self.assertEquals(expected_swift_contents, new_image_contents)
+        self.assertEquals(expected_swift_size, new_image_swift_size)
+
+    def test_add_large_object(self):
+        """
+        Tests that adding a very large image. We simulate the large
+        object by setting the DEFAULT_LARGE_OBJECT_SIZE to a small number
+        and then verify that there have been a number of calls to
+        put_object()...
+        """
+        options = SWIFT_OPTIONS.copy()
+        options['swift_store_container'] = 'glance'
+        expected_image_id = 42
+        expected_swift_size = FIVE_KB
+        expected_swift_contents = "*" * expected_swift_size
+        expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
+        expected_location = format_swift_location(
+            options['swift_store_user'],
+            options['swift_store_key'],
+            options['swift_store_auth_address'],
+            options['swift_store_container'],
+            expected_image_id)
+        image_swift = StringIO.StringIO(expected_swift_contents)
+
+        orig_max_size = glance.store.swift.DEFAULT_LARGE_OBJECT_SIZE
+        orig_temp_size = glance.store.swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE
+        try:
+            glance.store.swift.DEFAULT_LARGE_OBJECT_SIZE = 1024
+            glance.store.swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 1024
+            self.store = Store(options)
+            location, size, checksum = self.store.add(42, image_swift,
+                                                      expected_swift_size)
+        finally:
+            swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE = orig_temp_size
+            swift.DEFAULT_LARGE_OBJECT_SIZE = orig_max_size
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_swift_size, size)
@@ -355,7 +423,7 @@ class TestStore(unittest.TestCase):
         image_swift = StringIO.StringIO("nevergonnamakeit")
         self.assertRaises(exception.Duplicate,
                           self.store.add,
-                          2, image_swift)
+                          2, image_swift, 0)
 
     def _option_required(self, key):
         options = SWIFT_OPTIONS.copy()

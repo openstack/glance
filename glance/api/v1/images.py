@@ -343,8 +343,17 @@ class Controller(api.BaseController):
         try:
             logger.debug(_("Uploading image data for image %(image_id)s "
                          "to %(store_name)s store"), locals())
+            if req.content_length:
+                image_size = int(req.content_length)
+            elif 'x-image-meta-size' in req.headers:
+                image_size = int(req.headers['x-image-meta-size'])
+            else:
+                logger.debug(_("Got request with no content-length and no "
+                               "x-image-meta-size header"))
+                image_size = 0
             location, size, checksum = store.add(image_meta['id'],
-                                                 req.body_file)
+                                                 req.body_file,
+                                                 image_size)
 
             # Verify any supplied checksum value matches checksum
             # returned from store when adding image
