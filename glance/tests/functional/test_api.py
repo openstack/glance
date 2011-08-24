@@ -194,7 +194,7 @@ class TestApi(functional.FunctionalTest):
         image = json.loads(content)
 
         for expected_key, expected_value in expected_image.items():
-            self.assertEqual(expected_value, expected_image[expected_key],
+            self.assertEqual(expected_value, image['images'][0][expected_key],
                             "For key '%s' expected header value '%s'. Got '%s'"
                             % (expected_key,
                                expected_value,
@@ -235,7 +235,7 @@ class TestApi(functional.FunctionalTest):
         image = json.loads(content)
 
         for expected_key, expected_value in expected_image.items():
-            self.assertEqual(expected_value, expected_image[expected_key],
+            self.assertEqual(expected_value, image['images'][0][expected_key],
                             "For key '%s' expected header value '%s'. Got '%s'"
                             % (expected_key,
                                expected_value,
