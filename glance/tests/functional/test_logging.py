@@ -17,7 +17,9 @@
 
 """Functional test case that tests logging output"""
 
+import httplib2
 import os
+import stat
 import unittest
 
 from glance.tests import functional
@@ -73,5 +75,28 @@ class TestLogging(functional.FunctionalTest):
         registry_log_out = open(self.registry_server.log_file, 'r').read()
 
         self.assertFalse('DEBUG [glance-registry]' in registry_log_out)
+
+        self.stop_servers()
+
+    def assertNotEmptyFile(self, path):
+        self.assertTrue(os.path.exists(path))
+        self.assertNotEqual(os.stat(path)[stat.ST_SIZE], 0)
+
+    def test_logrotate(self):
+        """
+        Test that we notice when our log file has been rotated
+        """
+        self.cleanup()
+        self.start_servers()
+
+        self.assertNotEmptyFile(self.api_server.log_file)
+
+        os.rename(self.api_server.log_file, self.api_server.log_file + ".1")
+
+        path = "http://%s:%d/" % ("0.0.0.0", self.api_port)
+        response, content = httplib2.Http().request(path, 'GET')
+        self.assertEqual(response.status, 300)
+
+        self.assertNotEmptyFile(self.api_server.log_file)
 
         self.stop_servers()
