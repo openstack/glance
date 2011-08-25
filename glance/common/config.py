@@ -173,7 +173,7 @@ def setup_logging(options, conf):
             logdir = conf.get('log_dir')
         if logdir:
             logfile = os.path.join(logdir, logfile)
-        handler = logging.FileHandler(logfile)
+        handler = logging.handlers.WatchedFileHandler(logfile)
     else:
         handler = logging.StreamHandler(sys.stdout)
 
