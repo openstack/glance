@@ -59,7 +59,14 @@ def catch_error(action):
             try:
                 ret = func(*args, **kwargs)
                 return SUCCESS if ret is None else ret
+            except exception.NotAuthorized:
+                print "Not authorized to make this request. Check "\
+                      "your credentials (OS_AUTH_USER, OS_AUTH_KEY, ...)."
+                return FAILURE
             except Exception, e:
+                options = args[0]
+                if options.debug:
+                    raise
                 print "Failed to %s. Got error:" % action
                 pieces = unicode(e).split('\n')
                 for piece in pieces:
@@ -963,9 +970,14 @@ def get_client(options):
     specified by the --host and --port options
     supplied to the CLI
     """
-    return glance_client.Client(host=options.host,
-                         port=options.port,
-                         auth_tok=options.auth_token)
+    creds = dict(username=os.getenv('OS_AUTH_USER'),
+                 password=os.getenv('OS_AUTH_KEY'),
+                 tenant=os.getenv('OS_AUTH_TENANT'),
+                 auth_url=os.getenv('OS_AUTH_URL'),
+                 strategy=os.getenv('OS_AUTH_STRATEGY', 'noauth'))
+
+    return glance_client.Client(host=options.host, port=options.port,
+                                auth_tok=options.auth_token, creds=creds)
 
 
 def create_options(parser):
@@ -976,6 +988,8 @@ def create_options(parser):
     :param parser: The option parser
     """
     parser.add_option('-v', '--verbose', default=False, action="store_true",
+                      help="Print more verbose output")
+    parser.add_option('-d', '--debug', default=False, action="store_true",
                       help="Print more verbose output")
     parser.add_option('-H', '--host', metavar="ADDRESS", default="0.0.0.0",
                       help="Address of Glance API host. "

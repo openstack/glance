@@ -33,18 +33,6 @@ class RegistryClient(BaseClient):
 
     DEFAULT_PORT = 9191
 
-    def __init__(self, host, port=None, use_ssl=False, auth_tok=None):
-        """
-        Creates a new client to a Glance Registry service.
-
-        :param host: The host where Glance resides
-        :param port: The port where Glance resides (defaults to 9191)
-        :param use_ssl: Should we use HTTPS? (defaults to False)
-        :param auth_tok: The auth token to pass to the server
-        """
-        port = port or self.DEFAULT_PORT
-        super(RegistryClient, self).__init__(host, port, use_ssl, auth_tok)
-
     def get_images(self, **kwargs):
         """
         Returns a list of image id/name mappings from Registry
