@@ -2,6 +2,7 @@ import httplib
 import logging
 import socket
 import urllib
+import urlparse
 
 # See http://code.google.com/p/python-nose/issues/detail?id=373
 # The code below enables glance.client standalone to work with i18n _() blocks
@@ -9,6 +10,7 @@ import __builtin__
 if not hasattr(__builtin__, '_'):
     setattr(__builtin__, '_', lambda x: x)
 
+from glance.common import auth
 from glance.common import exception
 
 
@@ -46,8 +48,11 @@ class BaseClient(object):
     """A base client class"""
 
     CHUNKSIZE = 65536
+    DEFAULT_PORT = 80
+    DEFAULT_DOC_ROOT = None
 
-    def __init__(self, host, port, use_ssl, auth_tok):
+    def __init__(self, host, port=None, use_ssl=False, auth_tok=None,
+                 creds=None, doc_root=None):
         """
         Creates a new client to some service.
 
@@ -55,18 +60,52 @@ class BaseClient(object):
         :param port: The port where service resides
         :param use_ssl: Should we use HTTPS?
         :param auth_tok: The auth token to pass to the server
+        :param creds: The credentials to pass to the auth plugin
+        :param doc_root: Prefix for all URLs we request from host
         """
         self.host = host
-        self.port = port
+        self.port = port or self.DEFAULT_PORT
         self.use_ssl = use_ssl
         self.auth_tok = auth_tok
+        self.creds = creds or {}
         self.connection = None
+        self.doc_root = self.DEFAULT_DOC_ROOT if doc_root is None else doc_root
+        self.auth_plugin = self.make_auth_plugin(self.creds)
 
     def set_auth_token(self, auth_tok):
         """
         Updates the authentication token for this client connection.
         """
+        # FIXME(sirp): Nova image/glance.py currently calls this. Since this
+        # method isn't really doing anything useful[1], we should go ahead and
+        # rip it out, first in Nova, then here. Steps:
+        #
+        #       1. Change auth_tok in Glance to auth_token
+        #       2. Change image/glance.py in Nova to use client.auth_token
+        #       3. Remove this method
+        #
+        # [1] http://mail.python.org/pipermail/tutor/2003-October/025932.html
         self.auth_tok = auth_tok
+
+    def configure_from_url(self, url):
+        """
+        Setups the connection based on the given url.
+
+        The form is:
+
+            <http|https>://<host>:port/doc_root
+        """
+        parsed = urlparse.urlparse(url)
+        self.use_ssl = parsed.scheme == 'https'
+        self.host = parsed.hostname
+        self.port = parsed.port or 80
+        self.doc_root = parsed.path
+
+    def make_auth_plugin(self, creds):
+        strategy = creds.get('strategy', 'noauth')
+        plugin_class = auth.get_plugin_from_strategy(strategy)
+        plugin = plugin_class(creds)
+        return plugin
 
     def get_connection_type(self):
         """
@@ -77,7 +116,37 @@ class BaseClient(object):
         else:
             return httplib.HTTPConnection
 
+    def _authenticate(self, force_reauth=False):
+        auth_plugin = self.auth_plugin
+
+        if not auth_plugin.is_authenticated or force_reauth:
+            auth_plugin.authenticate()
+
+        self.auth_tok = auth_plugin.auth_token
+
+        management_url = auth_plugin.management_url
+        if management_url:
+            self.configure_from_url(management_url)
+
     def do_request(self, method, action, body=None, headers=None,
+                   params=None):
+        headers = headers or {}
+
+        if not self.auth_tok:
+            self._authenticate()
+
+        try:
+            return self._do_request(
+                method, action, body=body, headers=headers, params=params)
+        except exception.NotAuthorized:
+            self._authenticate(force_reauth=True)
+            try:
+                return self._do_request(
+                    method, action, body=body, headers=headers, params=params)
+            except exception.NotAuthorized:
+                raise
+
+    def _do_request(self, method, action, body=None, headers=None,
                    params=None):
         """
         Connects to the server and issues a request.  Handles converting
@@ -113,9 +182,14 @@ class BaseClient(object):
         try:
             connection_type = self.get_connection_type()
             headers = headers or {}
+
             if 'x-auth-token' not in headers and self.auth_tok:
                 headers['x-auth-token'] = self.auth_tok
+
             c = connection_type(self.host, self.port)
+
+            if self.doc_root:
+                action = '/'.join([self.doc_root, action.lstrip('/')])
 
             # Do a simple request or a chunked request, depending
             # on whether the body param is a file-like object and

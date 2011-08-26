@@ -14,7 +14,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 from glance.common import config
 from glance.common import exception
 from glance.common import utils
@@ -28,11 +27,13 @@ class RequestContext(object):
     accesses the system, as well as additional request information.
     """
 
-    def __init__(self, auth_tok=None, user=None, tenant=None, is_admin=False,
-                 read_only=False, show_deleted=False, owner_is_tenant=True):
+    def __init__(self, auth_tok=None, user=None, tenant=None, roles=None,
+                 is_admin=False, read_only=False, show_deleted=False,
+                 owner_is_tenant=True):
         self.auth_tok = auth_tok
         self.user = user
         self.tenant = tenant
+        self.roles = roles or []
         self.is_admin = is_admin
         self.read_only = read_only
         self.show_deleted = show_deleted
@@ -70,10 +71,47 @@ class ContextMiddleware(wsgi.Middleware):
         """
         Extract any authentication information in the request and
         construct an appropriate context from it.
+
+        A few scenarios exist:
+
+        1. If X-Auth-Token is passed in, then consult TENANT and ROLE headers
+           to determine permissions.
+
+        2. An X-Auth-Token was passed in, but the Identity-Status is not
+           confirmed. For now, just raising a NotAuthorized exception.
+
+        3. X-Auth-Token is omitted. If we were using Keystone, then the
+           tokenauth middleware would have rejected the request, so we must be
+           using NoAuth. In that case, assume that is_admin=True.
         """
-        # Use the default empty context, with admin turned on for
-        # backwards compatibility
-        req.context = self.make_context(is_admin=True)
+        # TODO(sirp): should we be using the glance_tokeauth shim from
+        # Keystone here? If we do, we need to make sure it handles the NoAuth
+        # case
+        auth_tok = req.headers.get('X-Auth-Token',
+                                   req.headers.get('X-Storage-Token'))
+        if auth_tok:
+            if req.headers.get('X-Identity-Status') == 'Confirmed':
+                # 1. Auth-token is passed, check other headers
+                user = req.headers.get('X-User')
+                tenant = req.headers.get('X-Tenant')
+                roles = [r.strip()
+                         for r in req.headers.get('X-Role', '').split(',')]
+                is_admin = 'Admin' in roles
+            else:
+                # 2. Indentity-Status not confirmed
+                # FIXME(sirp): not sure what the correct behavior in this case
+                # is; just raising NotAuthorized for now
+                raise exception.NotAuthorized()
+        else:
+            # 3. Auth-token is ommited, assume NoAuth
+            user = None
+            tenant = None
+            roles = []
+            is_admin = True
+
+        req.context = self.make_context(
+            auth_tok=auth_tok, user=user, tenant=tenant, roles=roles,
+            is_admin=is_admin)
 
 
 def filter_factory(global_conf, **local_conf):

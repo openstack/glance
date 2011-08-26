@@ -26,10 +26,10 @@ from glance.registry import client
 logger = logging.getLogger('glance.registry')
 
 
-def get_registry_client(options, cxt):
+def get_registry_client(options, context):
     host = options['registry_host']
     port = int(options['registry_port'])
-    return client.RegistryClient(host, port, auth_tok=cxt.auth_tok)
+    return client.RegistryClient(host, port, auth_tok=context.auth_tok)
 
 
 def get_images_list(options, context, **kwargs):

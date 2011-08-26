@@ -76,6 +76,10 @@ class Duplicate(Error):
     pass
 
 
+class AuthorizationFailure(Error):
+    pass
+
+
 class NotAuthorized(Error):
     pass
 
@@ -86,6 +90,11 @@ class NotEmpty(Error):
 
 class Invalid(Error):
     pass
+
+
+class RedirectException(Error):
+    def __init__(self, url):
+        self.url = url
 
 
 class BadInputError(Exception):

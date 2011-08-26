@@ -26,8 +26,16 @@ from glance.tests.utils import execute
 
 
 class TestBinGlance(functional.FunctionalTest):
-
     """Functional tests for the bin/glance CLI tool"""
+
+    def setUp(self):
+        super(TestBinGlance, self).setUp()
+
+        # NOTE(sirp): This is needed in case we are running the tests under an
+        # environment in which OS_AUTH_STRATEGY=keystone. The test server we
+        # spin up won't have keystone support, so we need to switch to the
+        # NoAuth strategy.
+        os.environ['OS_AUTH_STRATEGY'] = 'noauth'
 
     def test_add_list_delete_list(self):
         """
