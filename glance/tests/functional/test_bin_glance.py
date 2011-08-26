@@ -422,26 +422,26 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
-        self.assertEqual(24, len(image_lines))
+        self.assertEqual(26, len(image_lines))
         self.assertEqual(image_lines[1].split()[1], image_ids[1])
-        self.assertEqual(image_lines[13].split()[1], image_ids[0])
+        self.assertEqual(image_lines[14].split()[1], image_ids[0])
 
-        # 10. Check min_ram filter
+        # 12. Check min_ram filter
         cmd = "min_ram=256"
         exitcode, out, err = execute("%s %s" % (_details_cmd, cmd))
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
-        self.assertEqual(11, len(image_lines))
+        self.assertEqual(12, len(image_lines))
         self.assertEqual(image_lines[0].split()[1], image_ids[2])
 
-        # 11. Check min_disk filter
+        # 13. Check min_disk filter
         cmd = "min_disk=7"
         exitcode, out, err = execute("%s %s" % (_details_cmd, cmd))
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
-        self.assertEqual(11, len(image_lines))
+        self.assertEqual(12, len(image_lines))
         self.assertEqual(image_lines[0].split()[1], image_ids[2])
 
         self.stop_servers()
@@ -524,9 +524,9 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
-        self.assertEqual(22, len(image_lines))
+        self.assertEqual(24, len(image_lines))
         self.assertTrue(image_lines[1].split()[1], image_ids[2])
-        self.assertTrue(image_lines[12].split()[1], image_ids[1])
+        self.assertTrue(image_lines[13].split()[1], image_ids[1])
 
         self.stop_servers()
 
@@ -600,10 +600,10 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
-        self.assertEqual(33, len(image_lines))
+        self.assertEqual(36, len(image_lines))
         self.assertTrue(image_lines[1].split()[1], image_ids[2])
-        self.assertTrue(image_lines[12].split()[1], image_ids[1])
-        self.assertTrue(image_lines[23].split()[1], image_ids[4])
+        self.assertTrue(image_lines[13].split()[1], image_ids[1])
+        self.assertTrue(image_lines[25].split()[1], image_ids[4])
 
         self.stop_servers()
 
@@ -657,5 +657,89 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         self.assertEqual('Deleted image %s' % image_id, out.strip())
+
+    def test_protected_image(self):
+        """
+        We test the following:
+
+            0. Verify no public images in index
+            1. Add a public image with a location attr
+               protected and no image data
+            2. Check that image exists in index
+            3. Attempt to delete the image
+            4. Remove protection from image
+            5. Delete the image
+            6. Verify no longer in index
+        """
+        self.cleanup()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 0. Verify no public images
+        cmd = "bin/glance --port=%d index" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('', out.strip())
+
+        # 1. Add public image
+        cmd = "echo testdata | bin/glance --port=%d add is_public=True"\
+              " protected=True name=MyImage" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(out.strip().startswith('Added new image with ID:'))
+
+        # 2. Verify image added as public image
+        cmd = "bin/glance --port=%d index" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        lines = out.split("\n")[2:-1]
+        self.assertEqual(1, len(lines))
+
+        line = lines[0]
+
+        image_id, name, disk_format, container_format, size = \
+            [c.strip() for c in line.split()]
+        self.assertEqual('MyImage', name)
+
+        # 3. Delete the image
+        cmd = "bin/glance --port=%d --force delete %s" % (api_port, image_id)
+
+        exitcode, out, err = execute(cmd, raise_error=False)
+
+        self.assertNotEqual(0, exitcode)
+        self.assertTrue('Image is protected' in err)
+
+        # 4. Remove image protection
+        cmd = "bin/glance --port=%d --force update %s" \
+              " protected=False" % (api_port, image_id)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(out.strip().startswith('Updated image'))
+
+        # 5. Delete the image
+        cmd = "bin/glance --port=%d --force delete %s" % (api_port, image_id)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(out.strip().startswith('Deleted image'))
+
+        # 6. Verify no public images
+        cmd = "bin/glance --port=%d index" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('', out.strip())
 
         self.stop_servers()

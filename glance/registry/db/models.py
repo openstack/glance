@@ -110,6 +110,7 @@ class Image(BASE, ModelBase):
     min_disk = Column(Integer(), nullable=False, default=0)
     min_ram = Column(Integer(), nullable=False, default=0)
     owner = Column(String(255))
+    protected = Column(Boolean, nullable=False, default=False)
 
 
 class ImageProperty(BASE, ModelBase):

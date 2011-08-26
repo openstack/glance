@@ -15,8 +15,23 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
-                     'min_ram', 'min_disk', 'size_min', 'size_max',
-                     'is_public', 'changes-since', 'protected']
+from sqlalchemy import MetaData, Table, Column, Boolean
 
-SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
+
+meta = MetaData()
+
+protected = Column('protected', Boolean, default=False)
+
+
+def upgrade(migrate_engine):
+    meta.bind = migrate_engine
+
+    images = Table('images', meta, autoload=True)
+    images.create_column(protected)
+
+
+def downgrade(migrate_engine):
+    meta.bind = migrate_engine
+
+    images = Table('images', meta, autoload=True)
+    images.drop_column(protected)

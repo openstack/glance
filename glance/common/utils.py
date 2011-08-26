@@ -104,10 +104,9 @@ def get_image_meta_from_headers(response):
     result['properties'] = properties
     if 'size' in result:
         result['size'] = int(result['size'])
-    if 'is_public' in result:
-        result['is_public'] = bool_from_header_value(result['is_public'])
-    if 'deleted' in result:
-        result['deleted'] = bool_from_header_value(result['deleted'])
+    for key in ('is_public', 'deleted', 'protected'):
+        if key in result:
+            result[key] = bool_from_header_value(result[key])
     return result
 
 

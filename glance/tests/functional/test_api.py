@@ -667,6 +667,7 @@ class TestApi(functional.FunctionalTest):
                    'X-Image-Meta-Disk-Format': 'vdi',
                    'X-Image-Meta-Size': '19',
                    'X-Image-Meta-Is-Public': 'True',
+                   'X-Image-Meta-Protected': 'True',
                    'X-Image-Meta-Property-pants': 'are on'}
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
@@ -684,6 +685,7 @@ class TestApi(functional.FunctionalTest):
                    'X-Image-Meta-Disk-Format': 'vhd',
                    'X-Image-Meta-Size': '20',
                    'X-Image-Meta-Is-Public': 'True',
+                   'X-Image-Meta-Protected': 'False',
                    'X-Image-Meta-Property-pants': 'are on'}
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
@@ -701,6 +703,7 @@ class TestApi(functional.FunctionalTest):
                    'X-Image-Meta-Disk-Format': 'ami',
                    'X-Image-Meta-Size': '21',
                    'X-Image-Meta-Is-Public': 'True',
+                   'X-Image-Meta-Protected': 'False',
                    'X-Image-Meta-Property-pants': 'are off'}
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
@@ -717,7 +720,8 @@ class TestApi(functional.FunctionalTest):
                    'X-Image-Meta-Container-Format': 'ami',
                    'X-Image-Meta-Disk-Format': 'ami',
                    'X-Image-Meta-Size': '22',
-                   'X-Image-Meta-Is-Public': 'False'}
+                   'X-Image-Meta-Is-Public': 'False',
+                   'X-Image-Meta-Protected': 'False'}
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
@@ -851,7 +855,31 @@ class TestApi(functional.FunctionalTest):
         for image in data['images']:
             self.assertNotEqual(image['name'], "My Private Image")
 
-        # 12. GET /images with property filter
+        # 12. Get /images with protected=False filter
+        # Verify correct images returned with property
+        params = "protected=False"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 2)
+        for image in data['images']:
+            self.assertNotEqual(image['name'], "Image1")
+
+        # 13. Get /images with protected=True filter
+        # Verify correct images returned with property
+        params = "protected=True"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 1)
+        for image in data['images']:
+            self.assertEqual(image['name'], "Image1")
+
+        # 14. GET /images with property filter
         # Verify correct images returned with property
         params = "property-pants=are%20on"
         path = "http://%s:%d/v1/images/detail?%s" % (
@@ -863,7 +891,7 @@ class TestApi(functional.FunctionalTest):
         for image in data['images']:
             self.assertEqual(image['properties']['pants'], "are on")
 
-        # 13. GET /images with property filter and name filter
+        # 15. GET /images with property filter and name filter
         # Verify correct images returned with property and name
         # Make sure you quote the url when using more than one param!
         params = "name=My%20Image!&property-pants=are%20on"
@@ -877,7 +905,7 @@ class TestApi(functional.FunctionalTest):
             self.assertEqual(image['properties']['pants'], "are on")
             self.assertEqual(image['name'], "My Image!")
 
-        # 14. GET /images with past changes-since filter
+        # 16. GET /images with past changes-since filter
         dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
         iso1 = utils.isotime(dt1)
         params = "changes-since=%s" % iso1
@@ -887,7 +915,7 @@ class TestApi(functional.FunctionalTest):
         data = json.loads(content)
         self.assertEqual(len(data['images']), 3)
 
-        # 15. GET /images with future changes-since filter
+        # 17. GET /images with future changes-since filter
         dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
         iso2 = utils.isotime(dt2)
         params = "changes-since=%s" % iso2
@@ -896,14 +924,6 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(response.status, 200)
         data = json.loads(content)
         self.assertEqual(len(data['images']), 0)
-
-        # DELETE images
-        for image_id in image_ids:
-            path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
-                                                  image_id)
-            http = httplib2.Http()
-            response, content = http.request(path, 'DELETE')
-            self.assertEqual(response.status, 200)
 
         self.stop_servers()
 
