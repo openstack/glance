@@ -189,7 +189,6 @@ def find_config_file(app_name, options, args):
     * If --config-file option is used, use that
     * If args[0] is a file, use that
     * Search for $app.conf in standard directories:
-        * .
         * ~.glance/
         * ~
         * /etc/glance
@@ -207,8 +206,7 @@ def find_config_file(app_name, options, args):
             return fix_path(args[0])
 
     # Handle standard directory search for $app_name.conf
-    config_file_dirs = [fix_path(os.getcwd()),
-                        fix_path(os.path.join('~', '.glance')),
+    config_file_dirs = [fix_path(os.path.join('~', '.glance')),
                         fix_path('~'),
                         '/etc/glance/',
                         '/etc']
@@ -228,7 +226,6 @@ def load_paste_config(app_name, options, args):
     * If --config-file option is used, use that
     * If args[0] is a file, use that
     * Search for $app_name.conf in standard directories:
-        * .
         * ~.glance/
         * ~
         * /etc/glance
@@ -264,7 +261,6 @@ def load_paste_app(app_name, options, args):
     * If --config-file option is used, use that
     * If args[0] is a file, use that
     * Search for $app_name.conf in standard directories:
-        * .
         * ~.glance/
         * ~
         * /etc/glance

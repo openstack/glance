@@ -29,7 +29,6 @@ use (see `the documentation on controller Glance servers <controllingservers>`_)
 If you do **not** specify a configuration file, Glance will look in the following
 directories for a configuration file, in order:
 
-* ``$CWD``
 * ``~/.glance``
 * ``~/``
 * ``/etc/glance``
@@ -80,7 +79,6 @@ file. If it is, then we try to use that as the configuration file. If there is
 no file or there were no arguments, we search for a configuration file in the
 following order:
 
-* ``$CWD``
 * ``~/.glance``
 * ``~/``
 * ``/etc/glance``
