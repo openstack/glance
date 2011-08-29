@@ -39,6 +39,7 @@ from glance.registry.db import models
 _ENGINE = None
 _MAKER = None
 BASE = models.BASE
+logger = None
 
 # attributes common to all models
 BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
@@ -64,6 +65,7 @@ def configure_db(options):
     :param options: Mapping of configuration options
     """
     global _ENGINE
+    global logger
     if not _ENGINE:
         debug = config.get_option(
             options, 'debug', type='bool', default=False)
@@ -80,6 +82,13 @@ def configure_db(options):
             logger.setLevel(logging.INFO)
 
         models.register_models(_ENGINE)
+
+
+def check_mutate_authorization(context, image_ref):
+    if not context.is_image_mutable(image_ref):
+        logger.info(_("Attempted to modify image user did not own."))
+        msg = _("You do not own this image")
+        raise exception.NotAuthorized(msg)
 
 
 def get_session(autocommit=True, expire_on_commit=False):
@@ -112,6 +121,10 @@ def image_destroy(context, image_id):
     session = get_session()
     with session.begin():
         image_ref = image_get(context, image_id, session=session)
+
+        # Perform authorization check
+        check_mutate_authorization(context, image_ref)
+
         image_ref.delete(session=session)
 
         for prop_ref in image_ref.properties:
@@ -216,7 +229,8 @@ def image_get_all(context, filters=None, marker=None, limit=None,
         the_filter = [models.Image.is_public == filters['is_public']]
         if filters['is_public'] and context.owner is not None:
             the_filter.extend([(models.Image.owner == context.owner),
-                               models.Image.members.any(member=context.owner)])
+                               models.Image.members.any(member=context.owner,
+                                                        deleted=False)])
         if len(the_filter) > 1:
             query = query.filter(or_(*the_filter))
         else:
@@ -320,12 +334,19 @@ def _image_update(context, values, image_id, purge_props=False):
 
         if image_id:
             image_ref = image_get(context, image_id, session=session)
+
+            # Perform authorization check
+            check_mutate_authorization(context, image_ref)
         else:
             if 'size' in values:
                 values['size'] = int(values['size'])
 
             values['is_public'] = bool(values.get('is_public', False))
             image_ref = models.Image()
+
+        # Need to canonicalize ownership
+        if 'owner' in values and not values['owner']:
+            values['owner'] = None
 
         if image_id:
             # Don't drop created_at if we're passing it in...
@@ -438,6 +459,7 @@ def _image_member_update(context, memb_ref, values, session=None):
 
 def image_member_delete(context, memb_ref, session=None):
     """Delete an ImageMember object"""
+    session = session or get_session()
     memb_ref.update(dict(deleted=True))
     memb_ref.save(session=session)
     return memb_ref
@@ -470,7 +492,6 @@ def image_member_find(context, image_id, member, session=None):
         # RequestContext.is_image_visible(), so avoid recursive calls
         return session.query(models.ImageMember).\
                         options(joinedload(models.ImageMember.image)).\
-                        filter_by(deleted=_deleted(context)).\
                         filter_by(image_id=image_id).\
                         filter_by(member=member).\
                         one()

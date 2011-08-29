@@ -141,7 +141,10 @@ class RegistryClient(BaseClient):
 
     def replace_members(self, image_id, member_data):
         """Replaces Registry's information about image membership"""
-        if 'memberships' not in member_data.keys():
+        if isinstance(member_data, (list, tuple)):
+            member_data = dict(memberships=list(member_data))
+        elif (isinstance(member_data, dict) and
+              'memberships' not in member_data):
             member_data = dict(memberships=[member_data])
 
         body = json.dumps(member_data)

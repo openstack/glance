@@ -48,13 +48,26 @@ class RequestContext(context.RequestContext):
 
             # Figure out if this image is shared with that tenant
             try:
-                db_api.image_member_find(self, image.id, self.owner)
-                return True
+                tmp = db_api.image_member_find(self, image.id, self.owner)
+                return not tmp['deleted']
             except exception.NotFound:
                 pass
 
         # Private image
         return False
+
+    def is_image_mutable(self, image):
+        """Return True if the image is mutable in this context."""
+        # Is admin == image mutable
+        if self.is_admin:
+            return True
+
+        # No owner == image not mutable
+        if image.owner is None or self.owner is None:
+            return False
+
+        # Image only mutable by its owner
+        return image.owner == self.owner
 
     def is_image_sharable(self, image, **kwargs):
         """Return True if the image can be shared to others in this context."""

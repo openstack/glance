@@ -135,6 +135,8 @@ def print_image_formatted(client, image):
     print "Location: %s" % image['location']
     print "Disk format: %s" % image['disk_format']
     print "Container format: %s" % image['container_format']
+    if image['owner']:
+        print "Owner: %s" % image['owner']
     if len(image['properties']) > 0:
         for k, v in image['properties'].items():
             print "Property '%s': %s" % (k, v)
@@ -321,10 +323,10 @@ to spell field names correctly. :)"""
             fields.pop(field)
 
     base_image_fields = ['disk_format', 'container_format', 'name',
-                         'location']
+                         'location', 'owner']
     for field in base_image_fields:
         fvalue = fields.pop(field, None)
-        if fvalue:
+        if fvalue is not None:
             image_meta[field] = fvalue
 
     # Have to handle "boolean" values specially...
@@ -858,7 +860,7 @@ Displays a list of images shared with a given member"""
     c = get_client(options)
 
     try:
-        images = c.get_member_images(member_id)
+        members = c.get_member_images(member_id)
     except exception.NotFound:
         print "No images shared with member %s" % member_id
         return SUCCESS
@@ -886,8 +888,8 @@ Replaces the members of the image <ID> to be solely <MEMBER>.  If the
 "--can-share" option is given, <MEMBER> will be able to further share
 the image."""
     try:
-        image_id = args.pop()
         member_id = args.pop()
+        image_id = args.pop()
     except IndexError:
         print "Please specify the image ID and the member name"
         return FAILURE
@@ -914,8 +916,8 @@ def member_add(options, args):
 Adds the member <MEMBER> to the image <ID>.  If the "--can-share"
 option is given, <MEMBER> will be able to further share the image."""
     try:
-        image_id = args.pop()
         member_id = args.pop()
+        image_id = args.pop()
     except IndexError:
         print "Please specify the image ID and the member name"
         return FAILURE
@@ -940,8 +942,8 @@ def member_delete(options, args):
 
 Deletes the specified member of the image <ID>."""
     try:
-        image_id = args.pop()
         member_id = args.pop()
+        image_id = args.pop()
     except IndexError:
         print "Please specify the image ID and the member name"
         return FAILURE

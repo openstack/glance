@@ -76,20 +76,22 @@ class Server(object):
         """
         self.verbose = True
         self.debug = True
+        self.no_venv = False
         self.test_dir = test_dir
         self.bind_port = port
         self.conf_file = None
         self.conf_base = None
+        self.server_control = './bin/glance-control'
+        self.exec_env = None
 
-    def start(self, **kwargs):
+    def write_conf(self, **kwargs):
         """
-        Starts the server.
+        Writes the configuration file for the server to its intended
+        destination.  Returns the name of the configuration file.
+        """
 
-        Any kwargs passed to this method will override the configuration
-        value in the conf file used in starting the servers.
-        """
         if self.conf_file:
-            raise RuntimeError("Server configuration file already exists!")
+            return self.conf_file_name
         if not self.conf_base:
             raise RuntimeError("Subclass did not populate config_base!")
 
@@ -106,19 +108,32 @@ class Server(object):
         self.conf_file = conf_file
         self.conf_file_name = conf_file.name
 
-        cmd = ("./bin/glance-control %(server_name)s start "
+        return self.conf_file_name
+
+    def start(self, **kwargs):
+        """
+        Starts the server.
+
+        Any kwargs passed to this method will override the configuration
+        value in the conf file used in starting the servers.
+        """
+
+        # Ensure the configuration file is written
+        self.write_conf(**kwargs)
+
+        cmd = ("%(server_control)s %(server_name)s start "
                "%(conf_file_name)s --pid-file=%(pid_file)s"
                % self.__dict__)
-        return execute(cmd)
+        return execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env)
 
     def stop(self):
         """
         Spin down the server.
         """
-        cmd = ("./bin/glance-control %(server_name)s stop "
+        cmd = ("%(server_control)s %(server_name)s stop "
                "%(conf_file_name)s --pid-file=%(pid_file)s"
                % self.__dict__)
-        return execute(cmd)
+        return execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env)
 
 
 class ApiServer(Server):
@@ -148,6 +163,7 @@ class ApiServer(Server):
         self.swift_store_large_object_size = 5 * 1024
         self.swift_store_large_object_chunk_size = 200
         self.delayed_delete = delayed_delete
+        self.owner_is_tenant = True
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
@@ -169,6 +185,7 @@ swift_store_container = %(swift_store_container)s
 swift_store_large_object_size = %(swift_store_large_object_size)s
 swift_store_large_object_chunk_size = %(swift_store_large_object_chunk_size)s
 delayed_delete = %(delayed_delete)s
+owner_is_tenant = %(owner_is_tenant)s
 
 [pipeline:glance-api]
 pipeline = versionnegotiation context apiv1app
@@ -207,6 +224,7 @@ class RegistryServer(Server):
         self.pid_file = os.path.join(self.test_dir,
                                          "registry.pid")
         self.log_file = os.path.join(self.test_dir, "registry.log")
+        self.owner_is_tenant = True
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
@@ -217,6 +235,7 @@ sql_connection = %(sql_connection)s
 sql_idle_timeout = 3600
 api_limit_max = 1000
 limit_param_default = 25
+owner_is_tenant = %(owner_is_tenant)s
 
 [pipeline:glance-registry]
 pipeline = context registryapp
@@ -298,10 +317,9 @@ class FunctionalTest(unittest.TestCase):
             # We destroy the test data store between each test case,
             # and recreate it, which ensures that we have no side-effects
             # from the tests
-            self._reset_database()
+            self._reset_database(self.registry_server.sql_connection)
 
-    def _reset_database(self):
-        conn_string = self.registry_server.sql_connection
+    def _reset_database(self, conn_string):
         conn_pieces = urlparse.urlparse(conn_string)
         if conn_string.startswith('sqlite'):
             # We can just delete the SQLite database, which is

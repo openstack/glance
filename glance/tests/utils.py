@@ -87,7 +87,7 @@ def skip_if_disabled(func):
     return wrapped
 
 
-def execute(cmd, raise_error=True):
+def execute(cmd, raise_error=True, no_venv=False, exec_env=None):
     """
     Executes a command in a subprocess. Returns a tuple
     of (exitcode, out, err), where out is the string output
@@ -97,13 +97,38 @@ def execute(cmd, raise_error=True):
     :param cmd: Command string to execute
     :param raise_error: If returncode is not 0 (success), then
                         raise a RuntimeError? Default: True)
+    :param no_venv: Disable the virtual environment
+    :param exec_env: Optional dictionary of additional environment
+                     variables; values may be callables, which will
+                     be passed the current value of the named
+                     environment variable
     """
 
     env = os.environ.copy()
+    if exec_env is not None:
+        for env_name, env_val in exec_env.items():
+            if callable(env_val):
+                env[env_name] = env_val(env.get(env_name))
+            else:
+                env[env_name] = env_val
+
+    # If we're asked to omit the virtualenv, and if one is set up,
+    # restore the various environment variables
+    if no_venv and 'VIRTUAL_ENV' in env:
+        # Clip off the first element of PATH
+        env['PATH'] = env['PATH'].split(os.pathsep, 1)[-1]
+        del env['VIRTUAL_ENV']
 
     # Make sure that we use the programs in the
     # current source directory's bin/ directory.
-    env['PATH'] = os.path.join(os.getcwd(), 'bin') + ':' + env['PATH']
+    path_ext = [os.path.join(os.getcwd(), 'bin')]
+
+    # Also jack in the path cmd comes from, if it's absolute
+    executable = cmd.split()[0]
+    if os.path.isabs(executable):
+        path_ext.append(os.path.dirname(executable))
+
+    env['PATH'] = ':'.join(path_ext) + ':' + env['PATH']
     process = subprocess.Popen(cmd,
                                shell=True,
                                stdin=subprocess.PIPE,
@@ -120,6 +145,33 @@ def execute(cmd, raise_error=True):
               "\n\nSTDERR: %(err)s" % locals()
         raise RuntimeError(msg)
     return exitcode, out, err
+
+
+def find_executable(cmdname):
+    """
+    Searches the path for a given cmdname.  Returns an absolute
+    filename if an executable with the given name exists in the path,
+    or None if one does not.
+
+    :param cmdname: The bare name of the executable to search for
+    """
+
+    # Keep an eye out for the possibility of an absolute pathname
+    if os.path.isabs(cmdname):
+        return cmdname
+
+    # Get a list of the directories to search
+    path = ([os.path.join(os.getcwd(), 'bin')] +
+            os.environ['PATH'].split(os.pathsep))
+
+    # Search through each in turn
+    for elem in path:
+        full_path = os.path.join(elem, cmdname)
+        if os.access(full_path, os.X_OK):
+            return full_path
+
+    # No dice...
+    return None
 
 
 def get_unused_port():

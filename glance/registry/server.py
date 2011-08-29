@@ -422,8 +422,9 @@ class Controller(object):
             raise exc.HTTPUnauthorized(_("No authenticated user"))
 
         # Make sure the image exists
+        session = db_api.get_session()
         try:
-            image = db_api.image_get(req.context, image_id)
+            image = db_api.image_get(req.context, image_id, session=session)
         except exception.NotFound:
             raise exc.HTTPNotFound()
         except exception.NotAuthorized:
@@ -468,7 +469,8 @@ class Controller(object):
             try:
                 membership = db_api.image_member_find(req.context,
                                                       datum['image_id'],
-                                                      datum['member_id'])
+                                                      datum['member'],
+                                                      session=session)
 
                 # Are we overriding can_share?
                 if datum['can_share'] is None:
@@ -490,14 +492,15 @@ class Controller(object):
             if memb['id'] in existing:
                 # Just update the membership in place
                 update = existing[memb['id']]['values']
-                db_api.image_member_update(req.context, memb, update)
+                db_api.image_member_update(req.context, memb, update,
+                                           session=session)
             else:
                 # Outdated one; needs to be deleted
-                db_api.image_member_delete(memb)
+                db_api.image_member_delete(req.context, memb, session=session)
 
         # Now add the non-existant ones
         for memb in add:
-            db_api.image_member_create(req.context, memb)
+            db_api.image_member_create(req.context, memb, session=session)
 
         # Make an appropriate result
         return exc.HTTPNoContent()
@@ -550,15 +553,18 @@ class Controller(object):
 
         # Look up an existing membership...
         try:
+            session = db_api.get_session()
             membership = db_api.image_member_find(req.context,
-                                                  image_id, member)
+                                                  image_id, member,
+                                                  session=session)
             if can_share is not None:
                 values = dict(can_share=can_share)
-                db_api.image_member_update(req.context, membership, values)
+                db_api.image_member_update(req.context, membership, values,
+                                           session=session)
         except exception.NotFound:
             values = dict(image_id=image['id'], member=member,
                           can_share=bool(can_share))
-            db_api.image_member_create(req.context, values)
+            db_api.image_member_create(req.context, values, session=session)
 
         # Make an appropriate result
         return exc.HTTPNoContent()
@@ -592,9 +598,14 @@ class Controller(object):
 
         # Look up an existing membership
         try:
-            membership = db_api.image_member_find(req.context,
-                                                  image_id, member)
-            db_api.image_member_delete(req.context, membership)
+            session = db_api.get_session()
+            member_ref = db_api.image_member_find(req.context,
+                                                  image_id,
+                                                  member,
+                                                  session=session)
+            db_api.image_member_delete(req.context,
+                                       member_ref,
+                                       session=session)
         except exception.NotFound:
             pass
 
@@ -665,10 +676,12 @@ def make_member_list(members, **attr_map):
     """
 
     def _fetch_memb(memb, attr_map):
-        return dict([(k, memb[v]) for k, v in attr_map if v in memb.keys()])
+        return dict([(k, memb[v]) for k, v in attr_map.items()
+                                  if v in memb.keys()])
 
     # Return the list of members with the given attribute mapping
-    return [_fetch_memb(memb, attr_map) for memb in members]
+    return [_fetch_memb(memb, attr_map) for memb in members
+            if not memb.deleted]
 
 
 def app_factory(global_conf, **local_conf):
