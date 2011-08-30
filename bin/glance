@@ -213,7 +213,7 @@ EXAMPLES
                   'container_format': fields.pop('container_format', 'ovf')}
 
     # Strip any args that are not supported
-    unsupported_fields = ['status']
+    unsupported_fields = ['status', 'size']
     for field in unsupported_fields:
         if field in fields.keys():
             print 'Found non-settable field %s. Removing.' % field
