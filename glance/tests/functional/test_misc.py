@@ -19,6 +19,7 @@ import hashlib
 import httplib2
 import json
 import os
+import tempfile
 
 from glance.tests import functional
 from glance.tests.utils import execute
@@ -115,5 +116,40 @@ class TestMiscellaneous(functional.FunctionalTest):
         self.assertTrue('Invalid disk format' in out,
                         "Could not find 'Invalid disk format' "
                         "in output: %s" % out)
+
+        self.stop_servers()
+
+    def test_api_treats_size_as_a_normal_property(self):
+        """
+        A test for LP bug #825024 -- glance client currently
+        treats size as a normal property.
+        """
+
+        self.cleanup()
+        self.start_servers()
+
+        # 1. POST /images with public image named Image1
+        # attribute and no custom properties. Verify a 200 OK is returned
+        with tempfile.NamedTemporaryFile() as image_file:
+            image_file.write("XXX")
+            image_file.flush()
+            image_file_name = image_file.name
+            cmd = "bin/glance --port=%d add is_public=True name=MyImage "\
+                  "size=12345 < %s" % (self.api_port, image_file_name)
+
+            exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue('Found non-settable field size. Removing.' in out)
+        self.assertTrue('Added new image with ID: 1' in out)
+
+        # 2. Verify image added as public image
+        cmd = "bin/glance --port=%d show %d" % (self.api_port, 1)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        lines = out.split("\n")[2:-1]
+        self.assertFalse("12345" in out)
 
         self.stop_servers()
