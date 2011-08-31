@@ -25,21 +25,21 @@ logger = logging.getLogger('glance.api')
 
 
 class BaseController(object):
-    def get_image_meta_or_404(self, request, id):
+    def get_image_meta_or_404(self, request, image_id):
         """
         Grabs the image metadata for an image with a supplied
         identifier or raises an HTTPNotFound (404) response
 
         :param request: The WSGI/Webob Request object
-        :param id: The opaque image identifier
+        :param image_id: The opaque image identifier
 
         :raises HTTPNotFound if image does not exist
         """
         context = request.context
         try:
-            return registry.get_image_metadata(self.options, context, id)
+            return registry.get_image_metadata(self.options, context, image_id)
         except exception.NotFound:
-            msg = _("Image with identifier %s not found") % id
+            msg = _("Image with identifier %s not found") % image_id
             logger.debug(msg)
             raise webob.exc.HTTPNotFound(
                     msg, request=request, content_type='text/plain')
@@ -49,14 +49,14 @@ class BaseController(object):
             raise webob.exc.HTTPForbidden(msg, request=request,
                                 content_type='text/plain')
 
-    def get_active_image_meta_or_404(self, request, id):
+    def get_active_image_meta_or_404(self, request, image_id):
         """
         Same as get_image_meta_or_404 except that it will raise a 404 if the
         image isn't 'active'.
         """
-        image = self.get_image_meta_or_404(request, id)
+        image = self.get_image_meta_or_404(request, image_id)
         if image['status'] != 'active':
-            msg = _("Image %s is not active") % id
+            msg = _("Image %s is not active") % image_id
             logger.debug(msg)
             raise webob.exc.HTTPNotFound(
                     msg, request=request, content_type='text/plain')

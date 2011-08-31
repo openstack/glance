@@ -79,7 +79,7 @@ class Scrubber(object):
         delete_work = [(p['id'], p['location']) for p in pending]
         pool.starmap(self._delete, delete_work)
 
-    def _delete(self, id, location):
+    def _delete(self, image_id, location):
         try:
             logger.debug(_("Deleting %(location)s") % locals())
             store.delete_from_backend(location)
@@ -88,7 +88,7 @@ class Scrubber(object):
             logger.error(msg)
 
         ctx = context.RequestContext(is_admin=True, show_deleted=True)
-        db_api.image_update(ctx, id, {'status': 'deleted'})
+        db_api.image_update(ctx, image_id, {'status': 'deleted'})
 
 
 def app_factory(global_config, **local_conf):

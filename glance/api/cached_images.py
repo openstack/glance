@@ -54,8 +54,8 @@ class Controller(api.BaseController):
 
         return dict(cached_images=entries)
 
-    def delete(self, req, id):
-        self.cache.purge(id)
+    def delete(self, req, image_id):
+        self.cache.purge(image_id)
 
     def delete_collection(self, req):
         """
@@ -74,9 +74,9 @@ class Controller(api.BaseController):
             num_purged = self.cache.clear()
             return dict(num_purged=num_purged)
 
-    def update(self, req, id):
+    def update(self, req, image_id):
         """PUT /cached_images/1 is used to prefetch an image into the cache"""
-        image_meta = self.get_active_image_meta_or_404(req, id)
+        image_meta = self.get_active_image_meta_or_404(req, image_id)
         try:
             self.cache.queue_prefetch(image_meta)
         except exception.Invalid, e:
