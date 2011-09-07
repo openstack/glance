@@ -27,6 +27,7 @@ import webob
 from glance import client
 from glance.common import context
 from glance.common import exception
+from glance.common import utils
 from glance.registry.db import api as db_api
 from glance.registry.db import models as db_models
 from glance.registry import client as rclient
@@ -721,6 +722,89 @@ class TestRegistryClient(unittest.TestCase):
         for image in images:
             self.assertTrue(image['size'] >= 20)
 
+    def test_get_image_details_with_changes_since(self):
+        """Tests that a detailed call can be filtered by size_min"""
+        dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
+        iso1 = utils.isotime(dt1)
+
+        dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
+        iso2 = utils.isotime(dt2)
+
+        dt3 = datetime.datetime.utcnow() + datetime.timedelta(2)
+        iso3 = utils.isotime(dt3)
+
+        dt4 = datetime.datetime.utcnow() + datetime.timedelta(3)
+        iso4 = utils.isotime(dt4)
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+        db_api.image_destroy(self.context, 3)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': dt3,
+                         'updated_at': dt3}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        # Check a standard list, 4 images in db (2 deleted)
+        images = self.client.get_images_detailed(filters={})
+        self.assertEquals(len(images), 2)
+        self.assertEqual(images[0]['id'], 4)
+        self.assertEqual(images[1]['id'], 2)
+
+        # Expect 3 images (1 deleted)
+        filters = {'changes-since': iso1}
+        images = self.client.get_images(filters=filters)
+        self.assertEquals(len(images), 3)
+        self.assertEqual(images[0]['id'], 4)
+        self.assertEqual(images[1]['id'], 3)  # deleted
+        self.assertEqual(images[2]['id'], 2)
+
+        # Expect 1 images (0 deleted)
+        filters = {'changes-since': iso2}
+        images = self.client.get_images_detailed(filters=filters)
+        self.assertEquals(len(images), 1)
+        self.assertEqual(images[0]['id'], 4)
+
+        # Expect 0 images (0 deleted)
+        filters = {'changes-since': iso4}
+        images = self.client.get_images(filters=filters)
+        self.assertEquals(len(images), 0)
+
+    def test_get_image_details_with_changes_since(self):
+        """Tests that a detailed call can be filtered by changes-since"""
+        extra_fixture = {'id': 3,
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 20,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        images = self.client.get_images_detailed(filters={'size_min': 20})
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertTrue(image['size'] >= 20)
+
     def test_get_image_details_by_property(self):
         """Tests that a detailed call can be filtered by a property"""
         extra_fixture = {'id': 3,
@@ -1301,6 +1385,70 @@ class TestClient(unittest.TestCase):
 
         for image in images:
             self.assertEquals('new name! #123', image['name'])
+
+    def test_get_image_details_with_changes_since(self):
+        """Tests that a detailed call can be filtered by size_min"""
+        dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
+        iso1 = utils.isotime(dt1)
+
+        dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
+        iso2 = utils.isotime(dt2)
+
+        dt3 = datetime.datetime.utcnow() + datetime.timedelta(2)
+        iso3 = utils.isotime(dt3)
+
+        dt4 = datetime.datetime.utcnow() + datetime.timedelta(3)
+        iso4 = utils.isotime(dt4)
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+        db_api.image_destroy(self.context, 3)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': dt3,
+                         'updated_at': dt3}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        # Check a standard list, 4 images in db (2 deleted)
+        images = self.client.get_images_detailed(filters={})
+        self.assertEquals(len(images), 2)
+        self.assertEqual(images[0]['id'], 4)
+        self.assertEqual(images[1]['id'], 2)
+
+        # Expect 3 images (1 deleted)
+        filters = {'changes-since': iso1}
+        images = self.client.get_images(filters=filters)
+        self.assertEquals(len(images), 3)
+        self.assertEqual(images[0]['id'], 4)
+        self.assertEqual(images[1]['id'], 3)  # deleted
+        self.assertEqual(images[2]['id'], 2)
+
+        # Expect 1 images (0 deleted)
+        filters = {'changes-since': iso2}
+        images = self.client.get_images_detailed(filters=filters)
+        self.assertEquals(len(images), 1)
+        self.assertEqual(images[0]['id'], 4)
+
+        # Expect 0 images (0 deleted)
+        filters = {'changes-since': iso4}
+        images = self.client.get_images(filters=filters)
+        self.assertEquals(len(images), 0)
 
     def test_get_image_details_by_property(self):
         """Tests that a detailed call can be filtered by a property"""

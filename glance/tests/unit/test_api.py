@@ -27,11 +27,13 @@ import webob
 
 from glance.api import v1 as server
 from glance.common import context
+from glance.common import utils
 from glance.registry import context as rcontext
 from glance.registry import server as rserver
 from glance.registry.db import api as db_api
 from glance.registry.db import models as db_models
 from glance.tests import stubs
+
 
 OPTIONS = {'sql_connection': 'sqlite://',
            'verbose': False,
@@ -1208,6 +1210,96 @@ class TestRegistryAPI(unittest.TestCase):
         for image in images:
             self.assertTrue(image['size'] <= 19 and image['size'] >= 18)
 
+    def test_get_details_filter_changes_since(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images that have a size less than or equal to size_max
+        """
+        dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
+        iso1 = utils.isotime(dt1)
+
+        dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
+        iso2 = utils.isotime(dt2)
+
+        dt3 = datetime.datetime.utcnow() + datetime.timedelta(2)
+        iso3 = utils.isotime(dt3)
+
+        dt4 = datetime.datetime.utcnow() + datetime.timedelta(3)
+        iso4 = utils.isotime(dt4)
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+        db_api.image_destroy(self.context, 3)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': dt3,
+                         'updated_at': dt3}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        # Check a standard list, 4 images in db (2 deleted)
+        req = webob.Request.blank('/images/detail')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+        self.assertEqual(images[0]['id'], 4)
+        self.assertEqual(images[1]['id'], 2)
+
+        # Expect 3 images (1 deleted)
+        req = webob.Request.blank('/images/detail?changes-since=%s' % iso1)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+        self.assertEqual(images[0]['id'], 4)
+        self.assertEqual(images[1]['id'], 3)  # deleted
+        self.assertEqual(images[2]['id'], 2)
+
+        # Expect 1 images (0 deleted)
+        req = webob.Request.blank('/images/detail?changes-since=%s' % iso2)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+        self.assertEqual(images[0]['id'], 4)
+
+        # Expect 0 images (0 deleted)
+        req = webob.Request.blank('/images/detail?changes-since=%s' % iso4)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        images = res_dict['images']
+        self.assertEquals(len(images), 0)
+
+        # Bad request (empty changes-since param)
+        req = webob.Request.blank('/images/detail?changes-since=')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+        # Bad request (invalid changes-since param)
+        req = webob.Request.blank('/images/detail?changes-since=2011-09-05')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
     def test_get_details_filter_property(self):
         """
         Tests that the /images/detail registry API returns list of
@@ -1980,6 +2072,96 @@ class TestGlanceAPI(unittest.TestCase):
         self.assertEquals(int(images[0]['id']), 3)
         self.assertEquals(int(images[1]['id']), 2)
         self.assertEquals(int(images[2]['id']), 4)
+
+    def test_get_details_filter_changes_since(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images that have a size less than or equal to size_max
+        """
+        dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
+        iso1 = utils.isotime(dt1)
+
+        dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
+        iso2 = utils.isotime(dt2)
+
+        dt3 = datetime.datetime.utcnow() + datetime.timedelta(2)
+        iso3 = utils.isotime(dt3)
+
+        dt4 = datetime.datetime.utcnow() + datetime.timedelta(3)
+        iso4 = utils.isotime(dt4)
+
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+        db_api.image_destroy(self.context, 3)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': dt3,
+                         'updated_at': dt3}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        # Check a standard list, 4 images in db (2 deleted)
+        req = webob.Request.blank('/images/detail')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        images = res_dict['images']
+        self.assertEquals(len(images), 2)
+        self.assertEqual(images[0]['id'], 4)
+        self.assertEqual(images[1]['id'], 2)
+
+        # Expect 3 images (1 deleted)
+        req = webob.Request.blank('/images/detail?changes-since=%s' % iso1)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        images = res_dict['images']
+        self.assertEquals(len(images), 3)
+        self.assertEqual(images[0]['id'], 4)
+        self.assertEqual(images[1]['id'], 3)  # deleted
+        self.assertEqual(images[2]['id'], 2)
+
+        # Expect 1 images (0 deleted)
+        req = webob.Request.blank('/images/detail?changes-since=%s' % iso2)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+        self.assertEqual(images[0]['id'], 4)
+
+        # Expect 0 images (0 deleted)
+        req = webob.Request.blank('/images/detail?changes-since=%s' % iso4)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        images = res_dict['images']
+        self.assertEquals(len(images), 0)
+
+        # Bad request (empty changes-since param)
+        req = webob.Request.blank('/images/detail?changes-since=')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+        # Bad request (invalid changes-since param)
+        req = webob.Request.blank('/images/detail?changes-since=2011-09-05')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
 
     def test_image_is_checksummed(self):
         """Test that the image contents are checksummed properly"""

@@ -44,7 +44,8 @@ class ModelBase(object):
 
     created_at = Column(DateTime, default=datetime.datetime.utcnow,
                         nullable=False)
-    updated_at = Column(DateTime, onupdate=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow,
+                        nullable=False, onupdate=datetime.datetime.utcnow)
     deleted_at = Column(DateTime)
     deleted = Column(Boolean, nullable=False, default=False)
 

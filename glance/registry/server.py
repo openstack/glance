@@ -38,7 +38,8 @@ DISPLAY_FIELDS_IN_INDEX = ['id', 'name', 'size',
                            'checksum']
 
 SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
-                     'min_ram', 'min_disk', 'size_min', 'size_max']
+                     'min_ram', 'min_disk', 'size_min', 'size_max',
+                     'changes-since']
 
 SUPPORTED_SORT_KEYS = ('name', 'status', 'container_format', 'disk_format',
                        'size', 'id', 'created_at', 'updated_at')
@@ -148,20 +149,32 @@ class Controller(object):
         if req.context.is_admin:
             # Only admin gets to look for non-public images
             filters['is_public'] = self._get_is_public(req)
-            # The same for deleted
-            filters['deleted'] = self._parse_deleted_filter(req)
         else:
             filters['is_public'] = True
-            # NOTE(jkoelker): This is technically unnecessary since the db
-            #                 api will force deleted=False if its not an
-            #                 admin context. But explicit > implicit.
-            filters['deleted'] = False
+
         for param in req.str_params:
             if param in SUPPORTED_FILTERS:
                 filters[param] = req.str_params.get(param)
             if param.startswith('property-'):
                 _param = param[9:]
                 properties[_param] = req.str_params.get(param)
+
+        if 'changes-since' in filters:
+            isotime = filters['changes-since']
+            try:
+                filters['changes-since'] = utils.parse_isotime(isotime)
+            except ValueError:
+                raise exc.HTTPBadRequest(_("Unrecognized changes-since value"))
+
+        # only allow admins to filter on 'deleted'
+        if req.context.is_admin:
+            deleted_filter = self._parse_deleted_filter(req)
+            if deleted_filter is not None:
+                filters['deleted'] = deleted_filter
+            elif 'changes-since' not in filters:
+                filters['deleted'] = False
+        elif 'changes-since' not in filters:
+            filters['deleted'] = False
 
         if len(properties) > 0:
             filters['properties'] = properties
@@ -249,9 +262,9 @@ class Controller(object):
 
     def _parse_deleted_filter(self, req):
         """Parse deleted into something usable."""
-        deleted = req.str_params.get('deleted', False)
-        if not deleted:
-            return False
+        deleted = req.str_params.get('deleted')
+        if deleted is None:
+            return None
         return utils.bool_from_string(deleted)
 
     def show(self, req, id):

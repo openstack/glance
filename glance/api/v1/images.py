@@ -56,7 +56,7 @@ logger = logging.getLogger('glance.api.v1.images')
 
 SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
                      'min_ram', 'min_disk', 'size_min', 'size_max',
-                     'is_public']
+                     'is_public', 'changes-since']
 
 SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
 

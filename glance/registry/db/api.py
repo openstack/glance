@@ -150,10 +150,12 @@ def image_get(context, image_id, session=None):
                         options(joinedload(models.Image.members)).\
                         filter_by(id=image_id)
 
+        # filter out deleted images if context disallows it
         if not can_show_deleted(context):
             query = query.filter_by(deleted=False)
 
         image = query.one()
+
     except exc.NoResultFound:
         raise exception.NotFound("No image found with ID %s" % image_id)
 
@@ -182,16 +184,7 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     session = get_session()
     query = session.query(models.Image).\
                    options(joinedload(models.Image.properties)).\
-                   options(joinedload(models.Image.members)).\
-                   filter(models.Image.status != 'killed')
-
-    if not can_show_deleted(context) or 'deleted' not in filters:
-        query = query.filter_by(deleted=False)
-    else:
-        query = query.filter_by(deleted=filters['deleted'])
-
-    if 'deleted' in filters:
-        del filters['deleted']
+                   options(joinedload(models.Image.members))
 
     sort_dir_func = {
         'asc': asc,
@@ -222,6 +215,17 @@ def image_get_all(context, filters=None, marker=None, limit=None,
         else:
             query = query.filter(the_filter[0])
         del filters['is_public']
+
+    if 'changes-since' in filters:
+        changes_since = filters.pop('changes-since')
+        query = query.filter(models.Image.updated_at > changes_since)
+
+    if 'deleted' in filters:
+        deleted_filter = filters.pop('deleted')
+        query = query.filter_by(deleted=deleted_filter)
+        # TODO(bcwaldon): handle this logic in registry server
+        if not deleted_filter:
+            query = query.filter(models.Image.status != 'killed')
 
     for (k, v) in filters.pop('properties', {}).items():
         query = query.filter(models.Image.properties.any(name=k, value=v))

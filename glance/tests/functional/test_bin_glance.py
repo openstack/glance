@@ -17,10 +17,12 @@
 
 """Functional test case that utilizes the bin/glance CLI tool"""
 
+import datetime
 import os
 import tempfile
 import unittest
 
+from glance.common import utils
 from glance.tests import functional
 from glance.tests.utils import execute
 
@@ -396,7 +398,30 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(1, len(image_lines))
         self.assertTrue(image_lines[0].startswith('2'))
 
-        # 9. Ensure details call also respects filters
+        # 9. Check past changes-since
+        dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
+        iso1 = utils.isotime(dt1)
+        cmd = "changes-since=%s" % iso1
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(3, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('3'))
+        self.assertTrue(image_lines[1].startswith('2'))
+        self.assertTrue(image_lines[2].startswith('1'))
+
+        # 10. Check future changes-since
+        dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
+        iso2 = utils.isotime(dt2)
+        cmd = "changes-since=%s" % iso2
+        exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(0, len(image_lines))
+
+        # 11. Ensure details call also respects filters
         _details_cmd = "%s details" % (_base_cmd,)
         cmd = "foo=bar"
         exitcode, out, err = execute("%s %s" % (_details_cmd, cmd))

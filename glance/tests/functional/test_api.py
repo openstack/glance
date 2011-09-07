@@ -17,12 +17,14 @@
 
 """Functional test case that utilizes httplib2 against the API server"""
 
+import datetime
 import hashlib
 import httplib2
 import json
 import os
 import tempfile
 
+from glance.common import utils
 from glance.tests import functional
 from glance.tests.utils import execute, skip_if_disabled
 
@@ -852,6 +854,26 @@ class TestApi(functional.FunctionalTest):
         for image in data['images']:
             self.assertEqual(image['properties']['pants'], "are on")
             self.assertEqual(image['name'], "My Image!")
+
+        # 14. GET /images with past changes-since filter
+        dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
+        iso1 = utils.isotime(dt1)
+        params = "changes-since=%s" % iso1
+        path = "http://%s:%d/v1/images?%s" % ("0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 3)
+
+        # 15. GET /images with future changes-since filter
+        dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
+        iso2 = utils.isotime(dt2)
+        params = "changes-since=%s" % iso2
+        path = "http://%s:%d/v1/images?%s" % ("0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 0)
 
         self.stop_servers()
 
