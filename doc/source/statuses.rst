@@ -17,32 +17,38 @@
 Image Statuses
 ==============
 
-Images in Glance can be in one of four statuses:
+Images in Glance can be in one the following statuses:
 
 * ``queued``
 
-  Denotes an image identifier has been reserved for an image in Glance (or
-  more specifically, reserved in the registries Glance uses) and that no
-  actual image data has yet to be uploaded to Glance
+  The image identifier has been reserved for an image in the Glance
+  registry. No image data has been uploaded to Glance.
 
 * ``saving``
 
-  Denotes that an image's raw image data is currently being uploaded to
-  Glance
+  Denotes that an image's raw data is currently being uploaded to Glance.
+  When an image is registered with a call to `POST /images` and there
+  is an `x-image-meta-location` header present, that image will never be in
+  the `saving` status (as the image data is already available in some other
+  location).
 
 * ``active``
 
-  Denotes an image that is fully available in Glance
+  Denotes an image that is fully available in Glance.
 
 * ``killed``
 
   Denotes that an error occurred during the uploading of an image's data,
-  and that the image is not readable
+  and that the image is not readable.
 
+* ``deleted``
 
-.. note::
+  Glance has retained the information about the image, but it is no longer
+  available to use. An image in this state will be removed automatically
+  at a later date.
 
-  When an image is registered with a call to `POST /images` and there
-  is an `x-image-meta-location` header present, that image will never be in
-  the `saving` status (as the image data is already available in some other
-  location)
+* ``pending_delete``
+
+  This is similiar to `deleted`, however, Glance has not yet removed the
+  image data. An image in this state is recoverable.
+
