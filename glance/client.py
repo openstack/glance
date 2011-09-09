@@ -96,6 +96,33 @@ class V1Client(base_client.BaseClient):
         image = utils.get_image_meta_from_headers(res)
         return image
 
+    def _get_image_size(self, image_data):
+        """
+        Analyzes the incoming image file and attempts to determine
+        its size.
+
+        :param image_data: The input to the client, typically a file
+                           redirected from stdin.
+        :retval The image file's size or None if it cannot be determined.
+        """
+        # For large images, we need to supply the size of the
+        # image file. See LP Bugs #827660 and #845788.
+        if hasattr(image_data, 'seek') and hasattr(image_data, 'tell'):
+            try:
+                image_data.seek(0, os.SEEK_END)
+                image_size = image_data.tell()
+                image_data.seek(0)
+                return image_size
+            except IOError, e:
+                if e.errno == errno.ESPIPE:
+                    # Illegal seek. This means the user is trying
+                    # to pipe image data to the client, e.g.
+                    # echo testdata | bin/glance add blah..., or
+                    # that stdin is empty
+                    return None
+                else:
+                    raise
+
     def add_image(self, image_meta=None, image_data=None):
         """
         Tells Glance about an image's metadata as well
@@ -114,24 +141,10 @@ class V1Client(base_client.BaseClient):
         if image_data:
             body = image_data
             headers['content-type'] = 'application/octet-stream'
-            # For large images, we need to supply the size of the
-            # image file. See LP Bug #827660.
-            if hasattr(image_data, 'seek') and hasattr(image_data, 'tell'):
-                try:
-                    image_data.seek(0, os.SEEK_END)
-                    image_size = image_data.tell()
-                    image_data.seek(0)
-                    headers['x-image-meta-size'] = image_size
-                    headers['content-length'] = image_size
-                except IOError, e:
-                    if e.errno == errno.ESPIPE:
-                        # Illegal seek. This means the user is trying
-                        # to pipe image data to the client, e.g.
-                        # echo testdata | bin/glance add blah..., or
-                        # that stdin is empty
-                        pass
-                    else:
-                        raise
+            image_size = self._get_image_size(image_data)
+            if image_size:
+                headers['x-image-meta-size'] = image_size
+                headers['content-length'] = image_size
         else:
             body = None
 
@@ -151,6 +164,10 @@ class V1Client(base_client.BaseClient):
         if image_data:
             body = image_data
             headers['content-type'] = 'application/octet-stream'
+            image_size = self._get_image_size(image_data)
+            if image_size:
+                headers['x-image-meta-size'] = image_size
+                headers['content-length'] = image_size
         else:
             body = None
 
