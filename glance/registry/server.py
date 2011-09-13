@@ -25,8 +25,9 @@ import logging
 import routes
 from webob import exc
 
-from glance.common import wsgi
 from glance.common import exception
+from glance.common import utils
+from glance.common import wsgi
 from glance.registry.db import api as db_api
 
 
@@ -147,8 +148,14 @@ class Controller(object):
         if req.context.is_admin:
             # Only admin gets to look for non-public images
             filters['is_public'] = self._get_is_public(req)
+            # The same for deleted
+            filters['deleted'] = self._parse_deleted_filter(req)
         else:
             filters['is_public'] = True
+            # NOTE(jkoelker): This is technically unnecessary since the db
+            #                 api will force deleted=False if its not an
+            #                 admin context. But explicit > implicit.
+            filters['deleted'] = False
         for param in req.str_params:
             if param in SUPPORTED_FILTERS:
                 filters[param] = req.str_params.get(param)
@@ -239,6 +246,13 @@ class Controller(object):
         else:
             raise exc.HTTPBadRequest(_("is_public must be None, True, "
                                        "or False"))
+
+    def _parse_deleted_filter(self, req):
+        """Parse deleted into something usable."""
+        deleted = req.str_params.get('deleted', False)
+        if not deleted:
+            return False
+        return utils.bool_from_string(deleted)
 
     def show(self, req, id):
         """Return data about the given image id."""

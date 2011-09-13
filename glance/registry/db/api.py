@@ -145,12 +145,15 @@ def image_get(context, image_id, session=None):
         raise exception.NotFound("No image found")
 
     try:
-        image = session.query(models.Image).\
-                       options(joinedload(models.Image.properties)).\
-                       options(joinedload(models.Image.members)).\
-                       filter_by(deleted=_deleted(context)).\
-                       filter_by(id=image_id).\
-                       one()
+        query = session.query(models.Image).\
+                        options(joinedload(models.Image.properties)).\
+                        options(joinedload(models.Image.members)).\
+                        filter_by(id=image_id)
+
+        if not can_show_deleted(context):
+            query = query.filter_by(deleted=False)
+
+        image = query.one()
     except exc.NoResultFound:
         raise exception.NotFound("No image found with ID %s" % image_id)
 
@@ -159,30 +162,6 @@ def image_get(context, image_id, session=None):
         raise exception.NotAuthorized("Image not visible to you")
 
     return image
-
-
-def image_get_all_pending_delete(context, delete_time=None, limit=None):
-    """Get all images that are pending deletion
-
-    :param limit: maximum number of images to return
-    """
-    session = get_session()
-    query = session.query(models.Image).\
-                   options(joinedload(models.Image.properties)).\
-                   options(joinedload(models.Image.members)).\
-                   filter_by(deleted=True).\
-                   filter(models.Image.status == 'pending_delete')
-
-    if delete_time:
-        query = query.filter(models.Image.deleted_at <= delete_time)
-
-    query = query.order_by(desc(models.Image.deleted_at)).\
-                  order_by(desc(models.Image.id))
-
-    if limit:
-        query = query.limit(limit)
-
-    return query.all()
 
 
 def image_get_all(context, filters=None, marker=None, limit=None,
@@ -204,8 +183,15 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     query = session.query(models.Image).\
                    options(joinedload(models.Image.properties)).\
                    options(joinedload(models.Image.members)).\
-                   filter_by(deleted=_deleted(context)).\
                    filter(models.Image.status != 'killed')
+
+    if not can_show_deleted(context) or 'deleted' not in filters:
+        query = query.filter_by(deleted=False)
+    else:
+        query = query.filter_by(deleted=filters['deleted'])
+
+    if 'deleted' in filters:
+        del filters['deleted']
 
     sort_dir_func = {
         'asc': asc,
@@ -469,11 +455,15 @@ def image_member_get(context, member_id, session=None):
     """Get an image member or raise if it does not exist."""
     session = session or get_session()
     try:
-        member = session.query(models.ImageMember).\
+        query = session.query(models.ImageMember).\
                         options(joinedload(models.ImageMember.image)).\
-                        filter_by(deleted=_deleted(context)).\
-                        filter_by(id=member_id).\
-                        one()
+                        filter_by(id=member_id)
+
+        if not can_show_deleted(context):
+            query = query.filter_by(deleted=False)
+
+        member = query.one()
+
     except exc.NoResultFound:
         raise exception.NotFound("No membership found with ID %s" % member_id)
 
@@ -490,11 +480,16 @@ def image_member_find(context, image_id, member, session=None):
     try:
         # Note lack of permissions check; this function is called from
         # RequestContext.is_image_visible(), so avoid recursive calls
-        return session.query(models.ImageMember).\
+        query = session.query(models.ImageMember).\
                         options(joinedload(models.ImageMember.image)).\
                         filter_by(image_id=image_id).\
-                        filter_by(member=member).\
-                        one()
+                        filter_by(member=member)
+
+        if not can_show_deleted(context):
+            query = query.filter_by(deleted=False)
+
+        return query.one()
+
     except exc.NoResultFound:
         raise exception.NotFound("No membership found for image %s member %s" %
                                  (image_id, member))
@@ -515,8 +510,10 @@ def image_member_get_memberships(context, member, marker=None, limit=None,
     session = get_session()
     query = session.query(models.ImageMember).\
                    options(joinedload(models.ImageMember.image)).\
-                   filter_by(deleted=_deleted(context)).\
                    filter_by(member=member)
+
+    if not can_show_deleted(context):
+        query = query.filter_by(deleted=False)
 
     sort_dir_func = {
         'asc': asc,
@@ -551,7 +548,7 @@ def image_member_get_memberships(context, member, marker=None, limit=None,
 
 
 # pylint: disable-msg=C0111
-def _deleted(context):
+def can_show_deleted(context):
     """
     Calculates whether to include deleted objects based on context.
     Currently just looks for a flag called deleted in the context dict.

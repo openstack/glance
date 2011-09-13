@@ -36,13 +36,20 @@ class RequestContext(object):
         self.roles = roles or []
         self.is_admin = is_admin
         self.read_only = read_only
-        self.show_deleted = show_deleted
+        self._show_deleted = show_deleted
         self.owner_is_tenant = owner_is_tenant
 
     @property
     def owner(self):
         """Return the owner to correlate with an image."""
         return self.tenant if self.owner_is_tenant else self.user
+
+    @property
+    def show_deleted(self):
+        """Admins can see deleted by default"""
+        if self._show_deleted or self.is_admin:
+            return True
+        return False
 
 
 class ContextMiddleware(wsgi.Middleware):

@@ -18,6 +18,7 @@
 import logging
 import optparse
 import os
+import time
 import urlparse
 
 from glance import registry
@@ -167,6 +168,23 @@ def schedule_delete_from_backend(uri, options, context, image_id, **kwargs):
         except (UnsupportedBackend, exception.NotFound):
             msg = _("Failed to delete image from store (%(uri)s).") % locals()
             logger.error(msg)
+
+    datadir = config.get_option(options, 'scrubber_datadir')
+    scrub_time = config.get_option(options, 'scrub_time', type='int',
+                                   default=0)
+    delete_time = time.time() + scrub_time
+    file_path = os.path.join(datadir, str(image_id))
+    utils.safe_mkdirs(datadir)
+
+    if os.path.exists(file_path):
+        msg = _("Image id %(image_id)s already queued for delete") % {
+                'image_id': image_id}
+        raise exception.Duplicate(msg)
+
+    with open(file_path, 'w') as f:
+        f.write('\n'.join([uri, str(int(delete_time))]))
+    os.chmod(file_path, 0600)
+    os.utime(file_path, (delete_time, delete_time))
 
     registry.update_image_metadata(options, context, image_id,
                                    {'status': 'pending_delete'})

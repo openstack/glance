@@ -15,20 +15,23 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import datetime
+import calendar
 import eventlet
 import logging
+import time
+import os
 
-from glance import registry
-from glance import store
 import glance.store.filesystem
 import glance.store.http
 import glance.store.s3
 import glance.store.swift
+from glance import registry
+from glance import store
 from glance.common import config
-from glance.registry import context
+from glance.common import utils
 from glance.common import exception
-from glance.registry.db import api as db_api
+from glance.registry import context
+from glance.registry import client
 
 
 logger = logging.getLogger('glance.store.scrubber')
@@ -60,35 +63,123 @@ class Daemon(object):
 
 
 class Scrubber(object):
+    CLEANUP_FILE = ".cleanup"
+
     def __init__(self, options):
         logger.info(_("Initializing scrubber with options: %s") % options)
         self.options = options
-        scrub_time = config.get_option(options, 'scrub_time', type='int',
-                                       default=0)
-        logger.info(_("Scrub interval set to %s seconds") % scrub_time)
-        self.scrub_time = datetime.timedelta(seconds=scrub_time)
-        db_api.configure_db(options)
+        self.datadir = config.get_option(options, 'scrubber_datadir')
+        self.cleanup = config.get_option(options, 'cleanup_scrubber',
+                                         type='bool', default=False)
+        host = config.get_option(options, 'registry_host')
+        port = config.get_option(options, 'registry_port', type='int')
+        self.registry = client.RegistryClient(host, port)
+
+        utils.safe_mkdirs(self.datadir)
+
+        if self.cleanup:
+            self.cleanup_time = config.get_option(options,
+                                                  'cleanup_scrubber_time',
+                                                  type='int', default=86400)
         store.create_stores(options)
 
     def run(self, pool, event=None):
-        delete_time = datetime.datetime.utcnow() - self.scrub_time
-        logger.info(_("Getting images deleted before %s") % delete_time)
-        pending = db_api.image_get_all_pending_delete(None, delete_time)
-        num_pending = len(pending)
-        logger.info(_("Deleting %(num_pending)s images") % locals())
-        delete_work = [(p['id'], p['location']) for p in pending]
+        now = time.time()
+
+        if not os.path.exists(self.datadir):
+            logger.info(_("%s does not exist") % self.datadir)
+            return
+
+        delete_work = []
+        for root, dirs, files in os.walk(self.datadir):
+            for id in files:
+                if id == self.CLEANUP_FILE:
+                    continue
+
+                file_name = os.path.join(root, id)
+                delete_time = os.stat(file_name).st_mtime
+
+                if delete_time > now:
+                    continue
+
+                uri, delete_time = read_queue_file(file_name)
+
+                if delete_time > now:
+                    continue
+
+                delete_work.append((int(id), uri, now))
+
+        logger.info(_("Deleting %s images") % len(delete_work))
         pool.starmap(self._delete, delete_work)
 
-    def _delete(self, image_id, location):
-        try:
-            logger.debug(_("Deleting %(location)s") % locals())
-            store.delete_from_backend(location)
-        except (store.UnsupportedBackend, exception.NotFound):
-            msg = _("Failed to delete image from store (%(uri)s).") % locals()
-            logger.error(msg)
+        if self.cleanup:
+            self._cleanup()
 
-        ctx = context.RequestContext(is_admin=True, show_deleted=True)
-        db_api.image_update(ctx, image_id, {'status': 'deleted'})
+    def _delete(self, id, uri, now):
+        file_path = os.path.join(self.datadir, str(id))
+        try:
+            logger.debug(_("Deleting %(uri)s") % {'uri': uri})
+            store.delete_from_backend(uri)
+        except store.UnsupportedBackend:
+            msg = _("Failed to delete image from store (%(uri)s).")
+            logger.error(msg % {'uri': uri})
+            write_queue_file(file_path, uri, now)
+
+        self.registry.update_image(id, {'status': 'deleted'})
+        utils.safe_remove(file_path)
+
+    def _cleanup(self):
+        now = time.time()
+        cleanup_file = os.path.join(self.datadir, self.CLEANUP_FILE)
+        if not os.path.exists(cleanup_file):
+            write_queue_file(cleanup_file, 'cleanup', now)
+            return
+
+        _uri, last_run_time = read_queue_file(cleanup_file)
+        cleanup_time = last_run_time + self.cleanup_time
+        if cleanup_time > now:
+            return
+
+        logger.info(_("Getting images deleted before %s") % self.cleanup_time)
+        write_queue_file(cleanup_file, 'cleanup', now)
+
+        filters = {'deleted': True, 'is_public': 'none',
+                   'status': 'pending_delete'}
+        pending_deletes = self.registry.get_images_detailed(filters=filters)
+
+        delete_work = []
+        for pending_delete in pending_deletes:
+            deleted_at = pending_delete.get('deleted_at')
+            if not deleted_at:
+                continue
+
+            time_fmt = "%Y-%m-%dT%H:%M:%S"
+            delete_time = calendar.timegm(time.strptime(deleted_at,
+                                                        time_fmt))
+
+            if delete_time + self.cleanup_time > now:
+                continue
+
+            delete_work.append((int(pending_delete['id']),
+                                pending_delete['location'],
+                                now))
+
+        logger.info(_("Deleting %s images") % len(delete_work))
+        pool.starmap(self._delete, delete_work)
+
+
+def read_queue_file(file_path):
+    with open(file_path) as f:
+        uri = f.readline().strip()
+        delete_time = int(f.readline().strip())
+    return uri, delete_time
+
+
+def write_queue_file(file_path, uri, delete_time):
+    with open(file_path, 'w') as f:
+        f.write('\n'.join([uri, str(int(delete_time))]))
+    os.chmod(file_path, 0600)
+    os.utime(file_path, (delete_time, delete_time))
 
 
 def app_factory(global_config, **local_conf):
