@@ -99,7 +99,7 @@ paste.filter_factory = keystone.frontends.legacy_token_auth:filter_factory
 
 [filter:RAX-KEY-extension]
 paste.filter_factory =
-        keystone.contrib.extensions.raxkey.frontend:filter_factory
+        keystone.contrib.extensions.service.raxkey.frontend:filter_factory
 """
 
 
