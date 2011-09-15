@@ -468,6 +468,13 @@ class FunctionalTest(unittest.TestCase):
         if os.path.exists(self.test_dir):
             shutil.rmtree(self.test_dir)
 
+        # We do this here because the @runs_sql decorator above
+        # actually resets the registry server's sql_connection
+        # to the original (usually memory-based SQLite connection)
+        # and this block of code is run *before* the finally:
+        # block in that decorator...
+        self._reset_database(self.registry_server.sql_connection)
+
     def run_sql_cmd(self, sql):
         """
         Provides a crude mechanism to run manual SQL commands for backend

@@ -67,10 +67,11 @@ class TestMigrations(unittest.TestCase):
                     for key, value in defaults.items():
                         TestMigrations.TEST_DATABASES[key] = value
                 except ConfigParser.ParsingError, e:
-                    print ("Failed to read test_migrations.conf config file. "
-                           "Got error: %s" % e)
+                    self.fail("Failed to read test_migrations.conf config "
+                              "file. Got error: %s" % e)
             else:
-                self.fail("Unable to find test_migrations.conf")
+                self.fail("Failed to find test_migrations.conf config "
+                          "file.")
 
         self.engines = {}
         for key, value in TestMigrations.TEST_DATABASES.items():

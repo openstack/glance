@@ -4,6 +4,7 @@ include MANIFEST.in pylintrc
 include run_tests.py
 include glance/registry/db/migrate_repo/migrate.cfg
 include glance/registry/db/migrate_repo/versions/*.sql
+include glance/tests/unit/test_migrations.conf
 graft doc
 graft etc
 graft tools
