@@ -47,7 +47,7 @@ class TestMigrations(unittest.TestCase):
     # Test machines can set the GLANCE_TEST_MIGRATIONS_CONF variable
     # to override the location of the config file for migration testing
     CONFIG_FILE_PATH = os.environ.get('GLANCE_TEST_MIGRATIONS_CONF',
-                                      os.path.join('tests', 'unit',
+                                      os.path.join('glance', 'tests', 'unit',
                                                    'test_migrations.conf'))
     REPOSITORY_PATH = os.path.join('glance', 'registry', 'db', 'migrate_repo')
     REPOSITORY = Repository(REPOSITORY_PATH)
@@ -69,6 +69,8 @@ class TestMigrations(unittest.TestCase):
                 except ConfigParser.ParsingError, e:
                     print ("Failed to read test_migrations.conf config file. "
                            "Got error: %s" % e)
+            else:
+                self.fail("Unable to find test_migrations.conf")
 
         self.engines = {}
         for key, value in TestMigrations.TEST_DATABASES.items():
