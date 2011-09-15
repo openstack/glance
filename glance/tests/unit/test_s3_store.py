@@ -169,7 +169,9 @@ class TestStore(unittest.TestCase):
         """Test a "normal" retrieval of an image in chunks"""
         loc = get_location_from_uri(
             "s3://user:key@auth_address/glance/2")
-        image_s3 = self.store.get(loc)
+        (image_s3, image_size) = self.store.get(loc)
+
+        self.assertEqual(image_size, None)
 
         expected_data = "*" * FIVE_KB
         data = ""
@@ -217,7 +219,7 @@ class TestStore(unittest.TestCase):
         self.assertEquals(expected_checksum, checksum)
 
         loc = get_location_from_uri(expected_location)
-        new_image_s3 = self.store.get(loc)
+        (new_image_s3, new_image_size) = self.store.get(loc)
         new_image_contents = StringIO.StringIO()
         for chunk in new_image_s3:
             new_image_contents.write(chunk)
@@ -267,7 +269,7 @@ class TestStore(unittest.TestCase):
             self.assertEquals(expected_checksum, checksum)
 
             loc = get_location_from_uri(expected_location)
-            new_image_s3 = self.store.get(loc)
+            (new_image_s3, new_image_size) = self.store.get(loc)
             new_image_contents = new_image_s3.getvalue()
             new_image_s3_size = new_image_s3.len
 

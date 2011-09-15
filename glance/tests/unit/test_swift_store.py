@@ -197,7 +197,8 @@ class TestStore(unittest.TestCase):
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
         loc = get_location_from_uri("swift://user:key@auth_address/glance/2")
-        image_swift = self.store.get(loc)
+        (image_swift, image_size) = self.store.get(loc)
+        self.assertEqual(image_size, None)
 
         expected_data = "*" * FIVE_KB
         data = ""
@@ -214,7 +215,8 @@ class TestStore(unittest.TestCase):
         """
         loc = get_location_from_uri("swift+http://user:key@auth_address/"
                                     "glance/2")
-        image_swift = self.store.get(loc)
+        (image_swift, image_size) = self.store.get(loc)
+        self.assertEqual(image_size, None)
 
         expected_data = "*" * FIVE_KB
         data = ""
@@ -255,7 +257,7 @@ class TestStore(unittest.TestCase):
         self.assertEquals(expected_checksum, checksum)
 
         loc = get_location_from_uri(expected_location)
-        new_image_swift = self.store.get(loc)
+        (new_image_swift, new_image_size) = self.store.get(loc)
         new_image_contents = new_image_swift.getvalue()
         new_image_swift_size = new_image_swift.len
 
@@ -303,7 +305,7 @@ class TestStore(unittest.TestCase):
             self.assertEquals(expected_checksum, checksum)
 
             loc = get_location_from_uri(expected_location)
-            new_image_swift = self.store.get(loc)
+            (new_image_swift, new_image_size) = self.store.get(loc)
             new_image_contents = new_image_swift.getvalue()
             new_image_swift_size = new_image_swift.len
 
@@ -363,7 +365,7 @@ class TestStore(unittest.TestCase):
         self.assertEquals(expected_checksum, checksum)
 
         loc = get_location_from_uri(expected_location)
-        new_image_swift = self.store.get(loc)
+        (new_image_swift, new_image_size) = self.store.get(loc)
         new_image_contents = new_image_swift.getvalue()
         new_image_swift_size = new_image_swift.len
 
@@ -408,7 +410,7 @@ class TestStore(unittest.TestCase):
         self.assertEquals(expected_checksum, checksum)
 
         loc = get_location_from_uri(expected_location)
-        new_image_swift = self.store.get(loc)
+        (new_image_swift, new_image_size) = self.store.get(loc)
         new_image_contents = new_image_swift.getvalue()
         new_image_swift_size = new_image_swift.len
 

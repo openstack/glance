@@ -37,15 +37,25 @@ def stub_out_http_backend(stubs):
     :param stubs: Set of stubout stubs
     """
 
-    class FakeHTTPConnection(object):
+    class FakeHTTPResponse(object):
 
         DATA = 'I am a teapot, short and stout\n'
+        HEADERS = {'content-length': 31}
+
+        def __init__(self, *args, **kwargs):
+            self.data = StringIO.StringIO(self.DATA)
+            self.read = self.data.read
+
+        def getheader(self, name, default=None):
+            return self.HEADERS.get(name.lower(), default)
+
+    class FakeHTTPConnection(object):
 
         def __init__(self, *args, **kwargs):
             pass
 
         def getresponse(self):
-            return StringIO.StringIO(self.DATA)
+            return FakeHTTPResponse()
 
         def request(self, *_args, **_kwargs):
             pass
@@ -72,7 +82,8 @@ class TestHttpStore(unittest.TestCase):
         expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s',
                             'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
         loc = get_location_from_uri(uri)
-        image_file = self.store.get(loc)
+        (image_file, image_size) = self.store.get(loc)
+        self.assertEqual(image_size, 31)
 
         chunks = [c for c in image_file]
         self.assertEqual(chunks, expected_returns)
@@ -82,7 +93,8 @@ class TestHttpStore(unittest.TestCase):
         expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s',
                             'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
         loc = get_location_from_uri(uri)
-        image_file = self.store.get(loc)
+        (image_file, image_size) = self.store.get(loc)
+        self.assertEqual(image_size, 31)
 
         chunks = [c for c in image_file]
         self.assertEqual(chunks, expected_returns)

@@ -53,7 +53,7 @@ class TestStore(unittest.TestCase):
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
         loc = get_location_from_uri("file:///tmp/glance-tests/2")
-        image_file = self.store.get(loc)
+        (image_file, image_size) = self.store.get(loc)
 
         expected_data = "chunk00000remainder"
         expected_num_chunks = 2
@@ -95,7 +95,7 @@ class TestStore(unittest.TestCase):
         self.assertEquals(expected_checksum, checksum)
 
         loc = get_location_from_uri("file:///tmp/glance-tests/42")
-        new_image_file = self.store.get(loc)
+        (new_image_file, new_image_size) = self.store.get(loc)
         new_image_contents = ""
         new_image_file_size = 0
 
