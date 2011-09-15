@@ -55,8 +55,8 @@ class Store(object):
     def get(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates
-        where to find the image file, and returns a generator for reading
-        the image file
+        where to find the image file, and returns a tuple of generator
+        (for reading the image file) and image_size
 
         :param location `glance.store.location.Location` object, supplied
                         from glance.store.location.get_location_from_uri()

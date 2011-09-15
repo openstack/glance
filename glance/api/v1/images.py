@@ -200,13 +200,15 @@ class Controller(api.BaseController):
         """
         image = self.get_active_image_meta_or_404(req, id)
 
-        def get_from_store(image):
+        def get_from_store(image_meta):
             """Called if caching disabled"""
             try:
-                image = get_from_backend(image['location'])
+                location = image_meta['location']
+                image_data, image_size = get_from_backend(location)
+                image_meta["size"] = image_size or image_meta["size"]
             except exception.NotFound, e:
                 raise HTTPNotFound(explanation="%s" % e)
-            return image
+            return image_data
 
         def get_from_cache(image, cache):
             """Called if cache hit"""
