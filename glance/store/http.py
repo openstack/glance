@@ -85,14 +85,19 @@ class StoreLocation(glance.store.location.StoreLocation):
         self.path = path
 
 
-def http_response_iterator(f, size):
+def http_response_iterator(conn, size):
     """
-    Return an iterator for a file-like object
+    Return an iterator for a file-like object.
+
+    :param conn: HTTP(S) Connection
+    :param size: Chunk size to iterate with
     """
-    chunk = f.read(size)
+    response = conn.getresponse()
+    chunk = response.read(size)
     while chunk:
         yield chunk
-        chunk = f.read(size)
+        chunk = response.read(size)
+    conn.close()
 
 
 class Store(glance.store.base.Store):
@@ -115,10 +120,7 @@ class Store(glance.store.base.Store):
         conn = conn_class(loc.netloc)
         conn.request("GET", loc.path, "", {})
 
-        try:
-            return http_response_iterator(conn.getresponse(), self.CHUNKSIZE)
-        finally:
-            conn.close()
+        return http_response_iterator(conn, self.CHUNKSIZE)
 
     def _get_conn_class(self, loc):
         """
