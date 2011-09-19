@@ -1036,7 +1036,6 @@ class TestClient(unittest.TestCase):
                    'container_format': 'ovf',
                    'status': 'active',
                    'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
         meta, image_chunks = self.client.get_image(2)
 
@@ -1233,16 +1232,6 @@ class TestClient(unittest.TestCase):
 
     def test_get_image_details(self):
         """Tests that the detailed info about public images returned"""
-        fixture = {'id': 2,
-                   'name': 'fake image #2',
-                   'is_public': True,
-                   'disk_format': 'vhd',
-                   'container_format': 'ovf',
-                   'status': 'active',
-                   'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
-                   'properties': {}}
-
         expected = {'id': 2,
                    'name': 'fake image #2',
                    'is_public': True,
@@ -1250,7 +1239,6 @@ class TestClient(unittest.TestCase):
                    'container_format': 'ovf',
                    'status': 'active',
                    'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
         images = self.client.get_images_detailed()
@@ -1361,7 +1349,6 @@ class TestClient(unittest.TestCase):
                    'container_format': 'ovf',
                    'status': 'active',
                    'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
         data = self.client.get_image_meta(2)

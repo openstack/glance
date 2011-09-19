@@ -139,7 +139,6 @@ def print_image_formatted(client, image):
     print "Name: %s" % image['name']
     print "Status: %s" % image['status']
     print "Size: %d" % int(image['size'])
-    print "Location: %s" % image['location']
     print "Disk format: %s" % image['disk_format']
     print "Container format: %s" % image['container_format']
     if image['owner']:

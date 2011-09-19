@@ -142,6 +142,13 @@ class Controller(api.BaseController):
         try:
             images = registry.get_images_detail(self.options, req.context,
                                                 **params)
+            # Strip out the Location attribute. Temporary fix for
+            # LP Bug #755916. This information is still coming back
+            # from the registry, since the API server still needs access
+            # to it, however we do not return this potential security
+            # information to the API end user...
+            for image in images:
+                del image['location']
         except exception.Invalid, e:
             raise HTTPBadRequest(explanation="%s" % e)
         return dict(images=images)
