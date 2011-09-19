@@ -68,7 +68,6 @@ JSON-encoded mapping in the following format::
      'container_format': 'ovf',
      'size': '5368709120',
      'checksum': 'c2e5db72bd7fd153f53ede5da5a06de3',
-     'location': 'swift://account:key/container/image.tar.gz.0',
      'created_at': '2010-02-03 09:34:01',
      'updated_at': '2010-02-03 09:34:01',
      'deleted_at': '',
@@ -177,7 +176,6 @@ following shows an example of the HTTP headers returned from the above
   x-image-meta-container-format ovf
   x-image-meta-size             5368709120
   x-image-meta-checksum         c2e5db72bd7fd153f53ede5da5a06de3
-  x-image-meta-location         swift://account:key/container/image.tar.gz.0
   x-image-meta-created_at       2010-02-03 09:34:01
   x-image-meta-updated_at       2010-02-03 09:34:01
   x-image-meta-deleted_at
@@ -238,7 +236,6 @@ returned from the above ``GET`` request::
   x-image-meta-container-format ovf
   x-image-meta-size             5368709120
   x-image-meta-checksum         c2e5db72bd7fd153f53ede5da5a06de3
-  x-image-meta-location         swift://account:key/container/image.tar.gz.0
   x-image-meta-created_at       2010-02-03 09:34:01
   x-image-meta-updated_at       2010-02-03 09:34:01
   x-image-meta-deleted_at

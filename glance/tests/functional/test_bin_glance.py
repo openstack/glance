@@ -42,8 +42,7 @@ class TestBinGlance(functional.FunctionalTest):
         We test the following:
 
             0. Verify no public images in index
-            1. Add a public image with a location attr
-               and no image data
+            1. Add a public image
             2. Check that image exists in index
             3. Delete the image
             4. Verify no longer in index
@@ -403,9 +402,9 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
-        self.assertEqual(22, len(image_lines))
+        self.assertEqual(20, len(image_lines))
         self.assertTrue(image_lines[1].startswith('Id: 2'))
-        self.assertTrue(image_lines[12].startswith('Id: 1'))
+        self.assertTrue(image_lines[11].startswith('Id: 1'))
 
         self.stop_servers()
 
@@ -484,9 +483,9 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
-        self.assertEqual(20, len(image_lines))
+        self.assertEqual(18, len(image_lines))
         self.assertTrue(image_lines[1].startswith('Id: 3'))
-        self.assertTrue(image_lines[11].startswith('Id: 1'))
+        self.assertTrue(image_lines[10].startswith('Id: 1'))
 
     def test_results_sorting(self):
         self.cleanup()
@@ -556,7 +555,7 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
-        self.assertEqual(30, len(image_lines))
+        self.assertEqual(27, len(image_lines))
         self.assertTrue(image_lines[1].startswith('Id: 3'))
-        self.assertTrue(image_lines[11].startswith('Id: 2'))
-        self.assertTrue(image_lines[21].startswith('Id: 5'))
+        self.assertTrue(image_lines[10].startswith('Id: 2'))
+        self.assertTrue(image_lines[19].startswith('Id: 5'))

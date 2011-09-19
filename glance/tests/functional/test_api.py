@@ -45,8 +45,8 @@ class TestApi(functional.FunctionalTest):
         - Verify no public images
         2. HEAD /images/1
         - Verify 404 returned
-        3. POST /images with public image named Image1 with a location
-        attribute and no custom properties
+        3. POST /images with public image named Image1
+        and no custom properties
         - Verify 201 returned
         4. HEAD /images/1
         - Verify HTTP headers have correct information we just added
@@ -131,8 +131,7 @@ class TestApi(functional.FunctionalTest):
             'x-image-meta-status': 'active',
             'x-image-meta-disk_format': '',
             'x-image-meta-container_format': '',
-            'x-image-meta-size': str(FIVE_KB),
-            'x-image-meta-location': 'file://%s/1' % self.api_server.image_dir}
+            'x-image-meta-size': str(FIVE_KB)}
 
         expected_std_headers = {
             'content-length': str(FIVE_KB),
@@ -185,7 +184,6 @@ class TestApi(functional.FunctionalTest):
             "container_format": None,
             "disk_format": None,
             "id": 1,
-            "location": "file://%s/1" % self.api_server.image_dir,
             "is_public": True,
             "deleted_at": None,
             "properties": {},
@@ -226,7 +224,6 @@ class TestApi(functional.FunctionalTest):
             "container_format": None,
             "disk_format": None,
             "id": 1,
-            "location": "file://%s/1" % self.api_server.image_dir,
             "is_public": True,
             "deleted_at": None,
             "properties": {'distro': 'Ubuntu', 'arch': 'x86_64'},
@@ -583,15 +580,10 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
-        new_image_url = response['location']
-        self.assertTrue(new_image_url is not None,
-                        "Could not find a new image URI!")
-        self.assertTrue("v1/images" in new_image_url,
-                        "v1/images no in %s" % new_image_url)
 
         # 2. HEAD /images
         # Verify image size is what was passed in, and not truncated
-        path = new_image_url
+        path = response.get('location')
         http = httplib2.Http()
         response, content = http.request(path, 'HEAD')
         self.assertEqual(response.status, 200)
