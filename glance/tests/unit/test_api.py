@@ -62,6 +62,8 @@ class TestRegistryAPI(unittest.TestCase):
              'deleted_at': None,
              'deleted': False,
              'checksum': None,
+             'min_disk': 0,
+             'min_ram': 0,
              'size': 13,
              'location': "swift://user:passwd@acct/container/obj.tar.0",
              'properties': {'type': 'kernel'}},
@@ -76,6 +78,8 @@ class TestRegistryAPI(unittest.TestCase):
              'deleted_at': None,
              'deleted': False,
              'checksum': None,
+             'min_disk': 5,
+             'min_ram': 256,
              'size': 19,
              'location': "file:///tmp/glance-tests/2",
              'properties': {}}]
@@ -107,6 +111,8 @@ class TestRegistryAPI(unittest.TestCase):
         fixture = {'id': 2,
                    'name': 'fake image #2',
                    'size': 19,
+                   'min_ram': 256,
+                   'min_disk': 5,
                    'checksum': None}
         req = webob.Request.blank('/images/2')
         res = req.get_response(self.api)
@@ -779,6 +785,8 @@ class TestRegistryAPI(unittest.TestCase):
                    'name': 'fake image #2',
                    'is_public': True,
                    'size': 19,
+                   'min_disk': 5,
+                   'min_ram': 256,
                    'checksum': None,
                    'disk_format': 'vhd',
                    'container_format': 'ovf',
@@ -957,6 +965,84 @@ class TestRegistryAPI(unittest.TestCase):
 
         for image in images:
             self.assertEqual('ovf', image['container_format'])
+
+    def test_get_details_filter_min_disk(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images that have a specific min_disk
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 19,
+                         'min_disk': 7,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 19,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?min_disk=7')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEqual(7, image['min_disk'])
+
+    def test_get_details_filter_min_ram(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images that have a specific min_ram
+        """
+        extra_fixture = {'id': 3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 19,
+                         'min_ram': 514,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        extra_fixture = {'id': 4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'fake image #4',
+                         'size': 19,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?min_ram=514')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEqual(514, image['min_ram'])
 
     def test_get_details_filter_disk_format(self):
         """
@@ -1307,6 +1393,92 @@ class TestRegistryAPI(unittest.TestCase):
         # Test status was updated properly
         self.assertEquals('active', res_dict['image']['status'])
 
+    def test_create_image_with_min_disk(self):
+        """Tests that the /images POST registry API creates the image"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'min_disk': 5,
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf'}
+
+        req = webob.Request.blank('/images')
+
+        req.method = 'POST'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(image=fixture))
+
+        res = req.get_response(self.api)
+
+        self.assertEquals(res.status_int, 200)
+
+        res_dict = json.loads(res.body)
+
+        self.assertEquals(5, res_dict['image']['min_disk'])
+
+    def test_create_image_with_min_ram(self):
+        """Tests that the /images POST registry API creates the image"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'min_ram': 256,
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf'}
+
+        req = webob.Request.blank('/images')
+
+        req.method = 'POST'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(image=fixture))
+
+        res = req.get_response(self.api)
+
+        self.assertEquals(res.status_int, 200)
+
+        res_dict = json.loads(res.body)
+
+        self.assertEquals(256, res_dict['image']['min_ram'])
+
+    def test_create_image_with_min_ram_default(self):
+        """Tests that the /images POST registry API creates the image"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf'}
+
+        req = webob.Request.blank('/images')
+
+        req.method = 'POST'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(image=fixture))
+
+        res = req.get_response(self.api)
+
+        self.assertEquals(res.status_int, 200)
+
+        res_dict = json.loads(res.body)
+
+        self.assertEquals(0, res_dict['image']['min_ram'])
+
+    def test_create_image_with_min_disk_default(self):
+        """Tests that the /images POST registry API creates the image"""
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf'}
+
+        req = webob.Request.blank('/images')
+
+        req.method = 'POST'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(image=fixture))
+
+        res = req.get_response(self.api)
+
+        self.assertEquals(res.status_int, 200)
+
+        res_dict = json.loads(res.body)
+
+        self.assertEquals(0, res_dict['image']['min_disk'])
+
     def test_create_image_with_bad_container_format(self):
         """Tests proper exception is raised if a bad disk_format is set"""
         fixture = {'id': 3,
@@ -1385,6 +1557,8 @@ class TestRegistryAPI(unittest.TestCase):
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
+                   'min_disk': 5,
+                   'min_ram': 256,
                    'disk_format': 'raw'}
 
         req = webob.Request.blank('/images/2')

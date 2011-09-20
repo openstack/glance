@@ -37,7 +37,7 @@ DISPLAY_FIELDS_IN_INDEX = ['id', 'name', 'size',
                            'checksum']
 
 SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
-                     'size_min', 'size_max']
+                     'min_ram', 'min_disk', 'size_min', 'size_max']
 
 SUPPORTED_SORT_KEYS = ('name', 'status', 'container_format', 'disk_format',
                        'size', 'id', 'created_at', 'updated_at')

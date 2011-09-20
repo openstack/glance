@@ -114,7 +114,7 @@ def get_image_filters_from_args(args):
         return FAILURE
 
     SUPPORTED_FILTERS = ['name', 'disk_format', 'container_format', 'status',
-                         'size_min', 'size_max']
+                         'min_ram', 'min_disk', 'size_min', 'size_max']
     filters = {}
     for (key, value) in fields.items():
         if key not in SUPPORTED_FILTERS:
@@ -141,6 +141,8 @@ def print_image_formatted(client, image):
     print "Size: %d" % int(image['size'])
     print "Disk format: %s" % image['disk_format']
     print "Container format: %s" % image['container_format']
+    print "Minimum Ram Required (MB): %s" % image['min_ram']
+    print "Minimum Disk Required (GB): %s" % image['min_disk']
     if image['owner']:
         print "Owner: %s" % image['owner']
     if len(image['properties']) > 0:
@@ -216,6 +218,8 @@ EXAMPLES
                   'is_public': common_utils.bool_from_string(
                       fields.pop('is_public', False)),
                   'disk_format': fields.pop('disk_format', 'raw'),
+                  'min_disk': fields.pop('min_disk', 0),
+                  'min_ram': fields.pop('min_ram', 0),
                   'container_format': fields.pop('container_format', 'ovf')}
 
     # Strip any args that are not supported
@@ -329,7 +333,7 @@ to spell field names correctly. :)"""
             fields.pop(field)
 
     base_image_fields = ['disk_format', 'container_format', 'name',
-                         'location', 'owner']
+                         'min_disk', 'min_ram', 'location', 'owner']
     for field in base_image_fields:
         fvalue = fields.pop(field, None)
         if fvalue is not None:

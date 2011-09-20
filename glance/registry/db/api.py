@@ -47,8 +47,8 @@ BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
 
 IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size',
                                       'disk_format', 'container_format',
-                                      'is_public', 'location', 'checksum',
-                                      'owner'])
+                                      'min_disk', 'min_ram', 'is_public',
+                                      'location', 'checksum', 'owner'])
 
 CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
 DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi',
@@ -340,6 +340,12 @@ def _image_update(context, values, image_id, purge_props=False):
         else:
             if 'size' in values:
                 values['size'] = int(values['size'])
+
+            if 'min_ram' in values:
+                values['min_ram'] = int(values['min_ram'])
+
+            if 'min_disk' in values:
+                values['min_disk'] = int(values['min_disk'])
 
             values['is_public'] = bool(values.get('is_public', False))
             image_ref = models.Image()
