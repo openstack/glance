@@ -37,6 +37,53 @@ which it is `false` to be restricted to only the owner.
   those images to show up in lists, potentially confusing users.
 
 
+Configuring the Glance Client to use Keystone
+---------------------------------------------
+
+Once the Glance API and Registry servers have been configured to use Keystone, you
+will need to configure the Glance client (``bin/glance``) to use Keystone as
+well.
+
+Just as with Nova, the specifying of authentication credentials is done via
+environment variables. The only difference being that Glance environment
+variables start with `OS_AUTH_` while Nova's begin with `NOVA_`.
+
+If you already have Nova credentials present in your environment, you can use
+the included tool, ``tools/nova_to_os_env.sh``, to create Glance-style
+credentials. To use this tool, verify that Nova credentials are present by
+running::
+
+  $ env | grep NOVA_
+  NOVA_USERNAME=<YOUR USERNAME>
+  NOVA_API_KEY=<YOUR API KEY>
+  NOVA_PROJECT_ID=<YOUR TENANT ID>
+  NOVA_URL=<THIS SHOULD POINT TO KEYSTONE>
+  NOVA_AUTH_STRATEGY=keystone
+
+.. note::
+
+  If `NOVA_AUTH_STRATEGY=keystone` is not present, add that to your ``novarc`` file
+  and re-source it. If the command produces no output at all, then you will need
+  to source your ``novarc``.
+
+  Also, make sure that `NOVA_URL` points to Keystone and not the Nova API
+  server. Keystone will return the address for Nova and Glance's API servers
+  via its "service catalog".
+
+Once Nova credentials are present in the environment, you will need to source
+the conervsion script::
+
+  $ source ./tools/nova_to_os_env.sh
+
+The final step is to verify that the `OS_AUTH_` crednetials are present::
+
+  $ env | grep OS_AUTH
+  OS_AUTH_USER=<YOUR USERNAME>
+  OS_AUTH_KEY=<YOUR API KEY>
+  OS_AUTH_TENANT=<YOUR TENANT ID>
+  OS_AUTH_URL=<THIS SHOULD POINT TO KEYSTONE>
+  OS_AUTH_STRATEGY=keystone
+
 Sharing Images With Others
 --------------------------
 
