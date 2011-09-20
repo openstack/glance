@@ -73,6 +73,8 @@ JSON-encoded mapping in the following format::
      'deleted_at': '',
      'status': 'active',
      'is_public': true,
+     'min_ram': 256,
+     'min_disk': 5,
      'owner': null,
      'properties': {'distro': 'Ubuntu 10.04 LTS'}},
     ...]}
@@ -94,6 +96,12 @@ JSON-encoded mapping in the following format::
 
   The `is_public` field is a boolean indicating whether the image is
   publically available
+
+  The 'min_ram' field is an integer specifying the minimum amount of
+  ram needed to run this image on an instance, in megabytes
+
+  The 'min_disk' field is an integer specifying the minimum amount of
+  disk space needed to run this image on an instance, in gigabytes
 
   The `owner` field is a string which may either be null or which will
   indicate the owner of the image
@@ -181,6 +189,8 @@ following shows an example of the HTTP headers returned from the above
   x-image-meta-deleted_at
   x-image-meta-status           available
   x-image-meta-is-public        true
+  x-image-meta-min-ram          256
+  x-image-meta-min-disk         0
   x-image-meta-owner            null
   x-image-meta-property-distro  Ubuntu 10.04 LTS
 
@@ -241,6 +251,8 @@ returned from the above ``GET`` request::
   x-image-meta-deleted_at
   x-image-meta-status           available
   x-image-meta-is-public        true
+  x-image-meta-min-ram          256
+  x-image-meta-min-disk         5
   x-image-meta-owner            null
   x-image-meta-property-distro  Ubuntu 10.04 LTS
 
@@ -382,6 +394,20 @@ The list of metadata headers that Glance accepts are listed below.
 
   When not present, the image is assumed to be *not public* and specific to
   a user.
+
+* ``x-image-meta-min-ram``
+
+  This header is optional. When present it shall be the expected minimum ram
+  required in megabytes to run this image on a server.
+
+  When not present, the image is assumed to have a minimum ram requirement of 0.
+
+* ``x-image-meta-min-disk``
+
+  This header is optional. When present it shall be the expected minimum disk
+  space required in gigabytes to run this image on a server.
+
+  When not present, the image is assumed to have a minimum disk space requirement of 0.
 
 * ``x-image-meta-owner``
 

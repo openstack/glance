@@ -55,7 +55,8 @@ from glance import utils
 logger = logging.getLogger('glance.api.v1.images')
 
 SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
-                     'size_min', 'size_max', 'is_public']
+                     'min_ram', 'min_disk', 'size_min', 'size_max',
+                     'is_public']
 
 SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
 
@@ -130,6 +131,8 @@ class Controller(api.BaseController):
                  'disk_format': <DISK_FORMAT>,
                  'container_format': <CONTAINER_FORMAT>,
                  'checksum': <CHECKSUM>,
+                 'min_disk': <MIN_DISK>,
+                 'min_ram': <MIN_RAM>,
                  'store': <STORE>,
                  'status': <STATUS>,
                  'created_at': <TIMESTAMP>,

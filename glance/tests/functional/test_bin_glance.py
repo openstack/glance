@@ -318,7 +318,8 @@ class TestBinGlance(functional.FunctionalTest):
         _add_args = [
             "name=Name1 disk_format=vhd container_format=ovf foo=bar",
             "name=Name2 disk_format=ami container_format=ami foo=bar",
-            "name=Name3 disk_format=vhd container_format=ovf foo=baz",
+            "name=Name3 disk_format=vhd container_format=ovf foo=baz "
+            "min_disk=7 min_ram=256",
         ]
 
         for i, args in enumerate(_add_args):
@@ -402,9 +403,27 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
-        self.assertEqual(20, len(image_lines))
+        self.assertEqual(24, len(image_lines))
         self.assertTrue(image_lines[1].startswith('Id: 2'))
-        self.assertTrue(image_lines[11].startswith('Id: 1'))
+        self.assertTrue(image_lines[13].startswith('Id: 1'))
+
+        # 10. Check min_ram filter
+        cmd = "min_ram=256"
+        exitcode, out, err = execute("%s %s" % (_details_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(11, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('Id: 3'))
+
+        # 11. Check min_disk filter
+        cmd = "min_disk=7"
+        exitcode, out, err = execute("%s %s" % (_details_cmd, cmd))
+
+        self.assertEqual(0, exitcode)
+        image_lines = out.split("\n")[2:-1]
+        self.assertEqual(11, len(image_lines))
+        self.assertTrue(image_lines[0].startswith('Id: 3'))
 
         self.stop_servers()
 
@@ -483,9 +502,9 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
-        self.assertEqual(18, len(image_lines))
+        self.assertEqual(22, len(image_lines))
         self.assertTrue(image_lines[1].startswith('Id: 3'))
-        self.assertTrue(image_lines[10].startswith('Id: 1'))
+        self.assertTrue(image_lines[12].startswith('Id: 1'))
 
     def test_results_sorting(self):
         self.cleanup()
@@ -555,7 +574,7 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
-        self.assertEqual(27, len(image_lines))
+        self.assertEqual(33, len(image_lines))
         self.assertTrue(image_lines[1].startswith('Id: 3'))
-        self.assertTrue(image_lines[10].startswith('Id: 2'))
-        self.assertTrue(image_lines[19].startswith('Id: 5'))
+        self.assertTrue(image_lines[12].startswith('Id: 2'))
+        self.assertTrue(image_lines[23].startswith('Id: 5'))
