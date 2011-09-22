@@ -38,6 +38,7 @@ from glance.common import wsgi
 import glance.store
 import glance.store.filesystem
 import glance.store.http
+import glance.store.rbd
 import glance.store.s3
 import glance.store.swift
 from glance.store import (get_from_backend,

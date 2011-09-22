@@ -68,8 +68,8 @@ A store is a Python class that inherits from ``glance.store.Backend`` and
 conforms to that class' API for reading, writing, and deleting virtual
 machine image data.
 
-Glance currently ships with stores for S3, Swift, a simple filesystem store,
+Glance currently ships with stores for S3, Swift, RBD, a simple filesystem store,
 and a read-only HTTP(S) store.
 
 Implementors are encouraged to create stores for other backends, including
-other distributed storage systems like Sheepdog or Ceph.
+other distributed storage systems like Sheepdog.

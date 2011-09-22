@@ -146,7 +146,7 @@ Optional. Default: ``file``
 Can only be specified in configuration files.
 
 Sets the storage backend to use by default when storing images in Glance.
-Available options for this option are (``file``, ``swift``, or ``s3``).
+Available options for this option are (``file``, ``swift``, ``s3``, or ``rbd``).
 
 Configuring the Filesystem Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -323,6 +323,71 @@ Can only be specified in configuration files.
 
 If true, Glance will attempt to create the bucket ``s3_store_bucket``
 if it does not exist.
+
+Configuring the RBD Storage Backend
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Note**: the RBD storage backend requires the python bindings for
+librados and librbd. These are in the python-ceph package on
+Debian-based distributions.
+
+* ``rbd_store_pool=POOL``
+
+Optional. Default: ``rbd``
+
+Can only be specified in configuration files.
+
+`This option is specific to the RBD storage backend.`
+
+Sets the RADOS pool in which images are stored.
+
+* ``rbd_store_chunk_size=CHUNK_SIZE_MB``
+
+Optional. Default: ``4``
+
+Can only be specified in configuration files.
+
+`This option is specific to the RBD storage backend.`
+
+Images will be chunked into objects of this size (in megabytes).
+For best performance, this should be a power of two.
+
+* ``rbd_store_ceph_conf=PATH``
+
+Optional. Default: ``/etc/ceph/ceph.conf``, ``~/.ceph/config``, and ``./ceph.conf``
+
+Can only be specified in configuration files.
+
+`This option is specific to the RBD storage backend.`
+
+Sets the Ceph configuration file to use.
+
+* ``rbd_store_user=NAME``
+
+Optional. Default: ``admin``
+
+Can only be specified in configuration files.
+
+`This option is specific to the RBD storage backend.`
+
+Sets the RADOS user to authenticate as. This is only needed
+when `RADOS authentication <http://ceph.newdream.net/wiki/Cephx>`_
+is `enabled. <http://ceph.newdream.net/wiki/Cluster_configuration#Cephx_auth>`_
+
+A keyring must be set for this user in the Ceph
+configuration file, e.g. with a user ``glance``::
+
+  [client.glance]
+  keyring=/etc/glance/rbd.keyring
+
+To set up a user named ``glance`` with minimal permissions, using a pool called
+``images``, run::
+
+  rados mkpool images
+  ceph-authtool --create-keyring /etc/glance/rbd.keyring
+  ceph-authtool --gen-key --name client.glance --cap mon 'allow r' --cap osd 'allow rwx pool=images' /etc/glance/rbd.keyring
+  ceph auth add client.glance -i /etc/glance/rbd.keyring
+
 
 Configuring the Glance Registry
 -------------------------------
