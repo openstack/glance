@@ -106,8 +106,8 @@ class Image(BASE, ModelBase):
     is_public = Column(Boolean, nullable=False, default=False)
     location = Column(Text)
     checksum = Column(String(32))
-    min_disk = Column(Integer(), default=0)
-    min_ram = Column(Integer(), default=0)
+    min_disk = Column(Integer(), nullable=False, default=0)
+    min_ram = Column(Integer(), nullable=False, default=0)
     owner = Column(String(255))
 
 

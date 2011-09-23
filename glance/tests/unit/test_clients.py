@@ -119,6 +119,24 @@ class TestRegistryClient(unittest.TestCase):
         for k, v in fixture.items():
             self.assertEquals(v, images[0][k])
 
+    def test_create_image_with_null_min_disk_min_ram(self):
+        extra_fixture = {
+            'id': 3,
+            'status': 'active',
+            'is_public': True,
+            'disk_format': 'vhd',
+            'container_format': 'ovf',
+            'name': 'asdf',
+            'size': 19,
+            'checksum': None,
+            'min_disk': None,
+            'min_ram': None,
+        }
+        db_api.image_create(self.context, extra_fixture)
+        image = self.client.get_image(3)
+        self.assertEqual(0, image["min_ram"])
+        self.assertEqual(0, image["min_disk"])
+
     def test_get_index_sort_id_desc(self):
         """
         Tests that the /images registry API returns list of

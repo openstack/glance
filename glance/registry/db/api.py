@@ -332,10 +332,10 @@ def _image_update(context, values, image_id, purge_props=False):
                 values['size'] = int(values['size'])
 
             if 'min_ram' in values:
-                values['min_ram'] = int(values['min_ram'])
+                values['min_ram'] = int(values['min_ram'] or 0)
 
             if 'min_disk' in values:
-                values['min_disk'] = int(values['min_disk'])
+                values['min_disk'] = int(values['min_disk'] or 0)
 
             values['is_public'] = bool(values.get('is_public', False))
             image_ref = models.Image()
