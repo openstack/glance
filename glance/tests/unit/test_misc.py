@@ -16,6 +16,7 @@
 #    under the License.
 
 import os
+import commands
 import unittest
 
 
@@ -39,39 +40,27 @@ def str_dict_replace(s, mapping):
 
 class AuthorsTestCase(unittest.TestCase):
     def test_authors_up_to_date(self):
-        topdir = os.path.normpath(os.path.dirname(__file__) + '/../../')
-        if os.path.exists(os.path.join(topdir, '.bzr')):
-            contributors = set()
 
+        topdir = os.path.normpath(os.path.dirname(__file__) + '/../../..')
+        contributors = set()
+        missing = set()
+        authors_file = open(os.path.join(topdir, 'Authors'), 'r').read()
+
+        if os.path.exists(os.path.join(topdir, '.git')):
             mailmap = parse_mailmap(os.path.join(topdir, '.mailmap'))
+            for email in commands.getoutput('git log --format=%ae').split():
+                if not email:
+                    continue
+                if "jenkins" in email and "openstack.org" in email:
+                    continue
+                email = '<' + email + '>'
+                contributors.add(str_dict_replace(email, mailmap))
 
-            import bzrlib.workingtree
-            tree = bzrlib.workingtree.WorkingTree.open(topdir)
-            tree.lock_read()
-            try:
-                parents = tree.get_parent_ids()
-                g = tree.branch.repository.get_graph()
-                for p in parents:
-                    rev_ids = [r for r, _ in g.iter_ancestry(parents)
-                               if r != "null:"]
-                    revs = tree.branch.repository.get_revisions(rev_ids)
-                    for r in revs:
-                        for author in r.get_apparent_authors():
-                            email = author.split(' ')[-1]
-                            mailmapped = str_dict_replace(email, mailmap)
-                            contributors.add(mailmapped)
+        for contributor in contributors:
+            if contributor == 'glance-core':
+                continue
+            if not contributor in authors_file:
+                missing.add(contributor)
 
-                authors_file = open(os.path.join(topdir, 'Authors'),
-                                    'r').read()
-
-                missing = set()
-                for contributor in contributors:
-                    if contributor == 'glance-core':
-                        continue
-                    if not contributor in authors_file:
-                        missing.add(contributor)
-
-                self.assertTrue(len(missing) == 0,
-                                '%r not listed in Authors' % missing)
-            finally:
-                tree.unlock()
+        self.assertTrue(len(missing) == 0,
+                        '%r not listed in Authors' % missing)
