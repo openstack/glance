@@ -18,10 +18,10 @@
 import datetime
 import json
 import os
-import stubout
 import StringIO
 import unittest
 
+import stubout
 import webob
 
 from glance import client
@@ -977,7 +977,7 @@ class TestClient(unittest.TestCase):
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_filesystem_backend()
         db_api.configure_db(OPTIONS)
-        self.client = client.Client("0.0.0.0", doc_root="")
+        self.client = client.Client("0.0.0.0")
         self.FIXTURES = [
             {'id': 1,
              'name': 'fake image #1',
