@@ -18,17 +18,30 @@
 import json
 import unittest
 
+import stubout
 import webob
 
+from glance import client
+from glance.common import exception
 from glance.api import versions
+from glance.tests import stubs
 
 
 class VersionsTest(unittest.TestCase):
+
+    """
+    Test the version information returned from
+    the API service
+    """
+
     def setUp(self):
-        super(VersionsTest, self).setUp()
+        """Establish a clean test environment"""
+        self.stubs = stubout.StubOutForTesting()
+        stubs.stub_out_registry_and_store_server(self.stubs)
 
     def tearDown(self):
-        super(VersionsTest, self).tearDown()
+        """Clear the test environment"""
+        self.stubs.UnsetAll()
 
     def test_get_version_list(self):
         req = webob.Request.blank('/')
@@ -55,3 +68,9 @@ class VersionsTest(unittest.TestCase):
                         "rel": "self",
                         "href": "http://0.0.0.0:9292/v1/"}]}]
         self.assertEqual(results, expected)
+
+    def test_client_handles_versions(self):
+        api_client = client.Client("0.0.0.0", doc_root="")
+
+        self.assertRaises(exception.MultipleChoices,
+                          api_client.get_images)
