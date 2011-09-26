@@ -385,3 +385,86 @@ class TestSwift(test_api.TestApi):
                          hashlib.md5("*" * FIVE_MB).hexdigest())
 
         self.stop_servers()
+
+    @skip_if_disabled
+    def test_remote_image(self):
+        """
+        Ensure we can retrieve an image that was not stored by glance itself
+        """
+        self.cleanup()
+
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # POST /images with public image named Image1
+        image_data = "*" * FIVE_MB
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=image_data)
+        self.assertEqual(response.status, 201, content)
+        data = json.loads(content)
+        self.assertEqual(data['image']['checksum'],
+                         hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_MB)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(data['image']['is_public'], True)
+
+        # GET /images/1 and make sure data was uploaded
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['content-length'], str(FIVE_MB))
+
+        self.assertEqual(content, "*" * FIVE_MB)
+        self.assertEqual(hashlib.md5(content).hexdigest(),
+                         hashlib.md5("*" * FIVE_MB).hexdigest())
+
+        # use this header as the location for the next image
+        swift_location = response['x-image-meta-location']
+
+        # POST /images with public image named Image1 without uploading data
+        image_data = "*" * FIVE_MB
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Is-Public': 'True',
+                   'X-Image-Meta-Location': swift_location}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201, content)
+        data = json.loads(content)
+        self.assertEqual(data['image']['checksum'], None)
+        self.assertEqual(data['image']['size'], 0)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(data['image']['is_public'], True)
+
+        # GET /images/2 ensuring the data already in swift is accessible
+        path = "http://%s:%d/v1/images/2" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['content-length'], str(FIVE_MB))
+
+        self.assertEqual(content, "*" * FIVE_MB)
+        self.assertEqual(hashlib.md5(content).hexdigest(),
+                         hashlib.md5("*" * FIVE_MB).hexdigest())
+
+        # DELETE /images/1 and /image/2
+        # Verify image and all chunks are gone...
+        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+        path = "http://%s:%d/v1/images/2" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
+        self.stop_servers()

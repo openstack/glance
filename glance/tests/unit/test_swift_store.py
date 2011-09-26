@@ -198,7 +198,7 @@ class TestStore(unittest.TestCase):
         """Test a "normal" retrieval of an image in chunks"""
         loc = get_location_from_uri("swift://user:key@auth_address/glance/2")
         (image_swift, image_size) = self.store.get(loc)
-        self.assertEqual(image_size, None)
+        self.assertEqual(image_size, 5120)
 
         expected_data = "*" * FIVE_KB
         data = ""
@@ -216,7 +216,7 @@ class TestStore(unittest.TestCase):
         loc = get_location_from_uri("swift+http://user:key@auth_address/"
                                     "glance/2")
         (image_swift, image_size) = self.store.get(loc)
-        self.assertEqual(image_size, None)
+        self.assertEqual(image_size, 5120)
 
         expected_data = "*" * FIVE_KB
         data = ""
