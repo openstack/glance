@@ -20,9 +20,7 @@
 import StringIO
 import hashlib
 import httplib
-import sys
 import unittest
-import urlparse
 
 import stubout
 import swift.common.client
@@ -167,21 +165,6 @@ def stub_out_swift_common_client(stubs):
               'http_connection', fake_http_connection)
 
 
-def format_swift_location(user, key, authurl, container, obj):
-    """
-    Helper method that returns a Swift store URI given
-    the component pieces.
-    """
-    scheme = 'swift+https'
-    if authurl.startswith('http://'):
-        scheme = 'swift+http'
-        authurl = authurl[7:]
-    if authurl.startswith('https://'):
-        authurl = authurl[8:]
-    return "%s://%s:%s@%s/%s/%s" % (scheme, user, key, authurl,
-                                    container, obj)
-
-
 class TestStore(unittest.TestCase):
 
     def setUp(self):
@@ -237,16 +220,10 @@ class TestStore(unittest.TestCase):
 
     def test_add(self):
         """Test that we can add an image via the swift backend"""
-        expected_image_id = 42
         expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
         expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
-        expected_location = format_swift_location(
-            SWIFT_OPTIONS['swift_store_user'],
-            SWIFT_OPTIONS['swift_store_key'],
-            SWIFT_OPTIONS['swift_store_auth_address'],
-            SWIFT_OPTIONS['swift_store_container'],
-            expected_image_id)
+        expected_location = 'swift+https://user:key@localhost:8080/glance/42'
         image_swift = StringIO.StringIO(expected_swift_contents)
 
         location, size, checksum = self.store.add(42, image_swift,
@@ -269,35 +246,41 @@ class TestStore(unittest.TestCase):
         Test that we can add an image via the swift backend with
         a variety of different auth_address values
         """
-        variations = ['http://localhost:80',
-                      'http://localhost',
-                      'http://localhost/v1',
-                      'http://localhost/v1/',
-                      'https://localhost',
-                      'https://localhost:8080',
-                      'https://localhost/v1',
-                      'https://localhost/v1/',
-                      'localhost',
-                      'localhost:8080/v1']
-        i = 42
-        for variation in variations:
-            expected_image_id = i
+        variations = {
+            'http://localhost:80': 'swift+http://user:key@localhost:80'
+                                   '/glance/%s',
+            'http://localhost': 'swift+http://user:key@localhost/glance/%s',
+            'http://localhost/v1': 'swift+http://user:key@localhost'
+                                   '/v1/glance/%s',
+            'http://localhost/v1/': 'swift+http://user:key@localhost'
+                                    '/v1/glance/%s',
+            'https://localhost': 'swift+https://user:key@localhost/glance/%s',
+            'https://localhost:8080': 'swift+https://user:key@localhost:8080'
+                                      '/glance/%s',
+            'https://localhost/v1': 'swift+https://user:key@localhost'
+                                    '/v1/glance/%s',
+            'https://localhost/v1/': 'swift+https://user:key@localhost'
+                                     '/v1/glance/%s',
+            'localhost': 'swift+https://user:key@localhost/glance/%s',
+            'localhost:8080/v1': 'swift+https://user:key@localhost:8080'
+                                 '/v1/glance/%s',
+        }
+
+        for i, (variation, expected_location) in enumerate(variations.items()):
+            # start image id arbitrarily high due to existing fixtures
+            image_id = 50 + i
+            expected_location = expected_location % image_id
             expected_swift_size = FIVE_KB
             expected_swift_contents = "*" * expected_swift_size
             expected_checksum = \
                     hashlib.md5(expected_swift_contents).hexdigest()
             new_options = SWIFT_OPTIONS.copy()
             new_options['swift_store_auth_address'] = variation
-            expected_location = format_swift_location(
-                new_options['swift_store_user'],
-                new_options['swift_store_key'],
-                new_options['swift_store_auth_address'],
-                new_options['swift_store_container'],
-                expected_image_id)
+
             image_swift = StringIO.StringIO(expected_swift_contents)
 
             self.store = Store(new_options)
-            location, size, checksum = self.store.add(i, image_swift,
+            location, size, checksum = self.store.add(image_id, image_swift,
                                                       expected_swift_size)
 
             self.assertEquals(expected_location, location)
@@ -311,7 +294,6 @@ class TestStore(unittest.TestCase):
 
             self.assertEquals(expected_swift_contents, new_image_contents)
             self.assertEquals(expected_swift_size, new_image_swift_size)
-            i = i + 1
 
     def test_add_no_container_no_create(self):
         """
@@ -344,16 +326,10 @@ class TestStore(unittest.TestCase):
         options = SWIFT_OPTIONS.copy()
         options['swift_store_create_container_on_put'] = 'True'
         options['swift_store_container'] = 'noexist'
-        expected_image_id = 42
         expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
         expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
-        expected_location = format_swift_location(
-            options['swift_store_user'],
-            options['swift_store_key'],
-            options['swift_store_auth_address'],
-            options['swift_store_container'],
-            expected_image_id)
+        expected_location = 'swift+https://user:key@localhost:8080/noexist/42'
         image_swift = StringIO.StringIO(expected_swift_contents)
 
         self.store = Store(options)
@@ -381,16 +357,10 @@ class TestStore(unittest.TestCase):
         """
         options = SWIFT_OPTIONS.copy()
         options['swift_store_container'] = 'glance'
-        expected_image_id = 42
         expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
         expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
-        expected_location = format_swift_location(
-            options['swift_store_user'],
-            options['swift_store_key'],
-            options['swift_store_auth_address'],
-            options['swift_store_container'],
-            expected_image_id)
+        expected_location = 'swift+https://user:key@localhost:8080/glance/42'
         image_swift = StringIO.StringIO(expected_swift_contents)
 
         orig_max_size = glance.store.swift.DEFAULT_LARGE_OBJECT_SIZE
