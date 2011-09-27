@@ -171,7 +171,7 @@ class TestStore(unittest.TestCase):
             "s3://user:key@auth_address/glance/2")
         (image_s3, image_size) = self.store.get(loc)
 
-        self.assertEqual(image_size, None)
+        self.assertEqual(image_size, FIVE_KB)
 
         expected_data = "*" * FIVE_KB
         data = ""

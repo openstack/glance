@@ -253,7 +253,7 @@ class Store(glance.store.base.Store):
         #   raise glance.store.BackendException(msg)
 
         key.BufferSize = self.CHUNKSIZE
-        return (ChunkedFile(key), None)
+        return (ChunkedFile(key), key.size)
 
     def add(self, image_id, image_file, image_size):
         """
