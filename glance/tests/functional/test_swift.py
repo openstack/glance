@@ -426,8 +426,11 @@ class TestSwift(test_api.TestApi):
         self.assertEqual(hashlib.md5(content).hexdigest(),
                          hashlib.md5("*" * FIVE_MB).hexdigest())
 
-        # use this header as the location for the next image
-        swift_location = response['x-image-meta-location']
+        # GET /images/1 from registry in order to find Swift location
+        path = "http://%s:%d/images/1" % ("0.0.0.0", self.registry_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        swift_location = json.loads(content)['image']['location']
 
         # POST /images with public image named Image1 without uploading data
         image_data = "*" * FIVE_MB

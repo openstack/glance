@@ -68,7 +68,7 @@ class TestApi(functional.FunctionalTest):
         - Add a previously deleted property.
         """
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         # 0. GET /images
         # Verify no public images
@@ -299,7 +299,7 @@ class TestApi(functional.FunctionalTest):
         """
 
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         # 0. GET /images
         # Verify no public images
@@ -401,7 +401,7 @@ class TestApi(functional.FunctionalTest):
         """
 
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         versions = {'versions': [{
             "id": "v1.1",
@@ -566,7 +566,7 @@ class TestApi(functional.FunctionalTest):
         """
 
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         # 1. POST /images with public image named Image1
         # attribute and a size of 5G. Use the HTTP engine with an
@@ -605,7 +605,7 @@ class TestApi(functional.FunctionalTest):
         :see https://bugs.launchpad.net/glance/+bug/755912
         """
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         # POST /images with binary data, but not setting
         # Content-Type to application/octet-stream, verify a
@@ -630,7 +630,7 @@ class TestApi(functional.FunctionalTest):
         Set up four test images and ensure each query param filter works
         """
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         # 0. GET /images
         # Verify no public images
@@ -883,7 +883,7 @@ class TestApi(functional.FunctionalTest):
         Ensure marker and limit query params work
         """
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         # 0. GET /images
         # Verify no public images
@@ -972,7 +972,7 @@ class TestApi(functional.FunctionalTest):
         Set up three test images and ensure each query param filter works
         """
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         # 0. GET /images
         # Verify no public images
@@ -1083,7 +1083,7 @@ class TestApi(functional.FunctionalTest):
         Upload initial image, then attempt to upload duplicate image
         """
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         # 0. GET /images
         # Verify no public images
