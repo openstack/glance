@@ -18,6 +18,7 @@
 import unittest
 
 from glance import utils
+from glance.common import utils as common_utils
 
 
 class TestUtils(unittest.TestCase):
@@ -106,3 +107,26 @@ class TestUtils(unittest.TestCase):
             result = utils.get_image_meta_from_headers(response)
             for k, v in expected.items():
                 self.assertEqual(v, result[k])
+
+    def test_generate_uuid_format(self):
+        """Check the format of a uuid"""
+        uuid = common_utils.generate_uuid()
+        self.assertTrue(isinstance(uuid, basestring))
+        self.assertTrue(len(uuid), 36)
+        # make sure there are 4 dashes
+        self.assertTrue(len(uuid.replace('-', '')), 36)
+
+    def test_generate_uuid_unique(self):
+        """Ensure generate_uuid will return unique values"""
+        uuids = [common_utils.generate_uuid() for i in range(5)]
+        # casting to set will drop duplicate values
+        unique = set(uuids)
+        self.assertEqual(len(uuids), len(list(unique)))
+
+    def test_is_uuid_like_success(self):
+        fixture = 'b694bf02-6b01-4905-a50e-fcf7bce7e4d2'
+        self.assertTrue(common_utils.is_uuid_like(fixture))
+
+    def test_is_uuid_like_fails(self):
+        fixture = 'pants'
+        self.assertFalse(common_utils.is_uuid_like(fixture))

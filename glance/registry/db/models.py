@@ -31,6 +31,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 import glance.registry.db.api
 from glance.common import exception
+from glance.common import utils
 
 BASE = declarative_base()
 
@@ -97,7 +98,7 @@ class Image(BASE, ModelBase):
     """Represents an image in the datastore"""
     __tablename__ = 'images'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(String(36), primary_key=True, default=utils.generate_uuid)
     name = Column(String(255))
     disk_format = Column(String(20))
     container_format = Column(String(20))
@@ -117,7 +118,8 @@ class ImageProperty(BASE, ModelBase):
     __table_args__ = (UniqueConstraint('image_id', 'name'), {})
 
     id = Column(Integer, primary_key=True)
-    image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
+    image_id = Column(String(36), ForeignKey('images.id'),
+                      nullable=False)
     image = relationship(Image, backref=backref('properties'))
 
     name = Column(String(255), index=True, nullable=False)
@@ -130,7 +132,8 @@ class ImageMember(BASE, ModelBase):
     __table_args__ = (UniqueConstraint('image_id', 'member'), {})
 
     id = Column(Integer, primary_key=True)
-    image_id = Column(Integer, ForeignKey('images.id'), nullable=False)
+    image_id = Column(String(36), ForeignKey('images.id'),
+                      nullable=False)
     image = relationship(Image, backref=backref('members'))
 
     member = Column(String(255), nullable=False)

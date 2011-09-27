@@ -201,23 +201,27 @@ class TestSwift(test_api.TestApi):
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], True)
 
-        # HEAD /images/1
+        image_id = data['image']['id']
+
+        # HEAD image
         # Verify image found now
-        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'HEAD')
         self.assertEqual(response.status, 200)
         self.assertEqual(response['x-image-meta-name'], "Image1")
 
-        # GET /images/1
+        # GET image
         # Verify all information on image we just added is correct
-        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
 
         expected_image_headers = {
-            'x-image-meta-id': '1',
+            'x-image-meta-id': image_id,
             'x-image-meta-name': 'Image1',
             'x-image-meta-is_public': 'True',
             'x-image-meta-status': 'active',
@@ -253,7 +257,8 @@ class TestSwift(test_api.TestApi):
         # Grab the actual Swift location and query the object manifest for
         # the chunks/segments. We will check that the segments don't exist
         # after we delete the object through Glance...
-        path = "http://%s:%d/images/1" % ("0.0.0.0", self.registry_port)
+        path = "http://%s:%d/images/%s" % ("0.0.0.0", self.registry_port,
+                                           image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
@@ -283,9 +288,10 @@ class TestSwift(test_api.TestApi):
             self.assertTrue(headers.get('content-length') is not None,
                             headers)
 
-        # DELETE /images/1
+        # DELETE image
         # Verify image and all chunks are gone...
-        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 200)
@@ -339,23 +345,27 @@ class TestSwift(test_api.TestApi):
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], True)
 
-        # 4. HEAD /images/1
+        image_id = data['image']['id']
+
+        # 4. HEAD image
         # Verify image found now
-        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'HEAD')
         self.assertEqual(response.status, 200)
         self.assertEqual(response['x-image-meta-name'], "Image1")
 
-        # 5. GET /images/1
+        # 5. GET image
         # Verify all information on image we just added is correct
-        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
 
         expected_image_headers = {
-            'x-image-meta-id': '1',
+            'x-image-meta-id': image_id,
             'x-image-meta-name': 'Image1',
             'x-image-meta-is_public': 'True',
             'x-image-meta-status': 'active',
@@ -416,8 +426,11 @@ class TestSwift(test_api.TestApi):
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], True)
 
-        # GET /images/1 and make sure data was uploaded
-        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        image_id = data['image']['id']
+
+        # GET image and make sure data was uploaded
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
@@ -429,7 +442,8 @@ class TestSwift(test_api.TestApi):
 
         # Find the location that was just added and use it as
         # the remote image location for the next image
-        path = "http://%s:%d/images/1" % ("0.0.0.0", self.registry_port)
+        path = "http://%s:%d/images/%s" % ("0.0.0.0", self.registry_port,
+                                           image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
@@ -453,8 +467,11 @@ class TestSwift(test_api.TestApi):
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], True)
 
+        image_id2 = data['image']['id']
+
         # GET /images/2 ensuring the data already in swift is accessible
-        path = "http://%s:%d/v1/images/2" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id2)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
@@ -464,13 +481,15 @@ class TestSwift(test_api.TestApi):
         self.assertEqual(hashlib.md5(content).hexdigest(),
                          hashlib.md5("*" * FIVE_KB).hexdigest())
 
-        # DELETE /images/1 and /image/2
+        # DELETE boty images
         # Verify image and all chunks are gone...
-        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 200)
-        path = "http://%s:%d/v1/images/2" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id2)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 200)

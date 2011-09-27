@@ -51,12 +51,6 @@ class BaseCacheMiddlewareTest(object):
         api_port = self.api_port
         registry_port = self.registry_port
 
-        # Verify no image 1
-        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        response, content = http.request(path, 'HEAD')
-        self.assertEqual(response.status, 404)
-
         # Add an image and verify a 200 OK is returned
         image_data = "*" * FIVE_KB
         headers = {'Content-Type': 'application/octet-stream',
@@ -74,20 +68,23 @@ class BaseCacheMiddlewareTest(object):
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], True)
 
+        image_id = data['image']['id']
+
         # Verify image not in cache
         image_cached_path = os.path.join(self.api_server.image_cache_dir,
-                                         '1')
+                                         image_id)
         self.assertFalse(os.path.exists(image_cached_path))
 
         # Grab the image
-        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
 
         # Verify image now in cache
         image_cached_path = os.path.join(self.api_server.image_cache_dir,
-                                         '1')
+                                         image_id)
 
         # You might wonder why the heck this is here... well, it's here
         # because it took me forever to figure out that the disk write

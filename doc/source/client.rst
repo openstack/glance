@@ -164,7 +164,7 @@ first public image returned, we can use the following code
 
   c = Client("glance.example.com", 9292)
 
-  print c.get_image_meta("http://glance.example.com/images/1")
+  print c.get_image_meta("http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9")
 
 Retrieving a Virtual Machine Image
 ----------------------------------
@@ -186,7 +186,7 @@ first public image returned and its image data, we can use the following code
 
   c = Client("glance.example.com", 9292)
 
-  meta, image_file = c.get_image("http://glance.example.com/images/1")
+  meta, image_file = c.get_image("http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9")
 
   print meta
 
@@ -238,10 +238,11 @@ The list of metadata that `image_meta` can contain are listed below.
 
   When present, Glance will use the supplied identifier for the image.
   If the identifier already exists in that Glance node, then a
-  `glance.common.exception.Duplicate` will be raised.
+  `glance.common.exception.Duplicate` will be raised. The value of the header
+  must be a properly formatted uuid (i.e. 71c675ab-d94f-49cd-a114-e12490b328d9).
 
   When this key/value is *not* present, Glance will generate an identifier
-  for the image and return this identifier in the response (see below)
+  for the image and return this identifier in the response (see below).
 
 * `store`
 
@@ -333,7 +334,8 @@ We want to see a list of the other system tenants that may access a given
 virtual machine image that the Glance server knows about.
 
 Continuing from the example above, in order to get the memberships for the
-image with ID 1, we can use the following code
+image with ID '71c675ab-d94f-49cd-a114-e12490b328d9', we can use the
+following code
 
 .. code-block:: python
 
@@ -341,7 +343,7 @@ image with ID 1, we can use the following code
 
   c = Client("glance.example.com", 9292)
 
-  members = c.get_image_members(1)
+  members = c.get_image_members('71c675ab-d94f-49cd-a114-e12490b328d9')
 
 .. note::
 
@@ -379,9 +381,10 @@ Adding a Member To an Image
 
 We want to authorize a tenant to access a private image.
 
-Continuing from the example above, in order to share the image with ID 1
-with 'tenant1', and to allow 'tenant2' to not only access the image but to also
-share it with other tenants, we can use the following code
+Continuing from the example above, in order to share the image with ID
+'71c675ab-d94f-49cd-a114-e12490b328d9' with 'tenant1', and to allow
+'tenant2' to not only access the image but to also share it with other
+tenants, we can use the following code
 
 .. code-block:: python
 
@@ -389,8 +392,8 @@ share it with other tenants, we can use the following code
 
   c = Client("glance.example.com", 9292)
 
-  c.add_member(1, 'tenant1')
-  c.add_member(1, 'tenant2', True)
+  c.add_member('71c675ab-d94f-49cd-a114-e12490b328d9', 'tenant1')
+  c.add_member('71c675ab-d94f-49cd-a114-e12490b328d9', 'tenant2', True)
 
 .. note::
 
@@ -408,7 +411,8 @@ Removing a Member From an Image
 We want to revoke a tenant's authorization to access a private image.
 
 Continuing from the example above, in order to revoke the access of 'tenant1'
-to the image with ID 1, we can use the following code
+to the image with ID '71c675ab-d94f-49cd-a114-e12490b328d9', we can use
+the following code
 
 .. code-block:: python
 
@@ -416,7 +420,7 @@ to the image with ID 1, we can use the following code
 
   c = Client("glance.example.com", 9292)
 
-  c.delete_member(1, 'tenant1')
+  c.delete_member('71c675ab-d94f-49cd-a114-e12490b328d9', 'tenant1')
 
 .. note::
 
@@ -429,9 +433,10 @@ All existing image memberships may be revoked and replaced in a single
 operation.
 
 Continuing from the example above, in order to replace the membership list
-of the image with ID 1 with two entries--the first allowing 'tenant1' to
-access the image, and the second allowing 'tenant2' to access and further
-share the image, we can use the following code
+of the image with ID '71c675ab-d94f-49cd-a114-e12490b328d9' with two
+entries--the first allowing 'tenant1' to access the image, and the second
+allowing 'tenant2' to access and further share the image, we can use the
+following code
 
 .. code-block:: python
 
@@ -439,7 +444,8 @@ share the image, we can use the following code
 
   c = Client("glance.example.com", 9292)
 
-  c.replace_members(1, {'member_id': 'tenant1', 'can_share': False},
+  c.replace_members('71c675ab-d94f-49cd-a114-e12490b328d9',
+                    {'member_id': 'tenant1', 'can_share': False},
                     {'member_id': 'tenant2', 'can_share': True})
 
 .. note::

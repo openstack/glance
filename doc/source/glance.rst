@@ -181,20 +181,20 @@ If Glance was able to successfully upload and store your VM image data and
 metadata attributes, you would see something like this::
 
   $> glance add name="My Image" is_public=true < /tmp/images/myimage.iso --host=65.114.169.29
-  Added new image with ID: 2
+  Added new image with ID: 991baaf9-cc0d-4183-a201-8facdf1a1430
 
 You can use the ``--verbose`` (or ``-v``) command-line option to print some more
 information about the metadata that was saved with the image::
 
   $> glance --verbose add name="My Image" is_public=true < /tmp/images/myimage.iso --host=65.114.169.29
-  Added new image with ID: 4
+  Added new image with ID: 541424be-27b1-49d6-a55b-6430b8ae0f5f
   Returned the following metadata for the new image:
                  container_format => ovf
                        created_at => 2011-02-22T19:20:53.298556
                           deleted => False
                        deleted_at => None
                       disk_format => raw
-                               id => 4
+                               id => 541424be-27b1-49d6-a55b-6430b8ae0f5f
                         is_public => True
                          location => file:///tmp/images/4
                              name => My Image
@@ -242,14 +242,14 @@ Glance using the following::
 
   $> glance --verbose add name="Some web image" disk_format=vhd container_format=ovf\
      location="http://example.com/images/myimage.vhd"
-  Added new image with ID: 1
+  Added new image with ID: 71c675ab-d94f-49cd-a114-e12490b328d9
   Returned the following metadata for the new image:
                  container_format => ovf
                        created_at => 2011-02-23T00:42:04.688890
                           deleted => False
                        deleted_at => None
                       disk_format => vhd
-                               id => 1
+                               id => 71c675ab-d94f-49cd-a114-e12490b328d9
                         is_public => True
                          location => http://example.com/images/myimage.vhd
                              name => Some web image
@@ -272,23 +272,23 @@ image. You use this command like so::
 
   glance update <ID> [field1=value1 field2=value2 ...]
 
-Let's say we have an image with identifier 5 that we wish to change the is_public
+Let's say we have an image with identifier
+'9afc4097-1c70-45c3-8c12-1b897f083faa' that we wish to change the is_public
 attribute of the image from False to True. The following would accomplish this::
 
-  $> glance update 5 is_public=true --host=65.114.169.29
-  Updated image 5
+  $> glance update 9afc4097-1c70-45c3-8c12-1b897f083faa is_public=true --host=65.114.169.29
+  Updated image 9afc4097-1c70-45c3-8c12-1b897f083faa
 
 Using the ``--verbose`` flag will show you all the updated data about the image::
 
-  $> glance --verbose update 5 is_public=true --host=65.114.169.29
-  Updated image 5
-  Updated image metadata for image 5:
-  URI: http://example.com/images/5
-  Id: 5
+  $> glance --verbose update 97243446-9c74-42af-a31a-34ba16555868 is_public=true --host=65.114.169.29
+  Updated image 97243446-9c74-42af-a31a-34ba16555868
+  Updated image metadata for image 97243446-9c74-42af-a31a-34ba16555868:
+  URI: http://example.com/images/97243446-9c74-42af-a31a-34ba16555868
+  Id: 97243446-9c74-42af-a31a-34ba16555868
   Public? Yes
   Name: My Image
   Size: 58520278
-  Location: file:///tmp/images/5
   Disk format: raw
   Container format: ovf
   Completed in 0.0596 sec.
@@ -298,8 +298,8 @@ The ``delete`` command
 
 You can delete an image by using the ``delete`` command, shown below::
 
-  $> glance --verbose delete 5 --host=65.114.169.29
-  Deleted image 5
+  $> glance --verbose delete 660c96a7-ef95-45e7-8e48-595df6937675 --host=65.114.169.29 -f
+  Deleted image 660c96a7-ef95-45e7-8e48-595df6937675
 
 The ``index`` command
 ---------------------
@@ -308,12 +308,12 @@ The ``index`` command displays brief information about the *public* images
 available in Glance, as shown below::
 
   $> glance index --host=65.114.169.29
-  ID               Name                           Disk Format          Container Format     Size          
-  ---------------- ------------------------------ -------------------- -------------------- --------------
-  1                Ubuntu 10.10                   vhd                  ovf                        58520278
-  2                Ubuntu 10.04                   ami                  ami                        58520278
-  3                Fedora 9                       vdi                  bare                           3040
-  4                Vanilla Linux 2.6.22           qcow2                bare                              0
+  ID                                   Name                           Disk Format          Container Format     Size
+  ------------------------------------ ------------------------------ -------------------- -------------------- --------------
+  baa87554-34d2-4e9e-9949-e9e5620422bb Ubuntu 10.10                   vhd                  ovf                        58520278
+  9e1aede2-dc6e-4981-9f3e-93dee24d48b1 Ubuntu 10.04                   ami                  ami                        58520278
+  771c0223-27b4-4789-a83d-79eb9c166578 Fedora 9                       vdi                  bare                           3040
+  cb8f4908-ef58-4e4b-884e-517cf09ead86 Vanilla Linux 2.6.22           qcow2                bare                              0
 
 Image metadata such as 'name', 'disk_format', 'container_format' and 'status'
 may be used to filter the results of an index or details command. These
@@ -342,49 +342,45 @@ available in Glance, as shown below::
 
   $> glance details --host=65.114.169.29
   ================================================================================
-  URI: http://example.com/images/1
-  Id: 1
+  URI: http://example.com/images/baa87554-34d2-4e9e-9949-e9e5620422bb
+  Id: baa87554-34d2-4e9e-9949-e9e5620422bb
   Public? Yes
   Name: Ubuntu 10.10
   Status: active
   Size: 58520278
-  Location: file:///tmp/images/1
   Disk format: vhd
   Container format: ovf
   Property 'distro_version': 10.10
   Property 'distro': Ubuntu
   ================================================================================
-  URI: http://example.com/images/2
-  Id: 2
+  URI: http://example.com/images/9e1aede2-dc6e-4981-9f3e-93dee24d48b1
+  Id: 9e1aede2-dc6e-4981-9f3e-93dee24d48b1
   Public? Yes
   Name: Ubuntu 10.04
   Status: active
   Size: 58520278
-  Location: file:///tmp/images/2
   Disk format: ami
   Container format: ami
   Property 'distro_version': 10.04
   Property 'distro': Ubuntu
   ================================================================================
-  URI: http://example.com/images/3
-  Id: 3
+  URI: http://example.com/images/771c0223-27b4-4789-a83d-79eb9c166578
+  Id: 771c0223-27b4-4789-a83d-79eb9c166578
   Public? Yes
   Name: Fedora 9
   Status: active
   Size: 3040
-  Location: file:///tmp/images/3
   Disk format: vdi
   Container format: bare
   Property 'distro_version': 9
   Property 'distro': Fedora
   ================================================================================
-  URI: http://example.com/images/4
-  Id: 4
+  URI: http://example.com/images/cb8f4908-ef58-4e4b-884e-517cf09ead86
+  Id: cb8f4908-ef58-4e4b-884e-517cf09ead86
   Public? Yes
   Name: Vanilla Linux 2.6.22
   Status: active
   Size: 0
-  Location: http://example.com/images/vanilla.iso
   Disk format: qcow2
   Container format: bare
   ================================================================================
@@ -395,14 +391,13 @@ The ``show`` command
 The ``show`` command displays detailed information about a specific image, specified
 with ``<ID>``, as shown below::
 
-  $> glance show 3 --host=65.114.169.29
-  URI: http://example.com/images/3
-  Id: 3
+  $> glance show 771c0223-27b4-4789-a83d-79eb9c166578 --host=65.114.169.29
+  URI: http://example.com/images/771c0223-27b4-4789-a83d-79eb9c166578
+  Id: 771c0223-27b4-4789-a83d-79eb9c166578
   Public? Yes
   Name: Fedora 9
   Status: active
   Size: 3040
-  Location: file:///tmp/images/3
   Disk format: vdi
   Container format: bare
   Property 'distro_version': 9
@@ -416,8 +411,8 @@ and all image metadata. Passing the ``--verbose`` command will print brief
 information about all the images that were deleted, as shown below::
 
   $> glance --verbose clear --host=65.114.169.29
-  Deleting image 1 "Some web image" ... done
-  Deleting image 2 "Some other web image" ... done
+  Deleting image ab15b8d3-8f33-4467-abf2-9f89a042a8c4 "Some web image" ... done
+  Deleting image dc9698b4-e9f1-4f75-b777-1a897633e488 "Some other web image" ... done
   Completed in 0.0328 sec.
 
 The ``image-members`` Command
@@ -426,7 +421,7 @@ The ``image-members`` Command
 The ``image-members`` command displays the list of members with which a
 specific image, specified with ``<ID>``, is shared, as shown below::
 
-  $> glance image-members 3 --host=65.114.169.29
+  $> glance image-members ab15b8d3-8f33-4467-abf2-9f89a042a8c4 --host=65.114.169.29
   tenant1
   tenant2 *
 
@@ -439,8 +434,8 @@ The ``member-images`` command displays the list of images which are shared
 with a specific member, specified with ``<MEMBER>``, as shown below::
 
   $> glance member-images tenant1 --host=65.114.169.29
-  1
-  2 *
+  ab15b8d3-8f33-4467-abf2-9f89a042a8c4
+  dc9698b4-e9f1-4f75-b777-1a897633e488 *
 
   (*: Can share image)
 
@@ -451,8 +446,8 @@ The ``member-add`` command grants a member, specified with ``<MEMBER>``, access
 to a private image, specified with ``<ID>``.  The ``--can-share`` flag can be
 given to allow the member to share the image, as shown below::
 
-  $> glance member-add 1 tenant1 --host=65.114.169.29
-  $> glance member-add 1 tenant2 --can-share --host=65.114.169.29
+  $> glance member-add ab15b8d3-8f33-4467-abf2-9f89a042a8c4 tenant1 --host=65.114.169.29
+  $> glance member-add ab15b8d3-8f33-4467-abf2-9f89a042a8c4 tenant2 --can-share --host=65.114.169.29
 
 The ``member-delete`` Command
 -----------------------------
@@ -460,8 +455,8 @@ The ``member-delete`` Command
 The ``member-delete`` command revokes the access of a member, specified with
 ``<MEMBER>``, to a private image, specified with ``<ID>``, as shown below::
 
-  $> glance member-delete 1 tenant1
-  $> glance member-delete 1 tenant2
+  $> glance member-delete ab15b8d3-8f33-4467-abf2-9f89a042a8c4 tenant1
+  $> glance member-delete ab15b8d3-8f33-4467-abf2-9f89a042a8c4 tenant2
 
 The ``members-replace`` Command
 -------------------------------
@@ -471,7 +466,7 @@ image, specified with ``<ID>``, and replaces them with a membership for one
 member, specified with ``<MEMBER>``.  The ``--can-share`` flag can be given to
 allow the member to share the image, as shown below::
 
-  $> glance members-replace 1 tenant1 --can-share --host=65.114.169.29
+  $> glance members-replace ab15b8d3-8f33-4467-abf2-9f89a042a8c4 tenant1 --can-share --host=65.114.169.29
 
 The command is given in plural form to make it clear that all existing
 memberships are affected by the command.

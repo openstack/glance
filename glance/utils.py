@@ -72,8 +72,6 @@ def get_image_meta_from_headers(response):
             field_name = key[len('x-image-meta-'):].replace('-', '_')
             result[field_name] = value or None
     result['properties'] = properties
-    if 'id' in result:
-        result['id'] = int(result['id'])
     if 'size' in result:
         result['size'] = int(result['size'])
     if 'is_public' in result:

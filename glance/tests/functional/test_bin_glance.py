@@ -74,7 +74,7 @@ class TestBinGlance(functional.FunctionalTest):
             exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('Added new image with ID: 1', out.strip())
+        self.assertTrue(out.strip().startswith('Added new image with ID:'))
 
         # 2. Verify image added as public image
         cmd = "bin/glance --port=%d index" % api_port
@@ -97,12 +97,12 @@ class TestBinGlance(functional.FunctionalTest):
                          "of webob." % size)
 
         # 3. Delete the image
-        cmd = "bin/glance --port=%d --force delete 1" % api_port
+        cmd = "bin/glance --port=%d --force delete %s" % (api_port, image_id)
 
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('Deleted image 1', out.strip())
+        self.assertEqual('Deleted image %s' % image_id, out.strip())
 
         # 4. Verify no public images
         cmd = "bin/glance --port=%d index" % api_port
@@ -147,7 +147,9 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('Added new image with ID: 1', out.strip())
+        self.assertTrue(out.strip().startswith('Added new image with ID:'))
+
+        image_id = out.strip().split(':')[1].strip()
 
         # 2. Verify image does not appear as a public image
         cmd = "bin/glance --port=%d index" % api_port
@@ -158,12 +160,13 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual('', out.strip())
 
         # 3. Update the image to make it public
-        cmd = "bin/glance --port=%d update 1 is_public=True" % api_port
+        cmd = "bin/glance --port=%d update %s is_public=True" % (
+            api_port, image_id)
 
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('Updated image 1', out.strip())
+        self.assertEqual('Updated image %s' % image_id, out.strip())
 
         # 4. Verify image 1 in list of public images
         cmd = "bin/glance --port=%d index" % api_port
@@ -177,13 +180,13 @@ class TestBinGlance(functional.FunctionalTest):
 
         # 5. Update the image's Name attribute
         updated_image_name = "Updated image name"
-        cmd = "bin/glance --port=%d update 1 is_public=True name=\"%s\"" \
-                % (api_port, updated_image_name)
+        cmd = "bin/glance --port=%d update %s is_public=True name=\"%s\"" \
+                % (api_port, image_id, updated_image_name)
 
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('Updated image 1', out.strip())
+        self.assertEqual('Updated image %s' % image_id, out.strip())
 
         # 6. Verify updated name shown
         cmd = "bin/glance --port=%d index" % api_port
@@ -206,8 +209,6 @@ class TestBinGlance(functional.FunctionalTest):
             0. Verify no public images in index
             1. Attempt to add an image
             2. Verify the image does NOT appear in the index output
-            3. Verify the status of the image is displayed in the show output
-               and is in status 'killed'
         """
         self.cleanup()
 
@@ -249,14 +250,6 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         self.assertEqual('', out.strip())
 
-        # 3. Verify image status in show is 'killed'
-        cmd = "bin/glance --port=%d show 1" % api_port
-
-        exitcode, out, err = execute(cmd)
-
-        self.assertEqual(0, exitcode)
-        self.assertTrue('Status: killed' in out)
-
         self.stop_servers()
 
     @functional.runs_sql
@@ -282,7 +275,7 @@ class TestBinGlance(functional.FunctionalTest):
             exitcode, out, err = execute(cmd)
 
             self.assertEqual(0, exitcode)
-            self.assertEqual('Added new image with ID: %i' % i, out.strip())
+            self.assertTrue(out.strip().find('Added new image with ID:') > -1)
 
         # 2. Clear all images
         cmd = "bin/glance --port=%d --force clear" % api_port
@@ -324,12 +317,13 @@ class TestBinGlance(functional.FunctionalTest):
             "min_disk=7 min_ram=256",
         ]
 
+        image_ids = []
         for i, args in enumerate(_add_args):
             cmd = "%s %s" % (_add_cmd, args)
             exitcode, out, err = execute(cmd)
             self.assertEqual(0, exitcode)
-            expected_out = 'Added new image with ID: %d' % (i + 1,)
-            self.assertEqual(expected_out, out.strip())
+            self.assertTrue(out.strip().find('Added new image with ID:') > -1)
+            image_ids.append(out.strip().split(':')[1].strip())
 
         _base_cmd = "bin/glance --port=%d" % api_port
         _index_cmd = "%s index -f" % (_base_cmd,)
@@ -337,11 +331,11 @@ class TestBinGlance(functional.FunctionalTest):
         # 2. Check name filter
         cmd = "name=Name2"
         exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
+        image_lines = out.split("\n")[2:-1]
 
         self.assertEqual(0, exitcode)
-        image_lines = out.split("\n")[2:-1]
         self.assertEqual(1, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('2'))
+        self.assertEqual(image_lines[0].split()[0], image_ids[1])
 
         # 3. Check disk_format filter
         cmd = "disk_format=vhd"
@@ -350,8 +344,8 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(2, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('3'))
-        self.assertTrue(image_lines[1].startswith('1'))
+        self.assertEqual(image_lines[0].split()[0], image_ids[2])
+        self.assertEqual(image_lines[1].split()[0], image_ids[0])
 
         # 4. Check container_format filter
         cmd = "container_format=ami"
@@ -360,7 +354,7 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(1, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('2'))
+        self.assertEqual(image_lines[0].split()[0], image_ids[1])
 
         # 5. Check container_format filter
         cmd = "container_format=ami"
@@ -369,7 +363,7 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(1, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('2'))
+        self.assertEqual(image_lines[0].split()[0], image_ids[1])
 
         # 6. Check status filter
         cmd = "status=killed"
@@ -386,8 +380,8 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(2, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('2'))
-        self.assertTrue(image_lines[1].startswith('1'))
+        self.assertEqual(image_lines[0].split()[0], image_ids[1])
+        self.assertEqual(image_lines[1].split()[0], image_ids[0])
 
         # 8. Check multiple filters
         cmd = "name=Name2 foo=bar"
@@ -396,7 +390,7 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(1, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('2'))
+        self.assertEqual(image_lines[0].split()[0], image_ids[1])
 
         # 9. Check past changes-since
         dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
@@ -407,9 +401,9 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(3, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('3'))
-        self.assertTrue(image_lines[1].startswith('2'))
-        self.assertTrue(image_lines[2].startswith('1'))
+        self.assertEqual(image_lines[0].split()[0], image_ids[2])
+        self.assertEqual(image_lines[1].split()[0], image_ids[1])
+        self.assertEqual(image_lines[2].split()[0], image_ids[0])
 
         # 10. Check future changes-since
         dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
@@ -429,8 +423,8 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
         self.assertEqual(24, len(image_lines))
-        self.assertTrue(image_lines[1].startswith('Id: 2'))
-        self.assertTrue(image_lines[13].startswith('Id: 1'))
+        self.assertEqual(image_lines[1].split()[1], image_ids[1])
+        self.assertEqual(image_lines[13].split()[1], image_ids[0])
 
         # 10. Check min_ram filter
         cmd = "min_ram=256"
@@ -439,7 +433,7 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(11, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('Id: 3'))
+        self.assertEqual(image_lines[0].split()[1], image_ids[2])
 
         # 11. Check min_disk filter
         cmd = "min_disk=7"
@@ -448,7 +442,7 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(11, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('Id: 3'))
+        self.assertEqual(image_lines[0].split()[1], image_ids[2])
 
         self.stop_servers()
 
@@ -470,12 +464,15 @@ class TestBinGlance(functional.FunctionalTest):
             "name=Name5 disk_format=vhd container_format=ovf",
         ]
 
+        image_ids = []
+
         for i, args in enumerate(_add_args):
             cmd = "%s %s" % (_add_cmd, args)
             exitcode, out, err = execute(cmd)
             self.assertEqual(0, exitcode)
             expected_out = 'Added new image with ID: %d' % (i + 1,)
-            self.assertEqual(expected_out, out.strip())
+            self.assertTrue(out.strip().find('Added new image with ID:') > -1)
+            image_ids.append(out.strip().split(':')[1].strip())
 
         # 2. Limit less than total
         cmd = "--limit=3"
@@ -484,52 +481,52 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(5, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('5'))
-        self.assertTrue(image_lines[1].startswith('4'))
-        self.assertTrue(image_lines[2].startswith('3'))
-        self.assertTrue(image_lines[3].startswith('2'))
-        self.assertTrue(image_lines[4].startswith('1'))
+        self.assertTrue(image_lines[0].split()[0], image_ids[0])
+        self.assertTrue(image_lines[1].split()[0], image_ids[1])
+        self.assertTrue(image_lines[2].split()[0], image_ids[2])
+        self.assertTrue(image_lines[3].split()[0], image_ids[3])
+        self.assertTrue(image_lines[4].split()[0], image_ids[4])
 
         # 3. With a marker
-        cmd = "--marker=4"
+        cmd = "--marker=%s" % image_ids[3]
         exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(3, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('3'))
-        self.assertTrue(image_lines[1].startswith('2'))
-        self.assertTrue(image_lines[2].startswith('1'))
+        self.assertTrue(image_lines[0].split()[0], image_ids[1])
+        self.assertTrue(image_lines[1].split()[0], image_ids[2])
+        self.assertTrue(image_lines[2].split()[0], image_ids[3])
 
         # 3. With a marker and limit
-        cmd = "--marker=3 --limit=1"
+        cmd = "--marker=%s --limit=1" % image_ids[2]
         exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(2, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('2'))
-        self.assertTrue(image_lines[1].startswith('1'))
+        self.assertTrue(image_lines[0].split()[0], image_ids[1])
+        self.assertTrue(image_lines[1].split()[0], image_ids[2])
 
         # 4. Pagination params with filtered results
-        cmd = "--marker=4 --limit=1 container_format=ami"
+        cmd = "--marker=%s --limit=1 container_format=ami" % image_ids[3]
         exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(2, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('3'))
-        self.assertTrue(image_lines[1].startswith('1'))
+        self.assertTrue(image_lines[0].split()[0], image_ids[2])
+        self.assertTrue(image_lines[1].split()[0], image_ids[1])
 
         # 5. Pagination params with filtered results in a details call
-        cmd = "--marker=4 --limit=1 container_format=ami"
+        cmd = "--marker=%s --limit=1 container_format=ami" % image_ids[3]
         exitcode, out, err = execute("%s %s" % (details_cmd, cmd))
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
         self.assertEqual(22, len(image_lines))
-        self.assertTrue(image_lines[1].startswith('Id: 3'))
-        self.assertTrue(image_lines[12].startswith('Id: 1'))
+        self.assertTrue(image_lines[1].split()[1], image_ids[2])
+        self.assertTrue(image_lines[12].split()[1], image_ids[1])
 
     def test_results_sorting(self):
         self.cleanup()
@@ -549,12 +546,14 @@ class TestBinGlance(functional.FunctionalTest):
             "name=Name5 disk_format=vhd container_format=ovf",
         ]
 
+        image_ids = []
         for i, args in enumerate(_add_args):
             cmd = "%s %s" % (_add_cmd, args)
             exitcode, out, err = execute(cmd)
             self.assertEqual(0, exitcode)
             expected_out = 'Added new image with ID: %d' % (i + 1,)
-            self.assertEqual(expected_out, out.strip())
+            self.assertTrue(out.strip().find('Added new image with ID:') > -1)
+            image_ids.append(out.strip().split(':')[1].strip())
 
         # 2. Sort by name asc
         cmd = "--sort_key=name --sort_dir=asc"
@@ -563,43 +562,43 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(5, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('1'))
-        self.assertTrue(image_lines[1].startswith('4'))
-        self.assertTrue(image_lines[2].startswith('3'))
-        self.assertTrue(image_lines[3].startswith('2'))
-        self.assertTrue(image_lines[4].startswith('5'))
+        self.assertTrue(image_lines[0].split()[0], image_ids[0])
+        self.assertTrue(image_lines[1].split()[0], image_ids[1])
+        self.assertTrue(image_lines[2].split()[0], image_ids[2])
+        self.assertTrue(image_lines[3].split()[0], image_ids[3])
+        self.assertTrue(image_lines[4].split()[0], image_ids[4])
 
         # 3. Sort by name asc with a marker
-        cmd = "--sort_key=name --sort_dir=asc --marker=4"
+        cmd = "--sort_key=name --sort_dir=asc --marker=%s" % image_ids[3]
         exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(3, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('3'))
-        self.assertTrue(image_lines[1].startswith('2'))
-        self.assertTrue(image_lines[2].startswith('5'))
+        self.assertTrue(image_lines[0].split()[0], image_ids[2])
+        self.assertTrue(image_lines[1].split()[0], image_ids[1])
+        self.assertTrue(image_lines[2].split()[0], image_ids[4])
 
         # 4. Sort by container_format desc
-        cmd = "--sort_key=container_format --sort_dir=desc"
+        cmd = "--sort_key=container_format --sort_dir=desc --limit=10"
         exitcode, out, err = execute("%s %s" % (index_cmd, cmd))
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
         self.assertEqual(5, len(image_lines))
-        self.assertTrue(image_lines[0].startswith('5'))
-        self.assertTrue(image_lines[1].startswith('2'))
-        self.assertTrue(image_lines[2].startswith('4'))
-        self.assertTrue(image_lines[3].startswith('3'))
-        self.assertTrue(image_lines[4].startswith('1'))
+        self.assertTrue(image_lines[0].split()[0], image_ids[4])
+        self.assertTrue(image_lines[1].split()[0], image_ids[1])
+        self.assertTrue(image_lines[2].split()[0], image_ids[3])
+        self.assertTrue(image_lines[3].split()[0], image_ids[2])
+        self.assertTrue(image_lines[4].split()[0], image_ids[0])
 
         # 5. Sort by name asc with a marker (details)
-        cmd = "--sort_key=name --sort_dir=asc --marker=4"
+        cmd = "--sort_key=name --sort_dir=asc --marker=%s" % image_ids[3]
         exitcode, out, err = execute("%s %s" % (details_cmd, cmd))
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
         self.assertEqual(33, len(image_lines))
-        self.assertTrue(image_lines[1].startswith('Id: 3'))
-        self.assertTrue(image_lines[12].startswith('Id: 2'))
-        self.assertTrue(image_lines[23].startswith('Id: 5'))
+        self.assertTrue(image_lines[1].split()[1], image_ids[2])
+        self.assertTrue(image_lines[12].split()[1], image_ids[1])
+        self.assertTrue(image_lines[23].split()[1], image_ids[4])

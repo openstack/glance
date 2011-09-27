@@ -446,7 +446,7 @@ def _images_index(client, filters, limit, print_header=False, **kwargs):
         return SUCCESS
 
     pretty_table = utils.PrettyTable()
-    pretty_table.add_column(16, label="ID")
+    pretty_table.add_column(36, label="ID")
     pretty_table.add_column(30, label="Name")
     pretty_table.add_column(20, label="Disk Format")
     pretty_table.add_column(20, label="Container Format")
@@ -597,7 +597,7 @@ List all images currently cached"""
     print "Found %d cached images..." % len(images)
 
     pretty_table = utils.PrettyTable()
-    pretty_table.add_column(16, label="ID")
+    pretty_table.add_column(36, label="ID")
     pretty_table.add_column(30, label="Name")
     pretty_table.add_column(19, label="Last Accessed (UTC)")
     # 1 TB takes 13 characters to display: len(str(2**40)) == 13
@@ -630,7 +630,7 @@ List current invalid cache images"""
     print "Found %d invalid cached images..." % len(images)
 
     pretty_table = utils.PrettyTable()
-    pretty_table.add_column(16, label="ID")
+    pretty_table.add_column(36, label="ID")
     pretty_table.add_column(30, label="Name")
     pretty_table.add_column(30, label="Error")
     pretty_table.add_column(19, label="Last Modified (UTC)")
@@ -667,7 +667,7 @@ List images currently being fetched"""
     print "Found %d incomplete cached images..." % len(images)
 
     pretty_table = utils.PrettyTable()
-    pretty_table.add_column(16, label="ID")
+    pretty_table.add_column(36, label="ID")
     pretty_table.add_column(30, label="Name")
     pretty_table.add_column(19, label="Last Modified (UTC)")
     # 1 TB takes 13 characters to display: len(str(2**40)) == 13
@@ -810,7 +810,7 @@ List images that are being prefetched"""
     print "Found %d images being prefetched..." % len(images)
 
     pretty_table = utils.PrettyTable()
-    pretty_table.add_column(16, label="ID")
+    pretty_table.add_column(36, label="ID")
     pretty_table.add_column(30, label="Name")
     pretty_table.add_column(19, label="Last Accessed (UTC)")
     pretty_table.add_column(10, label="Status", just="r")

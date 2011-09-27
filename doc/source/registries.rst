@@ -129,6 +129,9 @@ The request shall validate the following conditions and return a
   **ami**, then *both* ``disk_format`` and ``container_format`` must be
   the same.
 
+* ``id`` must be a uuid in hexadecimal string notation
+  (i.e. '71c675ab-d94f-49cd-a114-e12490b328d9')
+
 Examples
 ********
 

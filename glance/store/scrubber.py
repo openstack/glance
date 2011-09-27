@@ -107,7 +107,7 @@ class Scrubber(object):
                 if delete_time > now:
                     continue
 
-                delete_work.append((int(id), uri, now))
+                delete_work.append((id, uri, now))
 
         logger.info(_("Deleting %s images") % len(delete_work))
         pool.starmap(self._delete, delete_work)
@@ -160,7 +160,7 @@ class Scrubber(object):
             if delete_time + self.cleanup_time > now:
                 continue
 
-            delete_work.append((int(pending_delete['id']),
+            delete_work.append((pending_delete['id'],
                                 pending_delete['location'],
                                 now))
 

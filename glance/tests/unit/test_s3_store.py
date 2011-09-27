@@ -28,9 +28,13 @@ import stubout
 import boto.s3.connection
 
 from glance.common import exception
+from glance.common import utils
 from glance.store import BackendException, UnsupportedBackend
 from glance.store.location import get_location_from_uri
 from glance.store.s3 import Store
+
+
+FAKE_UUID = utils.generate_uuid()
 
 FIVE_KB = (5 * 1024)
 S3_OPTIONS = {'verbose': True,
@@ -117,7 +121,7 @@ def stub_out_s3(stubs):
 
     fixture_buckets = {'glance': FakeBucket('glance')}
     b = fixture_buckets['glance']
-    k = b.new_key('2')
+    k = b.new_key(FAKE_UUID)
     k.set_contents_from_file(StringIO.StringIO("*" * FIVE_KB))
 
     def fake_connection_constructor(self, *args, **kwargs):
@@ -168,7 +172,7 @@ class TestStore(unittest.TestCase):
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
         loc = get_location_from_uri(
-            "s3://user:key@auth_address/glance/2")
+            "s3://user:key@auth_address/glance/%s" % FAKE_UUID)
         (image_s3, image_size) = self.store.get(loc)
 
         self.assertEqual(image_size, FIVE_KB)
@@ -185,21 +189,17 @@ class TestStore(unittest.TestCase):
         Test that trying to retrieve a s3 that doesn't exist
         raises an error
         """
-        loc = get_location_from_uri(
-            "s3://user:key@auth_address/badbucket/2")
-        self.assertRaises(exception.NotFound,
-                          self.store.get,
-                          loc)
+        uri = "s3://user:key@auth_address/badbucket/%s" % FAKE_UUID
+        loc = get_location_from_uri(uri)
+        self.assertRaises(exception.NotFound, self.store.get, loc)
 
-        loc = get_location_from_uri(
-            "s3://user:key@auth_address/glance/noexist")
-        self.assertRaises(exception.NotFound,
-                          self.store.get,
-                          loc)
+        uri = "s3://user:key@auth_address/glance/noexist"
+        loc = get_location_from_uri(uri)
+        self.assertRaises(exception.NotFound, self.store.get, loc)
 
     def test_add(self):
         """Test that we can add an image via the s3 backend"""
-        expected_image_id = 42
+        expected_image_id = utils.generate_uuid()
         expected_s3_size = FIVE_KB
         expected_s3_contents = "*" * expected_s3_size
         expected_checksum = hashlib.md5(expected_s3_contents).hexdigest()
@@ -211,7 +211,8 @@ class TestStore(unittest.TestCase):
             expected_image_id)
         image_s3 = StringIO.StringIO(expected_s3_contents)
 
-        location, size, checksum = self.store.add(42, image_s3,
+        location, size, checksum = self.store.add(expected_image_id,
+                                                  image_s3,
                                                   expected_s3_size)
 
         self.assertEquals(expected_location, location)
@@ -243,9 +244,8 @@ class TestStore(unittest.TestCase):
                       'https://localhost/v1/',
                       'localhost',
                       'localhost:8080/v1']
-        i = 42
         for variation in variations:
-            expected_image_id = i
+            expected_image_id = utils.generate_uuid()
             expected_s3_size = FIVE_KB
             expected_s3_contents = "*" * expected_s3_size
             expected_checksum = \
@@ -261,7 +261,8 @@ class TestStore(unittest.TestCase):
             image_s3 = StringIO.StringIO(expected_s3_contents)
 
             self.store = Store(new_options)
-            location, size, checksum = self.store.add(i, image_s3,
+            location, size, checksum = self.store.add(expected_image_id,
+                                                      image_s3,
                                                       expected_s3_size)
 
             self.assertEquals(expected_location, location)
@@ -275,7 +276,6 @@ class TestStore(unittest.TestCase):
 
             self.assertEquals(expected_s3_contents, new_image_contents)
             self.assertEquals(expected_s3_size, new_image_s3_size)
-            i = i + 1
 
     def test_add_already_existing(self):
         """
@@ -285,7 +285,7 @@ class TestStore(unittest.TestCase):
         image_s3 = StringIO.StringIO("nevergonnamakeit")
         self.assertRaises(exception.Duplicate,
                           self.store.add,
-                          2, image_s3, 0)
+                          FAKE_UUID, image_s3, 0)
 
     def _option_required(self, key):
         options = S3_OPTIONS.copy()
@@ -320,22 +320,17 @@ class TestStore(unittest.TestCase):
         """
         Test we can delete an existing image in the s3 store
         """
-        loc = get_location_from_uri(
-            "s3://user:key@auth_address/glance/2")
-
+        uri = "s3://user:key@auth_address/glance/%s" % FAKE_UUID
+        loc = get_location_from_uri(uri)
         self.store.delete(loc)
 
-        self.assertRaises(exception.NotFound,
-                          self.store.get,
-                          loc)
+        self.assertRaises(exception.NotFound, self.store.get, loc)
 
     def test_delete_non_existing(self):
         """
         Test that trying to delete a s3 that doesn't exist
         raises an error
         """
-        loc = get_location_from_uri(
-            "s3://user:key@auth_address/glance/noexist")
-        self.assertRaises(exception.NotFound,
-                          self.store.delete,
-                          loc)
+        uri = "s3://user:key@auth_address/glance/noexist"
+        loc = get_location_from_uri(uri)
+        self.assertRaises(exception.NotFound, self.store.delete, loc)

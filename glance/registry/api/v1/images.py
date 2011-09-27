@@ -211,13 +211,10 @@ class Controller(object):
         """Parse a marker query param into something usable."""
         marker = req.str_params.get('marker', None)
 
-        if marker is None:
-            return None
+        if marker and not utils.is_uuid_like(marker):
+            msg = _('Invalid marker format')
+            raise exc.HTTPBadRequest(explanation=msg)
 
-        try:
-            marker = int(marker)
-        except ValueError:
-            raise exc.HTTPBadRequest(_("marker param must be an integer"))
         return marker
 
     def _get_sort_key(self, req):
@@ -328,6 +325,11 @@ class Controller(object):
         # Set up the image owner
         if not req.context.is_admin or 'owner' not in image_data:
             image_data['owner'] = req.context.owner
+
+        image_id = image_data.get('id')
+        if image_id and not utils.is_uuid_like(image_id):
+            msg = _("Invalid image id format")
+            return exc.HTTPBadRequest(explanation=msg)
 
         try:
             image_data = db_api.image_create(req.context, image_data)
