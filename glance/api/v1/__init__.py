@@ -20,6 +20,7 @@ import logging
 import routes
 
 from glance.api.v1 import images
+from glance.api.v1 import members
 from glance.common import wsgi
 
 logger = logging.getLogger('glance.api.v1')
@@ -32,26 +33,28 @@ class API(wsgi.Router):
     def __init__(self, options):
         self.options = options
         mapper = routes.Mapper()
-        resource = images.create_resource(options)
-        mapper.resource("image", "images", controller=resource,
+
+        images_resource = images.create_resource(options)
+
+        mapper.resource("image", "images", controller=images_resource,
                         collection={'detail': 'GET'})
-        mapper.connect("/", controller=resource, action="index")
-        mapper.connect("/images/{id}", controller=resource,
+        mapper.connect("/", controller=images_resource, action="index")
+        mapper.connect("/images/{id}", controller=images_resource,
                        action="meta", conditions=dict(method=["HEAD"]))
-        mapper.connect("/shared-images/{member}",
-                       controller=resource, action="shared_images")
+
+        members_resource = members.create_resource(options)
+
+        mapper.resource("member", "members", controller=members_resource,
+                        parent_resource=dict(member_name='image',
+                                             collection_name='images'))
+        mapper.connect("/shared-images/{id}",
+                       controller=members_resource,
+                       action="index_shared_images")
         mapper.connect("/images/{image_id}/members",
-                       controller=resource, action="members",
-                       conditions=dict(method=["GET"]))
-        mapper.connect("/images/{image_id}/members",
-                       controller=resource, action="replace_members",
+                       controller=members_resource,
+                       action="update_all",
                        conditions=dict(method=["PUT"]))
-        mapper.connect("/images/{image_id}/members/{member}",
-                       controller=resource, action="add_member",
-                       conditions=dict(method=["PUT"]))
-        mapper.connect("/images/{image_id}/members/{member}",
-                       controller=resource, action="delete_member",
-                       conditions=dict(method=["DELETE"]))
+
         super(API, self).__init__(mapper)
 
 

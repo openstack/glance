@@ -19,13 +19,10 @@
 /images endpoint for Glance v1 API
 """
 
-import httplib
 import json
 import logging
-import sys
 import traceback
 
-import webob
 from webob.exc import (HTTPNotFound,
                        HTTPConflict,
                        HTTPBadRequest,
@@ -622,59 +619,6 @@ class Controller(api.BaseController):
         else:
             self.notifier.info('image.delete', id)
 
-    def members(self, req, image_id):
-        """
-        Return a list of dictionaries indicating the members of the
-        image, i.e., those tenants the image is shared with.
-
-        :param req: the Request object coming from the wsgi layer
-        :param image_id: The opaque image identifier
-        :retval The response body is a mapping of the following form::
-
-            {'members': [
-                {'member_id': <MEMBER>,
-                 'can_share': <SHARE_PERMISSION>, ...}, ...
-            ]}
-        """
-        try:
-            members = registry.get_image_members(self.options, req.context,
-                                                 image_id)
-        except exception.NotFound:
-            msg = _("Image with identifier %s not found") % image_id
-            logger.debug(msg)
-            raise HTTPNotFound(msg, request=req, content_type='text/plain')
-        except exception.NotAuthorized:
-            msg = _("Unauthorized image access")
-            logger.debug(msg)
-            raise HTTPForbidden(msg, request=req, content_type='text/plain')
-        return dict(members=members)
-
-    def shared_images(self, req, member):
-        """
-        Retrieves list of image memberships for the given member.
-
-        :param req: the Request object coming from the wsgi layer
-        :param member: the opaque member identifier
-        :retval The response body is a mapping of the following form::
-
-            {'shared_images': [
-                {'image_id': <IMAGE>,
-                 'can_share': <SHARE_PERMISSION>, ...}, ...
-            ]}
-        """
-        try:
-            members = registry.get_member_images(self.options, req.context,
-                                                 member)
-        except exception.NotFound, e:
-            msg = "%s" % e
-            logger.debug(msg)
-            raise HTTPNotFound(msg, request=req, content_type='text/plain')
-        except exception.NotAuthorized, e:
-            msg = "%s" % e
-            logger.debug(msg)
-            raise HTTPForbidden(msg, request=req, content_type='text/plain')
-        return dict(shared_images=members)
-
     def get_store_or_400(self, request, store_name):
         """
         Grabs the storage backend for the supplied store name
@@ -693,94 +637,6 @@ class Controller(api.BaseController):
             logger.error(msg)
             raise HTTPBadRequest(msg, request=request,
                                  content_type='text/plain')
-
-    def replace_members(self, req, image_id, body):
-        """
-        Replaces the members of the image with those specified in the
-        body.  The body is a dict with the following format::
-
-            {"memberships": [
-                {"member_id": <MEMBER_ID>,
-                 ["can_share": [True|False]]}, ...
-            ]}
-        """
-        if req.context.read_only:
-            raise HTTPForbidden()
-        elif req.context.owner is None:
-            raise HTTPUnauthorized(_("No authenticated user"))
-
-        try:
-            registry.replace_members(self.options, req.context,
-                                     image_id, body)
-        except exception.NotFound, e:
-            msg = "%s" % e
-            logger.debug(msg)
-            raise HTTPNotFound(msg, request=req, content_type='text/plain')
-        except exception.NotAuthorized, e:
-            msg = "%s" % e
-            logger.debug(msg)
-            raise HTTPNotFound(msg, request=req, content_type='text/plain')
-
-        return HTTPNoContent()
-
-    def add_member(self, req, image_id, member, body=None):
-        """
-        Adds a membership to the image, or updates an existing one.
-        If a body is present, it is a dict with the following format::
-
-            {"member": {
-                "can_share": [True|False]
-            }}
-
-        If "can_share" is provided, the member's ability to share is
-        set accordingly.  If it is not provided, existing memberships
-        remain unchanged and new memberships default to False.
-        """
-        if req.context.read_only:
-            raise HTTPForbidden()
-        elif req.context.owner is None:
-            raise HTTPUnauthorized(_("No authenticated user"))
-
-        # Figure out can_share
-        can_share = None
-        if body and 'member' in body and 'can_share' in body['member']:
-            can_share = bool(body['member']['can_share'])
-        try:
-            registry.add_member(self.options, req.context, image_id, member,
-                                can_share)
-        except exception.NotFound, e:
-            msg = "%s" % e
-            logger.debug(msg)
-            raise HTTPNotFound(msg, request=req, content_type='text/plain')
-        except exception.NotAuthorized, e:
-            msg = "%s" % e
-            logger.debug(msg)
-            raise HTTPNotFound(msg, request=req, content_type='text/plain')
-
-        return HTTPNoContent()
-
-    def delete_member(self, req, image_id, member):
-        """
-        Removes a membership from the image.
-        """
-        if req.context.read_only:
-            raise HTTPForbidden()
-        elif req.context.owner is None:
-            raise HTTPUnauthorized(_("No authenticated user"))
-
-        try:
-            registry.delete_member(self.options, req.context,
-                                   image_id, member)
-        except exception.NotFound, e:
-            msg = "%s" % e
-            logger.debug(msg)
-            raise HTTPNotFound(msg, request=req, content_type='text/plain')
-        except exception.NotAuthorized, e:
-            msg = "%s" % e
-            logger.debug(msg)
-            raise HTTPNotFound(msg, request=req, content_type='text/plain')
-
-        return HTTPNoContent()
 
 
 class ImageDeserializer(wsgi.JSONRequestDeserializer):
@@ -862,7 +718,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
 
     def create(self, response, result):
         image_meta = result['image_meta']
-        response.status = httplib.CREATED
+        response.status = 201
         response.headers['Content-Type'] = 'application/json'
         response.body = self.to_json(dict(image=image_meta))
         self._inject_location_header(response, image_meta)
