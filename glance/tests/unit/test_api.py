@@ -29,7 +29,7 @@ from glance.api import v1 as server
 from glance.common import context
 from glance.common import utils
 from glance.registry import context as rcontext
-from glance.registry import server as rserver
+from glance.registry.api import v1 as rserver
 from glance.registry.db import api as db_api
 from glance.registry.db import models as db_models
 from glance.tests import stubs

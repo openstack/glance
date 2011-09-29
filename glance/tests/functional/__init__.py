@@ -245,7 +245,7 @@ owner_is_tenant = %(owner_is_tenant)s
 pipeline = context registryapp
 
 [app:registryapp]
-paste.app_factory = glance.registry.server:app_factory
+paste.app_factory = glance.registry.api.v1:app_factory
 
 [filter:context]
 context_class = glance.registry.context.RequestContext
