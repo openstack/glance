@@ -191,8 +191,10 @@ class Controller(api.BaseController):
 
         :raises HTTPNotFound if image metadata is not available to user
         """
+        image_meta = self.get_image_meta_or_404(req, id)
+        del image_meta['location']
         return {
-            'image_meta': self.get_image_meta_or_404(req, id),
+            'image_meta': image_meta
         }
 
     def show(self, req, id):
@@ -268,6 +270,7 @@ class Controller(api.BaseController):
                          " from store"), id)
             image_iterator = get_from_store(image)
 
+        del image['location']
         return {
             'image_iterator': image_iterator,
             'image_meta': image,

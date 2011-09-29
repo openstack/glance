@@ -44,6 +44,7 @@ from glance.store.location import get_location_from_uri
 from glance.tests.functional import test_api
 from glance.tests.utils import execute, skip_if_disabled
 
+FIVE_KB = 5 * 1024
 FIVE_MB = 5 * 1024 * 1024
 
 
@@ -399,7 +400,7 @@ class TestSwift(test_api.TestApi):
         registry_port = self.registry_port
 
         # POST /images with public image named Image1
-        image_data = "*" * FIVE_MB
+        image_data = "*" * FIVE_KB
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'Image1',
                    'X-Image-Meta-Is-Public': 'True'}
@@ -411,7 +412,7 @@ class TestSwift(test_api.TestApi):
         data = json.loads(content)
         self.assertEqual(data['image']['checksum'],
                          hashlib.md5(image_data).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_MB)
+        self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], True)
 
@@ -420,20 +421,24 @@ class TestSwift(test_api.TestApi):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        self.assertEqual(response['content-length'], str(FIVE_MB))
+        self.assertEqual(response['content-length'], str(FIVE_KB))
 
-        self.assertEqual(content, "*" * FIVE_MB)
+        self.assertEqual(content, "*" * FIVE_KB)
         self.assertEqual(hashlib.md5(content).hexdigest(),
-                         hashlib.md5("*" * FIVE_MB).hexdigest())
+                         hashlib.md5("*" * FIVE_KB).hexdigest())
 
-        # GET /images/1 from registry in order to find Swift location
+        # Find the location that was just added and use it as
+        # the remote image location for the next image
         path = "http://%s:%d/images/1" % ("0.0.0.0", self.registry_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        swift_location = json.loads(content)['image']['location']
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertTrue('location' in data['image'].keys())
+        swift_location = data['image']['location']
 
         # POST /images with public image named Image1 without uploading data
-        image_data = "*" * FIVE_MB
+        image_data = "*" * FIVE_KB
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'Image1',
                    'X-Image-Meta-Is-Public': 'True',
@@ -453,11 +458,11 @@ class TestSwift(test_api.TestApi):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        self.assertEqual(response['content-length'], str(FIVE_MB))
+        self.assertEqual(response['content-length'], str(FIVE_KB))
 
-        self.assertEqual(content, "*" * FIVE_MB)
+        self.assertEqual(content, "*" * FIVE_KB)
         self.assertEqual(hashlib.md5(content).hexdigest(),
-                         hashlib.md5("*" * FIVE_MB).hexdigest())
+                         hashlib.md5("*" * FIVE_KB).hexdigest())
 
         # DELETE /images/1 and /image/2
         # Verify image and all chunks are gone...

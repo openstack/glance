@@ -2163,6 +2163,36 @@ class TestGlanceAPI(unittest.TestCase):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 400)
 
+    def test_store_location_not_revealed(self):
+        """
+        Test that the internal store location is NOT revealed
+        through the API server
+        """
+        # Check index and details...
+        for url in ('/images', '/images/detail'):
+            req = webob.Request.blank(url)
+            res = req.get_response(self.api)
+            self.assertEquals(res.status_int, 200)
+            res_dict = json.loads(res.body)
+
+            images = res_dict['images']
+            num_locations = sum([1 for record in images
+                                if 'location' in record.keys()])
+            self.assertEquals(0, num_locations, images)
+
+        # Check GET
+        req = webob.Request.blank("/images/2")
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        self.assertFalse('X-Image-Meta-Location' in res.headers)
+
+        # Check HEAD
+        req = webob.Request.blank("/images/2")
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        self.assertFalse('X-Image-Meta-Location' in res.headers)
+
     def test_image_is_checksummed(self):
         """Test that the image contents are checksummed properly"""
         fixture_headers = {'x-image-meta-store': 'file',
