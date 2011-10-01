@@ -31,7 +31,7 @@ import webob
 import glance.common.client
 from glance.common import context
 from glance.common import exception
-from glance.registry import server as rserver
+from glance.registry.api import v1 as rserver
 from glance.api import v1 as server
 from glance.api.middleware import version_negotiation
 import glance.store
