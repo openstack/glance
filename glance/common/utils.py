@@ -31,23 +31,8 @@ import socket
 import sys
 
 from glance.common import exception
-from glance.common.exception import ProcessExecutionError
-
 
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-
-
-def int_from_bool_as_string(subject):
-    """
-    Interpret a string as a boolean and return either 1 or 0.
-
-    Any string value in:
-        ('True', 'true', 'On', 'on', '1')
-    is interpreted as a boolean True.
-
-    Useful for JSON-decoded stuff and config file parsing
-    """
-    return bool_from_string(subject) and 1 or 0
 
 
 def bool_from_string(subject):
@@ -60,8 +45,10 @@ def bool_from_string(subject):
 
     Useful for JSON-decoded stuff and config file parsing
     """
-    if type(subject) == type(bool):
+    if isinstance(subject, bool):
         return subject
+    elif isinstance(subject, int):
+        return subject == 1
     if hasattr(subject, 'startswith'):  # str or unicode...
         if subject.strip().lower() in ('true', 'on', '1'):
             return True
@@ -74,8 +61,9 @@ def import_class(import_str):
     try:
         __import__(mod_str)
         return getattr(sys.modules[mod_str], class_str)
-    except (ImportError, ValueError, AttributeError):
-        raise exception.NotFound('Class %s cannot be found' % class_str)
+    except (ImportError, ValueError, AttributeError), e:
+        raise exception.ImportFailure(import_str=import_str,
+                                      reason=e)
 
 
 def import_object(import_str):
@@ -95,17 +83,6 @@ def abspath(s):
 def debug(arg):
     logging.debug('debug in callback: %s', arg)
     return arg
-
-
-def runthis(prompt, cmd, check_exit_code=True):
-    logging.debug("Running %s" % (cmd))
-    exit_code = subprocess.call(cmd.split(" "))
-    logging.debug(prompt % (exit_code))
-    if check_exit_code and exit_code != 0:
-        raise ProcessExecutionError(exit_code=exit_code,
-                                    stdout=None,
-                                    stderr=None,
-                                    cmd=cmd)
 
 
 def generate_uid(topic, size=8):

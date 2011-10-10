@@ -236,8 +236,7 @@ class BaseClient(object):
                 raise Exception("Unknown error occurred! %s" % res.read())
 
         except (socket.error, IOError), e:
-            raise exception.ClientConnectionError("Unable to connect to "
-                                                  "server. Got error: %s" % e)
+            raise exception.ClientConnectionError(e)
 
     def get_status_code(self, response):
         """

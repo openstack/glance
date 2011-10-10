@@ -101,7 +101,7 @@ class KeystoneStrategy(BaseStrategy):
         for _ in range(self.MAX_REDIRECTS):
             try:
                 _authenticate(auth_url)
-            except exception.RedirectException as e:
+            except exception.AuthorizationRedirect as e:
                 # 2. Keystone may redirect us
                 auth_url = e.url
             except exception.AuthorizationFailure:
@@ -139,7 +139,7 @@ class KeystoneStrategy(BaseStrategy):
             except KeyError:
                 raise exception.AuthorizationFailure()
         elif resp.status == 305:
-            raise exception.RedirectException(resp['location'])
+            raise exception.AuthorizationRedirect(resp['location'])
         elif resp.status == 401:
             raise exception.NotAuthorized()
         else:
@@ -173,7 +173,7 @@ class KeystoneStrategy(BaseStrategy):
             self.management_url = glance_endpoint
             self.auth_token = resp_auth['token']['id']
         elif resp.status == 305:
-            raise RedirectException(resp['location'])
+            raise AuthorizationRedirect(uri=resp['location'])
         elif resp.status == 401:
             raise exception.NotAuthorized()
         else:

@@ -16,118 +16,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""
-Nova base exception handling, including decorator for re-raising
-Nova-type exceptions. SHOULD include dedicated exception logging.
-"""
-
-import logging
-import sys
-import traceback
-
-
-class ProcessExecutionError(IOError):
-    def __init__(self, stdout=None, stderr=None, exit_code=None, cmd=None,
-                 description=None):
-        if description is None:
-            description = "Unexpected error while running command."
-        if exit_code is None:
-            exit_code = '-'
-        message = _("%s\nCommand: %s\nExit code: %s\nStdout: %r\nStderr: %r")\
-                    % (description, cmd, exit_code, stdout, stderr)
-        IOError.__init__(self, message)
-
-
-class Error(Exception):
-    def __init__(self, message=None):
-        super(Error, self).__init__(message)
-
-
-class ApiError(Error):
-    def __init__(self, message='Unknown', code='Unknown'):
-        self.message = message
-        self.code = code
-        super(ApiError, self).__init__('%s: %s' % (code, message))
-
-
-class NotFound(Error):
-    pass
-
-
-class UnknownScheme(Error):
-
-    msg = _("Unknown scheme '%s' found in URI")
-
-    def __init__(self, scheme):
-        msg = self.__class__.msg % scheme
-        super(UnknownScheme, self).__init__(msg)
-
-
-class BadStoreUri(Error):
-
-    msg = _("The Store URI %s was malformed. Reason: %s")
-
-    def __init__(self, uri, reason):
-        msg = self.__class__.msg % (uri, reason)
-        super(BadStoreUri, self).__init__(msg)
-
-
-class Duplicate(Error):
-    pass
-
-
-class AuthorizationFailure(Error):
-    pass
-
-
-class NotAuthorized(Error):
-    pass
-
-
-class NotEmpty(Error):
-    pass
-
-
-class Invalid(Error):
-    pass
-
-
-class RedirectException(Error):
-    def __init__(self, url):
-        self.url = url
-
-
-class BadInputError(Exception):
-    """Error resulting from a client sending bad input to a server"""
-    pass
-
-
-class MissingArgumentError(Error):
-    pass
-
-
-class DatabaseMigrationError(Error):
-    pass
-
-
-class ClientConnectionError(Exception):
-    """Error resulting from a client connecting to a server"""
-    pass
-
-
-def wrap_exception(f):
-    def _wrap(*args, **kw):
-        try:
-            return f(*args, **kw)
-        except Exception, e:
-            if not isinstance(e, Error):
-                #exc_type, exc_value, exc_traceback = sys.exc_info()
-                logging.exception('Uncaught exception')
-                #logging.error(traceback.extract_stack(exc_traceback))
-                raise Error("%s" % e)
-            raise
-    _wrap.func_name = f.func_name
-    return _wrap
+"""Glance exception subclasses"""
 
 
 class GlanceException(Exception):
@@ -140,16 +29,72 @@ class GlanceException(Exception):
     """
     message = _("An unknown exception occurred")
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         try:
             self._error_string = self.message % kwargs
-
         except Exception:
             # at least get the core message out if something happened
             self._error_string = self.message
+        if len(args) > 0:
+            # If there is a non-kwarg parameter, assume it's the error
+            # message or reason description and tack it on to the end
+            # of the exception message
+            # Convert all arguments into their string representations...
+            args = ["%s" % arg for arg in args]
+            self._error_string = (self._error_string +
+                                  "\nDetails: %s" % '\n'.join(args))
 
     def __str__(self):
         return self._error_string
+
+
+class MissingArgumentError(GlanceException):
+    message = _("Missing required argument.")
+
+
+class NotFound(GlanceException):
+    message = _("An object with the specified identifier was not found.")
+
+
+class UnknownScheme(GlanceException):
+    message = _("Unknown scheme '%(scheme)s' found in URI")
+
+
+class BadStoreUri(GlanceException):
+    message = _("The Store URI %(uri)s was malformed. Reason: %(reason)s")
+
+
+class Duplicate(GlanceException):
+    message = _("An object with the same identifier already exists.")
+
+
+class ImportFailure(GlanceException):
+    message = _("Failed to import requested object/class: '%(import_str)s'. "
+                "Reason: %(reason)s")
+
+
+class AuthorizationFailure(GlanceException):
+    message = _("Authorization failed.")
+
+
+class NotAuthorized(GlanceException):
+    message = _("You are not authorized to complete this action.")
+
+
+class Invalid(GlanceException):
+    message = _("Data supplied was not valid.")
+
+
+class AuthorizationRedirect(GlanceException):
+    message = _("Redirecting to %(uri)s for authorization.")
+
+
+class DatabaseMigrationError(GlanceException):
+    message = _("There was an error migrating the database.")
+
+
+class ClientConnectionError(GlanceException):
+    message = _("There was an error connecting to a server")
 
 
 class MultipleChoices(GlanceException):

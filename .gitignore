@@ -3,3 +3,4 @@
 *.log
 .glance-venv
 tests.sqlite
+glance/vcsversion.py
