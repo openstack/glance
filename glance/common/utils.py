@@ -76,31 +76,6 @@ def import_object(import_str):
         return cls()
 
 
-def abspath(s):
-    return os.path.join(os.path.dirname(__file__), s)
-
-
-def debug(arg):
-    logging.debug('debug in callback: %s', arg)
-    return arg
-
-
-def generate_uid(topic, size=8):
-    return '%s-%s' % (topic, ''.join(
-        [random.choice('01234567890abcdefghijklmnopqrstuvwxyz')
-         for x in xrange(size)]))
-
-
-def generate_mac():
-    mac = [0x02, 0x16, 0x3e, random.randint(0x00, 0x7f),
-           random.randint(0x00, 0xff), random.randint(0x00, 0xff)]
-    return ':'.join(map(lambda x: "%02x" % x, mac))
-
-
-def last_octet(address):
-    return int(address.split(".")[-1])
-
-
 def isotime(at=None):
     if not at:
         at = datetime.datetime.utcnow()
@@ -125,34 +100,3 @@ def safe_remove(path):
     except OSError, e:
         if e.errno != errno.ENOENT:
             raise
-
-
-class LazyPluggable(object):
-    """A pluggable backend loaded lazily based on some value."""
-
-    def __init__(self, pivot, **backends):
-        self.__backends = backends
-        self.__pivot = pivot
-        self.__backend = None
-
-    def __get_backend(self):
-        if not self.__backend:
-            backend_name = self.__pivot.value
-            if backend_name not in self.__backends:
-                raise exception.Error('Invalid backend: %s' % backend_name)
-
-            backend = self.__backends[backend_name]
-            if type(backend) == type(tuple()):
-                name = backend[0]
-                fromlist = backend[1]
-            else:
-                name = backend
-                fromlist = backend
-
-            self.__backend = __import__(name, None, None, fromlist)
-            logging.info('backend %s', self.__backend)
-        return self.__backend
-
-    def __getattr__(self, key):
-        backend = self.__get_backend()
-        return getattr(backend, key)

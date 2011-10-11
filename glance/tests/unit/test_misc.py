@@ -17,6 +17,8 @@
 
 import os
 import commands
+import datetime
+import re
 import unittest
 
 from glance.common import exception
@@ -101,3 +103,26 @@ class UtilsTestCase(unittest.TestCase):
 
         self.assertRaises(exception.ImportFailure, utils.import_object,
                           'os.path.NONEXISTINGOBJECT')
+
+        store_class = utils.import_class('glance.store.s3.Store')
+
+        self.assertTrue(store_class.__name__ == 'Store')
+
+        # Try importing an object by supplying a class and
+        # verify the object's class name is the same as that supplied
+        store_obj = utils.import_object('glance.store.s3.Store')
+
+        self.assertTrue(store_obj.__class__.__name__ == 'Store')
+
+        # Try importing a module itself
+        module_obj = utils.import_object('glance.registry')
+
+        self.assertEqual('glance.registry', module_obj.__package__)
+
+    def test_isotime(self):
+        dt1 = datetime.datetime(2001, 11, 10, 1, 2, 3)
+        self.assertEqual('2001-11-10T01:02:03Z', utils.isotime(dt1))
+
+        iso_re = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z')
+        now_iso = utils.isotime()
+        self.assertTrue(iso_re.match(now_iso) is not None)
