@@ -938,7 +938,7 @@ option is given, <MEMBER> will be able to further share the image."""
         c.add_member(image_id, member_id, options.can_share)
     else:
         print "Dry run. We would have done the following:"
-        print ('Add "%(member_id)" to membership of image %(image_id)s'
+        print ('Add "%(member_id)s" to membership of image %(image_id)s'
                % locals())
         if options.can_share:
             print "New member would have been able to further share image."
