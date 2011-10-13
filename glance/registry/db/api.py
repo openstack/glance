@@ -39,7 +39,8 @@ from glance.registry.db import models
 _ENGINE = None
 _MAKER = None
 BASE = models.BASE
-logger = None
+sa_logger = None
+logger = logging.getLogger(__name__)
 
 # attributes common to all models
 BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
@@ -64,8 +65,7 @@ def configure_db(options):
 
     :param options: Mapping of configuration options
     """
-    global _ENGINE
-    global logger
+    global _ENGINE, sa_logger, logger
     if not _ENGINE:
         debug = config.get_option(
             options, 'debug', type='bool', default=False)
@@ -73,13 +73,21 @@ def configure_db(options):
             options, 'verbose', type='bool', default=False)
         timeout = config.get_option(
             options, 'sql_idle_timeout', type='int', default=3600)
-        _ENGINE = create_engine(options['sql_connection'],
-                                pool_recycle=timeout)
-        logger = logging.getLogger('sqlalchemy.engine')
+        sql_connection = config.get_option(options, 'sql_connection')
+        try:
+            _ENGINE = create_engine(sql_connection, pool_recycle=timeout)
+        except Exception, err:
+            msg = _("Error configuring registry database with supplied "
+                    "sql_connection '%(sql_connection)s'. "
+                    "Got error:\n%(err)s") % locals()
+            logger.error(msg)
+            raise
+
+        sa_logger = logging.getLogger('sqlalchemy.engine')
         if debug:
-            logger.setLevel(logging.DEBUG)
+            sa_logger.setLevel(logging.DEBUG)
         elif verbose:
-            logger.setLevel(logging.INFO)
+            sa_logger.setLevel(logging.INFO)
 
         models.register_models(_ENGINE)
 
