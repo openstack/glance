@@ -19,6 +19,7 @@
 # http://code.activestate.com/recipes/
 #   577548-https-httplib-client-connection-with-certificate-v/
 
+import functools
 import httplib
 import logging
 import os
@@ -35,6 +36,39 @@ if not hasattr(__builtin__, '_'):
 
 from glance.common import auth
 from glance.common import exception
+
+
+def handle_unauthorized(func):
+    """
+    Wrap a function to re-authenticate and retry.
+    """
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        except exception.NotAuthorized:
+            self._authenticate(force_reauth=True)
+            return func(self, *args, **kwargs)
+    return wrapped
+
+
+def handle_redirects(func):
+    """
+    Wrap the _do_request function to handle HTTP redirects.
+    """
+    MAX_REDIRECTS = 5
+
+    @functools.wraps(func)
+    def wrapped(self, method, url, body, headers):
+        for _ in xrange(MAX_REDIRECTS):
+            try:
+                return func(self, method, url, body, headers)
+            except exception.RedirectException as redirect:
+                if redirect.url is None:
+                    raise exception.InvalidRedirect()
+                url = redirect.url
+        raise exception.MaxRedirectsExceeded(redirects=MAX_REDIRECTS)
+    return wrapped
 
 
 class ImageBodyIterator(object):
@@ -115,6 +149,21 @@ class BaseClient(object):
     CHUNKSIZE = 65536
     DEFAULT_PORT = 80
     DEFAULT_DOC_ROOT = None
+
+    OK_RESPONSE_CODES = (
+        httplib.OK,
+        httplib.CREATED,
+        httplib.ACCEPTED,
+        httplib.NO_CONTENT,
+    )
+
+    REDIRECT_RESPONSE_CODES = (
+        httplib.MOVED_PERMANENTLY,
+        httplib.FOUND,
+        httplib.SEE_OTHER,
+        httplib.USE_PROXY,
+        httplib.TEMPORARY_REDIRECT,
+    )
 
     def __init__(self, host, port=None, use_ssl=False, auth_tok=None,
                  creds=None, doc_root=None,
@@ -225,6 +274,9 @@ class BaseClient(object):
         self.doc_root = parsed.path
 
     def make_auth_plugin(self, creds):
+        """
+        Returns an instantiated authentication plugin.
+        """
         strategy = creds.get('strategy', 'noauth')
         plugin_class = auth.get_plugin_from_strategy(strategy)
         plugin = plugin_class(creds)
@@ -240,6 +292,11 @@ class BaseClient(object):
             return httplib.HTTPConnection
 
     def _authenticate(self, force_reauth=False):
+        """
+        Use the authentication plugin to authenticate and set the auth token.
+
+        :param force_reauth: For re-authentication to bypass cache.
+        """
         auth_plugin = self.auth_plugin
 
         if not auth_plugin.is_authenticated or force_reauth:
@@ -251,26 +308,47 @@ class BaseClient(object):
         if management_url:
             self.configure_from_url(management_url)
 
+    @handle_unauthorized
     def do_request(self, method, action, body=None, headers=None,
                    params=None):
-        headers = headers or {}
+        """
+        Make a request, returning an HTTP response object.
 
+        :param method: HTTP verb (GET, POST, PUT, etc.)
+        :param action: Requested path to append to self.doc_root
+        :param body: Data to send in the body of the request
+        :param headers: Headers to send with the request
+        :param params: Key/value pairs to use in query string
+        :returns: HTTP response object
+        """
         if not self.auth_tok:
             self._authenticate()
 
-        try:
-            return self._do_request(
-                method, action, body=body, headers=headers, params=params)
-        except exception.NotAuthorized:
-            self._authenticate(force_reauth=True)
-            try:
-                return self._do_request(
-                    method, action, body=body, headers=headers, params=params)
-            except exception.NotAuthorized:
-                raise
+        url = self._construct_url(action, params)
 
-    def _do_request(self, method, action, body=None, headers=None,
-                   params=None):
+        return self._do_request(method=method, url=url, body=body,
+                                headers=headers)
+
+    def _construct_url(self, action, params=None):
+        """
+        Create a URL object we can use to pass to _do_request().
+        """
+        path = '/'.join([self.doc_root or '', action.lstrip('/')])
+        scheme = "https" if self.use_ssl else "http"
+        netloc = "%s:%d" % (self.host, self.port)
+
+        if type(params) is dict:
+            for (key, value) in params.items():
+                if value is None:
+                    del params[key]
+            query = urllib.urlencode(params)
+        else:
+            query = None
+
+        return urlparse.ParseResult(scheme, netloc, path, '', query, '')
+
+    @handle_redirects
+    def _do_request(self, method, url, body, headers):
         """
         Connects to the server and issues a request.  Handles converting
         any returned HTTP error status codes to OpenStack/Glance exceptions
@@ -278,11 +356,9 @@ class BaseClient(object):
         raises an appropriate exception.
 
         :param method: HTTP method ("GET", "POST", "PUT", etc...)
-        :param action: part of URL after root netloc
+        :param url: urlparse.ParsedResult object with URL information
         :param body: string of data to send, or None (default)
         :param headers: mapping of key/value pairs to add as headers
-        :param params: dictionary of key/value pairs to add to append
-                             to action
 
         :note
 
@@ -293,14 +369,10 @@ class BaseClient(object):
         objects to be transferred efficiently without buffering the entire
         body in memory.
         """
-        if type(params) is dict:
-
-            # remove any params that are None
-            for (key, value) in params.items():
-                if value is None:
-                    del params[key]
-
-            action += '?' + urllib.urlencode(params)
+        if url.query:
+            path = url.path + "?" + url.query
+        else:
+            path = url.path
 
         try:
             connection_type = self.get_connection_type()
@@ -309,17 +381,14 @@ class BaseClient(object):
             if 'x-auth-token' not in headers and self.auth_tok:
                 headers['x-auth-token'] = self.auth_tok
 
-            c = connection_type(self.host, self.port, **self.connect_kwargs)
-
-            if self.doc_root:
-                action = '/'.join([self.doc_root, action.lstrip('/')])
+            c = connection_type(url.hostname, url.port, **self.connect_kwargs)
 
             # Do a simple request or a chunked request, depending
             # on whether the body param is a file-like object and
             # the method is PUT or POST
             if hasattr(body, 'read') and method.lower() in ('post', 'put'):
                 # Chunk it, baby...
-                c.putrequest(method, action)
+                c.putrequest(method, path)
 
                 for header, value in headers.items():
                     c.putheader(header, value)
@@ -333,14 +402,13 @@ class BaseClient(object):
                 c.send('0\r\n\r\n')
             else:
                 # Simple request...
-                c.request(method, action, body, headers)
+                c.request(method, path, body, headers)
             res = c.getresponse()
             status_code = self.get_status_code(res)
-            if status_code in (httplib.OK,
-                               httplib.CREATED,
-                               httplib.ACCEPTED,
-                               httplib.NO_CONTENT):
+            if status_code in self.OK_RESPONSE_CODES:
                 return res
+            elif status_code in self.REDIRECT_RESPONSE_CODES:
+                raise exception.RedirectException(res.getheader('Location'))
             elif status_code == httplib.UNAUTHORIZED:
                 raise exception.NotAuthorized(res.read())
             elif status_code == httplib.FORBIDDEN:

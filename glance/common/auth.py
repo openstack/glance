@@ -117,7 +117,7 @@ class KeystoneStrategy(BaseStrategy):
                 break
         else:
             # Guard against a redirection loop
-            raise Exception(_("Exceeded max redirects %s") % MAX_REDIRECTS)
+            raise exception.MaxRedirectsExceeded(redirects=self.MAX_REDIRECTS)
 
     def _v1_auth(self, token_url):
         creds = self.creds
@@ -173,7 +173,7 @@ class KeystoneStrategy(BaseStrategy):
             self.management_url = glance_endpoint
             self.auth_token = resp_auth['token']['id']
         elif resp.status == 305:
-            raise AuthorizationRedirect(uri=resp['location'])
+            raise exception.RedirectException(resp['location'])
         elif resp.status == 401:
             raise exception.NotAuthorized()
         else:
