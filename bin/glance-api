@@ -63,7 +63,7 @@ if __name__ == '__main__':
         conf, app = config.load_paste_app('glance-api', options, args)
 
         server = wsgi.Server()
-        server.start(app, int(conf['bind_port']), conf['bind_host'])
+        server.start(app, int(conf['bind_port']), conf['bind_host'], conf)
         server.wait()
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)

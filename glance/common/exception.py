@@ -107,6 +107,11 @@ class InvalidContentType(GlanceException):
     message = _("Invalid content type %(content_type)s")
 
 
+class BadRegistryConnectionConfiguration(GlanceException):
+    message = _("Registry was not configured correctly on API server. "
+                "Reason: %(reason)s")
+
+
 class BadStoreConfiguration(GlanceException):
     message = _("Store %(store_name)s could not be configured correctly. "
                "Reason: %(reason)s")
@@ -122,4 +127,4 @@ class StoreAddDisabled(GlanceException):
 
 
 class InvalidNotifierStrategy(GlanceException):
-    message = "'%(strategy)s' is not an available notifier strategy."
+    message = _("'%(strategy)s' is not an available notifier strategy.")

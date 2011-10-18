@@ -21,103 +21,111 @@ Registry API
 
 import logging
 
+from glance.common import config
+from glance.common import exception
 from glance.registry import client
 
 logger = logging.getLogger('glance.registry')
 
-
-def get_registry_client(options, context):
-    host = options['registry_host']
-    port = int(options['registry_port'])
-    return client.RegistryClient(host, port, auth_tok=context.auth_tok)
+_CLIENT_HOST = None
+_CLIENT_PORT = None
+_CLIENT_KWARGS = {}
 
 
-def get_images_list(options, context, **kwargs):
-    c = get_registry_client(options, context)
+def configure_registry_client(options):
+    """
+    Sets up a registry client for use in registry lookups
+
+    :param options: Configuration options coming from controller
+    """
+    global _CLIENT_KWARGS, _CLIENT_HOST, _CLIENT_PORT
+    try:
+        host = options['registry_host']
+        port = int(options['registry_port'])
+    except (TypeError, ValueError):
+        msg = _("Configuration option was not valid")
+        logger.error(msg)
+        raise exception.BadRegistryConnectionConfiguration(msg)
+    except IndexError:
+        msg = _("Could not find required configuration option")
+        logger.error(msg)
+        raise exception.BadRegistryConnectionConfiguration(msg)
+
+    use_ssl = config.get_option(options, 'registry_client_protocol',
+                                default='http').lower() == 'https'
+    key_file = options.get('registry_client_key_file')
+    cert_file = options.get('registry_client_cert_file')
+    ca_file = options.get('registry_client_ca_file')
+
+    _CLIENT_HOST = host
+    _CLIENT_PORT = port
+    _CLIENT_KWARGS = {'use_ssl': use_ssl,
+                      'key_file': key_file,
+                      'cert_file': cert_file,
+                      'ca_file': ca_file}
+
+
+def get_registry_client(cxt):
+    global _CLIENT_KWARGS, _CLIENT_HOST, _CLIENT_PORT
+    kwargs = _CLIENT_KWARGS.copy()
+    kwargs['auth_tok'] = cxt.auth_tok
+    return client.RegistryClient(_CLIENT_HOST, _CLIENT_PORT, **kwargs)
+
+
+def get_images_list(context, **kwargs):
+    c = get_registry_client(context)
     return c.get_images(**kwargs)
 
 
-def get_images_detail(options, context, **kwargs):
-    c = get_registry_client(options, context)
+def get_images_detail(context, **kwargs):
+    c = get_registry_client(context)
     return c.get_images_detailed(**kwargs)
 
 
-def get_image_metadata(options, context, image_id):
-    c = get_registry_client(options, context)
+def get_image_metadata(context, image_id):
+    c = get_registry_client(context)
     return c.get_image(image_id)
 
 
-def add_image_metadata(options, context, image_meta):
-    if options['debug']:
-        logger.debug(_("Adding image metadata..."))
-        _debug_print_metadata(image_meta)
-
-    c = get_registry_client(options, context)
-    new_image_meta = c.add_image(image_meta)
-
-    if options['debug']:
-        logger.debug(_("Returned image metadata from call to "
-                     "RegistryClient.add_image():"))
-        _debug_print_metadata(new_image_meta)
-
-    return new_image_meta
+def add_image_metadata(context, image_meta):
+    logger.debug(_("Adding image metadata..."))
+    c = get_registry_client(context)
+    return c.add_image(image_meta)
 
 
-def update_image_metadata(options, context, image_id, image_meta,
+def update_image_metadata(context, image_id, image_meta,
                           purge_props=False):
-    if options['debug']:
-        logger.debug(_("Updating image metadata for image %s..."), image_id)
-        _debug_print_metadata(image_meta)
-
-    c = get_registry_client(options, context)
-    new_image_meta = c.update_image(image_id, image_meta, purge_props)
-
-    if options['debug']:
-        logger.debug(_("Returned image metadata from call to "
-                     "RegistryClient.update_image():"))
-        _debug_print_metadata(new_image_meta)
-
-    return new_image_meta
+    logger.debug(_("Updating image metadata for image %s..."), image_id)
+    c = get_registry_client(context)
+    return c.update_image(image_id, image_meta, purge_props)
 
 
-def delete_image_metadata(options, context, image_id):
+def delete_image_metadata(context, image_id):
     logger.debug(_("Deleting image metadata for image %s..."), image_id)
-    c = get_registry_client(options, context)
+    c = get_registry_client(context)
     return c.delete_image(image_id)
 
 
-def get_image_members(options, context, image_id):
-    c = get_registry_client(options, context)
+def get_image_members(context, image_id):
+    c = get_registry_client(context)
     return c.get_image_members(image_id)
 
 
-def get_member_images(options, context, member_id):
-    c = get_registry_client(options, context)
+def get_member_images(context, member_id):
+    c = get_registry_client(context)
     return c.get_member_images(member_id)
 
 
-def replace_members(options, context, image_id, member_data):
-    c = get_registry_client(options, context)
+def replace_members(context, image_id, member_data):
+    c = get_registry_client(context)
     return c.replace_members(image_id, member_data)
 
 
-def add_member(options, context, image_id, member_id, can_share=None):
-    c = get_registry_client(options, context)
+def add_member(context, image_id, member_id, can_share=None):
+    c = get_registry_client(context)
     return c.add_member(image_id, member_id, can_share=can_share)
 
 
-def delete_member(options, context, image_id, member_id):
-    c = get_registry_client(options, context)
+def delete_member(context, image_id, member_id):
+    c = get_registry_client(context)
     return c.delete_member(image_id, member_id)
-
-
-def _debug_print_metadata(image_meta):
-    data = image_meta.copy()
-    properties = data.pop('properties', None)
-    for key, value in sorted(data.items()):
-        logger.debug(" %(key)20s: %(value)s" % locals())
-    if properties:
-        logger.debug(_(" %d custom properties..."),
-                     len(properties))
-        for key, value in properties.items():
-            logger.debug(" %(key)20s: %(value)s" % locals())

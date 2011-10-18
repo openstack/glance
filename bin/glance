@@ -980,8 +980,13 @@ def get_client(options):
                  auth_url=os.getenv('OS_AUTH_URL'),
                  strategy=os.getenv('OS_AUTH_STRATEGY', 'noauth'))
 
+    use_ssl = (options.host.find('https') != -1 or (
+        creds['auth_url'] is not None and
+        creds['auth_url'].find('https') != -1))
+
     return glance_client.Client(host=options.host, port=options.port,
-                                auth_tok=options.auth_token, creds=creds)
+                                use_ssl=use_ssl, auth_tok=options.auth_token,
+                                creds=creds)
 
 
 def create_options(parser):

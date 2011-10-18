@@ -1,8 +1,31 @@
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+
+# Copyright 2010-2011 OpenStack, LLC
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+# HTTPSClientAuthConnection code comes courtesy of ActiveState website:
+# http://code.activestate.com/recipes/
+#   577548-https-httplib-client-connection-with-certificate-v/
+
 import httplib
 import logging
-import socket
+import os
 import urllib
 import urlparse
+
+from eventlet.green import socket, ssl
 
 # See http://code.google.com/p/python-nose/issues/detail?id=373
 # The code below enables glance.client standalone to work with i18n _() blocks
@@ -43,6 +66,48 @@ class ImageBodyIterator(object):
                 break
 
 
+class HTTPSClientAuthConnection(httplib.HTTPSConnection):
+    """
+    Class to make a HTTPS connection, with support for
+    full client-based SSL Authentication
+
+    :see http://code.activestate.com/recipes/
+            577548-https-httplib-client-connection-with-certificate-v/
+    """
+
+    def __init__(self, host, port, key_file, cert_file,
+                 ca_file, timeout=None):
+        httplib.HTTPSConnection.__init__(self, host, port, key_file=key_file,
+                                         cert_file=cert_file)
+        self.key_file = key_file
+        self.cert_file = cert_file
+        self.ca_file = ca_file
+        self.timeout = timeout
+
+    def connect(self):
+        """
+        Connect to a host on a given (SSL) port.
+        If ca_file is pointing somewhere, use it to check Server Certificate.
+
+        Redefined/copied and extended from httplib.py:1105 (Python 2.6.x).
+        This is needed to pass cert_reqs=ssl.CERT_REQUIRED as parameter to
+        ssl.wrap_socket(), which forces SSL to check server certificate against
+        our client certificate.
+        """
+        sock = socket.create_connection((self.host, self.port), self.timeout)
+        if self._tunnel_host:
+            self.sock = sock
+            self._tunnel()
+        # If there's no CA File, don't force Server Certificate Check
+        if self.ca_file:
+            self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file,
+                                        ca_certs=self.ca_file,
+                                        cert_reqs=ssl.CERT_REQUIRED)
+        else:
+            self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file,
+                                        cert_reqs=ssl.CERT_NONE)
+
+
 class BaseClient(object):
 
     """A base client class"""
@@ -52,7 +117,8 @@ class BaseClient(object):
     DEFAULT_DOC_ROOT = None
 
     def __init__(self, host, port=None, use_ssl=False, auth_tok=None,
-                 creds=None, doc_root=None):
+                 creds=None, doc_root=None,
+                 key_file=None, cert_file=None, ca_file=None):
         """
         Creates a new client to some service.
 
@@ -62,6 +128,23 @@ class BaseClient(object):
         :param auth_tok: The auth token to pass to the server
         :param creds: The credentials to pass to the auth plugin
         :param doc_root: Prefix for all URLs we request from host
+        :param key_file: Optional PEM-formatted file that contains the private
+                         key.
+                         If use_ssl is True, and this param is None (the
+                         default), then an environ variable
+                         GLANCE_CLIENT_KEY_FILE is looked for. If no such
+                         environ variable is found, ClientConnectionError
+                         will be raised.
+        :param cert_file: Optional PEM-formatted certificate chain file.
+                          If use_ssl is True, and this param is None (the
+                          default), then an environ variable
+                          GLANCE_CLIENT_CERT_FILE is looked for. If no such
+                          environ variable is found, ClientConnectionError
+                          will be raised.
+        :param ca_file: Optional CA cert file to use in SSL connections
+                        If use_ssl is True, and this param is None (the
+                        default), then an environ variable
+                        GLANCE_CLIENT_CA_FILE is looked for.
         """
         self.host = host
         self.port = port or self.DEFAULT_PORT
@@ -69,8 +152,48 @@ class BaseClient(object):
         self.auth_tok = auth_tok
         self.creds = creds or {}
         self.connection = None
-        self.doc_root = self.DEFAULT_DOC_ROOT if doc_root is None else doc_root
+        # doc_root can be a nullstring, which is valid, and why we
+        # cannot simply do doc_root or self.DEFAULT_DOC_ROOT below.
+        self.doc_root = (doc_root if doc_root is not None
+                         else self.DEFAULT_DOC_ROOT)
         self.auth_plugin = self.make_auth_plugin(self.creds)
+        self.connect_kwargs = {}
+
+        if use_ssl:
+            if not key_file:
+                if not os.environ.get('GLANCE_CLIENT_KEY_FILE'):
+                    msg = _("You have selected to use SSL in connecting, "
+                            "however you have failed to supply either a "
+                            "key_file parameter or set the "
+                            "GLANCE_CLIENT_KEY_FILE environ variable")
+                    raise exception.ClientConnectionError(msg)
+                key_file = os.environ.get('GLANCE_CLIENT_KEY_FILE')
+
+            if not os.path.exists(key_file):
+                msg = _("The key file you specified %s does not "
+                        "exist") % key_file
+                raise exception.ClientConnectionError(msg)
+            self.connect_kwargs['key_file'] = key_file
+
+            if not cert_file:
+                if not os.environ.get('GLANCE_CLIENT_CERT_FILE'):
+                    msg = _("You have selected to use SSL in connecting, "
+                            "however you have failed to supply either a "
+                            "cert_file parameter or set the "
+                            "GLANCE_CLIENT_CERT_FILE environ variable")
+                    raise exception.ClientConnectionError(msg)
+                cert_file = os.environ.get('GLANCE_CLIENT_CERT_FILE')
+
+            if not os.path.exists(cert_file):
+                msg = _("The key file you specified %s does not "
+                        "exist") % cert_file
+                raise exception.ClientConnectionError(msg)
+            self.connect_kwargs['cert_file'] = cert_file
+
+            if not ca_file:
+                ca_file = os.environ.get('GLANCE_CLIENT_CA_FILE')
+
+            self.connect_kwargs['ca_file'] = ca_file
 
     def set_auth_token(self, auth_tok):
         """
@@ -112,7 +235,7 @@ class BaseClient(object):
         Returns the proper connection type
         """
         if self.use_ssl:
-            return httplib.HTTPSConnection
+            return HTTPSClientAuthConnection
         else:
             return httplib.HTTPConnection
 
@@ -186,7 +309,7 @@ class BaseClient(object):
             if 'x-auth-token' not in headers and self.auth_tok:
                 headers['x-auth-token'] = self.auth_tok
 
-            c = connection_type(self.host, self.port)
+            c = connection_type(self.host, self.port, **self.connect_kwargs)
 
             if self.doc_root:
                 action = '/'.join([self.doc_root, action.lstrip('/')])

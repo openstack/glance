@@ -32,8 +32,7 @@ class Controller(object):
             ]}
         """
         try:
-            members = registry.get_image_members(self.options, req.context,
-                                                 image_id)
+            members = registry.get_image_members(req.context, image_id)
         except exception.NotFound:
             msg = _("Image with identifier %s not found") % image_id
             logger.debug(msg)
@@ -54,7 +53,7 @@ class Controller(object):
             raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
 
         try:
-            registry.delete_member(self.options, req.context, image_id, id)
+            registry.delete_member(req.context, image_id, id)
         except exception.NotFound, e:
             msg = "%s" % e
             logger.debug(msg)
@@ -93,8 +92,7 @@ class Controller(object):
         if body and 'member' in body and 'can_share' in body['member']:
             can_share = bool(body['member']['can_share'])
         try:
-            registry.add_member(self.options, req.context, image_id, id,
-                                can_share)
+            registry.add_member(req.context, image_id, id, can_share)
         except exception.NotFound, e:
             msg = "%s" % e
             logger.debug(msg)
@@ -122,8 +120,7 @@ class Controller(object):
             raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
 
         try:
-            registry.replace_members(self.options, req.context,
-                                     image_id, body)
+            registry.replace_members(req.context, image_id, body)
         except exception.NotFound, e:
             msg = "%s" % e
             logger.debug(msg)
@@ -149,7 +146,7 @@ class Controller(object):
             ]}
         """
         try:
-            members = registry.get_member_images(self.options, req.context, id)
+            members = registry.get_member_images(req.context, id)
         except exception.NotFound, e:
             msg = "%s" % e
             logger.debug(msg)

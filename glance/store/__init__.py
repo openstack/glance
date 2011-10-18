@@ -161,7 +161,7 @@ def schedule_delete_from_backend(uri, options, context, image_id, **kwargs):
     use_delay = config.get_option(options, 'delayed_delete', type='bool',
                                   default=False)
     if not use_delay:
-        registry.update_image_metadata(options, context, image_id,
+        registry.update_image_metadata(context, image_id,
                                        {'status': 'deleted'})
         try:
             return delete_from_backend(uri, **kwargs)
@@ -186,5 +186,5 @@ def schedule_delete_from_backend(uri, options, context, image_id, **kwargs):
     os.chmod(file_path, 0600)
     os.utime(file_path, (delete_time, delete_time))
 
-    registry.update_image_metadata(options, context, image_id,
+    registry.update_image_metadata(context, image_id,
                                    {'status': 'pending_delete'})
