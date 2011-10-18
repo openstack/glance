@@ -205,14 +205,14 @@ class Controller(object):
         try:
             session = db_api.get_session()
             membership = db_api.image_member_find(req.context,
-                                                  image_id, member,
+                                                  image_id, id,
                                                   session=session)
             if can_share is not None:
                 values = dict(can_share=can_share)
                 db_api.image_member_update(req.context, membership, values,
                                            session=session)
         except exception.NotFound:
-            values = dict(image_id=image['id'], member=member,
+            values = dict(image_id=image['id'], member=id,
                           can_share=bool(can_share))
             db_api.image_member_create(req.context, values, session=session)
 

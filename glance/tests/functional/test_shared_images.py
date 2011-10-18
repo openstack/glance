@@ -45,7 +45,7 @@ class TestSharedImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], False)
-        self.assertEqual(data['image']['owner'], 'pattieblack')
+        self.assertEqual(data['image']['owner'], keystone_utils.pattieblack_id)
         return content
 
     def _request(self, path, method, auth_token, headers=None, body=None):
@@ -66,8 +66,9 @@ class TestSharedImagesApi(keystone_utils.KeystoneTests):
         data = json.loads(self._push_image())
 
         # Now add froggy as a shared image member
-        path = "http://%s:%d/v1/images/%s/members/%s" % \
-                ("0.0.0.0", self.api_port, data['image']['id'], 'froggy')
+        args = ("0.0.0.0", self.api_port, data['image']['id'],
+                keystone_utils.froggy_id)
+        path = "http://%s:%d/v1/images/%s/members/%s" % args
 
         response, _ = self._request(path, 'PUT',
                                     keystone_utils.pattieblack_token)
@@ -112,8 +113,9 @@ class TestSharedImagesApi(keystone_utils.KeystoneTests):
 
         image = data['image']
         # Now add froggy as a shared image member
-        path = "http://%s:%d/v1/images/%s/members/%s" % \
-                ("0.0.0.0", self.api_port, data['image']['id'], 'froggy')
+        args = ("0.0.0.0", self.api_port, data['image']['id'],
+                keystone_utils.froggy_id)
+        path = "http://%s:%d/v1/images/%s/members/%s" % args
 
         response, _ = self._request(path, 'PUT',
                                     keystone_utils.pattieblack_token)
@@ -148,14 +150,20 @@ class TestSharedImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(content, '{"images": []}')
 
         # Replace froggy with bacon
-        body = json.dumps({'memberships': [{'member_id': 'bacon',
-                                            'can_share': False}]})
+        body = {
+            'memberships': [
+                {
+                    'member_id': keystone_utils.bacon_id,
+                    'can_share': False,
+                },
+            ],
+        }
         path = "http://%s:%d/v1/images/%s/members" % \
                 ("0.0.0.0", self.api_port, image['id'])
 
         response, content = self._request(path, 'PUT',
                                           keystone_utils.pattieblack_token,
-                                          body=body)
+                                          body=json.dumps(body))
         self.assertEqual(response.status, 204)
 
         # Ensure bacon can see the image
@@ -186,8 +194,9 @@ class TestSharedImagesApi(keystone_utils.KeystoneTests):
         data = json.loads(self._push_image())
 
         # Now add froggy as a shared image member
-        path = "http://%s:%d/v1/images/%s/members/%s" % \
-                ("0.0.0.0", self.api_port, data['image']['id'], 'froggy')
+        args = ("0.0.0.0", self.api_port, data['image']['id'],
+                keystone_utils.froggy_id)
+        path = "http://%s:%d/v1/images/%s/members/%s" % args
 
         response, _ = self._request(path, 'PUT',
                                     keystone_utils.pattieblack_token)
@@ -223,8 +232,9 @@ class TestSharedImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(content, '{"images": []}')
 
         # Now remove froggy as a shared image member
-        path = "http://%s:%d/v1/images/%s/members/%s" % \
-                ("0.0.0.0", self.api_port, image['id'], 'froggy')
+        args = ("0.0.0.0", self.api_port, image['id'],
+                keystone_utils.froggy_id)
+        path = "http://%s:%d/v1/images/%s/members/%s" % args
 
         response, content = self._request(path, 'DELETE',
                                     keystone_utils.pattieblack_token)
@@ -266,8 +276,9 @@ class TestSharedImagesApi(keystone_utils.KeystoneTests):
 
         # Now add froggy as a shared image member
         body = json.dumps({'member': {'can_share': True}})
-        path = "http://%s:%d/v1/images/%s/members/%s" % \
-                ("0.0.0.0", self.api_port, data['image']['id'], 'froggy')
+        args = ("0.0.0.0", self.api_port, data['image']['id'],
+                keystone_utils.froggy_id)
+        path = "http://%s:%d/v1/images/%s/members/%s" % args
 
         response, content = self._request(path, 'PUT',
                                     keystone_utils.pattieblack_token,
@@ -288,8 +299,8 @@ class TestSharedImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(data['images'][0]['name'], "Image1")
 
         # Froggy is going to share with bacon
-        path = "http://%s:%d/v1/images/%s/members/%s" % \
-                ("0.0.0.0", self.api_port, image['id'], 'bacon')
+        args = ("0.0.0.0", self.api_port, image['id'], keystone_utils.bacon_id)
+        path = "http://%s:%d/v1/images/%s/members/%s" % args
 
         response, _ = self._request(path, 'PUT',
                                     keystone_utils.froggy_token)
@@ -329,11 +340,12 @@ class TestSharedImagesApi(keystone_utils.KeystoneTests):
         data = json.loads(self._push_image())
 
         # Now add froggy as a shared image member
-        path = "http://%s:%d/v1/images/%s/members/%s" % \
-                ("0.0.0.0", self.api_port, data['image']['id'], 'froggy')
+        args = ("0.0.0.0", self.api_port, data['image']['id'],
+                keystone_utils.froggy_id)
+        path = "http://%s:%d/v1/images/%s/members/%s" % args
 
         response, content = self._request(path, 'PUT',
-                                    keystone_utils.pattieblack_token)
+                                          keystone_utils.pattieblack_token)
         self.assertEqual(response.status, 204)
 
         path = "http://%s:%d/v1/images/%s/members" % \
@@ -344,7 +356,8 @@ class TestSharedImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(response.status, 200)
         body = json.loads(content)
         self.assertEqual(body['members'][0]['can_share'], False)
-        self.assertEqual(body['members'][0]['member_id'], 'froggy')
+        self.assertEqual(body['members'][0]['member_id'],
+                         keystone_utils.froggy_id)
 
         self.stop_servers()
 
@@ -365,7 +378,7 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], str(name))
         self.assertEqual(data['image']['is_public'], False)
-        self.assertEqual(data['image']['owner'], 'pattieblack')
+        self.assertEqual(data['image']['owner'], keystone_utils.pattieblack_id)
         return content
 
     def _request(self, path, method, auth_token, headers=None, body=None):
@@ -392,9 +405,9 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
         image_id = data['image']['id']
 
         # Test that we can add froggy as a shared image member
-        cmd = ("bin/glance --port=%d --auth_token=%s member-add %s %s" %
-               (self.api_port, keystone_utils.pattieblack_token,
-                image_id, 'froggy'))
+        args = (self.api_port, keystone_utils.pattieblack_token,
+                image_id, keystone_utils.froggy_id)
+        cmd = "bin/glance --port=%d --auth_token=%s member-add %s %s" % args
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
@@ -407,14 +420,15 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
         self.assertEqual(response.status, 200)
         data = json.loads(content)
         self.assertEqual(len(data['members']), 1)
-        self.assertEqual(data['members'][0]['member_id'], 'froggy')
+        self.assertEqual(data['members'][0]['member_id'],
+                         keystone_utils.froggy_id)
         self.assertEqual(data['members'][0]['can_share'], False)
 
         # Test that we can replace a shared image membership list
         cmd = ("bin/glance --port=%d --auth_token=%s members-replace %s %s "
                "--can-share" %
                (self.api_port, keystone_utils.pattieblack_token,
-                image_id, 'bacon'))
+                image_id, keystone_utils.bacon_id))
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
@@ -427,13 +441,14 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
         self.assertEqual(response.status, 200)
         data = json.loads(content)
         self.assertEqual(len(data['members']), 1)
-        self.assertEqual(data['members'][0]['member_id'], 'bacon')
+        self.assertEqual(data['members'][0]['member_id'],
+                         keystone_utils.bacon_id)
         self.assertEqual(data['members'][0]['can_share'], True)
 
         # Test that we can delete an image membership
         cmd = ("bin/glance --port=%d --auth_token=%s member-delete %s %s" %
                (self.api_port, keystone_utils.pattieblack_token,
-                image_id, 'bacon'))
+                image_id, keystone_utils.bacon_id))
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
@@ -467,24 +482,24 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
         # Share images with froggy and bacon
         cmd = ("bin/glance --port=%d --auth_token=%s member-add %s %s" %
                (self.api_port, keystone_utils.pattieblack_token,
-                image1_id, 'froggy'))
+                image1_id, keystone_utils.froggy_id))
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
         cmd = ("bin/glance --port=%d --auth_token=%s member-add %s %s" %
                (self.api_port, keystone_utils.pattieblack_token,
-                image1_id, 'bacon'))
+                image1_id, keystone_utils.bacon_id))
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
         cmd = ("bin/glance --port=%d --auth_token=%s member-add %s %s "
                "--can-share" %
                (self.api_port, keystone_utils.pattieblack_token,
-                image2_id, 'froggy'))
+                image2_id, keystone_utils.froggy_id))
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
         cmd = ("bin/glance --port=%d --auth_token=%s member-add %s %s "
                "--can-share" %
                (self.api_port, keystone_utils.pattieblack_token,
-                image2_id, 'bacon'))
+                image2_id, keystone_utils.bacon_id))
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
 
@@ -495,8 +510,8 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
         self.assertEqual(0, exitcode)
 
         result = self._outsplit(out)
-        self.assertTrue('froggy' in result)
-        self.assertTrue('bacon' in result)
+        self.assertTrue(keystone_utils.froggy_id in result)
+        self.assertTrue(keystone_utils.bacon_id in result)
 
         # Try again for can_share
         cmd = ("bin/glance --port=%d --auth_token=%s image-members %s" %
@@ -506,12 +521,13 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
 
         result = self._outsplit(out)
         self.assertEqual(result[-1], '(*: Can share image)')
-        self.assertTrue('froggy *' in result[:-2])
-        self.assertTrue('bacon *' in result[:-2])
+        self.assertTrue(keystone_utils.froggy_id + ' *' in result[:-2])
+        self.assertTrue(keystone_utils.bacon_id + ' *' in result[:-2])
 
         # Get the list of member images
         cmd = ("bin/glance --port=%d --auth_token=%s member-images %s" %
-               (self.api_port, keystone_utils.pattieblack_token, 'froggy'))
+               (self.api_port, keystone_utils.pattieblack_token,
+                keystone_utils.froggy_id))
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
 
