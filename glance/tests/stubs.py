@@ -197,3 +197,65 @@ def stub_out_registry_and_store_server(stubs):
               fake_get_connection_type)
     stubs.Set(glance.common.client.ImageBodyIterator, '__iter__',
               fake_image_iter)
+
+
+def stub_out_registry_server(stubs):
+    """
+    Mocks calls to 127.0.0.1 on 9191 for testing so
+    that a real Glance Registry server does not need to be up and
+    running
+    """
+
+    class FakeRegistryConnection(object):
+
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def connect(self):
+            return True
+
+        def close(self):
+            return True
+
+        def request(self, method, url, body=None, headers={}):
+            self.req = webob.Request.blank("/" + url.lstrip("/"))
+            self.req.method = method
+            if headers:
+                self.req.headers = headers
+            if body:
+                self.req.body = body
+
+        def getresponse(self):
+            sql_connection = os.environ.get('GLANCE_SQL_CONNECTION',
+                                            "sqlite:///")
+            context_class = 'glance.registry.context.RequestContext'
+            options = {'sql_connection': sql_connection, 'verbose': VERBOSE,
+                       'debug': DEBUG, 'context_class': context_class}
+            api = context.ContextMiddleware(rserver.API(options), options)
+            res = self.req.get_response(api)
+
+            # httplib.Response has a read() method...fake it out
+            def fake_reader():
+                return res.body
+
+            setattr(res, 'read', fake_reader)
+            return res
+
+    def fake_get_connection_type(client):
+        """
+        Returns the proper connection type
+        """
+        DEFAULT_REGISTRY_PORT = 9191
+
+        if (client.port == DEFAULT_REGISTRY_PORT and
+            client.host == '0.0.0.0'):
+            return FakeRegistryConnection
+
+    def fake_image_iter(self):
+        for i in self.response.app_iter:
+            yield i
+
+    stubs.Set(glance.common.client.BaseClient, 'get_connection_type',
+              fake_get_connection_type)
+    stubs.Set(glance.common.client.ImageBodyIterator, '__iter__',
+              fake_image_iter)

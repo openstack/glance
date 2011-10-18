@@ -107,20 +107,6 @@ def has_body(req):
     return req.content_length or 'transfer-encoding' in req.headers
 
 
-def chunkiter(fp, chunk_size=65536):
-    """Return an iterator to a file-like obj which yields fixed size chunks
-
-    :param fp: a file-like object
-    :param chunk_size: maximum size of chunk
-    """
-    while True:
-        chunk = fp.read(chunk_size)
-        if chunk:
-            yield chunk
-        else:
-            break
-
-
 class PrettyTable(object):
     """Creates an ASCII art table for use in bin/glance
 

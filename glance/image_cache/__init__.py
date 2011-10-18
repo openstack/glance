@@ -18,6 +18,7 @@
 """
 LRU Cache for Image Data
 """
+
 from contextlib import contextmanager
 import datetime
 import itertools
@@ -28,18 +29,15 @@ import time
 
 from glance.common import config
 from glance.common import exception
+from glance.common import utils as cutils
 from glance import utils
 
-logger = logging.getLogger('glance.image_cache')
+logger = logging.getLogger(__name__)
 
 
 class ImageCache(object):
-    """Provides an LRU cache for image data.
-
-    Data is cached on READ not on WRITE; meaning if the cache is enabled, we
-    attempt to read from the cache first, if we don't find the data, we begin
-    streaming the data from the 'store' while simultaneously tee'ing the data
-    into the cache. Subsequent reads will generate cache HITs for this image.
+    """
+    Provides an LRU cache for image data.
 
     Assumptions
     ===========
@@ -81,8 +79,6 @@ class ImageCache(object):
 
     def _make_cache_directory_if_needed(self):
         """Creates main cache directory along with incomplete subdirectory"""
-        if not self.enabled:
-            return
 
         # NOTE(sirp): making the incomplete_path will have the effect of
         # creating the main cache path directory as well
@@ -90,16 +86,7 @@ class ImageCache(object):
                  self.prefetching_path]
 
         for path in paths:
-            if os.path.exists(path):
-                continue
-            logger.info(_("image cache directory doesn't exist, "
-                          "creating '%s'"), path)
-            os.makedirs(path)
-
-    @property
-    def enabled(self):
-        return config.get_option(
-            self.options, 'image_cache_enabled', type='bool', default=False)
+            cutils.safe_mkdirs(path)
 
     @property
     def path(self):
@@ -221,6 +208,23 @@ class ImageCache(object):
             raise
         else:
             commit()
+
+    @contextmanager
+    def open_for_read(self, image_id):
+        path = self.path_for_image(image_id)
+        with open(path, 'rb') as cache_file:
+            yield cache_file
+
+        utils.inc_xattr(path, 'hits')  # bump the hit count
+
+    def get_hit_count(self, image_id):
+        """
+        Return the number of hits that an image has
+
+        :param image_id: Opaque image identifier
+        """
+        path = self.path_for_image(image_id)
+        return int(utils.get_xattr(path, 'hits', default=0))
 
     @contextmanager
     def _open_read(self, image_meta, mode):
@@ -390,7 +394,7 @@ class ImageCache(object):
             yield entry
 
     def incomplete_entries(self):
-        """Cache info for invalid cached images"""
+        """Cache info for incomplete cached images"""
         for entry in self._base_entries(self.incomplete_path):
             yield entry
 

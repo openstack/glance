@@ -207,10 +207,9 @@ class Controller(api.BaseController):
 
         :raises HTTPNotFound if image is not available to user
         """
-        image = self.get_active_image_meta_or_404(req, id)
+        image_meta = self.get_active_image_meta_or_404(req, id)
 
         def get_from_store(image_meta):
-            """Called if caching disabled"""
             try:
                 location = image_meta['location']
                 image_data, image_size = get_from_backend(location)
@@ -219,61 +218,11 @@ class Controller(api.BaseController):
                 raise HTTPNotFound(explanation="%s" % e)
             return image_data
 
-        def get_from_cache(image, cache):
-            """Called if cache hit"""
-            with cache.open(image, "rb") as cache_file:
-                chunks = utils.chunkiter(cache_file)
-                for chunk in chunks:
-                    yield chunk
-
-        def get_from_store_tee_into_cache(image, cache):
-            """Called if cache miss"""
-            with cache.open(image, "wb") as cache_file:
-                chunks = get_from_store(image)
-                for chunk in chunks:
-                    cache_file.write(chunk)
-                    yield chunk
-
-        cache = image_cache.ImageCache(self.options)
-        if cache.enabled:
-            if cache.hit(id):
-                # hit
-                logger.debug(_("image '%s' is a cache HIT"), id)
-                image_iterator = get_from_cache(image, cache)
-            else:
-                # miss
-                logger.debug(_("image '%s' is a cache MISS"), id)
-
-                # Make sure we're not already prefetching or caching the image
-                # that just generated the miss
-                if cache.is_image_currently_prefetching(id):
-                    logger.debug(_("image '%s' is already being prefetched,"
-                                 " not tee'ing into the cache"), id)
-                    image_iterator = get_from_store(image)
-                elif cache.is_image_currently_being_written(id):
-                    logger.debug(_("image '%s' is already being cached,"
-                                 " not tee'ing into the cache"), id)
-                    image_iterator = get_from_store(image)
-                else:
-                    # NOTE(sirp): If we're about to download and cache an
-                    # image which is currently in the prefetch queue, just
-                    # delete the queue items since we're caching it anyway
-                    if cache.is_image_queued_for_prefetch(id):
-                        cache.delete_queued_prefetch_image(id)
-
-                    logger.debug(_("tee'ing image '%s' into cache"), id)
-                    image_iterator = get_from_store_tee_into_cache(
-                        image, cache)
-        else:
-            # disabled
-            logger.debug(_("image cache DISABLED, retrieving image '%s'"
-                         " from store"), id)
-            image_iterator = get_from_store(image)
-
-        del image['location']
+        image_iterator = get_from_store(image_meta)
+        del image_meta['location']
         return {
             'image_iterator': image_iterator,
-            'image_meta': image,
+            'image_meta': image_meta,
         }
 
     def _reserve(self, req, image_meta):

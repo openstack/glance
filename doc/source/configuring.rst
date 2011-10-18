@@ -468,6 +468,54 @@ To set up a user named ``glance`` with minimal permissions, using a pool called
   ceph-authtool --gen-key --name client.glance --cap mon 'allow r' --cap osd 'allow rwx pool=images' /etc/glance/rbd.keyring
   ceph auth add client.glance -i /etc/glance/rbd.keyring
 
+Configuring the Image Cache
+---------------------------
+
+Glance API servers can be configured to have a local image cache. Caching of
+image files is transparent and happens using a piece of middleware that can
+optionally be placed in the server application pipeline.
+
+Enabling the Image Cache Middleware
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To enable the image cache middleware, you would insert the cache middleware
+into your application pipeline **after** the appropriate context middleware.
+
+The cache middleware should be in your ``glance-api.conf`` in a section titled
+``[filter:cache]``. It should look like this::
+
+  [filter:cache]
+  paste.filter_factory = glance.api.middleware.cache:filter_factory
+
+
+For example, suppose your application pipeline in the ``glance-api.conf`` file
+looked like so::
+
+  [pipeline:glance-api]
+  pipeline = versionnegotiation context apiv1app
+
+In the above application pipeline, you would add the cache middleware after the
+context middleware, like so::
+
+  [pipeline:glance-api]
+  pipeline = versionnegotiation context cache apiv1app
+
+And that would give you a transparent image cache on the API server.
+
+Configuration Options Affecting the Image Cache
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+One main configuration file option affects the image cache.
+
+ * ``image_cache_datadir=PATH``
+
+Required when image cache middleware is enabled.
+
+Default: ``/var/lib/glance/image-cache``
+
+This is the root directory where the image cache will write its
+cached image files. Make sure the directory is writeable by the
+user running the ``glance-api`` server
 
 Configuring the Glance Registry
 -------------------------------
