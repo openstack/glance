@@ -58,7 +58,7 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], False)
-        self.assertEqual(data['image']['owner'], 'pattieblack')
+        self.assertEqual(data['image']['owner'], keystone_utils.pattieblack_id)
 
         # Next, make sure froggy can't list the image
         headers = {'X-Auth-Token': keystone_utils.froggy_token}
@@ -135,11 +135,11 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(response.status, 200)
         data = json.loads(content)
         self.assertEqual(len(data['images']), 1)
-        self.assertEqual(data['images'][0]['id'], 1)
         self.assertEqual(data['images'][0]['size'], FIVE_KB)
         self.assertEqual(data['images'][0]['name'], "Image1")
         self.assertEqual(data['images'][0]['is_public'], False)
-        self.assertEqual(data['images'][0]['owner'], 'pattieblack')
+        self.assertEqual(data['images'][0]['owner'],
+                         keystone_utils.pattieblack_id)
 
         # Pattieblack should be able to get the image metadata
         headers = {'X-Auth-Token': keystone_utils.pattieblack_token}
@@ -149,7 +149,8 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(response.status, 200)
         self.assertEqual(response['x-image-meta-name'], "Image1")
         self.assertEqual(response['x-image-meta-is_public'], "False")
-        self.assertEqual(response['x-image-meta-owner'], "pattieblack")
+        self.assertEqual(response['x-image-meta-owner'],
+                         keystone_utils.pattieblack_id)
 
         # And of course the image itself
         headers = {'X-Auth-Token': keystone_utils.pattieblack_token}
@@ -160,7 +161,8 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(content, "*" * FIVE_KB)
         self.assertEqual(response['x-image-meta-name'], "Image1")
         self.assertEqual(response['x-image-meta-is_public'], "False")
-        self.assertEqual(response['x-image-meta-owner'], "pattieblack")
+        self.assertEqual(response['x-image-meta-owner'],
+                         keystone_utils.pattieblack_id)
 
         # Pattieblack should be able to manipulate is_public
         headers = {'X-Auth-Token': keystone_utils.pattieblack_token,
@@ -172,7 +174,7 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         data = json.loads(content)
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], True)
-        self.assertEqual(data['image']['owner'], 'pattieblack')
+        self.assertEqual(data['image']['owner'], keystone_utils.pattieblack_id)
 
         # Pattieblack can't give the image away, however
         headers = {'X-Auth-Token': keystone_utils.pattieblack_token,
@@ -184,7 +186,7 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         data = json.loads(content)
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], True)
-        self.assertEqual(data['image']['owner'], 'pattieblack')
+        self.assertEqual(data['image']['owner'], keystone_utils.pattieblack_id)
 
         # Now that the image is public, froggy can see it
         headers = {'X-Auth-Token': keystone_utils.froggy_token}
@@ -210,7 +212,8 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(data['images'][0]['size'], FIVE_KB)
         self.assertEqual(data['images'][0]['name'], "Image1")
         self.assertEqual(data['images'][0]['is_public'], True)
-        self.assertEqual(data['images'][0]['owner'], 'pattieblack')
+        self.assertEqual(data['images'][0]['owner'],
+                         keystone_utils.pattieblack_id)
 
         # Froggy can get the image metadata now...
         headers = {'X-Auth-Token': keystone_utils.froggy_token}
@@ -220,7 +223,8 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(response.status, 200)
         self.assertEqual(response['x-image-meta-name'], "Image1")
         self.assertEqual(response['x-image-meta-is_public'], "True")
-        self.assertEqual(response['x-image-meta-owner'], "pattieblack")
+        self.assertEqual(response['x-image-meta-owner'],
+                         keystone_utils.pattieblack_id)
 
         # And of course the image itself
         headers = {'X-Auth-Token': keystone_utils.froggy_token}
@@ -231,7 +235,8 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(content, "*" * FIVE_KB)
         self.assertEqual(response['x-image-meta-name'], "Image1")
         self.assertEqual(response['x-image-meta-is_public'], "True")
-        self.assertEqual(response['x-image-meta-owner'], "pattieblack")
+        self.assertEqual(response['x-image-meta-owner'],
+                         keystone_utils.pattieblack_id)
 
         # Froggy still can't change is-public
         headers = {'X-Auth-Token': keystone_utils.froggy_token,
@@ -289,7 +294,7 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], False)
-        self.assertEqual(data['image']['owner'], 'pattieblack')
+        self.assertEqual(data['image']['owner'], keystone_utils.pattieblack_id)
 
         # Make sure admin does not see image by default
         headers = {'X-Auth-Token': keystone_utils.admin_token}
@@ -334,7 +339,8 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(data['images'][0]['size'], FIVE_KB)
         self.assertEqual(data['images'][0]['name'], "Image1")
         self.assertEqual(data['images'][0]['is_public'], False)
-        self.assertEqual(data['images'][0]['owner'], 'pattieblack')
+        self.assertEqual(data['images'][0]['owner'],
+                         keystone_utils.pattieblack_id)
 
         # Admin should be able to get the image metadata
         headers = {'X-Auth-Token': keystone_utils.admin_token}
@@ -344,7 +350,8 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(response.status, 200)
         self.assertEqual(response['x-image-meta-name'], "Image1")
         self.assertEqual(response['x-image-meta-is_public'], "False")
-        self.assertEqual(response['x-image-meta-owner'], "pattieblack")
+        self.assertEqual(response['x-image-meta-owner'],
+                         keystone_utils.pattieblack_id)
 
         # And of course the image itself
         headers = {'X-Auth-Token': keystone_utils.admin_token}
@@ -355,7 +362,8 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(content, "*" * FIVE_KB)
         self.assertEqual(response['x-image-meta-name'], "Image1")
         self.assertEqual(response['x-image-meta-is_public'], "False")
-        self.assertEqual(response['x-image-meta-owner'], "pattieblack")
+        self.assertEqual(response['x-image-meta-owner'],
+                         keystone_utils.pattieblack_id)
 
         # Admin should be able to manipulate is_public
         headers = {'X-Auth-Token': keystone_utils.admin_token,
@@ -367,7 +375,8 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         data = json.loads(content)
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], True)
-        self.assertEqual(data['image']['owner'], 'pattieblack')
+        self.assertEqual(data['image']['owner'],
+                         keystone_utils.pattieblack_id)
 
         # Admin should also be able to change the ownership of the
         # image
@@ -466,7 +475,7 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
 
         # Or give themselves ownership
         headers = {'X-Auth-Token': keystone_utils.pattieblack_token,
-                   'X-Image-Meta-Owner': 'pattieblack'}
+                   'X-Image-Meta-Owner': keystone_utils.pattieblack_id}
         path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'PUT', headers=headers)
@@ -515,7 +524,7 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], False)
-        self.assertEqual(data['image']['owner'], 'pattieblack')
+        self.assertEqual(data['image']['owner'], keystone_utils.pattieblack_id)
 
         # Make sure anonymous user can't list the image
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
@@ -715,7 +724,8 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
         self.assertEqual(response.status, 200)
         self.assertEqual(response['x-image-meta-name'], "MyImage")
         self.assertEqual(response['x-image-meta-is_public'], "False")
-        self.assertEqual(response['x-image-meta-owner'], "pattieblack")
+        self.assertEqual(response['x-image-meta-owner'],
+                         keystone_utils.pattieblack_id)
 
         # Test that we can update is_public through the CLI
         cmd = ("bin/glance --port=%d --auth_token=%s update 1 is_public=True" %
@@ -733,7 +743,8 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
         self.assertEqual(response.status, 200)
         self.assertEqual(response['x-image-meta-name'], "MyImage")
         self.assertEqual(response['x-image-meta-is_public'], "True")
-        self.assertEqual(response['x-image-meta-owner'], "pattieblack")
+        self.assertEqual(response['x-image-meta-owner'],
+                         keystone_utils.pattieblack_id)
 
         # Test that admin can change the owner
         cmd = ("bin/glance --port=%d --auth_token=%s update 1 owner=froggy" %

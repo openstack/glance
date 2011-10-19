@@ -28,9 +28,12 @@ from glance.tests.utils import execute, find_executable
 
 
 pattieblack_token = '887665443383'
+pattieblack_id = '2'
 froggy_token = '383344566788'
+froggy_id = '3'
 admin_token = '999888777666'
 bacon_token = '111111111111'
+bacon_id = '4'
 prosciutto_token = '222222222222'
 
 

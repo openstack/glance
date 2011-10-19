@@ -46,6 +46,33 @@ DEFAULT_FIXTURE = [
      '2015-02-05T00:00'),
     ('token', 'add', '999888777666', 'admin', 'openstack',
      '2015-02-05T00:00'),
+#Services
+    #2 Service Name:swift Type:object-store
+    ('service', 'add', 'swift',
+        'object-store', 'Swift-compatible service'),
+    ('service', 'add', 'object_store',
+        'object-store', 'Swift-compatible service'),
+    #3 Service Name:cdn Type:object-store
+    ('service', 'add', 'cdn',
+        'object-store', 'Swift-compatible service'),
+    #4 Service Name:nova Type:compute
+    ('service', 'add', 'nova',
+        'compute', 'OpenStack Compute Service'),
+    ('service', 'add', 'compute',
+        'compute', 'OpenStack Compute Service'),
+    ('service', 'add', 'compute_v1',
+        'compute', 'OpenStack Compute Service'),
+    #5 Service Name:nova_compat Type:Compute
+    ('service', 'add', 'nova_compat',
+        'compute', 'OpenStack Compute Service'),
+    #6 Service Name:glance Type:image
+    ('service', 'add', 'glance',
+        'image', 'OpenStack Image Service'),
+    ('service', 'add', 'image',
+        'image', 'OpenStack Image Service'),
+    #7 Service Name:keystone Type:identity
+    ('service', 'add', 'identity',
+        'identity', 'OpenStack Identity Service'),
 # Keeping for compatibility for a while till dashboard catches up
     ('endpointTemplates', 'add', 'RegionOne', 'swift',
         'http://swift.publicinternets.com/v1/AUTH_%tenant_id%',
