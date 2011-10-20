@@ -18,6 +18,7 @@
 import datetime
 import hashlib
 import httplib
+import logging
 import os
 import json
 import unittest
@@ -43,6 +44,50 @@ OPTIONS = {'sql_connection': 'sqlite://',
            'default_store': 'file',
            'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR,
            'context_class': 'glance.registry.context.RequestContext'}
+
+
+class TestRegistryDb(unittest.TestCase):
+
+    def setUp(self):
+        """Establish a clean test environment"""
+        self.stubs = stubout.StubOutForTesting()
+
+    def test_bad_sql_connection(self):
+        """
+        Test that a bad sql_connection option supplied to the registry
+        API controller results in a) an Exception being thrown and b)
+        a message being logged to the registry log file...
+        """
+        bad_options = {'verbose': True,
+                       'debug': True,
+                       'sql_connection': 'baddriver:///'}
+        # We set this to None to trigger a reconfigure, otherwise
+        # other modules may have already correctly configured the DB
+        orig_engine = db_api._ENGINE
+        db_api._ENGINE = None
+        self.assertRaises(ImportError, db_api.configure_db,
+                          bad_options)
+        exc_raised = False
+        self.log_written = False
+
+        def fake_log_error(msg):
+            if 'Error configuring registry database' in msg:
+                self.log_written = True
+
+        self.stubs.Set(db_api.logger, 'error', fake_log_error)
+        try:
+            api_obj = rserver.API(bad_options)
+        except ImportError:
+            exc_raised = True
+        finally:
+            db_api._ENGINE = orig_engine
+
+        self.assertTrue(exc_raised)
+        self.assertTrue(self.log_written)
+
+    def tearDown(self):
+        """Clear the test environment"""
+        self.stubs.UnsetAll()
 
 
 class TestRegistryAPI(unittest.TestCase):
