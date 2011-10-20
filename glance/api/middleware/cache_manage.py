@@ -27,9 +27,9 @@ from glance.common import wsgi
 logger = logging.getLogger('glance.api.middleware.image_cache')
 
 
-class ImageCacheFilter(wsgi.Middleware):
+class CacheManageFilter(wsgi.Middleware):
     def __init__(self, app, options):
-        super(ImageCacheFilter, self).__init__(app)
+        super(CacheManageFilter, self).__init__(app)
 
         map = app.map
         resource = cached_images.create_resource(options)
@@ -52,6 +52,6 @@ def filter_factory(global_conf, **local_conf):
     conf.update(local_conf)
 
     def filter(app):
-        return ImageCacheFilter(app, conf)
+        return CacheManageFilter(app, conf)
 
     return filter

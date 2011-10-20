@@ -148,6 +148,8 @@ class ApiServer(Server):
         self.default_store = 'file'
         self.key_file = ""
         self.cert_file = ""
+        self.image_cache_datadir = os.path.join(self.test_dir,
+                                                'cache')
         self.image_dir = os.path.join(self.test_dir,
                                          "images")
         self.pid_file = os.path.join(self.test_dir,
@@ -172,6 +174,7 @@ class ApiServer(Server):
         self.rbd_store_chunk_size = 4
         self.delayed_delete = delayed_delete
         self.owner_is_tenant = True
+        self.cache_pipeline = ""  # Set to cache for cache middleware
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
@@ -202,9 +205,10 @@ delayed_delete = %(delayed_delete)s
 owner_is_tenant = %(owner_is_tenant)s
 scrub_time = 5
 scrubber_datadir = %(scrubber_datadir)s
+image_cache_datadir = %(image_cache_datadir)s
 
 [pipeline:glance-api]
-pipeline = versionnegotiation context apiv1app
+pipeline = versionnegotiation context %(cache_pipeline)s apiv1app
 
 [pipeline:versions]
 pipeline = versionsapp
@@ -217,6 +221,9 @@ paste.app_factory = glance.api.v1:app_factory
 
 [filter:versionnegotiation]
 paste.filter_factory = glance.api.middleware.version_negotiation:filter_factory
+
+[filter:cache]
+paste.filter_factory = glance.api.middleware.cache:filter_factory
 
 [filter:context]
 paste.filter_factory = glance.common.context:filter_factory

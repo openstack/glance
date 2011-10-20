@@ -35,6 +35,21 @@ from glance.common import exception
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
+def chunkiter(fp, chunk_size=65536):
+    """
+    Return an iterator to a file-like obj which yields fixed size chunks
+
+    :param fp: a file-like object
+    :param chunk_size: maximum size of chunk
+    """
+    while True:
+        chunk = fp.read(chunk_size)
+        if chunk:
+            yield chunk
+        else:
+            break
+
+
 def bool_from_string(subject):
     """
     Interpret a string as a boolean.
