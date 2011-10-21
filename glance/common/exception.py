@@ -117,6 +117,11 @@ class BadStoreConfiguration(GlanceException):
                "Reason: %(reason)s")
 
 
+class BadDriverConfiguration(GlanceException):
+    message = _("Driver %(driver_name)s could not be configured correctly. "
+               "Reason: %(reason)s")
+
+
 class StoreDeleteNotSupported(GlanceException):
     message = _("Deleting images from this store is not supported.")
 

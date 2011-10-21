@@ -16,30 +16,26 @@
 #    under the License.
 
 """
-Reaps any invalid cache entries that exceed the grace period
+Cleans up any invalid cache entries
 """
+
 import logging
 
 from glance.image_cache import ImageCache
 
+logger = logging.getLogger(__name__)
 
-logger = logging.getLogger('glance.image_cache.reaper')
 
-
-class Reaper(object):
+class Cleaner(object):
     def __init__(self, options):
         self.options = options
         self.cache = ImageCache(options)
 
     def run(self):
-        invalid_grace = int(self.options.get(
-                            'image_cache_invalid_entry_grace_period',
-                            3600))
-        self.cache.reap_invalid(grace=invalid_grace)
-        self.cache.reap_stalled()
+        self.cache.clean()
 
 
 def app_factory(global_config, **local_conf):
     conf = global_config.copy()
     conf.update(local_conf)
-    return Reaper(conf)
+    return Cleaner(conf)

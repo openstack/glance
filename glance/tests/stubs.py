@@ -17,27 +17,17 @@
 
 """Stubouts, mocks and fixtures for the test suite"""
 
-import datetime
-import httplib
-import operator
 import os
 import shutil
-import StringIO
-import sys
 
-import stubout
 import webob
 
+from glance.api import v1 as server
+from glance.api.middleware import version_negotiation
 import glance.common.client
 from glance.common import context
 from glance.common import exception
 from glance.registry.api import v1 as rserver
-from glance.api import v1 as server
-from glance.api.middleware import version_negotiation
-import glance.store
-import glance.store.filesystem
-import glance.store.http
-import glance.registry.db.api
 
 
 FAKE_FILESYSTEM_ROOTDIR = os.path.join('/tmp', 'glance-tests')
@@ -199,7 +189,7 @@ def stub_out_registry_and_store_server(stubs):
               fake_image_iter)
 
 
-def stub_out_registry_server(stubs):
+def stub_out_registry_server(stubs, **kwargs):
     """
     Mocks calls to 127.0.0.1 on 9191 for testing so
     that a real Glance Registry server does not need to be up and
@@ -226,8 +216,7 @@ def stub_out_registry_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            sql_connection = os.environ.get('GLANCE_SQL_CONNECTION',
-                                            "sqlite:///")
+            sql_connection = kwargs.get('sql_connection', "sqlite:///")
             context_class = 'glance.registry.context.RequestContext'
             options = {'sql_connection': sql_connection, 'verbose': VERBOSE,
                        'debug': DEBUG, 'context_class': context_class}

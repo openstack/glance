@@ -121,7 +121,7 @@ setup(
              'bin/glance-api',
              'bin/glance-cache-prefetcher',
              'bin/glance-cache-pruner',
-             'bin/glance-cache-reaper',
+             'bin/glance-cache-cleaner',
              'bin/glance-control',
              'bin/glance-manage',
              'bin/glance-registry',

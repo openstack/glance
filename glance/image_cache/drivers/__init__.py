@@ -14,28 +14,3 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-"""
-Prunes the Image Cache
-"""
-
-import logging
-
-from glance.image_cache import ImageCache
-
-logger = logging.getLogger(__name__)
-
-
-class Pruner(object):
-    def __init__(self, options):
-        self.options = options
-        self.cache = ImageCache(options)
-
-    def run(self):
-        self.cache.prune()
-
-
-def app_factory(global_config, **local_conf):
-    conf = global_config.copy()
-    conf.update(local_conf)
-    return Pruner(conf)
