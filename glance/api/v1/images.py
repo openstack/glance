@@ -540,6 +540,10 @@ class Controller(api.BaseController):
             if location:
                 image_meta = self._activate(req, image_id, location)
 
+        # Prevent client from learning the location, as it
+        # could contain security credentials
+        image_meta.pop('location', None)
+
         return {'image_meta': image_meta}
 
     def update(self, req, id, image_meta, image_data):
@@ -584,6 +588,10 @@ class Controller(api.BaseController):
             raise HTTPNotFound(msg, request=req, content_type="text/plain")
         else:
             self.notifier.info('image.update', image_meta)
+
+        # Prevent client from learning the location, as it
+        # could contain security credentials
+        image_meta.pop('location', None)
 
         return {'image_meta': image_meta}
 
