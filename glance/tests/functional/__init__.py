@@ -148,8 +148,6 @@ class ApiServer(Server):
         self.default_store = 'file'
         self.key_file = ""
         self.cert_file = ""
-        self.image_cache_datadir = os.path.join(self.test_dir,
-                                                'cache')
         self.image_dir = os.path.join(self.test_dir,
                                          "images")
         self.pid_file = os.path.join(self.test_dir,
@@ -175,6 +173,9 @@ class ApiServer(Server):
         self.delayed_delete = delayed_delete
         self.owner_is_tenant = True
         self.cache_pipeline = ""  # Set to cache for cache middleware
+        self.image_cache_dir = os.path.join(self.test_dir,
+                                            'cache')
+        self.image_cache_driver = 'sqlite'
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
@@ -205,7 +206,8 @@ delayed_delete = %(delayed_delete)s
 owner_is_tenant = %(owner_is_tenant)s
 scrub_time = 5
 scrubber_datadir = %(scrubber_datadir)s
-image_cache_datadir = %(image_cache_datadir)s
+image_cache_dir = %(image_cache_dir)s
+image_cache_driver = %(image_cache_driver)s
 
 [pipeline:glance-api]
 pipeline = versionnegotiation context %(cache_pipeline)s apiv1app

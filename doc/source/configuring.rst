@@ -507,15 +507,43 @@ Configuration Options Affecting the Image Cache
 
 One main configuration file option affects the image cache.
 
- * ``image_cache_datadir=PATH``
+ * ``image_cache_dir=PATH``
 
 Required when image cache middleware is enabled.
 
 Default: ``/var/lib/glance/image-cache``
 
-This is the root directory where the image cache will write its
-cached image files. Make sure the directory is writeable by the
-user running the ``glance-api`` server
+This is the base directory the image cache can write files to.
+Make sure the directory is writeable by the user running the
+``glance-api`` server
+
+ * ``image_cache_driver=DRIVER``
+
+Optional. Choice of ``sqlite`` or ``xattr``
+
+Default: ``sqlite``
+
+The default ``sqlite`` cache driver has no special dependencies, other
+than the ``python-sqlite3`` library, which is installed on virtually
+all operating systems with modern versions of Python. It stores
+information about the cached files in a SQLite database.
+
+The ``xattr`` cache driver required the ``python-xattr>=0.6.0`` library
+and requires that the filesystem containing ``image_cache_dir`` have
+access times tracked for all files (in other words, the noatime option
+CANNOT be set for that filesystem). In addition, ``user_xattr`` must be
+set on the filesystem's description line in fstab. Because of these
+requirements, the ``xattr`` cache driver is not available on Windows.
+
+ * ``image_cache_sqlite_db=DB_FILE``
+
+Optional.
+
+Default: ``cache.db``
+
+When using the ``sqlite`` cache driver, you can set the name of the database
+that will be used to store the cached images information. The database
+is always contained in the ``image_cache_dir``.
 
 Configuring the Glance Registry
 -------------------------------

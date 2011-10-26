@@ -19,16 +19,16 @@
 #    under the License.
 
 """
-Glance Image Cache Invalid Cache Entry and Stalled Image  Reaper
+Glance Image Cache Invalid Cache Entry and Stalled Image cleaner
 
 This is meant to be run as a periodic task from cron.
 
 If something goes wrong while we're caching an image (for example the fetch
 times out, or an exception is raised), we create an 'invalid' entry. These
 entires are left around for debugging purposes. However, after some period of
-time, we want to cleans these up, aka reap them.
+time, we want to clean these up.
 
-Also, if an incomplete image hangs around past the image_cache_stall_timeout
+Also, if an incomplete image hangs around past the image_cache_stall_time
 period, we automatically sweep it up.
 """
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     (options, args) = config.parse_options(oparser)
 
     try:
-        conf, app = config.load_paste_app('glance-reaper', options, args)
+        conf, app = config.load_paste_app('glance-cleaner', options, args)
         app.run()
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)

@@ -1,0 +1,527 @@
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+
+# Copyright 2011 OpenStack LLC.
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+"""
+Cache driver that uses xattr file tags and requires a filesystem
+that has atimes set.
+
+Assumptions
+===========
+
+1. Cache data directory exists on a filesytem that updates atime on
+   reads ('noatime' should NOT be set)
+
+2. Cache data directory exists on a filesystem that supports xattrs.
+   This is optional, but highly recommended since it allows us to
+   present ops with useful information pertaining to the cache, like
+   human readable filenames and statistics.
+
+3. `glance-prune` is scheduled to run as a periodic job via cron. This
+    is needed to run the LRU prune strategy to keep the cache size
+    within the limits set by the config file.
+
+
+Cache Directory Notes
+=====================
+
+The image cache data directory contains the main cache path, where the
+active cache entries and subdirectories for handling partial downloads
+and errored-out cache images.
+
+The layout looks like:
+
+$image_cache_dir/
+  entry1
+  entry2
+  ...
+  incomplete/
+  invalid/
+  queue/
+"""
+
+from __future__ import absolute_import
+from contextlib import contextmanager
+import datetime
+import errno
+import itertools
+import logging
+import os
+import stat
+import time
+
+import xattr
+
+from glance.common import exception
+from glance.common import utils
+from glance.image_cache.drivers import base
+
+logger = logging.getLogger(__name__)
+
+
+class Driver(base.Driver):
+
+    """
+    Cache driver that uses xattr file tags and requires a filesystem
+    that has atimes set.
+    """
+
+    def configure(self):
+        """
+        Configure the driver to use the stored configuration options
+        Any store that needs special configuration should implement
+        this method. If the store was not able to successfully configure
+        itself, it should raise `exception.BadDriverConfiguration`
+        """
+        # Here we set up the various file-based image cache paths
+        # that we need in order to find the files in different states
+        # of cache management. Once we establish these paths, we do
+        # a quick attempt to write a user xattr to a temporary file
+        # to check that the filesystem is even enabled to support xattrs
+        self.set_paths()
+
+    def set_paths(self):
+        """
+        Creates all necessary directories under the base cache directory
+        """
+        self.base_dir = self.options.get('image_cache_dir')
+        self.incomplete_dir = os.path.join(self.base_dir, 'incomplete')
+        self.invalid_dir = os.path.join(self.base_dir, 'invalid')
+        self.queue_dir = os.path.join(self.base_dir, 'queue')
+
+        dirs = [self.incomplete_dir, self.invalid_dir, self.queue_dir]
+
+        for path in dirs:
+            utils.safe_mkdirs(path)
+
+    def get_cache_size(self):
+        """
+        Returns the total size in bytes of the image cache.
+        """
+        sizes = []
+        for path in get_all_regular_files(self.base_dir):
+            file_info = os.stat(path)
+            sizes.append(file_info[stat.ST_SIZE])
+        return sum(sizes)
+
+    def is_cached(self, image_id):
+        """
+        Returns True if the image with the supplied ID has its image
+        file cached.
+
+        :param image_id: Image ID
+        """
+        return os.path.exists(self.get_image_filepath(image_id))
+
+    def is_cacheable(self, image_id):
+        """
+        Returns True if the image with the supplied ID can have its
+        image file cached, False otherwise.
+
+        :param image_id: Image ID
+        """
+        # Make sure we're not already cached or caching the image
+        return not (self.is_cached(image_id) or
+                    self.is_being_cached(image_id))
+
+    def is_being_cached(self, image_id):
+        """
+        Returns True if the image with supplied id is currently
+        in the process of having its image file cached.
+
+        :param image_id: Image ID
+        """
+        path = self.get_image_filepath(image_id, 'incomplete')
+        return os.path.exists(path)
+
+    def is_queued(self, image_id):
+        """
+        Returns True if the image identifier is in our cache queue.
+        """
+        path = self.get_image_filepath(image_id, 'queue')
+        return os.path.exists(path)
+
+    def get_hit_count(self, image_id):
+        """
+        Return the number of hits that an image has.
+
+        :param image_id: Opaque image identifier
+        """
+        if not self.is_cached(image_id):
+            return 0
+
+        path = self.get_image_filepath(image_id)
+        return int(get_xattr(path, 'hits', default=0))
+
+    def delete_all(self):
+        """
+        Removes all cached image files and any attributes about the images
+        """
+        deleted = 0
+        for path in get_all_regular_files(self.base_dir):
+            delete_cached_file(path)
+            deleted += 1
+        return deleted
+
+    def delete(self, image_id):
+        """
+        Removes a specific cached image file and any attributes about the image
+
+        :param image_id: Image ID
+        """
+        path = self.get_image_filepath(image_id)
+        delete_cached_file(path)
+
+    def get_least_recently_accessed(self):
+        """
+        Return a tuple containing the image_id and size of the least recently
+        accessed cached file, or None if no cached files.
+        """
+        stats = []
+        for path in get_all_regular_files(self.base_dir):
+            file_info = os.stat(path)
+            stats.append((file_info[stat.ST_ATIME],  # access time
+                          file_info[stat.ST_SIZE],   # size in bytes
+                          path))                     # absolute path
+
+        if not stats:
+            return None
+
+        stats.sort()
+        return os.path.basename(stats[0][2]), stats[0][1]
+
+    @contextmanager
+    def open_for_write(self, image_id):
+        """
+        Open a file for writing the image file for an image
+        with supplied identifier.
+
+        :param image_id: Image ID
+        """
+        incomplete_path = self.get_image_filepath(image_id, 'incomplete')
+
+        def set_attr(key, value):
+            set_xattr(incomplete_path, key, value)
+
+        def commit():
+            set_attr('hits', 0)
+
+            final_path = self.get_image_filepath(image_id)
+            logger.debug(_("Fetch finished, moving "
+                         "'%(incomplete_path)s' to '%(final_path)s'"),
+                         dict(incomplete_path=incomplete_path,
+                              final_path=final_path))
+            os.rename(incomplete_path, final_path)
+
+            # Make sure that we "pop" the image from the queue...
+            if self.is_queued(image_id):
+                logger.debug(_("Removing image '%s' from queue after "
+                               "caching it."), image_id)
+                os.unlink(self.get_image_filepath(image_id, 'queue'))
+
+        def rollback(e):
+            set_attr('error', "%s" % e)
+
+            invalid_path = self.get_image_filepath(image_id, 'invalid')
+            logger.debug(_("Fetch of cache file failed, rolling back by "
+                           "moving '%(incomplete_path)s' to "
+                           "'%(invalid_path)s'") % locals())
+            os.rename(incomplete_path, invalid_path)
+
+        try:
+            with open(incomplete_path, 'wb') as cache_file:
+                yield cache_file
+        except Exception as e:
+            rollback(e)
+            raise
+        else:
+            commit()
+
+    @contextmanager
+    def open_for_read(self, image_id):
+        """
+        Open and yield file for reading the image file for an image
+        with supplied identifier.
+
+        :param image_id: Image ID
+        """
+        path = self.get_image_filepath(image_id)
+        with open(path, 'rb') as cache_file:
+            yield cache_file
+        path = self.get_image_filepath(image_id)
+        inc_xattr(path, 'hits', 1)
+
+    def get_image_filepath(self, image_id, cache_status='active'):
+        """
+        This crafts an absolute path to a specific entry
+
+        :param image_id: Image ID
+        :param cache_status: Status of the image in the cache
+        """
+        if cache_status == 'active':
+            return os.path.join(self.base_dir, str(image_id))
+        return os.path.join(self.base_dir, cache_status, str(image_id))
+
+    def queue_image(self, image_id):
+        """
+        This adds a image to be cache to the queue.
+
+        If the image already exists in the queue or has already been
+        cached, we return False, True otherwise
+
+        :param image_id: Image ID
+        """
+        if self.is_cached(image_id):
+            msg = _("Not queueing image '%s'. Already cached.") % image_id
+            logger.warn(msg)
+            return False
+
+        if self.is_being_cached(image_id):
+            msg = _("Not queueing image '%s'. Already being "
+                    "written to cache") % image_id
+            logger.warn(msg)
+            return False
+
+        if self.is_queued(image_id):
+            msg = _("Not queueing image '%s'. Already queued.") % image_id
+            logger.warn(msg)
+            return False
+
+        path = self.get_image_filepath(image_id, 'queue')
+        logger.debug(_("Queueing image '%s'."), image_id)
+
+        # Touch the file to add it to the queue
+        with open(path, "w") as f:
+            pass
+
+        return True
+
+    def get_cache_queue(self):
+        """
+        Returns a list of image IDs that are in the queue. The
+        list should be sorted by the time the image ID was inserted
+        into the queue.
+        """
+        files = [f for f in get_all_regular_files(self.queue_dir)]
+        items = []
+        for path in files:
+            mtime = os.path.getmtime(path)
+            items.append((mtime, os.path.basename(path)))
+
+        items.sort()
+        return [image_id for (mtime, image_id) in items]
+
+    def _base_entries(self, basepath):
+        def iso8601_from_timestamp(timestamp):
+            return datetime.datetime.utcfromtimestamp(timestamp)\
+                                    .isoformat()
+
+        for path in self.get_all_regular_files(basepath):
+            filename = os.path.basename(path)
+            try:
+                image_id = int(filename)
+            except ValueError, TypeError:
+                continue
+
+            entry = {}
+            entry['id'] = image_id
+            entry['path'] = path
+            entry['name'] = self.driver.get_attr(image_id, 'active',
+                                                      'image_name',
+                                                      default='UNKNOWN')
+
+            mtime = os.path.getmtime(path)
+            entry['last_modified'] = iso8601_from_timestamp(mtime)
+
+            atime = os.path.getatime(path)
+            entry['last_accessed'] = iso8601_from_timestamp(atime)
+
+            entry['size'] = os.path.getsize(path)
+
+            entry['expected_size'] = self.driver.get_attr(image_id,
+                    'active', 'expected_size', default='UNKNOWN')
+
+            yield entry
+
+    def invalid_entries(self):
+        """Cache info for invalid cached images"""
+        for entry in self._base_entries(self.invalid_path):
+            path = entry['path']
+            entry['error'] = self.driver.get_attr(image_id, 'invalid',
+                                                       'error',
+                                                       default='UNKNOWN')
+            yield entry
+
+    def incomplete_entries(self):
+        """Cache info for incomplete cached images"""
+        for entry in self._base_entries(self.incomplete_path):
+            yield entry
+
+    def prefetch_entries(self):
+        """Cache info for both queued and in-progress prefetch jobs"""
+        both_entries = itertools.chain(
+                        self._base_entries(self.prefetch_path),
+                        self._base_entries(self.prefetching_path))
+
+        for entry in both_entries:
+            path = entry['path']
+            entry['status'] = 'in-progress' if 'prefetching' in path\
+                                            else 'queued'
+            yield entry
+
+    def entries(self):
+        """Cache info for currently cached images"""
+        for entry in self._base_entries(self.path):
+            path = entry['path']
+            entry['hits'] = self.driver.get_attr(image_id, 'active',
+                                                      'hits',
+                                                      default='UNKNOWN')
+            yield entry
+
+    def _reap_old_files(self, dirpath, entry_type, grace=None):
+        """
+        """
+        now = time.time()
+        reaped = 0
+        for path in self.get_all_regular_files(dirpath):
+            mtime = os.path.getmtime(path)
+            age = now - mtime
+            if not grace:
+                logger.debug(_("No grace period, reaping '%(path)s'"
+                             " immediately"), locals())
+                self._delete_file(path)
+                reaped += 1
+            elif age > grace:
+                logger.debug(_("Cache entry '%(path)s' exceeds grace period, "
+                             "(%(age)i s > %(grace)i s)"), locals())
+                self._delete_file(path)
+                reaped += 1
+
+        logger.info(_("Reaped %(reaped)s %(entry_type)s cache entries"),
+                    locals())
+        return reaped
+
+    def reap_invalid(self, grace=None):
+        """Remove any invalid cache entries
+
+        :param grace: Number of seconds to keep an invalid entry around for
+                      debugging purposes. If None, then delete immediately.
+        """
+        return self._reap_old_files(self.invalid_path, 'invalid', grace=grace)
+
+    def reap_stalled(self):
+        """Remove any stalled cache entries"""
+        stall_timeout = int(self.options.get('image_cache_stall_timeout',
+                            86400))
+        return self._reap_old_files(self.incomplete_path, 'stalled',
+                                    grace=stall_timeout)
+
+
+def get_all_regular_files(basepath):
+    for fname in os.listdir(basepath):
+        path = os.path.join(basepath, fname)
+        if os.path.isfile(path):
+            yield path
+
+
+def delete_cached_file(path):
+    if os.path.exists(path):
+        logger.debug(_("Deleting image cache file '%s'"), path)
+        os.unlink(path)
+    else:
+        logger.warn(_("Cached image file '%s' doesn't exist, unable to"
+                      " delete"), path)
+
+
+def _make_namespaced_xattr_key(key, namespace='user'):
+    """
+    Create a fully-qualified xattr-key by including the intended namespace.
+
+    Namespacing differs among OSes[1]:
+
+        FreeBSD: user, system
+        Linux: user, system, trusted, security
+        MacOS X: not needed
+
+    Mac OS X won't break if we include a namespace qualifier, so, for
+    simplicity, we always include it.
+
+    --
+    [1] http://en.wikipedia.org/wiki/Extended_file_attributes
+    """
+    namespaced_key = ".".join([namespace, key])
+    return namespaced_key
+
+
+def get_xattr(path, key, **kwargs):
+    """Return the value for a particular xattr
+
+    If the key doesn't not exist, or xattrs aren't supported by the file
+    system then a KeyError will be raised, that is, unless you specify a
+    default using kwargs.
+    """
+    namespaced_key = _make_namespaced_xattr_key(key)
+    entry_xattr = xattr.xattr(path)
+    try:
+        return entry_xattr[namespaced_key]
+    except KeyError:
+        if 'default' in kwargs:
+            return kwargs['default']
+        else:
+            raise
+
+
+def set_xattr(path, key, value):
+    """Set the value of a specified xattr.
+
+    If xattrs aren't supported by the file-system, we skip setting the value.
+    """
+    namespaced_key = _make_namespaced_xattr_key(key)
+    entry_xattr = xattr.xattr(path)
+    try:
+        entry_xattr.set(namespaced_key, str(value))
+    except IOError as e:
+        if e.errno == errno.EOPNOTSUPP:
+            logger.warn(_("xattrs not supported, skipping..."))
+        else:
+            raise
+
+
+def inc_xattr(path, key, n=1):
+    """
+    Increment the value of an xattr (assuming it is an integer).
+
+    BEWARE, this code *does* have a RACE CONDITION, since the
+    read/update/write sequence is not atomic.
+
+    Since the use-case for this function is collecting stats--not critical--
+    the benefits of simple, lock-free code out-weighs the possibility of an
+    occasional hit not being counted.
+    """
+    try:
+        count = int(get_xattr(path, key))
+    except KeyError:
+        # NOTE(sirp): a KeyError is generated in two cases:
+        # 1) xattrs is not supported by the filesystem
+        # 2) the key is not present on the file
+        #
+        # In either case, just ignore it...
+        pass
+    else:
+        # NOTE(sirp): only try to bump the count if xattrs is supported
+        # and the key is present
+        count += n
+        set_xattr(path, key, str(count))

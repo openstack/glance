@@ -18,70 +18,68 @@
 """
 Prefetches images into the Image Cache
 """
+
 import logging
-import os
-import stat
-import time
+
+import eventlet
 
 from glance.common import config
 from glance.common import context
+from glance.common import exception
 from glance.image_cache import ImageCache
 from glance import registry
 from glance.store import get_from_backend
 
 
-logger = logging.getLogger('glance.image_cache.prefetcher')
+logger = logging.getLogger(__name__)
 
 
 class Prefetcher(object):
+
     def __init__(self, options):
         self.options = options
         self.cache = ImageCache(options)
+        registry.configure_registry_client(options)
 
     def fetch_image_into_cache(self, image_id):
         ctx = context.RequestContext(is_admin=True, show_deleted=True)
-        image_meta = registry.get_image_metadata(
-                    self.options, ctx, image_id)
-        with self.cache.open(image_meta, "wb") as cache_file:
-            chunks = get_from_backend(image_meta['location'],
-                                      expected_size=image_meta['size'],
-                                      options=self.options)
-            for chunk in chunks:
-                cache_file.write(chunk)
+        try:
+            image_meta = registry.get_image_metadata(ctx, image_id)
+            if image_meta['status'] != 'active':
+                logger.warn(_("Image '%s' is not active. Not caching."),
+                            image_id)
+                return False
+
+        except exception.NotFound:
+            logger.warn(_("No metadata found for image '%s'"), image_id)
+            return False
+
+        chunks = get_from_backend(image_meta['location'],
+                                  options=self.options)
+        logger.debug(_("Caching image '%s'"), image_id)
+        self.cache.cache_image_iter(image_id, chunks)
+        return True
 
     def run(self):
-        if self.cache.is_currently_prefetching_any_images():
-            logger.debug(_("Currently prefetching, going back to sleep..."))
-            return
 
-        try:
-            image_id = self.cache.pop_prefetch_item()
-        except IndexError:
-            logger.debug(_("Nothing to prefetch, going back to sleep..."))
-            return
+        images = self.cache.get_cache_queue()
+        if not images:
+            logger.debug(_("Nothing to prefetch."))
+            return True
 
-        if self.cache.hit(image_id):
-            logger.warn(_("Image %s is already in the cache, deleting "
-                        "prefetch job and going back to sleep..."), image_id)
-            self.cache.delete_queued_prefetch_image(image_id)
-            return
+        num_images = len(images)
+        logger.debug(_("Found %d images to prefetch"), num_images)
 
-        # NOTE(sirp): if someone is already downloading an image that is in
-        # the prefetch queue, then go ahead and delete that item and try to
-        # prefetch another
-        if self.cache.is_image_currently_being_written(image_id):
-            logger.warn(_("Image %s is already being cached, deleting "
-                        "prefetch job and going back to sleep..."), image_id)
-            self.cache.delete_queued_prefetch_image(image_id)
-            return
+        pool = eventlet.GreenPool(num_images)
+        results = pool.imap(self.fetch_image_into_cache, images)
+        successes = sum([1 for r in results if r is True])
+        if successes != num_images:
+            logger.error(_("Failed to successfully cache all "
+                           "images in queue."))
+            return False
 
-        logger.debug(_("Prefetching '%s'"), image_id)
-        self.cache.do_prefetch(image_id)
-
-        try:
-            self.fetch_image_into_cache(image_id)
-        finally:
-            self.cache.delete_prefetching_image(image_id)
+        logger.info(_("Successfully cache all %d images"), num_images)
+        return True
 
 
 def app_factory(global_config, **local_conf):

@@ -19,203 +19,85 @@
 LRU Cache for Image Data
 """
 
-from contextlib import contextmanager
-import datetime
-import itertools
 import logging
 import os
-import sys
-import time
 
 from glance.common import config
 from glance.common import exception
-from glance.common import utils as cutils
-from glance import utils
+from glance.common import utils
 
 logger = logging.getLogger(__name__)
+DEFAULT_MAX_CACHE_SIZE = 10 * 1024 * 1024 * 1024  # 10 GB
 
 
 class ImageCache(object):
-    """
-    Provides an LRU cache for image data.
 
-    Assumptions
-    ===========
+    """Provides an LRU cache for image data."""
 
-        1. Cache data directory exists on a filesytem that updates atime on
-           reads ('noatime' should NOT be set)
-
-        2. Cache data directory exists on a filesystem that supports xattrs.
-           This is optional, but highly recommended since it allows us to
-           present ops with useful information pertaining to the cache, like
-           human readable filenames and statistics.
-
-        3. `glance-prune` is scheduled to run as a periodic job via cron. This
-            is needed to run the LRU prune strategy to keep the cache size
-            within the limits set by the config file.
-
-
-    Cache Directory Notes
-    =====================
-
-    The image cache data directory contains the main cache path, where the
-    active cache entries and subdirectories for handling partial downloads
-    and errored-out cache images.
-
-    The layout looks like:
-
-        image-cache/
-            entry1
-            entry2
-            ...
-            incomplete/
-            invalid/
-            prefetch/
-            prefetching/
-    """
     def __init__(self, options):
         self.options = options
-        self._make_cache_directory_if_needed()
+        self.init_driver()
 
-    def _make_cache_directory_if_needed(self):
-        """Creates main cache directory along with incomplete subdirectory"""
-
-        # NOTE(sirp): making the incomplete_path will have the effect of
-        # creating the main cache path directory as well
-        paths = [self.incomplete_path, self.invalid_path, self.prefetch_path,
-                 self.prefetching_path]
-
-        for path in paths:
-            cutils.safe_mkdirs(path)
-
-    @property
-    def path(self):
-        """This is the base path for the image cache"""
-        datadir = self.options['image_cache_datadir']
-        return datadir
-
-    @property
-    def incomplete_path(self):
-        """This provides a temporary place to write our cache entries so that
-        we we're not storing incomplete objects in the cache directly.
-
-        When the file is finished writing to, it is moved from the incomplete
-        path back out into the main cache directory.
-
-        The incomplete_path is a subdirectory of the main cache path to ensure
-        that they both reside on the same filesystem and thus making moves
-        cheap.
+    def init_driver(self):
         """
-        return os.path.join(self.path, 'incomplete')
-
-    @property
-    def invalid_path(self):
-        """Place to move corrupted images
-
-        If an exception is raised while we're writing an image to the
-        incomplete_path, we move the incomplete image to here.
+        Create the driver for the cache
         """
-        return os.path.join(self.path, 'invalid')
-
-    @property
-    def prefetch_path(self):
-        """This contains a list of image ids that should be pre-fetched into
-        the cache
-        """
-        return os.path.join(self.path, 'prefetch')
-
-    @property
-    def prefetching_path(self):
-        """This contains image ids that currently being prefetched"""
-        return os.path.join(self.path, 'prefetching')
-
-    def path_for_image(self, image_id):
-        """This crafts an absolute path to a specific entry"""
-        return os.path.join(self.path, str(image_id))
-
-    def incomplete_path_for_image(self, image_id):
-        """This crafts an absolute path to a specific entry in the incomplete
-        directory
-        """
-        return os.path.join(self.incomplete_path, str(image_id))
-
-    def invalid_path_for_image(self, image_id):
-        """This crafts an absolute path to a specific entry in the invalid
-        directory
-        """
-        return os.path.join(self.invalid_path, str(image_id))
-
-    @contextmanager
-    def open(self, image_meta, mode="rb"):
-        """Open a cache image for reading or writing.
-
-        We have two possible scenarios:
-
-            1. READ: we should attempt to read the file from the cache's
-               main directory
-
-            2. WRITE: we should write to a file under the cache's incomplete
-               directory, and when it's finished, move it out the main cache
-               directory.
-        """
-        if mode == 'wb':
-            with self._open_write(image_meta, mode) as cache_file:
-                yield cache_file
-        elif mode == 'rb':
-            with self._open_read(image_meta, mode) as cache_file:
-                yield cache_file
-        else:
-            # NOTE(sirp): `rw` and `a' modes are not supported since image
-            # data is immutable, we `wb` it once, then `rb` multiple times.
-            raise Exception(_("mode '%s' not supported") % mode)
-
-    @contextmanager
-    def _open_write(self, image_meta, mode):
-        image_id = image_meta['id']
-        incomplete_path = self.incomplete_path_for_image(image_id)
-
-        def set_xattr(key, value):
-            utils.set_xattr(incomplete_path, key, value)
-
-        def commit():
-            set_xattr('image_name', image_meta['name'])
-            set_xattr('hits', 0)
-
-            final_path = self.path_for_image(image_id)
-            logger.debug(_("fetch finished, commiting by moving "
-                         "'%(incomplete_path)s' to '%(final_path)s'"),
-                         dict(incomplete_path=incomplete_path,
-                              final_path=final_path))
-            os.rename(incomplete_path, final_path)
-
-        def rollback(e):
-            set_xattr('image_name', image_meta['name'])
-            set_xattr('error', "%s" % e)
-
-            invalid_path = self.invalid_path_for_image(image_id)
-            logger.debug(_("fetch errored, rolling back by moving "
-                         "'%(incomplete_path)s' to '%(invalid_path)s'"),
-                         dict(incomplete_path=incomplete_path,
-                              invalid_path=invalid_path))
-            os.rename(incomplete_path, invalid_path)
-
+        driver_name = self.options.get('image_cache_driver', 'sqlite')
+        driver_module = (__name__ + '.drivers.' + driver_name + '.Driver')
         try:
-            with open(incomplete_path, mode) as cache_file:
-                set_xattr('expected_size', image_meta['size'])
-                yield cache_file
-        except Exception as e:
-            rollback(e)
-            raise
-        else:
-            commit()
+            self.driver_class = utils.import_class(driver_module)
+            logger.info(_("Image cache loaded driver '%s'.") %
+                        driver_name)
+        except exception.ImportFailure, import_err:
+            logger.warn(_("Image cache driver "
+                          "'%(driver_name)s' failed to load. "
+                          "Got error: '%(import_err)s.") % locals())
 
-    @contextmanager
-    def open_for_read(self, image_id):
-        path = self.path_for_image(image_id)
-        with open(path, 'rb') as cache_file:
-            yield cache_file
+            driver_module = __name__ + '.drivers.sqlite.Driver'
+            logger.info(_("Defaulting to SQLite driver."))
+            self.driver_class = utils.import_class(driver_module)
+        self.configure_driver()
 
-        utils.inc_xattr(path, 'hits')  # bump the hit count
+    def configure_driver(self):
+        """
+        Configure the driver for the cache and, if it fails to configure,
+        fall back to using the SQLite driver which has no odd dependencies
+        """
+        try:
+            self.driver = self.driver_class(self.options)
+            self.driver.configure()
+        except exception.BadDriverConfiguration, config_err:
+            logger.warn(_("Image cache driver "
+                          "'%(driver_module)s' failed to configure. "
+                          "Got error: '%(config_err)s") % locals())
+            logger.info(_("Defaulting to SQLite driver."))
+            driver_module = __name__ + '.drivers.sqlite.Driver'
+            self.driver_class = utils.import_class(driver_module)
+            self.driver = self.driver_class(self.options)
+            self.driver.configure()
+
+    def is_cached(self, image_id):
+        """
+        Returns True if the image with the supplied ID has its image
+        file cached.
+
+        :param image_id: Image ID
+        """
+        return self.driver.is_cached(image_id)
+
+    def is_queued(self, image_id):
+        """
+        Returns True if the image identifier is in our cache queue.
+
+        :param image_id: Image ID
+        """
+        return self.driver.is_queued(image_id)
+
+    def get_cache_size(self):
+        """
+        Returns the total size in bytes of the image cache.
+        """
+        return self.driver.get_cache_size()
 
     def get_hit_count(self, image_id):
         """
@@ -223,234 +105,148 @@ class ImageCache(object):
 
         :param image_id: Opaque image identifier
         """
-        path = self.path_for_image(image_id)
-        return int(utils.get_xattr(path, 'hits', default=0))
+        return self.driver.get_hit_count(image_id)
 
-    @contextmanager
-    def _open_read(self, image_meta, mode):
-        image_id = image_meta['id']
-        path = self.path_for_image(image_id)
-        with open(path, mode) as cache_file:
-            yield cache_file
-
-        utils.inc_xattr(path, 'hits')  # bump the hit count
-
-    def hit(self, image_id):
-        return os.path.exists(self.path_for_image(image_id))
-
-    @staticmethod
-    def _delete_file(path):
-        if os.path.exists(path):
-            logger.debug(_("deleting image cache file '%s'"), path)
-            os.unlink(path)
-        else:
-            logger.warn(_("image cache file '%s' doesn't exist, unable to"
-                        " delete"), path)
-
-    def purge(self, image_id):
-        path = self.path_for_image(image_id)
-        self._delete_file(path)
-
-    def clear(self):
-        purged = 0
-        for path in self.get_all_regular_files(self.path):
-            self._delete_file(path)
-            purged += 1
-        return purged
-
-    def is_image_currently_being_written(self, image_id):
-        """Returns true if we're currently downloading an image"""
-        incomplete_path = self.incomplete_path_for_image(image_id)
-        return os.path.exists(incomplete_path)
-
-    def is_currently_prefetching_any_images(self):
-        """True if we are currently prefetching an image.
-
-        We only allow one prefetch to occur at a time.
+    def delete_all(self):
         """
-        return len(os.listdir(self.prefetching_path)) > 0
-
-    def is_image_queued_for_prefetch(self, image_id):
-        prefetch_path = os.path.join(self.prefetch_path, str(image_id))
-        return os.path.exists(prefetch_path)
-
-    def is_image_currently_prefetching(self, image_id):
-        prefetching_path = os.path.join(self.prefetching_path, str(image_id))
-        return os.path.exists(prefetching_path)
-
-    def queue_prefetch(self, image_meta):
-        """This adds a image to be prefetched to the queue directory.
-
-        If the image already exists in the queue directory or the
-        prefetching directory, we ignore it.
+        Removes all cached image files and any attributes about the images
+        and returns the number of cached image files that were deleted.
         """
-        image_id = image_meta['id']
+        return self.driver.delete_all()
 
-        if self.hit(image_id):
-            msg = _("Skipping prefetch, image '%s' already cached") % image_id
-            logger.warn(msg)
-            raise exception.Invalid(msg)
-
-        if self.is_image_currently_prefetching(image_id):
-            msg = _("Skipping prefetch, already prefetching "
-                    "image '%s'") % image_id
-            logger.warn(msg)
-            raise exception.Invalid(msg)
-
-        if self.is_image_queued_for_prefetch(image_id):
-            msg = _("Skipping prefetch, image '%s' already queued for"
-                    " prefetching") % image_id
-            logger.warn(msg)
-            raise exception.Invalid(msg)
-
-        prefetch_path = os.path.join(self.prefetch_path, str(image_id))
-
-        # Touch the file to add it to the queue
-        with open(prefetch_path, "w") as f:
-            pass
-
-        utils.set_xattr(prefetch_path, 'image_name', image_meta['name'])
-
-    def delete_queued_prefetch_image(self, image_id):
-        prefetch_path = os.path.join(self.prefetch_path, str(image_id))
-        self._delete_file(prefetch_path)
-
-    def delete_prefetching_image(self, image_id):
-        prefetching_path = os.path.join(self.prefetching_path, str(image_id))
-        self._delete_file(prefetching_path)
-
-    def pop_prefetch_item(self):
-        """This returns the next prefetch job.
-
-        The prefetch directory is treated like a FIFO; so we sort by modified
-        time and pick the oldest.
+    def delete(self, image_id):
         """
-        items = []
-        for path in self.get_all_regular_files(self.prefetch_path):
-            mtime = os.path.getmtime(path)
-            items.append((mtime, path))
+        Removes a specific cached image file and any attributes about the image
 
-        if not items:
-            raise IndexError
-
-        # Sort oldest files to the end of the list
-        items.sort(reverse=True)
-
-        mtime, path = items.pop()
-        image_id = os.path.basename(path)
-        return image_id
-
-    def do_prefetch(self, image_id):
-        """This moves the file from the prefetch queue path to the in-progress
-        prefetching path (so we don't try to prefetch something twice).
+        :param image_id: Image ID
         """
-        prefetch_path = os.path.join(self.prefetch_path, str(image_id))
-        prefetching_path = os.path.join(self.prefetching_path, str(image_id))
-        os.rename(prefetch_path, prefetching_path)
+        self.driver.delete(image_id)
 
-    @staticmethod
-    def get_all_regular_files(basepath):
-        for fname in os.listdir(basepath):
-            path = os.path.join(basepath, fname)
-            if os.path.isfile(path):
-                yield path
-
-    def _base_entries(self, basepath):
-        def iso8601_from_timestamp(timestamp):
-            return datetime.datetime.utcfromtimestamp(timestamp)\
-                                    .isoformat()
-
-        for path in self.get_all_regular_files(basepath):
-            filename = os.path.basename(path)
-            try:
-                image_id = int(filename)
-            except ValueError, TypeError:
-                continue
-
-            entry = {}
-            entry['id'] = image_id
-            entry['path'] = path
-            entry['name'] = utils.get_xattr(path, 'image_name',
-                                            default='UNKNOWN')
-
-            mtime = os.path.getmtime(path)
-            entry['last_modified'] = iso8601_from_timestamp(mtime)
-
-            atime = os.path.getatime(path)
-            entry['last_accessed'] = iso8601_from_timestamp(atime)
-
-            entry['size'] = os.path.getsize(path)
-
-            entry['expected_size'] = utils.get_xattr(
-                    path, 'expected_size', default='UNKNOWN')
-
-            yield entry
-
-    def invalid_entries(self):
-        """Cache info for invalid cached images"""
-        for entry in self._base_entries(self.invalid_path):
-            path = entry['path']
-            entry['error'] = utils.get_xattr(path, 'error', default='UNKNOWN')
-            yield entry
-
-    def incomplete_entries(self):
-        """Cache info for incomplete cached images"""
-        for entry in self._base_entries(self.incomplete_path):
-            yield entry
-
-    def prefetch_entries(self):
-        """Cache info for both queued and in-progress prefetch jobs"""
-        both_entries = itertools.chain(
-                        self._base_entries(self.prefetch_path),
-                        self._base_entries(self.prefetching_path))
-
-        for entry in both_entries:
-            path = entry['path']
-            entry['status'] = 'in-progress' if 'prefetching' in path\
-                                            else 'queued'
-            yield entry
-
-    def entries(self):
-        """Cache info for currently cached images"""
-        for entry in self._base_entries(self.path):
-            path = entry['path']
-            entry['hits'] = utils.get_xattr(path, 'hits', default='UNKNOWN')
-            yield entry
-
-    def _reap_old_files(self, dirpath, entry_type, grace=None):
+    def prune(self):
         """
+        Removes all cached image files above the cache's maximum
+        size. Returns a tuple containing the total number of cached
+        files removed and the total size of all pruned image files.
         """
-        now = time.time()
-        reaped = 0
-        for path in self.get_all_regular_files(dirpath):
-            mtime = os.path.getmtime(path)
-            age = now - mtime
-            if not grace:
-                logger.debug(_("No grace period, reaping '%(path)s'"
-                             " immediately"), locals())
-                self._delete_file(path)
-                reaped += 1
-            elif age > grace:
-                logger.debug(_("Cache entry '%(path)s' exceeds grace period, "
-                             "(%(age)i s > %(grace)i s)"), locals())
-                self._delete_file(path)
-                reaped += 1
+        max_size = int(self.options.get('image_cache_max_size',
+                                        DEFAULT_MAX_CACHE_SIZE))
+        current_size = self.driver.get_cache_size()
+        if max_size > current_size:
+            logger.debug(_("Image cache has free space, skipping prune..."))
+            return (0, 0)
 
-        logger.info(_("Reaped %(reaped)s %(entry_type)s cache entries"),
-                    locals())
-        return reaped
+        overage = current_size - max_size
+        logger.debug(_("Image cache currently %(overage)d bytes over max "
+                       "size. Starting prune to max size of %(max_size)d ") %
+                     locals())
 
-    def reap_invalid(self, grace=None):
-        """Remove any invalid cache entries
+        total_bytes_pruned = 0
+        total_files_pruned = 0
+        entry = self.driver.get_least_recently_accessed()
+        while entry and current_size > max_size:
+            image_id, size = entry
+            logger.debug(_("Pruning '%(image_id)s' to free %(size)d bytes"),
+                         {'image_id': image_id, 'size': size})
+            self.driver.delete(image_id)
+            total_bytes_pruned = total_bytes_pruned + size
+            total_files_pruned = total_files_pruned + 1
+            current_size = current_size - size
+            entry = self.driver.get_least_recently_accessed()
 
-        :param grace: Number of seconds to keep an invalid entry around for
-                      debugging purposes. If None, then delete immediately.
+        logger.debug(_("Pruning finished pruning. "
+                       "Pruned %(total_files_pruned)d and "
+                       "%(total_bytes_pruned)d.") % locals())
+        return total_files_pruned, total_bytes_pruned
+
+    def clean(self):
         """
-        return self._reap_old_files(self.invalid_path, 'invalid', grace=grace)
+        Cleans up any invalid or incomplete cached images. The cache driver
+        decides what that means...
+        """
+        self.driver.clean()
 
-    def reap_stalled(self):
-        """Remove any stalled cache entries"""
-        stall_timeout = int(self.options.get('image_cache_stall_timeout',
-                            86400))
-        return self._reap_old_files(self.incomplete_path, 'stalled',
-                                    grace=stall_timeout)
+    def queue_image(self, image_id):
+        """
+        This adds a image to be cache to the queue.
+
+        If the image already exists in the queue or has already been
+        cached, we return False, True otherwise
+
+        :param image_id: Image ID
+        """
+        return self.driver.queue_image(image_id)
+
+    def get_caching_iter(self, image_id, image_iter):
+        """
+        Returns an iterator that caches the contents of an image
+        while the image contents are read through the supplied
+        iterator.
+
+        :param image_id: Image ID
+        :param image_iter: Iterator that will read image contents
+        """
+        if not self.driver.is_cacheable(image_id):
+            return image_iter
+
+        logger.debug(_("Tee'ing image '%s' into cache"), image_id)
+
+        def tee_iter(image_id):
+            with self.driver.open_for_write(image_id) as cache_file:
+                for chunk in image_iter:
+                    cache_file.write(chunk)
+                    yield chunk
+                cache_file.flush()
+
+        return tee_iter(image_id)
+
+    def cache_image_iter(self, image_id, image_iter):
+        """
+        Cache an image with supplied iterator.
+
+        :param image_id: Image ID
+        :param image_file: Iterator retrieving image chunks
+
+        :retval True if image file was cached, False otherwise
+        """
+        if not self.driver.is_cacheable(image_id):
+            return False
+
+        with self.driver.open_for_write(image_id) as cache_file:
+            for chunk in image_iter:
+                cache_file.write(chunk)
+            cache_file.flush()
+        return True
+
+    def cache_image_file(self, image_id, image_file):
+        """
+        Cache an image file.
+
+        :param image_id: Image ID
+        :param image_file: Image file to cache
+
+        :retval True if image file was cached, False otherwise
+        """
+        CHUNKSIZE = 64 * 1024 * 1024
+
+        return self.cache_image_iter(image_id,
+                utils.chunkiter(image_file, CHUNKSIZE))
+
+    def open_for_read(self, image_id):
+        """
+        Open and yield file for reading the image file for an image
+        with supplied identifier.
+
+        :note Upon successful reading of the image file, the image's
+              hit count will be incremented.
+
+        :param image_id: Image ID
+        """
+        return self.driver.open_for_read(image_id)
+
+    def get_cache_queue(self):
+        """
+        Returns a list of image IDs that are in the queue. The
+        list should be sorted by the time the image ID was inserted
+        into the queue.
+        """
+        return self.driver.get_cache_queue()

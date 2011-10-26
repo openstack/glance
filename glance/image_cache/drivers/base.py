@@ -1,0 +1,139 @@
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+
+# Copyright 2011 OpenStack LLC.
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+"""
+Base attribute driver class
+"""
+
+from contextlib import contextmanager
+
+
+class Driver(object):
+
+    def __init__(self, options):
+        """
+        Initialize the attribute driver with a set of options.
+
+        :param options: Dictionary of configuration file options
+        :raises `exception.BadDriverConfiguration` if configuration of the
+                driver fails for any reason.
+        """
+        self.options = options or {}
+
+    def configure(self):
+        """
+        Configure the driver to use the stored configuration options
+        Any store that needs special configuration should implement
+        this method. If the store was not able to successfully configure
+        itself, it should raise `exception.BadDriverConfiguration`
+        """
+        pass
+
+    def get_cache_size(self):
+        """
+        Returns the total size in bytes of the image cache.
+        """
+        raise NotImplementedError
+
+    def is_cached(self, image_id):
+        """
+        Returns True if the image with the supplied ID has its image
+        file cached.
+
+        :param image_id: Image ID
+        """
+        raise NotImplementedError
+
+    def is_cacheable(self, image_id):
+        """
+        Returns True if the image with the supplied ID can have its
+        image file cached, False otherwise.
+
+        :param image_id: Image ID
+        """
+        raise NotImplementedError
+
+    def is_queued(self, image_id):
+        """
+        Returns True if the image identifier is in our cache queue.
+
+        :param image_id: Image ID
+        """
+        raise NotImplementedError
+
+    def delete_all(self):
+        """
+        Removes all cached image files and any attributes about the images
+        and returns the number of cached image files that were deleted.
+        """
+        raise NotImplementedError
+
+    def delete(self, image_id):
+        """
+        Removes a specific cached image file and any attributes about the image
+
+        :param image_id: Image ID
+        """
+        raise NotImplementedError
+
+    def queue_image(self, image_id):
+        """
+        Puts an image identifier in a queue for caching. Return True
+        on successful add to the queue, False otherwise...
+
+        :param image_id: Image ID
+        """
+
+    def clean(self):
+        """
+        Dependent on the driver, clean up and destroy any invalid or incomplete
+        cached images
+        """
+        raise NotImplementedError
+
+    def get_least_recently_accessed(self):
+        """
+        Return a tuple containing the image_id and size of the least recently
+        accessed cached file, or None if no cached files.
+        """
+        raise NotImplementedError
+
+    def open_for_write(self, image_id):
+        """
+        Open a file for writing the image file for an image
+        with supplied identifier.
+
+        :param image_id: Image ID
+        """
+        raise NotImplementedError
+
+    def open_for_read(self, image_id):
+        """
+        Open and yield file for reading the image file for an image
+        with supplied identifier.
+
+        :param image_id: Image ID
+        """
+        raise NotImplementedError
+
+    def get_cache_queue(self):
+        """
+        Returns a list of image IDs that are in the queue. The
+        list should be sorted by the time the image ID was inserted
+        into the queue.
+        """
+        raise NotImplementedError

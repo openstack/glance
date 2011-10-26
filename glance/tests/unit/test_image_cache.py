@@ -21,112 +21,45 @@ import shutil
 import StringIO
 import unittest
 
+import stubout
+
 from glance import image_cache
+from glance.image_cache import prefetcher
 from glance.common import exception
+from glance.tests import stubs
+from glance.tests.utils import skip_if_disabled
 
 FIXTURE_DATA = '*' * 1024
 
 
-class TestImageCache(unittest.TestCase):
-    def setUp(self):
-        self.cache_dir = os.path.join("/", "tmp", "test.cache.%d" %
-                                      random.randint(0, 1000000))
-        self.options = {'image_cache_datadir': self.cache_dir}
-        self.cache = image_cache.ImageCache(self.options)
+class ImageCacheTestCase(object):
 
-    def tearDown(self):
-        if os.path.exists(self.cache_dir):
-            shutil.rmtree(self.cache_dir)
-
-    def test_auto_properties(self):
+    @skip_if_disabled
+    def test_is_cached(self):
         """
-        Test that the auto-assigned properties are correct
+        Verify is_cached(1) returns 0, then add something to the cache
+        and verify is_cached(1) returns 1.
         """
-        self.assertEqual(self.cache.path, self.cache_dir)
-        self.assertEqual(self.cache.invalid_path,
-                         os.path.join(self.cache_dir,
-                                      'invalid'))
-        self.assertEqual(self.cache.incomplete_path,
-                         os.path.join(self.cache_dir,
-                                      'incomplete'))
-        self.assertEqual(self.cache.prefetch_path,
-                         os.path.join(self.cache_dir,
-                                      'prefetch'))
-        self.assertEqual(self.cache.prefetching_path,
-                         os.path.join(self.cache_dir,
-                                      'prefetching'))
+        FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
 
-    def test_hit(self):
-        """
-        Verify hit(1) returns 0, then add something to the cache
-        and verify hit(1) returns 1.
-        """
-        meta = {'id': 1,
-                'name': 'Image1',
-                'size': len(FIXTURE_DATA)}
+        self.assertFalse(self.cache.is_cached(1))
 
-        self.assertFalse(self.cache.hit(1))
+        self.assertTrue(self.cache.cache_image_file(1, FIXTURE_FILE))
 
-        with self.cache.open(meta, 'wb') as cache_file:
-            cache_file.write(FIXTURE_DATA)
+        self.assertTrue(self.cache.is_cached(1))
 
-        self.assertTrue(self.cache.hit(1))
-
-    def test_bad_open_mode(self):
-        """
-        Test than an exception is raised if attempting to open
-        the cache file context manager with an invalid mode string
-        """
-        meta = {'id': 1,
-                'name': 'Image1',
-                'size': len(FIXTURE_DATA)}
-
-        bad_modes = ('xb', 'wa', 'rw')
-        for mode in bad_modes:
-            exc_raised = False
-            try:
-                with self.cache.open(meta, 'xb') as cache_file:
-                    cache_file.write(FIXTURE_DATA)
-            except:
-                exc_raised = True
-            self.assertTrue(exc_raised,
-                            'Using mode %s, failed to raise exception.' % mode)
-
+    @skip_if_disabled
     def test_read(self):
         """
-        Verify hit(1) returns 0, then add something to the cache
+        Verify is_cached(1) returns 0, then add something to the cache
         and verify after a subsequent read from the cache that
-        hit(1) returns 1.
+        is_cached(1) returns 1.
         """
-        meta = {'id': 1,
-                'name': 'Image1',
-                'size': len(FIXTURE_DATA)}
+        FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
 
-        self.assertFalse(self.cache.hit(1))
+        self.assertFalse(self.cache.is_cached(1))
 
-        with self.cache.open(meta, 'wb') as cache_file:
-            cache_file.write(FIXTURE_DATA)
-
-        buff = StringIO.StringIO()
-        with self.cache.open(meta, 'rb') as cache_file:
-            for chunk in cache_file:
-                buff.write(chunk)
-
-        self.assertEqual(FIXTURE_DATA, buff.getvalue())
-
-    def test_open_for_read(self):
-        """
-        Test convenience wrapper for opening a cache file via
-        its image identifier.
-        """
-        meta = {'id': 1,
-                'name': 'Image1',
-                'size': len(FIXTURE_DATA)}
-
-        self.assertFalse(self.cache.hit(1))
-
-        with self.cache.open(meta, 'wb') as cache_file:
-            cache_file.write(FIXTURE_DATA)
+        self.assertTrue(self.cache.cache_image_file(1, FIXTURE_FILE))
 
         buff = StringIO.StringIO()
         with self.cache.open_for_read(1) as cache_file:
@@ -135,102 +68,238 @@ class TestImageCache(unittest.TestCase):
 
         self.assertEqual(FIXTURE_DATA, buff.getvalue())
 
-    def test_purge(self):
+    @skip_if_disabled
+    def test_open_for_read(self):
         """
-        Test purge method that removes an image from the cache
+        Test convenience wrapper for opening a cache file via
+        its image identifier.
         """
-        meta = {'id': 1,
-                'name': 'Image1',
-                'size': len(FIXTURE_DATA)}
+        FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
 
-        self.assertFalse(self.cache.hit(1))
+        self.assertFalse(self.cache.is_cached(1))
 
-        with self.cache.open(meta, 'wb') as cache_file:
-            cache_file.write(FIXTURE_DATA)
+        self.assertTrue(self.cache.cache_image_file(1, FIXTURE_FILE))
 
-        self.assertTrue(self.cache.hit(1))
+        buff = StringIO.StringIO()
+        with self.cache.open_for_read(1) as cache_file:
+            for chunk in cache_file:
+                buff.write(chunk)
 
-        self.cache.purge(1)
+        self.assertEqual(FIXTURE_DATA, buff.getvalue())
 
-        self.assertFalse(self.cache.hit(1))
-
-    def test_clear(self):
+    @skip_if_disabled
+    def test_delete(self):
         """
-        Test purge method that removes an image from the cache
+        Test delete method that removes an image from the cache
         """
-        metas = [
-            {'id': 1,
-             'name': 'Image1',
-             'size': len(FIXTURE_DATA)},
-            {'id': 2,
-             'name': 'Image2',
-             'size': len(FIXTURE_DATA)}]
+        FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
+
+        self.assertFalse(self.cache.is_cached(1))
+
+        self.assertTrue(self.cache.cache_image_file(1, FIXTURE_FILE))
+
+        self.assertTrue(self.cache.is_cached(1))
+
+        self.cache.delete(1)
+
+        self.assertFalse(self.cache.is_cached(1))
+
+    @skip_if_disabled
+    def test_delete_all(self):
+        """
+        Test delete method that removes an image from the cache
+        """
+        for image_id in (1, 2):
+            self.assertFalse(self.cache.is_cached(image_id))
 
         for image_id in (1, 2):
-            self.assertFalse(self.cache.hit(image_id))
-
-        for meta in metas:
-            with self.cache.open(meta, 'wb') as cache_file:
-                cache_file.write(FIXTURE_DATA)
+            FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
+            self.assertTrue(self.cache.cache_image_file(image_id,
+                                                        FIXTURE_FILE))
 
         for image_id in (1, 2):
-            self.assertTrue(self.cache.hit(image_id))
+            self.assertTrue(self.cache.is_cached(image_id))
 
-        self.cache.clear()
+        self.cache.delete_all()
 
         for image_id in (1, 2):
-            self.assertFalse(self.cache.hit(image_id))
+            self.assertFalse(self.cache.is_cached(image_id))
 
-    def test_prefetch(self):
+    @skip_if_disabled
+    def test_prune(self):
         """
-        Test that queueing for prefetch and prefetching works properly
+        Test that pruning the cache works as expected...
         """
-        meta = {'id': 1,
-                'name': 'Image1',
-                'size': len(FIXTURE_DATA)}
+        self.assertEqual(0, self.cache.get_cache_size())
 
-        self.assertFalse(self.cache.hit(1))
+        # Add a bunch of images to the cache. The max cache
+        # size for the cache is set to 5KB and each image is
+        # 1K. We add 10 images to the cache and then we'll
+        # prune it. We should see only 5 images left after
+        # pruning, and the images that are least recently accessed
+        # should be the ones pruned...
+        for x in xrange(0, 10):
+            FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
+            self.assertTrue(self.cache.cache_image_file(x,
+                                                        FIXTURE_FILE))
 
-        self.cache.queue_prefetch(meta)
+        self.assertEqual(10 * 1024, self.cache.get_cache_size())
 
-        self.assertFalse(self.cache.hit(1))
+        # OK, hit the images that are now cached...
+        for x in xrange(0, 10):
+            buff = StringIO.StringIO()
+            with self.cache.open_for_read(x) as cache_file:
+                for chunk in cache_file:
+                    buff.write(chunk)
 
-        # Test that an exception is raised if we try to queue the
-        # same image for prefetching
-        self.assertRaises(exception.Invalid, self.cache.queue_prefetch,
-                          meta)
+        self.cache.prune()
 
-        self.cache.delete_queued_prefetch_image(1)
+        self.assertEqual(5 * 1024, self.cache.get_cache_size())
 
-        self.assertFalse(self.cache.hit(1))
+        for x in xrange(0, 5):
+            self.assertFalse(self.cache.is_cached(x),
+                             "Image %s was cached!" % x)
 
-        # Test that an exception is raised if we try to queue for
-        # prefetching an image that has already been cached
+        for x in xrange(5, 10):
+            self.assertTrue(self.cache.is_cached(x),
+                            "Image %s was not cached!" % x)
 
-        with self.cache.open(meta, 'wb') as cache_file:
-            cache_file.write(FIXTURE_DATA)
+    @skip_if_disabled
+    def test_queue(self):
+        """
+        Test that queueing works properly
+        """
 
-        self.assertTrue(self.cache.hit(1))
+        self.assertFalse(self.cache.is_cached(1))
+        self.assertFalse(self.cache.is_queued(1))
 
-        self.assertRaises(exception.Invalid, self.cache.queue_prefetch,
-                          meta)
+        FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
 
-        self.cache.purge(1)
+        self.assertTrue(self.cache.queue_image(1))
 
-        # We can't prefetch an image that has not been queued
-        # for prefetching
-        self.assertRaises(OSError, self.cache.do_prefetch, 1)
+        self.assertTrue(self.cache.is_queued(1))
+        self.assertFalse(self.cache.is_cached(1))
 
-        self.cache.queue_prefetch(meta)
+        # Should not return True if the image is already
+        # queued for caching...
+        self.assertFalse(self.cache.queue_image(1))
 
-        self.assertTrue(self.cache.is_image_queued_for_prefetch(1))
+        self.assertFalse(self.cache.is_cached(1))
 
-        self.assertFalse(self.cache.is_currently_prefetching_any_images())
-        self.assertFalse(self.cache.is_image_currently_prefetching(1))
+        # Test that we return False if we try to queue
+        # an image that has already been cached
 
-        self.assertEqual(str(1), self.cache.pop_prefetch_item())
+        self.assertTrue(self.cache.cache_image_file(1, FIXTURE_FILE))
 
-        self.cache.do_prefetch(1)
-        self.assertFalse(self.cache.is_image_queued_for_prefetch(1))
-        self.assertTrue(self.cache.is_currently_prefetching_any_images())
-        self.assertTrue(self.cache.is_image_currently_prefetching(1))
+        self.assertFalse(self.cache.is_queued(1))
+        self.assertTrue(self.cache.is_cached(1))
+
+        self.assertFalse(self.cache.queue_image(1))
+
+        self.cache.delete(1)
+
+        for x in xrange(0, 3):
+            self.assertTrue(self.cache.queue_image(x))
+
+        self.assertEqual(self.cache.get_cache_queue(),
+                         ['0', '1', '2'])
+
+    @skip_if_disabled
+    def test_prefetcher(self):
+        """
+        Test that the prefetcher application works
+        """
+        stubs.stub_out_registry_server(self.stubs)
+        FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
+
+        # Should return True since there is nothing in the queue
+        pf = prefetcher.Prefetcher(self.options)
+        self.assertTrue(pf.run())
+
+        for x in xrange(2, 3):
+            self.assertTrue(self.cache.queue_image(x))
+
+        # Should return False since there is no metadata for these
+        # images in the registry
+        self.assertFalse(pf.run())
+
+
+class TestImageCacheXattr(unittest.TestCase,
+                          ImageCacheTestCase):
+
+    """Tests image caching when xattr is used in cache"""
+
+    def setUp(self):
+        """
+        Test to see if the pre-requisites for the image cache
+        are working (python-xattr installed and xattr support on the
+        filesystem)
+        """
+        if getattr(self, 'disable', False):
+            return
+
+        if not getattr(self, 'inited', False):
+            try:
+                import xattr
+            except ImportError:
+                self.inited = True
+                self.disabled = True
+                self.disabled_message = ("python-xattr not installed.")
+                return
+
+        self.inited = True
+        self.disabled = False
+        self.cache_dir = os.path.join("/", "tmp", "test.cache.%d" %
+                                      random.randint(0, 1000000))
+        self.options = {'image_cache_dir': self.cache_dir,
+                        'image_cache_driver': 'xattr',
+                        'image_cache_max_size': 1024 * 5,
+                        'registry_host': '0.0.0.0',
+                        'registry_port': 9191}
+        self.cache = image_cache.ImageCache(self.options)
+        self.stubs = stubout.StubOutForTesting()
+
+    def tearDown(self):
+        if os.path.exists(self.cache_dir):
+            shutil.rmtree(self.cache_dir)
+        self.stubs.UnsetAll()
+
+
+class TestImageCacheSqlite(unittest.TestCase,
+                           ImageCacheTestCase):
+
+    """Tests image caching when SQLite is used in cache"""
+
+    def setUp(self):
+        """
+        Test to see if the pre-requisites for the image cache
+        are working (python-sqlite3 installed)
+        """
+        if getattr(self, 'disable', False):
+            return
+
+        if not getattr(self, 'inited', False):
+            try:
+                import sqlite3
+            except ImportError:
+                self.inited = True
+                self.disabled = True
+                self.disabled_message = ("python-sqlite3 not installed.")
+                return
+
+        self.inited = True
+        self.disabled = False
+        self.cache_dir = os.path.join("/", "tmp", "test.cache.%d" %
+                                      random.randint(0, 1000000))
+        self.options = {'image_cache_dir': self.cache_dir,
+                        'image_cache_driver': 'sqlite',
+                        'image_cache_max_size': 1024 * 5,
+                        'registry_host': '0.0.0.0',
+                        'registry_port': 9191}
+        self.cache = image_cache.ImageCache(self.options)
+        self.stubs = stubout.StubOutForTesting()
+
+    def tearDown(self):
+        if os.path.exists(self.cache_dir):
+            shutil.rmtree(self.cache_dir)
+        self.stubs.UnsetAll()

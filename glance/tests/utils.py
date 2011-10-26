@@ -81,7 +81,7 @@ def skip_if_disabled(func):
         test_obj = a[0]
         message = getattr(test_obj, 'disabled_message',
                           'Test disabled')
-        if test_obj.disabled:
+        if getattr(test_obj, 'disabled', False):
             raise nose.SkipTest(message)
         func(*a, **kwargs)
     return wrapped
