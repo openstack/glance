@@ -2395,9 +2395,8 @@ class TestGlanceAPI(unittest.TestCase):
         that had had its save process killed manually results in failure
         because the location attribute is None.
         """
-        # Add an image the way that glance-upload adds an image...
-        # by reserving a place in the database for an image without
-        # really any attributes or information on the image and then
+        # Add an image by reserving a place in the database for an image
+        # without really any attributes or information on the image and then
         # later doing an update with the image body and other attributes.
         # We will stop the process after the reservation stage, then
         # try to delete the image.

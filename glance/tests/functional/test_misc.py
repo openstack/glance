@@ -90,9 +90,6 @@ class TestMiscellaneous(functional.FunctionalTest):
         We then use curl to try adding an image that does not
         meet validation requirements on the registry server and test
         that the error returned from the API server to curl is appropriate
-
-        We also fire the glance-upload tool against the API server
-        and verify that glance-upload doesn't eat the exception either...
         """
         self.cleanup()
         self.start_servers()
