@@ -2067,10 +2067,6 @@ class TestGlanceAPI(unittest.TestCase):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, httplib.CREATED)
 
-        res_body = json.loads(res.body)['image']
-        self.assertEquals(res_body['location'],
-                          'file:///tmp/glance-tests/3')
-
         # Test that the Location: header is set to the URI to
         # edit the newly-created image, as required by APP.
         # See LP Bug #719825
@@ -2238,6 +2234,29 @@ class TestGlanceAPI(unittest.TestCase):
         self.assertEqual(res.status_int, 200)
         self.assertFalse('X-Image-Meta-Location' in res.headers)
 
+        # Check PUT
+        req = webob.Request.blank("/images/2")
+        req.body = res.body
+        req.method = 'PUT'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        res_body = json.loads(res.body)
+        self.assertFalse('location' in res_body['image'])
+
+        # Check POST
+        req = webob.Request.blank("/images")
+        headers = {'x-image-meta-location': 'http://localhost',
+                   'x-image-meta-disk-format': 'vhd',
+                   'x-image-meta-container-format': 'ovf',
+                   'x-image-meta-name': 'fake image #3'}
+        for k, v in headers.iteritems():
+            req.headers[k] = v
+        req.method = 'POST'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 201)
+        res_body = json.loads(res.body)
+        self.assertFalse('location' in res_body['image'])
+
     def test_image_is_checksummed(self):
         """Test that the image contents are checksummed properly"""
         fixture_headers = {'x-image-meta-store': 'file',
@@ -2258,8 +2277,6 @@ class TestGlanceAPI(unittest.TestCase):
         self.assertEquals(res.status_int, httplib.CREATED)
 
         res_body = json.loads(res.body)['image']
-        self.assertEquals(res_body['location'],
-                          'file:///tmp/glance-tests/3')
         self.assertEquals(image_checksum, res_body['checksum'],
                           "Mismatched checksum. Expected %s, got %s" %
                           (image_checksum, res_body['checksum']))
