@@ -35,10 +35,10 @@ do that is by using the `glance-control` utility which runs both the
     glance-control all start
 
 
-Once both services are running, you can now use the `glance-upload` tool to
+Once both services are running, you can now use the `glance` tool to
 register new images in Glance.
 
-    glance-upload --type=machine --kernel=1 --ramdisk=2 myimage.img "MyImage"
+    glance add name="My Image" < /path/to/my/image
 
 
 With an image registered, you can now configure your IAAS provider to use
