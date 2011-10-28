@@ -648,8 +648,37 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
 
     def show(self, response, result):
         image_meta = result['image_meta']
+        image_id = image_meta['id']
 
-        response.app_iter = result['image_iterator']
+        # We use a secondary iterator here to wrap the
+        # iterator coming back from the store driver in
+        # order to check for disconnections from the backend
+        # storage connections and log an error if the size of
+        # the transferred image is not the same as the expected
+        # size of the image file. See LP Bug #882585.
+        def checked_iter(image_id, expected_size, image_iter):
+            bytes_written = 0
+            try:
+                for chunk in image_iter:
+                    yield chunk
+                    bytes_written += len(chunk)
+            except Exception, err:
+                msg = _("An error occurred reading from backend storage "
+                        "for image %(image_id): %(err)s") % locals()
+                logger.error(msg)
+                raise
+
+            if expected_size != bytes_written:
+                msg = _("Backend storage for image %(image_id)s "
+                        "disconnected after writing only %(bytes_written)d "
+                        "bytes") % locals()
+                logger.error(msg)
+                raise IOError(errno.EPIPE, _("Corrupt image download for "
+                                             "image %(image_id)s"))
+
+        image_iter = result['image_iterator']
+        expected_size = image_meta['size']
+        response.app_iter = checked_iter(image_id, expected_size, image_iter)
         # Using app_iter blanks content-length, so we set it here...
         response.headers['Content-Length'] = image_meta['size']
         response.headers['Content-Type'] = 'application/octet-stream'
