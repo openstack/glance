@@ -20,3 +20,4 @@ bzr
 httplib2
 xattr>=0.6.0
 kombu
+pycrypto

@@ -39,6 +39,7 @@ import os
 import tempfile
 import unittest
 
+from glance.common import crypt
 import glance.store.swift  # Needed to register driver for location
 from glance.store.location import get_location_from_uri
 from glance.tests.functional import test_api
@@ -263,7 +264,13 @@ class TestSwift(test_api.TestApi):
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
         data = json.loads(content)
-        image_loc = get_location_from_uri(data['image']['location'])
+        image_loc = data['image']['location']
+        if hasattr(self, 'metadata_encryption_key'):
+            key = self.metadata_encryption_key
+        else:
+            key = self.api_server.metadata_encryption_key
+        image_loc = crypt.urlsafe_decrypt(key, image_loc)
+        image_loc = get_location_from_uri(image_loc)
         swift_loc = image_loc.store_location
 
         from swift.common import client as swift_client
@@ -449,7 +456,12 @@ class TestSwift(test_api.TestApi):
         self.assertEqual(response.status, 200)
         data = json.loads(content)
         self.assertTrue('location' in data['image'].keys())
-        swift_location = data['image']['location']
+        loc = data['image']['location']
+        if hasattr(self, 'metadata_encryption_key'):
+            key = self.metadata_encryption_key
+        else:
+            key = self.api_server.metadata_encryption_key
+        swift_location = crypt.urlsafe_decrypt(key, loc)
 
         # POST /images with public image named Image1 without uploading data
         image_data = "*" * FIVE_KB

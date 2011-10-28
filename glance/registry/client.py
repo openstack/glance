@@ -24,6 +24,7 @@ import json
 import urllib
 
 from glance.common.client import BaseClient
+from glance.common import crypt
 from glance.registry.api.v1 import images
 
 
@@ -32,6 +33,32 @@ class RegistryClient(BaseClient):
     """A client for the Registry image metadata service"""
 
     DEFAULT_PORT = 9191
+
+    def __init__(self, host=None, port=None, metadata_encryption_key=None,
+                 **kwargs):
+        """
+        :param metadata_encryption_key: Key used to encrypt 'location' metadata
+        """
+        self.metadata_encryption_key = metadata_encryption_key
+        BaseClient.__init__(self, host, port, **kwargs)
+
+    def decrypt_metadata(self, image_metadata):
+        if (self.metadata_encryption_key is not None
+            and 'location' in image_metadata.keys()
+            and image_metadata['location'] is not None):
+            location = crypt.urlsafe_decrypt(self.metadata_encryption_key,
+                                             image_metadata['location'])
+            image_metadata['location'] = location
+        return image_metadata
+
+    def encrypt_metadata(self, image_metadata):
+        if (self.metadata_encryption_key is not None
+            and 'location' in image_metadata.keys()
+            and image_metadata['location'] is not None):
+            location = crypt.urlsafe_encrypt(self.metadata_encryption_key,
+                                             image_metadata['location'], 64)
+            image_metadata['location'] = location
+        return image_metadata
 
     def get_images(self, **kwargs):
         """
@@ -45,8 +72,10 @@ class RegistryClient(BaseClient):
         """
         params = self._extract_params(kwargs, images.SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images", params=params)
-        data = json.loads(res.read())['images']
-        return data
+        image_list = json.loads(res.read())['images']
+        for image in image_list:
+            image = self.decrypt_metadata(image)
+        return image_list
 
     def get_images_detailed(self, **kwargs):
         """
@@ -60,14 +89,16 @@ class RegistryClient(BaseClient):
         """
         params = self._extract_params(kwargs, images.SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images/detail", params=params)
-        data = json.loads(res.read())['images']
-        return data
+        image_list = json.loads(res.read())['images']
+        for image in image_list:
+            image = self.decrypt_metadata(image)
+        return image_list
 
     def get_image(self, image_id):
         """Returns a mapping of image metadata from Registry"""
         res = self.do_request("GET", "/images/%s" % image_id)
         data = json.loads(res.read())['image']
-        return data
+        return self.decrypt_metadata(data)
 
     def add_image(self, image_metadata):
         """
@@ -80,12 +111,15 @@ class RegistryClient(BaseClient):
         if 'image' not in image_metadata.keys():
             image_metadata = dict(image=image_metadata)
 
+        image_metadata['image'] = self.encrypt_metadata(
+                                      image_metadata['image'])
         body = json.dumps(image_metadata)
 
         res = self.do_request("POST", "/images", body, headers=headers)
         # Registry returns a JSONified dict(image=image_info)
         data = json.loads(res.read())
-        return data['image']
+        image = data['image']
+        return self.decrypt_metadata(image)
 
     def update_image(self, image_id, image_metadata, purge_props=False):
         """
@@ -94,6 +128,8 @@ class RegistryClient(BaseClient):
         if 'image' not in image_metadata.keys():
             image_metadata = dict(image=image_metadata)
 
+        image_metadata['image'] = self.encrypt_metadata(
+                                      image_metadata['image'])
         body = json.dumps(image_metadata)
 
         headers = {
@@ -106,7 +142,7 @@ class RegistryClient(BaseClient):
         res = self.do_request("PUT", "/images/%s" % image_id, body, headers)
         data = json.loads(res.read())
         image = data['image']
-        return image
+        return self.decrypt_metadata(image)
 
     def delete_image(self, image_id):
         """

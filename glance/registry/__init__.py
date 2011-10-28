@@ -30,6 +30,8 @@ logger = logging.getLogger('glance.registry')
 _CLIENT_HOST = None
 _CLIENT_PORT = None
 _CLIENT_KWARGS = {}
+# AES key used to encrypt 'location' metadata
+_METADATA_ENCRYPTION_KEY = None
 
 
 def configure_registry_client(options):
@@ -38,7 +40,7 @@ def configure_registry_client(options):
 
     :param options: Configuration options coming from controller
     """
-    global _CLIENT_KWARGS, _CLIENT_HOST, _CLIENT_PORT
+    global _CLIENT_KWARGS, _CLIENT_HOST, _CLIENT_PORT, _METADATA_ENCRYPTION_KEY
     try:
         host = options['registry_host']
         port = int(options['registry_port'])
@@ -56,7 +58,7 @@ def configure_registry_client(options):
     key_file = options.get('registry_client_key_file')
     cert_file = options.get('registry_client_cert_file')
     ca_file = options.get('registry_client_ca_file')
-
+    _METADATA_ENCRYPTION_KEY = options.get('metadata_encryption_key')
     _CLIENT_HOST = host
     _CLIENT_PORT = port
     _CLIENT_KWARGS = {'use_ssl': use_ssl,
@@ -66,10 +68,11 @@ def configure_registry_client(options):
 
 
 def get_registry_client(cxt):
-    global _CLIENT_KWARGS, _CLIENT_HOST, _CLIENT_PORT
+    global _CLIENT_KWARGS, _CLIENT_HOST, _CLIENT_PORT, _METADATA_ENCRYPTION_KEY
     kwargs = _CLIENT_KWARGS.copy()
     kwargs['auth_tok'] = cxt.auth_tok
-    return client.RegistryClient(_CLIENT_HOST, _CLIENT_PORT, **kwargs)
+    return client.RegistryClient(_CLIENT_HOST, _CLIENT_PORT,
+                                 _METADATA_ENCRYPTION_KEY, **kwargs)
 
 
 def get_images_list(context, **kwargs):

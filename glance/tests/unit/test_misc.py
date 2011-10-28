@@ -21,6 +21,7 @@ import datetime
 import re
 import unittest
 
+from glance.common import crypt
 from glance.common import exception
 from glance.common import utils
 
@@ -126,3 +127,21 @@ class UtilsTestCase(unittest.TestCase):
         iso_re = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z')
         now_iso = utils.isotime()
         self.assertTrue(iso_re.match(now_iso) is not None)
+
+    def test_encryption(self):
+        # Check that original plaintext and unencrypted ciphertext match
+        # Check keys of the three allowed lengths
+        key_list = ["1234567890abcdef",
+                    "12345678901234567890abcd",
+                    "1234567890abcdef1234567890ABCDEF"]
+        plaintext_list = ['']
+        blocksize = 64
+        for i in range(3 * blocksize):
+            plaintext_list.append(os.urandom(i))
+
+        for key in key_list:
+            for plaintext in plaintext_list:
+                ciphertext = crypt.urlsafe_encrypt(key, plaintext, blocksize)
+                self.assertTrue(ciphertext != plaintext)
+                text = crypt.urlsafe_decrypt(key, ciphertext)
+                self.assertTrue(plaintext == text)

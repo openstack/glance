@@ -150,6 +150,7 @@ class ApiServer(Server):
         self.default_store = 'file'
         self.key_file = ""
         self.cert_file = ""
+        self.metadata_encryption_key = "012345678901234567890123456789ab"
         self.image_dir = os.path.join(self.test_dir,
                                          "images")
         self.pid_file = os.path.join(self.test_dir,
@@ -187,6 +188,7 @@ bind_host = 0.0.0.0
 bind_port = %(bind_port)s
 key_file = %(key_file)s
 cert_file = %(cert_file)s
+metadata_encryption_key = %(metadata_encryption_key)s
 registry_host = 0.0.0.0
 registry_port = %(registry_port)s
 log_file = %(log_file)s
