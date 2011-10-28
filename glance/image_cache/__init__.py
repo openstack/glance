@@ -107,6 +107,12 @@ class ImageCache(object):
         """
         return self.driver.get_hit_count(image_id)
 
+    def get_cached_images(self):
+        """
+        Returns a list of records about cached images.
+        """
+        return self.driver.get_cached_images()
+
     def delete_all(self):
         """
         Removes all cached image files and any attributes about the images

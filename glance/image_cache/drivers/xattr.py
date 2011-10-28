@@ -117,6 +117,42 @@ class Driver(base.Driver):
             sizes.append(file_info[stat.ST_SIZE])
         return sum(sizes)
 
+    def get_hit_count(self, image_id):
+        """
+        Return the number of hits that an image has.
+
+        :param image_id: Opaque image identifier
+        """
+        if not self.is_cached(image_id):
+            return 0
+
+        path = self.get_image_filepath(image_id)
+        return int(get_xattr(path, 'hits', default=0))
+
+    def get_cached_images(self):
+        """
+        Returns a list of records about cached images.
+        """
+        logger.debug(_("Gathering cached image entries."))
+        entries = []
+        for path in get_all_regular_files(self.base_dir):
+            image_id = os.path.basename(path)
+
+            entry = {}
+            entry['image_id'] = image_id
+
+            file_info = os.stat(path)
+            entry['last_modified'] = iso8601_from_timestamp(
+                file_info[stat.ST_MTIME])
+            entry['last_accessed'] = iso8601_from_timestamp(
+                file_info[stat.ST_ATIME])
+            entry['size'] = file_info[stat.ST_SIZE]
+            entry['hits'] = self.get_hit_count(image_id)
+
+            entries.append(entry)
+        entries.sort()  # Order by ID
+        return entries
+
     def is_cached(self, image_id):
         """
         Returns True if the image with the supplied ID has its image
@@ -153,18 +189,6 @@ class Driver(base.Driver):
         """
         path = self.get_image_filepath(image_id, 'queue')
         return os.path.exists(path)
-
-    def get_hit_count(self, image_id):
-        """
-        Return the number of hits that an image has.
-
-        :param image_id: Opaque image identifier
-        """
-        if not self.is_cached(image_id):
-            return 0
-
-        path = self.get_image_filepath(image_id)
-        return int(get_xattr(path, 'hits', default=0))
 
     def delete_all(self):
         """
@@ -525,3 +549,7 @@ def inc_xattr(path, key, n=1):
         # and the key is present
         count += n
         set_xattr(path, key, str(count))
+
+
+def iso8601_from_timestamp(timestamp):
+    return datetime.datetime.utcfromtimestamp(timestamp).isoformat()

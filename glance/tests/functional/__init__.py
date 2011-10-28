@@ -30,11 +30,11 @@ import random
 import shutil
 import signal
 import socket
-import tempfile
 import time
 import unittest
 import urlparse
 
+from glance.common import utils
 from glance.tests.utils import execute, get_unused_port
 
 from sqlalchemy import create_engine
@@ -79,7 +79,7 @@ class Server(object):
         self.no_venv = False
         self.test_dir = test_dir
         self.bind_port = port
-        self.conf_file = None
+        self.conf_file_name = None
         self.conf_base = None
         self.server_control = './bin/glance-control'
         self.exec_env = None
@@ -90,7 +90,7 @@ class Server(object):
         destination.  Returns the name of the configuration file.
         """
 
-        if self.conf_file:
+        if self.conf_file_name:
             return self.conf_file_name
         if not self.conf_base:
             raise RuntimeError("Subclass did not populate config_base!")
@@ -102,11 +102,13 @@ class Server(object):
         # A config file to use just for this test...we don't want
         # to trample on currently-running Glance servers, now do we?
 
-        conf_file = tempfile.NamedTemporaryFile()
-        conf_file.write(self.conf_base % conf_override)
-        conf_file.flush()
-        self.conf_file = conf_file
-        self.conf_file_name = conf_file.name
+        conf_dir = os.path.join(self.test_dir, 'etc')
+        conf_filepath = os.path.join(conf_dir, "%s.conf" % self.server_name)
+        utils.safe_mkdirs(conf_dir)
+        with open(conf_filepath, 'wb') as conf_file:
+            conf_file.write(self.conf_base % conf_override)
+            conf_file.flush()
+            self.conf_file_name = conf_file.name
 
         return self.conf_file_name
 
@@ -226,6 +228,9 @@ paste.filter_factory = glance.api.middleware.version_negotiation:filter_factory
 
 [filter:cache]
 paste.filter_factory = glance.api.middleware.cache:filter_factory
+
+[filter:cache_manage]
+paste.filter_factory = glance.api.middleware.cache_manage:filter_factory
 
 [filter:context]
 paste.filter_factory = glance.common.context:filter_factory

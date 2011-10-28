@@ -49,6 +49,25 @@ class Driver(object):
         """
         raise NotImplementedError
 
+    def get_cached_images(self):
+        """
+        Returns a list of records about cached images.
+
+        The list of records shall be ordered by image ID and shall look like::
+
+            [
+                {
+                'image_id': <IMAGE_ID>,
+                'hits': INTEGER,
+                'last_modified': ISO_TIMESTAMP,
+                'last_accessed': ISO_TIMESTAMP,
+                'size': INTEGER
+                }, ...
+            ]
+
+        """
+        return NotImplementedError
+
     def is_cached(self, image_id):
         """
         Returns True if the image with the supplied ID has its image

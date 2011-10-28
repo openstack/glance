@@ -107,6 +107,214 @@ class BaseCacheMiddlewareTest(object):
         self.stop_servers()
 
 
+class BaseCacheManageMiddlewareTest(object):
+
+    """Base test class for testing cache management middleware"""
+
+    def verify_no_images(self):
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertTrue('images' in data)
+        self.assertEqual(0, len(data['images']))
+
+    @skip_if_disabled
+    def test_cache_manage_get_cached_images(self):
+        """
+        Tests that cached images are queryable
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        self.verify_no_images()
+
+        # Add an image and verify a 200 OK is returned
+        image_data = "*" * FIVE_KB
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=image_data)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        self.assertEqual(data['image']['checksum'],
+                         hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_KB)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(data['image']['is_public'], True)
+        image_id = data['image']['id']
+
+        # Verify image does not yet show up in cache (we haven't "hit"
+        # it yet using a GET /images/1 ...
+        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        data = json.loads(content)
+        self.assertTrue('cached_images' in data)
+        self.assertEqual(data['cached_images'], [])
+
+        # Grab the image
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        # Verify image now in cache
+        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        data = json.loads(content)
+        self.assertTrue('cached_images' in data)
+
+        cached_images = data['cached_images']
+        self.assertEqual(1, len(cached_images))
+        self.assertEqual(image_id, cached_images[0]['image_id'])
+        self.assertEqual(0, cached_images[0]['hits'])
+
+        # Hit the image
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        # Verify image hits increased in output of manage GET
+        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        data = json.loads(content)
+        self.assertTrue('cached_images' in data)
+
+        cached_images = data['cached_images']
+        self.assertEqual(1, len(cached_images))
+        self.assertEqual(image_id, cached_images[0]['image_id'])
+        self.assertEqual(1, cached_images[0]['hits'])
+
+        self.stop_servers()
+
+    @skip_if_disabled
+    def test_cache_manage_delete_cached_images(self):
+        """
+        Tests that cached images may be deleted
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        self.verify_no_images()
+
+        ids = {}
+
+        # Add a bunch of images...
+        for x in xrange(0, 4):
+            image_data = "*" * FIVE_KB
+            headers = {'Content-Type': 'application/octet-stream',
+                       'X-Image-Meta-Name': 'Image%s' % x,
+                       'X-Image-Meta-Is-Public': 'True'}
+            path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+            http = httplib2.Http()
+            response, content = http.request(path, 'POST', headers=headers,
+                                             body=image_data)
+            self.assertEqual(response.status, 201)
+            data = json.loads(content)
+            self.assertEqual(data['image']['checksum'],
+                             hashlib.md5(image_data).hexdigest())
+            self.assertEqual(data['image']['size'], FIVE_KB)
+            self.assertEqual(data['image']['name'], "Image%s" % x)
+            self.assertEqual(data['image']['is_public'], True)
+            ids[x] = data['image']['id']
+
+        # Verify no images in cached_images because no image has been hit
+        # yet using a GET /images/<IMAGE_ID> ...
+        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        data = json.loads(content)
+        self.assertTrue('cached_images' in data)
+        self.assertEqual(data['cached_images'], [])
+
+        # Grab the images, essentially caching them...
+        for x in xrange(0, 4):
+            path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                                  ids[x])
+            http = httplib2.Http()
+            response, content = http.request(path, 'GET')
+            self.assertEqual(response.status, 200,
+                             "Failed to find image %s" % ids[x])
+
+        # Verify images now in cache
+        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        data = json.loads(content)
+        self.assertTrue('cached_images' in data)
+
+        cached_images = data['cached_images']
+        self.assertEqual(4, len(cached_images))
+
+        for x in xrange(4, 0):  # Cached images returned last modified order
+            self.assertEqual(ids[x], cached_images[x]['image_id'])
+            self.assertEqual(0, cached_images[x]['hits'])
+
+        # Delete third image of the cached images and verify no longer in cache
+        path = "http://%s:%d/v1/cached_images/%s" % ("0.0.0.0", self.api_port,
+                                                     ids[2])
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
+        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        data = json.loads(content)
+        self.assertTrue('cached_images' in data)
+
+        cached_images = data['cached_images']
+        self.assertEqual(3, len(cached_images))
+        self.assertTrue(ids[2] not in [x['image_id'] for x in cached_images])
+
+        # Delete all cached images and verify nothing in cache
+        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
+        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        data = json.loads(content)
+        self.assertTrue('cached_images' in data)
+
+        cached_images = data['cached_images']
+        self.assertEqual(0, len(cached_images))
+
+        self.stop_servers()
+
+
 class TestImageCacheXattr(functional.FunctionalTest,
                           BaseCacheMiddlewareTest):
 
@@ -136,6 +344,44 @@ class TestImageCacheXattr(functional.FunctionalTest,
         self.image_cache_driver = "xattr"
 
         super(TestImageCacheXattr, self).setUp()
+
+    def tearDown(self):
+        if os.path.exists(self.api_server.image_cache_dir):
+            shutil.rmtree(self.api_server.image_cache_dir)
+
+
+class TestImageCacheManageXattr(functional.FunctionalTest,
+                                BaseCacheManageMiddlewareTest):
+
+    """
+    Functional tests that exercise the image cache management
+    with the Xattr cache driver
+    """
+
+    def setUp(self):
+        """
+        Test to see if the pre-requisites for the image cache
+        are working (python-xattr installed and xattr support on the
+        filesystem)
+        """
+        if getattr(self, 'disabled', False):
+            return
+
+        if not getattr(self, 'inited', False):
+            try:
+                import xattr
+            except ImportError:
+                self.inited = True
+                self.disabled = True
+                self.disabled_message = ("python-xattr not installed.")
+                return
+
+        self.inited = True
+        self.disabled = False
+        self.cache_pipeline = "cache cache_manage"
+        self.image_cache_driver = "xattr"
+
+        super(TestImageCacheManageXattr, self).setUp()
 
     def tearDown(self):
         if os.path.exists(self.api_server.image_cache_dir):
@@ -173,6 +419,43 @@ class TestImageCacheSqlite(functional.FunctionalTest,
         self.cache_pipeline = "cache"
 
         super(TestImageCacheSqlite, self).setUp()
+
+    def tearDown(self):
+        if os.path.exists(self.api_server.image_cache_dir):
+            shutil.rmtree(self.api_server.image_cache_dir)
+
+
+class TestImageCacheManageSqlite(functional.FunctionalTest,
+                                 BaseCacheManageMiddlewareTest):
+
+    """
+    Functional tests that exercise the image cache management using the
+    SQLite driver
+    """
+
+    def setUp(self):
+        """
+        Test to see if the pre-requisites for the image cache
+        are working (python-xattr installed and xattr support on the
+        filesystem)
+        """
+        if getattr(self, 'disabled', False):
+            return
+
+        if not getattr(self, 'inited', False):
+            try:
+                import sqlite3
+            except ImportError:
+                self.inited = True
+                self.disabled = True
+                self.disabled_message = ("python-sqlite3 not installed.")
+                return
+
+        self.inited = True
+        self.disabled = False
+        self.cache_pipeline = "cache cache_manage"
+
+        super(TestImageCacheManageSqlite, self).setUp()
 
     def tearDown(self):
         if os.path.exists(self.api_server.image_cache_dir):

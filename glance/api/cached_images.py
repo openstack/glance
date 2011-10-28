@@ -19,10 +19,8 @@
 Controller for Image Cache Management API
 """
 
-import httplib
-import json
+import logging
 
-import webob.dec
 import webob.exc
 
 from glance.common import exception
@@ -30,6 +28,8 @@ from glance.common import wsgi
 from glance import api
 from glance import image_cache
 from glance import registry
+
+logger = logging.getLogger(__name__)
 
 
 class Controller(api.BaseController):
@@ -42,45 +42,39 @@ class Controller(api.BaseController):
         self.cache = image_cache.ImageCache(self.options)
 
     def index(self, req):
-        status = req.str_params.get('status')
-        if status == 'invalid':
-            entries = list(self.cache.invalid_entries())
-        elif status == 'incomplete':
-            entries = list(self.cache.incomplete_entries())
-        elif status == 'prefetching':
-            entries = list(self.cache.prefetch_entries())
-        else:
-            entries = list(self.cache.entries())
+        """
+        GET /cached_images
 
-        return dict(cached_images=entries)
+        Returns a mapping of records about cached images.
+        """
+        images = self.cache.get_cached_images()
+        return dict(cached_images=images)
 
     def delete(self, req, id):
-        self.cache.purge(id)
+        """
+        DELETE /cached_images/1
+
+        Removes an image from the cache.
+        """
+        self.cache.delete(id)
 
     def delete_collection(self, req):
         """
         DELETE /cached_images - Clear all active cached images
-        DELETE /cached_images?status=invalid - Reap invalid cached images
-        DELETE /cached_images?status=incomplete - Reap stalled cached images
+
+        Removes all images from the cache.
         """
-        status = req.str_params.get('status')
-        if status == 'invalid':
-            num_reaped = self.cache.reap_invalid()
-            return dict(num_reaped=num_reaped)
-        elif status == 'incomplete':
-            num_reaped = self.cache.reap_stalled()
-            return dict(num_reaped=num_reaped)
-        else:
-            num_purged = self.cache.clear()
-            return dict(num_purged=num_purged)
+        self.cache.delete_all()
 
     def update(self, req, id):
-        """PUT /cached_images/1 is used to prefetch an image into the cache"""
-        image_meta = self.get_active_image_meta_or_404(req, id)
-        try:
-            self.cache.queue_prefetch(image_meta)
-        except exception.Invalid, e:
-            raise webob.exc.HTTPBadRequest(explanation="%s" % e)
+        """
+        PUT /cached_images/1
+
+        Queues an image for caching. We do not check to see if
+        the image is in the registry here. That is done by the
+        prefetcher...
+        """
+        self.cache.queue_image(image_id)
 
 
 class CachedImageDeserializer(wsgi.JSONRequestDeserializer):

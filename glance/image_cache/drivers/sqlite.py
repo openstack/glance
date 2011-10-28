@@ -71,6 +71,11 @@ class SqliteConnection(sqlite3.Connection):
         return self._timeout(lambda: sqlite3.Connection.commit(self))
 
 
+def dict_factory(cur, row):
+    return dict(
+        ((col[0], row[idx]) for idx, col in enumerate(cur.description)))
+
+
 class Driver(base.Driver):
 
     """
@@ -116,6 +121,7 @@ class Driver(base.Driver):
                 CREATE TABLE IF NOT EXISTS cached_images (
                     image_id TEXT PRIMARY KEY,
                     last_access REAL DEFAULT 0.0,
+                    last_modified REAL DEFAULT 0.0,
                     size INTEGER DEFAULT 0,
                     hits INTEGER DEFAULT 0,
                     checksum TEXT
@@ -139,6 +145,36 @@ class Driver(base.Driver):
             file_info = os.stat(path)
             sizes.append(file_info[stat.ST_SIZE])
         return sum(sizes)
+
+    def get_hit_count(self, image_id):
+        """
+        Return the number of hits that an image has.
+
+        :param image_id: Opaque image identifier
+        """
+        if not self.is_cached(image_id):
+            return 0
+
+        hits = 0
+        with self.get_db() as db:
+            cur = db.execute("""SELECT hits FROM cached_images
+                             WHERE image_id = ?""",
+                             (image_id,))
+            hits = cur.fetchone()[0]
+        return hits
+
+    def get_cached_images(self):
+        """
+        Returns a list of records about cached images.
+        """
+        logger.debug(_("Gathering cached image entries."))
+        with self.get_db() as db:
+            cur = db.execute("""SELECT
+                             image_id, hits, last_access, last_modified, size
+                             FROM cached_images
+                             ORDER BY image_id""")
+            cur.row_factory = dict_factory
+            return [r for r in cur]
 
     def is_cached(self, image_id):
         """
@@ -178,23 +214,6 @@ class Driver(base.Driver):
         """
         path = self.get_image_filepath(image_id, 'queue')
         return os.path.exists(path)
-
-    def get_hit_count(self, image_id):
-        """
-        Return the number of hits that an image has.
-
-        :param image_id: Opaque image identifier
-        """
-        if not self.is_cached(image_id):
-            return 0
-
-        hits = 0
-        with self.get_db() as db:
-            cur = db.execute("""SELECT hits FROM cached_images
-                             WHERE image_id = ?""",
-                             (image_id,))
-            hits = cur.fetchone()[0]
-        return hits
 
     def delete_all(self):
         """
@@ -273,9 +292,13 @@ class Driver(base.Driver):
                 if self.is_queued(image_id):
                     os.unlink(self.get_image_filepath(image_id, 'queue'))
 
+                filesize = os.path.getsize(final_path)
+                now = time.time()
+
                 db.execute("""INSERT INTO cached_images
-                           (image_id, last_access, hits)
-                           VALUES (?, 0, 0)""", (image_id, ))
+                           (image_id, last_access, last_modified, hits, size)
+                           VALUES (?, 0, ?, 0, ?)""",
+                           (image_id, now, filesize))
                 db.commit()
 
         def rollback(e):
