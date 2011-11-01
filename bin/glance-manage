@@ -110,7 +110,7 @@ def dispatch_cmd(options, args):
 
     try:
         cmd_func(options, args)
-    except exception.Error, e:
+    except exception.GlanceException, e:
         sys.exit("ERROR: %s" % e)
 
 
