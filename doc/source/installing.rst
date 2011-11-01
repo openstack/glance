@@ -20,7 +20,7 @@ Installing Glance
 Installing from packages
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-To install the latest version of Glance from the Launchpad Bazaar repositories,
+To install the latest released version of Glance,
 following the following instructions.
 
 Debian/Ubuntu
@@ -62,28 +62,29 @@ following the following instructions.
    $> cd glance-<RELEASE>
    $> sudo python setup.py install
 
-Installing from a Bazaar Branch
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installing from Git
+~~~~~~~~~~~~~~~~~~~
 
-To install the latest version of Glance from the Launchpad Bazaar repositories,
+To install the latest version of Glance from the GitHub Git repositories,
 following the following instructions.
 
 Debian/Ubuntu
 #############
 
-1. Install Bazaar and build dependencies::
+1. Install Git and build dependencies::
 
-   $> sudo apt-get install bzr python-eventlet python-routes python-greenlet swift
-   $> sudo apt-get install python-argparse python-sqlalchemy python-wsgiref python-pastedeploy
+   $> sudo apt-get install git
+   $> sudo apt-get build-dep glance
 
 .. note::
 
    If you want to build the Glance documentation locally, you will also want
    to install the python-sphinx package
 
-1. Branch Glance's trunk branch::
+1. Clone Glance's trunk branch from GitHub::
    
-   $> bzr branch lp:glance
+   $> git clone git://github.com/openstack/glance
+   $> cd glance
 
 1. Install Glance::
    
