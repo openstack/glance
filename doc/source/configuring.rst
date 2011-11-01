@@ -261,6 +261,10 @@ see the `Swift auth <http://swift.openstack.org/overview_auth.html>`_
 documentation and the
 `overview of Swift authentication <http://docs.openstack.org/openstack-object-storage/admin/content/ch02s02.html>`_.
 
+**IMPORTANT NOTE**: Swift authentication addresses use HTTPS by default. This
+means that if you are running Swift with authentication over HTTP, you need
+to set your ``swift_store_auth_address`` to the full URL, including the ``http://``.
+
 * ``swift_store_user=USER``
 
 Required when using the Swift storage backend.
