@@ -19,6 +19,7 @@
 /images endpoint for Glance v1 API
 """
 
+import errno
 import json
 import logging
 import traceback

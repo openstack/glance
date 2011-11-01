@@ -22,6 +22,7 @@ Utility methods for working with WSGI servers
 """
 
 import datetime
+import errno
 import json
 import logging
 import sys
