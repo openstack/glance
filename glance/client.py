@@ -26,7 +26,7 @@ import os
 from glance.api.v1 import images as v1_images
 from glance.common import client as base_client
 from glance.common import exception
-from glance import utils
+from glance.common import wsgi
 
 #TODO(jaypipes) Allow a logger param for client classes
 
@@ -82,7 +82,7 @@ class V1Client(base_client.BaseClient):
         """
         res = self.do_request("GET", "/images/%s" % image_id)
 
-        image = utils.get_image_meta_from_headers(res)
+        image = wsgi.get_image_meta_from_headers(res)
         return image, base_client.ImageBodyIterator(res)
 
     def get_image_meta(self, image_id):
@@ -93,7 +93,7 @@ class V1Client(base_client.BaseClient):
         """
         res = self.do_request("HEAD", "/images/%s" % image_id)
 
-        image = utils.get_image_meta_from_headers(res)
+        image = wsgi.get_image_meta_from_headers(res)
         return image
 
     def _get_image_size(self, image_data):
@@ -136,7 +136,7 @@ class V1Client(base_client.BaseClient):
 
         :retval The newly-stored image's metadata.
         """
-        headers = utils.image_meta_to_http_headers(image_meta or {})
+        headers = wsgi.image_meta_to_http_headers(image_meta or {})
 
         if image_data:
             body = image_data
@@ -159,7 +159,7 @@ class V1Client(base_client.BaseClient):
         if image_meta is None:
             image_meta = {}
 
-        headers = utils.image_meta_to_http_headers(image_meta)
+        headers = wsgi.image_meta_to_http_headers(image_meta)
 
         if image_data:
             body = image_data
@@ -275,7 +275,7 @@ class V1Client(base_client.BaseClient):
         Pre-fetch a specified image from the cache
         """
         res = self.do_request("HEAD", "/images/%s" % image_id)
-        image = utils.get_image_meta_from_headers(res)
+        image = wsgi.get_image_meta_from_headers(res)
         self.do_request("PUT", "/cached_images/%s" % image_id)
         return True
 

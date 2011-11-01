@@ -47,7 +47,6 @@ from glance.store import (get_from_backend,
                           get_store_from_scheme,
                           UnsupportedBackend)
 from glance import registry
-from glance import utils
 
 
 logger = logging.getLogger('glance.api.v1.images')
@@ -596,7 +595,7 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
 
     def _deserialize(self, request):
         result = {}
-        result['image_meta'] = utils.get_image_meta_from_headers(request)
+        result['image_meta'] = wsgi.get_image_meta_from_headers(request)
         data = request.body_file if self.has_body(request) else None
         result['image_data'] = data
         return result
@@ -630,7 +629,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
         :param response: The Webob Response object
         :param image_meta: Mapping of image metadata
         """
-        headers = utils.image_meta_to_http_headers(image_meta)
+        headers = wsgi.image_meta_to_http_headers(image_meta)
 
         for k, v in headers.items():
             response.headers[k] = v

@@ -43,8 +43,8 @@ gettext.install('glance', unicode=1)
 from glance import client as glance_client
 from glance import version
 from glance.common import exception
-from glance.common import utils as common_utils
-from glance import utils
+from glance.common import utils
+
 
 SUCCESS = 0
 FAILURE = 1
@@ -214,7 +214,7 @@ EXAMPLES
         return FAILURE
 
     image_meta = {'name': fields.pop('name'),
-                  'is_public': common_utils.bool_from_string(
+                  'is_public': utils.bool_from_string(
                       fields.pop('is_public', False)),
                   'disk_format': fields.pop('disk_format', 'raw'),
                   'min_disk': fields.pop('min_disk', 0),
@@ -340,7 +340,7 @@ to spell field names correctly. :)"""
 
     # Have to handle "boolean" values specially...
     if 'is_public' in fields:
-        image_meta['is_public'] = common_utils.bool_from_string(
+        image_meta['is_public'] = utils.bool_from_string(
             fields.pop('is_public'))
 
     # Add custom attributes, which are all the arguments remaining
