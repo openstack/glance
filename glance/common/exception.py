@@ -148,3 +148,7 @@ class MaxRedirectsExceeded(GlanceException):
 
 class InvalidRedirect(GlanceException):
     message = _("Received invalid HTTP redirect.")
+
+
+class NoServiceEndpoint(GlanceException):
+    message = _("Response from Keystone does not contain a Glance endpoint.")
