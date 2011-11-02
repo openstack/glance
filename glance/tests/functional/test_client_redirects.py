@@ -118,8 +118,10 @@ class TestClientRedirects(functional.FunctionalTest):
         """
         Test we don't redirect forever.
         """
-        with self.assertRaises(exception.MaxRedirectsExceeded):
-            self.client.do_request("GET", "/infinite_302")
+        self.assertRaises(exception.MaxRedirectsExceeded,
+                          self.client.do_request,
+                          "GET",
+                          "/infinite_302")
 
     def test_post_redirect(self):
         """
