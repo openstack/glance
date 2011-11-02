@@ -172,3 +172,7 @@ class StoreAddDisabled(GlanceException):
 
 class InvalidNotifierStrategy(GlanceException):
     message = "'%(strategy)s' is not an available notifier strategy."
+
+
+class NoServiceEndpoint(GlanceException):
+    message = _("Response from Keystone does not contain a Glance endpoint.")
