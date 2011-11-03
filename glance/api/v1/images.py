@@ -674,10 +674,11 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
                         "bytes") % locals()
                 logger.error(msg)
                 raise IOError(errno.EPIPE, _("Corrupt image download for "
-                                             "image %(image_id)s"))
+                                             "image %(image_id)s") % locals())
 
         image_iter = result['image_iterator']
-        expected_size = image_meta['size']
+        # image_meta['size'] is a str
+        expected_size = int(image_meta['size'])
         response.app_iter = checked_iter(image_id, expected_size, image_iter)
         # Using app_iter blanks content-length, so we set it here...
         response.headers['Content-Length'] = image_meta['size']
