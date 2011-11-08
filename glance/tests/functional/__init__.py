@@ -216,12 +216,6 @@ image_cache_driver = %(image_cache_driver)s
 [pipeline:glance-api]
 pipeline = versionnegotiation context %(cache_pipeline)s apiv1app
 
-[pipeline:versions]
-pipeline = versionsapp
-
-[app:versionsapp]
-paste.app_factory = glance.api.versions:app_factory
-
 [app:apiv1app]
 paste.app_factory = glance.api.v1:app_factory
 

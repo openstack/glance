@@ -24,8 +24,6 @@ import json
 
 import webob.dec
 
-from glance.common import wsgi
-
 
 class Controller(object):
 
@@ -67,10 +65,3 @@ class Controller(object):
     def get_href(self):
         return "http://%s:%s/v1/" % (self.options['bind_host'],
                                       self.options['bind_port'])
-
-
-def app_factory(global_conf, **local_conf):
-    """paste.deploy app factory for creating Glance API versions apps"""
-    conf = global_conf.copy()
-    conf.update(local_conf)
-    return Controller(conf)
