@@ -549,6 +549,20 @@ When using the ``sqlite`` cache driver, you can set the name of the database
 that will be used to store the cached images information. The database
 is always contained in the ``image_cache_dir``.
 
+ * ``image_cache_max_size=SIZE``
+
+Optional.
+
+Default: ``10737418240`` (10 GB)
+
+Size, in bytes, that the image cache should be constrained to. Images files
+are cached automatically in the local image cache, even if the writing of that
+image file would put the total cache size over this size. The
+``glance-cache-pruner`` executable is what prunes the image cache to be equal
+to or less than this value. The ``glance-cache-pruner`` executable is designed
+to be run via cron on a regular basis. See more about this executable in
+`Controlling the Growth of the Image Cache`
+
 Configuring the Glance Registry
 -------------------------------
 
