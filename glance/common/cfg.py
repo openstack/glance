@@ -1118,6 +1118,9 @@ class CommonConfigOpts(ConfigOpts):
         BoolOpt('use-syslog',
                 default=False,
                 help='Use syslog for logging.'),
+        StrOpt('syslog-log-facility',
+               default='LOG_USER',
+               help='syslog facility to receive log lines')
         ]
 
     def __init__(self, **kwargs):
