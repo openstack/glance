@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 class Controller(api.BaseController):
     """
-    A controller that produces information on the Glance API versions.
+    A controller for managing cached images.
     """
 
     def __init__(self, options):
