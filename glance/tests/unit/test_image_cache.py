@@ -24,9 +24,7 @@ import unittest
 import stubout
 
 from glance import image_cache
-from glance.image_cache import prefetcher
 from glance.common import exception
-from glance.tests import stubs
 from glance.tests.utils import skip_if_disabled
 
 FIXTURE_DATA = '*' * 1024
@@ -204,25 +202,6 @@ class ImageCacheTestCase(object):
         self.assertEqual(self.cache.get_cache_queue(),
                          ['0', '1', '2'])
 
-    @skip_if_disabled
-    def test_prefetcher(self):
-        """
-        Test that the prefetcher application works
-        """
-        stubs.stub_out_registry_server(self.stubs)
-        FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
-
-        # Should return True since there is nothing in the queue
-        pf = prefetcher.Prefetcher(self.options)
-        self.assertTrue(pf.run())
-
-        for x in xrange(2, 3):
-            self.assertTrue(self.cache.queue_image(x))
-
-        # Should return False since there is no metadata for these
-        # images in the registry
-        self.assertFalse(pf.run())
-
 
 class TestImageCacheXattr(unittest.TestCase,
                           ImageCacheTestCase):
@@ -257,12 +236,10 @@ class TestImageCacheXattr(unittest.TestCase,
                         'registry_host': '0.0.0.0',
                         'registry_port': 9191}
         self.cache = image_cache.ImageCache(self.options)
-        self.stubs = stubout.StubOutForTesting()
 
     def tearDown(self):
         if os.path.exists(self.cache_dir):
             shutil.rmtree(self.cache_dir)
-        self.stubs.UnsetAll()
 
 
 class TestImageCacheSqlite(unittest.TestCase,
@@ -297,9 +274,7 @@ class TestImageCacheSqlite(unittest.TestCase,
                         'registry_host': '0.0.0.0',
                         'registry_port': 9191}
         self.cache = image_cache.ImageCache(self.options)
-        self.stubs = stubout.StubOutForTesting()
 
     def tearDown(self):
         if os.path.exists(self.cache_dir):
             shutil.rmtree(self.cache_dir)
-        self.stubs.UnsetAll()

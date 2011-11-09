@@ -17,10 +17,7 @@
 #    under the License.
 
 """
-Glance Image Cache Pre-fetcher
-
-This is meant to be run from the command line after queueing
-images to be pretched.
+CLI Utility to queue one or more images for prefetching into the image cache
 """
 
 import gettext
@@ -41,26 +38,19 @@ gettext.install('glance', unicode=1)
 from glance import version
 from glance.common import config
 
-
-def create_options(parser):
-    """
-    Sets up the CLI and config-file options that may be
-    parsed and program commands.
-
-    :param parser: The option parser
-    """
-    config.add_common_options(parser)
-    config.add_log_options(parser)
+USAGE = """
+%%prog [OPTIONS] <IMAGE_ID1> [<IMAGE_ID2> ... <IMAGE_IDN>]
+"""
 
 
 if __name__ == '__main__':
     oparser = optparse.OptionParser(version='%%prog %s'
-                                    % version.version_string())
-    create_options(oparser)
+                                    % version.version_string(),
+                                    usage=USAGE)
     (options, args) = config.parse_options(oparser)
 
     try:
-        conf, app = config.load_paste_app('glance-prefetcher', options, args)
-        app.run()
+        conf, app = config.load_paste_app('glance-queue-image', options, args)
+        app.run(args)
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
