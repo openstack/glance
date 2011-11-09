@@ -74,7 +74,7 @@ class Controller(api.BaseController):
         the image is in the registry here. That is done by the
         prefetcher...
         """
-        self.cache.queue_image(image_id)
+        self.cache.queue_image(id)
 
 
 class CachedImageDeserializer(wsgi.JSONRequestDeserializer):

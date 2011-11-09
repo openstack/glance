@@ -251,6 +251,15 @@ class BaseCacheManageMiddlewareTest(object):
         self.assertTrue('cached_images' in data)
         self.assertEqual(data['cached_images'], [])
 
+        # Prefetch the first image
+        # NOTE(bcwaldon): can't verify the image exists since all this does
+        # is queue it up. This is here just to exercise the middleware
+        # and prevent bug 888284 from coming back
+        path = "http://%s:%d/v1/cached_images/1" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT')
+        self.assertEqual(response.status, 200)
+
         # Grab the images, essentially caching them...
         for x in xrange(0, 4):
             path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
