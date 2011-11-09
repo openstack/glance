@@ -92,7 +92,7 @@ def get_socket(host, port, conf):
         except socket.error, err:
             if err.args[0] != errno.EADDRINUSE:
                 raise
-            sleep(0.1)
+            eventlet.sleep(0.1)
     if not sock:
         raise RuntimeError(_("Could not bind to %s:%s after trying for 30 "
                              "seconds") % bind_addr)
