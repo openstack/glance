@@ -42,7 +42,9 @@ class Prefetcher(object):
         registry.configure_registry_client(options)
 
     def fetch_image_into_cache(self, image_id):
-        ctx = context.RequestContext(is_admin=True, show_deleted=True)
+        auth_tok = self.options.get('admin_token')
+        ctx = context.RequestContext(is_admin=True, show_deleted=True,
+                                     auth_tok=auth_tok)
         try:
             image_meta = registry.get_image_metadata(ctx, image_id)
             if image_meta['status'] != 'active':
