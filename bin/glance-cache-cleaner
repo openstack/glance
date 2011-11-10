@@ -70,7 +70,8 @@ if __name__ == '__main__':
     (options, args) = config.parse_options(oparser)
 
     try:
-        conf, app = config.load_paste_app('glance-cleaner', options, args)
+        conf, app = config.load_paste_app('glance-cleaner', options, args,
+                                          'glance-cache')
         app.run()
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)

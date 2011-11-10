@@ -26,6 +26,7 @@ from glance.api.middleware import version_negotiation
 from glance.api.v1 import images
 from glance.api.v1 import members
 from glance.common import config
+from glance.image_cache import pruner
 
 
 class TestOptionParsing(unittest.TestCase):
@@ -128,9 +129,9 @@ class TestConfigFiles(unittest.TestCase):
     def test_config_file_not_found(self):
         self.stubs.Set(os.path, 'exists', lambda p: False)
 
-        path = config.find_config_file('glance-foo', {}, [])
-
-        self.assertIsNone(path)
+        self.assertRaises(RuntimeError,
+                          config.find_config_file,
+                          'glance-foo', {}, [])
 
 
 class TestPasteConfig(unittest.TestCase):
@@ -138,9 +139,8 @@ class TestPasteConfig(unittest.TestCase):
     def test_load_paste_config(self):
         path = os.path.join(os.getcwd(), 'etc/glance-api.conf')
 
-        conf_file, conf = config.load_paste_config('glance-api', {}, [path])
+        conf = config.load_paste_config(path, 'glance-api')
 
-        self.assertEquals(path, conf_file)
         self.assertEquals('file', conf['default_store'])
 
 
@@ -164,3 +164,24 @@ class TestPasteApp(unittest.TestCase):
         self.assertEquals('file', conf['default_store'])
         self.assertEquals(version_negotiation.VersionNegotiationFilter,
                           type(app))
+
+    def test_load_paste_app_with_conf_name(self):
+        def fake_join(*args):
+            if len(args) == 2 and \
+                    args[0].endswith('.glance') and \
+                    args[1] == 'glance-cache.conf':
+                return os.path.join(os.getcwd(), 'etc', args[1])
+            else:
+                return orig_join(*args)
+
+        orig_join = os.path.join
+        self.stubs.Set(os.path, 'join', fake_join)
+
+        self.stubs.Set(config, 'setup_logging', lambda *a: None)
+        self.stubs.Set(pruner, 'app_factory', lambda *a: 'pruner')
+
+        conf, app = config.load_paste_app('glance-pruner', {}, [],
+                                          'glance-cache')
+
+        self.assertEquals('86400', conf['image_cache_stall_time'])
+        self.assertEquals('pruner', app)

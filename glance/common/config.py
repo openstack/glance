@@ -181,20 +181,22 @@ def setup_logging(options, conf):
     root_logger.addHandler(handler)
 
 
-def find_config_file(app_name, options, args):
+def find_config_file(conf_name, options, args):
     """
     Return the first config file found for an application.
 
     We search for the paste config file in the following order:
     * If --config-file option is used, use that
     * If args[0] is a file, use that
-    * Search for $app.conf in standard directories:
+    * Search for $conf_name.conf in standard directories:
         * ~.glance/
         * ~
         * /etc/glance
         * /etc
 
-    :retval Full path to config file, or None if no config file found
+    :retval Full path to config file.
+
+    :raises RuntimeError if the config file cannot be found.
     """
 
     fix_path = lambda p: os.path.abspath(os.path.expanduser(p))
@@ -205,62 +207,48 @@ def find_config_file(app_name, options, args):
         if os.path.exists(args[0]):
             return fix_path(args[0])
 
-    # Handle standard directory search for $app_name.conf
+    # Handle standard directory search for $conf_name.conf
     config_file_dirs = [fix_path(os.path.join('~', '.glance')),
                         fix_path('~'),
                         '/etc/glance/',
                         '/etc']
 
     for cfg_dir in config_file_dirs:
-        cfg_file = os.path.join(cfg_dir, '%s.conf' % app_name)
+        cfg_file = os.path.join(cfg_dir, '%s.conf' % conf_name)
         if os.path.exists(cfg_file):
             return cfg_file
 
+    raise RuntimeError("Unable to locate %s configuration file." % conf_name)
 
-def load_paste_config(app_name, options, args):
+
+def load_paste_config(conf_file, app_name):
     """
-    Looks for a config file to use for an app and returns the
-    config file path and a configuration mapping from a paste config file.
+    Load the configuration mapping from a paste config file.
 
-    We search for the paste config file in the following order:
-    * If --config-file option is used, use that
-    * If args[0] is a file, use that
-    * Search for $app_name.conf in standard directories:
-        * ~.glance/
-        * ~
-        * /etc/glance
-        * /etc
-
+    :param conf_file: The path to the paste config file.
     :param app_name: Name of the application to load config for, or None.
                      None signifies to only load the [DEFAULT] section of
                      the config file.
-    :param options: Set of typed options returned from parse_options()
-    :param args: Command line arguments from argv[1:]
-    :retval Tuple of (conf_file, conf)
+    :retval The configuration mapping.
 
-    :raises RuntimeError when config file cannot be located or there was a
-            problem loading the configuration file.
+    :raises RuntimeError when there was a problem loading the configuration
+            file.
     """
-    conf_file = find_config_file(app_name, options, args)
-    if not conf_file:
-        raise RuntimeError("Unable to locate any configuration file. "
-                            "Cannot load application %s" % app_name)
     try:
-        conf = deploy.appconfig("config:%s" % conf_file, name=app_name)
-        return conf_file, conf
+        return deploy.appconfig("config:%s" % conf_file, name=app_name)
     except Exception, e:
         raise RuntimeError("Error trying to load config %s: %s"
                            % (conf_file, e))
 
 
-def load_paste_app(app_name, options, args):
+def load_paste_app(app_name, options, args, conf_name=None):
     """
     Builds and returns a WSGI app from a paste config file.
 
     We search for the paste config file in the following order:
     * If --config-file option is used, use that
     * If args[0] is a file, use that
-    * Search for $app_name.conf in standard directories:
+    * Search for $conf_name.conf in standard directories:
         * ~.glance/
         * ~
         * /etc/glance
@@ -269,11 +257,16 @@ def load_paste_app(app_name, options, args):
     :param app_name: Name of the application to load
     :param options: Set of typed options returned from parse_options()
     :param args: Command line arguments from argv[1:]
+    :param conf_name: Name of config file to load, defaults to app_name
 
     :raises RuntimeError when config file cannot be located or application
             cannot be loaded from config file
     """
-    conf_file, conf = load_paste_config(app_name, options, args)
+    if conf_name is None:
+        conf_name = app_name
+    conf_file = find_config_file(conf_name, options, args)
+
+    conf = load_paste_config(conf_file, app_name)
 
     try:
         # Setup logging early, supplying both the CLI options and the
