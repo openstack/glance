@@ -32,7 +32,6 @@ from eventlet import sleep, timeout
 import sqlite3
 
 from glance.common import exception
-from glance.common import utils
 from glance.image_cache.drivers import base
 
 logger = logging.getLogger(__name__)
@@ -90,26 +89,10 @@ class Driver(base.Driver):
         this method. If the store was not able to successfully configure
         itself, it should raise `exception.BadDriverConfiguration`
         """
-        # Here we set up the various file-based image cache paths
-        # that we need in order to find the files in different states
-        # of cache management. Once we establish these paths, we create
-        # the SQLite database that will hold our cache attributes
-        self.set_paths()
+        super(Driver, self).configure()
+
+        # Create the SQLite database that will hold our cache attributes
         self.initialize_db()
-
-    def set_paths(self):
-        """
-        Creates all necessary directories under the base cache directory
-        """
-        self.base_dir = self.options.get('image_cache_dir')
-        self.incomplete_dir = os.path.join(self.base_dir, 'incomplete')
-        self.invalid_dir = os.path.join(self.base_dir, 'invalid')
-        self.queue_dir = os.path.join(self.base_dir, 'queue')
-
-        dirs = [self.incomplete_dir, self.invalid_dir, self.queue_dir]
-
-        for path in dirs:
-            utils.safe_mkdirs(path)
 
     def initialize_db(self):
         db = self.options.get('image_cache_sqlite_db', DEFAULT_SQLITE_DB)

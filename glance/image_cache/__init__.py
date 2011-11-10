@@ -67,12 +67,13 @@ class ImageCache(object):
             self.driver = self.driver_class(self.options)
             self.driver.configure()
         except exception.BadDriverConfiguration, config_err:
+            driver_module = self.driver_class.__module__
             logger.warn(_("Image cache driver "
                           "'%(driver_module)s' failed to configure. "
                           "Got error: '%(config_err)s") % locals())
             logger.info(_("Defaulting to SQLite driver."))
-            driver_module = __name__ + '.drivers.sqlite.Driver'
-            self.driver_class = utils.import_class(driver_module)
+            default_module = __name__ + '.drivers.sqlite.Driver'
+            self.driver_class = utils.import_class(default_module)
             self.driver = self.driver_class(self.options)
             self.driver.configure()
 

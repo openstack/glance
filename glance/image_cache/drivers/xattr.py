@@ -66,7 +66,6 @@ import time
 import xattr
 
 from glance.common import exception
-from glance.common import utils
 from glance.image_cache.drivers import base
 
 logger = logging.getLogger(__name__)
@@ -80,34 +79,6 @@ class Driver(base.Driver):
     Cache driver that uses xattr file tags and requires a filesystem
     that has atimes set.
     """
-
-    def configure(self):
-        """
-        Configure the driver to use the stored configuration options
-        Any store that needs special configuration should implement
-        this method. If the store was not able to successfully configure
-        itself, it should raise `exception.BadDriverConfiguration`
-        """
-        # Here we set up the various file-based image cache paths
-        # that we need in order to find the files in different states
-        # of cache management. Once we establish these paths, we do
-        # a quick attempt to write a user xattr to a temporary file
-        # to check that the filesystem is even enabled to support xattrs
-        self.set_paths()
-
-    def set_paths(self):
-        """
-        Creates all necessary directories under the base cache directory
-        """
-        self.base_dir = self.options.get('image_cache_dir')
-        self.incomplete_dir = os.path.join(self.base_dir, 'incomplete')
-        self.invalid_dir = os.path.join(self.base_dir, 'invalid')
-        self.queue_dir = os.path.join(self.base_dir, 'queue')
-
-        dirs = [self.incomplete_dir, self.invalid_dir, self.queue_dir]
-
-        for path in dirs:
-            utils.safe_mkdirs(path)
 
     def get_cache_size(self):
         """
