@@ -130,8 +130,10 @@ def print_image_formatted(client, image):
     :param client: The Glance client object
     :param image: The image metadata
     """
-    print "URI: %s://%s/images/%s" % (client.use_ssl and "https" or "http",
+    print "URI: %s://%s:%s/v1/images/%s" % (
+                                      client.use_ssl and "https" or "http",
                                       client.host,
+                                      client.port,
                                       image['id'])
     print "Id: %s" % image['id']
     print "Public: " + (image['is_public'] and "Yes" or "No")
