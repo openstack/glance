@@ -644,7 +644,7 @@ class TestBinGlance(functional.FunctionalTest):
             'Minimum Disk Required (GB): 0',
         ]
 
-        self.assertGreaterEqual(set(lines), set(expected_lines))
+        self.assertTrue(set(lines) >= set(expected_lines))
 
         # 3. Delete the image
         cmd = "bin/glance --port=%d --force delete %s" % (api_port, image_id)
