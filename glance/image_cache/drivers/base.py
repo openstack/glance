@@ -19,7 +19,16 @@
 Base attribute driver class
 """
 
+import logging
+import os.path
+
 from contextlib import contextmanager
+
+from glance.common import exception
+from glance.common import utils
+
+
+logger = logging.getLogger(__name__)
 
 
 class Driver(object):
@@ -41,7 +50,36 @@ class Driver(object):
         this method. If the store was not able to successfully configure
         itself, it should raise `exception.BadDriverConfiguration`
         """
-        pass
+        # Here we set up the various file-based image cache paths
+        # that we need in order to find the files in different states
+        # of cache management. Once we establish these paths, we do
+        # a quick attempt to write a user xattr to a temporary file
+        # to check that the filesystem is even enabled to support xattrs
+        self.set_paths()
+
+    def set_paths(self):
+        """
+        Creates all necessary directories under the base cache directory
+        """
+
+        try:
+            key = 'image_cache_dir'
+            self.base_dir = self.options[key]
+        except KeyError:
+            msg = _('Failed to read %s from config') % key
+            logger.error(msg)
+            driver = self.__class__.__module__
+            raise exception.BadDriverConfiguration(driver_name=driver,
+                                                   reason=msg)
+
+        self.incomplete_dir = os.path.join(self.base_dir, 'incomplete')
+        self.invalid_dir = os.path.join(self.base_dir, 'invalid')
+        self.queue_dir = os.path.join(self.base_dir, 'queue')
+
+        dirs = [self.incomplete_dir, self.invalid_dir, self.queue_dir]
+
+        for path in dirs:
+            utils.safe_mkdirs(path)
 
     def get_cache_size(self):
         """
