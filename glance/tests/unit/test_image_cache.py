@@ -124,6 +124,23 @@ class ImageCacheTestCase(object):
             self.assertFalse(self.cache.is_cached(image_id))
 
     @skip_if_disabled
+    def test_clean_stalled(self):
+        """
+        Test the clean method removes expected images
+        """
+        incomplete_file_path = os.path.join(self.cache_dir, 'incomplete', '1')
+        incomplete_file = open(incomplete_file_path, 'w')
+        incomplete_file.write(FIXTURE_DATA)
+        incomplete_file.close()
+
+        self.assertTrue(os.path.exists(incomplete_file_path))
+
+        self.cache.options['image_cache_stall_time'] = 0
+        self.cache.clean()
+
+        self.assertFalse(os.path.exists(incomplete_file_path))
+
+    @skip_if_disabled
     def test_prune(self):
         """
         Test that pruning the cache works as expected...

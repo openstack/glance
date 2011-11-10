@@ -71,6 +71,8 @@ from glance.image_cache.drivers import base
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_STALL_TIME = 86400  # 24 hours
+
 
 class Driver(base.Driver):
 
@@ -348,90 +350,23 @@ class Driver(base.Driver):
         items.sort()
         return [image_id for (mtime, image_id) in items]
 
-    def _base_entries(self, basepath):
-        def iso8601_from_timestamp(timestamp):
-            return datetime.datetime.utcfromtimestamp(timestamp)\
-                                    .isoformat()
-
-        for path in self.get_all_regular_files(basepath):
-            filename = os.path.basename(path)
-            try:
-                image_id = int(filename)
-            except ValueError, TypeError:
-                continue
-
-            entry = {}
-            entry['id'] = image_id
-            entry['path'] = path
-            entry['name'] = self.driver.get_attr(image_id, 'active',
-                                                      'image_name',
-                                                      default='UNKNOWN')
-
-            mtime = os.path.getmtime(path)
-            entry['last_modified'] = iso8601_from_timestamp(mtime)
-
-            atime = os.path.getatime(path)
-            entry['last_accessed'] = iso8601_from_timestamp(atime)
-
-            entry['size'] = os.path.getsize(path)
-
-            entry['expected_size'] = self.driver.get_attr(image_id,
-                    'active', 'expected_size', default='UNKNOWN')
-
-            yield entry
-
-    def invalid_entries(self):
-        """Cache info for invalid cached images"""
-        for entry in self._base_entries(self.invalid_path):
-            path = entry['path']
-            entry['error'] = self.driver.get_attr(image_id, 'invalid',
-                                                       'error',
-                                                       default='UNKNOWN')
-            yield entry
-
-    def incomplete_entries(self):
-        """Cache info for incomplete cached images"""
-        for entry in self._base_entries(self.incomplete_path):
-            yield entry
-
-    def prefetch_entries(self):
-        """Cache info for both queued and in-progress prefetch jobs"""
-        both_entries = itertools.chain(
-                        self._base_entries(self.prefetch_path),
-                        self._base_entries(self.prefetching_path))
-
-        for entry in both_entries:
-            path = entry['path']
-            entry['status'] = 'in-progress' if 'prefetching' in path\
-                                            else 'queued'
-            yield entry
-
-    def entries(self):
-        """Cache info for currently cached images"""
-        for entry in self._base_entries(self.path):
-            path = entry['path']
-            entry['hits'] = self.driver.get_attr(image_id, 'active',
-                                                      'hits',
-                                                      default='UNKNOWN')
-            yield entry
-
     def _reap_old_files(self, dirpath, entry_type, grace=None):
         """
         """
         now = time.time()
         reaped = 0
-        for path in self.get_all_regular_files(dirpath):
+        for path in get_all_regular_files(dirpath):
             mtime = os.path.getmtime(path)
             age = now - mtime
             if not grace:
                 logger.debug(_("No grace period, reaping '%(path)s'"
                              " immediately"), locals())
-                self._delete_file(path)
+                delete_cached_file(path)
                 reaped += 1
             elif age > grace:
                 logger.debug(_("Cache entry '%(path)s' exceeds grace period, "
                              "(%(age)i s > %(grace)i s)"), locals())
-                self._delete_file(path)
+                delete_cached_file(path)
                 reaped += 1
 
         logger.info(_("Reaped %(reaped)s %(entry_type)s cache entries"),
@@ -444,14 +379,28 @@ class Driver(base.Driver):
         :param grace: Number of seconds to keep an invalid entry around for
                       debugging purposes. If None, then delete immediately.
         """
-        return self._reap_old_files(self.invalid_path, 'invalid', grace=grace)
+        return self._reap_old_files(self.invalid_dir, 'invalid', grace=grace)
 
-    def reap_stalled(self):
-        """Remove any stalled cache entries"""
-        stall_timeout = int(self.options.get('image_cache_stall_timeout',
-                            86400))
-        return self._reap_old_files(self.incomplete_path, 'stalled',
-                                    grace=stall_timeout)
+    def reap_stalled(self, grace=None):
+        """Remove any stalled cache entries
+
+        :param grace: Number of seconds to keep an invalid entry around for
+                      debugging purposes. If None, then delete immediately.
+        """
+        return self._reap_old_files(self.incomplete_dir, 'stalled',
+                                    grace=grace)
+
+    def clean(self):
+        """
+        Delete any image files in the invalid directory and any
+        files in the incomplete directory that are older than a
+        configurable amount of time.
+        """
+        self.reap_invalid()
+
+        incomplete_stall_time = int(self.options.get('image_cache_stall_time',
+                                                     DEFAULT_STALL_TIME))
+        self.reap_stalled(incomplete_stall_time)
 
 
 def get_all_regular_files(basepath):

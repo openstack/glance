@@ -132,7 +132,8 @@ class Driver(base.Driver):
             msg = _("Failed to initialize the image cache database. "
                     "Got error: %s") % e
             logger.error(msg)
-            raise BadDriverConfiguration(driver_name='sqlite', reason=msg)
+            raise exception.BadDriverConfiguration(driver_name='sqlite',
+                                                   reason=msg)
 
     def get_cache_size(self):
         """
@@ -253,7 +254,7 @@ class Driver(base.Driver):
                                                      DEFAULT_STALL_TIME))
         now = time.time()
         older_than = now - incomplete_stall_time
-        self.delete_incomplete_files(older_than)
+        self.delete_stalled_files(older_than)
 
     def get_least_recently_accessed(self):
         """
@@ -406,73 +407,6 @@ class Driver(base.Driver):
             pass
 
         return True
-
-    def _base_entries(self, basepath):
-        def iso8601_from_timestamp(timestamp):
-            return datetime.datetime.utcfromtimestamp(timestamp)\
-                                    .isoformat()
-
-        for path in self.self.get_cache_files(basepath):
-            filename = os.path.basename(path)
-            try:
-                image_id = int(filename)
-            except ValueError, TypeError:
-                continue
-
-            entry = {}
-            entry['id'] = image_id
-            entry['path'] = path
-            entry['name'] = self.driver.get_attr(image_id, 'active',
-                                                      'image_name',
-                                                      default='UNKNOWN')
-
-            mtime = os.path.getmtime(path)
-            entry['last_modified'] = iso8601_from_timestamp(mtime)
-
-            atime = os.path.getatime(path)
-            entry['last_accessed'] = iso8601_from_timestamp(atime)
-
-            entry['size'] = os.path.getsize(path)
-
-            entry['expected_size'] = self.driver.get_attr(image_id,
-                    'active', 'expected_size', default='UNKNOWN')
-
-            yield entry
-
-    def invalid_entries(self):
-        """Cache info for invalid cached images"""
-        for entry in self._base_entries(self.invalid_path):
-            path = entry['path']
-            entry['error'] = self.driver.get_attr(image_id, 'invalid',
-                                                       'error',
-                                                       default='UNKNOWN')
-            yield entry
-
-    def incomplete_entries(self):
-        """Cache info for incomplete cached images"""
-        for entry in self._base_entries(self.incomplete_path):
-            yield entry
-
-    def prefetch_entries(self):
-        """Cache info for both queued and in-progress prefetch jobs"""
-        both_entries = itertools.chain(
-                        self._base_entries(self.prefetch_path),
-                        self._base_entries(self.prefetching_path))
-
-        for entry in both_entries:
-            path = entry['path']
-            entry['status'] = 'in-progress' if 'prefetching' in path\
-                                            else 'queued'
-            yield entry
-
-    def entries(self):
-        """Cache info for currently cached images"""
-        for entry in self._base_entries(self.path):
-            path = entry['path']
-            entry['hits'] = self.driver.get_attr(image_id, 'active',
-                                                      'hits',
-                                                      default='UNKNOWN')
-            yield entry
 
     def delete_invalid_files(self):
         """
