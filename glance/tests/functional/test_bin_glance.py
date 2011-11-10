@@ -602,3 +602,54 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertTrue(image_lines[1].split()[1], image_ids[2])
         self.assertTrue(image_lines[12].split()[1], image_ids[1])
         self.assertTrue(image_lines[23].split()[1], image_ids[4])
+
+    def test_show_image_format(self):
+        self.cleanup()
+        self.start_servers()
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 1. Add public image
+        with tempfile.NamedTemporaryFile() as image_file:
+            image_file.write("XXX")
+            image_file.flush()
+            image_file_name = image_file.name
+            cmd = "bin/glance --port=%d add is_public=True"\
+                  " name=MyImage < %s" % (api_port, image_file_name)
+
+            exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        image_id = out.strip().rsplit(' ', 1)[1]
+
+        # 2. Verify image added as public image
+        cmd = "bin/glance --port=%d show %s" % (api_port, image_id)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        lines = out.split("\n")[:-1]
+
+        expected_lines = [
+            'URI: http://0.0.0.0:%s/v1/images/%s' % (api_port, image_id),
+            'Id: %s' % image_id,
+            'Public: Yes',
+            'Name: MyImage',
+            'Status: active',
+            'Size: 3',
+            'Disk format: raw',
+            'Container format: ovf',
+            'Minimum Ram Required (MB): 0',
+            'Minimum Disk Required (GB): 0',
+        ]
+
+        self.assertGreaterEqual(set(lines), set(expected_lines))
+
+        # 3. Delete the image
+        cmd = "bin/glance --port=%d --force delete %s" % (api_port, image_id)
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('Deleted image %s' % image_id, out.strip())
