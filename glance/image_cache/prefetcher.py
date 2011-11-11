@@ -27,6 +27,12 @@ from glance.common import config
 from glance.common import context
 from glance.image_cache import ImageCache
 from glance import registry
+import glance.store
+import glance.store.filesystem
+import glance.store.http
+import glance.store.rbd
+import glance.store.s3
+import glance.store.swift
 from glance.store import get_from_backend
 
 
@@ -36,6 +42,7 @@ logger = logging.getLogger('glance.image_cache.prefetcher')
 class Prefetcher(object):
     def __init__(self, options):
         self.options = options
+        glance.store.create_stores(options)
         self.cache = ImageCache(options)
 
     def fetch_image_into_cache(self, image_id):
