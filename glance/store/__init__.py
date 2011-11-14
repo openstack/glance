@@ -107,7 +107,7 @@ def get_store_from_scheme(scheme):
     for handling that scheme
     """
     if scheme not in location.SCHEME_TO_STORE_MAP:
-        raise exception.UnknownScheme(scheme)
+        raise exception.UnknownScheme(scheme=scheme)
     return STORES[location.SCHEME_TO_STORE_MAP[scheme]]
 
 

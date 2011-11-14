@@ -319,6 +319,7 @@ class FunctionalTest(unittest.TestCase):
 
         self.test_id = random.randint(0, 100000)
         self.test_dir = os.path.join("/", "tmp", "test.%d" % self.test_id)
+        utils.safe_mkdirs(self.test_dir)
 
         self.api_protocol = 'http'
         self.api_port = get_unused_port()

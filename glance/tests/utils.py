@@ -17,6 +17,7 @@
 
 """Common utilities used in testing"""
 
+import errno
 import functools
 import os
 import socket
@@ -183,3 +184,37 @@ def get_unused_port():
     addr, port = s.getsockname()
     s.close()
     return port
+
+
+def xattr_writes_supported(path):
+    """
+    Returns True if the we can write a file to the supplied
+    path and subsequently write a xattr to that file.
+    """
+    try:
+        import xattr
+    except ImportError:
+        return False
+
+    def set_xattr(path, key, value):
+        entry_xattr = xattr.xattr(path)
+        entry_xattr.set("user.%s" % key, str(value))
+
+    # We do a quick attempt to write a user xattr to a temporary file
+    # to check that the filesystem is even enabled to support xattrs
+    fake_filepath = os.path.join(path, 'testing-checkme')
+    result = True
+    with open(fake_filepath, 'wb') as fake_file:
+        fake_file.write("XXX")
+        fake_file.flush()
+    try:
+        set_xattr(fake_filepath, 'hits', '1')
+    except IOError, e:
+        if e.errno == errno.EOPNOTSUPP:
+            result = False
+    else:
+        # Cleanup after ourselves...
+        if os.path.exists(fake_filepath):
+            os.unlink(fake_filepath)
+
+    return result

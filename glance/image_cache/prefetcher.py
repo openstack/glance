@@ -63,8 +63,7 @@ class Prefetcher(object):
             logger.warn(_("No metadata found for image '%s'"), image_id)
             return False
 
-        image_data, image_size = get_from_backend(
-                image_meta['location'], options=self.options)
+        image_data, image_size = get_from_backend(image_meta['location'])
         logger.debug(_("Caching image '%s'"), image_id)
         self.cache.cache_image_iter(image_id, image_data)
         return True

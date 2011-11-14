@@ -25,7 +25,8 @@ import stubout
 
 from glance import image_cache
 from glance.common import exception
-from glance.tests.utils import skip_if_disabled
+from glance.common import utils
+from glance.tests.utils import skip_if_disabled, xattr_writes_supported
 
 FIXTURE_DATA = '*' * 1024
 
@@ -234,6 +235,10 @@ class TestImageCacheXattr(unittest.TestCase,
         if getattr(self, 'disable', False):
             return
 
+        self.cache_dir = os.path.join("/", "tmp", "test.cache.%d" %
+                                      random.randint(0, 1000000))
+        utils.safe_mkdirs(self.cache_dir)
+
         if not getattr(self, 'inited', False):
             try:
                 import xattr
@@ -245,14 +250,18 @@ class TestImageCacheXattr(unittest.TestCase,
 
         self.inited = True
         self.disabled = False
-        self.cache_dir = os.path.join("/", "tmp", "test.cache.%d" %
-                                      random.randint(0, 1000000))
         self.options = {'image_cache_dir': self.cache_dir,
                         'image_cache_driver': 'xattr',
                         'image_cache_max_size': 1024 * 5,
                         'registry_host': '0.0.0.0',
                         'registry_port': 9191}
         self.cache = image_cache.ImageCache(self.options)
+
+        if not xattr_writes_supported(self.cache_dir):
+            self.inited = True
+            self.disabled = True
+            self.disabled_message = ("filesystem does not support xattr")
+            return
 
     def tearDown(self):
         if os.path.exists(self.cache_dir):
