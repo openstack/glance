@@ -32,12 +32,40 @@ class CacheManageFilter(wsgi.Middleware):
 
         map = app.map
         resource = cached_images.create_resource(options)
-        map.resource("cached_image", "cached_images",
-                     controller=resource)
 
         map.connect("/cached_images",
                     controller=resource,
-                    action="delete_collection",
+                    action="get_cached_images",
+                    conditions=dict(method=["GET"]))
+
+        map.connect("/cached_images/{image_id}",
+                    controller=resource,
+                    action="delete_cached_image",
+                    conditions=dict(method=["DELETE"]))
+
+        map.connect("/cached_images",
+                    controller=resource,
+                    action="delete_cached_images",
+                    conditions=dict(method=["DELETE"]))
+
+        map.connect("/queued_images/{image_id}",
+                    controller=resource,
+                    action="queue_image",
+                    conditions=dict(method=["PUT"]))
+
+        map.connect("/queued_images",
+                    controller=resource,
+                    action="get_queued_images",
+                    conditions=dict(method=["GET"]))
+
+        map.connect("/queued_images/{image_id}",
+                    controller=resource,
+                    action="delete_queued_image",
+                    conditions=dict(method=["DELETE"]))
+
+        map.connect("/queued_images",
+                    controller=resource,
+                    action="delete_queued_images",
                     conditions=dict(method=["DELETE"]))
 
         logger.info(_("Initialized image cache management middleware"))

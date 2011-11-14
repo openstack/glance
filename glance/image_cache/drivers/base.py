@@ -130,16 +130,31 @@ class Driver(object):
         """
         raise NotImplementedError
 
-    def delete_all(self):
+    def delete_all_cached_images(self):
         """
         Removes all cached image files and any attributes about the images
         and returns the number of cached image files that were deleted.
         """
         raise NotImplementedError
 
-    def delete(self, image_id):
+    def delete_cached_image(self, image_id):
         """
         Removes a specific cached image file and any attributes about the image
+
+        :param image_id: Image ID
+        """
+        raise NotImplementedError
+
+    def delete_all_queued_images(self):
+        """
+        Removes all queued image files and any attributes about the images
+        and returns the number of queued image files that were deleted.
+        """
+        raise NotImplementedError
+
+    def delete_queued_image(self, image_id):
+        """
+        Removes a specific queued image file and any attributes about the image
 
         :param image_id: Image ID
         """
@@ -185,7 +200,7 @@ class Driver(object):
         """
         raise NotImplementedError
 
-    def get_cache_queue(self):
+    def get_queued_images(self):
         """
         Returns a list of image IDs that are in the queue. The
         list should be sorted by the time the image ID was inserted

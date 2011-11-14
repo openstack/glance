@@ -199,7 +199,7 @@ class Driver(base.Driver):
         path = self.get_image_filepath(image_id, 'queue')
         return os.path.exists(path)
 
-    def delete_all(self):
+    def delete_all_cached_images(self):
         """
         Removes all cached image files and any attributes about the images
         """
@@ -209,7 +209,7 @@ class Driver(base.Driver):
             deleted += 1
         return deleted
 
-    def delete(self, image_id):
+    def delete_cached_image(self, image_id):
         """
         Removes a specific cached image file and any attributes about the image
 
@@ -217,6 +217,25 @@ class Driver(base.Driver):
         """
         path = self.get_image_filepath(image_id)
         delete_cached_file(path)
+
+    def delete_all_queued_images(self):
+        """
+        Removes all queued image files and any attributes about the images
+        """
+        files = [f for f in self.get_cache_files(self.queue_dir)]
+        for file in files:
+            os.unlink(file)
+        return len(files)
+
+    def delete_queued_image(self, image_id):
+        """
+        Removes a specific queued image file and any attributes about the image
+
+        :param image_id: Image ID
+        """
+        path = self.get_image_filepath(image_id, 'queue')
+        if os.path.exists(path):
+            os.unlink(path)
 
     def get_least_recently_accessed(self):
         """
@@ -342,7 +361,7 @@ class Driver(base.Driver):
 
         return True
 
-    def get_cache_queue(self):
+    def get_queued_images(self):
         """
         Returns a list of image IDs that are in the queue. The
         list should be sorted by the time the image ID was inserted

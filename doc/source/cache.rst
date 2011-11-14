@@ -74,8 +74,16 @@ from a local cache.
 To queue an image for prefetching, you can use one of the following methods:
 
  * If the ``cache_manage`` middleware is enabled in the application pipeline,
-   you may call ``PUT /cached-images/<IMAGE_ID>`` to queue the image with
+   you may call ``PUT /queued-images/<IMAGE_ID>`` to queue the image with
    identifier ``<IMAGE_ID>``
+
+   Alternately, you can use the ``glance-cache-manage`` program to queue the
+   image. This program may be run from a different host than the host
+   containing the image cache. Example usage::
+
+     $> glance-cache-manage --host=<HOST> queue-image <IMAGE_ID>
+
+   This will queue the image with identifier ``<IMAGE_ID>`` for prefetching
 
  * You may use the ``glance-cache-queue-image`` executable, supplying a list
    of image identifiers to queue for prefetching into the cache.
@@ -88,7 +96,7 @@ To queue an image for prefetching, you can use one of the following methods:
    prefetching.
 
 Once you have queued the images you wish to prefetch, call the
-``glance-cache-prefetch`` executable, which will prefetch all queued images
+``glance-cache-prefetcher`` executable, which will prefetch all queued images
 concurrently, reporting the results of the fetch for each image, as shown
 below::
 
@@ -105,7 +113,14 @@ following methods:
     mappings that show cached images, the number of cache hits on each image,
     the size of the image, and the times they were last accessed.
 
-  * You can issue the following call on \*nix systems::
+    Alternately, you can use the ``glance-cache-manage`` program. This program
+    may be run from a different host than the host containing the image cache.
+    Example usage::
+
+    $> glance-cache-manage --host=<HOST> list-cached
+
+  * You can issue the following call on \*nix systems (on the host that contains
+    the image cache)::
 
       $> ls -lhR $IMAGE_CACHE_DIR
 
@@ -120,3 +135,7 @@ Manually Removing Images from the Image Cache
 If the ``cache_manage`` middleware is enabled, you may call
 ``DELETE /cached-images/<IMAGE_ID>`` to remove the image file for image
 with identifier ``<IMAGE_ID>`` from the cache.
+
+Alternately, you can use the ``glance-cache-manage`` program. Example usage::
+
+  $> glance-cache-manage --host=<HOST> delete-cached-image <IMAGE_ID>

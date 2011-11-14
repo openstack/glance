@@ -99,7 +99,7 @@ class ImageCacheTestCase(object):
 
         self.assertTrue(self.cache.is_cached(1))
 
-        self.cache.delete(1)
+        self.cache.delete_cached_image(1)
 
         self.assertFalse(self.cache.is_cached(1))
 
@@ -119,7 +119,7 @@ class ImageCacheTestCase(object):
         for image_id in (1, 2):
             self.assertTrue(self.cache.is_cached(image_id))
 
-        self.cache.delete_all()
+        self.cache.delete_all_cached_images()
 
         for image_id in (1, 2):
             self.assertFalse(self.cache.is_cached(image_id))
@@ -212,12 +212,12 @@ class ImageCacheTestCase(object):
 
         self.assertFalse(self.cache.queue_image(1))
 
-        self.cache.delete(1)
+        self.cache.delete_cached_image(1)
 
         for x in xrange(0, 3):
             self.assertTrue(self.cache.queue_image(x))
 
-        self.assertEqual(self.cache.get_cache_queue(),
+        self.assertEqual(self.cache.get_queued_images(),
                          ['0', '1', '2'])
 
 

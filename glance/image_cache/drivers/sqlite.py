@@ -103,7 +103,7 @@ class Driver(base.Driver):
             conn.executescript("""
                 CREATE TABLE IF NOT EXISTS cached_images (
                     image_id TEXT PRIMARY KEY,
-                    last_access REAL DEFAULT 0.0,
+                    last_accessed REAL DEFAULT 0.0,
                     last_modified REAL DEFAULT 0.0,
                     size INTEGER DEFAULT 0,
                     hits INTEGER DEFAULT 0,
@@ -154,7 +154,7 @@ class Driver(base.Driver):
         logger.debug(_("Gathering cached image entries."))
         with self.get_db() as db:
             cur = db.execute("""SELECT
-                             image_id, hits, last_access, last_modified, size
+                             image_id, hits, last_accessed, last_modified, size
                              FROM cached_images
                              ORDER BY image_id""")
             cur.row_factory = dict_factory
@@ -199,7 +199,7 @@ class Driver(base.Driver):
         path = self.get_image_filepath(image_id, 'queue')
         return os.path.exists(path)
 
-    def delete_all(self):
+    def delete_all_cached_images(self):
         """
         Removes all cached image files and any attributes about the images
         """
@@ -212,7 +212,7 @@ class Driver(base.Driver):
             db.commit()
         return deleted
 
-    def delete(self, image_id):
+    def delete_cached_image(self, image_id):
         """
         Removes a specific cached image file and any attributes about the image
 
@@ -224,6 +224,25 @@ class Driver(base.Driver):
             db.execute("""DELETE FROM cached_images WHERE image_id = ?""",
                        (image_id, ))
             db.commit()
+
+    def delete_all_queued_images(self):
+        """
+        Removes all queued image files and any attributes about the images
+        """
+        files = [f for f in self.get_cache_files(self.queue_dir)]
+        for file in files:
+            os.unlink(file)
+        return len(files)
+
+    def delete_queued_image(self, image_id):
+        """
+        Removes a specific queued image file and any attributes about the image
+
+        :param image_id: Image ID
+        """
+        path = self.get_image_filepath(image_id, 'queue')
+        if os.path.exists(path):
+            os.unlink(path)
 
     def clean(self):
         """
@@ -246,7 +265,7 @@ class Driver(base.Driver):
         """
         with self.get_db() as db:
             cur = db.execute("""SELECT image_id FROM cached_images
-                             ORDER BY last_access LIMIT 1""")
+                             ORDER BY last_accessed LIMIT 1""")
             image_id = cur.fetchone()[0]
 
         path = self.get_image_filepath(image_id)
@@ -280,7 +299,7 @@ class Driver(base.Driver):
                 now = time.time()
 
                 db.execute("""INSERT INTO cached_images
-                           (image_id, last_access, last_modified, hits, size)
+                           (image_id, last_accessed, last_modified, hits, size)
                            VALUES (?, 0, ?, 0, ?)""",
                            (image_id, now, filesize))
                 db.commit()
@@ -319,7 +338,7 @@ class Driver(base.Driver):
         now = time.time()
         with self.get_db() as db:
             db.execute("""UPDATE cached_images
-                       SET hits = hits + 1, last_access = ?
+                       SET hits = hits + 1, last_accessed = ?
                        WHERE image_id = ?""",
                        (now, image_id))
             db.commit()
@@ -411,7 +430,7 @@ class Driver(base.Driver):
             os.unlink(path)
             logger.info("Removed stalled cache file %s", path)
 
-    def get_cache_queue(self):
+    def get_queued_images(self):
         """
         Returns a list of image IDs that are in the queue. The
         list should be sorted by the time the image ID was inserted

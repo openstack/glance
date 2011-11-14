@@ -41,7 +41,7 @@ class Controller(api.BaseController):
         self.options = options
         self.cache = image_cache.ImageCache(self.options)
 
-    def index(self, req):
+    def get_cached_images(self, req):
         """
         GET /cached_images
 
@@ -50,31 +50,56 @@ class Controller(api.BaseController):
         images = self.cache.get_cached_images()
         return dict(cached_images=images)
 
-    def delete(self, req, id):
+    def delete_cached_image(self, req, image_id):
         """
-        DELETE /cached_images/1
+        DELETE /cached_images/<IMAGE_ID>
 
         Removes an image from the cache.
         """
-        self.cache.delete(id)
+        self.cache.delete_cached_image(image_id)
 
-    def delete_collection(self, req):
+    def delete_cached_images(self, req):
         """
         DELETE /cached_images - Clear all active cached images
 
         Removes all images from the cache.
         """
-        self.cache.delete_all()
+        return dict(num_deleted=self.cache.delete_all_cached_images())
 
-    def update(self, req, id):
+    def get_queued_images(self, req):
         """
-        PUT /cached_images/1
+        GET /queued_images
+
+        Returns a mapping of records about queued images.
+        """
+        images = self.cache.get_queued_images()
+        return dict(queued_images=images)
+
+    def queue_image(self, req, image_id):
+        """
+        PUT /queued_images/<IMAGE_ID>
 
         Queues an image for caching. We do not check to see if
         the image is in the registry here. That is done by the
         prefetcher...
         """
-        self.cache.queue_image(id)
+        self.cache.queue_image(image_id)
+
+    def delete_queued_image(self, req, image_id):
+        """
+        DELETE /queued_images/<IMAGE_ID>
+
+        Removes an image from the cache.
+        """
+        self.cache.delete_queued_image(image_id)
+
+    def delete_queued_images(self, req):
+        """
+        DELETE /queued_images - Clear all active queued images
+
+        Removes all images from the cache.
+        """
+        return dict(num_deleted=self.cache.delete_all_queued_images())
 
 
 class CachedImageDeserializer(wsgi.JSONRequestDeserializer):

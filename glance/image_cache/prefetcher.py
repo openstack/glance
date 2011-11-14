@@ -70,7 +70,7 @@ class Prefetcher(object):
 
     def run(self):
 
-        images = self.cache.get_cache_queue()
+        images = self.cache.get_queued_images()
         if not images:
             logger.debug(_("Nothing to prefetch."))
             return True

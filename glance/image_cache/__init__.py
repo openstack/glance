@@ -114,20 +114,35 @@ class ImageCache(object):
         """
         return self.driver.get_cached_images()
 
-    def delete_all(self):
+    def delete_all_cached_images(self):
         """
         Removes all cached image files and any attributes about the images
         and returns the number of cached image files that were deleted.
         """
-        return self.driver.delete_all()
+        return self.driver.delete_all_cached_images()
 
-    def delete(self, image_id):
+    def delete_cached_image(self, image_id):
         """
         Removes a specific cached image file and any attributes about the image
 
         :param image_id: Image ID
         """
-        self.driver.delete(image_id)
+        self.driver.delete_cached_image(image_id)
+
+    def delete_all_queued_images(self):
+        """
+        Removes all queued image files and any attributes about the images
+        and returns the number of queued image files that were deleted.
+        """
+        return self.driver.delete_all_queued_images()
+
+    def delete_queued_image(self, image_id):
+        """
+        Removes a specific queued image file and any attributes about the image
+
+        :param image_id: Image ID
+        """
+        self.driver.delete_queued_image(image_id)
 
     def prune(self):
         """
@@ -154,7 +169,7 @@ class ImageCache(object):
             image_id, size = entry
             logger.debug(_("Pruning '%(image_id)s' to free %(size)d bytes"),
                          {'image_id': image_id, 'size': size})
-            self.driver.delete(image_id)
+            self.driver.delete_cached_image(image_id)
             total_bytes_pruned = total_bytes_pruned + size
             total_files_pruned = total_files_pruned + 1
             current_size = current_size - size
@@ -250,10 +265,10 @@ class ImageCache(object):
         """
         return self.driver.open_for_read(image_id)
 
-    def get_cache_queue(self):
+    def get_queued_images(self):
         """
         Returns a list of image IDs that are in the queue. The
         list should be sorted by the time the image ID was inserted
         into the queue.
         """
-        return self.driver.get_cache_queue()
+        return self.driver.get_queued_images()
