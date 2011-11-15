@@ -26,7 +26,7 @@ import unittest
 import stubout
 import webob
 
-from glance.api import v1 as server
+from glance.api.v1 import router
 from glance.common import context
 from glance.common import utils
 from glance.registry import context as rcontext
@@ -1936,7 +1936,7 @@ class TestGlanceAPI(unittest.TestCase):
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_filesystem_backend()
         sql_connection = os.environ.get('GLANCE_SQL_CONNECTION', "sqlite://")
-        self.api = context.ContextMiddleware(server.API(OPTIONS), OPTIONS)
+        self.api = context.ContextMiddleware(router.API(OPTIONS), OPTIONS)
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',

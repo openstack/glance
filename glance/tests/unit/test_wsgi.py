@@ -19,6 +19,7 @@ import unittest
 import webob
 
 from glance.common import wsgi
+from glance.common import utils
 from glance.common import exception
 
 
@@ -201,7 +202,7 @@ class TestHelpers(unittest.TestCase):
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}}
-        headers = wsgi.image_meta_to_http_headers(fixture)
+        headers = utils.image_meta_to_http_headers(fixture)
         for k, v in headers.iteritems():
             self.assert_(isinstance(v, unicode), "%s is not unicode" % v)
 
@@ -217,14 +218,14 @@ class TestHelpers(unittest.TestCase):
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}}
-        headers = wsgi.image_meta_to_http_headers(fixture)
+        headers = utils.image_meta_to_http_headers(fixture)
 
         class FakeResponse():
             pass
 
         response = FakeResponse()
         response.headers = headers
-        result = wsgi.get_image_meta_from_headers(response)
+        result = utils.get_image_meta_from_headers(response)
         for k, v in fixture.iteritems():
             self.assertEqual(v, result[k])
 
@@ -243,11 +244,11 @@ class TestHelpers(unittest.TestCase):
             pass
 
         for fixture in fixtures:
-            headers = wsgi.image_meta_to_http_headers(fixture)
+            headers = utils.image_meta_to_http_headers(fixture)
 
             response = FakeResponse()
             response.headers = headers
-            result = wsgi.get_image_meta_from_headers(response)
+            result = utils.get_image_meta_from_headers(response)
             for k, v in expected.items():
                 self.assertEqual(v, result[k])
 
@@ -261,10 +262,10 @@ class TestHelpers(unittest.TestCase):
         expected = {'is_public': False}
 
         for fixture in fixtures:
-            headers = wsgi.image_meta_to_http_headers(fixture)
+            headers = utils.image_meta_to_http_headers(fixture)
 
             response = FakeResponse()
             response.headers = headers
-            result = wsgi.get_image_meta_from_headers(response)
+            result = utils.get_image_meta_from_headers(response)
             for k, v in expected.items():
                 self.assertEqual(v, result[k])

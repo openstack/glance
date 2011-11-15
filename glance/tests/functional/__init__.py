@@ -217,7 +217,7 @@ image_cache_driver = %(image_cache_driver)s
 pipeline = versionnegotiation context %(cache_pipeline)s apiv1app
 
 [app:apiv1app]
-paste.app_factory = glance.api.v1:app_factory
+paste.app_factory = glance.api.v1.router:app_factory
 
 [filter:versionnegotiation]
 paste.filter_factory = glance.api.middleware.version_negotiation:filter_factory

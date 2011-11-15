@@ -40,8 +40,8 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 gettext.install('glance', unicode=1)
 
-from glance import client as glance_client
 from glance import version
+from glance import client as glance_client
 from glance.common import exception
 from glance.common import utils
 

@@ -21,14 +21,17 @@ Client classes for callers of a Glance system
 
 import errno
 import json
+import logging
 import os
 
-from glance.api.v1 import images as v1_images
+import glance.api.v1
 from glance.common import client as base_client
 from glance.common import exception
-from glance.common import wsgi
+from glance.common import utils
 
-#TODO(jaypipes) Allow a logger param for client classes
+logger = logging.getLogger(__name__)
+SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
+SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
 
 
 class V1Client(base_client.BaseClient):
@@ -49,7 +52,7 @@ class V1Client(base_client.BaseClient):
         :param sort_key: results will be ordered by this image attribute
         :param sort_dir: direction in which to to order results (asc, desc)
         """
-        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
+        params = self._extract_params(kwargs, SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images", params=params)
         data = json.loads(res.read())['images']
         return data
@@ -65,7 +68,7 @@ class V1Client(base_client.BaseClient):
         :param sort_key: results will be ordered by this image attribute
         :param sort_dir: direction in which to to order results (asc, desc)
         """
-        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
+        params = self._extract_params(kwargs, SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images/detail", params=params)
         data = json.loads(res.read())['images']
         return data
@@ -82,7 +85,7 @@ class V1Client(base_client.BaseClient):
         """
         res = self.do_request("GET", "/images/%s" % image_id)
 
-        image = wsgi.get_image_meta_from_headers(res)
+        image = utils.get_image_meta_from_headers(res)
         return image, base_client.ImageBodyIterator(res)
 
     def get_image_meta(self, image_id):
@@ -93,7 +96,7 @@ class V1Client(base_client.BaseClient):
         """
         res = self.do_request("HEAD", "/images/%s" % image_id)
 
-        image = wsgi.get_image_meta_from_headers(res)
+        image = utils.get_image_meta_from_headers(res)
         return image
 
     def _get_image_size(self, image_data):
@@ -136,7 +139,7 @@ class V1Client(base_client.BaseClient):
 
         :retval The newly-stored image's metadata.
         """
-        headers = wsgi.image_meta_to_http_headers(image_meta or {})
+        headers = utils.image_meta_to_http_headers(image_meta or {})
 
         if image_data:
             body = image_data
@@ -159,7 +162,7 @@ class V1Client(base_client.BaseClient):
         if image_meta is None:
             image_meta = {}
 
-        headers = wsgi.image_meta_to_http_headers(image_meta)
+        headers = utils.image_meta_to_http_headers(image_meta)
 
         if image_data:
             body = image_data

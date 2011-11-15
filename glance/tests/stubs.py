@@ -22,8 +22,8 @@ import shutil
 
 import webob
 
-from glance.api import v1 as server
 from glance.api.middleware import version_negotiation
+from glance.api.v1 import router
 import glance.common.client
 from glance.common import context
 from glance.common import exception
@@ -154,7 +154,7 @@ def stub_out_registry_and_store_server(stubs):
                        'default_store': 'file',
                        'filesystem_store_datadir': FAKE_FILESYSTEM_ROOTDIR}
             api = version_negotiation.VersionNegotiationFilter(
-                context.ContextMiddleware(server.API(options), options),
+                context.ContextMiddleware(router.API(options), options),
                 options)
             res = self.req.get_response(api)
 
