@@ -186,6 +186,10 @@ class Store(glance.store.base.Store):
     CHUNKSIZE = 65536
 
     def configure(self):
+        self.snet = config.get_option(
+            self.options, 'swift_enable_snet', type='bool', default=False)
+
+    def configure_add(self):
         """
         Configure the Store to use the stored configuration options
         Any store that needs special configuration should implement
@@ -225,9 +229,6 @@ class Store(glance.store.base.Store):
             self.full_auth_address = self.auth_address
         else:  # Defaults https
             self.full_auth_address = 'https://' + self.auth_address
-
-        self.snet = config.get_option(
-            self.options, 'swift_enable_snet', type='bool', default=False)
 
     def get(self, location):
         """

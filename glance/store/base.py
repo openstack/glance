@@ -35,8 +35,11 @@ class Store(object):
         :param options: Optional dictionary of configuration options
         """
         self.options = options or {}
+
+        self.configure()
+
         try:
-            self.configure()
+            self.configure_add()
         except exception.BadStoreConfiguration:
             msg = _("Failed to configure store correctly. "
                     "Disabling add method.")
@@ -47,8 +50,17 @@ class Store(object):
         """
         Configure the Store to use the stored configuration options
         Any store that needs special configuration should implement
-        this method. If the store was not able to successfully configure
-        itself, it should raise `exception.BadStoreConfiguration`
+        this method.
+        """
+        pass
+
+    def configure_add(self):
+        """
+        This is like `configure` except that it's specifically for
+        configuring the store to accept objects.
+
+        If the store was not able to successfully configure
+        itself, it should raise `exception.BadStoreConfiguration`.
         """
         pass
 
