@@ -80,6 +80,42 @@ class Driver(base.Driver):
     that has atimes set.
     """
 
+    def configure(self):
+        """
+        Configure the driver to use the stored configuration options
+        Any store that needs special configuration should implement
+        this method. If the store was not able to successfully configure
+        itself, it should raise `exception.BadDriverConfiguration`
+        """
+        # Here we set up the various file-based image cache paths
+        # that we need in order to find the files in different states
+        # of cache management.
+        self.set_paths()
+
+        # We do a quick attempt to write a user xattr to a temporary file
+        # to check that the filesystem is even enabled to support xattrs
+        image_cache_dir = self.base_dir
+        fake_image_filepath = os.path.join(image_cache_dir, 'checkme')
+        with open(fake_image_filepath, 'wb') as fake_file:
+            fake_file.write("XXX")
+            fake_file.flush()
+        try:
+            set_xattr(fake_image_filepath, 'hits', '1')
+        except IOError, e:
+            if e.errno == errno.EOPNOTSUPP:
+                msg = _("The device housing the image cache directory "
+                        "%(image_cache_dir)s does not support xattr. It is "
+                        "likely you need to edit your fstab and add the "
+                        "user_xattr option to the appropriate line for the "
+                        "device housing the cache directory.") % locals()
+                logger.error(msg)
+                raise exception.BadDriverConfiguration(driver="xattr",
+                                                       reason=msg)
+        else:
+            # Cleanup after ourselves...
+            if os.path.exists(fake_image_filepath):
+                os.unlink(fake_image_filepath)
+
     def get_cache_size(self):
         """
         Returns the total size in bytes of the image cache.
@@ -435,13 +471,7 @@ def set_xattr(path, key, value):
     """
     namespaced_key = _make_namespaced_xattr_key(key)
     entry_xattr = xattr.xattr(path)
-    try:
-        entry_xattr.set(namespaced_key, str(value))
-    except IOError as e:
-        if e.errno == errno.EOPNOTSUPP:
-            logger.warn(_("xattrs not supported, skipping..."))
-        else:
-            raise
+    entry_xattr.set(namespaced_key, str(value))
 
 
 def inc_xattr(path, key, n=1):
@@ -455,20 +485,9 @@ def inc_xattr(path, key, n=1):
     the benefits of simple, lock-free code out-weighs the possibility of an
     occasional hit not being counted.
     """
-    try:
-        count = int(get_xattr(path, key))
-    except KeyError:
-        # NOTE(sirp): a KeyError is generated in two cases:
-        # 1) xattrs is not supported by the filesystem
-        # 2) the key is not present on the file
-        #
-        # In either case, just ignore it...
-        pass
-    else:
-        # NOTE(sirp): only try to bump the count if xattrs is supported
-        # and the key is present
-        count += n
-        set_xattr(path, key, str(count))
+    count = int(get_xattr(path, key))
+    count += n
+    set_xattr(path, key, str(count))
 
 
 def iso8601_from_timestamp(timestamp):

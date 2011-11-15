@@ -52,9 +52,7 @@ class Driver(object):
         """
         # Here we set up the various file-based image cache paths
         # that we need in order to find the files in different states
-        # of cache management. Once we establish these paths, we do
-        # a quick attempt to write a user xattr to a temporary file
-        # to check that the filesystem is even enabled to support xattrs
+        # of cache management.
         self.set_paths()
 
     def set_paths(self):
