@@ -313,6 +313,7 @@ class FunctionalTest(unittest.TestCase):
     servers and clients and not just the stubbed out interfaces
     """
 
+    inited = False
     disabled = False
 
     def setUp(self):

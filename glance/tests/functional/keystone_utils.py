@@ -167,7 +167,6 @@ class KeystoneTests(functional.FunctionalTest):
     Base test class for keystone-related tests.
     """
 
-    inited = False
     KEYSTONE = None
 
     def setUp(self):
@@ -178,42 +177,20 @@ class KeystoneTests(functional.FunctionalTest):
         if not self.inited:
             KeystoneTests.inited = True
 
-            # Make sure we can import keystone
-            tmp_path = sys.path
-            if 'GLANCE_TEST_KEYSTONE_PATH' in os.environ:
-                sys.path.insert(1, os.environ['GLANCE_TEST_KEYSTONE_PATH'])
-            try:
-                import keystone
-            except ImportError, e:
-                # Can't import keystone
-                KeystoneTests.inited = True
-                KeystoneTests.disabled = True
-                KeystoneTests.disabled_message = (
-                    "Cannot import keystone.  Set "
-                    "GLANCE_TEST_KEYSTONE_PATH to the directory containing "
-                    "the keystone package.")
-            finally:
-                sys.path = tmp_path
-
             # Try looking up the keystone executable
-            if self.KEYSTONE is None:
-                bindir = os.environ.get('GLANCE_TEST_KEYSTONE_BIN')
-                if bindir is not None:
-                    cmdname = os.path.join(bindir, 'keystone-control')
-                else:
-                    cmdname = 'keystone-control'
-                KeystoneTests.KEYSTONE = find_executable(cmdname)
+            cmdname = 'keystone-control'
+            KeystoneTests.KEYSTONE = find_executable(cmdname)
 
             # If we don't have keystone-control, disable ourself
-            if self.disabled is not True and self.KEYSTONE is None:
+            if self.KEYSTONE is None:
                 KeystoneTests.disabled = True
-                KeystoneTests.disabled_message = (
-                    "Cannot find keystone-control.  Set "
-                    "GLANCE_TEST_KEYSTONE_BIN to the directory containing "
-                    "the keystone binaries.")
+                KeystoneTests.disabled_message = "Keystone not installed"
 
         # Make sure to call superclass
         super(KeystoneTests, self).setUp()
+
+        if self.disabled:
+            return
 
         # Also need keystone auth and admin ports...
         self.auth_port = functional.get_unused_port()
@@ -238,20 +215,6 @@ class KeystoneTests(functional.FunctionalTest):
         self.registry_server.conf_base += (
             'context_class = glance.registry.context.RequestContext\n')
 
-        # Need to add keystone python path to the environment for
-        # glance
-        self.exec_env = None
-        if 'GLANCE_TEST_KEYSTONE_PATH' in os.environ:
-            def augment_python_path(currpath):
-                if not currpath:
-                    return os.environ['GLANCE_TEST_KEYSTONE_PATH']
-                return (os.environ['GLANCE_TEST_KEYSTONE_PATH'] +
-                        ':' + currpath)
-            self.exec_env = dict(PYTHONPATH=augment_python_path)
-            self.api_server.exec_env = self.exec_env
-            self.registry_server.exec_env = self.exec_env
-            # Keystone can take care of itself on this score
-
     def tearDown(self):
         super(KeystoneTests, self).tearDown()
         if not self.disabled:
@@ -272,12 +235,9 @@ class KeystoneTests(functional.FunctionalTest):
 
         # Set up the data store
         keystone_conf = self.auth_server.write_conf(**kwargs)
-        if not os.path.isdir(self.test_dir):
-            os.mkdir(self.test_dir)
         datafile = os.path.join(os.path.dirname(__file__), 'data',
                                 'keystone_data.py')
-        execute("python %s -c %s" % (datafile, keystone_conf),
-                no_venv=True, exec_env=self.exec_env)
+        execute("python %s -c %s" % (datafile, keystone_conf))
 
         # Start keystone-auth
         exitcode, out, err = self.auth_server.start(**kwargs)
