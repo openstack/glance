@@ -210,6 +210,12 @@ class Store(glance.store.base.Store):
         else:  # Defaults http
             self.full_s3_host = 'http://' + self.s3_host
 
+        if self.options.get('s3_store_object_buffer_dir'):
+            self.s3_store_object_buffer_dir = self.options.get(
+                's3_store_object_buffer_dir')
+        else:
+            self.s3_store_object_buffer_dir = None
+
     def _option_get(self, param):
         result = self.options.get(param)
         if not result:
@@ -325,8 +331,9 @@ class Store(glance.store.base.Store):
         msg = _("Writing request body file to temporary file "
                 "for %s") % loc.get_uri()
         logger.debug(msg)
-        temp_file = tempfile.NamedTemporaryFile()
 
+        tmpdir = self.s3_store_object_buffer_dir
+        temp_file = tempfile.NamedTemporaryFile(dir=tmpdir)
         checksum = hashlib.md5()
         chunk = image_file.read(self.CHUNKSIZE)
         while chunk:

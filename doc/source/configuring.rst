@@ -332,6 +332,18 @@ Glance write chunks to Swift? This amount of data is written
 to a temporary disk buffer during the process of chunking
 the image file, and the default is 200MB
 
+* ``swift_store_object_buffer_dir=PATH``
+
+Optional. Default: ``the platform's default temporary directory``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Swift storage backend.`
+
+When sending large images to Swift, what directory should be
+used to buffer the chunks? By default the platform's
+temporary directory will be used.
+
 Configuring the S3 Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -407,6 +419,18 @@ Can only be specified in configuration files.
 
 If true, Glance will attempt to create the bucket ``s3_store_bucket``
 if it does not exist.
+
+* ``s3_store_object_buffer_dir=PATH``
+
+Optional. Default: ``the platform's default temporary directory``
+
+Can only be specified in configuration files.
+
+`This option is specific to the S3 storage backend.`
+
+When sending images to S3, what directory should be
+used to buffer the chunks? By default the platform's
+temporary directory will be used.
 
 Configuring the RBD Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

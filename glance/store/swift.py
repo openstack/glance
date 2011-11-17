@@ -215,6 +215,12 @@ class Store(glance.store.base.Store):
                     ) * (1024 * 1024)  # Size specified in MB in conf files
             else:
                 self.large_object_chunk_size = DEFAULT_LARGE_OBJECT_CHUNK_SIZE
+
+            if self.options.get('swift_store_object_buffer_dir'):
+                self.swift_store_object_buffer_dir = (
+                    self.options.get('swift_store_object_buffer_dir'))
+            else:
+                self.swift_store_object_buffer_dir = None
         except Exception, e:
             reason = _("Error in configuration options: %s") % e
             logger.error(reason)
@@ -359,8 +365,9 @@ class Store(glance.store.base.Store):
                 total_chunks = int(math.ceil(
                     float(image_size) / float(self.large_object_chunk_size)))
                 checksum = hashlib.md5()
+                tmp = self.swift_store_object_buffer_dir
                 while bytes_left > 0:
-                    with tempfile.NamedTemporaryFile() as disk_buffer:
+                    with tempfile.NamedTemporaryFile(dir=tmp) as disk_buffer:
                         chunk_size = min(self.large_object_chunk_size,
                                          bytes_left)
                         logger.debug(_("Writing %(chunk_size)d bytes for "
