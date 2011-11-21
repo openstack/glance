@@ -342,6 +342,13 @@ class Store(glance.store.base.Store):
                 # best...
                 obj_etag = swift_conn.put_object(self.container, obj_name,
                                                  image_file)
+
+                if image_size == 0:
+                    resp_headers = swift_conn.head_object(self.container,
+                                                          obj_name)
+                    # header keys are lowercased by Swift
+                    if 'content-length' in resp_headers:
+                        image_size = int(resp_headers['content-length'])
             else:
                 # Write the image into Swift in chunks. We cannot
                 # stream chunks of the webob.Request.body_file, unfortunately,
