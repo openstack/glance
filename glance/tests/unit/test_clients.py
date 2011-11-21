@@ -560,7 +560,6 @@ class TestRegistryClient(unittest.TestCase):
                    'container_format': 'ovf',
                    'status': 'active',
                    'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
                    'properties': {}}
 
         images = self.client.get_images_detailed()
@@ -787,7 +786,6 @@ class TestRegistryClient(unittest.TestCase):
                    'container_format': 'ami',
                    'status': 'active',
                    'size': 13,
-                   'location': "swift://user:passwd@acct/container/obj.tar.0",
                    'properties': {'type': 'kernel'}}
 
         data = self.client.get_image(1)
@@ -811,7 +809,6 @@ class TestRegistryClient(unittest.TestCase):
                    'disk_format': 'vmdk',
                    'container_format': 'ovf',
                    'size': 19,
-                   'location': "file:///tmp/glance-tests/acct/3.gz.0",
                   }
 
         new_image = self.client.add_image(fixture)
@@ -844,6 +841,7 @@ class TestRegistryClient(unittest.TestCase):
         # Test ID auto-assigned properly
         self.assertEquals(3, new_image['id'])
 
+        del fixture['location']
         for k, v in fixture.items():
             self.assertEquals(v, new_image[k])
 
