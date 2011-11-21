@@ -152,6 +152,12 @@ class GlanceException(Exception):
         return self._error_string
 
 
+class MultipleChoices(GlanceException):
+    message = _("The request returned a 302 Multiple Choices. This generally "
+                "means that you have not included a version indicator in a "
+                "request URI.\n\nThe body of response returned:\n%(body)s")
+
+
 class InvalidContentType(GlanceException):
     message = _("Invalid content type %(content_type)s")
 

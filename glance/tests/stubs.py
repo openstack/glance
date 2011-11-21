@@ -33,6 +33,7 @@ from glance.common import context
 from glance.common import exception
 from glance.registry import server as rserver
 from glance.api import v1 as server
+from glance.api.middleware import version_negotiation
 import glance.store
 import glance.store.filesystem
 import glance.store.http
@@ -156,11 +157,15 @@ def stub_out_registry_and_store_server(stubs):
         def getresponse(self):
             options = {'verbose': VERBOSE,
                        'debug': DEBUG,
+                       'bind_host': '0.0.0.0',
+                       'bind_port': '9999999',
                        'registry_host': '0.0.0.0',
                        'registry_port': '9191',
                        'default_store': 'file',
                        'filesystem_store_datadir': FAKE_FILESYSTEM_ROOTDIR}
-            api = context.ContextMiddleware(server.API(options), options)
+            api = version_negotiation.VersionNegotiationFilter(
+                context.ContextMiddleware(server.API(options), options),
+                options)
             res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out

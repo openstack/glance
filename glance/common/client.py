@@ -228,6 +228,8 @@ class BaseClient(object):
                 raise exception.Duplicate(res.read())
             elif status_code == httplib.BAD_REQUEST:
                 raise exception.Invalid(res.read())
+            elif status_code == httplib.MULTIPLE_CHOICES:
+                raise exception.MultipleChoices(body=res.read())
             elif status_code == httplib.INTERNAL_SERVER_ERROR:
                 raise Exception("Internal Server error: %s" % res.read())
             else:
