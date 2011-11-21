@@ -260,7 +260,7 @@ class Store(glance.store.base.Store):
         #            "Expected %s byte file, Swift has %s bytes" %
         #            (expected_size, obj_size))
 
-        return (resp_body, None)
+        return (resp_body, resp_headers.get('content-length'))
 
     def _make_swift_connection(self, auth_url, user, key):
         """
