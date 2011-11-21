@@ -12,7 +12,7 @@ nose
 nose-exclude
 sphinx
 argparse
-mox==0.5.0
+mox
 boto
 swift
 -f http://pymox.googlecode.com/files/mox-0.5.0.tar.gz
