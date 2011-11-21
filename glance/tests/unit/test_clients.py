@@ -1377,6 +1377,7 @@ class TestClient(unittest.TestCase):
         # Test all other attributes set
         data = self.client.get_image_meta(3)
 
+        del fixture['location']
         for k, v in fixture.items():
             self.assertEquals(v, data[k])
 
@@ -1415,6 +1416,7 @@ class TestClient(unittest.TestCase):
         # Test all other attributes set
         data = self.client.get_image_meta(3)
 
+        del fixture['location']
         for k, v in fixture.items():
             self.assertEquals(v, data[k])
 
@@ -1441,6 +1443,7 @@ class TestClient(unittest.TestCase):
         # Test all other attributes set
         data = self.client.get_image_meta(3)
 
+        del fixture['location']
         for k, v in fixture.items():
             self.assertEquals(v, data[k])
 
@@ -1467,6 +1470,7 @@ class TestClient(unittest.TestCase):
         # Test all other attributes set
         data = self.client.get_image_meta(3)
 
+        del fixture['location']
         for k, v in fixture.items():
             self.assertEquals(v, data[k])
 
