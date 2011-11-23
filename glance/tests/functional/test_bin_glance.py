@@ -50,7 +50,7 @@ class TestBinGlance(functional.FunctionalTest):
             4. Verify no longer in index
         """
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         api_port = self.api_port
         registry_port = self.registry_port
@@ -128,7 +128,7 @@ class TestBinGlance(functional.FunctionalTest):
             6. Verify the updated name is shown
         """
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         api_port = self.api_port
         registry_port = self.registry_port
@@ -263,7 +263,7 @@ class TestBinGlance(functional.FunctionalTest):
             4. Run SQL against DB to verify no undeleted properties
         """
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         api_port = self.api_port
         registry_port = self.registry_port
@@ -303,7 +303,7 @@ class TestBinGlance(functional.FunctionalTest):
 
     def test_results_filtering(self):
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         api_port = self.api_port
         registry_port = self.registry_port
@@ -448,7 +448,7 @@ class TestBinGlance(functional.FunctionalTest):
 
     def test_results_pagination(self):
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         _base_cmd = "bin/glance --port=%d" % self.api_port
         index_cmd = "%s index -f" % _base_cmd
@@ -528,9 +528,11 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertTrue(image_lines[1].split()[1], image_ids[2])
         self.assertTrue(image_lines[12].split()[1], image_ids[1])
 
+        self.stop_servers()
+
     def test_results_sorting(self):
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         _base_cmd = "bin/glance --port=%d" % self.api_port
         index_cmd = "%s index -f" % _base_cmd
@@ -603,9 +605,11 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertTrue(image_lines[12].split()[1], image_ids[1])
         self.assertTrue(image_lines[23].split()[1], image_ids[4])
 
+        self.stop_servers()
+
     def test_show_image_format(self):
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         api_port = self.api_port
         registry_port = self.registry_port
@@ -653,3 +657,5 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         self.assertEqual('Deleted image %s' % image_id, out.strip())
+
+        self.stop_servers()

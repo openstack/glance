@@ -185,117 +185,57 @@ class V1Client(base_client.BaseClient):
     def get_cached_images(self, **kwargs):
         """
         Returns a list of images stored in the image cache.
-
-        :param filters: dictionary of attributes by which the resulting
-                        collection of images should be filtered
-        :param marker: id after which to start the page of images
-        :param limit: maximum number of items to return
-        :param sort_key: results will be ordered by this image attribute
-        :param sort_dir: direction in which to to order results (asc, desc)
         """
-        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
-        res = self.do_request("GET", "/cached_images", params=params)
+        res = self.do_request("GET", "/cached_images")
         data = json.loads(res.read())['cached_images']
         return data
 
-    def get_invalid_cached_images(self, **kwargs):
+    def get_queued_images(self, **kwargs):
         """
-        Returns a list of invalid images stored in the image cache.
-
-        :param filters: dictionary of attributes by which the resulting
-                        collection of images should be filtered
-        :param marker: id after which to start the page of images
-        :param limit: maximum number of items to return
-        :param sort_key: results will be ordered by this image attribute
-        :param sort_dir: direction in which to to order results (asc, desc)
+        Returns a list of images queued for caching
         """
-        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
-        params['status'] = 'invalid'
-        res = self.do_request("GET", "/cached_images", params=params)
-        data = json.loads(res.read())['cached_images']
+        res = self.do_request("GET", "/queued_images")
+        data = json.loads(res.read())['queued_images']
         return data
 
-    def get_incomplete_cached_images(self, **kwargs):
-        """
-        Returns a list of incomplete images being fetched into cache
-
-        :param filters: dictionary of attributes by which the resulting
-                        collection of images should be filtered
-        :param marker: id after which to start the page of images
-        :param limit: maximum number of items to return
-        :param sort_key: results will be ordered by this image attribute
-        :param sort_dir: direction in which to to order results (asc, desc)
-        """
-        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
-        params['status'] = 'incomplete'
-        res = self.do_request("GET", "/cached_images", params=params)
-        data = json.loads(res.read())['cached_images']
-        return data
-
-    def purge_cached_image(self, image_id):
+    def delete_cached_image(self, image_id):
         """
         Delete a specified image from the cache
         """
         self.do_request("DELETE", "/cached_images/%s" % image_id)
         return True
 
-    def clear_cached_images(self):
+    def delete_all_cached_images(self):
         """
-        Clear all cached images
+        Delete all cached images
         """
         res = self.do_request("DELETE", "/cached_images")
         data = json.loads(res.read())
-        num_purged = data['num_purged']
-        return num_purged
+        num_deleted = data['num_deleted']
+        return num_deleted
 
-    def reap_invalid_cached_images(self, **kwargs):
+    def queue_image_for_caching(self, image_id):
         """
-        Reaps any invalid cached images
+        Queue an image for prefetching into cache
         """
-        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
-        params['status'] = 'invalid'
-        res = self.do_request("DELETE", "/cached_images", params=params)
-        data = json.loads(res.read())
-        num_reaped = data['num_reaped']
-        return num_reaped
-
-    def reap_stalled_cached_images(self, **kwargs):
-        """
-        Reaps any stalled cached images
-        """
-        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
-        params['status'] = 'incomplete'
-        res = self.do_request("DELETE", "/cached_images", params=params)
-        data = json.loads(res.read())
-        num_reaped = data['num_reaped']
-        return num_reaped
-
-    def prefetch_cache_image(self, image_id):
-        """
-        Pre-fetch a specified image from the cache
-        """
-        res = self.do_request("HEAD", "/images/%s" % image_id)
-        image = wsgi.get_image_meta_from_headers(res)
-        self.do_request("PUT", "/cached_images/%s" % image_id)
+        self.do_request("PUT", "/queued_images/%s" % image_id)
         return True
 
-    def get_prefetching_cache_images(self, **kwargs):
+    def delete_queued_image(self, image_id):
         """
-        Returns a list of images which are actively being prefetched or are
-        queued to be prefetched in the future.
+        Delete a specified image from the cache queue
+        """
+        self.do_request("DELETE", "/queued_images/%s" % image_id)
+        return True
 
-        :param filters: dictionary of attributes by which the resulting
-                        collection of images should be filtered
-        :param marker: id after which to start the page of images
-        :param limit: maximum number of items to return
-        :param sort_key: results will be ordered by this image attribute
-        :param sort_dir: direction in which to to order results (asc, desc)
+    def delete_all_queued_images(self):
         """
-        params = self._extract_params(kwargs, v1_images.SUPPORTED_PARAMS)
-        params['status'] = 'prefetching'
-        res = self.do_request("GET", "/cached_images", params=params)
-        data = json.loads(res.read())['cached_images']
-        return data
+        Delete all queued images
+        """
+        res = self.do_request("DELETE", "/queued_images")
+        data = json.loads(res.read())
+        num_deleted = data['num_deleted']
+        return num_deleted
 
     def get_image_members(self, image_id):
         """Returns a mapping of image memberships from Registry"""

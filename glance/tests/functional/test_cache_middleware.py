@@ -362,7 +362,7 @@ paste.app_factory = glance.image_cache.queue_image:app_factory
         # Queue the first image, verify no images still in cache after queueing
         # then run the prefetcher and verify that the image is then in the
         # cache
-        path = "http://%s:%d/v1/cached_images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/queued_images/%s" % ("0.0.0.0", self.api_port,
                                                      ids[0])
         http = httplib2.Http()
         response, content = http.request(path, 'PUT')
