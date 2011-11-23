@@ -306,11 +306,14 @@ class Driver(base.Driver):
 
         def rollback(e):
             with self.get_db() as db:
-                invalid_path = self.get_image_filepath(image_id, 'invalid')
-                logger.debug(_("Fetch of cache file failed, rolling back by "
-                               "moving '%(incomplete_path)s' to "
-                               "'%(invalid_path)s'") % locals())
-                os.rename(incomplete_path, invalid_path)
+                if os.path.exists(incomplete_path):
+                    invalid_path = self.get_image_filepath(image_id, 'invalid')
+
+                    logger.debug(_("Fetch of cache file failed, rolling back "
+                                   "by moving '%(incomplete_path)s' to "
+                                   "'%(invalid_path)s'") % locals())
+                    os.rename(incomplete_path, invalid_path)
+
                 db.execute("""DELETE FROM cached_images
                            WHERE image_id = ?""", (image_id, ))
                 db.commit()
