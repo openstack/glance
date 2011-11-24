@@ -433,7 +433,7 @@ used to buffer the chunks? By default the platform's
 temporary directory will be used.
 
 Configuring the RBD Storage Backend
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Note**: the RBD storage backend requires the python bindings for
 librados and librbd. These are in the python-ceph package on

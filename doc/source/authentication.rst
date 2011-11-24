@@ -27,7 +27,7 @@ their `owner` attribute set to the tenant of the authenticated users,
 and the `is_public` attribute will cause access to those images for
 which it is `false` to be restricted to only the owner.
 
-  .. note::
+.. note::
 
   The exception is those images for which `owner` is set to `null`,
   which may only be done by those users having the ``Admin`` role.
@@ -201,7 +201,7 @@ Sharing Images With Others
 It is possible to allow a private image to be shared with one or more
 alternate tenants.  This is done through image *memberships*, which
 are available via the `members` resource of images.  (For more
-details, see :ref:`glanceapi`.)  Essentially, a membership is an
+details, see :doc:`glanceapi`.)  Essentially, a membership is an
 association between an image and a tenant which has permission to
 access that image.  These membership associations may also have a
 `can_share` attribute, which, if set to `true`, delegates the
