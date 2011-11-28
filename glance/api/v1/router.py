@@ -30,7 +30,7 @@ class API(wsgi.Router):
 
     """WSGI router for Glance v1 API requests."""
 
-    def __init__(self, conf):
+    def __init__(self, conf, **local_conf):
         self.conf = conf
         mapper = routes.Mapper()
 

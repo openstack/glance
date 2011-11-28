@@ -24,6 +24,7 @@ from glance.common import exception
 from glance.store import create_stores, delete_from_backend
 from glance.store.http import Store
 from glance.store.location import get_location_from_uri
+from glance.tests import utils
 
 
 def stub_out_http_backend(stubs):
@@ -104,6 +105,6 @@ class TestHttpStore(unittest.TestCase):
         loc = get_location_from_uri(uri)
         self.assertRaises(NotImplementedError, self.store.delete, loc)
 
-        create_stores({})
+        create_stores(utils.TestConfigOpts({}))
         self.assertRaises(exception.StoreDeleteNotSupported,
                           delete_from_backend, uri)

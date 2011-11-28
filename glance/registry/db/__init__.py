@@ -17,23 +17,24 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import optparse
+from glance.common import cfg
 
 
-def add_conf(parser):
+def add_options(conf):
     """
     Adds any configuration options that the db layer might have.
 
-    :param parser: An optparse.OptionParser object
+    :param conf: A ConfigOpts object
     :retval None
     """
-    help_text = "The following configuration options are specific to the "\
-                "Glance image registry database."
-
-    group = optparse.OptionGroup(parser, "Registry Database Options",
-                                 help_text)
-    group.add_option('--sql-connection', metavar="CONNECTION",
-                     default=None,
-                     help="A valid SQLAlchemy connection string for the "
-                          "registry database. Default: %default")
-    parser.add_option_group(group)
+    conf.add_group(cfg.OptGroup('registrydb',
+                                title='Registry Database Options',
+                                help='The following configuration options '
+                                     'are specific to the Glance image '
+                                     'registry database.'))
+    conf.register_cli_opt(cfg.StrOpt('sql-connection',
+                                     group='registrydb',
+                                     metavar='CONNECTION',
+                                     help='A valid SQLAlchemy connection '
+                                          'string for the registry database. '
+                                          'Default: %default'))

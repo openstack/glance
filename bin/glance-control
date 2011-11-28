@@ -43,6 +43,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 gettext.install('glance', unicode=1)
 
 from glance import version
+from glance.common import cfg
 from glance.common import config
 
 ALL_COMMANDS = ['start', 'stop', 'shutdown', 'restart',
@@ -65,11 +66,11 @@ And command is one of:
 And CONFPATH is the optional configuration file to use."""
 
 
-def pid_files(server, options):
+def pid_files(server, conf):
     pid_files = []
-    if options['pid_file']:
-        if os.path.exists(os.path.abspath(options['pid_file'])):
-            pid_files = [os.path.abspath(options['pid_file'])]
+    if conf.pid_file:
+        if os.path.exists(os.path.abspath(conf.pid_file)):
+            pid_files = [os.path.abspath(conf.pid_file)]
     else:
         if os.path.exists('/var/run/glance/%s.pid' % server):
             pid_files = ['/var/run/glance/%s.pid' % server]
@@ -78,10 +79,10 @@ def pid_files(server, options):
         yield pid_file, pid
 
 
-def do_start(server, options, args):
+def do_start(server, conf, args):
     server_type = '-'.join(server.split('-')[:-1])
 
-    for pid_file, pid in pid_files(server, options):
+    for pid_file, pid in pid_files(server, conf):
         if os.path.exists('/proc/%s' % pid):
             print "%s appears to already be running: %s" % (server, pid_file)
             return
@@ -112,7 +113,6 @@ def do_start(server, options, args):
         fp.close()
 
     def launch(ini_file, pid_file):
-        args = [server, ini_file]
         print 'Starting %s with %s' % (server, ini_file)
 
         pid = os.fork()
@@ -125,7 +125,7 @@ def do_start(server, options, args):
                     except OSError:
                         pass
             try:
-                os.execlp('%s' % server, server, ini_file)
+                os.execlp('%s' % server, server, '--config-file', ini_file)
             except OSError, e:
                 sys.exit('unable to launch %s. Got error: %s'
                          % (server, "%s" % e))
@@ -133,31 +133,31 @@ def do_start(server, options, args):
         else:
             write_pid_file(pid_file, pid)
 
-    if not options['pid_file']:
+    if not conf.pid_file:
         pid_file = '/var/run/glance/%s.pid' % server
     else:
-        pid_file = os.path.abspath(options['pid_file'])
+        pid_file = os.path.abspath(conf.pid_file)
 
     try:
-        conf_file = config.find_config_file(server, options, args)
+        if args and os.path.exists(args[0]):
+            conf_file = os.path.abspath(os.path.expanduser(args[0]))
+        else:
+            # Assume paste config is in the last config file
+            conf_file = conf.config_file[-1]
     except RuntimeError, err:
         sys.exit("Could not find any configuration file to use: %s" % err)
 
-    launch_args = [(conf_file, pid_file)]
-
-    # start all servers
-    for conf_file, pid_file in launch_args:
-        launch(conf_file, pid_file)
+    launch(conf_file, pid_file)
 
 
-def do_stop(server, options, args, graceful=False):
+def do_stop(server, conf, args, graceful=False):
     if graceful and server in GRACEFUL_SHUTDOWN_SERVERS:
         sig = signal.SIGHUP
     else:
         sig = signal.SIGTERM
 
     did_anything = False
-    pfiles = pid_files(server, options)
+    pfiles = pid_files(server, conf)
     for pid_file, pid in pfiles:
         did_anything = True
         try:
@@ -182,13 +182,12 @@ def do_stop(server, options, args, graceful=False):
 
 
 if __name__ == '__main__':
-    oparser = optparse.OptionParser(usage=USAGE, version='%%prog %s'
-                                    % version.version_string())
-    oparser.add_option('--pid-file', default=None, metavar="PATH",
-                       help="File to use as pid file. Default: "
-                       "/var/run/glance/$server.pid")
-    config.add_common_options(oparser)
-    (options, args) = config.parse_options(oparser)
+    conf = config.GlanceConfigOpts(usage=USAGE)
+    conf.register_cli_opt(cfg.StrOpt('pid-file',
+                                     metavar='PATH',
+                                     help='File to use as pid file. Default: '
+                                          '/var/run/glance/$server.pid'))
+    args = conf()
 
     if len(args) < 2:
         oparser.print_usage()
@@ -217,23 +216,23 @@ if __name__ == '__main__':
 
     if command == 'start':
         for server in servers:
-            do_start(server, options, args)
+            do_start(server, conf, args)
 
     if command == 'stop':
         for server in servers:
-            do_stop(server, options, args)
+            do_stop(server, conf, args)
 
     if command == 'shutdown':
         for server in servers:
-            do_stop(server, options, args, graceful=True)
+            do_stop(server, conf, args, graceful=True)
 
     if command == 'restart':
         for server in servers:
-            do_stop(server, options, args)
+            do_stop(server, conf, args)
         for server in servers:
-            do_start(server, options, args)
+            do_start(server, conf, args)
 
     if command == 'reload' or command == 'force-reload':
         for server in servers:
-            do_stop(server, options, args, graceful=True)
-            do_start(server, options, args)
+            do_stop(server, conf, args, graceful=True)
+            do_start(server, conf, args)

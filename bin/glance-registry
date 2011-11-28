@@ -23,7 +23,6 @@ Reference implementation server for Glance Registry
 """
 
 import gettext
-import optparse
 import os
 import sys
 
@@ -37,33 +36,19 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 gettext.install('glance', unicode=1)
 
-from glance import version
 from glance.common import config
 from glance.common import wsgi
 
 
-def create_options(parser):
-    """
-    Sets up the CLI and config-file options that may be
-    parsed and program commands.
-
-    :param parser: The option parser
-    """
-    config.add_common_options(parser)
-    config.add_log_options(parser)
-
-
 if __name__ == '__main__':
-    oparser = optparse.OptionParser(version='%%prog %s'
-                                    % version.version_string())
-    create_options(oparser)
-    (options, args) = config.parse_options(oparser)
-
     try:
-        conf, app = config.load_paste_app('glance-registry', options, args)
+        conf = config.GlanceConfigOpts()
+        conf()
+
+        app = config.load_paste_app(conf)
 
         server = wsgi.Server()
-        server.start(app, int(conf['bind_port']), conf['bind_host'], conf)
+        server.start(app, conf, default_port=9191)
         server.wait()
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)

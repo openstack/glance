@@ -22,8 +22,43 @@ import functools
 import os
 import socket
 import subprocess
+import tempfile
 
 import nose.plugins.skip
+
+from glance.common import config
+
+
+class TestConfigOpts(config.GlanceConfigOpts):
+
+    def __init__(self, test_values):
+        super(TestConfigOpts, self).__init__()
+        self._test_values = test_values
+        self()
+
+    def __call__(self):
+        config_file = self._write_tmp_config_file()
+        try:
+            super(TestConfigOpts, self).\
+                __call__(['--config-file', config_file])
+        finally:
+            os.remove(config_file)
+
+    def _write_tmp_config_file(self):
+        contents = '[DEFAULT]\n'
+        for key, value in self._test_values.items():
+            contents += '%s = %s\n' % (key, value)
+
+        (fd, path) = tempfile.mkstemp(prefix='testcfg')
+        try:
+            os.write(fd, contents)
+        except Exception, e:
+            os.close(fd)
+            os.remove(path)
+            raise e
+
+        os.close(fd)
+        return path
 
 
 class skip_test(object):

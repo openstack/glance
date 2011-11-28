@@ -28,13 +28,13 @@ class Store(object):
 
     CHUNKSIZE = (16 * 1024 * 1024)  # 16M
 
-    def __init__(self, conf=None):
+    def __init__(self, conf):
         """
         Initialize the Store
 
         :param conf: Optional dictionary of configuration options
         """
-        self.conf = conf or {}
+        self.conf = conf
 
         self.configure()
 

@@ -31,7 +31,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import or_, and_
 
-from glance.common import config
+from glance.common import cfg
 from glance.common import exception
 from glance.common import utils
 from glance.registry.db import models
@@ -57,6 +57,11 @@ DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi',
 STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
             'deleted']
 
+db_opts = [
+    cfg.IntOpt('sql_idle_timeout', default=3600),
+    cfg.StrOpt('sql_connection', default='sqlite:///glance.sqlite'),
+    ]
+
 
 def configure_db(conf):
     """
@@ -67,13 +72,9 @@ def configure_db(conf):
     """
     global _ENGINE, sa_logger, logger
     if not _ENGINE:
-        debug = config.get_option(
-            conf, 'debug', type='bool', default=False)
-        verbose = config.get_option(
-            conf, 'verbose', type='bool', default=False)
-        timeout = config.get_option(
-            conf, 'sql_idle_timeout', type='int', default=3600)
-        sql_connection = config.get_option(conf, 'sql_connection')
+        conf.register_opts(db_opts)
+        timeout = conf.sql_idle_timeout
+        sql_connection = conf.sql_connection
         try:
             _ENGINE = create_engine(sql_connection, pool_recycle=timeout)
         except Exception, err:
@@ -84,9 +85,9 @@ def configure_db(conf):
             raise
 
         sa_logger = logging.getLogger('sqlalchemy.engine')
-        if debug:
+        if conf.debug:
             sa_logger.setLevel(logging.DEBUG)
-        elif verbose:
+        elif conf.verbose:
             sa_logger.setLevel(logging.INFO)
 
         models.register_models(_ENGINE)

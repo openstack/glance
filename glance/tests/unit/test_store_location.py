@@ -24,8 +24,9 @@ import glance.store.http
 import glance.store.filesystem
 import glance.store.swift
 import glance.store.s3
+from glance.tests import utils
 
-glance.store.create_stores({})
+glance.store.create_stores(utils.TestConfigOpts({}))
 
 
 class TestStoreLocation(unittest.TestCase):

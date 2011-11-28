@@ -34,9 +34,10 @@ from migrate.versioning.repository import Repository
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 
+from glance.common import cfg
 from glance.common import exception
 import glance.registry.db.migration as migration_api
-from glance.tests.utils import execute
+from glance.tests import utils
 
 
 class TestMigrations(unittest.TestCase):
@@ -115,7 +116,7 @@ class TestMigrations(unittest.TestCase):
                        "create database %(database)s;") % locals()
                 cmd = ("mysql -u%(user)s %(password)s -h%(host)s "
                        "-e\"%(sql)s\"") % locals()
-                exitcode, out, err = execute(cmd)
+                exitcode, out, err = utils.execute(cmd)
                 self.assertEqual(0, exitcode)
 
     def test_walk_versions(self):
@@ -124,7 +125,9 @@ class TestMigrations(unittest.TestCase):
         that there are no errors in the version scripts for each engine
         """
         for key, engine in self.engines.items():
-            conf = {'sql_connection': TestMigrations.TEST_DATABASES[key]}
+            conf = utils.TestConfigOpts({
+                    'sql_connection': TestMigrations.TEST_DATABASES[key]})
+            conf.register_opt(cfg.StrOpt('sql_connection'))
             self._walk_versions(conf)
 
     def _walk_versions(self, conf):
@@ -165,7 +168,9 @@ class TestMigrations(unittest.TestCase):
         the image_properties table back into the base image table.
         """
         for key, engine in self.engines.items():
-            conf = {'sql_connection': TestMigrations.TEST_DATABASES[key]}
+            conf = utils.TestConfigOpts({
+                    'sql_connection': TestMigrations.TEST_DATABASES[key]})
+            conf.register_opt(cfg.StrOpt('sql_connection'))
             self._no_data_loss_2_to_3_to_2(engine, conf)
 
     def _no_data_loss_2_to_3_to_2(self, engine, conf):

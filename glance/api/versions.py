@@ -24,6 +24,8 @@ import json
 
 import webob.dec
 
+from glance.common import wsgi
+
 
 class Controller(object):
 
@@ -63,5 +65,4 @@ class Controller(object):
         return response
 
     def get_href(self):
-        return "http://%s:%s/v1/" % (self.conf['bind_host'],
-                                     self.conf['bind_port'])
+        return "http://%s:%s/v1/" % wsgi.get_bind_addr(self.conf, 9292)

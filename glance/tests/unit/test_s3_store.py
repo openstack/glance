@@ -32,6 +32,7 @@ from glance.common import utils
 from glance.store import BackendException, UnsupportedBackend
 from glance.store.location import get_location_from_uri
 from glance.store.s3 import Store
+from glance.tests import utils as test_utils
 
 
 FAKE_UUID = utils.generate_uuid()
@@ -163,7 +164,7 @@ class TestStore(unittest.TestCase):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
         stub_out_s3(self.stubs)
-        self.store = Store(S3_CONF)
+        self.store = Store(test_utils.TestConfigOpts(S3_CONF))
 
     def tearDown(self):
         """Clear the test environment"""
@@ -260,7 +261,7 @@ class TestStore(unittest.TestCase):
                 expected_image_id)
             image_s3 = StringIO.StringIO(expected_s3_contents)
 
-            self.store = Store(new_conf)
+            self.store = Store(test_utils.TestConfigOpts(new_conf))
             location, size, checksum = self.store.add(expected_image_id,
                                                       image_s3,
                                                       expected_s3_size)
@@ -292,7 +293,7 @@ class TestStore(unittest.TestCase):
         del conf[key]
 
         try:
-            self.store = Store(conf)
+            self.store = Store(test_utils.TestConfigOpts(conf))
             return self.store.add == self.store.add_disabled
         except:
             return False

@@ -21,7 +21,6 @@ Glance Scrub Service
 """
 
 import gettext
-import optparse
 import os
 import sys
 
@@ -35,44 +34,30 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 gettext.install('glance', unicode=1)
 
-from glance import version
+from glance.common import cfg
 from glance.common import config
 from glance.store import scrubber
 
 
-def create_options(parser):
-    """
-    Sets up the CLI and config-file options that may be
-    parsed and program commands.
-
-    :param parser: The option parser
-    """
-    config.add_common_options(parser)
-    config.add_log_options(parser)
-    parser.add_option("-D", "--daemon", default=False, dest="daemon",
-                      action="store_true",
-                      help="Run as a long-running process. When not "
-                           "specified (the default) run the scrub "
-                           "operation once and then exits. When specified "
-                           "do not exit and run scrub on wakeup_time "
-                           "interval as specified in the config file.")
-
-
 if __name__ == '__main__':
-    oparser = optparse.OptionParser(version='%%prog %s'
-                                    % version.version_string())
-    create_options(oparser)
-    (options, args) = config.parse_options(oparser)
-
     try:
-        conf, app = config.load_paste_app('glance-scrubber', options, args)
-        daemon = options.get('daemon') or \
-                 config.get_option(conf, 'daemon', type='bool',
-                                   default=False)
+        conf = config.GlanceConfigOpts()
+        conf.register_cli_opt(
+            cfg.BoolOpt('daemon',
+                        short='D',
+                        default=False,
+                        help='Run as a long-running process. When not '
+                             'specified (the default) run the scrub operation '
+                             'once and then exits. When specified do not exit '
+                             'and run scrub on wakeup_time interval as '
+                             'specified in the config.'))
+        conf.register_opt(cfg.IntOpt('wakeup_time', default=300))
+        conf()
 
-        if daemon:
-            wakeup_time = int(conf.get('wakeup_time', 300))
-            server = scrubber.Daemon(wakeup_time)
+        app = config.load_paste_app(conf, 'glance-scrubber')
+
+        if conf.daemon:
+            server = scrubber.Daemon(conf.wakeup_time)
             server.start(app)
             server.wait()
         else:

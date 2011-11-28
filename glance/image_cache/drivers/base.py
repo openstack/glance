@@ -60,11 +60,9 @@ class Driver(object):
         Creates all necessary directories under the base cache directory
         """
 
-        try:
-            key = 'image_cache_dir'
-            self.base_dir = self.conf[key]
-        except KeyError:
-            msg = _('Failed to read %s from config') % key
+        self.base_dir = self.conf.image_cache_dir
+        if self.base_dir is None:
+            msg = _('Failed to read %s from config') % 'image_cache_dir'
             logger.error(msg)
             driver = self.__class__.__module__
             raise exception.BadDriverConfiguration(driver_name=driver,
@@ -168,7 +166,7 @@ class Driver(object):
         :param image_id: Image ID
         """
 
-    def clean(self):
+    def clean(self, stall_time=None):
         """
         Dependent on the driver, clean up and destroy any invalid or incomplete
         cached images

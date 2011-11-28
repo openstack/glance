@@ -20,13 +20,14 @@ import unittest
 
 from glance.common import exception
 from glance.common import notifier
+from glance.tests import utils
 
 
 class TestInvalidNotifier(unittest.TestCase):
     """Test that notifications are generated appropriately"""
 
     def test_cannot_create(self):
-        conf = {"notifier_strategy": "invalid_notifier"}
+        conf = utils.TestConfigOpts({"notifier_strategy": "invalid_notifier"})
         self.assertRaises(exception.InvalidNotifierStrategy,
                           notifier.Notifier,
                           conf)
@@ -36,7 +37,7 @@ class TestLoggingNotifier(unittest.TestCase):
     """Test the logging notifier is selected and works properly."""
 
     def setUp(self):
-        conf = {"notifier_strategy": "logging"}
+        conf = utils.TestConfigOpts({"notifier_strategy": "logging"})
         self.called = False
         self.logger = logging.getLogger("glance.notifier.logging_notifier")
         self.notifier = notifier.Notifier(conf)
@@ -67,7 +68,7 @@ class TestNoopNotifier(unittest.TestCase):
     """Test that the noop notifier works...and does nothing?"""
 
     def setUp(self):
-        conf = {"notifier_strategy": "noop"}
+        conf = utils.TestConfigOpts({"notifier_strategy": "noop"})
         self.notifier = notifier.Notifier(conf)
 
     def test_warn(self):
@@ -86,7 +87,7 @@ class TestRabbitNotifier(unittest.TestCase):
     def setUp(self):
         notifier.RabbitStrategy._send_message = self._send_message
         self.called = False
-        conf = {"notifier_strategy": "rabbit"}
+        conf = utils.TestConfigOpts({"notifier_strategy": "rabbit"})
         self.notifier = notifier.Notifier(conf)
 
     def _send_message(self, message, priority):

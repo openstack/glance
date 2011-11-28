@@ -26,7 +26,7 @@ import math
 import tempfile
 import urlparse
 
-from glance.common import config
+from glance.common import cfg
 from glance.common import exception
 import glance.store
 import glance.store.base
@@ -38,8 +38,8 @@ except ImportError:
     pass
 
 DEFAULT_CONTAINER = 'glance'
-DEFAULT_LARGE_OBJECT_SIZE = 5 * 1024 * 1024 * 1024  # 5GB
-DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 200 * 1024 * 1024  # 200M
+DEFAULT_LARGE_OBJECT_SIZE = 5 * 1024  # 5GB
+DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 200  # 200M
 
 logger = logging.getLogger('glance.store.swift')
 
@@ -185,9 +185,24 @@ class Store(glance.store.base.Store):
 
     CHUNKSIZE = 65536
 
+    opts = [
+        cfg.BoolOpt('swift_enable_snet', default=False),
+        cfg.StrOpt('swift_store_auth_address'),
+        cfg.StrOpt('swift_store_user'),
+        cfg.StrOpt('swift_store_key'),
+        cfg.StrOpt('swift_store_container',
+                   default=DEFAULT_CONTAINER),
+        cfg.IntOpt('swift_store_large_object_size',
+                   default=DEFAULT_LARGE_OBJECT_SIZE),
+        cfg.IntOpt('swift_store_large_object_chunk_size',
+                   default=DEFAULT_LARGE_OBJECT_CHUNK_SIZE),
+        cfg.StrOpt('swift_store_object_buffer_dir'),
+        cfg.BoolOpt('swift_store_create_container_on_put', default=False),
+        ]
+
     def configure(self):
-        self.snet = config.get_option(
-            self.conf, 'swift_enable_snet', type='bool', default=False)
+        self.conf.register_opts(self.opts)
+        self.snet = self.conf.swift_enable_snet
 
     def configure_add(self):
         """
@@ -199,29 +214,14 @@ class Store(glance.store.base.Store):
         self.auth_address = self._option_get('swift_store_auth_address')
         self.user = self._option_get('swift_store_user')
         self.key = self._option_get('swift_store_key')
-        self.container = self.conf.get('swift_store_container',
-                                          DEFAULT_CONTAINER)
+        self.container = self.conf.swift_store_container
         try:
-            if self.conf.get('swift_store_large_object_size'):
-                self.large_object_size = int(
-                    self.conf.get('swift_store_large_object_size')
-                    ) * (1024 * 1024)  # Size specified in MB in conf files
-            else:
-                self.large_object_size = DEFAULT_LARGE_OBJECT_SIZE
-
-            if self.conf.get('swift_store_large_object_chunk_size'):
-                self.large_object_chunk_size = int(
-                    self.conf.get('swift_store_large_object_chunk_size')
-                    ) * (1024 * 1024)  # Size specified in MB in conf files
-            else:
-                self.large_object_chunk_size = DEFAULT_LARGE_OBJECT_CHUNK_SIZE
-
-            if self.conf.get('swift_store_object_buffer_dir'):
-                self.swift_store_object_buffer_dir = (
-                    self.conf.get('swift_store_object_buffer_dir'))
-            else:
-                self.swift_store_object_buffer_dir = None
-        except Exception, e:
+            self.large_object_size = self.conf.swift_store_large_object_size
+            self.large_object_chunk_size = \
+                self.conf.swift_store_large_object_chunk_size
+            self.swift_store_object_buffer_dir = \
+                self.conf.swift_store_object_buffer_dir
+        except cfg.ConfigFileValueError, e:
             reason = _("Error in configuration conf: %s") % e
             logger.error(reason)
             raise exception.BadStoreConfiguration(store_name="swift",
@@ -283,7 +283,7 @@ class Store(glance.store.base.Store):
             authurl=auth_url, user=user, key=key, snet=snet)
 
     def _option_get(self, param):
-        result = self.conf.get(param)
+        result = getattr(self.conf, param)
         if not result:
             reason = (_("Could not find %(param)s in configuration "
                         "options.") % locals())
@@ -495,10 +495,7 @@ def create_container_if_missing(container, swift_conn, conf):
         swift_conn.head_container(container)
     except swift_client.ClientException, e:
         if e.http_status == httplib.NOT_FOUND:
-            add_container = config.get_option(conf,
-                                'swift_store_create_container_on_put',
-                                type='bool', default=False)
-            if add_container:
+            if conf.swift_store_create_container_on_put:
                 try:
                     swift_conn.put_container(container)
                 except ClientException, e:

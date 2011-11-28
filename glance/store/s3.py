@@ -23,7 +23,7 @@ import httplib
 import tempfile
 import urlparse
 
-from glance.common import config
+from glance.common import cfg
 from glance.common import exception
 import glance.store
 import glance.store.base
@@ -183,6 +183,15 @@ class Store(glance.store.base.Store):
 
     EXAMPLE_URL = "s3://<ACCESS_KEY>:<SECRET_KEY>@<S3_URL>/<BUCKET>/<OBJ>"
 
+    opts = [
+        cfg.StrOpt('s3_store_host'),
+        cfg.StrOpt('s3_store_access_key'),
+        cfg.StrOpt('s3_store_secret_key'),
+        cfg.StrOpt('s3_store_bucket'),
+        cfg.StrOpt('s3_store_object_buffer_dir'),
+        cfg.BoolOpt('s3_store_create_bucket_on_put', default=False),
+        ]
+
     def configure_add(self):
         """
         Configure the Store to use the stored configuration options
@@ -190,6 +199,7 @@ class Store(glance.store.base.Store):
         this method. If the store was not able to successfully configure
         itself, it should raise `exception.BadStoreConfiguration`
         """
+        self.conf.register_opts(self.opts)
         self.s3_host = self._option_get('s3_store_host')
         access_key = self._option_get('s3_store_access_key')
         secret_key = self._option_get('s3_store_secret_key')
@@ -210,14 +220,11 @@ class Store(glance.store.base.Store):
         else:  # Defaults http
             self.full_s3_host = 'http://' + self.s3_host
 
-        if self.conf.get('s3_store_object_buffer_dir'):
-            self.s3_store_object_buffer_dir = self.conf.get(
-                's3_store_object_buffer_dir')
-        else:
-            self.s3_store_object_buffer_dir = None
+        self.s3_store_object_buffer_dir = \
+            self.conf.s3_store_object_buffer_dir
 
     def _option_get(self, param):
-        result = self.conf.get(param)
+        result = getattr(self.conf, param)
         if not result:
             reason = _("Could not find %(param)s in configuration "
                        "options.") % locals()
@@ -417,10 +424,7 @@ def create_bucket_if_missing(bucket, s3_conn, conf):
         s3_conn.get_bucket(bucket)
     except S3ResponseError, e:
         if e.status == httplib.NOT_FOUND:
-            add_bucket = config.get_option(conf,
-                                's3_store_create_bucket_on_put',
-                                type='bool', default=False)
-            if add_bucket:
+            if conf.s3_store_create_bucket_on_put:
                 try:
                     s3_conn.create_bucket(bucket)
                 except S3ResponseError, e:

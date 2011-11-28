@@ -70,8 +70,6 @@ from glance.image_cache.drivers import base
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_STALL_TIME = 86400  # 24 hours
-
 
 class Driver(base.Driver):
 
@@ -416,7 +414,7 @@ class Driver(base.Driver):
         return self._reap_old_files(self.incomplete_dir, 'stalled',
                                     grace=grace)
 
-    def clean(self):
+    def clean(self, stall_time=None):
         """
         Delete any image files in the invalid directory and any
         files in the incomplete directory that are older than a
@@ -424,9 +422,10 @@ class Driver(base.Driver):
         """
         self.reap_invalid()
 
-        incomplete_stall_time = int(self.conf.get('image_cache_stall_time',
-                                                  DEFAULT_STALL_TIME))
-        self.reap_stalled(incomplete_stall_time)
+        if stall_time is None:
+            stall_time = self.conf.image_cache_stall_time
+
+        self.reap_stalled(stall_time)
 
 
 def get_all_regular_files(basepath):

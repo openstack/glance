@@ -34,6 +34,7 @@ from webob.exc import (HTTPNotFound,
 import glance.api.v1
 from glance.api.v1 import controller
 from glance import image_cache
+from glance.common import cfg
 from glance.common import exception
 from glance.common import notifier
 from glance.common import wsgi
@@ -76,8 +77,11 @@ class Controller(controller.BaseController):
         DELETE /images/<ID> -- Delete the image with id <ID>
     """
 
+    default_store_opt = cfg.StrOpt('default_store', default='file')
+
     def __init__(self, conf):
         self.conf = conf
+        self.conf.register_opt(self.default_store_opt)
         glance.store.create_stores(conf)
         self.notifier = notifier.Notifier(conf)
         registry.configure_registry_client(conf)
@@ -290,7 +294,7 @@ class Controller(controller.BaseController):
             raise HTTPBadRequest(explanation=msg)
 
         store_name = req.headers.get('x-image-meta-store',
-                                     self.conf['default_store'])
+                                     self.conf.default_store)
 
         store = self.get_store_or_400(req, store_name)
 

@@ -30,6 +30,7 @@ from glance.common import utils
 from glance.store import BackendException
 import glance.store.swift
 from glance.store.location import get_location_from_uri
+from glance.tests import utils as test_utils
 
 
 FAKE_UUID = utils.generate_uuid
@@ -182,7 +183,7 @@ class TestStore(unittest.TestCase):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
         stub_out_swift_common_client(self.stubs)
-        self.store = Store(SWIFT_CONF)
+        self.store = Store(test_utils.TestConfigOpts(SWIFT_CONF))
 
     def tearDown(self):
         """Clear the test environment"""
@@ -293,7 +294,7 @@ class TestStore(unittest.TestCase):
 
             image_swift = StringIO.StringIO(expected_swift_contents)
 
-            self.store = Store(new_conf)
+            self.store = Store(test_utils.TestConfigOpts(new_conf))
             location, size, checksum = self.store.add(image_id, image_swift,
                                                       expected_swift_size)
 
@@ -318,7 +319,7 @@ class TestStore(unittest.TestCase):
         conf['swift_store_create_container_on_put'] = 'False'
         conf['swift_store_container'] = 'noexist'
         image_swift = StringIO.StringIO("nevergonnamakeit")
-        self.store = Store(conf)
+        self.store = Store(test_utils.TestConfigOpts(conf))
 
         # We check the exception text to ensure the container
         # missing text is found in it, otherwise, we would have
@@ -348,7 +349,7 @@ class TestStore(unittest.TestCase):
                             '/noexist/%s' % expected_image_id
         image_swift = StringIO.StringIO(expected_swift_contents)
 
-        self.store = Store(conf)
+        self.store = Store(test_utils.TestConfigOpts(conf))
         location, size, checksum = self.store.add(expected_image_id,
                                                   image_swift,
                                                   expected_swift_size)
@@ -387,7 +388,7 @@ class TestStore(unittest.TestCase):
         try:
             glance.store.swift.DEFAULT_LARGE_OBJECT_SIZE = 1024
             glance.store.swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 1024
-            self.store = Store(conf)
+            self.store = Store(test_utils.TestConfigOpts(conf))
             location, size, checksum = self.store.add(expected_image_id,
                                                       image_swift,
                                                       expected_swift_size)
@@ -440,7 +441,7 @@ class TestStore(unittest.TestCase):
             MAX_SWIFT_OBJECT_SIZE = 1024
             glance.store.swift.DEFAULT_LARGE_OBJECT_SIZE = 1024
             glance.store.swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 1024
-            self.store = Store(conf)
+            self.store = Store(test_utils.TestConfigOpts(conf))
             location, size, checksum = self.store.add(expected_image_id,
                                                       image_swift, 0)
         finally:
@@ -475,7 +476,7 @@ class TestStore(unittest.TestCase):
         del conf[key]
 
         try:
-            self.store = Store(conf)
+            self.store = Store(test_utils.TestConfigOpts(conf))
             return self.store.add == self.store.add_disabled
         except:
             return False

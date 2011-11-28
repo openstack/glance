@@ -26,6 +26,7 @@ import stubout
 from glance import image_cache
 from glance.common import exception
 from glance.common import utils
+from glance.tests import utils as test_utils
 from glance.tests.utils import skip_if_disabled, xattr_writes_supported
 
 FIXTURE_DATA = '*' * 1024
@@ -136,8 +137,7 @@ class ImageCacheTestCase(object):
 
         self.assertTrue(os.path.exists(incomplete_file_path))
 
-        self.cache.conf['image_cache_stall_time'] = 0
-        self.cache.clean()
+        self.cache.clean(stall_time=0)
 
         self.assertFalse(os.path.exists(incomplete_file_path))
 
@@ -250,11 +250,12 @@ class TestImageCacheXattr(unittest.TestCase,
 
         self.inited = True
         self.disabled = False
-        self.conf = {'image_cache_dir': self.cache_dir,
-                     'image_cache_driver': 'xattr',
-                     'image_cache_max_size': 1024 * 5,
-                     'registry_host': '0.0.0.0',
-                     'registry_port': 9191}
+        self.conf = test_utils.TestConfigOpts({
+                'image_cache_dir': self.cache_dir,
+                'image_cache_driver': 'xattr',
+                'image_cache_max_size': 1024 * 5,
+                'registry_host': '0.0.0.0',
+                'registry_port': 9191})
         self.cache = image_cache.ImageCache(self.conf)
 
         if not xattr_writes_supported(self.cache_dir):
@@ -294,11 +295,12 @@ class TestImageCacheSqlite(unittest.TestCase,
         self.disabled = False
         self.cache_dir = os.path.join("/", "tmp", "test.cache.%d" %
                                       random.randint(0, 1000000))
-        self.conf = {'image_cache_dir': self.cache_dir,
-                     'image_cache_driver': 'sqlite',
-                     'image_cache_max_size': 1024 * 5,
-                     'registry_host': '0.0.0.0',
-                     'registry_port': 9191}
+        self.conf = test_utils.TestConfigOpts({
+                'image_cache_dir': self.cache_dir,
+                'image_cache_driver': 'sqlite',
+                'image_cache_max_size': 1024 * 5,
+                'registry_host': '0.0.0.0',
+                'registry_port': 9191})
         self.cache = image_cache.ImageCache(self.conf)
 
     def tearDown(self):

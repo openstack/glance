@@ -22,7 +22,7 @@ import uuid
 
 import kombu.connection
 
-from glance.common import config
+from glance.common import cfg
 from glance.common import exception
 
 
@@ -61,33 +61,29 @@ class LoggingStrategy(object):
 class RabbitStrategy(object):
     """A notifier that puts a message on a queue when called."""
 
+    opts = [
+        cfg.StrOpt('rabbit_host', default='localhost'),
+        cfg.IntOpt('rabbit_port', default=5672),
+        cfg.BoolOpt('rabbit_use_ssl', default=False),
+        cfg.StrOpt('rabbit_userid', default='guest'),
+        cfg.StrOpt('rabbit_password', default='guest'),
+        cfg.StrOpt('rabbit_virtual_host', default='/'),
+        cfg.StrOpt('rabbit_notification_topic', default='glance_notifications')
+        ]
+
     def __init__(self, conf):
         """Initialize the rabbit notification strategy."""
         self._conf = conf
-        host = self._get_option('rabbit_host', 'str', 'localhost')
-        port = self._get_option('rabbit_port', 'int', 5672)
-        use_ssl = self._get_option('rabbit_use_ssl', 'bool', False)
-        userid = self._get_option('rabbit_userid', 'str', 'guest')
-        password = self._get_option('rabbit_password', 'str', 'guest')
-        virtual_host = self._get_option('rabbit_virtual_host', 'str', '/')
+        self._conf.register_opts(self.opts)
 
         self.connection = kombu.connection.BrokerConnection(
-            hostname=host,
-            userid=userid,
-            password=password,
-            virtual_host=virtual_host,
-            ssl=use_ssl)
+            hostname=self._conf.rabbit_host,
+            userid=self._conf.rabbit_userid,
+            password=self._conf.rabbit_password,
+            virtual_host=self._conf.rabbit_virtual_host,
+            ssl=self._conf.rabbit_use_ssl)
 
-        self.topic = self._get_option('rabbit_notification_topic',
-                                      'str',
-                                      'glance_notifications')
-
-    def _get_option(self, name, datatype, default):
-        """Retrieve a configuration option."""
-        return config.get_option(self._conf,
-                                 name,
-                                 type=datatype,
-                                 default=default)
+        self.topic = self._conf.rabbit_notification_topic
 
     def _send_message(self, message, priority):
         topic = "%s.%s" % (self.topic, priority)
@@ -115,9 +111,13 @@ class Notifier(object):
         "default": NoopStrategy,
     }
 
+    opts = [
+        cfg.StrOpt('notifier_strategy', default='default')
+        ]
+
     def __init__(self, conf, strategy=None):
-        strategy = config.get_option(conf, "notifier_strategy",
-                                     type="str", default="default")
+        conf.register_opts(self.opts)
+        strategy = conf.notifier_strategy
         try:
             self.strategy = self.STRATEGIES[strategy](conf)
         except KeyError:

@@ -22,7 +22,7 @@ import time
 import urlparse
 
 from glance import registry
-from glance.common import config
+from glance.common import cfg
 from glance.common import exception
 from glance.common import utils
 from glance.store import location
@@ -154,13 +154,27 @@ def get_store_from_location(uri):
     return loc.store_name
 
 
+scrubber_datadir_opt = cfg.StrOpt('scrubber_datadir',
+                                  default='/var/lib/glance/scrubber')
+
+
+def get_scrubber_datadir(conf):
+    conf.register_opt(scrubber_datadir_opt)
+    return conf.scrubber_datadir
+
+
+delete_opts = [
+    cfg.BoolOpt('delayed_delete', default=False),
+    cfg.IntOpt('scrub_time', default=0)
+    ]
+
+
 def schedule_delete_from_backend(uri, conf, context, image_id, **kwargs):
     """
     Given a uri and a time, schedule the deletion of an image.
     """
-    use_delay = config.get_option(conf, 'delayed_delete', type='bool',
-                                  default=False)
-    if not use_delay:
+    conf.register_opts(delete_opts)
+    if not conf.delayed_delete:
         registry.update_image_metadata(context, image_id,
                                        {'status': 'deleted'})
         try:
@@ -169,10 +183,8 @@ def schedule_delete_from_backend(uri, conf, context, image_id, **kwargs):
             msg = _("Failed to delete image from store (%(uri)s).") % locals()
             logger.error(msg)
 
-    datadir = config.get_option(conf, 'scrubber_datadir')
-    scrub_time = config.get_option(conf, 'scrub_time', type='int',
-                                   default=0)
-    delete_time = time.time() + scrub_time
+    datadir = get_scrubber_datadir(conf)
+    delete_time = time.time() + conf.scrub_time
     file_path = os.path.join(datadir, str(image_id))
     utils.safe_mkdirs(datadir)
 
