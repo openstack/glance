@@ -209,16 +209,20 @@ metadata_encryption_key = %(metadata_encryption_key)s
 log_file = %(log_file)s
 
 [app:glance-pruner]
-paste.app_factory = glance.image_cache.pruner:app_factory
+paste.app_factory = glance.common.wsgi:app_factory
+glance.app_factory = glance.image_cache.pruner:Pruner
 
 [app:glance-prefetcher]
-paste.app_factory = glance.image_cache.prefetcher:app_factory
+paste.app_factory = glance.common.wsgi:app_factory
+glance.app_factory = glance.image_cache.prefetcher:Prefetcher
 
 [app:glance-cleaner]
-paste.app_factory = glance.image_cache.cleaner:app_factory
+paste.app_factory = glance.common.wsgi:app_factory
+glance.app_factory = glance.image_cache.cleaner:Cleaner
 
 [app:glance-queue-image]
-paste.app_factory = glance.image_cache.queue_image:app_factory
+paste.app_factory = glance.common.wsgi:app_factory
+glance.app_factory = glance.image_cache.queue_image:Queuer
 """ % cache_file_options)
             cache_file.flush()
 

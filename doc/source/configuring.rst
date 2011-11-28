@@ -513,7 +513,8 @@ The cache middleware should be in your ``glance-api.conf`` in a section titled
 ``[filter:cache]``. It should look like this::
 
   [filter:cache]
-  paste.filter_factory = glance.api.middleware.cache:filter_factory
+  paste.filter_factory = glance.common.wsgi:filter_factory
+  glance.filter_factory = glance.api.middleware.cache:CacheFilter
 
 
 For example, suppose your application pipeline in the ``glance-api.conf`` file

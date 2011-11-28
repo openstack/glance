@@ -115,10 +115,3 @@ def create_resource(options):
     deserializer = CachedImageDeserializer()
     serializer = CachedImageSerializer()
     return wsgi.Resource(Controller(options), deserializer, serializer)
-
-
-def app_factory(global_conf, **local_conf):
-    """paste.deploy app factory for creating Cached Images apps"""
-    conf = global_conf.copy()
-    conf.update(local_conf)
-    return Controller(conf)

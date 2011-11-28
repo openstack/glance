@@ -180,9 +180,3 @@ def write_queue_file(file_path, uri, delete_time):
         f.write('\n'.join([uri, str(int(delete_time))]))
     os.chmod(file_path, 0600)
     os.utime(file_path, (delete_time, delete_time))
-
-
-def app_factory(global_config, **local_conf):
-    conf = global_config.copy()
-    conf.update(local_conf)
-    return Scrubber(conf)

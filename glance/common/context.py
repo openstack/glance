@@ -119,16 +119,3 @@ class ContextMiddleware(wsgi.Middleware):
         req.context = self.make_context(
             auth_tok=auth_tok, user=user, tenant=tenant, roles=roles,
             is_admin=is_admin)
-
-
-def filter_factory(global_conf, **local_conf):
-    """
-    Factory method for paste.deploy
-    """
-    conf = global_conf.copy()
-    conf.update(local_conf)
-
-    def filter(app):
-        return ContextMiddleware(app, conf)
-
-    return filter

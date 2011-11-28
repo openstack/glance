@@ -121,16 +121,3 @@ class VersionNegotiationFilter(wsgi.Middleware):
             req.environ['api.major_version'] = major_version
             req.environ['api.minor_version'] = minor_version
         return match is not None
-
-
-def filter_factory(global_conf, **local_conf):
-    """
-    Factory method for paste.deploy
-    """
-    conf = global_conf.copy()
-    conf.update(local_conf)
-
-    def filter(app):
-        return VersionNegotiationFilter(app, conf)
-
-    return filter

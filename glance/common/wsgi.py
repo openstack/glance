@@ -37,6 +37,7 @@ import webob.dec
 import webob.exc
 
 from glance.common import exception
+from glance.common import utils
 
 
 class WritableLogger(object):
@@ -406,3 +407,52 @@ class Resource(object):
             pass
 
         return args
+
+
+def _import_factory(conf, key):
+    return utils.import_class(conf[key].replace(':', '.').strip())
+
+
+def app_factory(global_conf, **local_conf):
+    """A Generic paste.deploy app factory.
+
+    This requires glance.app_factory to be set to a callable which returns a
+    WSGI app when invoked. The format of the name is <module>:<callable> e.g.
+
+      [app:apiv1app]
+      paste.app_factory = glance.common.wsgi:app_factory
+      glance.app_factory = glance.api.v1:API
+
+    The WSGI app constructor must accept a configuration dict as its only
+    argument.
+    """
+    factory = _import_factory(local_conf, 'glance.app_factory')
+
+    conf = global_conf.copy()
+    conf.update(local_conf)
+
+    return factory(conf)
+
+
+def filter_factory(global_conf, **local_conf):
+    """A Generic paste.deploy filter factory.
+
+    This requires glance.filter_factory to be set to a callable which returns a
+    WSGI filter when invoked. The format is <module>:<callable> e.g.
+
+      [filter:cache]
+      paste.filter_factory = glance.common.wsgi:filter_factory
+      glance.filter_factory = glance.api.middleware.cache:CacheFilter
+
+    The WSGI filter constructor must accept a WSGI app and a configuration dict
+    as its only two arguments.
+    """
+    factory = _import_factory(local_conf, 'glance.filter_factory')
+
+    conf = global_conf.copy()
+    conf.update(local_conf)
+
+    def filter(app):
+        return factory(app, conf)
+
+    return filter

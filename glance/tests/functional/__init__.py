@@ -217,19 +217,25 @@ image_cache_driver = %(image_cache_driver)s
 pipeline = versionnegotiation context %(cache_pipeline)s apiv1app
 
 [app:apiv1app]
-paste.app_factory = glance.api.v1.router:app_factory
+paste.app_factory = glance.common.wsgi:app_factory
+glance.app_factory = glance.api.v1.router:API
 
 [filter:versionnegotiation]
-paste.filter_factory = glance.api.middleware.version_negotiation:filter_factory
+paste.filter_factory = glance.common.wsgi:filter_factory
+glance.filter_factory =
+ glance.api.middleware.version_negotiation:VersionNegotiationFilter
 
 [filter:cache]
-paste.filter_factory = glance.api.middleware.cache:filter_factory
+paste.filter_factory = glance.common.wsgi:filter_factory
+glance.filter_factory = glance.api.middleware.cache:CacheFilter
 
 [filter:cache_manage]
-paste.filter_factory = glance.api.middleware.cache_manage:filter_factory
+paste.filter_factory = glance.common.wsgi:filter_factory
+glance.filter_factory = glance.api.middleware.cache_manage:CacheManageFilter
 
 [filter:context]
-paste.filter_factory = glance.common.context:filter_factory
+paste.filter_factory = glance.common.wsgi:filter_factory
+glance.filter_factory = glance.common.context:ContextMiddleware
 """
 
 
@@ -267,11 +273,13 @@ owner_is_tenant = %(owner_is_tenant)s
 pipeline = context registryapp
 
 [app:registryapp]
-paste.app_factory = glance.registry.api.v1:app_factory
+paste.app_factory = glance.common.wsgi:app_factory
+glance.app_factory = glance.registry.api.v1:API
 
 [filter:context]
 context_class = glance.registry.context.RequestContext
-paste.filter_factory = glance.common.context:filter_factory
+paste.filter_factory = glance.common.wsgi:filter_factory
+glance.filter_factory = glance.common.context:ContextMiddleware
 """
 
 
@@ -302,7 +310,8 @@ registry_host = 0.0.0.0
 registry_port = %(registry_port)s
 
 [app:glance-scrubber]
-paste.app_factory = glance.store.scrubber:app_factory
+paste.app_factory = glance.common.wsgi:app_factory
+glance.app_factory = glance.store.scrubber:Scrubber
 """
 
 
