@@ -136,7 +136,7 @@ class ImageCacheTestCase(object):
 
         self.assertTrue(os.path.exists(incomplete_file_path))
 
-        self.cache.options['image_cache_stall_time'] = 0
+        self.cache.conf['image_cache_stall_time'] = 0
         self.cache.clean()
 
         self.assertFalse(os.path.exists(incomplete_file_path))
@@ -250,12 +250,12 @@ class TestImageCacheXattr(unittest.TestCase,
 
         self.inited = True
         self.disabled = False
-        self.options = {'image_cache_dir': self.cache_dir,
-                        'image_cache_driver': 'xattr',
-                        'image_cache_max_size': 1024 * 5,
-                        'registry_host': '0.0.0.0',
-                        'registry_port': 9191}
-        self.cache = image_cache.ImageCache(self.options)
+        self.conf = {'image_cache_dir': self.cache_dir,
+                     'image_cache_driver': 'xattr',
+                     'image_cache_max_size': 1024 * 5,
+                     'registry_host': '0.0.0.0',
+                     'registry_port': 9191}
+        self.cache = image_cache.ImageCache(self.conf)
 
         if not xattr_writes_supported(self.cache_dir):
             self.inited = True
@@ -294,12 +294,12 @@ class TestImageCacheSqlite(unittest.TestCase,
         self.disabled = False
         self.cache_dir = os.path.join("/", "tmp", "test.cache.%d" %
                                       random.randint(0, 1000000))
-        self.options = {'image_cache_dir': self.cache_dir,
-                        'image_cache_driver': 'sqlite',
-                        'image_cache_max_size': 1024 * 5,
-                        'registry_host': '0.0.0.0',
-                        'registry_port': 9191}
-        self.cache = image_cache.ImageCache(self.options)
+        self.conf = {'image_cache_dir': self.cache_dir,
+                     'image_cache_driver': 'sqlite',
+                     'image_cache_max_size': 1024 * 5,
+                     'registry_host': '0.0.0.0',
+                     'registry_port': 9191}
+        self.cache = image_cache.ImageCache(self.conf)
 
     def tearDown(self):
         if os.path.exists(self.cache_dir):

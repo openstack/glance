@@ -424,8 +424,8 @@ class Driver(base.Driver):
         """
         self.reap_invalid()
 
-        incomplete_stall_time = int(self.options.get('image_cache_stall_time',
-                                                     DEFAULT_STALL_TIME))
+        incomplete_stall_time = int(self.conf.get('image_cache_stall_time',
+                                                  DEFAULT_STALL_TIME))
         self.reap_stalled(incomplete_stall_time)
 
 

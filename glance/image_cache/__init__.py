@@ -34,15 +34,15 @@ class ImageCache(object):
 
     """Provides an LRU cache for image data."""
 
-    def __init__(self, options):
-        self.options = options
+    def __init__(self, conf):
+        self.conf = conf
         self.init_driver()
 
     def init_driver(self):
         """
         Create the driver for the cache
         """
-        driver_name = self.options.get('image_cache_driver', 'sqlite')
+        driver_name = self.conf.get('image_cache_driver', 'sqlite')
         driver_module = (__name__ + '.drivers.' + driver_name + '.Driver')
         try:
             self.driver_class = utils.import_class(driver_module)
@@ -64,7 +64,7 @@ class ImageCache(object):
         fall back to using the SQLite driver which has no odd dependencies
         """
         try:
-            self.driver = self.driver_class(self.options)
+            self.driver = self.driver_class(self.conf)
             self.driver.configure()
         except exception.BadDriverConfiguration, config_err:
             driver_module = self.driver_class.__module__
@@ -74,7 +74,7 @@ class ImageCache(object):
             logger.info(_("Defaulting to SQLite driver."))
             default_module = __name__ + '.drivers.sqlite.Driver'
             self.driver_class = utils.import_class(default_module)
-            self.driver = self.driver_class(self.options)
+            self.driver = self.driver_class(self.conf)
             self.driver.configure()
 
     def is_cached(self, image_id):
@@ -150,8 +150,8 @@ class ImageCache(object):
         size. Returns a tuple containing the total number of cached
         files removed and the total size of all pruned image files.
         """
-        max_size = int(self.options.get('image_cache_max_size',
-                                        DEFAULT_MAX_CACHE_SIZE))
+        max_size = int(self.conf.get('image_cache_max_size',
+                                     DEFAULT_MAX_CACHE_SIZE))
         current_size = self.driver.get_cache_size()
         if max_size > current_size:
             logger.debug(_("Image cache has free space, skipping prune..."))

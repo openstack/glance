@@ -97,9 +97,9 @@ def stub_out_registry_and_store_server(stubs):
             sql_connection = os.environ.get('GLANCE_SQL_CONNECTION',
                                             "sqlite://")
             context_class = 'glance.registry.context.RequestContext'
-            options = {'sql_connection': sql_connection, 'verbose': VERBOSE,
-                       'debug': DEBUG, 'context_class': context_class}
-            api = context.ContextMiddleware(rserver.API(options), options)
+            conf = {'sql_connection': sql_connection, 'verbose': VERBOSE,
+                    'debug': DEBUG, 'context_class': context_class}
+            api = context.ContextMiddleware(rserver.API(conf), conf)
             res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out
@@ -145,17 +145,17 @@ def stub_out_registry_and_store_server(stubs):
                 self.req.body = body
 
         def getresponse(self):
-            options = {'verbose': VERBOSE,
-                       'debug': DEBUG,
-                       'bind_host': '0.0.0.0',
-                       'bind_port': '9999999',
-                       'registry_host': '0.0.0.0',
-                       'registry_port': '9191',
-                       'default_store': 'file',
-                       'filesystem_store_datadir': FAKE_FILESYSTEM_ROOTDIR}
+            conf = {'verbose': VERBOSE,
+                    'debug': DEBUG,
+                    'bind_host': '0.0.0.0',
+                    'bind_port': '9999999',
+                    'registry_host': '0.0.0.0',
+                    'registry_port': '9191',
+                    'default_store': 'file',
+                    'filesystem_store_datadir': FAKE_FILESYSTEM_ROOTDIR}
             api = version_negotiation.VersionNegotiationFilter(
-                context.ContextMiddleware(router.API(options), options),
-                options)
+                context.ContextMiddleware(router.API(conf), conf),
+                conf)
             res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out
@@ -218,9 +218,9 @@ def stub_out_registry_server(stubs, **kwargs):
         def getresponse(self):
             sql_connection = kwargs.get('sql_connection', "sqlite:///")
             context_class = 'glance.registry.context.RequestContext'
-            options = {'sql_connection': sql_connection, 'verbose': VERBOSE,
-                       'debug': DEBUG, 'context_class': context_class}
-            api = context.ContextMiddleware(rserver.API(options), options)
+            conf = {'sql_connection': sql_connection, 'verbose': VERBOSE,
+                    'debug': DEBUG, 'context_class': context_class}
+            api = context.ContextMiddleware(rserver.API(conf), conf)
             res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out

@@ -87,7 +87,7 @@ def register_store(store_module, schemes):
     location.register_scheme_map(scheme_map)
 
 
-def create_stores(options):
+def create_stores(conf):
     """
     Construct the store objects with supplied configuration options
     """
@@ -98,7 +98,7 @@ def create_stores(options):
             raise BackendException('Unable to create store. Could not find '
                                    'a class named Store in module %s.'
                                    % store_module)
-        STORES[store_module] = store_class(options)
+        STORES[store_module] = store_class(conf)
 
 
 def get_store_from_scheme(scheme):
@@ -154,11 +154,11 @@ def get_store_from_location(uri):
     return loc.store_name
 
 
-def schedule_delete_from_backend(uri, options, context, image_id, **kwargs):
+def schedule_delete_from_backend(uri, conf, context, image_id, **kwargs):
     """
     Given a uri and a time, schedule the deletion of an image.
     """
-    use_delay = config.get_option(options, 'delayed_delete', type='bool',
+    use_delay = config.get_option(conf, 'delayed_delete', type='bool',
                                   default=False)
     if not use_delay:
         registry.update_image_metadata(context, image_id,
@@ -169,8 +169,8 @@ def schedule_delete_from_backend(uri, options, context, image_id, **kwargs):
             msg = _("Failed to delete image from store (%(uri)s).") % locals()
             logger.error(msg)
 
-    datadir = config.get_option(options, 'scrubber_datadir')
-    scrub_time = config.get_option(options, 'scrub_time', type='int',
+    datadir = config.get_option(conf, 'scrubber_datadir')
+    scrub_time = config.get_option(conf, 'scrub_time', type='int',
                                    default=0)
     delete_time = time.time() + scrub_time
     file_path = os.path.join(datadir, str(image_id))

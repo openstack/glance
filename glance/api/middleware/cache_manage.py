@@ -28,10 +28,10 @@ logger = logging.getLogger(__name__)
 
 
 class CacheManageFilter(wsgi.Middleware):
-    def __init__(self, app, options):
+    def __init__(self, app, conf):
 
         map = app.map
-        resource = cached_images.create_resource(options)
+        resource = cached_images.create_resource(conf)
 
         map.connect("/cached_images",
                     controller=resource,

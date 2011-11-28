@@ -38,12 +38,12 @@ Store = glance.store.swift.Store
 FIVE_KB = (5 * 1024)
 FIVE_GB = (5 * 1024 * 1024 * 1024)
 MAX_SWIFT_OBJECT_SIZE = FIVE_GB
-SWIFT_OPTIONS = {'verbose': True,
-                 'debug': True,
-                 'swift_store_user': 'user',
-                 'swift_store_key': 'key',
-                 'swift_store_auth_address': 'localhost:8080',
-                 'swift_store_container': 'glance'}
+SWIFT_CONF = {'verbose': True,
+              'debug': True,
+              'swift_store_user': 'user',
+              'swift_store_key': 'key',
+              'swift_store_auth_address': 'localhost:8080',
+              'swift_store_container': 'glance'}
 
 
 # We stub out as little as possible to ensure that the code paths
@@ -182,7 +182,7 @@ class TestStore(unittest.TestCase):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
         stub_out_swift_common_client(self.stubs)
-        self.store = Store(SWIFT_OPTIONS)
+        self.store = Store(SWIFT_CONF)
 
     def tearDown(self):
         """Clear the test environment"""
@@ -288,12 +288,12 @@ class TestStore(unittest.TestCase):
             expected_swift_contents = "*" * expected_swift_size
             expected_checksum = \
                     hashlib.md5(expected_swift_contents).hexdigest()
-            new_options = SWIFT_OPTIONS.copy()
-            new_options['swift_store_auth_address'] = variation
+            new_conf = SWIFT_CONF.copy()
+            new_conf['swift_store_auth_address'] = variation
 
             image_swift = StringIO.StringIO(expected_swift_contents)
 
-            self.store = Store(new_options)
+            self.store = Store(new_conf)
             location, size, checksum = self.store.add(image_id, image_swift,
                                                       expected_swift_size)
 
@@ -314,11 +314,11 @@ class TestStore(unittest.TestCase):
         Tests that adding an image with a non-existing container
         raises an appropriate exception
         """
-        options = SWIFT_OPTIONS.copy()
-        options['swift_store_create_container_on_put'] = 'False'
-        options['swift_store_container'] = 'noexist'
+        conf = SWIFT_CONF.copy()
+        conf['swift_store_create_container_on_put'] = 'False'
+        conf['swift_store_container'] = 'noexist'
         image_swift = StringIO.StringIO("nevergonnamakeit")
-        self.store = Store(options)
+        self.store = Store(conf)
 
         # We check the exception text to ensure the container
         # missing text is found in it, otherwise, we would have
@@ -337,9 +337,9 @@ class TestStore(unittest.TestCase):
         Tests that adding an image with a non-existing container
         creates the container automatically if flag is set
         """
-        options = SWIFT_OPTIONS.copy()
-        options['swift_store_create_container_on_put'] = 'True'
-        options['swift_store_container'] = 'noexist'
+        conf = SWIFT_CONF.copy()
+        conf['swift_store_create_container_on_put'] = 'True'
+        conf['swift_store_container'] = 'noexist'
         expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
         expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
@@ -348,7 +348,7 @@ class TestStore(unittest.TestCase):
                             '/noexist/%s' % expected_image_id
         image_swift = StringIO.StringIO(expected_swift_contents)
 
-        self.store = Store(options)
+        self.store = Store(conf)
         location, size, checksum = self.store.add(expected_image_id,
                                                   image_swift,
                                                   expected_swift_size)
@@ -372,8 +372,8 @@ class TestStore(unittest.TestCase):
         and then verify that there have been a number of calls to
         put_object()...
         """
-        options = SWIFT_OPTIONS.copy()
-        options['swift_store_container'] = 'glance'
+        conf = SWIFT_CONF.copy()
+        conf['swift_store_container'] = 'glance'
         expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
         expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
@@ -387,7 +387,7 @@ class TestStore(unittest.TestCase):
         try:
             glance.store.swift.DEFAULT_LARGE_OBJECT_SIZE = 1024
             glance.store.swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 1024
-            self.store = Store(options)
+            self.store = Store(conf)
             location, size, checksum = self.store.add(expected_image_id,
                                                       image_swift,
                                                       expected_swift_size)
@@ -418,8 +418,8 @@ class TestStore(unittest.TestCase):
 
         Bug lp:891738
         """
-        options = SWIFT_OPTIONS.copy()
-        options['swift_store_container'] = 'glance'
+        conf = SWIFT_CONF.copy()
+        conf['swift_store_container'] = 'glance'
 
         # Set up a 'large' image of 5KB
         expected_swift_size = FIVE_KB
@@ -440,7 +440,7 @@ class TestStore(unittest.TestCase):
             MAX_SWIFT_OBJECT_SIZE = 1024
             glance.store.swift.DEFAULT_LARGE_OBJECT_SIZE = 1024
             glance.store.swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 1024
-            self.store = Store(options)
+            self.store = Store(conf)
             location, size, checksum = self.store.add(expected_image_id,
                                                       image_swift, 0)
         finally:
@@ -471,11 +471,11 @@ class TestStore(unittest.TestCase):
                           FAKE_UUID, image_swift, 0)
 
     def _option_required(self, key):
-        options = SWIFT_OPTIONS.copy()
-        del options[key]
+        conf = SWIFT_CONF.copy()
+        del conf[key]
 
         try:
-            self.store = Store(options)
+            self.store = Store(conf)
             return self.store.add == self.store.add_disabled
         except:
             return False

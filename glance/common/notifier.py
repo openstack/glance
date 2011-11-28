@@ -29,7 +29,7 @@ from glance.common import exception
 class NoopStrategy(object):
     """A notifier that does nothing when called."""
 
-    def __init__(self, options):
+    def __init__(self, conf):
         pass
 
     def warn(self, msg):
@@ -45,7 +45,7 @@ class NoopStrategy(object):
 class LoggingStrategy(object):
     """A notifier that calls logging when called."""
 
-    def __init__(self, options):
+    def __init__(self, conf):
         self.logger = logging.getLogger('glance.notifier.logging_notifier')
 
     def warn(self, msg):
@@ -61,9 +61,9 @@ class LoggingStrategy(object):
 class RabbitStrategy(object):
     """A notifier that puts a message on a queue when called."""
 
-    def __init__(self, options):
+    def __init__(self, conf):
         """Initialize the rabbit notification strategy."""
-        self._options = options
+        self._conf = conf
         host = self._get_option('rabbit_host', 'str', 'localhost')
         port = self._get_option('rabbit_port', 'int', 5672)
         use_ssl = self._get_option('rabbit_use_ssl', 'bool', False)
@@ -84,7 +84,7 @@ class RabbitStrategy(object):
 
     def _get_option(self, name, datatype, default):
         """Retrieve a configuration option."""
-        return config.get_option(self._options,
+        return config.get_option(self._conf,
                                  name,
                                  type=datatype,
                                  default=default)
@@ -115,11 +115,11 @@ class Notifier(object):
         "default": NoopStrategy,
     }
 
-    def __init__(self, options, strategy=None):
-        strategy = config.get_option(options, "notifier_strategy",
+    def __init__(self, conf, strategy=None):
+        strategy = config.get_option(conf, "notifier_strategy",
                                      type="str", default="default")
         try:
-            self.strategy = self.STRATEGIES[strategy](options)
+            self.strategy = self.STRATEGIES[strategy](conf)
         except KeyError:
             raise exception.InvalidNotifierStrategy(strategy=strategy)
 

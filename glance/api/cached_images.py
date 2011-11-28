@@ -37,9 +37,9 @@ class Controller(controller.BaseController):
     A controller for managing cached images.
     """
 
-    def __init__(self, options):
-        self.options = options
-        self.cache = image_cache.ImageCache(self.options)
+    def __init__(self, conf):
+        self.conf = conf
+        self.cache = image_cache.ImageCache(self.conf)
 
     def get_cached_images(self, req):
         """
@@ -110,8 +110,8 @@ class CachedImageSerializer(wsgi.JSONResponseSerializer):
     pass
 
 
-def create_resource(options):
+def create_resource(conf):
     """Cached Images resource factory method"""
     deserializer = CachedImageDeserializer()
     serializer = CachedImageSerializer()
-    return wsgi.Resource(Controller(options), deserializer, serializer)
+    return wsgi.Resource(Controller(conf), deserializer, serializer)

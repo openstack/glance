@@ -48,21 +48,21 @@ class TestOptionParsing(unittest.TestCase):
         # of typed values
         parser = optparse.OptionParser()
         config.add_common_options(parser)
-        parsed_options, args = config.parse_options(parser, [])
+        parsed_conf, args = config.parse_options(parser, [])
 
-        expected_options = {'verbose': False, 'debug': False,
-                            'config_file': None}
-        self.assertEquals(expected_options, parsed_options)
+        expected_conf = {'verbose': False, 'debug': False,
+                         'config_file': None}
+        self.assertEquals(expected_conf, parsed_conf)
 
         # test non-empty args and that parse_options() returns a mapping
         # of typed values matching supplied args
         parser = optparse.OptionParser()
         config.add_common_options(parser)
-        parsed_options, args = config.parse_options(parser, ['--verbose'])
+        parsed_conf, args = config.parse_options(parser, ['--verbose'])
 
-        expected_options = {'verbose': True, 'debug': False,
-                            'config_file': None}
-        self.assertEquals(expected_options, parsed_options)
+        expected_conf = {'verbose': True, 'debug': False,
+                         'config_file': None}
+        self.assertEquals(expected_conf, parsed_conf)
 
         # test non-empty args that contain unknown options raises
         # a SystemExit exception. Not ideal, but unfortunately optparse

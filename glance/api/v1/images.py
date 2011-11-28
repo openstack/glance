@@ -76,11 +76,11 @@ class Controller(controller.BaseController):
         DELETE /images/<ID> -- Delete the image with id <ID>
     """
 
-    def __init__(self, options):
-        self.options = options
-        glance.store.create_stores(options)
-        self.notifier = notifier.Notifier(options)
-        registry.configure_registry_client(options)
+    def __init__(self, conf):
+        self.conf = conf
+        glance.store.create_stores(conf)
+        self.notifier = notifier.Notifier(conf)
+        registry.configure_registry_client(conf)
 
     def index(self, req):
         """
@@ -290,7 +290,7 @@ class Controller(controller.BaseController):
             raise HTTPBadRequest(explanation=msg)
 
         store_name = req.headers.get('x-image-meta-store',
-                                     self.options['default_store'])
+                                     self.conf['default_store'])
 
         store = self.get_store_or_400(req, store_name)
 
@@ -557,7 +557,7 @@ class Controller(controller.BaseController):
         # See https://bugs.launchpad.net/glance/+bug/747799
         try:
             if image['location']:
-                schedule_delete_from_backend(image['location'], self.options,
+                schedule_delete_from_backend(image['location'], self.conf,
                                              req.context, id)
             registry.delete_image_metadata(req.context, id)
         except exception.NotFound, e:
@@ -706,8 +706,8 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
         return response
 
 
-def create_resource(options):
+def create_resource(conf):
     """Images resource factory method"""
     deserializer = ImageDeserializer()
     serializer = ImageSerializer()
-    return wsgi.Resource(Controller(options), deserializer, serializer)
+    return wsgi.Resource(Controller(conf), deserializer, serializer)

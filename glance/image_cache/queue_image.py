@@ -35,13 +35,13 @@ logger = logging.getLogger(__name__)
 
 class Queuer(object):
 
-    def __init__(self, options):
-        self.options = options
-        self.cache = ImageCache(options)
-        registry.configure_registry_client(options)
+    def __init__(self, conf):
+        self.conf = conf
+        self.cache = ImageCache(conf)
+        registry.configure_registry_client(conf)
 
     def queue_image(self, image_id):
-        auth_tok = self.options.get('admin_token')
+        auth_tok = self.conf.get('admin_token')
         ctx = context.RequestContext(is_admin=True, show_deleted=True,
                                      auth_tok=auth_tok)
         try:

@@ -109,16 +109,16 @@ class Store(glance.store.base.Store):
         """
         try:
             self.chunk_size = int(
-                self.options.get(
+                self.conf.get(
                     'rbd_store_chunk_size',
                     DEFAULT_CHUNKSIZE)) * 1024 * 1024
             # these must not be unicode since they will be passed to a
             # non-unicode-aware C library
-            self.pool = str(self.options.get('rbd_store_pool',
+            self.pool = str(self.conf.get('rbd_store_pool',
                                              DEFAULT_POOL))
-            self.user = str(self.options.get('rbd_store_user',
+            self.user = str(self.conf.get('rbd_store_user',
                                              DEFAULT_USER))
-            self.conf_file = str(self.options.get('rbd_store_ceph_conf',
+            self.conf_file = str(self.conf.get('rbd_store_ceph_conf',
                                                   DEFAULT_CONFFILE))
         except Exception, e:
             reason = _("Error in store configuration: %s") % e

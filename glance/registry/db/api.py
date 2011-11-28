@@ -58,22 +58,22 @@ STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
             'deleted']
 
 
-def configure_db(options):
+def configure_db(conf):
     """
     Establish the database, create an engine if needed, and
     register the models.
 
-    :param options: Mapping of configuration options
+    :param conf: Mapping of configuration options
     """
     global _ENGINE, sa_logger, logger
     if not _ENGINE:
         debug = config.get_option(
-            options, 'debug', type='bool', default=False)
+            conf, 'debug', type='bool', default=False)
         verbose = config.get_option(
-            options, 'verbose', type='bool', default=False)
+            conf, 'verbose', type='bool', default=False)
         timeout = config.get_option(
-            options, 'sql_idle_timeout', type='int', default=3600)
-        sql_connection = config.get_option(options, 'sql_connection')
+            conf, 'sql_idle_timeout', type='int', default=3600)
+        sql_connection = config.get_option(conf, 'sql_connection')
         try:
             _ENGINE = create_engine(sql_connection, pool_recycle=timeout)
         except Exception, err:

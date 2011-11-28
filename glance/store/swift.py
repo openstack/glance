@@ -187,7 +187,7 @@ class Store(glance.store.base.Store):
 
     def configure(self):
         self.snet = config.get_option(
-            self.options, 'swift_enable_snet', type='bool', default=False)
+            self.conf, 'swift_enable_snet', type='bool', default=False)
 
     def configure_add(self):
         """
@@ -199,30 +199,30 @@ class Store(glance.store.base.Store):
         self.auth_address = self._option_get('swift_store_auth_address')
         self.user = self._option_get('swift_store_user')
         self.key = self._option_get('swift_store_key')
-        self.container = self.options.get('swift_store_container',
+        self.container = self.conf.get('swift_store_container',
                                           DEFAULT_CONTAINER)
         try:
-            if self.options.get('swift_store_large_object_size'):
+            if self.conf.get('swift_store_large_object_size'):
                 self.large_object_size = int(
-                    self.options.get('swift_store_large_object_size')
+                    self.conf.get('swift_store_large_object_size')
                     ) * (1024 * 1024)  # Size specified in MB in conf files
             else:
                 self.large_object_size = DEFAULT_LARGE_OBJECT_SIZE
 
-            if self.options.get('swift_store_large_object_chunk_size'):
+            if self.conf.get('swift_store_large_object_chunk_size'):
                 self.large_object_chunk_size = int(
-                    self.options.get('swift_store_large_object_chunk_size')
+                    self.conf.get('swift_store_large_object_chunk_size')
                     ) * (1024 * 1024)  # Size specified in MB in conf files
             else:
                 self.large_object_chunk_size = DEFAULT_LARGE_OBJECT_CHUNK_SIZE
 
-            if self.options.get('swift_store_object_buffer_dir'):
+            if self.conf.get('swift_store_object_buffer_dir'):
                 self.swift_store_object_buffer_dir = (
-                    self.options.get('swift_store_object_buffer_dir'))
+                    self.conf.get('swift_store_object_buffer_dir'))
             else:
                 self.swift_store_object_buffer_dir = None
         except Exception, e:
-            reason = _("Error in configuration options: %s") % e
+            reason = _("Error in configuration conf: %s") % e
             logger.error(reason)
             raise exception.BadStoreConfiguration(store_name="swift",
                                                   reason=reason)
@@ -283,7 +283,7 @@ class Store(glance.store.base.Store):
             authurl=auth_url, user=user, key=key, snet=snet)
 
     def _option_get(self, param):
-        result = self.options.get(param)
+        result = self.conf.get(param)
         if not result:
             reason = (_("Could not find %(param)s in configuration "
                         "options.") % locals())
@@ -330,7 +330,7 @@ class Store(glance.store.base.Store):
         swift_conn = self._make_swift_connection(
             auth_url=self.full_auth_address, user=self.user, key=self.key)
 
-        create_container_if_missing(self.container, swift_conn, self.options)
+        create_container_if_missing(self.container, swift_conn, self.conf)
 
         obj_name = str(image_id)
         location = StoreLocation({'scheme': self.scheme,
@@ -482,20 +482,20 @@ class Store(glance.store.base.Store):
                 raise
 
 
-def create_container_if_missing(container, swift_conn, options):
+def create_container_if_missing(container, swift_conn, conf):
     """
     Creates a missing container in Swift if the
     ``swift_store_create_container_on_put`` option is set.
 
     :param container: Name of container to create
     :param swift_conn: Connection to Swift
-    :param options: Option mapping
+    :param conf: Option mapping
     """
     try:
         swift_conn.head_container(container)
     except swift_client.ClientException, e:
         if e.http_status == httplib.NOT_FOUND:
-            add_container = config.get_option(options,
+            add_container = config.get_option(conf,
                                 'swift_store_create_container_on_put',
                                 type='bool', default=False)
             if add_container:

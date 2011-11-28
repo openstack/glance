@@ -49,9 +49,9 @@ SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
 
 class Controller(object):
 
-    def __init__(self, options):
-        self.options = options
-        db_api.configure_db(options)
+    def __init__(self, conf):
+        self.conf = conf
+        db_api.configure_db(conf)
 
     def _get_images(self, context, **params):
         """
@@ -181,7 +181,7 @@ class Controller(object):
     def _get_limit(self, req):
         """Parse a limit query param into something usable."""
         try:
-            default = self.options['limit_param_default']
+            default = self.conf['limit_param_default']
         except KeyError:
             # if no value is configured, provide a sane default
             default = 25
@@ -198,7 +198,7 @@ class Controller(object):
             raise exc.HTTPBadRequest(_("limit param must be positive"))
 
         try:
-            api_limit_max = int(self.options['api_limit_max'])
+            api_limit_max = int(self.conf['api_limit_max'])
         except (KeyError, ValueError):
             api_limit_max = 1000
             msg = _("Failed to read api_limit_max from config. "
@@ -417,8 +417,8 @@ def make_image_dict(image):
     return image_dict
 
 
-def create_resource(options):
+def create_resource(conf):
     """Images resource factory method."""
     deserializer = wsgi.JSONRequestDeserializer()
     serializer = wsgi.JSONResponseSerializer()
-    return wsgi.Resource(Controller(options), deserializer, serializer)
+    return wsgi.Resource(Controller(conf), deserializer, serializer)

@@ -35,10 +35,10 @@ logger = logging.getLogger('glance.api.middleware.version_negotiation')
 
 class VersionNegotiationFilter(wsgi.Middleware):
 
-    def __init__(self, app, options):
-        self.versions_app = versions.Controller(options)
+    def __init__(self, app, conf):
+        self.versions_app = versions.Controller(conf)
         self.version_uri_regex = re.compile(r"^v(\d+)\.?(\d+)?")
-        self.options = options
+        self.conf = conf
         super(VersionNegotiationFilter, self).__init__(app)
 
     def process_request(self, req):

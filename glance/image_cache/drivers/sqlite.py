@@ -95,7 +95,7 @@ class Driver(base.Driver):
         self.initialize_db()
 
     def initialize_db(self):
-        db = self.options.get('image_cache_sqlite_db', DEFAULT_SQLITE_DB)
+        db = self.conf.get('image_cache_sqlite_db', DEFAULT_SQLITE_DB)
         self.db_path = os.path.join(self.base_dir, db)
         try:
             conn = sqlite3.connect(self.db_path, check_same_thread=False,
@@ -252,8 +252,8 @@ class Driver(base.Driver):
         """
         self.delete_invalid_files()
 
-        incomplete_stall_time = int(self.options.get('image_cache_stall_time',
-                                                     DEFAULT_STALL_TIME))
+        incomplete_stall_time = int(self.conf.get('image_cache_stall_time',
+                                                  DEFAULT_STALL_TIME))
         now = time.time()
         older_than = now - incomplete_stall_time
         self.delete_stalled_files(older_than)

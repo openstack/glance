@@ -26,20 +26,20 @@ class TestInvalidNotifier(unittest.TestCase):
     """Test that notifications are generated appropriately"""
 
     def test_cannot_create(self):
-        options = {"notifier_strategy": "invalid_notifier"}
+        conf = {"notifier_strategy": "invalid_notifier"}
         self.assertRaises(exception.InvalidNotifierStrategy,
                           notifier.Notifier,
-                          options)
+                          conf)
 
 
 class TestLoggingNotifier(unittest.TestCase):
     """Test the logging notifier is selected and works properly."""
 
     def setUp(self):
-        options = {"notifier_strategy": "logging"}
+        conf = {"notifier_strategy": "logging"}
         self.called = False
         self.logger = logging.getLogger("glance.notifier.logging_notifier")
-        self.notifier = notifier.Notifier(options)
+        self.notifier = notifier.Notifier(conf)
 
     def _called(self, msg):
         self.called = msg
@@ -67,8 +67,8 @@ class TestNoopNotifier(unittest.TestCase):
     """Test that the noop notifier works...and does nothing?"""
 
     def setUp(self):
-        options = {"notifier_strategy": "noop"}
-        self.notifier = notifier.Notifier(options)
+        conf = {"notifier_strategy": "noop"}
+        self.notifier = notifier.Notifier(conf)
 
     def test_warn(self):
         self.notifier.warn("test_event", "test_message")
@@ -86,8 +86,8 @@ class TestRabbitNotifier(unittest.TestCase):
     def setUp(self):
         notifier.RabbitStrategy._send_message = self._send_message
         self.called = False
-        options = {"notifier_strategy": "rabbit"}
-        self.notifier = notifier.Notifier(options)
+        conf = {"notifier_strategy": "rabbit"}
+        self.notifier = notifier.Notifier(conf)
 
     def _send_message(self, message, priority):
         self.called = {

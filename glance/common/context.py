@@ -53,8 +53,8 @@ class RequestContext(object):
 
 
 class ContextMiddleware(wsgi.Middleware):
-    def __init__(self, app, options):
-        self.options = options
+    def __init__(self, app, conf):
+        self.conf = conf
         super(ContextMiddleware, self).__init__(app)
 
     def make_context(self, *args, **kwargs):
@@ -64,11 +64,11 @@ class ContextMiddleware(wsgi.Middleware):
 
         # Determine the context class to use
         ctxcls = RequestContext
-        if 'context_class' in self.options:
-            ctxcls = utils.import_class(self.options['context_class'])
+        if 'context_class' in self.conf:
+            ctxcls = utils.import_class(self.conf['context_class'])
 
         # Determine whether to use tenant or owner
-        owner_is_tenant = config.get_option(self.options, 'owner_is_tenant',
+        owner_is_tenant = config.get_option(self.conf, 'owner_is_tenant',
                                             type='bool', default=True)
         kwargs.setdefault('owner_is_tenant', owner_is_tenant)
 

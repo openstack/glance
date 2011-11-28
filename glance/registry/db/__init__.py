@@ -20,7 +20,7 @@
 import optparse
 
 
-def add_options(parser):
+def add_conf(parser):
     """
     Adds any configuration options that the db layer might have.
 

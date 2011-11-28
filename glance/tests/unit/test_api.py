@@ -42,14 +42,14 @@ UUID1 = _gen_uuid()
 UUID2 = _gen_uuid()
 
 
-OPTIONS = {'sql_connection': 'sqlite://',
-           'verbose': False,
-           'debug': False,
-           'registry_host': '0.0.0.0',
-           'registry_port': '9191',
-           'default_store': 'file',
-           'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR,
-           'context_class': 'glance.registry.context.RequestContext'}
+CONF = {'sql_connection': 'sqlite://',
+        'verbose': False,
+        'debug': False,
+        'registry_host': '0.0.0.0',
+        'registry_port': '9191',
+        'default_store': 'file',
+        'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR,
+        'context_class': 'glance.registry.context.RequestContext'}
 
 
 class TestRegistryDb(unittest.TestCase):
@@ -64,15 +64,14 @@ class TestRegistryDb(unittest.TestCase):
         API controller results in a) an Exception being thrown and b)
         a message being logged to the registry log file...
         """
-        bad_options = {'verbose': True,
-                       'debug': True,
-                       'sql_connection': 'baddriver:///'}
+        bad_conf = {'verbose': True,
+                    'debug': True,
+                    'sql_connection': 'baddriver:///'}
         # We set this to None to trigger a reconfigure, otherwise
         # other modules may have already correctly configured the DB
         orig_engine = db_api._ENGINE
         db_api._ENGINE = None
-        self.assertRaises(ImportError, db_api.configure_db,
-                          bad_options)
+        self.assertRaises(ImportError, db_api.configure_db, bad_conf)
         exc_raised = False
         self.log_written = False
 
@@ -82,7 +81,7 @@ class TestRegistryDb(unittest.TestCase):
 
         self.stubs.Set(db_api.logger, 'error', fake_log_error)
         try:
-            api_obj = rserver.API(bad_options)
+            api_obj = rserver.API(bad_conf)
         except ImportError:
             exc_raised = True
         finally:
@@ -102,7 +101,7 @@ class TestRegistryAPI(unittest.TestCase):
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_filesystem_backend()
-        self.api = context.ContextMiddleware(rserver.API(OPTIONS), OPTIONS)
+        self.api = context.ContextMiddleware(rserver.API(CONF), CONF)
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',
@@ -137,7 +136,7 @@ class TestRegistryAPI(unittest.TestCase):
              'location': "file:///tmp/glance-tests/2",
              'properties': {}}]
         self.context = rcontext.RequestContext(is_admin=True)
-        db_api.configure_db(OPTIONS)
+        db_api.configure_db(CONF)
         self.destroy_fixtures()
         self.create_fixtures()
 
@@ -1936,7 +1935,7 @@ class TestGlanceAPI(unittest.TestCase):
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_filesystem_backend()
         sql_connection = os.environ.get('GLANCE_SQL_CONNECTION', "sqlite://")
-        self.api = context.ContextMiddleware(router.API(OPTIONS), OPTIONS)
+        self.api = context.ContextMiddleware(router.API(CONF), CONF)
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',
@@ -1967,7 +1966,7 @@ class TestGlanceAPI(unittest.TestCase):
              'location': "file:///tmp/glance-tests/2",
              'properties': {}}]
         self.context = rcontext.RequestContext(is_admin=True)
-        db_api.configure_db(OPTIONS)
+        db_api.configure_db(CONF)
         self.destroy_fixtures()
         self.create_fixtures()
 

@@ -35,7 +35,7 @@ from glance.registry import client as rclient
 from glance.registry import context as rcontext
 from glance.tests import stubs
 
-OPTIONS = {'sql_connection': 'sqlite://'}
+CONF = {'sql_connection': 'sqlite://'}
 
 _gen_uuid = utils.generate_uuid
 
@@ -138,7 +138,7 @@ class TestRegistryClient(unittest.TestCase):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_and_store_server(self.stubs)
-        db_api.configure_db(OPTIONS)
+        db_api.configure_db(CONF)
         self.context = rcontext.RequestContext(is_admin=True)
         self.FIXTURES = [
             {'id': UUID1,
@@ -1138,7 +1138,7 @@ class TestClient(unittest.TestCase):
         self.stubs = stubout.StubOutForTesting()
         stubs.stub_out_registry_and_store_server(self.stubs)
         stubs.stub_out_filesystem_backend()
-        db_api.configure_db(OPTIONS)
+        db_api.configure_db(CONF)
         self.client = client.Client("0.0.0.0")
         self.FIXTURES = [
             {'id': UUID1,

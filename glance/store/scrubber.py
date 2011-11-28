@@ -65,23 +65,23 @@ class Daemon(object):
 class Scrubber(object):
     CLEANUP_FILE = ".cleanup"
 
-    def __init__(self, options):
-        logger.info(_("Initializing scrubber with options: %s") % options)
-        self.options = options
-        self.datadir = config.get_option(options, 'scrubber_datadir')
-        self.cleanup = config.get_option(options, 'cleanup_scrubber',
+    def __init__(self, conf):
+        logger.info(_("Initializing scrubber with conf: %s") % conf)
+        self.conf = conf
+        self.datadir = config.get_option(conf, 'scrubber_datadir')
+        self.cleanup = config.get_option(conf, 'cleanup_scrubber',
                                          type='bool', default=False)
-        host = config.get_option(options, 'registry_host')
-        port = config.get_option(options, 'registry_port', type='int')
+        host = config.get_option(conf, 'registry_host')
+        port = config.get_option(conf, 'registry_port', type='int')
         self.registry = client.RegistryClient(host, port)
 
         utils.safe_mkdirs(self.datadir)
 
         if self.cleanup:
-            self.cleanup_time = config.get_option(options,
+            self.cleanup_time = config.get_option(conf,
                                                   'cleanup_scrubber_time',
                                                   type='int', default=86400)
-        store.create_stores(options)
+        store.create_stores(conf)
 
     def run(self, pool, event=None):
         now = time.time()

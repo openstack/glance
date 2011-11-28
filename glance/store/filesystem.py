@@ -115,7 +115,7 @@ class Store(glance.store.base.Store):
                                                       reason=reason)
 
     def _option_get(self, param):
-        result = self.options.get(param)
+        result = self.conf.get(param)
         if not result:
             reason = _("Could not find %s in configuration options.") % param
             logger.error(reason)

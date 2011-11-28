@@ -34,16 +34,16 @@ _CLIENT_KWARGS = {}
 _METADATA_ENCRYPTION_KEY = None
 
 
-def configure_registry_client(options):
+def configure_registry_client(conf):
     """
     Sets up a registry client for use in registry lookups
 
-    :param options: Configuration options coming from controller
+    :param conf: Configuration options coming from controller
     """
     global _CLIENT_KWARGS, _CLIENT_HOST, _CLIENT_PORT, _METADATA_ENCRYPTION_KEY
     try:
-        host = options['registry_host']
-        port = int(options['registry_port'])
+        host = conf['registry_host']
+        port = int(conf['registry_port'])
     except (TypeError, ValueError):
         msg = _("Configuration option was not valid")
         logger.error(msg)
@@ -53,12 +53,12 @@ def configure_registry_client(options):
         logger.error(msg)
         raise exception.BadRegistryConnectionConfiguration(msg)
 
-    use_ssl = config.get_option(options, 'registry_client_protocol',
+    use_ssl = config.get_option(conf, 'registry_client_protocol',
                                 default='http').lower() == 'https'
-    key_file = options.get('registry_client_key_file')
-    cert_file = options.get('registry_client_cert_file')
-    ca_file = options.get('registry_client_ca_file')
-    _METADATA_ENCRYPTION_KEY = options.get('metadata_encryption_key')
+    key_file = conf.get('registry_client_key_file')
+    cert_file = conf.get('registry_client_cert_file')
+    ca_file = conf.get('registry_client_ca_file')
+    _METADATA_ENCRYPTION_KEY = conf.get('metadata_encryption_key')
     _CLIENT_HOST = host
     _CLIENT_PORT = port
     _CLIENT_KWARGS = {'use_ssl': use_ssl,
