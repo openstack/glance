@@ -36,6 +36,8 @@ FAKE_UUID = utils.generate_uuid
 
 Store = glance.store.swift.Store
 FIVE_KB = (5 * 1024)
+FIVE_GB = (5 * 1024 * 1024 * 1024)
+MAX_SWIFT_OBJECT_SIZE = FIVE_GB
 SWIFT_OPTIONS = {'verbose': True,
                  'debug': True,
                  'swift_store_user': 'user',
@@ -69,12 +71,12 @@ def stub_out_swift_common_client(stubs):
         # PUT returns the ETag header for the newly-added object
         # Large object manifest...
         fixture_key = "%s/%s" % (container, name)
-        if kwargs.get('headers'):
-            etag = kwargs['headers']['ETag']
-            fixture_headers[fixture_key] = {'manifest': True,
-                                            'etag': etag}
-            return etag
         if not fixture_key in fixture_headers.keys():
+            if kwargs.get('headers'):
+                etag = kwargs['headers']['ETag']
+                fixture_headers[fixture_key] = {'manifest': True,
+                                                'etag': etag}
+                return etag
             if hasattr(contents, 'read'):
                 fixture_object = StringIO.StringIO()
                 chunk = contents.read(Store.CHUNKSIZE)
@@ -88,6 +90,11 @@ def stub_out_swift_common_client(stubs):
                 fixture_object = StringIO.StringIO(contents)
                 etag = hashlib.md5(fixture_object.getvalue()).hexdigest()
             read_len = fixture_object.len
+            if read_len > MAX_SWIFT_OBJECT_SIZE:
+                msg = ('Image size:%d exceeds Swift max:%d' %
+                        (read_len, MAX_SWIFT_OBJECT_SIZE))
+                raise swift.common.client.ClientException(
+                        msg, http_status=httplib.REQUEST_ENTITY_TOO_LARGE)
             fixture_objects[fixture_key] = fixture_object
             fixture_headers[fixture_key] = {
                 'content-length': read_len,
@@ -387,6 +394,59 @@ class TestStore(unittest.TestCase):
         finally:
             swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE = orig_temp_size
             swift.DEFAULT_LARGE_OBJECT_SIZE = orig_max_size
+
+        self.assertEquals(expected_location, location)
+        self.assertEquals(expected_swift_size, size)
+        self.assertEquals(expected_checksum, checksum)
+
+        loc = get_location_from_uri(expected_location)
+        (new_image_swift, new_image_size) = self.store.get(loc)
+        new_image_contents = new_image_swift.getvalue()
+        new_image_swift_size = new_image_swift.len
+
+        self.assertEquals(expected_swift_contents, new_image_contents)
+        self.assertEquals(expected_swift_size, new_image_swift_size)
+
+    def test_add_large_object_zero_size(self):
+        """
+        Tests that adding an image to Swift which has both an unknown size and
+        exceeds Swift's maximum limit of 5GB is correctly uploaded.
+
+        We avoid the overhead of creating a 5GB object for this test by
+        temporarily setting MAX_SWIFT_OBJECT_SIZE to 1KB, and then adding
+        an object of 5KB.
+
+        Bug lp:891738
+        """
+        options = SWIFT_OPTIONS.copy()
+        options['swift_store_container'] = 'glance'
+
+        # Set up a 'large' image of 5KB
+        expected_swift_size = FIVE_KB
+        expected_swift_contents = "*" * expected_swift_size
+        expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
+        expected_image_id = utils.generate_uuid()
+        expected_location = 'swift+https://user:key@localhost:8080' + \
+                            '/glance/%s' % expected_image_id
+        image_swift = StringIO.StringIO(expected_swift_contents)
+
+        # Temporarily set Swift MAX_SWIFT_OBJECT_SIZE to 1KB and add our image,
+        # explicitly setting the image_length to 0
+        orig_max_size = glance.store.swift.DEFAULT_LARGE_OBJECT_SIZE
+        orig_temp_size = glance.store.swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE
+        global MAX_SWIFT_OBJECT_SIZE
+        orig_max_swift_object_size = MAX_SWIFT_OBJECT_SIZE
+        try:
+            MAX_SWIFT_OBJECT_SIZE = 1024
+            glance.store.swift.DEFAULT_LARGE_OBJECT_SIZE = 1024
+            glance.store.swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 1024
+            self.store = Store(options)
+            location, size, checksum = self.store.add(expected_image_id,
+                                                      image_swift, 0)
+        finally:
+            swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE = orig_temp_size
+            swift.DEFAULT_LARGE_OBJECT_SIZE = orig_max_size
+            MAX_SWIFT_OBJECT_SIZE = orig_max_swift_object_size
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_swift_size, size)
