@@ -2,4 +2,5 @@
 *.swp
 *.log
 .glance-venv
+.venv
 tests.sqlite
