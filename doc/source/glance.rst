@@ -96,6 +96,10 @@ a brief help message, like so::
     -H ADDRESS, --host=ADDRESS
                           Address of Glance API host. Default: example.com
     -p PORT, --port=PORT  Port the Glance API host listens on. Default: 9292
+    -U URL, --url=URL     URL of Glance service. This option can be used to
+                          specify the hostname, port and protocol (http/https)
+                          of the glance server, for example -U
+                          https://localhost:9292/v1 Default: None
     --limit=LIMIT         Page size to use while requesting image metadata
     --marker=MARKER       Image index after which to begin pagination
     --sort_key=KEY        Sort results by this image attribute.
