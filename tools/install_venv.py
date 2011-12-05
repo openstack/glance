@@ -28,7 +28,7 @@ import sys
 
 
 ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-VENV = os.path.join(ROOT, '.glance-venv')
+VENV = os.path.join(ROOT, '.venv')
 PIP_REQUIRES = os.path.join(ROOT, 'tools', 'pip-requires')
 
 
@@ -124,7 +124,7 @@ def print_help():
  To activate the Glance virtualenv for the extent of your current shell session
  you can run:
 
- $ source .glance-venv/bin/activate
+ $ source .venv/bin/activate
 
  Or, if you prefer, you can run commands in the virtualenv on a case by case
  basis by running:
