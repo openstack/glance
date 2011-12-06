@@ -2,6 +2,7 @@
 glance.egg-info
 tests.sqlite
 *.glance-venv
+.venv/
 dist/
 ChangeLog
 *.pid

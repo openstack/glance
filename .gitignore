@@ -2,6 +2,7 @@
 *.swp
 *.log
 .glance-venv
+.venv
 build
 dist
 glance.egg-info
