@@ -74,6 +74,8 @@ admin_host = 0.0.0.0
 admin_port = %(admin_port)s
 keystone-admin-role = Admin
 keystone-service-admin-role = KeystoneServiceAdmin
+service_ssl = False
+admin_ssl = False
 
 [keystone.backends.sqlalchemy]
 sql_connection = %(sql_connection)s
