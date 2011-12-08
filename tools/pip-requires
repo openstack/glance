@@ -27,8 +27,11 @@ kombu
 pycrypto
 
 # The following allow Keystone to be installed in the venv
-# along with all of Keystone's dependencies
--e git://github.com/openstack/keystone.git#egg=keystone
+# along with all of Keystone's dependencies. We target a specific
+# commit hash so we can code to a constant version of keystone.
+# Trying to hit a moving target causes our local unittests to fail 
+# when they should remain unaffected.
+-e git://github.com/openstack/keystone.git@b9dde8d0e317203e349b8e4bca5bc9923c11974e#egg=keystone
 
 # Note you will need gcc buildtools installed and must
 # have installed libxml headers for lxml to be successfully
