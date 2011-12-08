@@ -2097,6 +2097,147 @@ class TestGlanceAPI(unittest.TestCase):
         self.assertTrue('/images/%s' % res_body['id']
                         in res.headers['location'])
 
+    def test_register_and_upload(self):
+        """
+        Test that the process of registering an image with
+        some metadata, then uploading an image file with some
+        more metadata doesn't mark the original metadata deleted
+        :see LP Bug#901534
+        """
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3',
+                           'x-image-meta-property-key1': 'value1'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.CREATED)
+        res_body = json.loads(res.body)['image']
+
+        self.assertTrue('id' in res_body)
+
+        image_id = res_body['id']
+        self.assertTrue('/images/%s' % image_id in res.headers['location'])
+
+        # Verify the status is queued
+        self.assertTrue('status' in res_body)
+        self.assertEqual('queued', res_body['status'])
+
+        # Check properties are not deleted
+        self.assertTrue('properties' in res_body)
+        self.assertTrue('key1' in res_body['properties'])
+        self.assertEqual('value1', res_body['properties']['key1'])
+
+        # Now upload the image file along with some more
+        # metadata and verify original metadata properties
+        # are not marked deleted
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'PUT'
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.headers['x-image-meta-property-key2'] = 'value2'
+        req.body = "chunk00000remainder"
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.OK)
+
+        # Verify the status is queued
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'HEAD'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.OK)
+        self.assertTrue('x-image-meta-property-key1' in res.headers,
+                        "Did not find required property in headers. "
+                        "Got headers: %r" % res.headers)
+        self.assertEqual("active", res.headers['x-image-meta-status'])
+
+    def test_disable_purge_props(self):
+        """
+        Test the special x-glance-registry-purge-props header controls
+        the purge property behaviour of the registry.
+        :see LP Bug#901534
+        """
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3',
+                           'x-image-meta-property-key1': 'value1'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.body = "chunk00000remainder"
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.CREATED)
+        res_body = json.loads(res.body)['image']
+
+        self.assertTrue('id' in res_body)
+
+        image_id = res_body['id']
+        self.assertTrue('/images/%s' % image_id in res.headers['location'])
+
+        # Verify the status is queued
+        self.assertTrue('status' in res_body)
+        self.assertEqual('active', res_body['status'])
+
+        # Check properties are not deleted
+        self.assertTrue('properties' in res_body)
+        self.assertTrue('key1' in res_body['properties'])
+        self.assertEqual('value1', res_body['properties']['key1'])
+
+        # Now update the image, setting new properties without
+        # passing the x-glance-registry-purge-props header and
+        # verify that original properties are marked deleted.
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'PUT'
+        req.headers['x-image-meta-property-key2'] = 'value2'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.OK)
+
+        # Verify the original property no longer in headers
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'HEAD'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.OK)
+        self.assertTrue('x-image-meta-property-key2' in res.headers,
+                        "Did not find required property in headers. "
+                        "Got headers: %r" % res.headers)
+        self.assertFalse('x-image-meta-property-key1' in res.headers,
+                         "Found property in headers that was not expected. "
+                         "Got headers: %r" % res.headers)
+
+        # Now update the image, setting new properties and
+        # passing the x-glance-registry-purge-props header with
+        # a value of "false" and verify that second property
+        # still appears in headers.
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'PUT'
+        req.headers['x-image-meta-property-key3'] = 'value3'
+        req.headers['x-glance-registry-purge-props'] = 'false'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.OK)
+
+        # Verify the second and third property in headers
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'HEAD'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.OK)
+        self.assertTrue('x-image-meta-property-key2' in res.headers,
+                        "Did not find required property in headers. "
+                        "Got headers: %r" % res.headers)
+        self.assertTrue('x-image-meta-property-key3' in res.headers,
+                        "Did not find required property in headers. "
+                        "Got headers: %r" % res.headers)
+
     def test_get_index_sort_name_asc(self):
         """
         Tests that the /images registry API returns list of

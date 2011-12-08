@@ -505,12 +505,25 @@ class Controller(controller.BaseController):
         orig_image_meta = self.get_image_meta_or_404(req, id)
         orig_status = orig_image_meta['status']
 
+        # The default behaviour for a PUT /images/<IMAGE_ID> is to
+        # override any properties that were previously set. This, however,
+        # leads to a number of issues for the common use case where a caller
+        # registers an image with some properties and then almost immediately
+        # uploads an image file along with some more properties. Here, we
+        # check for a special header value to be false in order to force
+        # properties NOT to be purged. However we also disable purging of
+        # properties if an image file is being uploaded...
+        purge_props = req.headers.get('x-glance-registry-purge-props', True)
+        purge_props = (utils.bool_from_string(purge_props) and
+                       image_data is None)
+
         if image_data is not None and orig_status != 'queued':
             raise HTTPConflict(_("Cannot upload to an unqueued image"))
 
         try:
             image_meta = registry.update_image_metadata(req.context, id,
-                                                        image_meta, True)
+                                                        image_meta,
+                                                        purge_props)
             if image_data is not None:
                 image_meta = self._upload_and_activate(req, image_meta)
         except exception.Invalid, e:
