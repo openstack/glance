@@ -24,7 +24,6 @@ import functools
 import gettext
 import optparse
 import os
-import re
 import sys
 import time
 
@@ -96,6 +95,7 @@ List all images currently cached"""
     pretty_table = utils.PrettyTable()
     pretty_table.add_column(36, label="ID")
     pretty_table.add_column(19, label="Last Accessed (UTC)")
+    pretty_table.add_column(19, label="Last Modified (UTC)")
     # 1 TB takes 13 characters to display: len(str(2**40)) == 13
     pretty_table.add_column(14, label="Size", just="r")
     pretty_table.add_column(10, label="Hits", just="r")
