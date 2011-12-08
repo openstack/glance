@@ -59,6 +59,10 @@ class MissingArgumentError(GlanceException):
     message = _("Missing required argument.")
 
 
+class MissingCredentialError(GlanceException):
+    message = _("Missing required credential: %(required)s")
+
+
 class NotFound(GlanceException):
     message = _("An object with the specified identifier was not found.")
 
@@ -78,6 +82,14 @@ class Duplicate(GlanceException):
 class ImportFailure(GlanceException):
     message = _("Failed to import requested object/class: '%(import_str)s'. "
                 "Reason: %(reason)s")
+
+
+class AuthBadRequest(GlanceException):
+    message = _("Connect error/bad request to Auth service at URL %(url)s.")
+
+
+class AuthUrlNotFound(GlanceException):
+    message = _("Auth service at URL %(url)s not found.")
 
 
 class AuthorizationFailure(GlanceException):
