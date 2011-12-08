@@ -182,3 +182,19 @@ class InvalidNotifierStrategy(GlanceException):
 
 class NoServiceEndpoint(GlanceException):
     message = _("Response from Keystone does not contain a Glance endpoint.")
+
+
+class MissingCredentialError(GlanceException):
+    message = _("Missing required credential: %(required)s")
+
+
+class AuthBadRequest(GlanceException):
+    message = _("Connect error/bad request to Auth service at URL %(url)s.")
+
+
+class AuthUrlNotFound(GlanceException):
+    message = _("Auth service at URL %(url)s not found.")
+
+
+class AuthorizationFailure(GlanceException):
+    message = _("Authorization failed.")
