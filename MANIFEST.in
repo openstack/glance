@@ -1,10 +1,14 @@
 include run_tests.sh ChangeLog
 include README builddeb.sh
 include MANIFEST.in pylintrc
+include Authors
 include run_tests.py
+include glance/registry/db/migrate_repo/README
 include glance/registry/db/migrate_repo/migrate.cfg
 include glance/registry/db/migrate_repo/versions/*.sql
 include glance/tests/unit/test_migrations.conf
+include glance/tests/functional/data/*
+include glance/tests/var/*
 graft doc
 graft etc
 graft tools
