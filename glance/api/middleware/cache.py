@@ -38,7 +38,7 @@ from glance.common import utils
 from glance.common import wsgi
 
 logger = logging.getLogger(__name__)
-get_images_re = re.compile(r'^(/v\d+)*/images/(.+)$')
+get_images_re = re.compile(r'^(/v\d+)*/images/([^\/]+)$')
 
 
 class CacheFilter(wsgi.Middleware):
