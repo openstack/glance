@@ -78,9 +78,3 @@ class Queuer(object):
 
         logger.info(_("Successfully queued all %d images"), num_images)
         return True
-
-
-def app_factory(global_config, **local_conf):
-    conf = global_config.copy()
-    conf.update(local_conf)
-    return Queuer(conf)

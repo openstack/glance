@@ -33,9 +33,3 @@ class Pruner(object):
 
     def run(self):
         self.cache.prune()
-
-
-def app_factory(global_config, **local_conf):
-    conf = global_config.copy()
-    conf.update(local_conf)
-    return Pruner(conf)

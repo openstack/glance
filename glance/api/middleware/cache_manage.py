@@ -70,16 +70,3 @@ class CacheManageFilter(wsgi.Middleware):
 
         logger.info(_("Initialized image cache management middleware"))
         super(CacheManageFilter, self).__init__(app)
-
-
-def filter_factory(global_conf, **local_conf):
-    """
-    Factory method for paste.deploy
-    """
-    conf = global_conf.copy()
-    conf.update(local_conf)
-
-    def filter(app):
-        return CacheManageFilter(app, conf)
-
-    return filter

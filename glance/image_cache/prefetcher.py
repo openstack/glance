@@ -88,9 +88,3 @@ class Prefetcher(object):
 
         logger.info(_("Successfully cached all %d images"), num_images)
         return True
-
-
-def app_factory(global_config, **local_conf):
-    conf = global_config.copy()
-    conf.update(local_conf)
-    return Prefetcher(conf)

@@ -26,6 +26,7 @@ from glance.api.middleware import version_negotiation
 from glance.api.v1 import images
 from glance.api.v1 import members
 from glance.common import config
+from glance.common import wsgi
 from glance.image_cache import pruner
 
 
@@ -178,7 +179,7 @@ class TestPasteApp(unittest.TestCase):
         self.stubs.Set(os.path, 'join', fake_join)
 
         self.stubs.Set(config, 'setup_logging', lambda *a: None)
-        self.stubs.Set(pruner, 'app_factory', lambda *a: 'pruner')
+        self.stubs.Set(wsgi, 'app_factory', lambda *a, **kw: 'pruner')
 
         conf, app = config.load_paste_app('glance-pruner', {}, [],
                                           'glance-cache')

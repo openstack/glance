@@ -132,16 +132,3 @@ class CacheFilter(wsgi.Middleware):
             chunks = utils.chunkiter(cache_file)
             for chunk in chunks:
                 yield chunk
-
-
-def filter_factory(global_conf, **local_conf):
-    """
-    Factory method for paste.deploy
-    """
-    conf = global_conf.copy()
-    conf.update(local_conf)
-
-    def filter(app):
-        return CacheFilter(app, conf)
-
-    return filter

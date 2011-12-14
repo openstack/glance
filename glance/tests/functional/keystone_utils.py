@@ -158,7 +158,9 @@ admin_token = 999888777666
 delay_auth_decision = 1
 
 [filter:keystone_shim]
-paste.filter_factory = keystone.middleware.glance_auth_token:filter_factory
+paste.filter_factory = glance.common.wsgi:filter_factory
+glance.filter_factory =
+ keystone.middleware.glance_auth_token:KeystoneContextMiddleware
 """ % subs
 
 
