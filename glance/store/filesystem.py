@@ -24,6 +24,7 @@ import logging
 import os
 import urlparse
 
+from glance.common import cfg
 from glance.common import exception
 import glance.store
 import glance.store.base
@@ -93,6 +94,8 @@ class ChunkedFile(object):
 
 class Store(glance.store.base.Store):
 
+    datadir_opt = cfg.StrOpt('filesystem_store_datadir')
+
     def configure_add(self):
         """
         Configure the Store to use the stored configuration options
@@ -100,7 +103,15 @@ class Store(glance.store.base.Store):
         this method. If the store was not able to successfully configure
         itself, it should raise `exception.BadStoreConfiguration`
         """
-        self.datadir = self._option_get('filesystem_store_datadir')
+        self.conf.register_opt(self.datadir_opt)
+
+        self.datadir = self.conf.filesystem_store_datadir
+        if self.datadir is None:
+            reason = _("Could not find %s in configuration options.") % \
+                'filesystem_store_datadir'
+            logger.error(reason)
+            raise exception.BadStoreConfiguration(store_name="filesystem",
+                                                  reason=reason)
 
         if not os.path.exists(self.datadir):
             msg = _("Directory to write image files does not exist "
@@ -113,15 +124,6 @@ class Store(glance.store.base.Store):
                 logger.error(reason)
                 raise exception.BadStoreConfiguration(store_name="filesystem",
                                                       reason=reason)
-
-    def _option_get(self, param):
-        result = self.options.get(param)
-        if not result:
-            reason = _("Could not find %s in configuration options.") % param
-            logger.error(reason)
-            raise exception.BadStoreConfiguration(store_name="filesystem",
-                                                  reason=reason)
-        return result
 
     def get(self, location):
         """

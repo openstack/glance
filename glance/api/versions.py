@@ -24,6 +24,8 @@ import json
 
 import webob.dec
 
+from glance.common import wsgi
+
 
 class Controller(object):
 
@@ -31,8 +33,8 @@ class Controller(object):
     A controller that produces information on the Glance API versions.
     """
 
-    def __init__(self, options):
-        self.options = options
+    def __init__(self, conf):
+        self.conf = conf
 
     @webob.dec.wsgify
     def __call__(self, req):
@@ -63,5 +65,4 @@ class Controller(object):
         return response
 
     def get_href(self):
-        return "http://%s:%s/v1/" % (self.options['bind_host'],
-                                      self.options['bind_port'])
+        return "http://%s:%s/v1/" % wsgi.get_bind_addr(self.conf, 9292)

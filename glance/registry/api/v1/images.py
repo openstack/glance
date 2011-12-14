@@ -23,6 +23,7 @@ import logging
 
 from webob import exc
 
+from glance.common import cfg
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
@@ -49,9 +50,15 @@ SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
 
 class Controller(object):
 
-    def __init__(self, options):
-        self.options = options
-        db_api.configure_db(options)
+    opts = [
+        cfg.IntOpt('limit_param_default', default=25),
+        cfg.IntOpt('api_limit_max', default=1000),
+        ]
+
+    def __init__(self, conf):
+        self.conf = conf
+        self.conf.register_opts(self.opts)
+        db_api.configure_db(conf)
 
     def _get_images(self, context, **params):
         """
@@ -181,31 +188,15 @@ class Controller(object):
     def _get_limit(self, req):
         """Parse a limit query param into something usable."""
         try:
-            default = self.options['limit_param_default']
-        except KeyError:
-            # if no value is configured, provide a sane default
-            default = 25
-            msg = _("Failed to read limit_param_default from config. "
-                    "Defaulting to %s") % default
-            logger.debug(msg)
-
-        try:
-            limit = int(req.str_params.get('limit', default))
+            limit = int(req.str_params.get('limit',
+                                           self.conf.limit_param_default))
         except ValueError:
             raise exc.HTTPBadRequest(_("limit param must be an integer"))
 
         if limit < 0:
             raise exc.HTTPBadRequest(_("limit param must be positive"))
 
-        try:
-            api_limit_max = int(self.options['api_limit_max'])
-        except (KeyError, ValueError):
-            api_limit_max = 1000
-            msg = _("Failed to read api_limit_max from config. "
-                    "Defaulting to %s") % api_limit_max
-            logger.debug(msg)
-
-        return min(api_limit_max, limit)
+        return min(self.conf.api_limit_max, limit)
 
     def _get_marker(self, req):
         """Parse a marker query param into something usable."""
@@ -417,8 +408,8 @@ def make_image_dict(image):
     return image_dict
 
 
-def create_resource(options):
+def create_resource(conf):
     """Images resource factory method."""
     deserializer = wsgi.JSONRequestDeserializer()
     serializer = wsgi.JSONResponseSerializer()
-    return wsgi.Resource(Controller(options), deserializer, serializer)
+    return wsgi.Resource(Controller(conf), deserializer, serializer)

@@ -21,7 +21,7 @@ Registry API
 
 import logging
 
-from glance.common import config
+from glance.common import cfg
 from glance.common import exception
 from glance.registry import client
 
@@ -34,17 +34,35 @@ _CLIENT_KWARGS = {}
 _METADATA_ENCRYPTION_KEY = None
 
 
-def configure_registry_client(options):
+registry_addr_opts = [
+    cfg.StrOpt('registry_host', default='0.0.0.0'),
+    cfg.IntOpt('registry_port', default=9191),
+    ]
+registry_client_opts = [
+    cfg.StrOpt('registry_client_protocol', default='http'),
+    cfg.StrOpt('registry_client_key_file'),
+    cfg.StrOpt('registry_client_cert_file'),
+    cfg.StrOpt('registry_client_ca_file'),
+    cfg.StrOpt('metadata_encryption_key'),
+    ]
+admin_token_opt = cfg.StrOpt('admin_token')
+
+
+def get_registry_addr(conf):
+    conf.register_opts(registry_addr_opts)
+    return (conf.registry_host, conf.registry_port)
+
+
+def configure_registry_client(conf):
     """
     Sets up a registry client for use in registry lookups
 
-    :param options: Configuration options coming from controller
+    :param conf: Configuration options coming from controller
     """
     global _CLIENT_KWARGS, _CLIENT_HOST, _CLIENT_PORT, _METADATA_ENCRYPTION_KEY
     try:
-        host = options['registry_host']
-        port = int(options['registry_port'])
-    except (TypeError, ValueError):
+        host, port = get_registry_addr(conf)
+    except cfg.ConfigFileValueError:
         msg = _("Configuration option was not valid")
         logger.error(msg)
         raise exception.BadRegistryConnectionConfiguration(msg)
@@ -53,18 +71,23 @@ def configure_registry_client(options):
         logger.error(msg)
         raise exception.BadRegistryConnectionConfiguration(msg)
 
-    use_ssl = config.get_option(options, 'registry_client_protocol',
-                                default='http').lower() == 'https'
-    key_file = options.get('registry_client_key_file')
-    cert_file = options.get('registry_client_cert_file')
-    ca_file = options.get('registry_client_ca_file')
-    _METADATA_ENCRYPTION_KEY = options.get('metadata_encryption_key')
+    conf.register_opts(registry_client_opts)
+
     _CLIENT_HOST = host
     _CLIENT_PORT = port
-    _CLIENT_KWARGS = {'use_ssl': use_ssl,
-                      'key_file': key_file,
-                      'cert_file': cert_file,
-                      'ca_file': ca_file}
+    _METADATA_ENCRYPTION_KEY = conf.metadata_encryption_key
+    _CLIENT_KWARGS = {
+        'use_ssl': conf.registry_client_protocol.lower() == 'https',
+        'key_file': conf.registry_client_key_file,
+        'cert_file': conf.registry_client_cert_file,
+        'ca_file': conf.registry_client_ca_file
+        }
+
+
+def get_client_context(conf, **kwargs):
+    conf.register_opt(admin_token_opt)
+    from glance.common import context
+    return context.RequestContext(auth_tok=conf.admin_token, **kwargs)
 
 
 def get_registry_client(cxt):

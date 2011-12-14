@@ -32,17 +32,18 @@ from glance.common import utils
 from glance.store import BackendException, UnsupportedBackend
 from glance.store.location import get_location_from_uri
 from glance.store.s3 import Store
+from glance.tests import utils as test_utils
 
 
 FAKE_UUID = utils.generate_uuid()
 
 FIVE_KB = (5 * 1024)
-S3_OPTIONS = {'verbose': True,
-              'debug': True,
-              's3_store_access_key': 'user',
-              's3_store_secret_key': 'key',
-              's3_store_host': 'localhost:8080',
-              's3_store_bucket': 'glance'}
+S3_CONF = {'verbose': True,
+           'debug': True,
+           's3_store_access_key': 'user',
+           's3_store_secret_key': 'key',
+           's3_store_host': 'localhost:8080',
+           's3_store_bucket': 'glance'}
 
 
 # We stub out as little as possible to ensure that the code paths
@@ -163,7 +164,7 @@ class TestStore(unittest.TestCase):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
         stub_out_s3(self.stubs)
-        self.store = Store(S3_OPTIONS)
+        self.store = Store(test_utils.TestConfigOpts(S3_CONF))
 
     def tearDown(self):
         """Clear the test environment"""
@@ -204,10 +205,10 @@ class TestStore(unittest.TestCase):
         expected_s3_contents = "*" * expected_s3_size
         expected_checksum = hashlib.md5(expected_s3_contents).hexdigest()
         expected_location = format_s3_location(
-            S3_OPTIONS['s3_store_access_key'],
-            S3_OPTIONS['s3_store_secret_key'],
-            S3_OPTIONS['s3_store_host'],
-            S3_OPTIONS['s3_store_bucket'],
+            S3_CONF['s3_store_access_key'],
+            S3_CONF['s3_store_secret_key'],
+            S3_CONF['s3_store_host'],
+            S3_CONF['s3_store_bucket'],
             expected_image_id)
         image_s3 = StringIO.StringIO(expected_s3_contents)
 
@@ -250,17 +251,17 @@ class TestStore(unittest.TestCase):
             expected_s3_contents = "*" * expected_s3_size
             expected_checksum = \
                     hashlib.md5(expected_s3_contents).hexdigest()
-            new_options = S3_OPTIONS.copy()
-            new_options['s3_store_host'] = variation
+            new_conf = S3_CONF.copy()
+            new_conf['s3_store_host'] = variation
             expected_location = format_s3_location(
-                new_options['s3_store_access_key'],
-                new_options['s3_store_secret_key'],
-                new_options['s3_store_host'],
-                new_options['s3_store_bucket'],
+                new_conf['s3_store_access_key'],
+                new_conf['s3_store_secret_key'],
+                new_conf['s3_store_host'],
+                new_conf['s3_store_bucket'],
                 expected_image_id)
             image_s3 = StringIO.StringIO(expected_s3_contents)
 
-            self.store = Store(new_options)
+            self.store = Store(test_utils.TestConfigOpts(new_conf))
             location, size, checksum = self.store.add(expected_image_id,
                                                       image_s3,
                                                       expected_s3_size)
@@ -288,11 +289,11 @@ class TestStore(unittest.TestCase):
                           FAKE_UUID, image_s3, 0)
 
     def _option_required(self, key):
-        options = S3_OPTIONS.copy()
-        del options[key]
+        conf = S3_CONF.copy()
+        del conf[key]
 
         try:
-            self.store = Store(options)
+            self.store = Store(test_utils.TestConfigOpts(conf))
             return self.store.add == self.store.add_disabled
         except:
             return False

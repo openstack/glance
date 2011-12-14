@@ -27,7 +27,7 @@ import glance.store.s3
 import glance.store.swift
 from glance import registry
 from glance import store
-from glance.common import config
+from glance.common import cfg
 from glance.common import utils
 from glance.common import exception
 from glance.registry import context
@@ -65,23 +65,31 @@ class Daemon(object):
 class Scrubber(object):
     CLEANUP_FILE = ".cleanup"
 
-    def __init__(self, options):
-        logger.info(_("Initializing scrubber with options: %s") % options)
-        self.options = options
-        self.datadir = config.get_option(options, 'scrubber_datadir')
-        self.cleanup = config.get_option(options, 'cleanup_scrubber',
-                                         type='bool', default=False)
-        host = config.get_option(options, 'registry_host')
-        port = config.get_option(options, 'registry_port', type='int')
+    opts = [
+        cfg.BoolOpt('cleanup_scrubber', default=False),
+        cfg.IntOpt('cleanup_scrubber_time', default=86400)
+        ]
+
+    def __init__(self, conf, **local_conf):
+        self.conf = conf
+        self.conf.register_opts(self.opts)
+
+        self.datadir = store.get_scrubber_datadir(conf)
+        self.cleanup = self.conf.cleanup_scrubber
+        self.cleanup_time = self.conf.cleanup_scrubber_time
+
+        host, port = registry.get_registry_addr(conf)
+
+        logger.info(_("Initializing scrubber with conf: %s") %
+                    {'datadir': self.datadir, 'cleanup': self.cleanup,
+                     'cleanup_time': self.cleanup_time,
+                     'registry_host': host, 'registry_port': port})
+
         self.registry = client.RegistryClient(host, port)
 
         utils.safe_mkdirs(self.datadir)
 
-        if self.cleanup:
-            self.cleanup_time = config.get_option(options,
-                                                  'cleanup_scrubber_time',
-                                                  type='int', default=86400)
-        store.create_stores(options)
+        store.create_stores(conf)
 
     def run(self, pool, event=None):
         now = time.time()

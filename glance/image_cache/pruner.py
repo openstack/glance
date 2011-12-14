@@ -27,9 +27,9 @@ logger = logging.getLogger(__name__)
 
 
 class Pruner(object):
-    def __init__(self, options):
-        self.options = options
-        self.cache = ImageCache(options)
+    def __init__(self, conf, **local_conf):
+        self.conf = conf
+        self.cache = ImageCache(conf)
 
     def run(self):
         self.cache.prune()

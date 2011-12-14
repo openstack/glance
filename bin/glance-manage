@@ -27,7 +27,6 @@ Glance Management Utility
 # glance-manage (or the other way around)
 
 import gettext
-import optparse
 import os
 import sys
 
@@ -41,41 +40,29 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 gettext.install('glance', unicode=1)
 
-from glance import version as glance_version
+from glance.common import cfg
 from glance.common import config
 from glance.common import exception
 import glance.registry.db
 import glance.registry.db.migration
 
 
-def create_options(parser):
-    """
-    Sets up the CLI and config-file options that may be
-    parsed and program commands.
-
-    :param parser: The option parser
-    """
-    config.add_common_options(parser)
-    config.add_log_options(parser)
-    glance.registry.db.add_options(parser)
-
-
-def do_db_version(options, args):
+def do_db_version(conf, args):
     """Print database's current migration level"""
-    print glance.registry.db.migration.db_version(options)
+    print glance.registry.db.migration.db_version(conf)
 
 
-def do_upgrade(options, args):
+def do_upgrade(conf, args):
     """Upgrade the database's migration level"""
     try:
         db_version = args[1]
     except IndexError:
         db_version = None
 
-    glance.registry.db.migration.upgrade(options, version=db_version)
+    glance.registry.db.migration.upgrade(conf, version=db_version)
 
 
-def do_downgrade(options, args):
+def do_downgrade(conf, args):
     """Downgrade the database's migration level"""
     try:
         db_version = args[1]
@@ -83,24 +70,24 @@ def do_downgrade(options, args):
         raise exception.MissingArgumentError(
             "downgrade requires a version argument")
 
-    glance.registry.db.migration.downgrade(options, version=db_version)
+    glance.registry.db.migration.downgrade(conf, version=db_version)
 
 
-def do_version_control(options, args):
+def do_version_control(conf, args):
     """Place a database under migration control"""
-    glance.registry.db.migration.version_control(options)
+    glance.registry.db.migration.version_control(conf)
 
 
-def do_db_sync(options, args):
+def do_db_sync(conf, args):
     """Place a database under migration control and upgrade"""
     try:
         db_version = args[1]
     except IndexError:
         db_version = None
-    glance.registry.db.migration.db_sync(options, version=db_version)
+    glance.registry.db.migration.db_sync(conf, version=db_version)
 
 
-def dispatch_cmd(options, args):
+def dispatch_cmd(conf, args):
     """Search for do_* cmd in this module and then run it"""
     cmd = args[0]
     try:
@@ -109,35 +96,32 @@ def dispatch_cmd(options, args):
         sys.exit("ERROR: unrecognized command '%s'" % cmd)
 
     try:
-        cmd_func(options, args)
+        cmd_func(conf, args)
     except exception.GlanceException, e:
         sys.exit("ERROR: %s" % e)
 
 
 def main():
-    version = '%%prog %s' % glance_version.version_string()
-    usage = "%prog [options] <cmd>"
-    oparser = optparse.OptionParser(usage, version=version)
-    create_options(oparser)
-    (options, args) = config.parse_options(oparser)
-
     try:
         # We load the glance-registry config section because
         # sql_connection is only part of the glance registry.
-        conf_file = config.find_config_file('glance-registry', options, args)
-        conf = config.load_paste_config(conf_file, 'glance-registry')
-        config.setup_logging(options, conf)
+        default_config_files = \
+            cfg.find_config_files(project='glance', prog='glance-registry')
+
+        conf = \
+            config.GlanceConfigOpts(default_config_files=default_config_files,
+                                    usage="%prog [options] <cmd>")
+        glance.registry.db.add_options(conf)
+        args = conf()
+        config.setup_logging(conf)
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
 
     if not args:
-        oparser.print_usage()
+        conf.print_usage()
         sys.exit(1)
 
-    if conf.get('sql_connection') and not options['sql_connection']:
-        options['sql_connection'] = conf.get('sql_connection')
-
-    dispatch_cmd(options, args)
+    dispatch_cmd(conf, args)
 
 
 if __name__ == '__main__':

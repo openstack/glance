@@ -23,8 +23,6 @@ import logging
 
 import eventlet
 
-from glance.common import config
-from glance.common import context
 from glance.common import exception
 from glance.image_cache import ImageCache
 from glance import registry
@@ -35,15 +33,14 @@ logger = logging.getLogger(__name__)
 
 class Queuer(object):
 
-    def __init__(self, options):
-        self.options = options
-        self.cache = ImageCache(options)
-        registry.configure_registry_client(options)
+    def __init__(self, conf, **local_conf):
+        self.conf = conf
+        self.cache = ImageCache(conf)
+        registry.configure_registry_client(conf)
 
     def queue_image(self, image_id):
-        auth_tok = self.options.get('admin_token')
-        ctx = context.RequestContext(is_admin=True, show_deleted=True,
-                                     auth_tok=auth_tok)
+        ctx = \
+            registry.get_client_context(conf, is_admin=True, show_deleted=True)
         try:
             image_meta = registry.get_image_metadata(ctx, image_id)
             if image_meta['status'] != 'active':

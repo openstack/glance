@@ -22,7 +22,7 @@ LRU Cache for Image Data
 import logging
 import os
 
-from glance.common import config
+from glance.common import cfg
 from glance.common import exception
 from glance.common import utils
 
@@ -34,15 +34,23 @@ class ImageCache(object):
 
     """Provides an LRU cache for image data."""
 
-    def __init__(self, options):
-        self.options = options
+    opts = [
+        cfg.StrOpt('image_cache_driver', default='sqlite'),
+        cfg.IntOpt('image_cache_max_size', default=10 * (1024 ** 3)),  # 10 GB
+        cfg.IntOpt('image_cache_stall_time', default=86400),  # 24 hours
+        cfg.StrOpt('image_cache_dir'),
+        ]
+
+    def __init__(self, conf):
+        self.conf = conf
+        self.conf.register_opts(self.opts)
         self.init_driver()
 
     def init_driver(self):
         """
         Create the driver for the cache
         """
-        driver_name = self.options.get('image_cache_driver', 'sqlite')
+        driver_name = self.conf.image_cache_driver
         driver_module = (__name__ + '.drivers.' + driver_name + '.Driver')
         try:
             self.driver_class = utils.import_class(driver_module)
@@ -64,7 +72,7 @@ class ImageCache(object):
         fall back to using the SQLite driver which has no odd dependencies
         """
         try:
-            self.driver = self.driver_class(self.options)
+            self.driver = self.driver_class(self.conf)
             self.driver.configure()
         except exception.BadDriverConfiguration, config_err:
             driver_module = self.driver_class.__module__
@@ -74,7 +82,7 @@ class ImageCache(object):
             logger.info(_("Defaulting to SQLite driver."))
             default_module = __name__ + '.drivers.sqlite.Driver'
             self.driver_class = utils.import_class(default_module)
-            self.driver = self.driver_class(self.options)
+            self.driver = self.driver_class(self.conf)
             self.driver.configure()
 
     def is_cached(self, image_id):
@@ -150,8 +158,7 @@ class ImageCache(object):
         size. Returns a tuple containing the total number of cached
         files removed and the total size of all pruned image files.
         """
-        max_size = int(self.options.get('image_cache_max_size',
-                                        DEFAULT_MAX_CACHE_SIZE))
+        max_size = self.conf.image_cache_max_size
         current_size = self.driver.get_cache_size()
         if max_size > current_size:
             logger.debug(_("Image cache has free space, skipping prune..."))
@@ -180,12 +187,12 @@ class ImageCache(object):
                        "%(total_bytes_pruned)d.") % locals())
         return total_files_pruned, total_bytes_pruned
 
-    def clean(self):
+    def clean(self, stall_time=None):
         """
         Cleans up any invalid or incomplete cached images. The cache driver
         decides what that means...
         """
-        self.driver.clean()
+        self.driver.clean(stall_time)
 
     def queue_image(self, image_id):
         """

@@ -31,13 +31,12 @@ import time
 from eventlet import sleep, timeout
 import sqlite3
 
+from glance.common import cfg
 from glance.common import exception
 from glance.image_cache.drivers import base
 
 logger = logging.getLogger(__name__)
 DEFAULT_SQL_CALL_TIMEOUT = 2
-DEFAULT_STALL_TIME = 86400  # 24 hours
-DEFAULT_SQLITE_DB = 'cache.db'
 
 
 class SqliteConnection(sqlite3.Connection):
@@ -82,6 +81,10 @@ class Driver(base.Driver):
     that has atimes set.
     """
 
+    opts = [
+        cfg.StrOpt('image_cache_sqlite_db', default='cache.db'),
+        ]
+
     def configure(self):
         """
         Configure the driver to use the stored configuration options
@@ -91,11 +94,13 @@ class Driver(base.Driver):
         """
         super(Driver, self).configure()
 
+        self.conf.register_opts(self.opts)
+
         # Create the SQLite database that will hold our cache attributes
         self.initialize_db()
 
     def initialize_db(self):
-        db = self.options.get('image_cache_sqlite_db', DEFAULT_SQLITE_DB)
+        db = self.conf.image_cache_sqlite_db
         self.db_path = os.path.join(self.base_dir, db)
         try:
             conn = sqlite3.connect(self.db_path, check_same_thread=False,
@@ -244,7 +249,7 @@ class Driver(base.Driver):
         if os.path.exists(path):
             os.unlink(path)
 
-    def clean(self):
+    def clean(self, stall_time=None):
         """
         Delete any image files in the invalid directory and any
         files in the incomplete directory that are older than a
@@ -252,10 +257,11 @@ class Driver(base.Driver):
         """
         self.delete_invalid_files()
 
-        incomplete_stall_time = int(self.options.get('image_cache_stall_time',
-                                                     DEFAULT_STALL_TIME))
+        if stall_time is None:
+            stall_time = self.conf.image_cache_stall_time
+
         now = time.time()
-        older_than = now - incomplete_stall_time
+        older_than = now - stall_time
         self.delete_stalled_files(older_than)
 
     def get_least_recently_accessed(self):

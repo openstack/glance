@@ -28,8 +28,9 @@ from glance.common import utils
 from glance.store.location import get_location_from_uri
 from glance.store.filesystem import Store, ChunkedFile
 from glance.tests import stubs
+from glance.tests import utils as test_utils
 
-FILESYSTEM_OPTIONS = {
+FILESYSTEM_CONF = {
     'verbose': True,
     'debug': True,
     'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
@@ -43,7 +44,7 @@ class TestStore(unittest.TestCase):
         stubs.stub_out_filesystem_backend()
         self.orig_chunksize = ChunkedFile.CHUNKSIZE
         ChunkedFile.CHUNKSIZE = 10
-        self.store = Store(FILESYSTEM_OPTIONS)
+        self.store = Store(test_utils.TestConfigOpts(FILESYSTEM_CONF))
 
     def tearDown(self):
         """Clear the test environment"""
@@ -116,9 +117,6 @@ class TestStore(unittest.TestCase):
         raises an appropriate exception
         """
         image_file = StringIO.StringIO("nevergonnamakeit")
-        options = {'verbose': True,
-                   'debug': True,
-                   'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
         self.assertRaises(exception.Duplicate,
                           self.store.add,
                           '2', image_file, 0)

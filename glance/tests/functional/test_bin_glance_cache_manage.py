@@ -226,7 +226,8 @@ glance.app_factory = glance.image_cache.queue_image:Queuer
 """ % cache_file_options)
             cache_file.flush()
 
-        cmd = "bin/glance-cache-prefetcher %s" % cache_config_filepath
+        cmd = "bin/glance-cache-prefetcher --config-file %s" % \
+            cache_config_filepath
 
         exitcode, out, err = execute(cmd)
 

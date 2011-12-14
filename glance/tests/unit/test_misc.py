@@ -111,9 +111,9 @@ class UtilsTestCase(unittest.TestCase):
 
         # Try importing an object by supplying a class and
         # verify the object's class name is the same as that supplied
-        store_obj = utils.import_object('glance.store.s3.Store')
+        ex_obj = utils.import_object('glance.common.exception.GlanceException')
 
-        self.assertTrue(store_obj.__class__.__name__ == 'Store')
+        self.assertTrue(ex_obj.__class__.__name__ == 'GlanceException')
 
         # Try importing a module itself
         module_obj = utils.import_object('glance.registry')

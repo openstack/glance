@@ -374,7 +374,8 @@ glance.app_factory = glance.image_cache.queue_image:Queuer
 
         self.verify_no_cached_images()
 
-        cmd = "bin/glance-cache-prefetcher %s" % cache_config_filepath
+        cmd = "bin/glance-cache-prefetcher --config-file %s" % \
+            cache_config_filepath
 
         exitcode, out, err = execute(cmd)
 
