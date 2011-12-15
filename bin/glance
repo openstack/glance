@@ -26,7 +26,6 @@ import functools
 import gettext
 import optparse
 import os
-import re
 import sys
 import time
 
@@ -79,15 +78,6 @@ def catch_error(action):
 
         return wrapper
     return wrap
-
-
-def get_percent_done(image):
-    try:
-        pct_done = image['size'] * 100 / int(image['expected_size'])
-    except (ValueError, ZeroDivisionError):
-        # NOTE(sirp): Ignore if expected_size isn't a number, or if it's 0
-        pct_done = "UNKNOWN"
-    return pct_done
 
 
 def get_image_fields_from_args(args):
@@ -927,28 +917,6 @@ Commands:
                     Glance
 
     clear           Removes all images and metadata from Glance
-
-
-Cache Commands:
-
-    cache-index          List all images currently cached
-
-    cache-invalid        List current invalid cache images
-
-    cache-incomplete     List images currently being fetched
-
-    cache-prefetching    List images that are being prefetched
-
-    cache-prefetch       Pre-fetch an image or list of images into the cache
-
-    cache-purge          Purges an image from the cache
-
-    cache-clear          Removes all images from the cache
-
-    cache-reap-invalid   Reaps any invalid images that were left for
-                         debugging purposes
-
-    cache-reap-stalled   Reaps any stalled incomplete images
 
 
 Member Commands:
