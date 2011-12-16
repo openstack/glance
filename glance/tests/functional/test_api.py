@@ -268,6 +268,13 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(data['properties']['arch'], "x86_64")
         self.assertEqual(data['properties']['distro'], "Ubuntu")
 
+        # DELETE image
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
         self.stop_servers()
 
     @skip_if_disabled
@@ -391,6 +398,13 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(data['images'][0]['container_format'], None)
         self.assertEqual(data['images'][0]['disk_format'], None)
         self.assertEqual(data['images'][0]['name'], "Image1")
+
+        # DELETE image
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
 
         self.stop_servers()
 
@@ -642,6 +656,8 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(response.status, 200)
         self.assertEqual(content, '{"images": []}')
 
+        image_ids = []
+
         # 1. POST /images with three public images, and one private image
         # with various attributes
         headers = {'Content-Type': 'application/octet-stream',
@@ -659,6 +675,7 @@ class TestApi(functional.FunctionalTest):
         data = json.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are on")
         self.assertEqual(data['image']['is_public'], True)
+        image_ids.append(data['image']['id'])
 
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'My Image!',
@@ -675,6 +692,7 @@ class TestApi(functional.FunctionalTest):
         data = json.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are on")
         self.assertEqual(data['image']['is_public'], True)
+        image_ids.append(data['image']['id'])
 
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'My Image!',
@@ -691,6 +709,7 @@ class TestApi(functional.FunctionalTest):
         data = json.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are off")
         self.assertEqual(data['image']['is_public'], True)
+        image_ids.append(data['image']['id'])
 
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'My Private Image',
@@ -705,6 +724,7 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(response.status, 201)
         data = json.loads(content)
         self.assertEqual(data['image']['is_public'], False)
+        image_ids.append(data['image']['id'])
 
         # 2. GET /images
         # Verify three public images
@@ -877,6 +897,14 @@ class TestApi(functional.FunctionalTest):
         data = json.loads(content)
         self.assertEqual(len(data['images']), 0)
 
+        # DELETE images
+        for image_id in image_ids:
+            path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                                  image_id)
+            http = httplib2.Http()
+            response, content = http.request(path, 'DELETE')
+            self.assertEqual(response.status, 200)
+
         self.stop_servers()
 
     @skip_if_disabled
@@ -895,6 +923,8 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(response.status, 200)
         self.assertEqual(content, '{"images": []}')
 
+        image_ids = []
+
         # 1. POST /images with three public images with various attributes
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'Image1',
@@ -903,6 +933,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
+        image_ids.append(json.loads(content)['image']['id'])
 
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'Image2',
@@ -911,6 +942,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
+        image_ids.append(json.loads(content)['image']['id'])
 
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'Image3',
@@ -919,6 +951,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
+        image_ids.append(json.loads(content)['image']['id'])
 
         # 2. GET /images with all images
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
@@ -961,8 +994,6 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(response.status, 200)
         data = json.loads(content)['images']
         self.assertEqual(len(data), 1)
-        print images
-        print data[0]
         self.assertEqual(data[0]['id'], images[2]['id'])
 
         # 6. GET /images/detail with marker and limit
@@ -975,6 +1006,14 @@ class TestApi(functional.FunctionalTest):
         data = json.loads(content)['images']
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]['id'], images[2]['id'])
+
+        # DELETE images
+        for image_id in image_ids:
+            path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                                  image_id)
+            http = httplib2.Http()
+            response, content = http.request(path, 'DELETE')
+            self.assertEqual(response.status, 200)
 
         self.stop_servers()
 
@@ -1090,6 +1129,14 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(response.status, 200)
         data = json.loads(content)
         self.assertEqual(len(data['images']), 0)
+
+        # DELETE images
+        for image_id in image_ids:
+            path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                                  image_id)
+            http = httplib2.Http()
+            response, content = http.request(path, 'DELETE')
+            self.assertEqual(response.status, 200)
 
         self.stop_servers()
 

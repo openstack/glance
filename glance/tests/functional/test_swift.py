@@ -36,14 +36,12 @@ import httplib
 import httplib2
 import json
 import os
-import tempfile
-import unittest
 
 from glance.common import crypt
 import glance.store.swift  # Needed to register driver for location
 from glance.store.location import get_location_from_uri
 from glance.tests.functional import test_api
-from glance.tests.utils import execute, skip_if_disabled
+from glance.tests.utils import skip_if_disabled
 
 FIVE_KB = 5 * 1024
 FIVE_MB = 5 * 1024 * 1024
@@ -401,6 +399,13 @@ class TestSwift(test_api.TestApi):
         self.assertEqual(content, "*" * FIVE_MB)
         self.assertEqual(hashlib.md5(content).hexdigest(),
                          hashlib.md5("*" * FIVE_MB).hexdigest())
+
+        # DELETE image
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
 
         self.stop_servers()
 
