@@ -27,13 +27,12 @@ def add_options(conf):
     :param conf: A ConfigOpts object
     :retval None
     """
-    conf.add_group(cfg.OptGroup('registrydb',
+    conf.register_group(cfg.OptGroup('registrydb',
                                 title='Registry Database Options',
                                 help='The following configuration options '
                                      'are specific to the Glance image '
                                      'registry database.'))
-    conf.register_cli_opt(cfg.StrOpt('sql-connection',
-                                     group='registrydb',
+    conf.register_cli_opt(cfg.StrOpt('sql_connection',
                                      metavar='CONNECTION',
                                      help='A valid SQLAlchemy connection '
                                           'string for the registry database. '
