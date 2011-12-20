@@ -123,6 +123,17 @@ Number of backlog requests to configure the socket with.
 
 Optional. Default: ``4096``
 
+* ``workers=PROCESSES``
+
+Number of Glance API worker processes to start. Each worker
+process will listen on the same port. Increasing this
+value may increase performance (especially if using SSL
+with compression enabled). Typically it is recommended
+to have one worker process per CPU. The value `0` will
+prevent any new processes from being created.
+
+Optional. Default: ``0``
+
 Configurating SSL Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 

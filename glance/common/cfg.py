@@ -1076,7 +1076,8 @@ class ConfigOpts(object):
 
 class CommonConfigOpts(ConfigOpts):
 
-    DEFAULT_LOG_FORMAT = "%(asctime)s %(levelname)8s [%(name)s] %(message)s"
+    DEFAULT_LOG_FORMAT = ('%(asctime)s %(process)d %(levelname)8s '
+                          '[%(name)s] %(message)s')
     DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
     common_cli_opts = [

@@ -20,7 +20,6 @@
 import datetime
 import os
 import tempfile
-import unittest
 
 from glance.common import utils
 from glance.tests import functional
