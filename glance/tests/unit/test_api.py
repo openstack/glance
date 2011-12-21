@@ -18,7 +18,6 @@
 import datetime
 import hashlib
 import httplib
-import logging
 import os
 import json
 import unittest

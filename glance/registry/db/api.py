@@ -143,7 +143,7 @@ def image_destroy(context, image_id):
             image_member_delete(context, memb_ref, session=session)
 
 
-def image_get(context, image_id, session=None):
+def image_get(context, image_id, session=None, force_show_deleted=False):
     """Get an image or raise if it does not exist."""
     session = session or get_session()
 
@@ -154,7 +154,7 @@ def image_get(context, image_id, session=None):
                         filter_by(id=image_id)
 
         # filter out deleted images if context disallows it
-        if not can_show_deleted(context):
+        if not force_show_deleted and not can_show_deleted(context):
             query = query.filter_by(deleted=False)
 
         image = query.one()
@@ -219,13 +219,16 @@ def image_get_all(context, filters=None, marker=None, limit=None,
             query = query.filter(the_filter[0])
         del filters['is_public']
 
+    showing_deleted = False
     if 'changes-since' in filters:
         changes_since = filters.pop('changes-since')
         query = query.filter(models.Image.updated_at > changes_since)
+        showing_deleted = True
 
     if 'deleted' in filters:
         deleted_filter = filters.pop('deleted')
         query = query.filter_by(deleted=deleted_filter)
+        showing_deleted = deleted_filter
         # TODO(bcwaldon): handle this logic in registry server
         if not deleted_filter:
             query = query.filter(models.Image.status != 'killed')
@@ -239,7 +242,8 @@ def image_get_all(context, filters=None, marker=None, limit=None,
 
     if marker != None:
         # images returned should be created before the image defined by marker
-        marker_image = image_get(context, marker)
+        marker_image = image_get(context, marker,
+                                 force_show_deleted=showing_deleted)
         marker_value = getattr(marker_image, sort_key)
         if sort_dir == 'desc':
             query = query.filter(
