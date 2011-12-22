@@ -234,13 +234,6 @@ EXAMPLES
         # Grab the image data stream from stdin or redirect,
         # otherwise error out
         image_data = sys.stdin
-    else:
-        # Ensure no image data has been given
-        if not sys.stdin.isatty():
-            print "Either supply a location=LOCATION argument or supply image "
-            print "data via a redirect. You have supplied BOTH image data "
-            print "AND a location."
-            return FAILURE
 
     # Add custom attributes, which are all the arguments remaining
     image_meta['properties'] = fields
