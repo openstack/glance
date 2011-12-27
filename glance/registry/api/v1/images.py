@@ -38,7 +38,7 @@ DISPLAY_FIELDS_IN_INDEX = ['id', 'name', 'size',
 
 SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
                      'min_ram', 'min_disk', 'size_min', 'size_max',
-                     'changes-since']
+                     'changes-since', 'protected']
 
 SUPPORTED_SORT_KEYS = ('name', 'status', 'container_format', 'disk_format',
                        'size', 'id', 'created_at', 'updated_at')
@@ -170,6 +170,14 @@ class Controller(object):
             except ValueError:
                 raise exc.HTTPBadRequest(_("Unrecognized changes-since value"))
 
+        if 'protected' in filters:
+            value = self._get_bool(filters['protected'])
+            if value is None:
+                raise exc.HTTPBadRequest(_("protected must be True, or "
+                                           "False"))
+
+            filters['protected'] = value
+
         # only allow admins to filter on 'deleted'
         if req.context.is_admin:
             deleted_filter = self._parse_deleted_filter(req)
@@ -226,6 +234,15 @@ class Controller(object):
             raise exc.HTTPBadRequest(explanation=msg)
         return sort_dir
 
+    def _get_bool(self, value):
+        value = value.lower()
+        if value == 'true' or value == '1':
+            return True
+        elif value == 'false' or value == '0':
+            return False
+
+        return None
+
     def _get_is_public(self, req):
         """Parse is_public into something usable."""
         is_public = req.str_params.get('is_public', None)
@@ -234,16 +251,15 @@ class Controller(object):
             # NOTE(vish): This preserves the default value of showing only
             #             public images.
             return True
-        is_public = is_public.lower()
-        if is_public == 'none':
+        elif is_public.lower() == 'none':
             return None
-        elif is_public == 'true' or is_public == '1':
-            return True
-        elif is_public == 'false' or is_public == '0':
-            return False
-        else:
-            raise exc.HTTPBadRequest(_("is_public must be None, True, "
-                                       "or False"))
+
+        value = self._get_bool(is_public)
+        if value is None:
+            raise exc.HTTPBadRequest(_("is_public must be None, True, or "
+                                       "False"))
+
+        return value
 
     def _parse_deleted_filter(self, req):
         """Parse deleted into something usable."""

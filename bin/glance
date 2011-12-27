@@ -131,6 +131,7 @@ def print_image_formatted(client, image):
                                       image['id'])
     print "Id: %s" % image['id']
     print "Public: " + (image['is_public'] and "Yes" or "No")
+    print "Protected: " + (image['protected'] and "Yes" or "No")
     print "Name: %s" % image['name']
     print "Status: %s" % image['status']
     print "Size: %d" % int(image['size'])
@@ -166,6 +167,9 @@ size                Optional. Should be size in bytes of the image if
                     specified.
 is_public           Optional. If specified, interpreted as a boolean value
                     and sets or unsets the image's availability to the public.
+                    The default value is False.
+protected           Optional. If specified, interpreted as a boolean value
+                    and enables or disables deletion protection.
                     The default value is False.
 disk_format         Optional. Possible values are 'vhd','vmdk','raw', 'qcow2',
                     and 'ami'. Default value is 'raw'.
@@ -212,6 +216,8 @@ EXAMPLES
     image_meta = {'name': fields.pop('name'),
                   'is_public': utils.bool_from_string(
                       fields.pop('is_public', False)),
+                  'protected': utils.bool_from_string(
+                      fields.pop('protected', False)),
                   'disk_format': fields.pop('disk_format', 'raw'),
                   'min_disk': fields.pop('min_disk', 0),
                   'min_ram': fields.pop('min_ram', 0),
@@ -291,6 +297,8 @@ name                A name for the image.
 location            The location of the image.
 is_public           If specified, interpreted as a boolean value
                     and sets or unsets the image's availability to the public.
+protected           If specified, interpreted as a boolean value
+                    and enables or disables deletion protection for the image.
 disk_format         Format of the disk image
 container_format    Format of the container
 
@@ -331,6 +339,9 @@ to spell field names correctly. :)"""
     if 'is_public' in fields:
         image_meta['is_public'] = utils.bool_from_string(
             fields.pop('is_public'))
+    if 'protected' in fields:
+        image_meta['protected'] = utils.bool_from_string(
+            fields.pop('protected'))
 
     # Add custom attributes, which are all the arguments remaining
     image_meta['properties'] = fields

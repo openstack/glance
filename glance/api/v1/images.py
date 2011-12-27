@@ -567,6 +567,11 @@ class Controller(controller.BaseController):
                                 content_type="text/plain")
 
         image = self.get_image_meta_or_404(req, id)
+        if image['protected']:
+            msg = _("Image is protected")
+            logger.debug(msg)
+            raise HTTPForbidden(msg, request=req,
+                                content_type="text/plain")
 
         # The image's location field may be None in the case
         # of a saving or queued image, therefore don't ask a backend

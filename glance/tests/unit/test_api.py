@@ -2585,6 +2585,27 @@ class TestGlanceAPI(unittest.TestCase):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 200)
 
+    def test_delete_protected_image(self):
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-name': 'fake image #3',
+                           'x-image-meta-protected': 'True'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.CREATED)
+
+        res_body = json.loads(res.body)['image']
+        self.assertEquals('queued', res_body['status'])
+
+        # Now try to delete the image...
+        req = webob.Request.blank("/images/%s" % res_body['id'])
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.FORBIDDEN)
+
     def test_get_details_invalid_marker(self):
         """
         Tests that the /images/detail registry API returns a 400
