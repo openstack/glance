@@ -166,7 +166,7 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
 
         for creds in good_creds:
             plugin = auth.KeystoneStrategy(creds)
-            self.assertIsNone(plugin.authenticate())
+            self.assertTrue(plugin.authenticate() is None)
 
     def test_v2_auth(self):
         """Test v2 auth code paths"""
@@ -267,4 +267,4 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
 
         for creds in good_creds:
             plugin = auth.KeystoneStrategy(creds)
-            self.assertIsNone(plugin.authenticate())
+            self.assertTrue(plugin.authenticate() is None)
