@@ -16,11 +16,13 @@
 #    under the License.
 
 import datetime
+import json
 import logging
 import socket
 import uuid
 
 import kombu.connection
+import kombu.entity
 
 from glance.common import cfg
 from glance.common import exception
@@ -68,6 +70,7 @@ class RabbitStrategy(object):
         cfg.StrOpt('rabbit_userid', default='guest'),
         cfg.StrOpt('rabbit_password', default='guest'),
         cfg.StrOpt('rabbit_virtual_host', default='/'),
+        cfg.StrOpt('rabbit_notification_exchange', default='glance'),
         cfg.StrOpt('rabbit_notification_topic', default='glance_notifications')
         ]
 
@@ -76,20 +79,40 @@ class RabbitStrategy(object):
         self._conf = conf
         self._conf.register_opts(self.opts)
 
+        self.topic = self._conf.rabbit_notification_topic
+        self.connect()
+
+    def connect(self):
         self.connection = kombu.connection.BrokerConnection(
             hostname=self._conf.rabbit_host,
             userid=self._conf.rabbit_userid,
             password=self._conf.rabbit_password,
             virtual_host=self._conf.rabbit_virtual_host,
             ssl=self._conf.rabbit_use_ssl)
+        self.channel = self.connection.channel()
 
-        self.topic = self._conf.rabbit_notification_topic
+        self.exchange = kombu.entity.Exchange(
+            channel=self.channel,
+            type="topic",
+            name=self._conf.rabbit_notification_exchange)
+        self.exchange.declare()
 
     def _send_message(self, message, priority):
-        topic = "%s.%s" % (self.topic, priority)
-        queue = self.connection.SimpleQueue(topic)
-        queue.put(message, serializer="json")
-        queue.close()
+        routing_key = "%s.%s" % (self.topic, priority.lower())
+
+        # NOTE(jerdfelt): Normally the consumer would create the queue, but
+        # we do this to ensure that messages don't get dropped if the
+        # consumer is started after we do
+        queue = kombu.entity.Queue(
+            channel=self.channel,
+            exchange=self.exchange,
+            durable=True,
+            name=routing_key,
+            routing_key=routing_key)
+        queue.declare()
+
+        msg = self.exchange.Message(json.dumps(message))
+        self.exchange.publish(msg, routing_key=routing_key)
 
     def warn(self, msg):
         self._send_message(msg, "WARN")

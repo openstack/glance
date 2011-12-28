@@ -86,6 +86,7 @@ class TestRabbitNotifier(unittest.TestCase):
 
     def setUp(self):
         notifier.RabbitStrategy._send_message = self._send_message
+        notifier.RabbitStrategy.connect = lambda s: None
         self.called = False
         conf = utils.TestConfigOpts({"notifier_strategy": "rabbit"})
         self.notifier = notifier.Notifier(conf)

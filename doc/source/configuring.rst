@@ -670,6 +670,12 @@ Optional. Default: ``/``
 
 Virtual host to use for connection when using ``rabbit`` strategy.
 
+* ``rabbit_notification_exchange``
+
+Optional. Default: ``glance``
+
+Exchange name to use for connection when using ``rabbit`` strategy.
+
 * ``rabbit_notification_topic``
 
 Optional. Default: ``glance_notifications``
