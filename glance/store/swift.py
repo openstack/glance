@@ -278,7 +278,7 @@ class Store(glance.store.base.Store):
         snet = self.snet
         logger.debug(_("Creating Swift connection with "
                      "(auth_address=%(auth_url)s, user=%(user)s, "
-                     "key=%(key)s, snet=%(snet)s)") % locals())
+                     "snet=%(snet)s)") % locals())
         return swift_client.Connection(
             authurl=auth_url, user=user, key=key, snet=snet)
 
