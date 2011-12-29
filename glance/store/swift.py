@@ -40,6 +40,7 @@ except ImportError:
 DEFAULT_CONTAINER = 'glance'
 DEFAULT_LARGE_OBJECT_SIZE = 5 * 1024  # 5GB
 DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 200  # 200M
+ONE_MB = 1000 * 1024
 
 logger = logging.getLogger('glance.store.swift')
 
@@ -196,7 +197,6 @@ class Store(glance.store.base.Store):
                    default=DEFAULT_LARGE_OBJECT_SIZE),
         cfg.IntOpt('swift_store_large_object_chunk_size',
                    default=DEFAULT_LARGE_OBJECT_CHUNK_SIZE),
-        cfg.StrOpt('swift_store_object_buffer_dir'),
         cfg.BoolOpt('swift_store_create_container_on_put', default=False),
         ]
 
@@ -216,11 +216,13 @@ class Store(glance.store.base.Store):
         self.key = self._option_get('swift_store_key')
         self.container = self.conf.swift_store_container
         try:
-            self.large_object_size = self.conf.swift_store_large_object_size
+            # The config file has swift_store_large_object_*size in MB, but
+            # internally we store it in bytes, since the image_size parameter
+            # passed to add() is also in bytes.
+            self.large_object_size = \
+                self.conf.swift_store_large_object_size * ONE_MB
             self.large_object_chunk_size = \
-                self.conf.swift_store_large_object_chunk_size
-            self.swift_store_object_buffer_dir = \
-                self.conf.swift_store_object_buffer_dir
+                self.conf.swift_store_large_object_chunk_size * ONE_MB
         except cfg.ConfigFileValueError, e:
             reason = _("Error in configuration conf: %s") % e
             logger.error(reason)
@@ -347,12 +349,10 @@ class Store(glance.store.base.Store):
                 # Image size is known, and is less than large_object_size.
                 # Send to Swift with regular PUT.
                 obj_etag = swift_conn.put_object(self.container, obj_name,
-                                                 image_file)
+                                                 image_file,
+                                                 content_length=image_size)
             else:
-                # Write the image into Swift in chunks. We cannot
-                # stream chunks of the webob.Request.body_file, unfortunately,
-                # so we must write chunks of the body_file into a temporary
-                # disk buffer, and then pass this disk buffer to Swift.
+                # Write the image into Swift in chunks.
                 chunk_id = 1
                 if image_size > 0:
                     total_chunks = str(int(
@@ -367,37 +367,40 @@ class Store(glance.store.base.Store):
                     total_chunks = '?'
 
                 checksum = hashlib.md5()
-                tmp = self.swift_store_object_buffer_dir
                 combined_chunks_size = 0
                 while True:
-                    with tempfile.NamedTemporaryFile(dir=tmp) as disk_buffer:
-                        chunk = image_file.read(self.large_object_chunk_size)
-                        if not chunk:
+                    chunk_size = self.large_object_chunk_size
+                    if image_size == 0:
+                        content_length = None
+                    else:
+                        left = image_size - combined_chunks_size
+                        if left == 0:
                             break
-                        chunk_size = len(chunk)
-                        logger.debug(_("Writing %(chunk_size)d bytes for "
-                                       "chunk %(chunk_id)d/"
-                                       "%(total_chunks)s to disk buffer "
-                                       "for image %(image_id)s")
-                                     % locals())
-                        checksum.update(chunk)
-                        disk_buffer.write(chunk)
-                        disk_buffer.flush()
-                        logger.debug(_("Writing chunk %(chunk_id)d/"
-                                       "%(total_chunks)s to Swift "
-                                       "for image %(image_id)s")
-                                     % locals())
-                        chunk_etag = swift_conn.put_object(
-                            self.container,
-                            "%s-%05d" % (obj_name, chunk_id),
-                            open(disk_buffer.name, 'rb'))
-                        logger.debug(_("Wrote chunk %(chunk_id)d/"
-                                       "%(total_chunks)s to Swift "
-                                       "returning MD5 of content: "
-                                       "%(chunk_etag)s")
-                                     % locals())
+                        if chunk_size > left:
+                            chunk_size = left
+                        content_length = chunk_size
+
+                    chunk_name = "%s-%05d" % (obj_name, chunk_id)
+                    reader = ChunkReader(image_file, checksum, chunk_size)
+                    chunk_etag = swift_conn.put_object(
+                        self.container, chunk_name, reader,
+                        content_length=content_length)
+                    bytes_read = reader.bytes_read
+                    logger.debug(_("Wrote chunk %(chunk_id)d/"
+                                   "%(total_chunks)s of length %(bytes_read)d "
+                                   "to Swift returning MD5 of content: "
+                                   "%(chunk_etag)s")
+                                 % locals())
+
+                    if bytes_read == 0:
+                        # Delete the last chunk, because it's of zero size.
+                        # This will happen if image_size == 0.
+                        logger.debug(_("Deleting final zero-length chunk"))
+                        swift_conn.delete_object(self.container, chunk_name)
+                        break
+
                     chunk_id += 1
-                    combined_chunks_size += chunk_size
+                    combined_chunks_size += bytes_read
 
                 # In the case we have been given an unknown image size,
                 # set the image_size to the total size of the combined chunks.
@@ -482,6 +485,23 @@ class Store(glance.store.base.Store):
                                          "uri %(uri)s") % locals())
             else:
                 raise
+
+
+class ChunkReader(object):
+    def __init__(self, fd, checksum, total):
+        self.fd = fd
+        self.checksum = checksum
+        self.total = total
+        self.bytes_read = 0
+
+    def read(self, i):
+        left = self.total - self.bytes_read
+        if i > left:
+            i = left
+        result = self.fd.read(i)
+        self.bytes_read += len(result)
+        self.checksum.update(result)
+        return result
 
 
 def create_container_if_missing(container, swift_conn, conf):

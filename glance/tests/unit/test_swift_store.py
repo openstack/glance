@@ -20,6 +20,7 @@
 import StringIO
 import hashlib
 import httplib
+import tempfile
 import unittest
 
 import stubout
@@ -39,6 +40,7 @@ Store = glance.store.swift.Store
 FIVE_KB = (5 * 1024)
 FIVE_GB = (5 * 1024 * 1024 * 1024)
 MAX_SWIFT_OBJECT_SIZE = FIVE_GB
+SWIFT_PUT_OBJECT_CALLS = 0
 SWIFT_CONF = {'verbose': True,
               'debug': True,
               'swift_store_user': 'user',
@@ -71,6 +73,8 @@ def stub_out_swift_common_client(stubs):
     def fake_put_object(url, token, container, name, contents, **kwargs):
         # PUT returns the ETag header for the newly-added object
         # Large object manifest...
+        global SWIFT_PUT_OBJECT_CALLS
+        SWIFT_PUT_OBJECT_CALLS += 1
         fixture_key = "%s/%s" % (container, name)
         if not fixture_key in fixture_headers.keys():
             if kwargs.get('headers'):
@@ -241,6 +245,9 @@ class TestStore(unittest.TestCase):
                             '/glance/%s' % expected_image_id
         image_swift = StringIO.StringIO(expected_swift_contents)
 
+        global SWIFT_PUT_OBJECT_CALLS
+        SWIFT_PUT_OBJECT_CALLS = 0
+
         location, size, checksum = self.store.add(expected_image_id,
                                                   image_swift,
                                                   expected_swift_size)
@@ -248,6 +255,8 @@ class TestStore(unittest.TestCase):
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_swift_size, size)
         self.assertEquals(expected_checksum, checksum)
+        # Expecting a single object to be created on Swift i.e. no chunking.
+        self.assertEquals(SWIFT_PUT_OBJECT_CALLS, 1)
 
         loc = get_location_from_uri(expected_location)
         (new_image_swift, new_image_size) = self.store.get(loc)
@@ -294,6 +303,9 @@ class TestStore(unittest.TestCase):
 
             image_swift = StringIO.StringIO(expected_swift_contents)
 
+            global SWIFT_PUT_OBJECT_CALLS
+            SWIFT_PUT_OBJECT_CALLS = 0
+
             self.store = Store(test_utils.TestConfigOpts(new_conf))
             location, size, checksum = self.store.add(image_id, image_swift,
                                                       expected_swift_size)
@@ -301,6 +313,7 @@ class TestStore(unittest.TestCase):
             self.assertEquals(expected_location, location)
             self.assertEquals(expected_swift_size, size)
             self.assertEquals(expected_checksum, checksum)
+            self.assertEquals(SWIFT_PUT_OBJECT_CALLS, 1)
 
             loc = get_location_from_uri(expected_location)
             (new_image_swift, new_image_size) = self.store.get(loc)
@@ -321,6 +334,9 @@ class TestStore(unittest.TestCase):
         image_swift = StringIO.StringIO("nevergonnamakeit")
         self.store = Store(test_utils.TestConfigOpts(conf))
 
+        global SWIFT_PUT_OBJECT_CALLS
+        SWIFT_PUT_OBJECT_CALLS = 0
+
         # We check the exception text to ensure the container
         # missing text is found in it, otherwise, we would have
         # simply used self.assertRaises here
@@ -332,6 +348,7 @@ class TestStore(unittest.TestCase):
             self.assertTrue("container noexist does not exist "
                             "in Swift" in str(e))
         self.assertTrue(exception_caught)
+        self.assertEquals(SWIFT_PUT_OBJECT_CALLS, 0)
 
     def test_add_no_container_and_create(self):
         """
@@ -349,6 +366,9 @@ class TestStore(unittest.TestCase):
                             '/noexist/%s' % expected_image_id
         image_swift = StringIO.StringIO(expected_swift_contents)
 
+        global SWIFT_PUT_OBJECT_CALLS
+        SWIFT_PUT_OBJECT_CALLS = 0
+
         self.store = Store(test_utils.TestConfigOpts(conf))
         location, size, checksum = self.store.add(expected_image_id,
                                                   image_swift,
@@ -357,6 +377,7 @@ class TestStore(unittest.TestCase):
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_swift_size, size)
         self.assertEquals(expected_checksum, checksum)
+        self.assertEquals(SWIFT_PUT_OBJECT_CALLS, 1)
 
         loc = get_location_from_uri(expected_location)
         (new_image_swift, new_image_size) = self.store.get(loc)
@@ -369,7 +390,7 @@ class TestStore(unittest.TestCase):
     def test_add_large_object(self):
         """
         Tests that adding a very large image. We simulate the large
-        object by setting the DEFAULT_LARGE_OBJECT_SIZE to a small number
+        object by setting store.large_object_size to a small number
         and then verify that there have been a number of calls to
         put_object()...
         """
@@ -383,22 +404,28 @@ class TestStore(unittest.TestCase):
                             '/glance/%s' % expected_image_id
         image_swift = StringIO.StringIO(expected_swift_contents)
 
-        orig_max_size = glance.store.swift.DEFAULT_LARGE_OBJECT_SIZE
-        orig_temp_size = glance.store.swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE
+        global SWIFT_PUT_OBJECT_CALLS
+        SWIFT_PUT_OBJECT_CALLS = 0
+
+        self.store = Store(test_utils.TestConfigOpts(conf))
+        orig_max_size = self.store.large_object_size
+        orig_temp_size = self.store.large_object_chunk_size
         try:
-            glance.store.swift.DEFAULT_LARGE_OBJECT_SIZE = 1024
-            glance.store.swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 1024
-            self.store = Store(test_utils.TestConfigOpts(conf))
+            self.store.large_object_size = 1024
+            self.store.large_object_chunk_size = 1024
             location, size, checksum = self.store.add(expected_image_id,
                                                       image_swift,
                                                       expected_swift_size)
         finally:
-            swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE = orig_temp_size
-            swift.DEFAULT_LARGE_OBJECT_SIZE = orig_max_size
+            self.store.large_object_chunk_size = orig_temp_size
+            self.store.large_object_size = orig_max_size
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_swift_size, size)
         self.assertEquals(expected_checksum, checksum)
+        # Expecting 6 objects to be created on Swift -- 5 chunks and 1
+        # manifest.
+        self.assertEquals(SWIFT_PUT_OBJECT_CALLS, 6)
 
         loc = get_location_from_uri(expected_location)
         (new_image_swift, new_image_size) = self.store.get(loc)
@@ -431,27 +458,35 @@ class TestStore(unittest.TestCase):
                             '/glance/%s' % expected_image_id
         image_swift = StringIO.StringIO(expected_swift_contents)
 
+        global SWIFT_PUT_OBJECT_CALLS
+        SWIFT_PUT_OBJECT_CALLS = 0
+
         # Temporarily set Swift MAX_SWIFT_OBJECT_SIZE to 1KB and add our image,
         # explicitly setting the image_length to 0
-        orig_max_size = glance.store.swift.DEFAULT_LARGE_OBJECT_SIZE
-        orig_temp_size = glance.store.swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE
+        self.store = Store(test_utils.TestConfigOpts(conf))
+        orig_max_size = self.store.large_object_size
+        orig_temp_size = self.store.large_object_chunk_size
         global MAX_SWIFT_OBJECT_SIZE
         orig_max_swift_object_size = MAX_SWIFT_OBJECT_SIZE
         try:
             MAX_SWIFT_OBJECT_SIZE = 1024
-            glance.store.swift.DEFAULT_LARGE_OBJECT_SIZE = 1024
-            glance.store.swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 1024
-            self.store = Store(test_utils.TestConfigOpts(conf))
+            self.store.large_object_size = 1024
+            self.store.large_object_chunk_size = 1024
             location, size, checksum = self.store.add(expected_image_id,
                                                       image_swift, 0)
         finally:
-            swift.DEFAULT_LARGE_OBJECT_CHUNK_SIZE = orig_temp_size
-            swift.DEFAULT_LARGE_OBJECT_SIZE = orig_max_size
+            self.store.large_object_chunk_size = orig_temp_size
+            self.store.large_object_size = orig_max_size
             MAX_SWIFT_OBJECT_SIZE = orig_max_swift_object_size
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_swift_size, size)
         self.assertEquals(expected_checksum, checksum)
+        # Expecting 7 calls to put_object -- 5 chunks, a zero chunk which is
+        # then deleted, and the manifest.  Note the difference with above
+        # where the image_size is specified in advance (there's no zero chunk
+        # in that case).
+        self.assertEquals(SWIFT_PUT_OBJECT_CALLS, 7)
 
         loc = get_location_from_uri(expected_location)
         (new_image_swift, new_image_size) = self.store.get(loc)
@@ -517,3 +552,27 @@ class TestStore(unittest.TestCase):
         """
         loc = get_location_from_uri("swift://user:key@authurl/glance/noexist")
         self.assertRaises(exception.NotFound, self.store.delete, loc)
+
+
+class TestChunkReader(unittest.TestCase):
+
+    def test_read_all_data(self):
+        """
+        Replicate what goes on in the Swift driver with the
+        repeated creation of the ChunkReader object
+        """
+        CHUNKSIZE = 100
+        checksum = hashlib.md5()
+        data_file = tempfile.NamedTemporaryFile()
+        data_file.write('*' * 1024)
+        data_file.flush()
+        infile = open(data_file.name, 'rb')
+        bytes_read = 0
+        while True:
+            cr = glance.store.swift.ChunkReader(infile, checksum, CHUNKSIZE)
+            chunk = cr.read(CHUNKSIZE)
+            bytes_read += len(chunk)
+            if len(chunk) == 0:
+                break
+        self.assertEqual(1024, bytes_read)
+        data_file.close()

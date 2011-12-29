@@ -328,21 +328,7 @@ Can only be specified in configuration files.
 `This option is specific to the Swift storage backend.`
 
 When doing a large object manifest, what size, in MB, should
-Glance write chunks to Swift? This amount of data is written
-to a temporary disk buffer during the process of chunking
-the image file, and the default is 200MB
-
-* ``swift_store_object_buffer_dir=PATH``
-
-Optional. Default: ``the platform's default temporary directory``
-
-Can only be specified in configuration files.
-
-`This option is specific to the Swift storage backend.`
-
-When sending large images to Swift, what directory should be
-used to buffer the chunks? By default the platform's
-temporary directory will be used.
+Glance write chunks to Swift?  The default is 200MB.
 
 Configuring the S3 Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
