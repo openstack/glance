@@ -34,6 +34,7 @@ store_opts = [
                          'glance.store.http.Store',
                          'glance.store.rbd.Store',
                          'glance.store.s3.Store',
+                         'glance.store.sheepdog.Store',
                          'glance.store.swift.Store',
                         ]),
     cfg.StrOpt('scrubber_datadir',

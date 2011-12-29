@@ -32,6 +32,7 @@ from glance.store import get_from_backend
 import glance.store.http
 import glance.store.rbd
 import glance.store.s3
+import glance.store.sheepdog
 import glance.store.swift
 
 
