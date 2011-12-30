@@ -30,6 +30,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 VENV = os.path.join(ROOT, '.venv')
 PIP_REQUIRES = os.path.join(ROOT, 'tools', 'pip-requires')
+TEST_REQUIRES = os.path.join(ROOT, 'tools', 'test-requires')
 
 
 def die(message, *args):
@@ -90,14 +91,19 @@ def create_virtualenv(venv=VENV):
     print 'done.'
 
 
+def pip_install(*args):
+    run_command(['tools/with_venv.sh',
+                 'pip', 'install', '--upgrade'] + list(args),
+                redirect_output=False)
+
+
 def install_dependencies(venv=VENV):
     print 'Installing dependencies with pip (this can take a while)...'
 
-    # Install greenlet by hand - just listing it in the requires file does not
-    # get it in stalled in the right order
-    venv_tool = 'tools/with_venv.sh'
-    run_command([venv_tool, 'pip', 'install', '-E', venv, '-r', PIP_REQUIRES],
-                redirect_output=False)
+    pip_install('pip')
+
+    pip_install('-r', PIP_REQUIRES)
+    pip_install('-r', TEST_REQUIRES)
 
     # Tell the virtual env how to "import glance"
     py_ver = _detect_python_version(venv)

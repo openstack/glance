@@ -3,4 +3,5 @@
 *.log
 .glance-venv
 .venv
+.tox
 tests.sqlite

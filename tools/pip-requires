@@ -1,18 +1,12 @@
 greenlet>=0.3.1
 SQLAlchemy>=0.6.3,<0.7
-pep8==0.6.1
-pylint==0.19
 anyjson
 eventlet>=0.9.12
 PasteDeploy
 routes
 webob==1.0.8
 wsgiref
-nose
-nose-exclude
-sphinx
 argparse
-mox
 boto
 swift
 -f http://pymox.googlecode.com/files/mox-0.5.0.tar.gz
