@@ -28,7 +28,6 @@ import sys
 
 from glance import version
 from glance.common import cfg
-from glance.common import utils
 from glance.common import wsgi
 
 
@@ -77,7 +76,14 @@ def setup_logging(conf):
     formatter = logging.Formatter(conf.log_format, conf.log_date_format)
 
     if conf.use_syslog:
-        handler = logging.handlers.SysLogHandler(address='/dev/log')
+        try:
+            facility = getattr(logging.handlers.SysLogHandler,
+                               conf.syslog_log_facility)
+        except AttributeError:
+            raise ValueError(_("Invalid syslog facility"))
+
+        handler = logging.handlers.SysLogHandler(address='/dev/log',
+                                                 facility=facility)
     elif conf.log_file:
         logfile = conf.log_file
         if conf.log_dir:
