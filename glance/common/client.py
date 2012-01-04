@@ -335,7 +335,7 @@ class BaseClient(object):
         scheme = "https" if self.use_ssl else "http"
         netloc = "%s:%d" % (self.host, self.port)
 
-        if type(params) is dict:
+        if isinstance(params, dict):
             for (key, value) in params.items():
                 if value is None:
                     del params[key]
