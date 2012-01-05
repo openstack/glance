@@ -540,6 +540,7 @@ class BoolOpt(Opt):
         container = self._get_optparse_container(parser, group)
         kwargs = self._get_optparse_kwargs(group, action='store_false')
         prefix = self._get_optparse_prefix('no', group)
+        kwargs["help"] = "The inverse of --" + self.name
         self._add_to_optparse(container, self.name, None, kwargs, prefix)
 
     def _get_optparse_kwargs(self, group, action='store_true', **kwargs):
