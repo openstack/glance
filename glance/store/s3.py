@@ -38,9 +38,9 @@ class StoreLocation(glance.store.location.StoreLocation):
     Class describing an S3 URI. An S3 URI can look like any of
     the following:
 
-        s3://accesskey:secretkey@s3service.com/bucket/key-id
-        s3+http://accesskey:secretkey@s3service.com/bucket/key-id
-        s3+https://accesskey:secretkey@s3service.com/bucket/key-id
+        s3://accesskey:secretkey@s3.amazonaws.com/bucket/key-id
+        s3+http://accesskey:secretkey@s3.amazonaws.com/bucket/key-id
+        s3+https://accesskey:secretkey@s3.amazonaws.com/bucket/key-id
 
     The s3+https:// URIs indicate there is an HTTPS s3service URL
     """
@@ -84,15 +84,19 @@ class StoreLocation(glance.store.location.StoreLocation):
         This function works around that issue.
         """
         # Make sure that URIs that contain multiple schemes, such as:
-        # swift://user:pass@http://authurl.com/v1/container/obj
+        # s3://accesskey:secretkey@https://s3.amazonaws.com/bucket/key-id
         # are immediately rejected.
         if uri.count('://') != 1:
-            reason = _("URI Cannot contain more than one occurrence of a "
-                      "scheme. If you have specified a "
-                      "URI like s3://user:pass@https://s3.amazonaws.com/"
-                      "bucket/key, you need to change it to use the "
-                      "s3+https:// scheme, like so: "
-                      "s3+https://user:pass@s3.amazonaws.com/bucket/key")
+            reason = _(
+                    "URI cannot contain more than one occurrence of a scheme."
+                    "If you have specified a URI like "
+                    "s3://accesskey:secretkey@https://s3.amazonaws.com/bucket/"
+                    "key-id"
+                    ", you need to change it to use the s3+https:// scheme, "
+                    "like so: "
+                    "s3+https://accesskey:secretkey@s3.amazonaws.com/bucket/"
+                    "key-id"
+                      )
             raise exception.BadStoreUri(uri, reason)
 
         pieces = urlparse.urlparse(uri)
@@ -213,7 +217,7 @@ class Store(glance.store.base.Store):
 
         self.scheme = 's3'
         if self.s3_host.startswith('https://'):
-            self.scheme = 'swift+https'
+            self.scheme = 's3+https'
             self.full_s3_host = self.s3_host
         elif self.s3_host.startswith('http://'):
             self.full_s3_host = self.s3_host
