@@ -17,7 +17,7 @@
 Notifications
 =============
 
-Notifications can be generated for each upload, update or delete image
+Notifications can be generated for each send, upload, update or delete image
 event. These can be used for auditing, troubleshooting, etc.
 
 Strategies
@@ -70,16 +70,28 @@ Every message contains a handful of attributes.
 Payload
 -------
 
-WARN and ERROR events contain a text message in the payload.
+* image.send
+
+  The payload for INFO, WARN, and ERROR events contain the following::
+
+  image_id - ID of the image (UUID)
+  owner_id - Tenant or User ID that owns this image (string)
+  receiver_tenant_id - Tenant ID of the account receiving the image (string)
+  receiver_user_id - User ID of the account receiving the image (string)
+  destination_ip
+  bytes_sent - The number of bytes actually sent
 
 * image.upload
 
   For INFO events, it is the image metadata.
+  WARN and ERROR events contain a text message in the payload.
 
 * image.update
 
   For INFO events, it is the image metadata.
+  WARN and ERROR events contain a text message in the payload.
 
 * image.delete
 
   For INFO events, it is the image id.
+  WARN and ERROR events contain a text message in the payload.

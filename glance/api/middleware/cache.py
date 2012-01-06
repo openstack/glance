@@ -46,7 +46,7 @@ class CacheFilter(wsgi.Middleware):
     def __init__(self, app, conf, **local_conf):
         self.conf = conf
         self.cache = image_cache.ImageCache(conf)
-        self.serializer = images.ImageSerializer()
+        self.serializer = images.ImageSerializer(conf)
         logger.info(_("Initialized image cache middleware"))
         super(CacheFilter, self).__init__(app)
 
@@ -80,7 +80,7 @@ class CacheFilter(wsgi.Middleware):
             try:
                 image_meta = registry.get_image_metadata(context, image_id)
 
-                response = webob.Response()
+                response = webob.Response(request=request)
                 return self.serializer.show(response, {
                     'image_iterator': image_iterator,
                     'image_meta': image_meta})
