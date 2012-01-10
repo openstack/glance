@@ -19,7 +19,8 @@ import logging
 import unittest
 
 from glance.common import exception
-from glance.common import notifier
+from glance.common import utils as common_utils
+from glance import notifier
 from glance.tests import utils
 
 
@@ -85,8 +86,10 @@ class TestRabbitNotifier(unittest.TestCase):
     """Test AMQP/Rabbit notifier works."""
 
     def setUp(self):
-        notifier.RabbitStrategy._send_message = self._send_message
-        notifier.RabbitStrategy.connect = lambda s: None
+        notify_kombu = common_utils.import_object(
+                                        "glance.notifier.notify_kombu")
+        notify_kombu.RabbitStrategy._send_message = self._send_message
+        notify_kombu.RabbitStrategy.connect = lambda s: None
         self.called = False
         conf = utils.TestConfigOpts({"notifier_strategy": "rabbit"})
         self.notifier = notifier.Notifier(conf)

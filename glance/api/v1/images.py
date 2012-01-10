@@ -36,7 +36,6 @@ from glance.api.v1 import controller
 from glance import image_cache
 from glance.common import cfg
 from glance.common import exception
-from glance.common import notifier
 from glance.common import wsgi
 from glance.common import utils
 import glance.store
@@ -51,6 +50,7 @@ from glance.store import (get_from_backend,
                           get_store_from_scheme,
                           UnsupportedBackend)
 from glance import registry
+from glance import notifier
 
 
 logger = logging.getLogger(__name__)
