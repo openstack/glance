@@ -35,6 +35,7 @@ from glance.registry import client as rclient
 from glance.registry import context as rcontext
 from glance.tests import stubs
 from glance.tests import utils as test_utils
+from glance.tests.unit import base
 
 CONF = {'sql_connection': 'sqlite://'}
 
@@ -128,7 +129,7 @@ class TestBadClients(unittest.TestCase):
             self.fail("Raised ClientConnectionError when it should not")
 
 
-class TestRegistryClient(unittest.TestCase):
+class TestRegistryClient(base.IsolatedUnitTest):
 
     """
     Test proper actions made for both valid and invalid requests
@@ -137,10 +138,8 @@ class TestRegistryClient(unittest.TestCase):
 
     def setUp(self):
         """Establish a clean test environment"""
-        self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_registry_and_store_server(self.stubs)
-        conf = test_utils.TestConfigOpts(CONF)
-        db_api.configure_db(conf)
+        super(TestRegistryClient, self).setUp()
+        db_api.configure_db(self.conf)
         self.context = rcontext.RequestContext(is_admin=True)
         self.FIXTURES = [
             {'id': UUID1,
@@ -177,7 +176,7 @@ class TestRegistryClient(unittest.TestCase):
 
     def tearDown(self):
         """Clear the test environment"""
-        self.stubs.UnsetAll()
+        super(TestRegistryClient, self).tearDown()
         self.destroy_fixtures()
 
     def create_fixtures(self):
@@ -1128,7 +1127,7 @@ class TestRegistryClient(unittest.TestCase):
                           self.client.delete_member, UUID2, 'pattieblack')
 
 
-class TestClient(unittest.TestCase):
+class TestClient(base.IsolatedUnitTest):
 
     """
     Test proper actions made for both valid and invalid requests
@@ -1137,11 +1136,8 @@ class TestClient(unittest.TestCase):
 
     def setUp(self):
         """Establish a clean test environment"""
-        self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_registry_and_store_server(self.stubs)
-        stubs.stub_out_filesystem_backend()
-        conf = test_utils.TestConfigOpts(CONF)
-        db_api.configure_db(conf)
+        super(TestClient, self).setUp()
+        db_api.configure_db(self.conf)
         self.client = client.Client("0.0.0.0")
         self.FIXTURES = [
             {'id': UUID1,
@@ -1156,7 +1152,7 @@ class TestClient(unittest.TestCase):
              'deleted': False,
              'checksum': None,
              'size': 13,
-             'location': "swift://user:passwd@acct/container/obj.tar.0",
+             'location': "file:///%s/%s" % (self.test_dir, UUID1),
              'properties': {'type': 'kernel'}},
             {'id': UUID2,
              'name': 'fake image #2',
@@ -1170,7 +1166,7 @@ class TestClient(unittest.TestCase):
              'deleted': False,
              'checksum': None,
              'size': 19,
-             'location': "file:///tmp/glance-tests/2",
+             'location': "file:///%s/%s" % (self.test_dir, UUID2),
              'properties': {}}]
         self.context = rcontext.RequestContext(is_admin=True)
         self.destroy_fixtures()
@@ -1178,13 +1174,16 @@ class TestClient(unittest.TestCase):
 
     def tearDown(self):
         """Clear the test environment"""
-        stubs.clean_out_fake_filesystem_backend()
-        self.stubs.UnsetAll()
+        super(TestClient, self).tearDown()
         self.destroy_fixtures()
 
     def create_fixtures(self):
         for fixture in self.FIXTURES:
             db_api.image_create(self.context, fixture)
+            # We write a fake image file to the filesystem
+            with open("%s/%s" % (self.test_dir, fixture['id']), 'wb') as image:
+                image.write("chunk00000remainder")
+                image.flush()
 
     def destroy_fixtures(self):
         # Easiest to just drop the models and re-create them...

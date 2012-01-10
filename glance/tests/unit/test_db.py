@@ -16,9 +16,6 @@
 #    under the License.
 
 import datetime
-import unittest
-
-import stubout
 
 from glance.common import context
 from glance.common import exception
@@ -26,7 +23,7 @@ from glance.common import utils
 from glance.registry import context as rcontext
 from glance.registry.db import api as db_api
 from glance.registry.db import models as db_models
-from glance.tests import stubs
+from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
 
@@ -38,11 +35,7 @@ UUID2 = _gen_uuid()
 
 CONF = {'sql_connection': 'sqlite://',
         'verbose': False,
-        'debug': False,
-        'registry_host': '0.0.0.0',
-        'registry_port': '9191',
-        'default_store': 'file',
-        'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
+        'debug': False}
 
 FIXTURES = [
     {'id': UUID1,
@@ -79,24 +72,17 @@ FIXTURES = [
      'properties': {}}]
 
 
-class TestRegistryDb(unittest.TestCase):
+class TestRegistryDb(base.IsolatedUnitTest):
 
     def setUp(self):
         """Establish a clean test environment"""
-        self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_registry_and_store_server(self.stubs)
-        stubs.stub_out_filesystem_backend()
+        super(TestRegistryDb, self).setUp()
         conf = test_utils.TestConfigOpts(CONF)
         self.adm_context = rcontext.RequestContext(is_admin=True)
         self.context = rcontext.RequestContext(is_admin=False)
         db_api.configure_db(conf)
         self.destroy_fixtures()
         self.create_fixtures()
-
-    def tearDown(self):
-        """Clear the test environment"""
-        stubs.clean_out_fake_filesystem_backend()
-        self.stubs.UnsetAll()
 
     def create_fixtures(self):
         for fixture in FIXTURES:

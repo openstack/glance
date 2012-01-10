@@ -20,6 +20,7 @@
 import errno
 import functools
 import os
+import random
 import socket
 import subprocess
 import tempfile
@@ -27,6 +28,19 @@ import tempfile
 import nose.plugins.skip
 
 from glance.common import config
+from glance.common import utils
+
+
+def get_isolated_test_env():
+    """
+    Returns a tuple of (test_id, test_dir) that is unique
+    for an isolated test environment. Also ensure the test_dir
+    is created.
+    """
+    test_id = random.randint(0, 100000)
+    test_dir = os.path.join("/", "tmp", "test.%d" % test_id)
+    utils.safe_mkdirs(test_dir)
+    return test_id, test_dir
 
 
 class TestConfigOpts(config.GlanceConfigOpts):

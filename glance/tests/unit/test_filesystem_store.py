@@ -27,34 +27,37 @@ from glance.common import exception
 from glance.common import utils
 from glance.store.location import get_location_from_uri
 from glance.store.filesystem import Store, ChunkedFile
-from glance.tests import stubs
-from glance.tests import utils as test_utils
-
-FILESYSTEM_CONF = {
-    'verbose': True,
-    'debug': True,
-    'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
+from glance.tests.unit import base
 
 
-class TestStore(unittest.TestCase):
+class TestStore(base.IsolatedUnitTest):
 
     def setUp(self):
         """Establish a clean test environment"""
-        self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_filesystem_backend()
+        super(TestStore, self).setUp()
         self.orig_chunksize = ChunkedFile.CHUNKSIZE
         ChunkedFile.CHUNKSIZE = 10
-        self.store = Store(test_utils.TestConfigOpts(FILESYSTEM_CONF))
+        self.store = Store(self.conf)
 
     def tearDown(self):
         """Clear the test environment"""
-        stubs.clean_out_fake_filesystem_backend()
-        self.stubs.UnsetAll()
+        super(TestStore, self).tearDown()
         ChunkedFile.CHUNKSIZE = self.orig_chunksize
 
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
-        uri = "file:///tmp/glance-tests/2"
+        # First add an image...
+        image_id = utils.generate_uuid()
+        file_contents = "chunk00000remainder"
+        location = "file://%s/%s" % (self.test_dir, image_id)
+        image_file = StringIO.StringIO(file_contents)
+
+        location, size, checksum = self.store.add(image_id,
+                                                  image_file,
+                                                  len(file_contents))
+
+        # Now read it back...
+        uri = "file:///%s/%s" % (self.test_dir, image_id)
         loc = get_location_from_uri(uri)
         (image_file, image_size) = self.store.get(loc)
 
@@ -74,7 +77,7 @@ class TestStore(unittest.TestCase):
         Test that trying to retrieve a file that doesn't exist
         raises an error
         """
-        loc = get_location_from_uri("file:///tmp/glance-tests/non-existing")
+        loc = get_location_from_uri("file:///%s/non-existing" % self.test_dir)
         self.assertRaises(exception.NotFound,
                           self.store.get,
                           loc)
@@ -86,7 +89,7 @@ class TestStore(unittest.TestCase):
         expected_file_size = 1024 * 5  # 5K
         expected_file_contents = "*" * expected_file_size
         expected_checksum = hashlib.md5(expected_file_contents).hexdigest()
-        expected_location = "file://%s/%s" % (stubs.FAKE_FILESYSTEM_ROOTDIR,
+        expected_location = "file://%s/%s" % (self.test_dir,
                                               expected_image_id)
         image_file = StringIO.StringIO(expected_file_contents)
 
@@ -98,7 +101,7 @@ class TestStore(unittest.TestCase):
         self.assertEquals(expected_file_size, size)
         self.assertEquals(expected_checksum, checksum)
 
-        uri = "file:///tmp/glance-tests/%s" % expected_image_id
+        uri = "file:///%s/%s" % (self.test_dir, expected_image_id)
         loc = get_location_from_uri(uri)
         (new_image_file, new_image_size) = self.store.get(loc)
         new_image_contents = ""
@@ -116,16 +119,38 @@ class TestStore(unittest.TestCase):
         Tests that adding an image with an existing identifier
         raises an appropriate exception
         """
+        ChunkedFile.CHUNKSIZE = 1024
+        image_id = utils.generate_uuid()
+        file_size = 1024 * 5  # 5K
+        file_contents = "*" * file_size
+        location = "file://%s/%s" % (self.test_dir, image_id)
+        image_file = StringIO.StringIO(file_contents)
+
+        location, size, checksum = self.store.add(image_id,
+                                                  image_file,
+                                                  file_size)
         image_file = StringIO.StringIO("nevergonnamakeit")
         self.assertRaises(exception.Duplicate,
                           self.store.add,
-                          '2', image_file, 0)
+                          image_id, image_file, 0)
 
     def test_delete(self):
         """
         Test we can delete an existing image in the filesystem store
         """
-        uri = "file:///tmp/glance-tests/2"
+        # First add an image
+        image_id = utils.generate_uuid()
+        file_size = 1024 * 5  # 5K
+        file_contents = "*" * file_size
+        location = "file://%s/%s" % (self.test_dir, image_id)
+        image_file = StringIO.StringIO(file_contents)
+
+        location, size, checksum = self.store.add(image_id,
+                                                  image_file,
+                                                  file_size)
+
+        # Now check that we can delete it
+        uri = "file:///%s/%s" % (self.test_dir, image_id)
         loc = get_location_from_uri(uri)
         self.store.delete(loc)
 

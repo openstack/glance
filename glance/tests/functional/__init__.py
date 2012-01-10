@@ -34,10 +34,12 @@ import time
 import unittest
 import urlparse
 
-from glance.common import utils
-from glance.tests.utils import execute, get_unused_port
-
 from sqlalchemy import create_engine
+
+from glance.common import utils
+from glance.tests import utils as test_utils
+
+execute, get_unused_port = test_utils.execute, test_utils.get_unused_port
 
 
 def runs_sql(func):
@@ -326,10 +328,7 @@ class FunctionalTest(unittest.TestCase):
     disabled = False
 
     def setUp(self):
-
-        self.test_id = random.randint(0, 100000)
-        self.test_dir = os.path.join("/", "tmp", "test.%d" % self.test_id)
-        utils.safe_mkdirs(self.test_dir)
+        self.test_id, self.test_dir = test_utils.get_isolated_test_env()
 
         self.api_protocol = 'http'
         self.api_port = get_unused_port()

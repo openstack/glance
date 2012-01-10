@@ -16,34 +16,23 @@
 #    under the License.
 
 import json
-import unittest
 
-import stubout
 import webob
 
 from glance import client
 from glance.common import config
 from glance.common import exception
 from glance.api import versions
-from glance.tests import stubs
 from glance.tests import utils
+from glance.tests.unit import base
 
 
-class VersionsTest(unittest.TestCase):
+class VersionsTest(base.IsolatedUnitTest):
 
     """
     Test the version information returned from
     the API service
     """
-
-    def setUp(self):
-        """Establish a clean test environment"""
-        self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_registry_and_store_server(self.stubs)
-
-    def tearDown(self):
-        """Clear the test environment"""
-        self.stubs.UnsetAll()
 
     def test_get_version_list(self):
         req = webob.Request.blank('/', base_url="http://0.0.0.0:9292/")

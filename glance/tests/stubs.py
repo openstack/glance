@@ -31,44 +31,11 @@ from glance.registry.api import v1 as rserver
 from glance.tests import utils
 
 
-FAKE_FILESYSTEM_ROOTDIR = os.path.join('/tmp', 'glance-tests')
 VERBOSE = False
 DEBUG = False
 
 
-def clean_out_fake_filesystem_backend():
-    """
-    Removes any leftover directories used in fake filesystem
-    backend
-    """
-    if os.path.exists(FAKE_FILESYSTEM_ROOTDIR):
-        shutil.rmtree(FAKE_FILESYSTEM_ROOTDIR, ignore_errors=True)
-
-
-def stub_out_filesystem_backend():
-    """
-    Stubs out the Filesystem Glance service to return fake
-    pped image data from files.
-
-    We establish a few fake images in a directory under //tmp/glance-tests
-    and ensure that this directory contains the following files:
-
-        //tmp/glance-tests/2 <-- file containing "chunk00000remainder"
-
-    The stubbed service yields the data in the above files.
-    """
-
-    # Establish a clean faked filesystem with dummy images
-    if os.path.exists(FAKE_FILESYSTEM_ROOTDIR):
-        shutil.rmtree(FAKE_FILESYSTEM_ROOTDIR, ignore_errors=True)
-    os.mkdir(FAKE_FILESYSTEM_ROOTDIR)
-
-    f = open(os.path.join(FAKE_FILESYSTEM_ROOTDIR, '2'), "wb")
-    f.write("chunk00000remainder")
-    f.close()
-
-
-def stub_out_registry_and_store_server(stubs):
+def stub_out_registry_and_store_server(stubs, images_dir):
     """
     Mocks calls to 127.0.0.1 on 9191 and 9292 for testing so
     that a real Glance server does not need to be up and
@@ -158,7 +125,7 @@ def stub_out_registry_and_store_server(stubs):
                     'registry_host': '0.0.0.0',
                     'registry_port': '9191',
                     'default_store': 'file',
-                    'filesystem_store_datadir': FAKE_FILESYSTEM_ROOTDIR
+                    'filesystem_store_datadir': images_dir
                     })
             api = version_negotiation.VersionNegotiationFilter(
                 context.ContextMiddleware(router.API(conf), conf),

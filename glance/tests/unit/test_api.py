@@ -18,7 +18,6 @@
 import datetime
 import hashlib
 import httplib
-import os
 import json
 import unittest
 
@@ -33,23 +32,14 @@ from glance.registry import context as rcontext
 from glance.registry.api import v1 as rserver
 from glance.registry.db import api as db_api
 from glance.registry.db import models as db_models
-from glance.tests import stubs
 from glance.tests import utils as test_utils
+from glance.tests.unit import base
 
 
 _gen_uuid = utils.generate_uuid
 
 UUID1 = _gen_uuid()
 UUID2 = _gen_uuid()
-
-
-CONF = {'sql_connection': 'sqlite://',
-        'verbose': False,
-        'debug': False,
-        'registry_host': '0.0.0.0',
-        'registry_port': '9191',
-        'default_store': 'file',
-        'filesystem_store_datadir': stubs.FAKE_FILESYSTEM_ROOTDIR}
 
 
 class TestRegistryDb(unittest.TestCase):
@@ -97,16 +87,14 @@ class TestRegistryDb(unittest.TestCase):
         self.stubs.UnsetAll()
 
 
-class TestRegistryAPI(unittest.TestCase):
+class TestRegistryAPI(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
-        self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_registry_and_store_server(self.stubs)
-        stubs.stub_out_filesystem_backend()
-        conf = test_utils.TestConfigOpts(CONF)
+        super(TestRegistryAPI, self).setUp()
         context_class = 'glance.registry.context.RequestContext'
-        self.api = context.ContextMiddleware(rserver.API(conf),
-                                             conf, context_class=context_class)
+        self.api = context.ContextMiddleware(rserver.API(self.conf),
+                                             self.conf,
+                                             context_class=context_class)
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',
@@ -122,7 +110,7 @@ class TestRegistryAPI(unittest.TestCase):
              'min_disk': 0,
              'min_ram': 0,
              'size': 13,
-             'location': "swift://user:passwd@acct/container/obj.tar.0",
+             'location': "file:///%s/%s" % (self.test_dir, UUID1),
              'properties': {'type': 'kernel'}},
             {'id': UUID2,
              'name': 'fake image #2',
@@ -138,22 +126,25 @@ class TestRegistryAPI(unittest.TestCase):
              'min_disk': 5,
              'min_ram': 256,
              'size': 19,
-             'location': "file:///tmp/glance-tests/2",
+             'location': "file:///%s/%s" % (self.test_dir, UUID2),
              'properties': {}}]
         self.context = rcontext.RequestContext(is_admin=True)
-        db_api.configure_db(conf)
+        db_api.configure_db(self.conf)
         self.destroy_fixtures()
         self.create_fixtures()
 
     def tearDown(self):
         """Clear the test environment"""
-        stubs.clean_out_fake_filesystem_backend()
-        self.stubs.UnsetAll()
+        super(TestRegistryAPI, self).tearDown()
         self.destroy_fixtures()
 
     def create_fixtures(self):
         for fixture in self.FIXTURES:
             db_api.image_create(self.context, fixture)
+            # We write a fake image file to the filesystem
+            with open("%s/%s" % (self.test_dir, fixture['id']), 'wb') as image:
+                image.write("chunk00000remainder")
+                image.flush()
 
     def destroy_fixtures(self):
         # Easiest to just drop the models and re-create them...
@@ -1932,16 +1923,11 @@ class TestRegistryAPI(unittest.TestCase):
         self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
 
 
-class TestGlanceAPI(unittest.TestCase):
+class TestGlanceAPI(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
-
-        self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_registry_and_store_server(self.stubs)
-        stubs.stub_out_filesystem_backend()
-        sql_connection = os.environ.get('GLANCE_SQL_CONNECTION', "sqlite://")
-        conf = test_utils.TestConfigOpts(CONF)
-        self.api = context.ContextMiddleware(router.API(conf), conf)
+        super(TestGlanceAPI, self).setUp()
+        self.api = context.ContextMiddleware(router.API(self.conf), self.conf)
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',
@@ -1955,7 +1941,7 @@ class TestGlanceAPI(unittest.TestCase):
              'deleted': False,
              'checksum': None,
              'size': 13,
-             'location': "swift://user:passwd@acct/container/obj.tar.0",
+             'location': "file:///%s/%s" % (self.test_dir, UUID1),
              'properties': {'type': 'kernel'}},
             {'id': UUID2,
              'name': 'fake image #2',
@@ -1969,22 +1955,25 @@ class TestGlanceAPI(unittest.TestCase):
              'deleted': False,
              'checksum': None,
              'size': 19,
-             'location': "file:///tmp/glance-tests/2",
+             'location': "file:///%s/%s" % (self.test_dir, UUID2),
              'properties': {}}]
         self.context = rcontext.RequestContext(is_admin=True)
-        db_api.configure_db(conf)
+        db_api.configure_db(self.conf)
         self.destroy_fixtures()
         self.create_fixtures()
 
     def tearDown(self):
         """Clear the test environment"""
-        stubs.clean_out_fake_filesystem_backend()
-        self.stubs.UnsetAll()
+        super(TestGlanceAPI, self).tearDown()
         self.destroy_fixtures()
 
     def create_fixtures(self):
         for fixture in self.FIXTURES:
             db_api.image_create(self.context, fixture)
+            # We write a fake image file to the filesystem
+            with open("%s/%s" % (self.test_dir, fixture['id']), 'wb') as image:
+                image.write("chunk00000remainder")
+                image.flush()
 
     def destroy_fixtures(self):
         # Easiest to just drop the models and re-create them...
@@ -2691,19 +2680,16 @@ class TestGlanceAPI(unittest.TestCase):
         self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
 
 
-class TestImageSerializer(unittest.TestCase):
+class TestImageSerializer(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
-        self.stubs = stubout.StubOutForTesting()
-        stubs.stub_out_registry_and_store_server(self.stubs)
-        stubs.stub_out_filesystem_backend()
-        conf = test_utils.TestConfigOpts(CONF)
+        super(TestImageSerializer, self).setUp()
         self.receiving_user = 'fake_user'
         self.receiving_tenant = 2
         self.context = rcontext.RequestContext(is_admin=True,
                                                user=self.receiving_user,
                                                tenant=self.receiving_tenant)
-        self.serializer = images.ImageSerializer(conf)
+        self.serializer = images.ImageSerializer(self.conf)
 
         def image_iter():
             for x in ['chunk', '678911234', '56789']:
@@ -2728,11 +2714,6 @@ class TestImageSerializer(unittest.TestCase):
                  'location': "file:///tmp/glance-tests/2",
                  'properties': {}}
              }
-
-    def tearDown(self):
-        """Clear the test environment"""
-        stubs.clean_out_fake_filesystem_backend()
-        self.stubs.UnsetAll()
 
     def test_meta(self):
         exp_headers = {'x-image-meta-id': UUID2,
