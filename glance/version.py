@@ -21,14 +21,14 @@ except ImportError:
                     'revision_id': 'LOCALREVISION',
                     'revno': 0}
 
-GLANCE_VERSION = ['2011', '3']
-YEAR, COUNT = GLANCE_VERSION
+GLANCE_VERSION = ['2011', '3', None]
+YEAR, COUNT, REVSISION = GLANCE_VERSION
 
 FINAL = True   # This becomes true at Release Candidate time
 
 
 def canonical_version_string():
-    return '.'.join([YEAR, COUNT])
+    return '.'.join(filter(None, GLANCE_VERSION))
 
 
 def version_string():
