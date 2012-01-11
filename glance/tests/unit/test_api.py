@@ -2028,6 +2028,20 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res_body = json.loads(res.body)['image']
         self.assertEquals('queued', res_body['status'])
+        image_id = res_body['id']
+
+        # Test that we are able to edit the Location field
+        # per LP Bug #911599
+
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'PUT'
+        req.headers['x-image-meta-location'] = 'http://example.com/images/123'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.OK)
+
+        res_body = json.loads(res.body)['image']
+        self.assertEquals('queued', res_body['status'])
+        self.assertFalse('location' in res_body)  # location never shown
 
     def test_add_image_no_location_no_content_type(self):
         """Tests creates a queued image for no body and no loc header"""
@@ -2085,6 +2099,17 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res_body = json.loads(res.body)['image']
         self.assertTrue('/images/%s' % res_body['id']
                         in res.headers['location'])
+        self.assertEquals('active', res_body['status'])
+        image_id = res_body['id']
+
+        # Test that we are NOT able to edit the Location field
+        # per LP Bug #911599
+
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'PUT'
+        req.headers['x-image-meta-location'] = 'http://example.com/images/123'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.BAD_REQUEST)
 
     def test_add_image_unauthorized(self):
         rules = {"add_image": [["false:false"]]}

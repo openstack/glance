@@ -536,6 +536,14 @@ class Controller(controller.BaseController):
         if image_data is not None and orig_status != 'queued':
             raise HTTPConflict(_("Cannot upload to an unqueued image"))
 
+        # Only allow the Location fields to be modified if the image is
+        # in queued status, which indicates that the user called POST /images
+        # but did not supply either a Location field OR image data
+        if not orig_status == 'queued' and 'location' in image_meta:
+            msg = _("Attempted to update Location field for an image "
+                    "not in queued status.")
+            raise HTTPBadRequest(msg, request=req, content_type="text/plain")
+
         try:
             image_meta = registry.update_image_metadata(req.context, id,
                                                         image_meta,
