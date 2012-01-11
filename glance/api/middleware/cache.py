@@ -100,7 +100,7 @@ class CacheFilter(wsgi.Middleware):
             return resp
 
         request = resp.request
-        if request.method != 'GET':
+        if request.method not in ('GET', 'DELETE'):
             return resp
 
         match = get_images_re.match(request.path)
@@ -112,6 +112,9 @@ class CacheFilter(wsgi.Middleware):
             return resp
 
         if self.cache.is_cached(image_id):
+            if request.method == 'DELETE':
+                logger.info(_("Removing image %s from cache"), image_id)
+                self.cache.delete_cached_image(image_id)
             return resp
 
         resp.app_iter = self.cache.get_caching_iter(image_id, resp.app_iter)

@@ -106,6 +106,16 @@ class BaseCacheMiddlewareTest(object):
 
         self.assertTrue(os.path.exists(image_cached_path))
 
+        # Now, we delete the image from the server and verify that
+        # the image cache no longer contains the deleted image
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
+        self.assertFalse(os.path.exists(image_cached_path))
+
         self.stop_servers()
 
 
