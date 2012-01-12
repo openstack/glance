@@ -25,6 +25,7 @@ import unittest
 import stubout
 import webob
 
+from glance.api.v1 import images
 from glance.api.v1 import router
 from glance.common import context
 from glance.common import utils
@@ -2688,3 +2689,149 @@ class TestGlanceAPI(unittest.TestCase):
 
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
+
+
+class TestImageSerializer(unittest.TestCase):
+    def setUp(self):
+        """Establish a clean test environment"""
+        self.stubs = stubout.StubOutForTesting()
+        stubs.stub_out_registry_and_store_server(self.stubs)
+        stubs.stub_out_filesystem_backend()
+        conf = test_utils.TestConfigOpts(CONF)
+        self.receiving_user = 'fake_user'
+        self.receiving_tenant = 2
+        self.context = rcontext.RequestContext(is_admin=True,
+                                               user=self.receiving_user,
+                                               tenant=self.receiving_tenant)
+        self.serializer = images.ImageSerializer(conf)
+
+        def image_iter():
+            for x in ['chunk', '678911234', '56789']:
+                yield x
+
+        self.FIXTURE = {
+             'image_iterator': image_iter(),
+             'image_meta': {
+                 'id': UUID2,
+                 'name': 'fake image #2',
+                 'status': 'active',
+                 'disk_format': 'vhd',
+                 'container_format': 'ovf',
+                 'is_public': True,
+                 'created_at': datetime.datetime.utcnow(),
+                 'updated_at': datetime.datetime.utcnow(),
+                 'deleted_at': None,
+                 'deleted': False,
+                 'checksum': None,
+                 'size': 19,
+                 'owner': _gen_uuid(),
+                 'location': "file:///tmp/glance-tests/2",
+                 'properties': {}}
+             }
+
+    def tearDown(self):
+        """Clear the test environment"""
+        stubs.clean_out_fake_filesystem_backend()
+        self.stubs.UnsetAll()
+
+    def test_meta(self):
+        exp_headers = {'x-image-meta-id': UUID2,
+                       'x-image-meta-location': 'file:///tmp/glance-tests/2',
+                       'ETag': self.FIXTURE['image_meta']['checksum'],
+                       'x-image-meta-name': 'fake image #2'}
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'HEAD'
+        req.remote_addr = "1.2.3.4"
+        req.context = self.context
+        response = webob.Response(request=req)
+        self.serializer.meta(response, self.FIXTURE)
+        for key, value in exp_headers.iteritems():
+            self.assertEquals(value, response.headers[key])
+
+    def test_show(self):
+        exp_headers = {'x-image-meta-id': UUID2,
+                       'x-image-meta-location': 'file:///tmp/glance-tests/2',
+                       'ETag': self.FIXTURE['image_meta']['checksum'],
+                       'x-image-meta-name': 'fake image #2'}
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'GET'
+        req.context = self.context
+        response = webob.Response(request=req)
+
+        self.serializer.show(response, self.FIXTURE)
+        for key, value in exp_headers.iteritems():
+            self.assertEquals(value, response.headers[key])
+
+        self.assertEqual(response.body, 'chunk67891123456789')
+
+    def test_show_notify(self):
+        """Make sure an eventlet posthook for notify_image_sent is added."""
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'GET'
+        req.context = self.context
+        response = webob.Response(request=req)
+        response.environ['eventlet.posthooks'] = []
+
+        self.serializer.show(response, self.FIXTURE)
+
+        #just make sure the app_iter is called
+        for chunk in response.app_iter:
+            pass
+
+        self.assertNotEqual(response.environ['eventlet.posthooks'], [])
+
+    def test_image_send_notification(self):
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'GET'
+        req.remote_addr = '1.2.3.4'
+        req.context = self.context
+
+        image_meta = self.FIXTURE['image_meta']
+        called = {"notified": False}
+        expected_payload = {
+            'bytes_sent': 19,
+            'image_id': UUID2,
+            'owner_id': image_meta['owner'],
+            'receiver_tenant_id': self.receiving_tenant,
+            'receiver_user_id': self.receiving_user,
+            'destination_ip': '1.2.3.4',
+            }
+
+        def fake_info(_event_type, _payload):
+            self.assertDictEqual(_payload, expected_payload)
+            called['notified'] = True
+
+        self.stubs.Set(self.serializer.notifier, 'info', fake_info)
+
+        self.serializer.image_send_notification(19, 19, image_meta, req)
+
+        self.assertTrue(called['notified'])
+
+    def test_image_send_notification_error(self):
+        """Ensure image.send notification is sent on error."""
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'GET'
+        req.remote_addr = '1.2.3.4'
+        req.context = self.context
+
+        image_meta = self.FIXTURE['image_meta']
+        called = {"notified": False}
+        expected_payload = {
+            'bytes_sent': 17,
+            'image_id': UUID2,
+            'owner_id': image_meta['owner'],
+            'receiver_tenant_id': self.receiving_tenant,
+            'receiver_user_id': self.receiving_user,
+            'destination_ip': '1.2.3.4',
+            }
+
+        def fake_error(_event_type, _payload):
+            self.assertDictEqual(_payload, expected_payload)
+            called['notified'] = True
+
+        self.stubs.Set(self.serializer.notifier, 'error', fake_error)
+
+        #expected and actually sent bytes differ
+        self.serializer.image_send_notification(17, 19, image_meta, req)
+
+        self.assertTrue(called['notified'])

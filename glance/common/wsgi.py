@@ -391,7 +391,7 @@ class Resource(object):
         action_result = self.dispatch(self.controller, action,
                                       request, **action_args)
         try:
-            response = webob.Response()
+            response = webob.Response(request=request)
             self.dispatch(self.serializer, action, response, action_result)
             return response
 
