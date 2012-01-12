@@ -454,12 +454,12 @@ class TestSSL(functional.FunctionalTest):
             "status": "CURRENT",
             "links": [{
                 "rel": "self",
-                "href": "http://0.0.0.0:%d/v1/" % self.api_port}]}, {
+                "href": "https://0.0.0.0:%d/v1/" % self.api_port}]}, {
             "id": "v1.0",
             "status": "SUPPORTED",
             "links": [{
                 "rel": "self",
-                "href": "http://0.0.0.0:%d/v1/" % self.api_port}]}]}
+                "href": "https://0.0.0.0:%d/v1/" % self.api_port}]}]}
         versions_json = json.dumps(versions)
         images = {'images': []}
         images_json = json.dumps(images)
