@@ -46,14 +46,14 @@ class Controller(object):
                 "links": [
                     {
                         "rel": "self",
-                        "href": self.get_href()}]},
+                        "href": self.get_href(req)}]},
             {
                 "id": "v1.0",
                 "status": "SUPPORTED",
                 "links": [
                     {
                         "rel": "self",
-                        "href": self.get_href()}]}]
+                        "href": self.get_href(req)}]}]
 
         body = json.dumps(dict(versions=version_objs))
 
@@ -64,5 +64,5 @@ class Controller(object):
 
         return response
 
-    def get_href(self):
-        return "http://%s:%s/v1/" % wsgi.get_bind_addr(self.conf, 9292)
+    def get_href(self, req):
+        return "%s/v1/" % req.host_url

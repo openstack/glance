@@ -46,7 +46,7 @@ class VersionsTest(unittest.TestCase):
         self.stubs.UnsetAll()
 
     def test_get_version_list(self):
-        req = webob.Request.blank('/')
+        req = webob.Request.blank('/', base_url="http://0.0.0.0:9292/")
         req.accept = "application/json"
         conf = utils.TestConfigOpts({
                 'bind_host': '0.0.0.0',
