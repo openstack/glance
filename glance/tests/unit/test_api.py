@@ -2798,7 +2798,7 @@ class TestImageSerializer(unittest.TestCase):
             }
 
         def fake_info(_event_type, _payload):
-            self.assertDictEqual(_payload, expected_payload)
+            self.assertEqual(_payload, expected_payload)
             called['notified'] = True
 
         self.stubs.Set(self.serializer.notifier, 'info', fake_info)
@@ -2826,7 +2826,7 @@ class TestImageSerializer(unittest.TestCase):
             }
 
         def fake_error(_event_type, _payload):
-            self.assertDictEqual(_payload, expected_payload)
+            self.assertEqual(_payload, expected_payload)
             called['notified'] = True
 
         self.stubs.Set(self.serializer.notifier, 'error', fake_error)
