@@ -40,6 +40,7 @@ class TestPasteApp(unittest.TestCase):
     def _do_test_load_paste_app(self,
                                 expected_app_type,
                                 paste_group={},
+                                paste_copy=True,
                                 paste_append=None):
 
         conf = test_utils.TestConfigOpts(groups=paste_group)
@@ -50,10 +51,11 @@ class TestPasteApp(unittest.TestCase):
                 f.write(str or '')
                 f.flush()
 
-        paste_from = os.path.join(os.getcwd(), 'etc/glance-api-paste.ini')
-        paste_to = os.path.join(conf.temp_file.replace('.conf',
+        if paste_copy:
+            paste_from = os.path.join(os.getcwd(), 'etc/glance-api-paste.ini')
+            paste_to = os.path.join(conf.temp_file.replace('.conf',
                                                        '-paste.ini'))
-        _appendto(paste_from, paste_to, paste_append)
+            _appendto(paste_from, paste_to, paste_append)
 
         app = config.load_paste_app(conf, 'glance-api')
 
@@ -70,6 +72,14 @@ class TestPasteApp(unittest.TestCase):
 
         type = context.ContextMiddleware
         self._do_test_load_paste_app(type, paste_group, paste_append=pipeline)
+
+    def test_load_paste_app_with_paste_config_file(self):
+        paste_config_file = os.path.join(os.getcwd(),
+                                         'etc/glance-api-paste.ini')
+        paste_group = {'paste_deploy': {'config_file': paste_config_file}}
+
+        type = version_negotiation.VersionNegotiationFilter
+        self._do_test_load_paste_app(type, paste_group, paste_copy=False)
 
     def test_load_paste_app_with_conf_name(self):
         def fake_join(*args):

@@ -46,9 +46,14 @@ files distributed with Glance for example configuration files for each server
 application with detailed comments on what each options does.
 
 The PasteDeploy configuration (controlling the deployment of the WSGI
-application for each component) may be found in <component>-paste.ini
-alongside the main configuration file, <component>.conf. For example,
-``glance-api-paste.ini`` corresponds to ``glance-api.conf``.
+application for each component) may be found by default in
+<component>-paste.ini alongside the main configuration file, <component>.conf.
+For example, ``glance-api-paste.ini`` corresponds to ``glance-api.conf``.
+This pathname for the paste config is configurable, as follows:
+
+  [paste_deploy]
+  config_file = /path/to/paste/config
+
 
 Common Configuration Options in Glance
 --------------------------------------
