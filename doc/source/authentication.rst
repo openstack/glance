@@ -116,7 +116,8 @@ Configuring Glance API to use Keystone
 
 Configuring Glance API to use Keystone is relatively straight
 forward.  The first step is to ensure that declarations for the two
-pieces of middleware exist.  Here is an example for ``authtoken``::
+pieces of middleware exist in the ``glance-api-paste.ini``.  Here is
+an example for ``authtoken``::
 
   [filter:authtoken]
   paste.filter_factory = keystone.middleware.auth_token:filter_factory
@@ -170,10 +171,11 @@ Configuring Glance Registry to use Keystone
 -------------------------------------------
 
 Configuring Glance Registry to use Keystone is also relatively
-straight forward.  The same pieces of middleware need to be added as
-are needed by Glance API; see above for an example of the
-``authtoken`` configuration.  There is a slight difference for the
-``auth-context`` middleware, which should look like this::
+straight forward.  The same pieces of middleware need to be added
+to ``glance-registry-paste.ini`` as are needed by Glance API;
+see above for an example of the ``authtoken`` configuration.
+There is a slight difference for the ``auth-context`` middleware,
+which should look like this::
 
   [filter:auth-context]
   context_class = glance.registry.context.RequestContext

@@ -45,6 +45,11 @@ In addition to this documentation page, you can check the
 files distributed with Glance for example configuration files for each server
 application with detailed comments on what each options does.
 
+The PasteDeploy configuration (controlling the deployment of the WSGI
+application for each component) may be found in <component>-paste.ini
+alongside the main configuration file, <component>.conf. For example,
+``glance-api-paste.ini`` corresponds to ``glance-api.conf``.
+
 Common Configuration Options in Glance
 --------------------------------------
 
@@ -489,22 +494,25 @@ Glance API servers can be configured to have a local image cache. Caching of
 image files is transparent and happens using a piece of middleware that can
 optionally be placed in the server application pipeline.
 
+This pipeline is configured in the PasteDeploy configuration file,
+<component>-paste.ini.
+
 Enabling the Image Cache Middleware
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To enable the image cache middleware, you would insert the cache middleware
 into your application pipeline **after** the appropriate context middleware.
 
-The cache middleware should be in your ``glance-api.conf`` in a section titled
-``[filter:cache]``. It should look like this::
+The cache middleware should be in your ``glance-api-paste.ini`` in a section
+titled ``[filter:cache]``. It should look like this::
 
   [filter:cache]
   paste.filter_factory = glance.common.wsgi:filter_factory
   glance.filter_factory = glance.api.middleware.cache:CacheFilter
 
 
-For example, suppose your application pipeline in the ``glance-api.conf`` file
-looked like so::
+For example, suppose your application pipeline in the ``glance-api-paste.ini``
+file looked like so::
 
   [pipeline:glance-api]
   pipeline = versionnegotiation context apiv1app
