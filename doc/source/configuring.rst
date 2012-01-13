@@ -667,3 +667,24 @@ Exchange name to use for connection when using ``rabbit`` strategy.
 Optional. Default: ``glance_notifications``
 
 Topic to use for connection when using ``rabbit`` strategy.
+
+* ``rabbit_max_retries``
+
+Optional. Default: ``0``
+
+Number of retries on communication failures when using ``rabbit`` strategy.
+A value of 0 means to retry forever.
+
+* ``rabbit_retry_backoff``
+
+Optional. Default: ``2``
+
+Number of seconds to wait before reconnecting on failures when using
+``rabbit`` strategy.
+
+* ``rabbit_retry_max_backoff``
+
+Optional. Default: ``30``
+
+Maximum seconds to wait before reconnecting on failures when using
+``rabbit`` strategy.

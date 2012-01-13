@@ -86,18 +86,26 @@ class TestRabbitNotifier(unittest.TestCase):
     """Test AMQP/Rabbit notifier works."""
 
     def setUp(self):
-        notify_kombu = common_utils.import_object(
-                                        "glance.notifier.notify_kombu")
-        notify_kombu.RabbitStrategy._send_message = self._send_message
-        notify_kombu.RabbitStrategy.connect = lambda s: None
-        self.called = False
-        conf = utils.TestConfigOpts({"notifier_strategy": "rabbit"})
-        self.notifier = notifier.Notifier(conf)
+        def _fake_connect(rabbit_self):
+            rabbit_self.connection_errors = ()
+            rabbit_self.connection = 'fake_connection'
+            return None
 
-    def _send_message(self, message, priority):
+        self.notify_kombu = common_utils.import_object(
+                                        "glance.notifier.notify_kombu")
+        self.notify_kombu.RabbitStrategy._send_message = self._send_message
+        self.notify_kombu.RabbitStrategy._connect = _fake_connect
+        self.called = False
+        self.conf = utils.TestConfigOpts({"notifier_strategy": "rabbit",
+                                          "rabbit_retry_backoff": 0,
+                                          "rabbit_notification_topic":
+                                                "fake_topic"})
+        self.notifier = notifier.Notifier(self.conf)
+
+    def _send_message(self, message, routing_key):
         self.called = {
             "message": message,
-            "priority": priority,
+            "routing_key": routing_key
         }
 
     def test_warn(self):
@@ -108,6 +116,7 @@ class TestRabbitNotifier(unittest.TestCase):
 
         self.assertEquals("test_message", self.called["message"]["payload"])
         self.assertEquals("WARN", self.called["message"]["priority"])
+        self.assertEquals("fake_topic.warn", self.called["routing_key"])
 
     def test_info(self):
         self.notifier.info("test_event", "test_message")
@@ -117,6 +126,7 @@ class TestRabbitNotifier(unittest.TestCase):
 
         self.assertEquals("test_message", self.called["message"]["payload"])
         self.assertEquals("INFO", self.called["message"]["priority"])
+        self.assertEquals("fake_topic.info", self.called["routing_key"])
 
     def test_error(self):
         self.notifier.error("test_event", "test_message")
@@ -126,3 +136,128 @@ class TestRabbitNotifier(unittest.TestCase):
 
         self.assertEquals("test_message", self.called["message"]["payload"])
         self.assertEquals("ERROR", self.called["message"]["priority"])
+        self.assertEquals("fake_topic.error", self.called["routing_key"])
+
+    def test_unknown_error_on_connect_raises(self):
+        class MyException(Exception):
+            pass
+
+        def _connect(self):
+            self.connection_errors = ()
+            raise MyException('meow')
+
+        self.notify_kombu.RabbitStrategy._connect = _connect
+        self.assertRaises(MyException, notifier.Notifier, self.conf)
+
+    def test_timeout_on_connect_reconnects(self):
+        info = {'num_called': 0}
+
+        def _connect(rabbit_self):
+            rabbit_self.connection_errors = ()
+            info['num_called'] += 1
+            if info['num_called'] == 1:
+                raise Exception('foo timeout foo')
+            rabbit_self.connection = 'fake_connection'
+
+        self.notify_kombu.RabbitStrategy._connect = _connect
+        notifier_ = notifier.Notifier(self.conf)
+        notifier_.error('test_event', 'test_message')
+
+        if self.called is False:
+            self.fail("Did not call _send_message properly.")
+
+        self.assertEquals("test_message", self.called["message"]["payload"])
+        self.assertEquals("ERROR", self.called["message"]["priority"])
+        self.assertEquals(info['num_called'], 2)
+
+    def test_connection_error_on_connect_reconnects(self):
+        info = {'num_called': 0}
+
+        class MyException(Exception):
+            pass
+
+        def _connect(rabbit_self):
+            rabbit_self.connection_errors = (MyException, )
+            info['num_called'] += 1
+            if info['num_called'] == 1:
+                raise MyException('meow')
+            rabbit_self.connection = 'fake_connection'
+
+        self.notify_kombu.RabbitStrategy._connect = _connect
+        notifier_ = notifier.Notifier(self.conf)
+        notifier_.error('test_event', 'test_message')
+
+        if self.called is False:
+            self.fail("Did not call _send_message properly.")
+
+        self.assertEquals("test_message", self.called["message"]["payload"])
+        self.assertEquals("ERROR", self.called["message"]["priority"])
+        self.assertEquals(info['num_called'], 2)
+
+    def test_unknown_error_on_send_message_raises(self):
+        class MyException(Exception):
+            pass
+
+        def _send_message(rabbit_self, msg, routing_key):
+            raise MyException('meow')
+
+        self.notify_kombu.RabbitStrategy._send_message = _send_message
+        notifier_ = notifier.Notifier(self.conf)
+        self.assertRaises(MyException, notifier_.error, 'a', 'b')
+
+    def test_timeout_on_send_message_reconnects(self):
+        info = {'send_called': 0, 'conn_called': 0}
+
+        def _connect(rabbit_self):
+            info['conn_called'] += 1
+            rabbit_self.connection_errors = ()
+            rabbit_self.connection = 'fake_connection'
+
+        def _send_message(rabbit_self, msg, routing_key):
+            info['send_called'] += 1
+            if info['send_called'] == 1:
+                raise Exception('foo timeout foo')
+            self._send_message(msg, routing_key)
+
+        self.notify_kombu.RabbitStrategy._connect = _connect
+        self.notify_kombu.RabbitStrategy._send_message = _send_message
+        notifier_ = notifier.Notifier(self.conf)
+        notifier_.error('test_event', 'test_message')
+
+        if self.called is False:
+            self.fail("Did not call _send_message properly.")
+
+        self.assertEquals("test_message", self.called["message"]["payload"])
+        self.assertEquals("ERROR", self.called["message"]["priority"])
+        self.assertEquals(info['send_called'], 2)
+        self.assertEquals(info['conn_called'], 2)
+
+    def test_connection_error_on_send_message_reconnects(self):
+        info = {'send_called': 0, 'conn_called': 0}
+
+        class MyException(Exception):
+            pass
+
+        def _connect(rabbit_self):
+            info['conn_called'] += 1
+            rabbit_self.connection_errors = (MyException, )
+            rabbit_self.connection = 'fake_connection'
+
+        def _send_message(rabbit_self, msg, routing_key):
+            info['send_called'] += 1
+            if info['send_called'] == 1:
+                raise MyException('meow')
+            self._send_message(msg, routing_key)
+
+        self.notify_kombu.RabbitStrategy._connect = _connect
+        self.notify_kombu.RabbitStrategy._send_message = _send_message
+        notifier_ = notifier.Notifier(self.conf)
+        notifier_.error('test_event', 'test_message')
+
+        if self.called is False:
+            self.fail("Did not call _send_message properly.")
+
+        self.assertEquals("test_message", self.called["message"]["payload"])
+        self.assertEquals("ERROR", self.called["message"]["priority"])
+        self.assertEquals(info['send_called'], 2)
+        self.assertEquals(info['conn_called'], 2)
