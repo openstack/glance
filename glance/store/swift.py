@@ -453,7 +453,9 @@ class Store(glance.store.base.Store):
                     # be hogging up network or file I/O here...
                     swift_conn.delete_object(obj_container, segment['name'])
 
-            swift_conn.delete_object(loc.container, loc.obj)
+            else:
+                swift_conn.delete_object(loc.container, loc.obj)
+
         except swift_client.ClientException, e:
             if e.http_status == httplib.NOT_FOUND:
                 uri = location.get_store_uri()
