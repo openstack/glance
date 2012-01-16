@@ -29,17 +29,13 @@ from glance.common import utils
 from glance.tests import utils as test_utils
 from glance.tests.utils import skip_if_disabled, xattr_writes_supported
 
-FIXTURE_DATA = '*' * 1024
+FIXTURE_LENGTH = 1024
+FIXTURE_DATA = '*' * FIXTURE_LENGTH
 
 
 class ImageCacheTestCase(object):
 
-    @skip_if_disabled
-    def test_is_cached(self):
-        """
-        Verify is_cached(1) returns 0, then add something to the cache
-        and verify is_cached(1) returns 1.
-        """
+    def _setup_fixture_file(self):
         FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
 
         self.assertFalse(self.cache.is_cached(1))
@@ -49,17 +45,21 @@ class ImageCacheTestCase(object):
         self.assertTrue(self.cache.is_cached(1))
 
     @skip_if_disabled
+    def test_is_cached(self):
+        """
+        Verify is_cached(1) returns 0, then add something to the cache
+        and verify is_cached(1) returns 1.
+        """
+        self._setup_fixture_file()
+
+    @skip_if_disabled
     def test_read(self):
         """
         Verify is_cached(1) returns 0, then add something to the cache
         and verify after a subsequent read from the cache that
         is_cached(1) returns 1.
         """
-        FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
-
-        self.assertFalse(self.cache.is_cached(1))
-
-        self.assertTrue(self.cache.cache_image_file(1, FIXTURE_FILE))
+        self._setup_fixture_file()
 
         buff = StringIO.StringIO()
         with self.cache.open_for_read(1) as cache_file:
@@ -74,11 +74,7 @@ class ImageCacheTestCase(object):
         Test convenience wrapper for opening a cache file via
         its image identifier.
         """
-        FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
-
-        self.assertFalse(self.cache.is_cached(1))
-
-        self.assertTrue(self.cache.cache_image_file(1, FIXTURE_FILE))
+        self._setup_fixture_file()
 
         buff = StringIO.StringIO()
         with self.cache.open_for_read(1) as cache_file:
@@ -88,17 +84,23 @@ class ImageCacheTestCase(object):
         self.assertEqual(FIXTURE_DATA, buff.getvalue())
 
     @skip_if_disabled
+    def test_get_image_size(self):
+        """
+        Test convenience wrapper for querying cache file size via
+        its image identifier.
+        """
+        self._setup_fixture_file()
+
+        size = self.cache.get_image_size(1)
+
+        self.assertEqual(FIXTURE_LENGTH, size)
+
+    @skip_if_disabled
     def test_delete(self):
         """
         Test delete method that removes an image from the cache
         """
-        FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
-
-        self.assertFalse(self.cache.is_cached(1))
-
-        self.assertTrue(self.cache.cache_image_file(1, FIXTURE_FILE))
-
-        self.assertTrue(self.cache.is_cached(1))
+        self._setup_fixture_file()
 
         self.cache.delete_cached_image(1)
 

@@ -272,6 +272,15 @@ class ImageCache(object):
         """
         return self.driver.open_for_read(image_id)
 
+    def get_image_size(self, image_id):
+        """
+        Return the size of the image file for an image with supplied
+        identifier.
+
+        :param image_id: Image ID
+        """
+        return self.driver.get_image_size(image_id)
+
     def get_queued_images(self):
         """
         Returns a list of image IDs that are in the queue. The

@@ -80,6 +80,11 @@ class CacheFilter(wsgi.Middleware):
             try:
                 image_meta = registry.get_image_metadata(context, image_id)
 
+                if not image_meta['size']:
+                    # override image size metadata with the actual cached
+                    # file size, see LP Bug #900959
+                    image_meta['size'] = self.cache.get_image_size(image_id)
+
                 response = webob.Response(request=request)
                 return self.serializer.show(response, {
                     'image_iterator': image_iterator,

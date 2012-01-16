@@ -198,6 +198,27 @@ class Driver(object):
         """
         raise NotImplementedError
 
+    def get_image_filepath(self, image_id, cache_status='active'):
+        """
+        This crafts an absolute path to a specific entry
+
+        :param image_id: Image ID
+        :param cache_status: Status of the image in the cache
+        """
+        if cache_status == 'active':
+            return os.path.join(self.base_dir, str(image_id))
+        return os.path.join(self.base_dir, cache_status, str(image_id))
+
+    def get_image_size(self, image_id):
+        """
+        Return the size of the image file for an image with supplied
+        identifier.
+
+        :param image_id: Image ID
+        """
+        path = self.get_image_filepath(image_id)
+        return os.path.getsize(path)
+
     def get_queued_images(self):
         """
         Returns a list of image IDs that are in the queue. The

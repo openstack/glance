@@ -26,8 +26,10 @@ import hashlib
 import json
 import os
 import shutil
+import thread
 import time
 
+import BaseHTTPServer
 import httplib2
 
 from glance.tests import functional
@@ -37,6 +39,25 @@ from glance.tests.utils import (skip_if_disabled,
 
 
 FIVE_KB = 5 * 1024
+
+
+class RemoteImageHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+    def do_GET(s):
+        """
+        Respond to an image GET request with fake image content.
+        """
+        if 'images' in s.path:
+            s.send_response(200)
+            s.send_header('Content-Type', 'application/octet-stream')
+            s.send_header('Content-Length', FIVE_KB)
+            s.end_headers()
+            image_data = '*' * FIVE_KB
+            s.wfile.write(image_data)
+            self.wfile.close()
+            return
+        else:
+            self.send_error(404, 'File Not Found: %s' % self.path)
+            return
 
 
 class BaseCacheMiddlewareTest(object):
@@ -115,6 +136,61 @@ class BaseCacheMiddlewareTest(object):
         self.assertEqual(response.status, 200)
 
         self.assertFalse(os.path.exists(image_cached_path))
+
+        self.stop_servers()
+
+    @skip_if_disabled
+    def test_cache_remote_image(self):
+        """
+        We test that caching is no longer broken for remote images
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # set up "remote" image server
+        server_class = BaseHTTPServer.HTTPServer
+        remote_server = server_class(('127.0.0.1', 0), RemoteImageHandler)
+        remote_ip, remote_port = remote_server.server_address
+
+        def serve_requests(httpd):
+            httpd.serve_forever()
+
+        thread.start_new_thread(serve_requests, (remote_server,))
+
+        # Add a remote image and verify a 200 OK is returned
+        remote_uri = 'http://%s:%d/images/2' % (remote_ip, remote_port)
+        headers = {'X-Image-Meta-Name': 'Image2',
+                   'X-Image-Meta-Is-Public': 'True',
+                   'X-Image-Meta-Location': remote_uri}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        self.assertEqual(data['image']['size'], 0)
+
+        image_id = data['image']['id']
+
+        # Grab the image
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        # Grab the image again to ensure it can be served out from
+        # cache with the correct size
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(int(response['content-length']), FIVE_KB)
+
+        remote_server.shutdown()
 
         self.stop_servers()
 
