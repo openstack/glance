@@ -275,6 +275,26 @@ class Store(glance.store.base.Store):
 
         return (resp_body, resp_headers.get('content-length'))
 
+    def get_size(self, location):
+        """
+        Takes a `glance.store.location.Location` object that indicates
+        where to find the image file, and returns the image_size (or 0
+        if unavailable)
+
+        :param location `glance.store.location.Location` object, supplied
+                        from glance.store.location.get_location_from_uri()
+        """
+        loc = location.store_location
+        swift_conn = self._make_swift_connection(
+            auth_url=loc.swift_auth_url, user=loc.user, key=loc.key)
+
+        try:
+            resp_headers = swift_conn.head_object(container=loc.container,
+                                                  obj=loc.obj)
+            return resp_headers.get('content-length', 0)
+        except Exception:
+            return 0
+
     def _make_swift_connection(self, auth_url, user, key):
         """
         Creates a connection using the Swift client library.

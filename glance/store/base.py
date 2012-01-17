@@ -76,6 +76,17 @@ class Store(object):
         """
         raise NotImplementedError
 
+    def get_size(self, location):
+        """
+        Takes a `glance.store.location.Location` object that indicates
+        where to find the image file, and returns the size
+
+        :param location `glance.store.location.Location` object, supplied
+                        from glance.store.location.get_location_from_uri()
+        :raises `glance.exception.NotFound` if image does not exist
+        """
+        raise NotImplementedError
+
     def add_disabled(self, *args, **kwargs):
         """
         Add method that raises an exception because the Store was

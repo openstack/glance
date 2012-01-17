@@ -113,17 +113,33 @@ class Store(glance.store.base.Store):
         :param location `glance.store.location.Location` object, supplied
                         from glance.store.location.get_location_from_uri()
         """
-        loc = location.store_location
+        conn, resp, content_length = self._query(location, 'GET')
 
-        conn_class = self._get_conn_class(loc)
-        conn = conn_class(loc.netloc)
-        conn.request("GET", loc.path, "", {})
-        resp = conn.getresponse()
-
-        content_length = resp.getheader('content-length', 0)
         iterator = http_response_iterator(conn, resp, self.CHUNKSIZE)
 
         return (iterator, content_length)
+
+    def get_size(self, location):
+        """
+        Takes a `glance.store.location.Location` object that indicates
+        where to find the image file, and returns the size
+
+        :param location `glance.store.location.Location` object, supplied
+                        from glance.store.location.get_location_from_uri()
+        """
+        try:
+            return self._query(location, 'HEAD')[2]
+        except Exception:
+            return 0
+
+    def _query(self, location, verb):
+        loc = location.store_location
+        conn_class = self._get_conn_class(loc)
+        conn = conn_class(loc.netloc)
+        conn.request(verb, loc.path, "", {})
+        resp = conn.getresponse()
+        content_length = resp.getheader('content-length', 0)
+        return (conn, resp, content_length)
 
     def _get_conn_class(self, loc):
         """

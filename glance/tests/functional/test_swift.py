@@ -480,7 +480,7 @@ class TestSwift(test_api.TestApi):
         self.assertEqual(response.status, 201, content)
         data = json.loads(content)
         self.assertEqual(data['image']['checksum'], None)
-        self.assertEqual(data['image']['size'], 0)
+        self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], True)
 

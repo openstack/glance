@@ -45,6 +45,7 @@ import glance.store.rbd
 import glance.store.s3
 import glance.store.swift
 from glance.store import (get_from_backend,
+                          get_size_from_backend,
                           schedule_delete_from_backend,
                           get_store_from_location,
                           get_store_from_scheme,
@@ -246,12 +247,16 @@ class Controller(controller.BaseController):
             # don't actually care what it is at this point
             self.get_store_or_400(req, store)
 
-        image_meta['status'] = 'queued'
+            # retrieve the image size from remote store (if not provided)
+            image_meta['size'] = image_meta.get('size', 0) \
+                                 or get_size_from_backend(location)
+        else:
+            # Ensure that the size attribute is set to zero for uploadable
+            # images (if not provided). The size will be set to a non-zero
+            # value during upload
+            image_meta['size'] = image_meta.get('size', 0)
 
-        # Ensure that the size attribute is set to zero for all
-        # queued instances. The size will be set to a non-zero
-        # value during upload
-        image_meta['size'] = image_meta.get('size', 0)
+        image_meta['status'] = 'queued'
 
         try:
             image_meta = registry.add_image_metadata(req.context, image_meta)
