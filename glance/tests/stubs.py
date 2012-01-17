@@ -35,7 +35,7 @@ VERBOSE = False
 DEBUG = False
 
 
-def stub_out_registry_and_store_server(stubs, images_dir):
+def stub_out_registry_and_store_server(stubs, base_dir):
     """
     Mocks calls to 127.0.0.1 on 9191 and 9292 for testing so
     that a real Glance server does not need to be up and
@@ -125,7 +125,8 @@ def stub_out_registry_and_store_server(stubs, images_dir):
                     'registry_host': '0.0.0.0',
                     'registry_port': '9191',
                     'default_store': 'file',
-                    'filesystem_store_datadir': images_dir
+                    'filesystem_store_datadir': base_dir,
+                    'policy_file': os.path.join(base_dir, 'policy.json'),
                     })
             api = version_negotiation.VersionNegotiationFilter(
                 context.ContextMiddleware(router.API(conf), conf),
