@@ -436,10 +436,11 @@ class TestImageCacheXattr(functional.FunctionalTest,
 
         self.inited = True
         self.disabled = False
-        self.cache_pipeline = "cache"
         self.image_cache_driver = "xattr"
 
         super(TestImageCacheXattr, self).setUp()
+
+        self.api_server.deployment_flavor = "caching"
 
         if not xattr_writes_supported(self.test_dir):
             self.inited = True
@@ -480,10 +481,11 @@ class TestImageCacheManageXattr(functional.FunctionalTest,
 
         self.inited = True
         self.disabled = False
-        self.cache_pipeline = "cache cache_manage"
         self.image_cache_driver = "xattr"
 
         super(TestImageCacheManageXattr, self).setUp()
+
+        self.api_server.deployment_flavor = "cachemanagement"
 
         if not xattr_writes_supported(self.test_dir):
             self.inited = True
@@ -524,9 +526,10 @@ class TestImageCacheSqlite(functional.FunctionalTest,
 
         self.inited = True
         self.disabled = False
-        self.cache_pipeline = "cache"
 
         super(TestImageCacheSqlite, self).setUp()
+
+        self.api_server.deployment_flavor = "caching"
 
     def tearDown(self):
         if os.path.exists(self.api_server.image_cache_dir):
@@ -561,10 +564,11 @@ class TestImageCacheManageSqlite(functional.FunctionalTest,
 
         self.inited = True
         self.disabled = False
-        self.cache_pipeline = "cache cache_manage"
         self.image_cache_driver = "sqlite"
 
         super(TestImageCacheManageSqlite, self).setUp()
+
+        self.api_server.deployment_flavor = "cachemanagement"
 
     def tearDown(self):
         if os.path.exists(self.api_server.image_cache_dir):

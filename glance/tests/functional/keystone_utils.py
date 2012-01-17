@@ -130,6 +130,10 @@ class AdminServer(KeystoneServer):
                                           auth_port, admin_port)
 
 
+def patch_copy(base, src, offset, old, new):
+    base.insert(src + offset, base[src].replace(old, new))
+
+
 def conf_patch(server, **subs):
     # First, pull the configuration file
     paste_base = server.paste_conf_base.split('\n')
@@ -137,13 +141,15 @@ def conf_patch(server, **subs):
     # Need to find the pipeline
     for idx, text in enumerate(paste_base):
         if text.startswith('[pipeline:glance-'):
-            # OK, the line to modify is the next one...
-            modidx = idx + 1
+            # OK, the lines to repeat in modified form
+            # are this and the next one...
+            modidx = idx
             break
 
-    # Now we need to replace the default context field...
-    paste_base[modidx] = paste_base[modidx].replace('context',
-                                                    'tokenauth keystone_shim')
+    # Now we need to add a new pipeline, replacing the default context field...
+    server.deployment_flavor = 'tokenauth+keystoneshim'
+    patch_copy(paste_base, modidx, 2, ']', '-tokenauth+keystoneshim]')
+    patch_copy(paste_base, modidx + 1, 2, 'context', 'tokenauth keystone_shim')
 
     # Put the conf back together and append the keystone pieces
     server.paste_conf_base = '\n'.join(paste_base) + """

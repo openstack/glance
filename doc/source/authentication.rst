@@ -185,17 +185,17 @@ The ``context_class`` variable is needed to specify the
 Registry-specific request context, which contains the extra access
 checks used by the Registry.
 
-Again, to enable using Keystone authentication, the application
-pipeline must be modified.  By default, it looks like:
+Again, to enable using Keystone authentication, the appropriate
+application pipeline must be selected.  By default, it looks like:
 
-  [pipeline:glance-registry]
-  pipeline = context registryapp
-
-This must be changed by replacing ``context`` with ``authtoken`` and
-``auth-context``::
-
-  [pipeline:glance-registry]
+  [pipeline:glance-registry-keystone]
   pipeline = authtoken auth-context registryapp
+
+To enable the above application pipeline, in your main ``glance-registry.conf``
+configuration file, select the appropriate deployment flavor like so::
+
+  [paste_deploy]
+  flavor = keystone
 
 Sharing Images With Others
 --------------------------
