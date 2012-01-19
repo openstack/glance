@@ -83,6 +83,7 @@ class Server(object):
         self.bind_port = port
         self.conf_file_name = None
         self.conf_base = None
+        self.paste_conf_base = None
         self.server_control = './bin/glance-control'
         self.exec_env = None
 
@@ -101,16 +102,28 @@ class Server(object):
         if kwargs:
             conf_override.update(**kwargs)
 
-        # A config file to use just for this test...we don't want
+        # A config file and paste.ini to use just for this test...we don't want
         # to trample on currently-running Glance servers, now do we?
 
         conf_dir = os.path.join(self.test_dir, 'etc')
         conf_filepath = os.path.join(conf_dir, "%s.conf" % self.server_name)
+        paste_conf_filepath = conf_filepath.replace(".conf", "-paste.ini")
         utils.safe_mkdirs(conf_dir)
-        with open(conf_filepath, 'wb') as conf_file:
-            conf_file.write(self.conf_base % conf_override)
-            conf_file.flush()
-            self.conf_file_name = conf_file.name
+
+        def override_conf(filepath, base, override):
+            with open(filepath, 'wb') as conf_file:
+                conf_file.write(base % override)
+                conf_file.flush()
+                return conf_file.name
+
+        self.conf_file_name = override_conf(conf_filepath,
+                                            self.conf_base,
+                                            conf_override)
+
+        if self.paste_conf_base:
+            override_conf(paste_conf_filepath,
+                          self.paste_conf_base,
+                          conf_override)
 
         return self.conf_file_name
 
@@ -214,8 +227,8 @@ scrub_time = 5
 scrubber_datadir = %(scrubber_datadir)s
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
-
-[pipeline:glance-api]
+"""
+        self.paste_conf_base = """[pipeline:glance-api]
 pipeline = versionnegotiation context %(cache_pipeline)s apiv1app
 
 [app:apiv1app]
@@ -270,8 +283,8 @@ sql_idle_timeout = 3600
 api_limit_max = 1000
 limit_param_default = 25
 owner_is_tenant = %(owner_is_tenant)s
-
-[pipeline:glance-registry]
+"""
+        self.paste_conf_base = """[pipeline:glance-registry]
 pipeline = context registryapp
 
 [app:registryapp]
@@ -310,8 +323,8 @@ wakeup_time = 2
 scrubber_datadir = %(scrubber_datadir)s
 registry_host = 0.0.0.0
 registry_port = %(registry_port)s
-
-[app:glance-scrubber]
+"""
+        self.paste_conf_base = """[app:glance-scrubber]
 paste.app_factory = glance.common.wsgi:app_factory
 glance.app_factory = glance.store.scrubber:Scrubber
 """

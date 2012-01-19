@@ -132,21 +132,21 @@ class AdminServer(KeystoneServer):
 
 def conf_patch(server, **subs):
     # First, pull the configuration file
-    conf_base = server.conf_base.split('\n')
+    paste_base = server.paste_conf_base.split('\n')
 
     # Need to find the pipeline
-    for idx, text in enumerate(conf_base):
+    for idx, text in enumerate(paste_base):
         if text.startswith('[pipeline:glance-'):
             # OK, the line to modify is the next one...
             modidx = idx + 1
             break
 
     # Now we need to replace the default context field...
-    conf_base[modidx] = conf_base[modidx].replace('context',
-                                                  'tokenauth keystone_shim')
+    paste_base[modidx] = paste_base[modidx].replace('context',
+                                                    'tokenauth keystone_shim')
 
     # Put the conf back together and append the keystone pieces
-    server.conf_base = '\n'.join(conf_base) + """
+    server.paste_conf_base = '\n'.join(paste_base) + """
 [filter:tokenauth]
 paste.filter_factory = keystone.middleware.auth_token:filter_factory
 service_protocol = http
@@ -216,7 +216,7 @@ class KeystoneTests(functional.FunctionalTest):
                    admin_port=self.admin_port)
         conf_patch(self.registry_server, auth_port=self.auth_port,
                    admin_port=self.admin_port)
-        self.registry_server.conf_base += (
+        self.registry_server.paste_conf_base += (
             'context_class = glance.registry.context.RequestContext\n')
 
     def tearDown(self):

@@ -112,8 +112,10 @@ def load_paste_app(conf, app_name=None):
     if app_name is None:
         app_name = conf.prog
 
-    # Assume paste config is in the last config file
-    conf_file = os.path.abspath(conf.config_file[-1])
+    # Assume paste config is in a paste.ini file corresponding
+    # to the last config file
+    conf_file = os.path.abspath(conf.config_file[-1].replace(".conf",
+                                                             "-paste.ini"))
 
     try:
         # Setup logging early

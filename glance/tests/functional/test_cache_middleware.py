@@ -422,8 +422,11 @@ registry_host = 0.0.0.0
 registry_port = %(registry_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
 log_file = %(log_file)s
+""" % cache_file_options)
 
-[app:glance-pruner]
+        with open(cache_config_filepath.replace(".conf", "-paste.ini"),
+                  'w') as paste_file:
+            paste_file.write("""[app:glance-pruner]
 paste.app_factory = glance.common.wsgi:app_factory
 glance.app_factory = glance.image_cache.pruner:Pruner
 
@@ -438,8 +441,7 @@ glance.app_factory = glance.image_cache.cleaner:Cleaner
 [app:glance-queue-image]
 paste.app_factory = glance.common.wsgi:app_factory
 glance.app_factory = glance.image_cache.queue_image:Queuer
-""" % cache_file_options)
-            cache_file.flush()
+""")
 
         self.verify_no_images()
 
