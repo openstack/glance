@@ -34,6 +34,7 @@ from glance.common import wsgi
 paste_deploy_group = cfg.OptGroup('paste_deploy')
 paste_deploy_opts = [
     cfg.StrOpt('flavor'),
+    cfg.StrOpt('config_file'),
     ]
 
 
@@ -124,6 +125,24 @@ def _get_deployment_flavor(conf):
     return '' if not flavor else ('-' + flavor)
 
 
+def _get_deployment_config_file(conf):
+    """
+    Retrieve the deployment_config_file config item, formatted as an
+    absolute pathname.
+
+   :param conf: a cfg.ConfigOpts object
+    """
+    _register_paste_deploy_opts(conf)
+    config_file = conf.paste_deploy.config_file
+    if not config_file:
+        # Assume paste config is in a paste.ini file corresponding
+        # to the last config file
+        path = conf.config_file[-1].replace(".conf", "-paste.ini")
+    else:
+        path = config_file
+    return os.path.abspath(path)
+
+
 def load_paste_app(conf, app_name=None):
     """
     Builds and returns a WSGI app from a paste config file.
@@ -144,10 +163,7 @@ def load_paste_app(conf, app_name=None):
     # in order to identify the appropriate paste pipeline
     app_name += _get_deployment_flavor(conf)
 
-    # Assume paste config is in a paste.ini file corresponding
-    # to the last config file
-    conf_file = os.path.abspath(conf.config_file[-1].replace(".conf",
-                                                             "-paste.ini"))
+    conf_file = _get_deployment_config_file(conf)
 
     try:
         # Setup logging early
