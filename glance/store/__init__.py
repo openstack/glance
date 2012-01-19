@@ -18,6 +18,7 @@
 import logging
 import optparse
 import os
+import sys
 import time
 import urlparse
 
@@ -188,9 +189,16 @@ def schedule_delete_from_backend(uri, conf, context, image_id, **kwargs):
                                        {'status': 'deleted'})
         try:
             return delete_from_backend(uri, **kwargs)
-        except (UnsupportedBackend, exception.NotFound):
-            msg = _("Failed to delete image from store (%(uri)s).") % locals()
+        except (UnsupportedBackend,
+                exception.StoreDeleteNotSupported,
+                exception.NotFound):
+            exc_type = sys.exc_info()[0].__name__
+            msg = _("Failed to delete image at %s from store (%s)") % \
+                  (uri, exc_type)
             logger.error(msg)
+        finally:
+            # avoid falling through to the delayed deletion logic
+            return
 
     datadir = get_scrubber_datadir(conf)
     delete_time = time.time() + conf.scrub_time

@@ -20,11 +20,14 @@ import unittest
 
 import stubout
 
-from glance.common import exception
-from glance.store import create_stores, delete_from_backend
+from glance.common import exception, context
+from glance.registry.db import api as db_api
+from glance.store import (create_stores,
+                          delete_from_backend,
+                          schedule_delete_from_backend)
 from glance.store.http import Store
 from glance.store.location import get_location_from_uri
-from glance.tests import utils
+from glance.tests import utils, stubs as test_stubs
 
 
 def stub_out_http_backend(stubs):
@@ -70,6 +73,20 @@ def stub_out_http_backend(stubs):
     stubs.Set(Store, '_get_conn_class', fake_get_conn_class)
 
 
+def stub_out_registry_image_update(stubs):
+    """
+    Stubs an image update on the registry.
+
+    :param stubs: Set of stubout stubs
+    """
+    test_stubs.stub_out_registry_server(stubs)
+
+    def fake_image_update(ctx, image_id, values, purge_props=False):
+        return {'properties': {}}
+
+    stubs.Set(db_api, 'image_update', fake_image_update)
+
+
 class TestHttpStore(unittest.TestCase):
 
     def setUp(self):
@@ -108,3 +125,15 @@ class TestHttpStore(unittest.TestCase):
         create_stores(utils.TestConfigOpts({}))
         self.assertRaises(exception.StoreDeleteNotSupported,
                           delete_from_backend, uri)
+
+    def test_http_schedule_delete_swallows_error(self):
+        stub_out_registry_image_update(self.stubs)
+        uri = "https://netloc/path/to/file.tar.gz"
+        ctx = context.RequestContext()
+        conf = utils.TestConfigOpts({})
+        create_stores(conf)
+
+        try:
+            schedule_delete_from_backend(uri, conf, ctx, 'image_id')
+        except exception.StoreDeleteNotSupported:
+            self.fail('StoreDeleteNotSupported should be swallowed')
