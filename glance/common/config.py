@@ -31,6 +31,12 @@ from glance.common import cfg
 from glance.common import wsgi
 
 
+paste_deploy_group = cfg.OptGroup('paste_deploy')
+paste_deploy_opts = [
+    cfg.StrOpt('flavor'),
+    ]
+
+
 class GlanceConfigOpts(cfg.CommonConfigOpts):
 
     def __init__(self, default_config_files=None, **kwargs):
@@ -96,6 +102,28 @@ def setup_logging(conf):
     root_logger.addHandler(handler)
 
 
+def _register_paste_deploy_opts(conf):
+    """
+    Idempotent registration of paste_deploy option group
+
+    :param conf: a cfg.ConfigOpts object
+    """
+    conf.register_group(paste_deploy_group)
+    conf.register_opts(paste_deploy_opts, group=paste_deploy_group)
+
+
+def _get_deployment_flavor(conf):
+    """
+    Retrieve the paste_deploy.flavor config item, formatted appropriately
+    for appending to the application name.
+
+    :param conf: a cfg.ConfigOpts object
+    """
+    _register_paste_deploy_opts(conf)
+    flavor = conf.paste_deploy.flavor
+    return '' if not flavor else ('-' + flavor)
+
+
 def load_paste_app(conf, app_name=None):
     """
     Builds and returns a WSGI app from a paste config file.
@@ -111,6 +139,10 @@ def load_paste_app(conf, app_name=None):
     """
     if app_name is None:
         app_name = conf.prog
+
+    # append the deployment flavor to the application name,
+    # in order to identify the appropriate paste pipeline
+    app_name += _get_deployment_flavor(conf)
 
     # Assume paste config is in a paste.ini file corresponding
     # to the last config file

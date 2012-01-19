@@ -36,10 +36,11 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
     """Functional tests for the bin/glance CLI tool"""
 
     def setUp(self):
-        self.cache_pipeline = "cache cache_manage"
         self.image_cache_driver = "sqlite"
 
         super(TestBinGlanceCacheManage, self).setUp()
+
+        self.api_server.deployment_flavor = "cachemanagement"
 
         # NOTE(sirp): This is needed in case we are running the tests under an
         # environment in which OS_AUTH_STRATEGY=keystone. The test server we
@@ -85,6 +86,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         Test that cache index command works
         """
         self.cleanup()
+        self.api_server.deployment_flavor = ''
         self.start_servers()  # Not passing in cache_manage in pipeline...
 
         api_port = self.api_port

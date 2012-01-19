@@ -44,35 +44,66 @@ def get_isolated_test_env():
 
 
 class TestConfigOpts(config.GlanceConfigOpts):
+    """
+    Support easily controllable config for unit tests, avoiding the
+    need to manipulate config files directly.
 
-    def __init__(self, test_values):
+    Configuration values are provided as a dictionary of key-value pairs,
+    in the simplest case feeding into the DEFAULT group only.
+
+    Non-default groups may also populated via nested dictionaries, e.g.
+
+      {'snafu': {'foo': 'bar', 'bells': 'whistles'}}
+
+    equates to config of form:
+
+      [snafu]
+      foo = bar
+      bells = whistles
+
+    The config so provided is dumped to a temporary file, with its path
+    exposed via the temp_file property.
+
+    :param test_values: dictionary of key-value pairs for the
+                        DEFAULT group
+    :param groups:      nested dictionary of key-value pairs for
+                        non-default groups
+    """
+
+    def __init__(self, test_values={}, groups={}):
         super(TestConfigOpts, self).__init__()
         self._test_values = test_values
+        self._test_groups = groups
+
+        self.temp_file = os.path.join(tempfile.mkdtemp(), 'testcfg.conf')
+
         self()
 
     def __call__(self):
-        config_file = self._write_tmp_config_file()
+        self._write_tmp_config_file()
         try:
             super(TestConfigOpts, self).\
-                __call__(['--config-file', config_file])
+                __call__(['--config-file', self.temp_file])
         finally:
-            os.remove(config_file)
+            os.remove(self.temp_file)
 
     def _write_tmp_config_file(self):
         contents = '[DEFAULT]\n'
         for key, value in self._test_values.items():
             contents += '%s = %s\n' % (key, value)
 
-        (fd, path) = tempfile.mkstemp(prefix='testcfg')
-        try:
-            os.write(fd, contents)
-        except Exception, e:
-            os.close(fd)
-            os.remove(path)
-            raise e
+        for group, settings in self._test_groups.items():
+            contents += '[%s]\n' % group
+            for key, value in settings.items():
+                contents += '%s = %s\n' % (key, value)
 
-        os.close(fd)
-        return path
+        try:
+            with open(self.temp_file, 'wb') as f:
+                f.write(contents)
+                f.flush()
+        except Exception, e:
+            os.remove(self.temp_file)
+            raise e
 
 
 class skip_test(object):

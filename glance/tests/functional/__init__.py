@@ -86,6 +86,7 @@ class Server(object):
         self.paste_conf_base = None
         self.server_control = './bin/glance-control'
         self.exec_env = None
+        self.deployment_flavor = ''
 
     def write_conf(self, **kwargs):
         """
@@ -190,7 +191,6 @@ class ApiServer(Server):
         self.rbd_store_chunk_size = 4
         self.delayed_delete = delayed_delete
         self.owner_is_tenant = True
-        self.cache_pipeline = ""  # Set to cache for cache middleware
         self.image_cache_dir = os.path.join(self.test_dir,
                                             'cache')
         self.image_cache_driver = 'sqlite'
@@ -227,9 +227,17 @@ scrub_time = 5
 scrubber_datadir = %(scrubber_datadir)s
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
+[paste_deploy]
+flavor = %(deployment_flavor)s
 """
         self.paste_conf_base = """[pipeline:glance-api]
-pipeline = versionnegotiation context %(cache_pipeline)s apiv1app
+pipeline = versionnegotiation context apiv1app
+
+[pipeline:glance-api-caching]
+pipeline = versionnegotiation context cache apiv1app
+
+[pipeline:glance-api-cachemanagement]
+pipeline = versionnegotiation context cache cache_manage apiv1app
 
 [app:apiv1app]
 paste.app_factory = glance.common.wsgi:app_factory
@@ -283,6 +291,8 @@ sql_idle_timeout = 3600
 api_limit_max = 1000
 limit_param_default = 25
 owner_is_tenant = %(owner_is_tenant)s
+[paste_deploy]
+flavor = %(deployment_flavor)s
 """
         self.paste_conf_base = """[pipeline:glance-registry]
 pipeline = context registryapp
