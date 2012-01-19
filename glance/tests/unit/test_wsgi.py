@@ -134,6 +134,9 @@ class JSONResponseSerializerTest(unittest.TestCase):
         response = webob.Response()
         wsgi.JSONResponseSerializer().default(response, fixture)
         self.assertEqual(response.status_int, 200)
+        content_types = filter(lambda h: h[0] == 'Content-Type',
+                               response.headerlist)
+        self.assertEqual(len(content_types), 1)
         self.assertEqual(response.content_type, 'application/json')
         self.assertEqual(response.body, '{"key": "value"}')
 

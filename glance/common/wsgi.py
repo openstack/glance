@@ -430,7 +430,7 @@ class JSONResponseSerializer(object):
         return json.dumps(data, default=sanitizer)
 
     def default(self, response, result):
-        response.headers.add('Content-Type', 'application/json')
+        response.content_type = 'application/json'
         response.body = self.to_json(result)
 
 
