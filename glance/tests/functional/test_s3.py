@@ -213,9 +213,13 @@ class TestS3(test_api.TestApi):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
+        # ensure data is refreshed, previously the size assertion
+        # applied to the metadata returned from the previous GET
+        data = json.loads(content)
         self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['checksum'],
-                         hashlib.md5(image_data).hexdigest())
+        # checksum is not set for a remote image, as the image data
+        # is not yet retrieved
+        self.assertEqual(data['image']['checksum'], None)
 
         # 5. GET second image and make sure it can stream the image
         path = "http://%s:%d/v1/images/%s"

@@ -247,6 +247,27 @@ class Store(glance.store.base.Store):
                         from glance.store.location.get_location_from_uri()
         :raises `glance.exception.NotFound` if image does not exist
         """
+        key = self._retrieve_key(location)
+
+        key.BufferSize = self.CHUNKSIZE
+        return (ChunkedFile(key), key.size)
+
+    def get_size(self, location):
+        """
+        Takes a `glance.store.location.Location` object that indicates
+        where to find the image file, and returns the image_size (or 0
+        if unavailable)
+
+        :param location `glance.store.location.Location` object, supplied
+                        from glance.store.location.get_location_from_uri()
+        """
+        try:
+            key = self._retrieve_key(location)
+            return key.size
+        except Exception:
+            return 0
+
+    def _retrieve_key(self, location):
         loc = location.store_location
         from boto.s3.connection import S3Connection
 
@@ -264,13 +285,7 @@ class Store(glance.store.base.Store):
                 'obj_name': loc.key})
         logger.debug(msg)
 
-        #if expected_size and (key.size != expected_size):
-        #   msg = "Expected %s bytes, got %s" % (expected_size, key.size)
-        #   logger.error(msg)
-        #   raise glance.store.BackendException(msg)
-
-        key.BufferSize = self.CHUNKSIZE
-        return (ChunkedFile(key), key.size)
+        return key
 
     def add(self, image_id, image_file, image_size):
         """

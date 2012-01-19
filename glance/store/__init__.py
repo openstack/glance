@@ -131,6 +131,15 @@ def get_from_backend(uri, **kwargs):
     return store.get(loc)
 
 
+def get_size_from_backend(uri):
+    """Retrieves image size from backend specified by uri"""
+
+    store = get_store_from_uri(uri)
+    loc = location.get_location_from_uri(uri)
+
+    return store.get_size(loc)
+
+
 def delete_from_backend(uri, **kwargs):
     """Removes chunks of data from backend specified by uri"""
     store = get_store_from_uri(uri)
