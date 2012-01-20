@@ -298,7 +298,7 @@ class ConfigFileValueError(Error):
     pass
 
 
-def find_config_files(project=None, prog=None):
+def find_config_files(project=None, prog=None, filetype="conf"):
     """Return a list of default configuration files.
 
     We default to two config files: [${project}.conf, ${prog}.conf]
@@ -331,7 +331,8 @@ def find_config_files(project=None, prog=None):
         fix_path(os.path.join('~', '.' + project)) if project else None,
         fix_path('~'),
         os.path.join('/etc', project) if project else None,
-        '/etc'
+        '/etc',
+        'etc',
         ]
     cfg_dirs = filter(bool, cfg_dirs)
 
@@ -342,9 +343,12 @@ def find_config_files(project=None, prog=None):
                 return path
 
     config_files = []
+
     if project:
-        config_files.append(search_dirs(cfg_dirs, '%s.conf' % project))
-    config_files.append(search_dirs(cfg_dirs, '%s.conf' % prog))
+        project_config = search_dirs(cfg_dirs, '%s.%s' % (project, filetype))
+        config_files.append(project_config)
+
+    config_files.append(search_dirs(cfg_dirs, '%s.%s' % (prog, filetype)))
 
     return filter(bool, config_files)
 

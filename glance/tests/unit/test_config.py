@@ -21,10 +21,8 @@ import unittest
 
 import stubout
 
-from glance.api.middleware import version_negotiation
-from glance.api.v1 import images
-from glance.api.v1 import members
-from glance.common import config, context, utils
+from glance.common import config
+from glance.common import context
 from glance.image_cache import pruner
 from glance.tests import utils as test_utils
 
@@ -52,34 +50,36 @@ class TestPasteApp(unittest.TestCase):
                 f.flush()
 
         if paste_copy:
-            paste_from = os.path.join(os.getcwd(), 'etc/glance-api-paste.ini')
+            paste_from = os.path.join(os.getcwd(),
+                                      'etc/glance-registry-paste.ini')
             paste_to = os.path.join(conf.temp_file.replace('.conf',
                                                        '-paste.ini'))
             _appendto(paste_from, paste_to, paste_append)
 
-        app = config.load_paste_app(conf, 'glance-api')
+        app = config.load_paste_app(conf, 'glance-registry')
 
         self.assertEquals(expected_app_type, type(app))
 
     def test_load_paste_app(self):
-        type = version_negotiation.VersionNegotiationFilter
-        self._do_test_load_paste_app(type)
+        expected_middleware = context.ContextMiddleware
+        self._do_test_load_paste_app(expected_middleware)
 
     def test_load_paste_app_with_paste_flavor(self):
         paste_group = {'paste_deploy': {'flavor': 'incomplete'}}
-        pipeline = '[pipeline:glance-api-incomplete]\n' + \
-                   'pipeline = context apiv1app'
+        pipeline = '[pipeline:glance-registry-incomplete]\n' + \
+                   'pipeline = context registryapp'
 
         type = context.ContextMiddleware
         self._do_test_load_paste_app(type, paste_group, paste_append=pipeline)
 
     def test_load_paste_app_with_paste_config_file(self):
         paste_config_file = os.path.join(os.getcwd(),
-                                         'etc/glance-api-paste.ini')
+                                         'etc/glance-registry-paste.ini')
         paste_group = {'paste_deploy': {'config_file': paste_config_file}}
 
-        type = version_negotiation.VersionNegotiationFilter
-        self._do_test_load_paste_app(type, paste_group, paste_copy=False)
+        expected_middleware = context.ContextMiddleware
+        self._do_test_load_paste_app(expected_middleware,
+                                     paste_group, paste_copy=False)
 
     def test_load_paste_app_with_conf_name(self):
         def fake_join(*args):

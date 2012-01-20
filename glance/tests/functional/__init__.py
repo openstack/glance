@@ -26,7 +26,6 @@ and spinning down the servers.
 import datetime
 import functools
 import os
-import random
 import shutil
 import signal
 import socket
@@ -160,7 +159,8 @@ class ApiServer(Server):
     Server object that starts/stops/manages the API server
     """
 
-    def __init__(self, test_dir, port, registry_port, delayed_delete=False):
+    def __init__(self, test_dir, port, registry_port, policy_file,
+            delayed_delete=False):
         super(ApiServer, self).__init__(test_dir, port)
         self.server_name = 'api'
         self.default_store = 'file'
@@ -195,6 +195,8 @@ class ApiServer(Server):
         self.image_cache_dir = os.path.join(self.test_dir,
                                             'cache')
         self.image_cache_driver = 'sqlite'
+        self.policy_file = policy_file
+        self.policy_default_rule = 'default'
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
@@ -229,6 +231,8 @@ scrub_time = 5
 scrubber_datadir = %(scrubber_datadir)s
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
+policy_file = %(policy_file)s
+policy_default_rule = %(policy_default_rule)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
 """
@@ -359,9 +363,13 @@ class FunctionalTest(unittest.TestCase):
         self.api_port = get_unused_port()
         self.registry_port = get_unused_port()
 
+        self.copy_data_file('policy.json', self.test_dir)
+        self.policy_file = os.path.join(self.test_dir, 'policy.json')
+
         self.api_server = ApiServer(self.test_dir,
                                     self.api_port,
-                                    self.registry_port)
+                                    self.registry_port,
+                                    self.policy_file)
         self.registry_server = RegistryServer(self.test_dir,
                                               self.registry_port)
 
@@ -546,3 +554,9 @@ class FunctionalTest(unittest.TestCase):
         engine = create_engine(self.registry_server.sql_connection,
                                pool_recycle=30)
         return engine.execute(sql)
+
+    def copy_data_file(self, file_name, dst_dir):
+        src_file_name = os.path.join('glance/tests/etc', file_name)
+        shutil.copy(src_file_name, dst_dir)
+        dst_file_name = os.path.join(dst_dir, file_name)
+        return dst_file_name

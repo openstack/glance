@@ -20,7 +20,6 @@
 """
 
 import errno
-import json
 import logging
 import traceback
 
@@ -28,12 +27,11 @@ from webob.exc import (HTTPNotFound,
                        HTTPConflict,
                        HTTPBadRequest,
                        HTTPForbidden,
-                       HTTPNoContent,
                        HTTPUnauthorized)
 
+from glance.api import policy
 import glance.api.v1
 from glance.api.v1 import controller
-from glance import image_cache
 from glance.common import cfg
 from glance.common import exception
 from glance.common import wsgi
@@ -48,8 +46,7 @@ from glance.store import (get_from_backend,
                           get_size_from_backend,
                           schedule_delete_from_backend,
                           get_store_from_location,
-                          get_store_from_scheme,
-                          UnsupportedBackend)
+                          get_store_from_scheme)
 from glance import registry
 from glance import notifier
 
@@ -86,6 +83,14 @@ class Controller(controller.BaseController):
         glance.store.create_stores(conf)
         self.notifier = notifier.Notifier(conf)
         registry.configure_registry_client(conf)
+        self.policy = policy.Enforcer(conf)
+
+    def _enforce(self, req, action):
+        """Authorize an action against our policies"""
+        try:
+            self.policy.enforce(req.context, action, {})
+        except exception.NotAuthorized:
+            raise HTTPUnauthorized()
 
     def index(self, req):
         """
@@ -110,6 +115,7 @@ class Controller(controller.BaseController):
                  'size': <SIZE>}, ...
             ]}
         """
+        self._enforce(req, 'get_images')
         params = self._get_query_params(req)
         try:
             images = registry.get_images_list(req.context, **params)
@@ -142,6 +148,7 @@ class Controller(controller.BaseController):
                  'properties': {'distro': 'Ubuntu 10.04 LTS', ...}}, ...
             ]}
         """
+        self._enforce(req, 'get_images')
         params = self._get_query_params(req)
         try:
             images = registry.get_images_detail(req.context, **params)
@@ -194,6 +201,7 @@ class Controller(controller.BaseController):
 
         :raises HTTPNotFound if image metadata is not available to user
         """
+        self._enforce(req, 'get_image')
         image_meta = self.get_image_meta_or_404(req, id)
         del image_meta['location']
         return {
@@ -210,6 +218,7 @@ class Controller(controller.BaseController):
 
         :raises HTTPNotFound if image is not available to user
         """
+        self._enforce(req, 'get_image')
         image_meta = self.get_active_image_meta_or_404(req, id)
 
         def get_from_store(image_meta):
@@ -470,6 +479,7 @@ class Controller(controller.BaseController):
                 and the request body is not application/octet-stream
                 image data.
         """
+        self._enforce(req, 'add_image')
         if req.context.read_only:
             msg = _("Read-only access")
             logger.debug(msg)
@@ -501,6 +511,7 @@ class Controller(controller.BaseController):
 
         :retval Returns the updated image information as a mapping
         """
+        self._enforce(req, 'modify_image')
         if req.context.read_only:
             msg = _("Read-only access")
             logger.debug(msg)
@@ -565,6 +576,7 @@ class Controller(controller.BaseController):
         :raises HttpNotAuthorized if image or any chunk is not
                 deleteable by the requesting user
         """
+        self._enforce(req, 'delete_image')
         if req.context.read_only:
             msg = _("Read-only access")
             logger.debug(msg)

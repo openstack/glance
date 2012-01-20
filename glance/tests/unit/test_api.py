@@ -2086,6 +2086,24 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertTrue('/images/%s' % res_body['id']
                         in res.headers['location'])
 
+    def test_add_image_unauthorized(self):
+        rules = {"add_image": [["false:false"]]}
+        self.set_policy_rules(rules)
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.body = "chunk00000remainder"
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 401)
+
     def test_register_and_upload(self):
         """
         Test that the process of registering an image with
@@ -2360,6 +2378,20 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 400)
 
+    def test_get_images_detailed_unauthorized(self):
+        rules = {"get_images": [["false:false"]]}
+        self.set_policy_rules(rules)
+        req = webob.Request.blank('/images/detail')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 401)
+
+    def test_get_images_unauthorized(self):
+        rules = {"get_images": [["false:false"]]}
+        self.set_policy_rules(rules)
+        req = webob.Request.blank('/images/detail')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 401)
+
     def test_store_location_not_revealed(self):
         """
         Test that the internal store location is NOT revealed
@@ -2514,6 +2546,14 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         for key, value in expected_headers.iteritems():
             self.assertEquals(value, res.headers[key])
 
+    def test_image_meta_unauthorized(self):
+        rules = {"get_image": [["false:false"]]}
+        self.set_policy_rules(rules)
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 401)
+
     def test_show_image_basic(self):
         req = webob.Request.blank("/images/%s" % UUID2)
         res = req.get_response(self.api)
@@ -2525,6 +2565,13 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images/%s" % _gen_uuid())
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
+
+    def test_show_image_unauthorized(self):
+        rules = {"get_image": [["false:false"]]}
+        self.set_policy_rules(rules)
+        req = webob.Request.blank("/images/%s" % UUID2)
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 401)
 
     def test_delete_image(self):
         req = webob.Request.blank("/images/%s" % UUID2)
@@ -2595,6 +2642,14 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'DELETE'
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, httplib.FORBIDDEN)
+
+    def test_delete_image_unauthorized(self):
+        rules = {"delete_image": [["false:false"]]}
+        self.set_policy_rules(rules)
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 401)
 
     def test_get_details_invalid_marker(self):
         """
