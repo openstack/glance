@@ -19,6 +19,7 @@
 
 import httplib2
 import json
+import os
 
 from glance.tests import functional
 from glance.tests.functional import keystone_utils
@@ -741,21 +742,25 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
     bin/glance.
     """
 
-    @skip_if_disabled
-    def test_glance_cli(self):
+    def setUp(self):
         """
-        Test that we can upload an owned image; that we can manipulate
-        its is_public setting; and that appropriate authorization
-        checks are applied to other (non-admin) users.
+        Clear environment to ensure that pre-existing $OS_* variables
+        do not leak into test.
+        """
+        self._clear_os_env()
+        super(TestPrivateImagesCli, self).setUp()
+
+    def _do_test_glance_cli(self, cmd):
+        """
+        Test that we can upload an owned image with a given command line;
+        that we can manipulate its is_public setting; and that appropriate
+        authorization checks are applied to other (non-admin) users.
         """
         self.cleanup()
         self.start_servers()
 
-        # Add a non-public image
-        cmd = ("echo testdata | bin/glance --port=%d --auth_token=%s add "
-               "name=MyImage" %
-               (self.api_port, keystone_utils.pattieblack_token))
-        exitcode, out, err = execute(cmd)
+        # Add a non-public image using the given glance command line
+        exitcode, out, err = execute("echo testdata | %s" % cmd)
 
         self.assertEqual(0, exitcode)
         image_id = out.strip()[25:]
@@ -833,3 +838,44 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
         self.assertEqual(response['x-image-meta-owner'], '')
 
         self.stop_servers()
+
+    def _clear_os_env(self):
+        os.environ.pop('OS_AUTH_URL', None)
+        os.environ.pop('OS_AUTH_STRATEGY', None)
+        os.environ.pop('OS_AUTH_USER', None)
+        os.environ.pop('OS_AUTH_KEY', None)
+
+    @skip_if_disabled
+    def test_glance_cli_noauth_strategy(self):
+        """
+        Test the CLI with the noauth strategy defaulted to.
+        """
+        cmd = ("bin/glance --port=%d --auth_token=%s add name=MyImage" %
+               (self.api_port, keystone_utils.pattieblack_token))
+        self._do_test_glance_cli(cmd)
+
+    @skip_if_disabled
+    def test_glance_cli_keystone_strategy_switches(self):
+        """
+        Test the CLI with the keystone (v1) strategy enabled via
+        command line switches.
+        """
+        substitutions = (self.api_port, self.auth_port, 'keystone',
+                         'pattieblack', 'secrete')
+        cmd = ("bin/glance --port=%d  --auth_url=http://localhost:%d/v1.0 "
+               "--auth_strategy=%s --username=%s --password=%s "
+               " add name=MyImage" % substitutions)
+        self._do_test_glance_cli(cmd)
+
+    @skip_if_disabled
+    def test_glance_cli_keystone_strategy_environment(self):
+        """
+        Test the CLI with the keystone strategy enabled via
+        environment variables.
+        """
+        os.environ['OS_AUTH_URL'] = 'http://localhost:%d/v1.0' % self.auth_port
+        os.environ['OS_AUTH_STRATEGY'] = 'keystone'
+        os.environ['OS_AUTH_USER'] = 'pattieblack'
+        os.environ['OS_AUTH_KEY'] = 'secrete'
+        cmd = "bin/glance --port=%d add name=MyImage" % self.api_port
+        self._do_test_glance_cli(cmd)

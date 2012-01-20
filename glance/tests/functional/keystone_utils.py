@@ -66,6 +66,7 @@ log_file = %(log_file)s
 backends = keystone.backends.sqlalchemy
 service-header-mappings = {
         'nova' : 'X-Server-Management-Url',
+        'glance' : 'X-Image-Management-Url',
         'swift' : 'X-Storage-Url',
         'cdn' : 'X-CDN-Management-Url'}
 service_host = 0.0.0.0
@@ -247,7 +248,10 @@ class KeystoneTests(functional.FunctionalTest):
         keystone_conf = self.auth_server.write_conf(**kwargs)
         datafile = os.path.join(os.path.dirname(__file__), 'data',
                                 'keystone_data.py')
-        execute("python %s -c %s" % (datafile, keystone_conf))
+
+        cmd = "python %s -c %s api_port=%d" % \
+              (datafile, keystone_conf, self.api_server.bind_port)
+        execute(cmd)
 
         # Start keystone-auth
         exitcode, out, err = self.auth_server.start(**kwargs)
