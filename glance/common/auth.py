@@ -149,7 +149,7 @@ class KeystoneStrategy(BaseStrategy):
         elif resp.status == 305:
             raise exception.AuthorizationRedirect(resp['location'])
         elif resp.status == 400:
-            raise exception.AuthBadRequest()
+            raise exception.AuthBadRequest(url=token_url)
         elif resp.status == 401:
             raise exception.NotAuthorized()
         elif resp.status == 404:
@@ -194,7 +194,7 @@ class KeystoneStrategy(BaseStrategy):
         elif resp.status == 305:
             raise exception.RedirectException(resp['location'])
         elif resp.status == 400:
-            raise exception.AuthBadRequest()
+            raise exception.AuthBadRequest(url=token_url)
         elif resp.status == 401:
             raise exception.NotAuthorized()
         elif resp.status == 404:
