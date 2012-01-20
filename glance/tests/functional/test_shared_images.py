@@ -148,6 +148,24 @@ class TestSharedImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(response.status, 200)
         self.assertEqual(content, '{"images": []}')
 
+        # Build path for the next couple of checks
+        path = ("http://%s:%d/v1/images/%s/members" %
+                ("0.0.0.0", self.api_port, image_id))
+
+        # Make sure update with invalid data gets rejected with 400
+        body = {
+            'test': [
+                {
+                    'member_id': keystone_utils.bacon_id,
+                    'can_share': False,
+                },
+            ],
+        }
+        response, _ = self._request(path, 'PUT',
+                                    keystone_utils.pattieblack_token,
+                                    body=json.dumps(body))
+        self.assertEqual(response.status, 400)
+
         # Replace froggy with bacon
         body = {
             'memberships': [
@@ -157,8 +175,6 @@ class TestSharedImagesApi(keystone_utils.KeystoneTests):
                 },
             ],
         }
-        path = "http://%s:%d/v1/images/%s/members" % \
-                ("0.0.0.0", self.api_port, image_id)
 
         response, content = self._request(path, 'PUT',
                                           keystone_utils.pattieblack_token,

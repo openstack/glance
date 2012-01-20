@@ -93,6 +93,10 @@ class Controller(object):
             can_share = bool(body['member']['can_share'])
         try:
             registry.add_member(req.context, image_id, id, can_share)
+        except exception.Invalid, e:
+            msg = "%s" % e
+            logger.debug(msg)
+            raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.NotFound, e:
             msg = "%s" % e
             logger.debug(msg)
@@ -121,6 +125,10 @@ class Controller(object):
 
         try:
             registry.replace_members(req.context, image_id, body)
+        except exception.Invalid, e:
+            msg = "%s" % e
+            logger.debug(msg)
+            raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.NotFound, e:
             msg = "%s" % e
             logger.debug(msg)
