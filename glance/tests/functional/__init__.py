@@ -26,6 +26,7 @@ and spinning down the servers.
 import datetime
 import functools
 import os
+import re
 import shutil
 import signal
 import socket
@@ -438,11 +439,33 @@ class FunctionalTest(unittest.TestCase):
             if os.path.exists(f):
                 os.unlink(f)
 
+    def start_server(self, server, expect_launch, **kwargs):
+        """
+        Starts a server on an unused port.
+
+        Any kwargs passed to this method will override the configuration
+        value in the conf file used in starting the server.
+
+        :param server: the server to launch
+        :param expect_launch: true iff the server is expected to
+                              successfully start
+        """
+        self.cleanup()
+
+        # Start up the requested server
+        exitcode, out, err = server.start(**kwargs)
+
+        self.assertEqual(0, exitcode,
+                         "Failed to spin up the requested server. "
+                         "Got: %s" % err)
+        self.assertTrue(re.search("Starting glance-[a-z]+ with", out))
+
+        self.wait_for_servers([server.bind_port], expect_launch)
+
     def start_servers(self, **kwargs):
         """
-        Starts the API and Registry servers (bin/glance-api and
-        bin/glance-registry) on unused ports and returns a tuple
-        of the (api_port, registry_port, conf_file_name).
+        Starts the API and Registry servers (bin/glance-control api start
+        & bin/glance-control registry start) on unused ports.
 
         Any kwargs passed to this method will override the configuration
         value in the conf file used in starting the servers.
@@ -471,7 +494,7 @@ class FunctionalTest(unittest.TestCase):
                          "Got: %s" % err)
         self.assertTrue("Starting glance-scrubber with" in out)
 
-        self.wait_for_servers()
+        self.wait_for_servers([self.api_port, self.registry_port])
 
     def ping_server(self, port):
         """
@@ -489,23 +512,29 @@ class FunctionalTest(unittest.TestCase):
         except socket.error, e:
             return False
 
-    def wait_for_servers(self, timeout=3):
+    def wait_for_servers(self, ports, expect_launch=True, timeout=3):
         """
-        Tight loop, waiting for both API and registry server to be
-        available on the ports. Returns when both are pingable. There
-        is a timeout on waiting for the servers to come up.
+        Tight loop, waiting for the given server port(s) to be available.
+        Returns when all are pingable. There is a timeout on waiting
+        for the servers to come up.
 
+        :param ports: Glance server ports to ping
+        :param expect_launch: Optional, true iff the server(s) are
+                              expected to successfully start
         :param timeout: Optional, defaults to 3 seconds
         """
         now = datetime.datetime.now()
         timeout_time = now + datetime.timedelta(seconds=timeout)
         while (timeout_time > now):
-            if self.ping_server(self.api_port) and\
-               self.ping_server(self.registry_port):
+            pinged = 0
+            for port in ports:
+                if self.ping_server(port):
+                    pinged += 1
+            if pinged == len(ports):
                 return
             now = datetime.datetime.now()
             time.sleep(0.05)
-        self.assertFalse(True, "Failed to start servers.")
+        self.assertFalse(expect_launch, "Unexpected server launch status")
 
     def stop_servers(self):
         """
