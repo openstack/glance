@@ -111,8 +111,13 @@ def do_start(server, conf, args):
         fp.write('%d\n' % pid)
         fp.close()
 
-    def launch(ini_file, pid_file):
-        print 'Starting %s with %s' % (server, ini_file)
+    def launch(pid_file, conf_file=None):
+        args = [server]
+        print 'Starting %s' % server,
+        if conf_file:
+            args += ['--config-file', conf_file]
+            print 'with %s' % conf_file,
+        print
 
         pid = os.fork()
         if pid == 0:
@@ -124,7 +129,7 @@ def do_start(server, conf, args):
                     except OSError:
                         pass
             try:
-                os.execlp('%s' % server, server, '--config-file', ini_file)
+                os.execlp('%s' % server, *args)
             except OSError, e:
                 sys.exit('unable to launch %s. Got error: %s'
                          % (server, "%s" % e))
@@ -137,16 +142,11 @@ def do_start(server, conf, args):
     else:
         pid_file = os.path.abspath(conf.pid_file)
 
-    try:
-        if args and os.path.exists(args[0]):
-            conf_file = os.path.abspath(os.path.expanduser(args[0]))
-        else:
-            # Assume paste config is in the last config file
-            conf_file = conf.config_file[-1]
-    except RuntimeError, err:
-        sys.exit("Could not find any configuration file to use: %s" % err)
+    conf_file = None
+    if args and os.path.exists(args[0]):
+        conf_file = os.path.abspath(os.path.expanduser(args[0]))
 
-    launch(conf_file, pid_file)
+    launch(pid_file, conf_file)
 
 
 def do_stop(server, conf, args, graceful=False):
