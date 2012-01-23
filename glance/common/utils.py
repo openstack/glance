@@ -103,7 +103,10 @@ def get_image_meta_from_headers(response):
             result[field_name] = value or None
     result['properties'] = properties
     if 'size' in result:
-        result['size'] = int(result['size'])
+        try:
+            result['size'] = int(result['size'])
+        except ValueError:
+            raise exception.Invalid
     for key in ('is_public', 'deleted', 'protected'):
         if key in result:
             result[key] = bool_from_header_value(result[key])

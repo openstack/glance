@@ -23,7 +23,8 @@ import errno
 import logging
 import traceback
 
-from webob.exc import (HTTPNotFound,
+from webob.exc import (HTTPError,
+                       HTTPNotFound,
                        HTTPConflict,
                        HTTPBadRequest,
                        HTTPForbidden,
@@ -54,6 +55,13 @@ from glance import notifier
 logger = logging.getLogger(__name__)
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
 SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
+
+
+# 1 PiB, which is a *huge* image by anyone's measure.  This is just to protect
+# against client programming errors (or DoS attacks) in the image metadata.
+# We have a known limit of 1 << 63 in the database -- images.size is declared
+# as a BigInteger.
+IMAGE_SIZE_CAP = 1 << 50
 
 
 class Controller(controller.BaseController):
@@ -327,6 +335,15 @@ class Controller(controller.BaseController):
                 logger.debug(_("Got request with no content-length and no "
                                "x-image-meta-size header"))
                 image_size = 0
+
+            if image_size > IMAGE_SIZE_CAP:
+                max_image_size = IMAGE_SIZE_CAP
+                msg = _("Denying attempt to upload image larger than "
+                        "%(max_image_size)d. Supplied image size was "
+                        "%(image_size)d") % locals()
+                logger.warn(msg)
+                raise HTTPBadRequest(msg, request=request)
+
             location, size, checksum = store.add(image_meta['id'],
                                                  req.body_file,
                                                  image_size)
@@ -370,6 +387,11 @@ class Controller(controller.BaseController):
             self.notifier.error('image.upload', msg)
             raise HTTPForbidden(msg, request=req,
                                 content_type='text/plain')
+
+        except HTTPError, e:
+            self._safe_kill(req, image_id)
+            self.notifier.error('image.upload', e.explanation)
+            raise
 
         except Exception, e:
             tb_info = traceback.format_exc()
@@ -641,7 +663,25 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
 
     def _deserialize(self, request):
         result = {}
-        result['image_meta'] = utils.get_image_meta_from_headers(request)
+        try:
+            result['image_meta'] = utils.get_image_meta_from_headers(request)
+        except exception.Invalid:
+            image_size_str = request.headers['x-image-meta-size']
+            msg = _("Incoming image size of %s was not convertible to "
+                    "an integer.") % image_size_str
+            raise HTTPBadRequest(msg, request=request)
+
+        image_meta = result['image_meta']
+        if 'size' in image_meta:
+            incoming_image_size = image_meta['size']
+            if incoming_image_size > IMAGE_SIZE_CAP:
+                max_image_size = IMAGE_SIZE_CAP
+                msg = _("Denying attempt to upload image larger than "
+                        "%(max_image_size)d. Supplied image size was "
+                        "%(incoming_image_size)d") % locals()
+                logger.warn(msg)
+                raise HTTPBadRequest(msg, request=request)
+
         data = request.body_file if self.has_body(request) else None
         result['image_data'] = data
         return result
