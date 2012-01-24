@@ -15,6 +15,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import re
+import sys
+
 import keystone.manage
 
 DEFAULT_FIXTURE = [
@@ -85,7 +88,7 @@ DEFAULT_FIXTURE = [
         'http://nova.publicinternets.com/v1.1/', 'http://127.0.0.1:8774/v1.1',
         'http://localhost:8774/v1.1', '1', '0'),
     ('endpointTemplates', 'add', 'RegionOne', 'glance',
-        'http://glance.publicinternets.com/v1.1/%tenant_id%',
+        'http://127.0.0.1:%api_port%/v1',
         'http://nova.admin-nets.local/v1.1/%tenant_id%',
         'http://127.0.0.1:9292/v1.1/%tenant_id%', '1', '0'),
     ('endpointTemplates', 'add', 'RegionOne', 'cdn',
@@ -140,10 +143,34 @@ DEFAULT_FIXTURE = [
 ]
 
 
+def _get_subsitutions(args):
+    substitutions = {}
+    for arg in args:
+        matches = re.match('(.*)=(.*)', arg)
+        if matches:
+            token = '%%%s%%' % matches.group(1)
+            value = matches.group(2)
+            substitutions[token] = value
+    return substitutions
+
+
+def _expand(cmd, substitutions):
+    expanded = ()
+    for word in cmd:
+        for token in substitutions.keys():
+            word = word.replace(token, substitutions[token])
+        expanded = expanded + (word,)
+    return expanded
+
+
 def load_fixture(fixture=DEFAULT_FIXTURE, args=None):
+    substitutions = _get_subsitutions(sys.argv)
+
     keystone.manage.parse_args(args)
+
     for cmd in fixture:
-        keystone.manage.process(*cmd)
+        expanded = _expand(cmd, substitutions)
+        keystone.manage.process(*expanded)
 
 
 def main():

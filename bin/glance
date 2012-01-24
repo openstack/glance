@@ -731,11 +731,12 @@ def get_client(options):
     specified by the --host and --port options
     supplied to the CLI
     """
-    creds = dict(username=os.getenv('OS_AUTH_USER'),
-                 password=os.getenv('OS_AUTH_KEY'),
-                 tenant=os.getenv('OS_AUTH_TENANT'),
-                 auth_url=os.getenv('OS_AUTH_URL'),
-                 strategy=os.getenv('OS_AUTH_STRATEGY', 'noauth'))
+    creds = dict(username=options.username or os.getenv('OS_AUTH_USER'),
+                 password=options.password or os.getenv('OS_AUTH_KEY'),
+                 tenant=options.tenant or os.getenv('OS_AUTH_TENANT'),
+                 auth_url=options.auth_url or os.getenv('OS_AUTH_URL'),
+                 strategy=options.auth_strategy or \
+                          os.getenv('OS_AUTH_STRATEGY', 'noauth'))
 
     use_ssl = (options.use_ssl or (
         creds['auth_url'] is not None and
@@ -774,6 +775,21 @@ def create_options(parser):
                       metavar="TOKEN", default=None,
                       help="Authentication token to use to identify the "
                            "client to the glance server")
+    parser.add_option('-I', '--username', dest="username",
+                      metavar="USER", default=None,
+                      help="User name used to acquire an authentication token")
+    parser.add_option('-K', '--password', dest="password",
+                      metavar="PASSWORD", default=None,
+                      help="Password used to acquire an authentication token")
+    parser.add_option('-T', '--tenant', dest="tenant",
+                      metavar="TENANT", default=None,
+                      help="Tenant name")
+    parser.add_option('-N', '--auth_url', dest="auth_url",
+                      metavar="AUTH_URL", default=None,
+                      help="Authentication URL")
+    parser.add_option('-S', '--auth_strategy', dest="auth_strategy",
+                      metavar="STRATEGY", default=None,
+                      help="Authentication strategy (keystone or noauth)")
     parser.add_option('--limit', dest="limit", metavar="LIMIT", default=10,
                       type="int", help="Page size to use while "
                                        "requesting image metadata")

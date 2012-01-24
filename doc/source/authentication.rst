@@ -84,6 +84,32 @@ The final step is to verify that the `OS_AUTH_` crednetials are present::
   OS_AUTH_URL=<THIS SHOULD POINT TO KEYSTONE>
   OS_AUTH_STRATEGY=keystone
 
+Alternatively, these credentials may be specified using the following
+switches to the ``bin/glance`` command:
+
+  -I USER, --username=USER
+                        User name used to acquire an authentication token
+  -K PASSWORD, --password=PASSWORD
+                        Password used to acquire an authentication token
+  -T TENANT, --tenant=TENANT
+                        Tenant name
+  -N AUTH_URL, --auth_url=AUTH_URL
+                        Authentication URL
+  -S STRATEGY, --auth_strategy=STRATEGY
+                        Authentication strategy (keystone or noauth)
+
+Or, if a pre-authenticated token is preferred, the following option allows
+the client-side interaction with keystone to be by-passed (useful if a long
+sequence of commands is being scripted):
+
+  -A TOKEN, --auth_token=TOKEN
+                        Authentication token to use to identify the client to
+                        the glance server
+
+In general the command line switch takes precedence over the corresponding
+OS_AUTH_* environment variable, if both are set.
+
+
 Configuring the Glance servers to use Keystone
 ----------------------------------------------
 
