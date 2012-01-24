@@ -1239,3 +1239,17 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(response.status, 404)
 
         self.stop_servers()
+
+    @skip_if_disabled
+    def test_unsupported_default_store(self):
+        """
+        We test that a mis-configured default_store causes the API server
+        to fail to start.
+        """
+        self.cleanup()
+        self.api_server.default_store = 'shouldnotexist'
+
+        # ensure that the API server fails to launch
+        self.start_server(self.api_server,
+                          expect_launch=False,
+                          **self.__dict__.copy())

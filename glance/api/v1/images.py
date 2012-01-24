@@ -644,9 +644,9 @@ class Controller(controller.BaseController):
         or raises an HTTPBadRequest (400) response
 
         :param request: The WSGI/Webob Request object
-        :param id: The opaque image identifier
+        :param store_name: The backend store name
 
-        :raises HTTPNotFound if image does not exist
+        :raises HTTPNotFound if store does not exist
         """
         try:
             return get_store_from_scheme(store_name)
@@ -656,6 +656,24 @@ class Controller(controller.BaseController):
             logger.error(msg)
             raise HTTPBadRequest(msg, request=request,
                                  content_type='text/plain')
+
+    def verify_store_or_exit(self, store_name):
+        """
+        Verifies availability of the storage backend for the
+        given store name or exits
+
+        :param store_name: The backend store name
+        """
+        try:
+            get_store_from_scheme(store_name)
+        except exception.UnknownScheme:
+            msg = (_("Default store %s not available on this Glance server\n")
+                   % store_name)
+            logger.error(msg)
+            # message on stderr will only be visible if started directly via
+            # bin/glance-api, as opposed to being daemonized by glance-control
+            sys.stderr.write(msg)
+            sys.exit(255)
 
 
 class ImageDeserializer(wsgi.JSONRequestDeserializer):
