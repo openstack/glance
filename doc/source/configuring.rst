@@ -713,3 +713,23 @@ Optional. Default: ``30``
 
 Maximum seconds to wait before reconnecting on failures when using
 ``rabbit`` strategy.
+
+Configuring Access Policies
+---------------------------
+
+Access rules may be configured using a
+:doc:`Policy Configuration file <policies>`. Two configuration options tell
+the Glance API server about the policies to use.
+
+* ``policy_file=PATH``
+
+Optional. Default: Looks for a file called ``policy.json`` or
+``glance.policy.json`` in standard configuration directories.
+
+Policy file to load when starting the API server
+
+* ``policy_default_rule=RULE``
+
+Optional. Default: "default"
+
+Name of the rule in the policy configuration file to use as the default rule

@@ -18,8 +18,6 @@
 """Common Policy Engine Implementation"""
 
 import json
-import urllib
-import urllib2
 
 
 class NotAuthorized(Exception):
