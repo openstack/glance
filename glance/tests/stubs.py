@@ -155,7 +155,7 @@ def stub_out_registry_and_store_server(stubs, base_dir):
             return FakeRegistryConnection
 
     def fake_image_iter(self):
-        for i in self.response.app_iter:
+        for i in self.source.app_iter:
             yield i
 
     stubs.Set(glance.common.client.BaseClient, 'get_connection_type',

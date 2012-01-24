@@ -19,6 +19,7 @@
 # http://code.activestate.com/recipes/
 #   577548-https-httplib-client-connection-with-certificate-v/
 
+import collections
 import functools
 import httplib
 import logging
@@ -34,6 +35,10 @@ except ImportError:
 
 from glance.common import auth
 from glance.common import exception
+
+
+# common chunk size for get and put
+CHUNKSIZE = 65536
 
 
 def handle_unauthorized(func):
@@ -77,13 +82,12 @@ class ImageBodyIterator(object):
     tuple from `glance.client.Client.get_image`
     """
 
-    CHUNKSIZE = 65536
-
-    def __init__(self, response):
+    def __init__(self, source):
         """
-        Constructs the object from an HTTPResponse object
+        Constructs the object from a readable image source
+        (such as an HTTPResponse or file-like object)
         """
-        self.response = response
+        self.source = source
 
     def __iter__(self):
         """
@@ -91,7 +95,7 @@ class ImageBodyIterator(object):
         image file.
         """
         while True:
-            chunk = self.response.read(ImageBodyIterator.CHUNKSIZE)
+            chunk = self.source.read(CHUNKSIZE)
             if chunk:
                 yield chunk
             else:
@@ -144,7 +148,6 @@ class BaseClient(object):
 
     """A base client class"""
 
-    CHUNKSIZE = 65536
     DEFAULT_PORT = 80
     DEFAULT_DOC_ROOT = None
 
@@ -355,15 +358,16 @@ class BaseClient(object):
 
         :param method: HTTP method ("GET", "POST", "PUT", etc...)
         :param url: urlparse.ParsedResult object with URL information
-        :param body: string of data to send, or None (default)
+        :param body: data to send (as string, filelike or iterable),
+                     or None (default)
         :param headers: mapping of key/value pairs to add as headers
 
         :note
 
         If the body param has a read attribute, and method is either
         POST or PUT, this method will automatically conduct a chunked-transfer
-        encoding and use the body as a file object, transferring chunks
-        of data using the connection's send() method. This allows large
+        encoding and use the body as a file object or iterable, transferring
+        chunks of data using the connection's send() method. This allows large
         objects to be transferred efficiently without buffering the entire
         body in memory.
         """
@@ -381,10 +385,26 @@ class BaseClient(object):
 
             c = connection_type(url.hostname, url.port, **self.connect_kwargs)
 
+            def _pushing(method):
+                return method.lower() in ('post', 'put')
+
+            def _simple(body):
+                return body is None or isinstance(body, basestring)
+
+            def _filelike(body):
+                return hasattr(body, 'read')
+
+            def _iterable(body):
+                return isinstance(body, collections.Iterable)
+
             # Do a simple request or a chunked request, depending
-            # on whether the body param is a file-like object and
+            # on whether the body param is file-like or iterable and
             # the method is PUT or POST
-            if hasattr(body, 'read') and method.lower() in ('post', 'put'):
+            #
+            if not _pushing(method) or _simple(body):
+                # Simple request...
+                c.request(method, path, body, headers)
+            elif _filelike(body) or _iterable(body):
                 # Chunk it, baby...
                 c.putrequest(method, path)
 
@@ -393,14 +413,14 @@ class BaseClient(object):
                 c.putheader('Transfer-Encoding', 'chunked')
                 c.endheaders()
 
-                chunk = body.read(self.CHUNKSIZE)
-                while chunk:
+                iter = body if _iterable(body) else ImageBodyIterator(body)
+
+                for chunk in iter:
                     c.send('%x\r\n%s\r\n' % (len(chunk), chunk))
-                    chunk = body.read(self.CHUNKSIZE)
                 c.send('0\r\n\r\n')
             else:
-                # Simple request...
-                c.request(method, path, body, headers)
+                raise TypeError('Unsupported image type: %s' % body.__class__)
+
             res = c.getresponse()
             status_code = self.get_status_code(res)
             if status_code in self.OK_RESPONSE_CODES:

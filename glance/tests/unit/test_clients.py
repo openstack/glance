@@ -1813,6 +1813,60 @@ class TestClient(base.IsolatedUnitTest):
         for k, v in fixture.items():
             self.assertEquals(v, new_meta[k])
 
+    def _add_image_as_iterable(self):
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
+                   'size': 10 * 65536,
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'},
+                  }
+
+        class Zeros:
+            def __init__(self, chunks):
+                self.chunks = chunks
+                self.zeros = open('/dev/zero', 'rb')
+
+            def __iter__(self):
+                while self.chunks > 0:
+                    self.chunks -= 1
+                    chunk = self.zeros.read(65536)
+                    yield chunk
+
+        new_image = self.client.add_image(fixture, Zeros(10))
+        new_image_id = new_image['id']
+
+        new_meta, new_image_chunks = self.client.get_image(new_image_id)
+
+        return (fixture, new_meta, new_image_chunks)
+
+    def _verify_image_iterable(self, fixture, meta, chunks):
+        image_data_len = 0
+        for image_chunk in chunks:
+            image_data_len += len(image_chunk)
+        self.assertEquals(10 * 65536, image_data_len)
+
+        for k, v in fixture.items():
+            self.assertEquals(v, meta[k])
+
+    def test_add_image_with_image_data_as_iterable(self):
+        """Tests we can add image by passing image data as an iterable"""
+        fixture, new_meta, new_chunks = self._add_image_as_iterable()
+
+        self._verify_image_iterable(fixture, new_meta, new_chunks)
+
+    def test_roundtrip_image_with_image_data_as_iterable(self):
+        """Tests we can roundtrip image as an iterable"""
+        fixture, new_meta, new_chunks = self._add_image_as_iterable()
+
+        # duplicate directly from iterable returned from get
+        dup_image = self.client.add_image(fixture, new_chunks)
+        dup_image_id = dup_image['id']
+
+        roundtrip_meta, roundtrip_chunks = self.client.get_image(dup_image_id)
+
+        self._verify_image_iterable(fixture, roundtrip_meta, roundtrip_chunks)
+
     def test_add_image_with_image_data_as_string_and_no_size(self):
         """Tests add image by passing image data as string w/ no size attr"""
         fixture = {'name': 'fake public image',
