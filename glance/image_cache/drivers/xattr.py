@@ -461,10 +461,9 @@ def get_xattr(path, key, **kwargs):
     default using kwargs.
     """
     namespaced_key = _make_namespaced_xattr_key(key)
-    entry_xattr = xattr.xattr(path)
     try:
-        return entry_xattr[namespaced_key]
-    except KeyError:
+        return xattr.getxattr(path, namespaced_key)
+    except IOError:
         if 'default' in kwargs:
             return kwargs['default']
         else:
@@ -477,8 +476,7 @@ def set_xattr(path, key, value):
     If xattrs aren't supported by the file-system, we skip setting the value.
     """
     namespaced_key = _make_namespaced_xattr_key(key)
-    entry_xattr = xattr.xattr(path)
-    entry_xattr.set(namespaced_key, str(value))
+    xattr.setxattr(path, namespaced_key, str(value))
 
 
 def inc_xattr(path, key, n=1):

@@ -277,8 +277,7 @@ def xattr_writes_supported(path):
         return False
 
     def set_xattr(path, key, value):
-        entry_xattr = xattr.xattr(path)
-        entry_xattr.set("user.%s" % key, str(value))
+        xattr.setxattr(path, "user.%s" % key, str(value))
 
     # We do a quick attempt to write a user xattr to a temporary file
     # to check that the filesystem is even enabled to support xattrs
