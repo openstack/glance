@@ -42,31 +42,31 @@ FIVE_KB = 5 * 1024
 
 
 class RemoteImageHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    def do_HEAD(s):
+    def do_HEAD(self):
         """
         Respond to an image HEAD request fake metadata
         """
-        if 'images' in s.path:
-            s.send_response(200)
-            s.send_header('Content-Type', 'application/octet-stream')
-            s.send_header('Content-Length', FIVE_KB)
-            s.end_headers()
+        if 'images' in self.path:
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/octet-stream')
+            self.send_header('Content-Length', FIVE_KB)
+            self.end_headers()
             return
         else:
             self.send_error(404, 'File Not Found: %s' % self.path)
             return
 
-    def do_GET(s):
+    def do_GET(self):
         """
         Respond to an image GET request with fake image content.
         """
-        if 'images' in s.path:
-            s.send_response(200)
-            s.send_header('Content-Type', 'application/octet-stream')
-            s.send_header('Content-Length', FIVE_KB)
-            s.end_headers()
+        if 'images' in self.path:
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/octet-stream')
+            self.send_header('Content-Length', FIVE_KB)
+            self.end_headers()
             image_data = '*' * FIVE_KB
-            s.wfile.write(image_data)
+            self.wfile.write(image_data)
             self.wfile.close()
             return
         else:
