@@ -203,6 +203,7 @@ class ApiServer(Server):
         self.image_cache_driver = 'sqlite'
         self.policy_file = policy_file
         self.policy_default_rule = 'default'
+        self.server_control_options = '--capture-output'
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
@@ -292,6 +293,7 @@ class RegistryServer(Server):
                                          "registry.pid")
         self.log_file = os.path.join(self.test_dir, "registry.log")
         self.owner_is_tenant = True
+        self.server_control_options = '--capture-output'
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
