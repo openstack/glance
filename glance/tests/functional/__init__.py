@@ -531,6 +531,8 @@ class FunctionalTest(unittest.TestCase):
                 if self.ping_server(port):
                     pinged += 1
             if pinged == len(ports):
+                self.assertTrue(expect_launch,
+                                "Unexpected server launch status")
                 return
             now = datetime.datetime.now()
             time.sleep(0.05)

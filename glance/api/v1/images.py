@@ -21,6 +21,7 @@
 
 import errno
 import logging
+import sys
 import traceback
 
 from webob.exc import (HTTPError,
@@ -89,6 +90,7 @@ class Controller(controller.BaseController):
         self.conf = conf
         self.conf.register_opt(self.default_store_opt)
         glance.store.create_stores(conf)
+        self.verify_store_or_exit(self.conf.default_store)
         self.notifier = notifier.Notifier(conf)
         registry.configure_registry_client(conf)
         self.policy = policy.Enforcer(conf)
