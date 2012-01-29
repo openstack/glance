@@ -29,7 +29,8 @@ from webob.exc import (HTTPError,
                        HTTPConflict,
                        HTTPBadRequest,
                        HTTPForbidden,
-                       HTTPUnauthorized)
+                       HTTPUnauthorized,
+                       HTTPRequestEntityTooLarge)
 
 from glance.api import policy
 import glance.api.v1
@@ -389,6 +390,14 @@ class Controller(controller.BaseController):
             self.notifier.error('image.upload', msg)
             raise HTTPForbidden(msg, request=req,
                                 content_type='text/plain')
+
+        except exception.StorageFull, e:
+            msg = _("Image storage media is full: %s") % e
+            logger.error(msg)
+            self._safe_kill(req, image_id)
+            self.notifier.error('image.upload', msg)
+            raise HTTPRequestEntityTooLarge(msg, request=req,
+                                            content_type='text/plain')
 
         except HTTPError, e:
             self._safe_kill(req, image_id)

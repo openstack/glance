@@ -195,15 +195,17 @@ class Store(glance.store.base.Store):
 
         checksum = hashlib.md5()
         bytes_written = 0
-        with open(filepath, 'wb') as f:
-            while True:
-                buf = image_file.read(ChunkedFile.CHUNKSIZE)
-                if not buf:
-                    break
-                bytes_written += len(buf)
-                checksum.update(buf)
-                f.write(buf)
-
+        try:
+            with open(filepath, 'wb') as f:
+                while True:
+                    buf = image_file.read(ChunkedFile.CHUNKSIZE)
+                    if not buf:
+                        break
+                    bytes_written += len(buf)
+                    checksum.update(buf)
+                    f.write(buf)
+        except IOError:
+            raise exception.StorageFull()
         checksum_hex = checksum.hexdigest()
 
         logger.debug(_("Wrote %(bytes_written)d bytes to %(filepath)s with "
