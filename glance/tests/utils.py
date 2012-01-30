@@ -172,6 +172,7 @@ def execute(cmd,
             raise_error=True,
             no_venv=False,
             exec_env=None,
+            expect_exit=True,
             expected_exitcode=0):
     """
     Executes a command in a subprocess. Returns a tuple
@@ -187,6 +188,7 @@ def execute(cmd,
                      variables; values may be callables, which will
                      be passed the current value of the named
                      environment variable
+    :param expect_exit: Optional flag true iff timely exit is expected
     :param expected_exitcode: expected exitcode from the launcher
     """
 
@@ -221,10 +223,16 @@ def execute(cmd,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
                                env=env)
-    result = process.communicate()
-    (out, err) = result
-    exitcode = process.returncode
-    if process.returncode != expected_exitcode and raise_error:
+    if expect_exit:
+        result = process.communicate()
+        (out, err) = result
+        exitcode = process.returncode
+    else:
+        out = ''
+        err = ''
+        exitcode = 0
+
+    if exitcode != expected_exitcode and raise_error:
         msg = "Command %(cmd)s did not succeed. Returned an exit "\
               "code of %(exitcode)d."\
               "\n\nSTDOUT: %(out)s"\

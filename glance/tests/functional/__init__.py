@@ -129,7 +129,7 @@ class Server(object):
 
         return self.conf_file_name
 
-    def start(self, expected_exitcode=0, **kwargs):
+    def start(self, expect_exit=True, expected_exitcode=0, **kwargs):
         """
         Starts the server.
 
@@ -147,6 +147,7 @@ class Server(object):
         return execute(cmd,
                        no_venv=self.no_venv,
                        exec_env=self.exec_env,
+                       expect_exit=expect_exit,
                        expected_exitcode=expected_exitcode)
 
     def stop(self):
@@ -156,7 +157,8 @@ class Server(object):
         cmd = ("%(server_control)s %(server_name)s stop "
                "%(conf_file_name)s --pid-file=%(pid_file)s"
                % self.__dict__)
-        return execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env)
+        return execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env,
+                       expect_exit=True)
 
 
 class ApiServer(Server):
@@ -449,6 +451,7 @@ class FunctionalTest(unittest.TestCase):
     def start_server(self,
                      server,
                      expect_launch,
+                     expect_exit=True,
                      expected_exitcode=0,
                      **kwargs):
         """
@@ -460,18 +463,22 @@ class FunctionalTest(unittest.TestCase):
         :param server: the server to launch
         :param expect_launch: true iff the server is expected to
                               successfully start
+        :param expect_exit: true iff the launched server is expected
+                            to exit in a timely fashion
         :param expected_exitcode: expected exitcode from the launcher
         """
         self.cleanup()
 
         # Start up the requested server
-        exitcode, out, err = server.start(expected_exitcode=expected_exitcode,
+        exitcode, out, err = server.start(expect_exit=expect_exit,
+                                          expected_exitcode=expected_exitcode,
                                           **kwargs)
+        if expect_exit:
+            self.assertEqual(expected_exitcode, exitcode,
+                             "Failed to spin up the requested server. "
+                             "Got: %s" % err)
 
-        self.assertEqual(expected_exitcode, exitcode,
-                         "Failed to spin up the requested server. "
-                         "Got: %s" % err)
-        self.assertTrue(re.search("Starting glance-[a-z]+ with", out))
+            self.assertTrue(re.search("Starting glance-[a-z]+ with", out))
 
         self.wait_for_servers([server.bind_port], expect_launch)
 
@@ -551,6 +558,19 @@ class FunctionalTest(unittest.TestCase):
             time.sleep(0.05)
         self.assertFalse(expect_launch, "Unexpected server launch status")
 
+    def stop_server(self, server, name):
+        """
+        Called to stop a single server in a normal fashion using the
+        glance-control stop method to gracefully shut the server down.
+
+        :param server: the server to stop
+        """
+        # Spin down the requested server
+        exitcode, out, err = server.stop()
+        self.assertEqual(0, exitcode,
+                         "Failed to spin down the %s server. Got: %s" %
+                         (err, name))
+
     def stop_servers(self):
         """
         Called to stop the started servers in a normal fashion. Note
@@ -562,20 +582,10 @@ class FunctionalTest(unittest.TestCase):
         """
 
         # Spin down the API and default registry server
-        exitcode, out, err = self.api_server.stop()
-        self.assertEqual(0, exitcode,
-                         "Failed to spin down the API server. "
-                         "Got: %s" % err)
+        self.stop_server(self.api_server, 'API server')
+        self.stop_server(self.registry_server, 'Registry server')
+        self.stop_server(self.scrubber_daemon, 'Scrubber daemon')
 
-        exitcode, out, err = self.registry_server.stop()
-        self.assertEqual(0, exitcode,
-                         "Failed to spin down the Registry server. "
-                         "Got: %s" % err)
-
-        exitcode, out, err = self.scrubber_daemon.stop()
-        self.assertEqual(0, exitcode,
-                         "Failed to spin down the Scrubber daemon. "
-                         "Got: %s" % err)
         # If all went well, then just remove the test directory.
         # We only want to check the logs and stuff if something
         # went wrong...

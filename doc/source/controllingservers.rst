@@ -177,6 +177,18 @@ Glance server programs, and you can specify (as the example above shows)
 a configuration file when starting the server.
 
 
+In order for your launched glance service to be monitored for unexpected death
+and respawned if necessary, use the following option:
+
+
+  $ sudo glance-control [service] start --respawn ...
+
+
+Note that this will cause ``glance-control`` itself to remain running. Also note
+that deliberately stopped services are not respawned, neither are rapidly bouncing
+services (where process death occurred within one second of the last launch).
+
+
 By default, output from glance services is discarded when launched with ``glance-control``.
 In order to capture such output via syslog, use the following option:
 
