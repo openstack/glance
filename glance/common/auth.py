@@ -193,7 +193,7 @@ class KeystoneStrategy(BaseStrategy):
             # FIXME(sirp): for now just using the first endpoint we get back
             # from the service catalog for glance, and using the public url.
             for service in resp_auth['serviceCatalog']:
-                if service['name'] == 'glance':
+                if service['type'] == 'image':
                     glance_endpoint = service['endpoints'][0]['publicURL']
                     break
             else:

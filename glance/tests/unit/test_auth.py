@@ -170,6 +170,40 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
 
     def test_v2_auth(self):
         """Test v2 auth code paths"""
+        service_type = "image"
+
+        def v2_token(service_type="image"):
+            # Mock up a token to satisfy v2 auth
+            token = {
+                "access": {
+                    "token": {
+                        "expires": "2010-11-23T16:40:53.321584",
+                        "id": "5c7f8799-2e54-43e4-851b-31f81871b6c",
+                        "tenant": {"id": "1", "name": "tenant-ok"}
+                    },
+                    "serviceCatalog": [{
+                        "endpoints": [{
+                            "region": "RegionOne",
+                            "adminURL": "http://localhost:9292",
+                            "internalURL": "http://localhost:9292",
+                            "publicURL": "http://localhost:9292"
+                        }],
+                        "type": service_type,
+                        "name": "glance"
+                    }],
+                    "user": {
+                        "id": "2",
+                        "roles": [{
+                            "tenantId": "1",
+                            "id": "1",
+                            "name": "Admin"
+                        }],
+                        "name": "joeadmin"
+                    }
+                }
+            }
+            return token
+
         def fake_do_request(cls, url, method, headers=None, body=None):
             if (not url.rstrip('/').endswith('v2.0/tokens') or
                 url.count("2.0") != 1):
@@ -186,35 +220,7 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
                 resp.status = 401
             else:
                 resp.status = 200
-                # Mock up a token to satisfy v2 auth
-                body = {
-                    "access": {
-                        "token": {
-                            "expires": "2010-11-23T16:40:53.321584",
-                            "id": "5c7f8799-2e54-43e4-851b-31f81871b6c",
-                            "tenant": {"id": "1", "name": "tenant-ok"}
-                        },
-                        "serviceCatalog": [{
-                            "endpoints": [{
-                                "region": "RegionOne",
-                                "adminURL": "http://localhost:9292",
-                                "internalURL": "http://localhost:9292",
-                                "publicURL": "http://localhost:9292"
-                            }],
-                            "type": "image",
-                            "name": "glance"
-                        }],
-                        "user": {
-                            "id": "2",
-                            "roles": [{
-                                "tenantId": "1",
-                                "id": "1",
-                                "name": "Admin"
-                            }],
-                            "name": "joeadmin"
-                        }
-                    }
-                }
+                body = v2_token(service_type)
 
             return FakeResponse(resp), json.dumps(body)
 
@@ -268,3 +274,20 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
         for creds in good_creds:
             plugin = auth.KeystoneStrategy(creds)
             self.assertTrue(plugin.authenticate() is None)
+
+        creds = {
+                    'username': 'user1',
+                    'auth_url': 'http://localhost/v2.0/',
+                    'password': 'pass',
+                    'tenant': 'tenant-ok'
+        }
+
+        service_type = "bad-image"
+
+        try:
+            plugin = auth.KeystoneStrategy(creds)
+            plugin.authenticate()
+            self.fail("Failed to raise NoServiceEndpoint when bad service "
+               "type encountered: %r" % service_type)
+        except exception.NoServiceEndpoint:
+            pass
