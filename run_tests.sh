@@ -50,7 +50,7 @@ function run_tests {
 
 function run_pep8 {
   echo "Running pep8 ..."
-  PEP8_OPTIONS="--exclude=$PEP8_EXCLUDE --repeat --show-pep8 --show-source"
+  PEP8_OPTIONS="--exclude=$PEP8_EXCLUDE --repeat"
   PEP8_INCLUDE="bin/* glance tools setup.py run_tests.py"
   ${wrapper} pep8 $PEP8_OPTIONS $PEP8_INCLUDE
 }
