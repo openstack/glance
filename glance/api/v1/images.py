@@ -35,6 +35,7 @@ from webob.exc import (HTTPError,
 from glance.api import policy
 import glance.api.v1
 from glance.api.v1 import controller
+from glance.api.v1 import filters
 from glance.common import cfg
 from glance.common import exception
 from glance.common import wsgi
@@ -182,6 +183,7 @@ class Controller(controller.BaseController):
         :retval dict of parameters that can be used by registry client
         """
         params = {'filters': self._get_filters(req)}
+
         for PARAM in SUPPORTED_PARAMS:
             if PARAM in req.str_params:
                 params[PARAM] = req.str_params.get(PARAM)
@@ -194,12 +196,15 @@ class Controller(controller.BaseController):
         :param req: the Request object coming from the wsgi layer
         :retval a dict of key/value filters
         """
-        filters = {}
+        query_filters = {}
         for param in req.str_params:
             if param in SUPPORTED_FILTERS or param.startswith('property-'):
-                filters[param] = req.str_params.get(param)
-
-        return filters
+                query_filters[param] = req.str_params.get(param)
+                if not filters.validate(param, query_filters[param]):
+                    raise HTTPBadRequest('Bad value passed to filter %s '
+                                         'got %s' % (param,
+                                                     query_filters[param]))
+        return query_filters
 
     def meta(self, req, id):
         """

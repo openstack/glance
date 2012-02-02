@@ -925,6 +925,51 @@ class TestApi(functional.FunctionalTest):
         data = json.loads(content)
         self.assertEqual(len(data['images']), 0)
 
+        # 18. GET /images with size_min filter
+        # Verify correct images returned with size >= expected
+        params = "size_min=-1"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 400)
+        self.assertTrue("filter size_min got -1" in content)
+
+        # 19. GET /images with size_min filter
+        # Verify correct images returned with size >= expected
+        params = "size_max=-1"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 400)
+        self.assertTrue("filter size_max got -1" in content)
+
+        # 20. GET /images with size_min filter
+        # Verify correct images returned with size >= expected
+        params = "min_ram=-1"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 400)
+        self.assertTrue("Bad value passed to filter min_ram got -1" in content)
+
+        # 21. GET /images with size_min filter
+        # Verify correct images returned with size >= expected
+        params = "protected=imalittleteapot"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 400)
+        self.assertTrue("protected got imalittleteapot" in content)
+
+        # 22. GET /images with size_min filter
+        # Verify correct images returned with size >= expected
+        params = "is_public=imalittleteapot"
+        path = "http://%s:%d/v1/images?%s" % (
+               "0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 400)
+        self.assertTrue("is_public got imalittleteapot" in content)
+
         self.stop_servers()
 
     @skip_if_disabled
