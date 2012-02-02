@@ -98,7 +98,12 @@ def check_mutate_authorization(context, image_ref):
     if not context.is_image_mutable(image_ref):
         logger.info(_("Attempted to modify image user did not own."))
         msg = _("You do not own this image")
-        raise exception.NotAuthorized(msg)
+        if image_ref.is_public:
+            exc_class = exception.NotAuthorizedPublicImage
+        else:
+            exc_class = exception.NotAuthorized
+
+        raise exc_class(msg)
 
 
 def get_session(autocommit=True, expire_on_commit=False):

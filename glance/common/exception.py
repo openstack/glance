@@ -104,6 +104,10 @@ class NotAuthorized(GlanceException):
     message = _("You are not authorized to complete this action.")
 
 
+class NotAuthorizedPublicImage(NotAuthorized):
+    message = _("You are not authorized to complete this action.")
+
+
 class Invalid(GlanceException):
     message = _("Data supplied was not valid.")
 

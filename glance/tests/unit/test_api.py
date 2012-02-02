@@ -1848,6 +1848,15 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         self.assertEquals(res.status_int,
                           webob.exc.HTTPNotFound.code)
 
+    def test_delete_image_public_not_owned(self):
+        req = webob.Request.blank('/images/%s' % UUID2)
+        req.method = 'DELETE'
+        req.headers['x-auth-token'] = 'toke'
+        req.headers['x-identity-status'] = 'Confirmed'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 403)
+
     def test_get_image_members(self):
         """
         Tests members listing for existing images
