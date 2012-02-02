@@ -125,7 +125,7 @@ class SendFileIterator:
             def __init__(self, len):
                 self.len = len
 
-            def __len__():
+            def __len__(self):
                 return self.len
 
         while self.sending:

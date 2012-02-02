@@ -762,11 +762,16 @@ def get_client(options):
         creds['auth_url'] is not None and
         creds['auth_url'].find('https') != -1))
 
-    return glance_client.Client(host=options.host, port=options.port,
-                                use_ssl=use_ssl,
-                                auth_tok=options.auth_token or \
-                                        os.getenv('OS_TOKEN'),
-                                creds=creds, insecure=options.insecure)
+    client = (glance_client.ProgressClient if not options.is_silent_upload
+                                        else glance_client.Client)
+
+    return client(host=options.host,
+                port=options.port,
+                use_ssl=use_ssl,
+                auth_tok=options.auth_token or
+                os.getenv('OS_TOKEN'),
+                creds=creds,
+                insecure=options.insecure)
 
 
 def create_options(parser):
@@ -776,6 +781,10 @@ def create_options(parser):
 
     :param parser: The option parser
     """
+    parser.add_option('--silent-upload', default=False, action="store_true",
+                      dest="is_silent_upload",
+                      help="disable progress bar animation and information "
+                      "during upload")
     parser.add_option('-v', '--verbose', default=False, action="store_true",
                       help="Print more verbose output")
     parser.add_option('-d', '--debug', default=False, action="store_true",
