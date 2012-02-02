@@ -1248,8 +1248,10 @@ class TestApi(functional.FunctionalTest):
         """
         self.cleanup()
         self.api_server.default_store = 'shouldnotexist'
+        self.api_server.server_control_options += ' --await-child=1'
 
         # ensure that the API server fails to launch
         self.start_server(self.api_server,
                           expect_launch=False,
+                          expected_exitcode=255,
                           **self.__dict__.copy())

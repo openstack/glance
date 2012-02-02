@@ -111,6 +111,18 @@ def do_start(server, conf, args):
         fp.write('%d\n' % pid)
         fp.close()
 
+    def await_child(pid):
+        if conf.await_child:
+            bail_time = time.time() + conf.await_child
+            while time.time() < bail_time:
+                reported_pid, status = os.waitpid(pid, os.WNOHANG)
+                if reported_pid == pid:
+                    global exitcode
+                    # the exit code is encoded in 2nd least significant byte
+                    exitcode = status >> 8
+                    break
+                time.sleep(0.05)
+
     def launch(pid_file, conf_file=None):
         args = [server]
         print 'Starting %s' % server,
@@ -136,6 +148,7 @@ def do_start(server, conf, args):
             sys.exit(0)
         else:
             write_pid_file(pid_file, pid)
+            await_child(pid)
 
     if not conf.pid_file:
         pid_file = '/var/run/glance/%s.pid' % server
@@ -181,11 +194,19 @@ def do_stop(server, conf, args, graceful=False):
 
 
 if __name__ == '__main__':
+    exitcode = 0
+
     conf = config.GlanceConfigOpts(usage=USAGE)
     conf.register_cli_opt(cfg.StrOpt('pid-file',
                                      metavar='PATH',
                                      help='File to use as pid file. Default: '
                                           '/var/run/glance/$server.pid'))
+    conf.register_cli_opt(cfg.IntOpt('await-child',
+                                     metavar='DELAY',
+                                     default=0,
+                                     help='Period to wait for service death '
+                                          'in order to report exit code '
+                                          '(default is to not wait at all)'))
     args = conf()
 
     if len(args) < 2:
@@ -235,3 +256,5 @@ if __name__ == '__main__':
         for server in servers:
             do_stop(server, conf, args, graceful=True)
             do_start(server, conf, args)
+
+    sys.exit(exitcode)
