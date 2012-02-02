@@ -217,7 +217,7 @@ information about the metadata that was saved with the image::
 If you are unsure about what will be added, you can use the ``--dry-run``
 command-line option, which will simply show you what *would* have happened::
 
-  $> glance --dry-run add name="Foo" distro="Ubuntu" is_publi=True < \
+  $> glance --dry-run add name="Foo" distro="Ubuntu" is_public=True < \
   /tmp/images/myimage.iso --host=65.114.169.29
   Dry run. We would have done the following:
   Add new image with metadata:
@@ -225,12 +225,12 @@ command-line option, which will simply show you what *would* have happened::
                       disk_format => raw
                         is_public => False
                              name => Foo
-                       properties => {'is_publi': 'True', 'distro': 'Ubuntu'}
+                       properties => {'is_public': 'True', 'distro': 'Ubuntu'}
 
 This is useful for detecting problems and for seeing what the default field
 values supplied by ``glance`` are.  For instance, there was a typo in
-the command above (the ``is_public`` field was incorrectly spelled ``is_publi``
-which resulted in the image having an ``is_publi`` custom property added to
+the command above (the ``is_public`` field was incorrectly spelled ``is_public``
+which resulted in the image having an ``is_public`` custom property added to
 the image and the *real* ``is_public`` field value being `False` (the default)
 and not `True`...
 
