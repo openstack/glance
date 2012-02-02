@@ -168,7 +168,11 @@ def skip_if_disabled(func):
     return wrapped
 
 
-def execute(cmd, raise_error=True, no_venv=False, exec_env=None):
+def execute(cmd,
+            raise_error=True,
+            no_venv=False,
+            exec_env=None,
+            expected_exitcode=0):
     """
     Executes a command in a subprocess. Returns a tuple
     of (exitcode, out, err), where out is the string output
@@ -183,6 +187,7 @@ def execute(cmd, raise_error=True, no_venv=False, exec_env=None):
                      variables; values may be callables, which will
                      be passed the current value of the named
                      environment variable
+    :param expected_exitcode: expected exitcode from the launcher
     """
 
     env = os.environ.copy()
@@ -219,7 +224,7 @@ def execute(cmd, raise_error=True, no_venv=False, exec_env=None):
     result = process.communicate()
     (out, err) = result
     exitcode = process.returncode
-    if process.returncode != 0 and raise_error:
+    if process.returncode != expected_exitcode and raise_error:
         msg = "Command %(cmd)s did not succeed. Returned an exit "\
               "code of %(exitcode)d."\
               "\n\nSTDOUT: %(out)s"\

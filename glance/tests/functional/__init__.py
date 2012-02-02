@@ -87,6 +87,7 @@ class Server(object):
         self.server_control = './bin/glance-control'
         self.exec_env = None
         self.deployment_flavor = ''
+        self.server_control_options = ''
 
     def write_conf(self, **kwargs):
         """
@@ -128,7 +129,7 @@ class Server(object):
 
         return self.conf_file_name
 
-    def start(self, **kwargs):
+    def start(self, expected_exitcode=0, **kwargs):
         """
         Starts the server.
 
@@ -140,9 +141,13 @@ class Server(object):
         self.write_conf(**kwargs)
 
         cmd = ("%(server_control)s %(server_name)s start "
-               "%(conf_file_name)s --pid-file=%(pid_file)s"
+               "%(conf_file_name)s --pid-file=%(pid_file)s "
+               "%(server_control_options)s"
                % self.__dict__)
-        return execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env)
+        return execute(cmd,
+                       no_venv=self.no_venv,
+                       exec_env=self.exec_env,
+                       expected_exitcode=expected_exitcode)
 
     def stop(self):
         """
@@ -439,7 +444,11 @@ class FunctionalTest(unittest.TestCase):
             if os.path.exists(f):
                 os.unlink(f)
 
-    def start_server(self, server, expect_launch, **kwargs):
+    def start_server(self,
+                     server,
+                     expect_launch,
+                     expected_exitcode=0,
+                     **kwargs):
         """
         Starts a server on an unused port.
 
@@ -449,13 +458,15 @@ class FunctionalTest(unittest.TestCase):
         :param server: the server to launch
         :param expect_launch: true iff the server is expected to
                               successfully start
+        :param expected_exitcode: expected exitcode from the launcher
         """
         self.cleanup()
 
         # Start up the requested server
-        exitcode, out, err = server.start(**kwargs)
+        exitcode, out, err = server.start(expected_exitcode=expected_exitcode,
+                                          **kwargs)
 
-        self.assertEqual(0, exitcode,
+        self.assertEqual(expected_exitcode, exitcode,
                          "Failed to spin up the requested server. "
                          "Got: %s" % err)
         self.assertTrue(re.search("Starting glance-[a-z]+ with", out))
