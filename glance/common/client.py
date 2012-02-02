@@ -210,39 +210,46 @@ class BaseClient(object):
         self.connect_kwargs = {}
 
         if use_ssl:
-            if not key_file:
-                if not os.environ.get('GLANCE_CLIENT_KEY_FILE'):
-                    msg = _("You have selected to use SSL in connecting, "
-                            "however you have failed to supply either a "
-                            "key_file parameter or set the "
-                            "GLANCE_CLIENT_KEY_FILE environ variable")
-                    raise exception.ClientConnectionError(msg)
+            if key_file is None:
                 key_file = os.environ.get('GLANCE_CLIENT_KEY_FILE')
+            if cert_file is None:
+                cert_file = os.environ.get('GLANCE_CLIENT_CERT_FILE')
+            if ca_file is None:
+                ca_file = os.environ.get('GLANCE_CLIENT_CA_FILE')
 
-            if not os.path.exists(key_file):
+            # Check that key_file/cert_file are either both set or both unset
+            if cert_file is not None and key_file is None:
+                msg = _("You have selected to use SSL in connecting, "
+                        "and you have supplied a cert, "
+                        "however you have failed to supply either a "
+                        "key_file parameter or set the "
+                        "GLANCE_CLIENT_KEY_FILE environ variable")
+                raise exception.ClientConnectionError(msg)
+
+            if key_file is not None and cert_file is None:
+                msg = _("You have selected to use SSL in connecting, "
+                        "and you have supplied a key, "
+                        "however you have failed to supply either a "
+                        "cert_file parameter or set the "
+                        "GLANCE_CLIENT_CERT_FILE environ variable")
+                raise exception.ClientConnectionError(msg)
+
+            if key_file is not None and not os.path.exists(key_file):
                 msg = _("The key file you specified %s does not "
                         "exist") % key_file
                 raise exception.ClientConnectionError(msg)
             self.connect_kwargs['key_file'] = key_file
 
-            if not cert_file:
-                if not os.environ.get('GLANCE_CLIENT_CERT_FILE'):
-                    msg = _("You have selected to use SSL in connecting, "
-                            "however you have failed to supply either a "
-                            "cert_file parameter or set the "
-                            "GLANCE_CLIENT_CERT_FILE environ variable")
-                    raise exception.ClientConnectionError(msg)
-                cert_file = os.environ.get('GLANCE_CLIENT_CERT_FILE')
-
-            if not os.path.exists(cert_file):
-                msg = _("The key file you specified %s does not "
+            if cert_file is not None and not os.path.exists(cert_file):
+                msg = _("The cert file you specified %s does not "
                         "exist") % cert_file
                 raise exception.ClientConnectionError(msg)
             self.connect_kwargs['cert_file'] = cert_file
 
-            if not ca_file:
-                ca_file = os.environ.get('GLANCE_CLIENT_CA_FILE')
-
+            if ca_file is not None and not os.path.exists(ca_file):
+                msg = _("The CA file you specified %s does not "
+                        "exist") % ca_file
+                raise exception.ClientConnectionError(msg)
             self.connect_kwargs['ca_file'] = ca_file
 
     def set_auth_token(self, auth_tok):

@@ -59,18 +59,22 @@ class TestBadClients(unittest.TestCase):
     def test_ssl_no_key_file(self):
         """
         Test that when doing SSL connection, a key file is
-        required
+        required if a cert file has been specified
         """
         try:
-            c = client.Client("0.0.0.0", use_ssl=True)
+            with tempfile.NamedTemporaryFile() as cert_file:
+                cert_file.write("bogus-cert")
+                cert_file.flush()
+            c = client.Client("0.0.0.0", use_ssl=True,
+                              cert_file=cert_file.name)
         except exception.ClientConnectionError:
             return
         self.fail("Did not raise ClientConnectionError")
 
     def test_ssl_non_existing_key_file(self):
         """
-        Test that when doing SSL connection, a key file is
-        required to exist
+        Test that when doing SSL connection, a specified key
+        file is required to exist
         """
         try:
             c = client.Client("0.0.0.0", use_ssl=True,
@@ -82,11 +86,11 @@ class TestBadClients(unittest.TestCase):
     def test_ssl_no_cert_file(self):
         """
         Test that when doing SSL connection, a cert file is
-        required
+        required if a key file has been specified
         """
         try:
             with tempfile.NamedTemporaryFile() as key_file:
-                key_file.write("bogus")
+                key_file.write("bogus-key")
                 key_file.flush()
                 c = client.Client("0.0.0.0", use_ssl=True,
                                   key_file=key_file.name)
@@ -97,11 +101,11 @@ class TestBadClients(unittest.TestCase):
     def test_ssl_non_existing_cert_file(self):
         """
         Test that when doing SSL connection, a cert file is
-        required to exist
+        required to exist if specified
         """
         try:
             with tempfile.NamedTemporaryFile() as key_file:
-                key_file.write("bogus")
+                key_file.write("bogus-key")
                 key_file.flush()
                 c = client.Client("0.0.0.0", use_ssl=True,
                                   key_file=key_file.name,
@@ -110,17 +114,28 @@ class TestBadClients(unittest.TestCase):
             return
         self.fail("Did not raise ClientConnectionError")
 
+    def test_ssl_non_existing_ca_file(self):
+        """
+        Test that when doing SSL connection, a specified CA file exists
+        """
+        try:
+            c = client.Client("0.0.0.0", use_ssl=True,
+                              ca_file='nonexistingfile')
+        except exception.ClientConnectionError:
+            return
+        self.fail("Did not raise ClientConnectionError")
+
     def test_ssl_optional_ca_file(self):
         """
         Test that when doing SSL connection, a cert file and key file are
-        required to exist, but a CA file is optional.
+        required to exist if specified, but a CA file is optional.
         """
         try:
             with tempfile.NamedTemporaryFile() as key_file:
-                key_file.write("bogus")
+                key_file.write("bogus-key")
                 key_file.flush()
                 with tempfile.NamedTemporaryFile() as cert_file:
-                    cert_file.write("bogus")
+                    cert_file.write("bogus-cert")
                     cert_file.flush()
                     c = client.Client("0.0.0.0", use_ssl=True,
                                       key_file=key_file.name,
