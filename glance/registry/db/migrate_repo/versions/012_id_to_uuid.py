@@ -71,9 +71,7 @@ def _upgrade_sqlite(t_images, t_image_members, t_image_properties):
     """
     Upgrade 011 -> 012 with special SQLite-compatible logic.
     """
-    t_images.c.id.alter(sqlalchemy.Column("id",
-                                          sqlalchemy.String(36),
-                                          primary_key=True))
+    t_images.c.id.alter(sqlalchemy.String(36), primary_key=True)
 
     sql_commands = [
         """CREATE TABLE image_members_backup (
@@ -121,9 +119,7 @@ def _downgrade_sqlite(t_images, t_image_members, t_image_properties):
     """
     Downgrade 012 -> 011 with special SQLite-compatible logic.
     """
-    t_images.c.id.alter(sqlalchemy.Column("id",
-                                          sqlalchemy.Integer(),
-                                          primary_key=True))
+    t_images.c.id.alter(sqlalchemy.Integer(), primary_key=True)
 
     sql_commands = [
         """CREATE TABLE image_members_backup (
