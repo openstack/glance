@@ -3,6 +3,7 @@
 *.log
 .glance-venv
 .venv
+.tox
 build
 dist
 glance.egg-info
