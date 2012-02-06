@@ -24,6 +24,7 @@ import unittest
 import stubout
 import webob
 
+from sqlalchemy import exc
 from glance.api.v1 import images
 from glance.api.v1 import router
 from glance.common import context
@@ -47,6 +48,7 @@ class TestRegistryDb(unittest.TestCase):
     def setUp(self):
         """Establish a clean test environment"""
         self.stubs = stubout.StubOutForTesting()
+        self.orig_engine = db_api._ENGINE
 
     def test_bad_sql_connection(self):
         """
@@ -61,9 +63,9 @@ class TestRegistryDb(unittest.TestCase):
                 })
         # We set this to None to trigger a reconfigure, otherwise
         # other modules may have already correctly configured the DB
-        orig_engine = db_api._ENGINE
         db_api._ENGINE = None
-        self.assertRaises(ImportError, db_api.configure_db, bad_conf)
+        self.assertRaises((ImportError, exc.ArgumentError),
+            db_api.configure_db, bad_conf)
         exc_raised = False
         self.log_written = False
 
@@ -74,16 +76,17 @@ class TestRegistryDb(unittest.TestCase):
         self.stubs.Set(db_api.logger, 'error', fake_log_error)
         try:
             api_obj = rserver.API(bad_conf)
+        except exc.ArgumentError:
+            exc_raised = True
         except ImportError:
             exc_raised = True
-        finally:
-            db_api._ENGINE = orig_engine
 
         self.assertTrue(exc_raised)
         self.assertTrue(self.log_written)
 
     def tearDown(self):
         """Clear the test environment"""
+        db_api._ENGINE = self.orig_engine
         self.stubs.UnsetAll()
 
 
