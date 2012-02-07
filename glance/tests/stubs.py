@@ -20,6 +20,12 @@
 import os
 import shutil
 
+try:
+    import sendfile
+    SENDFILE_SUPPORTED = True
+except ImportError:
+    SENDFILE_SUPPORTED = False
+
 import webob
 
 from glance.api.middleware import version_negotiation
@@ -81,9 +87,29 @@ def stub_out_registry_and_store_server(stubs, base_dir):
             setattr(res, 'read', fake_reader)
             return res
 
+    class FakeSocket(object):
+
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def fileno(self):
+            return 42
+
+    class FakeSendFile(object):
+
+        def __init__(self, req):
+            self.req = req
+
+        def sendfile(self, o, i, offset, nbytes):
+            os.lseek(i, offset, os.SEEK_SET)
+            prev_len = len(self.req.body)
+            self.req.body += os.read(i, nbytes)
+            return len(self.req.body) - prev_len
+
     class FakeGlanceConnection(object):
 
         def __init__(self, *args, **kwargs):
+            self.sock = FakeSocket()
             pass
 
         def connect(self):
@@ -94,6 +120,9 @@ def stub_out_registry_and_store_server(stubs, base_dir):
 
         def putrequest(self, method, url):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
+            if SENDFILE_SUPPORTED:
+                fake_sendfile = FakeSendFile(self.req)
+                stubs.Set(sendfile, 'sendfile', fake_sendfile.sendfile)
             self.req.method = method
 
         def putheader(self, key, value):

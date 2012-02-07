@@ -20,6 +20,7 @@
 #   577548-https-httplib-client-connection-with-certificate-v/
 
 import collections
+import errno
 import functools
 import httplib
 import logging
@@ -32,6 +33,12 @@ try:
 except ImportError:
     import socket
     import ssl
+
+try:
+    import sendfile
+    SENDFILE_SUPPORTED = True
+except ImportError:
+    SENDFILE_SUPPORTED = False
 
 from glance.common import auth
 from glance.common import exception
@@ -100,6 +107,35 @@ class ImageBodyIterator(object):
                 yield chunk
             else:
                 break
+
+
+class SendFileIterator:
+    """
+    Emulate iterator pattern over sendfile, in order to allow
+    send progress be followed by wrapping the iteration.
+    """
+    def __init__(self, connection, body):
+        self.connection = connection
+        self.body = body
+        self.offset = 0
+        self.sending = True
+
+    def __iter__(self):
+        class OfLength:
+            def __init__(self, len):
+                self.len = len
+
+            def __len__():
+                return self.len
+
+        while self.sending:
+            sent = sendfile.sendfile(self.connection.sock.fileno(),
+                                     self.body.fileno(),
+                                     self.offset,
+                                     CHUNKSIZE)
+            self.sending = (sent != 0)
+            self.offset += sent
+            yield OfLength(sent)
 
 
 class HTTPSClientAuthConnection(httplib.HTTPSConnection):
@@ -401,8 +437,18 @@ class BaseClient(object):
             def _filelike(body):
                 return hasattr(body, 'read')
 
-            def _iterable(body):
-                return isinstance(body, collections.Iterable)
+            def _sendbody(connection, iter):
+                connection.endheaders()
+                for sent in iter:
+                    # iterator has done the heavy lifting
+                    pass
+
+            def _chunkbody(connection, iter):
+                connection.putheader('Transfer-Encoding', 'chunked')
+                connection.endheaders()
+                for chunk in iter:
+                    connection.send('%x\r\n%s\r\n' % (len(chunk), chunk))
+                connection.send('0\r\n\r\n')
 
             # Do a simple request or a chunked request, depending
             # on whether the body param is file-like or iterable and
@@ -411,20 +457,20 @@ class BaseClient(object):
             if not _pushing(method) or _simple(body):
                 # Simple request...
                 c.request(method, path, body, headers)
-            elif _filelike(body) or _iterable(body):
-                # Chunk it, baby...
+            elif _filelike(body) or self._iterable(body):
                 c.putrequest(method, path)
 
                 for header, value in headers.items():
                     c.putheader(header, value)
-                c.putheader('Transfer-Encoding', 'chunked')
-                c.endheaders()
 
-                iter = body if _iterable(body) else ImageBodyIterator(body)
+                iter = self.image_iterator(c, headers, body)
 
-                for chunk in iter:
-                    c.send('%x\r\n%s\r\n' % (len(chunk), chunk))
-                c.send('0\r\n\r\n')
+                if self._sendable(body):
+                    # send actual file without copying into userspace
+                    _sendbody(c, iter)
+                else:
+                    # otherwise iterate and chunk
+                    _chunkbody(c, iter)
             else:
                 raise TypeError('Unsupported image type: %s' % body.__class__)
 
@@ -453,6 +499,33 @@ class BaseClient(object):
 
         except (socket.error, IOError), e:
             raise exception.ClientConnectionError(e)
+
+    def _seekable(self, body):
+        # pipes are not seekable, avoids sendfile() failure on e.g.
+        #   cat /path/to/image | glance add ...
+        # or where add command is launched via popen
+        try:
+            os.lseek(body.fileno(), 0, os.SEEK_SET)
+            return True
+        except OSError as e:
+            return (e.errno != errno.ESPIPE)
+
+    def _sendable(self, body):
+        return (SENDFILE_SUPPORTED      and
+                hasattr(body, 'fileno') and
+                self._seekable(body)    and
+                not self.use_ssl)
+
+    def _iterable(self, body):
+        return isinstance(body, collections.Iterable)
+
+    def image_iterator(self, connection, headers, body):
+        if self._sendable(body):
+            return SendFileIterator(connection, body)
+        elif self._iterable(body):
+            return body
+        else:
+            return ImageBodyIterator(body)
 
     def get_status_code(self, response):
         """
