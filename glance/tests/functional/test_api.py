@@ -21,7 +21,6 @@ import datetime
 import hashlib
 import httplib2
 import json
-import os
 import tempfile
 
 from glance.common import utils
@@ -1293,6 +1292,8 @@ class TestApi(functional.FunctionalTest):
         """
         self.cleanup()
         self.api_server.default_store = 'shouldnotexist'
+
+        # ensure failure exit code is available to assert on
         self.api_server.server_control_options += ' --await-child=1'
 
         # ensure that the API server fails to launch
