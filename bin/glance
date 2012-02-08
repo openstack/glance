@@ -731,9 +731,13 @@ def get_client(options):
     specified by the --host and --port options
     supplied to the CLI
     """
-    creds = dict(username=options.username or os.getenv('OS_AUTH_USER'),
-                 password=options.password or os.getenv('OS_AUTH_KEY'),
-                 tenant=options.tenant or os.getenv('OS_AUTH_TENANT'),
+    creds = dict(username=options.username or \
+                         os.getenv('OS_AUTH_USER', os.getenv('OS_USERNAME')),
+                 password=options.password or \
+                         os.getenv('OS_AUTH_KEY', os.getenv('OS_PASSWORD')),
+                 tenant=options.tenant or \
+                         os.getenv('OS_AUTH_TENANT',
+                                 os.getenv('OS_TENANT_NAME')),
                  auth_url=options.auth_url or os.getenv('OS_AUTH_URL'),
                  strategy=options.auth_strategy or \
                           os.getenv('OS_AUTH_STRATEGY', 'noauth'))
@@ -743,7 +747,9 @@ def get_client(options):
         creds['auth_url'].find('https') != -1))
 
     return glance_client.Client(host=options.host, port=options.port,
-                                use_ssl=use_ssl, auth_tok=options.auth_token,
+                                use_ssl=use_ssl,
+                                auth_tok=options.auth_token or \
+                                        os.getenv('OS_TOKEN'),
                                 creds=creds)
 
 
