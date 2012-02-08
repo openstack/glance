@@ -34,6 +34,11 @@ Strategies
   This strategy sends notifications to a rabbitmq queue. This can then
   be processed by other services or applications.
 
+* qpid
+
+  This strategy is similar to rabbit. It sends notifications to an AMQP
+  message queue via Qpid.
+
 * noop
 
   This strategy produces no notifications. It is the default strategy.

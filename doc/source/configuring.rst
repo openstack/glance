@@ -642,7 +642,7 @@ a RabbitMQ queue. The configuration options are specified in the
 Optional. Default: ``noop``
 
 Sets the strategy used for notifications. Options are ``logging``,
-``rabbit`` and ``noop``.
+``rabbit``, ``qpid`` and ``noop``.
 For more information :doc:`Glance notifications <notifications>`
 
 * ``rabbit_host``
@@ -713,6 +713,122 @@ Optional. Default: ``30``
 
 Maximum seconds to wait before reconnecting on failures when using
 ``rabbit`` strategy.
+
+* ``qpid_notification_exchange``
+
+Optional. Default: ``glance``
+
+Message exchange to use when using the ``qpid`` notification strategy.
+
+* ``qpid_notification_topic``
+
+Optional. Default: ``glanice_notifications``
+
+This is the topic prefix for notifications when using the ``qpid``
+notification strategy. When a notification is sent at the ``info`` priority,
+the topic will be ``glance_notifications.info``. The same idea applies for
+the ``error`` and ``warn`` notification priorities. To receive all
+notifications, you would set up a receiver with a topic of
+``glance_notifications.*``.
+
+* ``qpid_host``
+
+Optional. Default: ``localhost``
+
+This is the hostname or IP address of the Qpid broker that will be used
+when Glance has been configured to use the ``qpid`` notification strategy.
+
+* ``qpid_port``
+
+Optional. Default: ``5672``
+
+This is the port number to connect to on the Qpid broker, ``qpid_host``,
+when using the ``qpid`` notification strategy.
+
+* ``qpid_username``
+
+Optional. Default: None
+
+This is the username that Glance will use to authenticate with the Qpid
+broker if using the ``qpid`` notification strategy.
+
+* ``qpid_password``
+
+Optional. Default: None
+
+This is the username that Glance will use to authenticate with the Qpid
+broker if using the ``qpid`` notification strategy.
+
+* ``qpid_sasl_mechanisms``
+
+Optional. Default: None
+
+This is a space separated list of SASL mechanisms to use for authentication
+with the Qpid broker if using the ``qpid`` notification strategy.
+
+* ``qpid_reconnect_timeout``
+
+Optional. Default: None
+
+This option specifies a timeout in seconds for automatic reconnect attempts
+to the Qpid broker if the ``qpid`` notification strategy is used.  In general,
+it is safe to leave all of the reconnect timing options not set. In that case,
+the Qpid client's default behavior will be used, which is to attempt to
+reconnect to the broker at exponential back-off intervals (in 1 second, then 2
+seconds, then 4, 8, 16, etc).
+
+* ``qpid_reconnect_limit``
+
+Optional. Default: None
+
+This option specifies a maximum number of reconnect attempts to the Qpid
+broker if the ``qpid`` notification strategy is being used.  Normally the
+Qpid client will continue attempting to reconnect until successful.
+
+* ``qpid_reconnect_interval_min``
+
+Optional. Default: None
+
+This option specifies the minimum number of seconds between reconnection
+attempts if the ``qpid`` notification strategy is being used.
+
+* ``qpid_reconnect_interval_max``
+
+Optional. Default: None
+
+This option specifies the maximum number of seconds between reconnection
+attempts if the ``qpid`` notification strategy is being used.
+
+* ``qpid_reconnect_interval``
+
+This option specifies the exact number of seconds between reconnection
+attempts if the ``qpid`` notification strategy is being used. Setting
+this option is equivalent to setting ``qpid_reconnect_interval_max`` and
+``qpid_reconnect_interval_min`` to the same value.
+
+* ``qpid_heartbeat``
+
+Optional. Default: ``5``
+
+This option is used to specify the number of seconds between heartbeat messages
+exchanged between the Qpid client and Qpid broker if the ``qpid`` notification
+strategy is being used.  Heartbeats are used to more quickly detect that a
+connection has been lost.
+
+* ``qpid_protocol``
+
+Optional. Default: ``tcp``
+
+This option is used to specify the transport protocol to use if using the
+``qpid`` notification strategy. To enable SSL, set this option to ``ssl``.
+
+* ``qpid_tcp_nodelay``
+
+Optional. Default: ``True``
+
+This option can be used to disable the TCP NODELAY option. It effectively
+disables the Nagle algorithm for the connection to the Qpid broker. This
+option only applies if the ``qpid`` notification strategy is used.
 
 Configuring Access Policies
 ---------------------------
