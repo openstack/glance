@@ -220,11 +220,22 @@ class ImageCache(object):
         logger.debug(_("Tee'ing image '%s' into cache"), image_id)
 
         def tee_iter(image_id):
-            with self.driver.open_for_write(image_id) as cache_file:
-                for chunk in image_iter:
-                    cache_file.write(chunk)
-                    yield chunk
-                cache_file.flush()
+            try:
+                with self.driver.open_for_write(image_id) as cache_file:
+                    for chunk in image_iter:
+                        try:
+                            cache_file.write(chunk)
+                        finally:
+                            yield chunk
+                    cache_file.flush()
+            except Exception:
+                logger.exception(_("Exception encountered while tee'ing "
+                                   "image '%s' into cache. Continuing "
+                                   "with response.") % image_id)
+
+            # NOTE(markwash): continue responding even if caching failed
+            for chunk in image_iter:
+                yield chunk
 
         return tee_iter(image_id)
 

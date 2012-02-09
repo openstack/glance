@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from contextlib import contextmanager
 import os
 import random
 import shutil
@@ -24,6 +25,7 @@ import unittest
 import stubout
 
 from glance import image_cache
+from glance.common import cfg
 from glance.common import exception
 from glance.common import utils
 from glance.tests import utils as test_utils
@@ -308,3 +310,62 @@ class TestImageCacheSqlite(unittest.TestCase,
     def tearDown(self):
         if os.path.exists(self.cache_dir):
             shutil.rmtree(self.cache_dir)
+
+
+class TestImageCacheNoDep(unittest.TestCase):
+
+    def setUp(self):
+        self.driver = None
+
+        def init_driver(self2):
+            self2.driver = self.driver
+
+        self.stubs = stubout.StubOutForTesting()
+        self.stubs.Set(image_cache.ImageCache, 'init_driver', init_driver)
+
+    def tearDown(self):
+        self.stubs.UnsetAll()
+
+    def test_get_caching_iter_when_write_fails(self):
+
+        class FailingFile(object):
+
+            def write(self, data):
+                if data == "Fail":
+                    raise IOError
+
+        class FailingFileDriver(object):
+
+            def is_cacheable(self, *args, **kwargs):
+                return True
+
+            @contextmanager
+            def open_for_write(self, *args, **kwargs):
+                yield FailingFile()
+
+        self.driver = FailingFileDriver()
+        conf = cfg.ConfigOpts()
+        cache = image_cache.ImageCache(conf)
+        data = ['a', 'b', 'c', 'Fail', 'd', 'e', 'f']
+
+        caching_iter = cache.get_caching_iter('dummy_id', iter(data))
+        self.assertEqual(list(caching_iter), data)
+
+    def test_get_caching_iter_when_open_fails(self):
+
+        class OpenFailingDriver(object):
+
+            def is_cacheable(self, *args, **kwargs):
+                return True
+
+            @contextmanager
+            def open_for_write(self, *args, **kwargs):
+                raise IOError
+
+        self.driver = OpenFailingDriver()
+        conf = cfg.ConfigOpts()
+        cache = image_cache.ImageCache(conf)
+        data = ['a', 'b', 'c', 'd', 'e', 'f']
+
+        caching_iter = cache.get_caching_iter('dummy_id', iter(data))
+        self.assertEqual(list(caching_iter), data)
