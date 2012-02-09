@@ -1307,7 +1307,7 @@ class TestApi(functional.FunctionalTest):
         to fail to start.
         """
         self.cleanup()
-        self.api_server.default_store = 'shouldnotexist'
+        self.default_store = 'shouldnotexist'
 
         # ensure failure exit code is available to assert on
         self.api_server.server_control_options += ' --await-child=1'

@@ -235,13 +235,21 @@ EXAMPLES
             print 'Found non-settable field %s. Removing.' % field
             fields.pop(field)
 
-    if 'location' in fields.keys():
-        image_meta['location'] = fields.pop('location')
+    def _external_source(fields, image_data):
+        source = None
+        features = {}
+        if 'location' in fields.keys():
+            source = fields.pop('location')
+            image_meta['location'] = source
+        elif 'copy_from' in fields.keys():
+            source = fields.pop('copy_from')
+            features['x-glance-api-copy-from'] = source
+        return source, features
 
     # We need either a location or image data/stream to add...
-    image_location = image_meta.get('location')
+    location, features = _external_source(fields, image_meta)
     image_data = None
-    if not image_location:
+    if not location:
         # Grab the image data stream from stdin or redirect,
         # otherwise error out
         image_data = sys.stdin
@@ -251,7 +259,8 @@ EXAMPLES
 
     if not options.dry_run:
         try:
-            image_meta = c.add_image(image_meta, image_data)
+            image_meta = c.add_image(image_meta, image_data,
+                                     features=features)
             image_id = image_meta['id']
             print "Added new image with ID: %s" % image_id
             if options.verbose:
@@ -278,9 +287,17 @@ EXAMPLES
             return FAILURE
     else:
         print "Dry run. We would have done the following:"
+
+        def _dump(dict):
+            for k, v in sorted(dict.items()):
+                print " %(k)30s => %(v)s" % locals()
+
         print "Add new image with metadata:"
-        for k, v in sorted(image_meta.items()):
-            print " %(k)30s => %(v)s" % locals()
+        _dump(image_meta)
+
+        if features:
+            print "with features enabled:"
+            _dump(features)
 
     return SUCCESS
 
@@ -299,7 +316,8 @@ to Glance that represents the metadata for an image.
 Field names that can be specified:
 
 name                A name for the image.
-location            The location of the image.
+location            An external location to serve out from.
+copy_from           An external location (HTTP, S3 or Swift URI) to copy from.
 is_public           If specified, interpreted as a boolean value
                     and sets or unsets the image's availability to the public.
 protected           If specified, interpreted as a boolean value

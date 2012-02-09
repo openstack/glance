@@ -273,7 +273,15 @@ class Store(glance.store.base.Store):
         #            "Expected %s byte file, Swift has %s bytes" %
         #            (expected_size, obj_size))
 
-        return (resp_body, resp_headers.get('content-length'))
+        class ResponseIndexable(glance.store.Indexable):
+            def another(self):
+                try:
+                    return self.wrapped.next()
+                except StopIteration:
+                    return ''
+
+        length = resp_headers.get('content-length')
+        return (ResponseIndexable(resp_body, length), length)
 
     def get_size(self, location):
         """

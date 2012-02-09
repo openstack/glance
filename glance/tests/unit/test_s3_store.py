@@ -273,7 +273,7 @@ class TestStore(unittest.TestCase):
             loc = get_location_from_uri(expected_location)
             (new_image_s3, new_image_size) = self.store.get(loc)
             new_image_contents = new_image_s3.getvalue()
-            new_image_s3_size = new_image_s3.len
+            new_image_s3_size = len(new_image_s3)
 
             self.assertEquals(expected_s3_contents, new_image_contents)
             self.assertEquals(expected_s3_size, new_image_s3_size)

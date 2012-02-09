@@ -117,7 +117,14 @@ class Store(glance.store.base.Store):
 
         iterator = http_response_iterator(conn, resp, self.CHUNKSIZE)
 
-        return (iterator, content_length)
+        class ResponseIndexable(glance.store.Indexable):
+            def another(self):
+                try:
+                    return self.wrapped.next()
+                except StopIteration:
+                    return ''
+
+        return (ResponseIndexable(iterator, content_length), content_length)
 
     def get_size(self, location):
         """

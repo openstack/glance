@@ -154,6 +154,23 @@ class skip_unless(object):
         return _skipper
 
 
+class requires(object):
+    """Decorator that initiates additional test setup/teardown."""
+    def __init__(self, setup, teardown=None):
+        self.setup = setup
+        self.teardown = teardown
+
+    def __call__(self, func):
+        def _runner(*args, **kw):
+            self.setup(args[0])
+            func(*args, **kw)
+            if self.teardown:
+                self.teardown(args[0])
+        _runner.__name__ = func.__name__
+        _runner.__doc__ = func.__doc__
+        return _runner
+
+
 def skip_if_disabled(func):
     """Decorator that skips a test if test case is disabled."""
     @functools.wraps(func)

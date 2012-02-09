@@ -260,11 +260,18 @@ To upload an EC2 tarball VM image with an associated property (e.g., distro)::
      container_format=ovf disk_format=raw \
      distro="ubuntu 10.10" < /root/maverick-server-uec-amd64.tar.gz
 
-To upload an EC2 tarball VM image from a URL::
+To reference an EC2 tarball VM image available at an external URL::
 
-  $> glance add name="uubntu-10.04-amd64" is_public=true \
+  $> glance add name="ubuntu-10.04-amd64" is_public=true \
      container_format=ovf disk_format=raw \
      location="http://uec-images.ubuntu.com/lucid/current/\
+     lucid-server-uec-amd64.tar.gz"
+
+To upload a copy of that same EC2 tarball VM image::
+
+  $> glance add name="ubuntu-10.04-amd64" is_public=true \
+     container_format=ovf disk_format=raw \
+     copy_from="http://uec-images.ubuntu.com/lucid/current/\
      lucid-server-uec-amd64.tar.gz"
 
 To upload a qcow2 image::
