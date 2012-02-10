@@ -731,6 +731,10 @@ def get_client(options):
     specified by the --host and --port options
     supplied to the CLI
     """
+    if options.auth_url or os.getenv('OS_AUTH_URL'):
+        force_strategy = 'keystone'
+    else:
+        force_strategy = None
     creds = dict(username=options.username or \
                          os.getenv('OS_AUTH_USER', os.getenv('OS_USERNAME')),
                  password=options.password or \
@@ -739,7 +743,7 @@ def get_client(options):
                          os.getenv('OS_AUTH_TENANT',
                                  os.getenv('OS_TENANT_NAME')),
                  auth_url=options.auth_url or os.getenv('OS_AUTH_URL'),
-                 strategy=options.auth_strategy or \
+                 strategy=force_strategy or options.auth_strategy or \
                           os.getenv('OS_AUTH_STRATEGY', 'noauth'))
 
     use_ssl = (options.use_ssl or (
