@@ -87,8 +87,8 @@ class TestConfigOpts(config.GlanceConfigOpts):
     def __call__(self):
         self._write_tmp_config_file()
         try:
-            super(TestConfigOpts, self).\
-                __call__(['--config-file', self.temp_file])
+            super(TestConfigOpts, self).__call__(['--config-file',
+                                                  self.temp_file])
         finally:
             if self.clean:
                 os.remove(self.temp_file)

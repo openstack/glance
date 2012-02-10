@@ -153,8 +153,8 @@ class TestBinGlance(functional.FunctionalTest):
 
         line = lines[0]
 
-        image_id, name, disk_format, container_format, size = \
-            [c.strip() for c in line.split()]
+        img_info = [c.strip() for c in line.split()]
+        image_id, name, disk_format, container_format, size = img_info
         self.assertEqual('MyImage', name)
 
         self.assertEqual('0', size, "Expected image to be 0 bytes in size, "
@@ -349,8 +349,8 @@ class TestBinGlance(functional.FunctionalTest):
 
         line = lines[0]
 
-        image_id, name, disk_format, container_format, size = \
-            [c.strip() for c in line.split()]
+        img_info = [c.strip() for c in line.split()]
+        image_id, name, disk_format, container_format, size = img_info
         self.assertEqual('MyImage', name)
 
         self.assertEqual('0', size, "Expected image to be 0 bytes in size, "
@@ -406,8 +406,8 @@ class TestBinGlance(functional.FunctionalTest):
 
         line = lines[0]
 
-        image_id, name, disk_format, container_format, size = \
-            [c.strip() for c in line.split()]
+        img_info = [c.strip() for c in line.split()]
+        image_id, name, disk_format, container_format, size = img_info
         self.assertEqual('MyImage', name)
 
         self.assertEqual('3', size,
@@ -503,8 +503,8 @@ class TestBinGlance(functional.FunctionalTest):
 
         # 5. Update the image's Name attribute
         updated_image_name = "Updated image name"
-        cmd = "bin/glance --port=%d update %s is_public=True name=\"%s\"" \
-                % (api_port, image_id, updated_image_name)
+        cmd = ("bin/glance --port=%d update %s is_public=True name=\"%s\"" %
+               (api_port, image_id, updated_image_name))
 
         exitcode, out, err = execute(cmd)
 
@@ -1100,8 +1100,8 @@ class TestBinGlance(functional.FunctionalTest):
 
         line = lines[0]
 
-        image_id, name, disk_format, container_format, size = \
-            [c.strip() for c in line.split()]
+        img_info = [c.strip() for c in line.split()]
+        image_id, name, disk_format, container_format, size = img_info
         self.assertEqual('MyImage', name)
 
         # 3. Delete the image
@@ -1113,8 +1113,8 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertTrue(out.startswith('You do not have permission'))
 
         # 4. Remove image protection
-        cmd = "bin/glance --port=%d --force update %s" \
-              " protected=False" % (api_port, image_id)
+        cmd = ("bin/glance --port=%d --force update %s "
+               "protected=False" % (api_port, image_id))
 
         exitcode, out, err = execute(cmd)
 

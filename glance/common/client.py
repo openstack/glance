@@ -207,10 +207,10 @@ class BaseClient(object):
     DEFAULT_DOC_ROOT = None
     # Standard CA file locations for Debian/Ubuntu, RedHat/Fedora,
     # Suse, FreeBSD/OpenBSD
-    DEFAULT_CA_FILE_PATH = '/etc/ssl/certs/ca-certificates.crt:'\
-        '/etc/pki/tls/certs/ca-bundle.crt:'\
-        '/etc/ssl/ca-bundle.pem:'\
-        '/etc/ssl/cert.pem'
+    DEFAULT_CA_FILE_PATH = ('/etc/ssl/certs/ca-certificates.crt:'
+                            '/etc/pki/tls/certs/ca-bundle.crt:'
+                            '/etc/ssl/ca-bundle.pem:'
+                            '/etc/ssl/cert.pem')
 
     OK_RESPONSE_CODES = (
         httplib.OK,

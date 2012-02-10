@@ -251,8 +251,7 @@ class TestStore(base.StoreClearingUnitTest):
             expected_image_id = utils.generate_uuid()
             expected_s3_size = FIVE_KB
             expected_s3_contents = "*" * expected_s3_size
-            expected_checksum = \
-                    hashlib.md5(expected_s3_contents).hexdigest()
+            expected_checksum = hashlib.md5(expected_s3_contents).hexdigest()
             new_conf = S3_CONF.copy()
             new_conf['s3_store_host'] = variation
             expected_location = format_s3_location(

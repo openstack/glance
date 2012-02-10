@@ -270,8 +270,8 @@ def schedule_delete_from_backend(uri, conf, context, image_id, **kwargs):
                 exception.StoreDeleteNotSupported,
                 exception.NotFound):
             exc_type = sys.exc_info()[0].__name__
-            msg = _("Failed to delete image at %s from store (%s)") % \
-                  (uri, exc_type)
+            msg = (_("Failed to delete image at %s from store (%s)") %
+                   (uri, exc_type))
             logger.error(msg)
         finally:
             # avoid falling through to the delayed deletion logic

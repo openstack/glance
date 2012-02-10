@@ -113,10 +113,10 @@ class TestMiscellaneous(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         self.assertEqual('{"images": []}', out.strip())
 
-        cmd = "curl -X POST -H 'Content-Type: application/octet-stream' "\
-              "-H 'X-Image-Meta-Name: ImageName' "\
-              "-H 'X-Image-Meta-Disk-Format: Invalid' "\
-              "http://0.0.0.0:%d/v1/images" % api_port
+        cmd = ("curl -X POST -H 'Content-Type: application/octet-stream' "
+               "-H 'X-Image-Meta-Name: ImageName' "
+               "-H 'X-Image-Meta-Disk-Format: Invalid' "
+               "http://0.0.0.0:%d/v1/images" % api_port)
         ignored, out, err = execute(cmd)
 
         self.assertTrue('Invalid disk format' in out,
