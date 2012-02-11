@@ -28,7 +28,7 @@ from glance.common import utils
 _STRATEGIES = {
     "logging": "glance.notifier.notify_log.LoggingStrategy",
     "rabbit": "glance.notifier.notify_kombu.RabbitStrategy",
-    "qpid" : "glance.notifier.notify_qpid.QpidStrategy",
+    "qpid": "glance.notifier.notify_qpid.QpidStrategy",
     "noop": "glance.notifier.notify_noop.NoopStrategy",
     "default": "glance.notifier.notify_noop.NoopStrategy",
 }
