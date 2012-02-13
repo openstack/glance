@@ -3,6 +3,7 @@
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # Copyright 2010-2011 OpenStack LLC.
+# Copyright 2012 Justin Santa Barbara
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -247,7 +248,13 @@ def image_get_all(context, filters=None, marker=None, limit=None,
             query = query.filter(getattr(models.Image, k) == v)
 
     if marker != None:
-        # images returned should be created before the image defined by marker
+        # For pagination, we return the images that follow the 'marker' image
+        # in the sort order. We sort on (sort_key, created_at, id).
+        # Why? Because we need a unique id for paging to work correctly. So:
+        # * sort_key is what we really want to sort on
+        # * created_at means sort_key ties come in a human-friendly order
+        # * id is used to break any remaining ties
+
         marker_image = image_get(context, marker,
                                  force_show_deleted=showing_deleted)
         marker_value = getattr(marker_image, sort_key)
@@ -255,13 +262,17 @@ def image_get_all(context, filters=None, marker=None, limit=None,
             query = query.filter(
                 or_(sort_key_attr < marker_value,
                     and_(sort_key_attr == marker_value,
-                         models.Image.created_at < marker_image.created_at,
+                         models.Image.created_at < marker_image.created_at),
+                    and_(sort_key_attr == marker_value,
+                         models.Image.created_at == marker_image.created_at,
                          models.Image.id < marker)))
         else:
             query = query.filter(
                 or_(sort_key_attr > marker_value,
                     and_(sort_key_attr == marker_value,
-                         models.Image.created_at > marker_image.created_at,
+                         models.Image.created_at > marker_image.created_at),
+                    and_(sort_key_attr == marker_value,
+                         models.Image.created_at == marker_image.created_at,
                          models.Image.id > marker)))
 
     if limit != None:
