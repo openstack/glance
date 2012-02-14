@@ -41,7 +41,7 @@ except ImportError:
     SENDFILE_SUPPORTED = False
 
 from glance.common import auth
-from glance.common import exception
+from glance.common import exception, utils
 
 
 # common chunk size for get and put
@@ -523,7 +523,7 @@ class BaseClient(object):
         if self._sendable(body):
             return SendFileIterator(connection, body)
         elif self._iterable(body):
-            return body
+            return utils.chunkreadable(body)
         else:
             return ImageBodyIterator(body)
 

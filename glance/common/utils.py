@@ -39,6 +39,17 @@ logger = logging.getLogger(__name__)
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
+def chunkreadable(iter, chunk_size=65536):
+    """
+    Wrap a readable iterator with a reader yielding chunks of
+    a preferred size, otherwise leave iterator unchanged.
+
+    :param iter: an iter which may also be readable
+    :param chunk_size: maximum size of chunk
+    """
+    return chunkiter(iter, chunk_size) if hasattr(iter, 'read') else iter
+
+
 def chunkiter(fp, chunk_size=65536):
     """
     Return an iterator to a file-like obj which yields fixed size chunks
