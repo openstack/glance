@@ -124,6 +124,10 @@ class ClientConnectionError(GlanceException):
     message = _("There was an error connecting to a server")
 
 
+class ClientConfigurationError(GlanceException):
+    message = _("There was an error configuring the client.")
+
+
 class MultipleChoices(GlanceException):
     message = _("The request returned a 302 Multiple Choices. This generally "
                 "means that you have not included a version indicator in a "
