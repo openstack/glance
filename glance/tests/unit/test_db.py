@@ -178,7 +178,7 @@ class TestPagingOrder(base.IsolatedUnitTest):
     through, and check that we get back the images in the order we expect.
     """
 
-    ITEM_COUNT = 500
+    ITEM_COUNT = 100
     PAGE_SIZE = 5
     TIME_VALUES = 10
     MINDISK_VALUES = 10
@@ -264,6 +264,9 @@ class TestPagingOrder(base.IsolatedUnitTest):
 
             for result in results:
                 got_ids.append(result['id'])
+
+            # Prevent this running infinitely in error cases
+            self.assertTrue(len(got_ids) < (500 + len(expected_ids)))
 
             marker = results[-1].id
 

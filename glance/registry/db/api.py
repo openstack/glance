@@ -176,6 +176,101 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
     return image
 
 
+def paginate_query(query, model, limit, sort_keys, marker=None,
+                   sort_dir=None, sort_dirs=None):
+    """Returns a query with sorting / pagination criteria added.
+
+    Pagination works by requiring a unique sort_key, specified by sort_keys.
+    (If sort_keys is not unique, then we risk looping through values.)
+    We use the last row in the previous page as the 'marker' for pagination.
+    So we must return values that follow the passed marker in the order.
+    With a single-valued sort_key, this would be easy: sort_key > X.
+    With a compound-values sort_key, (k1, k2, k3) we must do this to repeat
+    the lexicographical ordering:
+    (k1 > X1) or (k1 == X1 && k2 > X2) or (k1 == X1 && k2 == X2 && k3 > X3)
+
+    We also have to cope with different sort_directions.
+
+    Typically, the id of the last row is used as the client-facing pagination
+    marker, then the actual marker object must be fetched from the db and
+    passed in to us as marker.
+
+    :param query: the query object to which we should add paging/sorting
+    :param model: the ORM model class
+    :param limit: maximum number of items to return
+    :param sort_keys: array of attributes by which results should be sorted
+    :param marker: the last item of the previous page; we returns the next
+                    results after this value.
+    :param sort_dir: direction in which results should be sorted (asc, desc)
+    :param sort_dirs: per-column array of sort_dirs, corresponding to sort_keys
+
+    :rtype: sqlalchemy.orm.query.Query
+    :return: The query with sorting/pagination added.
+    """
+
+    if 'id' not in sort_keys:
+        # TODO(justinsb): If this ever gives a false-positive, check
+        # the actual primary key, rather than assuming it's id
+        logger.warn(_('Id not in sort_keys; is sort_keys unique?'))
+
+    assert(not (sort_dir and sort_dirs))
+
+    # Default the sort direction to ascending
+    if sort_dirs is None and sort_dir is None:
+        sort_dir = 'asc'
+
+    # Ensure a per-column sort direction
+    if sort_dirs is None:
+        sort_dirs = [sort_dir for _sort_key in sort_keys]
+
+    assert(len(sort_dirs) == len(sort_keys))
+
+    # Add sorting
+    for current_sort_key, current_sort_dir in zip(sort_keys, sort_dirs):
+        sort_dir_func = {
+            'asc': asc,
+            'desc': desc,
+        }[current_sort_dir]
+
+        sort_key_attr = getattr(model, current_sort_key)
+        query = query.order_by(sort_dir_func(sort_key_attr))
+
+    # Add pagination
+    if marker is not None:
+        marker_values = []
+        for sort_key in sort_keys:
+            v = getattr(marker, sort_key)
+            marker_values.append(v)
+
+        # Build up an array of sort criteria as in the docstring
+        criteria_list = []
+        for i in xrange(0, len(sort_keys)):
+            crit_attrs = []
+            for j in xrange(0, i):
+                model_attr = getattr(model, sort_keys[j])
+                crit_attrs.append((model_attr == marker_values[j]))
+
+            model_attr = getattr(model, sort_keys[i])
+            if sort_dirs[i] == 'desc':
+                crit_attrs.append((model_attr < marker_values[i]))
+            elif sort_dirs[i] == 'asc':
+                crit_attrs.append((model_attr > marker_values[i]))
+            else:
+                raise ValueError(_("Unknown sort direction, "
+                                   "must be 'desc' or 'asc'"))
+
+            criteria = and_(*crit_attrs)
+            criteria_list.append(criteria)
+
+        f = or_(*criteria_list)
+        query = query.filter(f)
+
+    if limit is not None:
+        query = query.limit(limit)
+
+    return query
+
+
 def image_get_all(context, filters=None, marker=None, limit=None,
                   sort_key='created_at', sort_dir='desc'):
     """
@@ -195,16 +290,6 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     query = session.query(models.Image).\
                    options(joinedload(models.Image.properties)).\
                    options(joinedload(models.Image.members))
-
-    sort_dir_func = {
-        'asc': asc,
-        'desc': desc,
-    }[sort_dir]
-
-    sort_key_attr = getattr(models.Image, sort_key)
-    query = query.order_by(sort_dir_func(sort_key_attr))\
-                 .order_by(sort_dir_func(models.Image.created_at))\
-                 .order_by(sort_dir_func(models.Image.id))
 
     if 'size_min' in filters:
         query = query.filter(models.Image.size >= filters['size_min'])
@@ -249,36 +334,15 @@ def image_get_all(context, filters=None, marker=None, limit=None,
         if v is not None:
             query = query.filter(getattr(models.Image, k) == v)
 
-    if marker != None:
-        # For pagination, we return the images that follow the 'marker' image
-        # in the sort order. We sort on (sort_key, created_at, id).
-        # Why? Because we need a unique id for paging to work correctly. So:
-        # * sort_key is what we really want to sort on
-        # * created_at means sort_key ties come in a human-friendly order
-        # * id is used to break any remaining ties
-
+    marker_image = None
+    if marker is not None:
         marker_image = image_get(context, marker,
                                  force_show_deleted=showing_deleted)
-        marker_value = getattr(marker_image, sort_key)
-        if sort_dir == 'desc':
-            query = query.filter(
-                or_(sort_key_attr < marker_value,
-                    and_(sort_key_attr == marker_value,
-                         models.Image.created_at < marker_image.created_at),
-                    and_(sort_key_attr == marker_value,
-                         models.Image.created_at == marker_image.created_at,
-                         models.Image.id < marker)))
-        else:
-            query = query.filter(
-                or_(sort_key_attr > marker_value,
-                    and_(sort_key_attr == marker_value,
-                         models.Image.created_at > marker_image.created_at),
-                    and_(sort_key_attr == marker_value,
-                         models.Image.created_at == marker_image.created_at,
-                         models.Image.id > marker)))
 
-    if limit != None:
-        query = query.limit(limit)
+    query = paginate_query(query, models.Image, limit,
+                           [sort_key, 'created_at', 'id'],
+                           marker=marker_image,
+                           sort_dir=sort_dir)
 
     return query.all()
 
@@ -564,34 +628,16 @@ def image_member_get_memberships(context, member, marker=None, limit=None,
     if not can_show_deleted(context):
         query = query.filter_by(deleted=False)
 
-    sort_dir_func = {
-        'asc': asc,
-        'desc': desc,
-    }[sort_dir]
-
-    sort_key_attr = getattr(models.ImageMember, sort_key)
-
-    query = query.order_by(sort_dir_func(sort_key_attr)).\
-                  order_by(sort_dir_func(models.ImageMember.id))
-
-    if marker != None:
+    marker_membership = None
+    if marker is not None:
         # memberships returned should be created before the membership
         # defined by marker
         marker_membership = image_member_get(context, marker)
-        marker_value = getattr(marker_membership, sort_key)
-        if sort_dir == 'desc':
-            query = query.filter(
-                or_(sort_key_attr < marker_value,
-                    and_(sort_key_attr == marker_value,
-                         models.ImageMember.id < marker)))
-        else:
-            query = query.filter(
-                or_(sort_key_attr > marker_value,
-                    and_(sort_key_attr == marker_value,
-                         models.ImageMember.id > marker)))
 
-    if limit != None:
-        query = query.limit(limit)
+    query = paginate_query(query, models.ImageMember, limit,
+                           [sort_key, 'id'],
+                           marker=marker_membership,
+                           sort_dir=sort_dir)
 
     return query.all()
 
