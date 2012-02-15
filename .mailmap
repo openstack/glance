@@ -1,6 +1,7 @@
 # Format is:
 # <preferred e-mail> <other e-mail 1>
 # <preferred e-mail> <other e-mail 2>
+<adam.gandelman@canonical.com> <adamg@canonical.com>
 <brian.waldon@rackspace.com> <bcwaldon@gmail.com>
 <corywright@gmail.com> <cory.wright@rackspace.com>
 <jsuh@isi.edu> <jsuh@bespin>

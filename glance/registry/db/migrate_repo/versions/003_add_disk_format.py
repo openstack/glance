@@ -105,6 +105,7 @@ def upgrade(migrate_engine):
                      created_at=record.created_at,
                      deleted=False,
                      value=record.type)
+    conn.close()
 
     disk_format = Column('disk_format', String(20))
     disk_format.create(images)
@@ -112,7 +113,6 @@ def upgrade(migrate_engine):
     container_format.create(images)
 
     images.columns['type'].drop()
-    conn.close()
 
 
 def downgrade(migrate_engine):
