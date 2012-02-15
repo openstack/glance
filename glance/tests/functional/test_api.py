@@ -905,9 +905,23 @@ class TestApi(functional.FunctionalTest):
             self.assertEqual(image['name'], "My Image!")
 
         # 16. GET /images with past changes-since filter
-        dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
-        iso1 = utils.isotime(dt1)
-        params = "changes-since=%s" % iso1
+        yesterday = utils.isotime(datetime.datetime.utcnow() -
+                                  datetime.timedelta(1))
+        params = "changes-since=%s" % yesterday
+        path = "http://%s:%d/v1/images?%s" % ("0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 3)
+
+        # one timezone west of Greenwich equates to an hour ago
+        # taking care to pre-urlencode '+' as '%2B', otherwise the timezone
+        # '+' is wrongly decoded as a space
+        # TODO(eglynn): investigate '+' --> <SPACE> decoding, an artifact
+        # of WSGI/webob dispatch?
+        now = datetime.datetime.utcnow()
+        hour_ago = now.strftime('%Y-%m-%dT%H:%M:%S%%2B01:00')
+        params = "changes-since=%s" % hour_ago
         path = "http://%s:%d/v1/images?%s" % ("0.0.0.0", self.api_port, params)
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
@@ -915,9 +929,19 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(len(data['images']), 3)
 
         # 17. GET /images with future changes-since filter
-        dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
-        iso2 = utils.isotime(dt2)
-        params = "changes-since=%s" % iso2
+        tomorrow = utils.isotime(datetime.datetime.utcnow() +
+                                 datetime.timedelta(1))
+        params = "changes-since=%s" % tomorrow
+        path = "http://%s:%d/v1/images?%s" % ("0.0.0.0", self.api_port, params)
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['images']), 0)
+
+        # one timezone east of Greenwich equates to an hour from now
+        now = datetime.datetime.utcnow()
+        hour_hence = now.strftime('%Y-%m-%dT%H:%M:%S-01:00')
+        params = "changes-since=%s" % hour_hence
         path = "http://%s:%d/v1/images?%s" % ("0.0.0.0", self.api_port, params)
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)

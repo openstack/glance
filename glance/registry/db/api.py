@@ -228,7 +228,9 @@ def image_get_all(context, filters=None, marker=None, limit=None,
 
     showing_deleted = False
     if 'changes-since' in filters:
-        changes_since = filters.pop('changes-since')
+        # normalize timestamp to UTC, as sqlalchemy doesn't appear to
+        # respect timezone offsets
+        changes_since = utils.normalize_time(filters.pop('changes-since'))
         query = query.filter(models.Image.updated_at > changes_since)
         showing_deleted = True
 

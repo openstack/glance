@@ -1268,8 +1268,9 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
         iso2 = utils.isotime(dt2)
 
-        dt3 = datetime.datetime.utcnow() + datetime.timedelta(2)
-        iso3 = utils.isotime(dt3)
+        image_ts = datetime.datetime.utcnow() + datetime.timedelta(2)
+        hour_before = image_ts.strftime('%Y-%m-%dT%H:%M:%S%%2B01:00')
+        hour_after = image_ts.strftime('%Y-%m-%dT%H:%M:%S-01:00')
 
         dt4 = datetime.datetime.utcnow() + datetime.timedelta(3)
         iso4 = utils.isotime(dt4)
@@ -1296,8 +1297,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
                          'name': 'fake image #4',
                          'size': 20,
                          'checksum': None,
-                         'created_at': dt3,
-                         'updated_at': dt3}
+                         'created_at': image_ts,
+                         'updated_at': image_ts}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -1330,6 +1331,25 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         images = res_dict['images']
         self.assertEquals(len(images), 1)
         self.assertEqual(images[0]['id'], UUID4)
+
+        # Expect 1 images (0 deleted)
+        req = webob.Request.blank('/images/detail?changes-since=%s' %
+                                  hour_before)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+        self.assertEqual(images[0]['id'], UUID4)
+
+        # Expect 0 images (0 deleted)
+        req = webob.Request.blank('/images/detail?changes-since=%s' %
+                                  hour_after)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        images = res_dict['images']
+        self.assertEquals(len(images), 0)
 
         # Expect 0 images (0 deleted)
         req = webob.Request.blank('/images/detail?changes-since=%s' % iso4)
@@ -2367,8 +2387,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
         iso2 = utils.isotime(dt2)
 
-        dt3 = datetime.datetime.utcnow() + datetime.timedelta(2)
-        iso3 = utils.isotime(dt3)
+        image_ts = datetime.datetime.utcnow() + datetime.timedelta(2)
+        hour_before = image_ts.strftime('%Y-%m-%dT%H:%M:%S%%2B01:00')
+        hour_after = image_ts.strftime('%Y-%m-%dT%H:%M:%S-01:00')
 
         dt4 = datetime.datetime.utcnow() + datetime.timedelta(3)
         iso4 = utils.isotime(dt4)
@@ -2395,8 +2416,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                          'name': 'fake image #4',
                          'size': 20,
                          'checksum': None,
-                         'created_at': dt3,
-                         'updated_at': dt3}
+                         'created_at': image_ts,
+                         'updated_at': image_ts}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -2429,6 +2450,25 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         images = res_dict['images']
         self.assertEquals(len(images), 1)
         self.assertEqual(images[0]['id'], UUID4)
+
+        # Expect 1 images (0 deleted)
+        req = webob.Request.blank('/images/detail?changes-since=%s' %
+                                  hour_before)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+        self.assertEqual(images[0]['id'], UUID4)
+
+        # Expect 0 images (0 deleted)
+        req = webob.Request.blank('/images/detail?changes-since=%s' %
+                                  hour_after)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        images = res_dict['images']
+        self.assertEquals(len(images), 0)
 
         # Expect 0 images (0 deleted)
         req = webob.Request.blank('/images/detail?changes-since=%s' % iso4)
