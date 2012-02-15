@@ -754,7 +754,7 @@ def get_client(options):
                                 use_ssl=use_ssl,
                                 auth_tok=options.auth_token or \
                                         os.getenv('OS_TOKEN'),
-                                creds=creds)
+                                creds=creds, insecure=options.insecure)
 
 
 def create_options(parser):
@@ -781,6 +781,12 @@ def create_options(parser):
                            "(http/https) of the glance server, for example "
                            "-U https://localhost:" + str(DEFAULT_PORT) +
                            "/v1 Default: None")
+    parser.add_option('-k', '--insecure', dest="insecure",
+                      default=False, action="store_true",
+                      help="Explicitly allow glance to perform \"insecure\" "
+                      "SSL (https) requests. The server's certificate will "
+                      "not be verified against any certificate authorities. "
+                      "This option should be used with caution.")
     parser.add_option('-A', '--auth_token', dest="auth_token",
                       metavar="TOKEN", default=None,
                       help="Authentication token to use to identify the "
@@ -810,7 +816,7 @@ def create_options(parser):
                       help="Sort results by this image attribute.")
     parser.add_option('--sort_dir', dest="sort_dir", metavar="[desc|asc]",
                       help="Sort results in this direction.")
-    parser.add_option('-f', '--force', dest="force", metavar="FORCE",
+    parser.add_option('-f', '--force', dest="force",
                       default=False, action="store_true",
                       help="Prevent select actions from requesting "
                            "user confirmation")

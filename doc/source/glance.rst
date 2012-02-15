@@ -100,6 +100,10 @@ a brief help message, like so::
                           specify the hostname, port and protocol (http/https)
                           of the glance server, for example -U
                           https://localhost:9292/v1 Default: None
+    -k, --insecure        Explicitly allow glance to perform insecure SSL
+                          requests. The server certificate will not be
+                          verified against any certificate authorities.
+                          This option should be used with caution.
     --limit=LIMIT         Page size to use while requesting image metadata
     --marker=MARKER       Image index after which to begin pagination
     --sort_key=KEY        Sort results by this image attribute.
@@ -153,7 +157,7 @@ Important Information about Uploading Images
 Before we go over the commands for adding an image to Glance, it is
 important to understand that Glance **does not currently inspect** the image
 files you add to it. In other words, **Glance only understands what you tell it,
-via attributes and custom properties**. 
+via attributes and custom properties**.
 
 If the file extension of the file you upload to Glance ends in '.vhd', Glance
 **does not** know that the image you are uploading has a disk format of ``vhd``.

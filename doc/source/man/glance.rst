@@ -78,10 +78,10 @@ OPTIONS
 
   **-v, --verbose**
         Print more verbose output
- 
+
   **-d, --debug**
         Print more verbose output
- 
+
   **-H ADDRESS, --host=ADDRESS**
         Address of Glance API host. Default: 0.0.0.0
 
@@ -90,9 +90,14 @@ OPTIONS
 
   **-U URL, --url=URL**
         URL of Glance service. This option can be used to specify the hostname,
-        port and protocol (http/https) of the glance server, for example 
-        -U https://localhost:9292/v1 
+        port and protocol (http/https) of the glance server, for example
+        -U https://localhost:9292/v1
         Default: None
+
+  **-k, --insecure**
+        Explicitly allow glance to perform insecure SSL (https) requests.
+        The server certificate will not be verified against any certificate
+        authorities. This option should be used with caution.
 
   **-A TOKEN, --auth_token=TOKEN**
         Authentication token to use to identify the client to the glance server

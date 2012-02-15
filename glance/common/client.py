@@ -148,13 +148,14 @@ class HTTPSClientAuthConnection(httplib.HTTPSConnection):
     """
 
     def __init__(self, host, port, key_file, cert_file,
-                 ca_file, timeout=None):
+                 ca_file, timeout=None, insecure=False):
         httplib.HTTPSConnection.__init__(self, host, port, key_file=key_file,
                                          cert_file=cert_file)
         self.key_file = key_file
         self.cert_file = cert_file
         self.ca_file = ca_file
         self.timeout = timeout
+        self.insecure = insecure
 
     def connect(self):
         """
@@ -170,14 +171,14 @@ class HTTPSClientAuthConnection(httplib.HTTPSConnection):
         if self._tunnel_host:
             self.sock = sock
             self._tunnel()
-        # If there's no CA File, don't force Server Certificate Check
-        if self.ca_file:
+        # Check CA file unless 'insecure' is specificed
+        if self.insecure is True:
+            self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file,
+                                        cert_reqs=ssl.CERT_NONE)
+        else:
             self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file,
                                         ca_certs=self.ca_file,
                                         cert_reqs=ssl.CERT_REQUIRED)
-        else:
-            self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file,
-                                        cert_reqs=ssl.CERT_NONE)
 
 
 class BaseClient(object):
@@ -186,6 +187,12 @@ class BaseClient(object):
 
     DEFAULT_PORT = 80
     DEFAULT_DOC_ROOT = None
+    # Standard CA file locations for Debian/Ubuntu, RedHat/Fedora,
+    # Suse, FreeBSD/OpenBSD
+    DEFAULT_CA_FILE_PATH = '/etc/ssl/certs/ca-certificates.crt:'\
+        '/etc/pki/tls/certs/ca-bundle.crt:'\
+        '/etc/ssl/ca-bundle.pem:'\
+        '/etc/ssl/cert.pem'
 
     OK_RESPONSE_CODES = (
         httplib.OK,
@@ -203,8 +210,8 @@ class BaseClient(object):
     )
 
     def __init__(self, host, port=None, use_ssl=False, auth_tok=None,
-                 creds=None, doc_root=None,
-                 key_file=None, cert_file=None, ca_file=None):
+                 creds=None, doc_root=None, key_file=None,
+                 cert_file=None, ca_file=None, insecure=False):
         """
         Creates a new client to some service.
 
@@ -231,6 +238,8 @@ class BaseClient(object):
                         If use_ssl is True, and this param is None (the
                         default), then an environ variable
                         GLANCE_CLIENT_CA_FILE is looked for.
+        :param insecure: Optional. If set then the server's certificate
+                         will not be verified.
         """
         self.host = host
         self.port = port or self.DEFAULT_PORT
@@ -286,7 +295,15 @@ class BaseClient(object):
                 msg = _("The CA file you specified %s does not "
                         "exist") % ca_file
                 raise exception.ClientConnectionError(msg)
+
+            if ca_file is None:
+                for ca in self.DEFAULT_CA_FILE_PATH.split(":"):
+                    if os.path.exists(ca):
+                        ca_file = ca
+                        break
+
             self.connect_kwargs['ca_file'] = ca_file
+            self.connect_kwargs['insecure'] = insecure
 
     def set_auth_token(self, auth_tok):
         """
