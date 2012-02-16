@@ -208,6 +208,8 @@ class Store(glance.store.base.Store):
         except IOError as e:
             if e.errno in [errno.EFBIG, errno.ENOSPC]:
                 raise exception.StorageFull()
+            elif e.errno == errno.EACCES:
+                raise exception.StorageWriteDenied()
             else:
                 raise
 

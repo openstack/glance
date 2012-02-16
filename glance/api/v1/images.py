@@ -30,7 +30,9 @@ from webob.exc import (HTTPError,
                        HTTPBadRequest,
                        HTTPForbidden,
                        HTTPUnauthorized,
-                       HTTPRequestEntityTooLarge)
+                       HTTPRequestEntityTooLarge,
+                       HTTPServiceUnavailable,
+                      )
 
 from glance.api import policy
 import glance.api.v1
@@ -403,6 +405,14 @@ class Controller(controller.BaseController):
             self.notifier.error('image.upload', msg)
             raise HTTPRequestEntityTooLarge(msg, request=req,
                                             content_type='text/plain')
+
+        except exception.StorageWriteDenied, e:
+            msg = _("Insufficient permissions on image storage media: %s") % e
+            logger.error(msg)
+            self._safe_kill(req, image_id)
+            self.notifier.error('image.upload', msg)
+            raise HTTPServiceUnavailable(msg, request=req,
+                                         content_type='text/plain')
 
         except HTTPError, e:
             self._safe_kill(req, image_id)

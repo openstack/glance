@@ -167,6 +167,13 @@ class TestStore(base.IsolatedUnitTest):
         """
         self._do_test_add_failure(errno.EFBIG, exception.StorageFull)
 
+    def test_add_storage_write_denied(self):
+        """
+        Tests that adding an image with insufficient filestore permissions
+        raises an appropriate exception
+        """
+        self._do_test_add_failure(errno.EACCES, exception.StorageWriteDenied)
+
     def test_add_other_failure(self):
         """
         Tests that a non-space-related IOError does not raise a
