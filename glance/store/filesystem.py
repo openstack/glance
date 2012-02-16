@@ -19,6 +19,7 @@
 A simple filesystem-backed store
 """
 
+import errno
 import hashlib
 import logging
 import os
@@ -204,8 +205,12 @@ class Store(glance.store.base.Store):
                     bytes_written += len(buf)
                     checksum.update(buf)
                     f.write(buf)
-        except IOError:
-            raise exception.StorageFull()
+        except IOError as e:
+            if e.errno in [errno.EFBIG, errno.ENOSPC]:
+                raise exception.StorageFull()
+            else:
+                raise
+
         checksum_hex = checksum.hexdigest()
 
         logger.debug(_("Wrote %(bytes_written)d bytes to %(filepath)s with "
