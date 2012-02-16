@@ -879,3 +879,21 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
         os.environ['OS_AUTH_KEY'] = 'secrete'
         cmd = "bin/glance --port=%d add name=MyImage" % self.api_port
         self._do_test_glance_cli(cmd)
+
+    @skip_if_disabled
+    def test_glance_cli_keystone_strategy_without_auth_url(self):
+        """
+        Test the CLI with the keystone strategy enabled but
+        auth url missing.
+        """
+        substitutions = (self.api_port, 'keystone', 'pattieblack', 'secrete')
+        cmd = ("bin/glance --port=%d --auth_strategy=%s "
+               "--username=%s --password=%s index" % substitutions)
+
+        exitcode, out, err = execute(cmd, raise_error=False)
+
+        self.assertEqual(1, exitcode)
+
+        msg = ("--auth_url option or OS_AUTH_URL environment variable "
+               "required when keystone authentication strategy is enabled")
+        self.assertTrue(msg in err, 'expected "%s" in "%s"' % (msg, err))

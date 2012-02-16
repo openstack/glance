@@ -66,6 +66,8 @@ def catch_error(action):
                 print "Not authorized to make this request. Check "\
                       "your credentials (OS_AUTH_USER, OS_AUTH_KEY, ...)."
                 return FAILURE
+            except exception.ClientConfigurationError:
+                raise
             except Exception, e:
                 options = args[0]
                 if options.debug:
@@ -731,10 +733,12 @@ def get_client(options):
     specified by the --host and --port options
     supplied to the CLI
     """
+
     if options.auth_url or os.getenv('OS_AUTH_URL'):
         force_strategy = 'keystone'
     else:
         force_strategy = None
+
     creds = dict(username=options.username or \
                          os.getenv('OS_AUTH_USER', os.getenv('OS_USERNAME')),
                  password=options.password or \
@@ -745,6 +749,11 @@ def get_client(options):
                  auth_url=options.auth_url or os.getenv('OS_AUTH_URL'),
                  strategy=force_strategy or options.auth_strategy or \
                           os.getenv('OS_AUTH_STRATEGY', 'noauth'))
+
+    if creds['strategy'] == 'keystone' and not creds['auth_url']:
+        msg = ("--auth_url option or OS_AUTH_URL environment variable "
+               "required when keystone authentication strategy is enabled\n")
+        raise exception.ClientConfigurationError(msg)
 
     use_ssl = (options.use_ssl or (
         creds['auth_url'] is not None and
@@ -981,5 +990,9 @@ Member Commands:
         if options.verbose:
             print "Completed in %-0.4f sec." % (end_time - start_time)
         sys.exit(result)
-    except (RuntimeError, NotImplementedError), e:
-        print "ERROR: ", e
+    except (RuntimeError,
+            NotImplementedError,
+            exception.ClientConfigurationError), e:
+        oparser.print_usage()
+        print >> sys.stderr, "ERROR: ", e
+        sys.exit(1)
