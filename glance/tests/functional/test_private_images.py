@@ -23,7 +23,11 @@ import os
 
 from glance.tests import functional
 from glance.tests.functional import keystone_utils
-from glance.tests.utils import execute, skip_if_disabled
+from glance.tests.utils import (execute,
+                                skip_if_disabled,
+                                minimal_headers,
+                                minimal_add_command,
+                                )
 
 FIVE_KB = 5 * 1024
 FIVE_GB = 5 * 1024 * 1024 * 1024
@@ -46,9 +50,8 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
 
         # First, we need to push an image up
         image_data = "*" * FIVE_KB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Auth-Token': keystone_utils.pattieblack_token,
-                   'X-Image-Meta-Name': 'Image1'}
+        headers = minimal_headers('Image1', public=False)
+        headers['X-Auth-Token'] = keystone_utils.pattieblack_token
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
@@ -298,9 +301,8 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
 
         # Need to push an image up
         image_data = "*" * FIVE_KB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Auth-Token': keystone_utils.pattieblack_token,
-                   'X-Image-Meta-Name': 'Image1'}
+        headers = minimal_headers('Image1', public=False)
+        headers['X-Auth-Token'] = keystone_utils.pattieblack_token
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
@@ -478,7 +480,7 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(response.status, 200)
         self.assertEqual(response['x-image-meta-name'], "Image1")
         self.assertEqual(response['x-image-meta-is_public'], "False")
-        self.assertEqual(response['x-image-meta-owner'], '')
+        self.assertFalse('x-image-meta-owner' in response)
 
         # And of course the image itself
         headers = {'X-Auth-Token': keystone_utils.pattieblack_token}
@@ -490,7 +492,7 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(content, "*" * FIVE_KB)
         self.assertEqual(response['x-image-meta-name'], "Image1")
         self.assertEqual(response['x-image-meta-is_public'], "False")
-        self.assertEqual(response['x-image-meta-owner'], '')
+        self.assertFalse('x-image-meta-owner' in response)
 
         # Pattieblack can't change is-public, though
         headers = {'X-Auth-Token': keystone_utils.pattieblack_token,
@@ -531,8 +533,7 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
 
         # Make sure anonymous user can't push up an image
         image_data = "*" * FIVE_KB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1'}
+        headers = minimal_headers('Image1', public=False)
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
@@ -541,9 +542,8 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
 
         # Now push up an image for anonymous user to try to access
         image_data = "*" * FIVE_KB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Auth-Token': keystone_utils.pattieblack_token,
-                   'X-Image-Meta-Name': 'Image1'}
+        headers = minimal_headers('Image1', public=False)
+        headers['X-Auth-Token'] = keystone_utils.pattieblack_token
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
@@ -644,7 +644,7 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(response.status, 200)
         self.assertEqual(response['x-image-meta-name'], "Image1")
         self.assertEqual(response['x-image-meta-is_public'], "False")
-        self.assertEqual(response['x-image-meta-owner'], '')
+        self.assertFalse('x-image-meta-owner' in response)
 
         # And even the image itself...
         path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
@@ -655,7 +655,7 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
         self.assertEqual(content, "*" * FIVE_KB)
         self.assertEqual(response['x-image-meta-name'], "Image1")
         self.assertEqual(response['x-image-meta-is_public'], "False")
-        self.assertEqual(response['x-image-meta-owner'], '')
+        self.assertFalse('x-image-meta-owner' in response)
 
         # Anonymous still shouldn't be able to make the image
         # public...
@@ -835,7 +835,7 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
         self.assertEqual(response.status, 200)
         self.assertEqual(response['x-image-meta-name'], "MyImage")
         self.assertEqual(response['x-image-meta-is_public'], "True")
-        self.assertEqual(response['x-image-meta-owner'], '')
+        self.assertFalse('x-image-meta-owner' in response)
 
         self.stop_servers()
 
@@ -850,8 +850,8 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
         """
         Test the CLI with the noauth strategy defaulted to.
         """
-        cmd = ("bin/glance --port=%d --auth_token=%s add name=MyImage" %
-               (self.api_port, keystone_utils.pattieblack_token))
+        suffix = '--auth_token=%s' % keystone_utils.pattieblack_token
+        cmd = minimal_add_command(self.api_port, 'MyImage', suffix, False)
         self._do_test_glance_cli(cmd)
 
     @skip_if_disabled
@@ -860,11 +860,12 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
         Test the CLI with the keystone (v1) strategy enabled via
         command line switches.
         """
-        substitutions = (self.api_port, self.auth_port, 'keystone',
+        substitutions = (self.auth_port, 'keystone',
                          'pattieblack', 'secrete')
-        cmd = ("bin/glance --port=%d  --auth_url=http://localhost:%d/v1.0 "
-               "--auth_strategy=%s --username=%s --password=%s "
-               " add name=MyImage" % substitutions)
+        suffix = ("--auth_url=http://localhost:%d/v1.0 "
+                  "--auth_strategy=%s --username=%s --password=%s "
+                  % substitutions)
+        cmd = minimal_add_command(self.api_port, 'MyImage', suffix, False)
         self._do_test_glance_cli(cmd)
 
     @skip_if_disabled
@@ -877,7 +878,7 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
         os.environ['OS_AUTH_STRATEGY'] = 'keystone'
         os.environ['OS_AUTH_USER'] = 'pattieblack'
         os.environ['OS_AUTH_KEY'] = 'secrete'
-        cmd = "bin/glance --port=%d add name=MyImage" % self.api_port
+        cmd = minimal_add_command(self.api_port, 'MyImage', public=False)
         self._do_test_glance_cli(cmd)
 
     @skip_if_disabled

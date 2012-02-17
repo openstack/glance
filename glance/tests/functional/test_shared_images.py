@@ -22,7 +22,7 @@ import json
 
 from glance.tests import functional
 from glance.tests.functional import keystone_utils
-from glance.tests.utils import execute, skip_if_disabled
+from glance.tests.utils import execute, skip_if_disabled, minimal_headers
 
 FIVE_KB = 5 * 1024
 FIVE_GB = 5 * 1024 * 1024 * 1024
@@ -32,8 +32,7 @@ class TestSharedImagesApi(keystone_utils.KeystoneTests):
     def _push_image(self):
         # First, we need to push an image up
         image_data = "*" * FIVE_KB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1'}
+        headers = minimal_headers('Image1', public=False)
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         response, content = self._request(path, 'POST',
                                           keystone_utils.pattieblack_token,
@@ -378,8 +377,7 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
     def _push_image(self, name=1):
         # First, we need to push an image up
         image_data = "*" * FIVE_KB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': str(name)}
+        headers = minimal_headers(str(name), public=False)
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         response, content = self._request(path, 'POST',
                                           keystone_utils.pattieblack_token,

@@ -25,7 +25,7 @@ import tempfile
 
 from glance.common import utils
 from glance.tests import functional
-from glance.tests.utils import execute, skip_if_disabled
+from glance.tests.utils import execute, skip_if_disabled, minimal_headers
 
 FIVE_KB = 5 * 1024
 FIVE_GB = 5 * 1024 * 1024 * 1024
@@ -86,9 +86,7 @@ class TestApi(functional.FunctionalTest):
         # 2. POST /images with public image named Image1
         # attribute and no custom properties. Verify a 200 OK is returned
         image_data = "*" * FIVE_KB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
@@ -124,8 +122,8 @@ class TestApi(functional.FunctionalTest):
             'x-image-meta-name': 'Image1',
             'x-image-meta-is_public': 'True',
             'x-image-meta-status': 'active',
-            'x-image-meta-disk_format': '',
-            'x-image-meta-container_format': '',
+            'x-image-meta-disk_format': 'raw',
+            'x-image-meta-container_format': 'ovf',
             'x-image-meta-size': str(FIVE_KB)}
 
         expected_std_headers = {
@@ -157,8 +155,8 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(response.status, 200)
 
         expected_result = {"images": [
-            {"container_format": None,
-             "disk_format": None,
+            {"container_format": "ovf",
+             "disk_format": "raw",
              "id": image_id,
              "name": "Image1",
              "checksum": "c2e5db72bd7fd153f53ede5da5a06de3",
@@ -176,8 +174,8 @@ class TestApi(functional.FunctionalTest):
             "status": "active",
             "name": "Image1",
             "deleted": False,
-            "container_format": None,
-            "disk_format": None,
+            "container_format": "ovf",
+            "disk_format": "raw",
             "id": image_id,
             "is_public": True,
             "deleted_at": None,
@@ -217,8 +215,8 @@ class TestApi(functional.FunctionalTest):
             "status": "active",
             "name": "Image1",
             "deleted": False,
-            "container_format": None,
-            "disk_format": None,
+            "container_format": "ovf",
+            "disk_format": "raw",
             "id": image_id,
             "is_public": True,
             "deleted_at": None,
@@ -314,9 +312,7 @@ class TestApi(functional.FunctionalTest):
 
         # 1. POST /images with public image named Image1
         # with no location or image data
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
@@ -324,8 +320,8 @@ class TestApi(functional.FunctionalTest):
         data = json.loads(content)
         self.assertEqual(data['image']['checksum'], None)
         self.assertEqual(data['image']['size'], 0)
-        self.assertEqual(data['image']['container_format'], None)
-        self.assertEqual(data['image']['disk_format'], None)
+        self.assertEqual(data['image']['container_format'], 'ovf')
+        self.assertEqual(data['image']['disk_format'], 'raw')
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], True)
 
@@ -341,8 +337,8 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(data['images'][0]['id'], image_id)
         self.assertEqual(data['images'][0]['checksum'], None)
         self.assertEqual(data['images'][0]['size'], 0)
-        self.assertEqual(data['images'][0]['container_format'], None)
-        self.assertEqual(data['images'][0]['disk_format'], None)
+        self.assertEqual(data['images'][0]['container_format'], 'ovf')
+        self.assertEqual(data['images'][0]['disk_format'], 'raw')
         self.assertEqual(data['images'][0]['name'], "Image1")
 
         # 3. HEAD /images
@@ -394,8 +390,8 @@ class TestApi(functional.FunctionalTest):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['images'][0]['id'], image_id)
         self.assertEqual(data['images'][0]['size'], FIVE_KB)
-        self.assertEqual(data['images'][0]['container_format'], None)
-        self.assertEqual(data['images'][0]['disk_format'], None)
+        self.assertEqual(data['images'][0]['container_format'], 'ovf')
+        self.assertEqual(data['images'][0]['disk_format'], 'raw')
         self.assertEqual(data['images'][0]['name'], "Image1")
 
         # DELETE image
@@ -592,6 +588,8 @@ class TestApi(functional.FunctionalTest):
                    'X-Image-Meta-Location': 'http://example.com/fakeimage',
                    'X-Image-Meta-Size': str(FIVE_GB),
                    'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-disk_format': 'raw',
+                   'X-image-Meta-container_format': 'ovf',
                    'X-Image-Meta-Is-Public': 'True'}
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
@@ -633,7 +631,8 @@ class TestApi(functional.FunctionalTest):
         response, content = http.request(path, 'POST',
                             body=test_data_file.name)
         self.assertEqual(response.status, 400)
-        expected = "Content-Type must be application/octet-stream"
+        expected = ("Failed to reserve image. Got error: "
+                    "Data supplied was not valid. Details: 400 Bad Request")
         self.assertTrue(expected in content,
                         "Could not find '%s' in '%s'" % (expected, content))
 
@@ -1014,27 +1013,21 @@ class TestApi(functional.FunctionalTest):
         image_ids = []
 
         # 1. POST /images with three public images with various attributes
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
         image_ids.append(json.loads(content)['image']['id'])
 
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image2',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image2')
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
         image_ids.append(json.loads(content)['image']['id'])
 
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image3',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image3')
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
@@ -1325,3 +1318,40 @@ class TestApi(functional.FunctionalTest):
                           expect_launch=False,
                           expected_exitcode=255,
                           **self.__dict__.copy())
+
+    def _do_test_unset_required_format(self, format):
+        """
+        We test that missing container/disk format fails with 400 "Bad Request"
+
+        :see https://bugs.launchpad.net/glance/+bug/933702
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+
+        # POST /images without given format being specified
+        headers = minimal_headers('Image1')
+        del headers['X-Image-Meta-' + format]
+        with tempfile.NamedTemporaryFile() as test_data_file:
+            test_data_file.write("XXX")
+            test_data_file.flush()
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST',
+                            headers=headers,
+                            body=test_data_file.name)
+        self.assertEqual(response.status, 400)
+        type = format.replace('_format', '')
+        expected = "Details: Invalid %s format 'None' for image" % type
+        self.assertTrue(expected in content,
+                        "Could not find '%s' in '%s'" % (expected, content))
+
+        self.stop_servers()
+
+    @skip_if_disabled
+    def test_unset_container_format(self):
+        self._do_test_unset_required_format('container_format')
+
+    @skip_if_disabled
+    def test_unset_disk_format(self):
+        self._do_test_unset_required_format('disk_format')

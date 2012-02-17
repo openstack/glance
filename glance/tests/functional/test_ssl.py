@@ -45,7 +45,7 @@ from glance.common import exception
 from glance.common import utils
 from glance.store.location import get_location_from_uri
 from glance.tests import functional
-from glance.tests.utils import execute, skip_if_disabled
+from glance.tests.utils import execute, skip_if_disabled, minimal_headers
 
 FIVE_KB = 5 * 1024
 FIVE_GB = 5 * 1024 * 1024 * 1024
@@ -144,9 +144,7 @@ class TestSSL(functional.FunctionalTest):
         # 2. POST /images with public image named Image1
         # attribute and no custom properties. Verify a 200 OK is returned
         image_data = "*" * FIVE_KB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image1')
         path = "https://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers,
@@ -183,8 +181,8 @@ class TestSSL(functional.FunctionalTest):
             'x-image-meta-name': 'Image1',
             'x-image-meta-is_public': 'True',
             'x-image-meta-status': 'active',
-            'x-image-meta-disk_format': '',
-            'x-image-meta-container_format': '',
+            'x-image-meta-disk_format': 'raw',
+            'x-image-meta-container_format': 'ovf',
             'x-image-meta-size': str(FIVE_KB)}
 
         expected_std_headers = {
@@ -216,8 +214,8 @@ class TestSSL(functional.FunctionalTest):
         self.assertEqual(response.status, 200)
 
         expected_result = {"images": [
-            {"container_format": None,
-             "disk_format": None,
+            {"container_format": "ovf",
+             "disk_format": "raw",
              "id": image_id,
              "name": "Image1",
              "checksum": "c2e5db72bd7fd153f53ede5da5a06de3",
@@ -235,8 +233,8 @@ class TestSSL(functional.FunctionalTest):
             "status": "active",
             "name": "Image1",
             "deleted": False,
-            "container_format": None,
-            "disk_format": None,
+            "container_format": "ovf",
+            "disk_format": "raw",
             "id": image_id,
             "is_public": True,
             "deleted_at": None,
@@ -276,8 +274,8 @@ class TestSSL(functional.FunctionalTest):
             "status": "active",
             "name": "Image1",
             "deleted": False,
-            "container_format": None,
-            "disk_format": None,
+            "container_format": "ovf",
+            "disk_format": "raw",
             "id": image_id,
             "is_public": True,
             "deleted_at": None,
@@ -366,9 +364,7 @@ class TestSSL(functional.FunctionalTest):
 
         # 1. POST /images with public image named Image1
         # with no location or image data
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image1')
         path = "https://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
@@ -376,8 +372,8 @@ class TestSSL(functional.FunctionalTest):
         data = json.loads(content)
         self.assertEqual(data['image']['checksum'], None)
         self.assertEqual(data['image']['size'], 0)
-        self.assertEqual(data['image']['container_format'], None)
-        self.assertEqual(data['image']['disk_format'], None)
+        self.assertEqual(data['image']['container_format'], 'ovf')
+        self.assertEqual(data['image']['disk_format'], 'raw')
         self.assertEqual(data['image']['name'], "Image1")
         self.assertEqual(data['image']['is_public'], True)
 
@@ -393,8 +389,8 @@ class TestSSL(functional.FunctionalTest):
         self.assertEqual(data['images'][0]['id'], image_id)
         self.assertEqual(data['images'][0]['checksum'], None)
         self.assertEqual(data['images'][0]['size'], 0)
-        self.assertEqual(data['images'][0]['container_format'], None)
-        self.assertEqual(data['images'][0]['disk_format'], None)
+        self.assertEqual(data['images'][0]['container_format'], 'ovf')
+        self.assertEqual(data['images'][0]['disk_format'], 'raw')
         self.assertEqual(data['images'][0]['name'], "Image1")
 
         # 3. HEAD /images
@@ -446,8 +442,8 @@ class TestSSL(functional.FunctionalTest):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['images'][0]['id'], image_id)
         self.assertEqual(data['images'][0]['size'], FIVE_KB)
-        self.assertEqual(data['images'][0]['container_format'], None)
-        self.assertEqual(data['images'][0]['disk_format'], None)
+        self.assertEqual(data['images'][0]['container_format'], 'ovf')
+        self.assertEqual(data['images'][0]['disk_format'], 'raw')
         self.assertEqual(data['images'][0]['name'], "Image1")
 
         self.stop_servers()
@@ -633,11 +629,9 @@ class TestSSL(functional.FunctionalTest):
         # X-Image-Meta-Location attribute to make Glance forego
         # "adding" the image data.
         # Verify a 201 OK is returned
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Location': 'https://example.com/fakeimage',
-                   'X-Image-Meta-Size': str(FIVE_GB),
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image1')
+        headers['X-Image-Meta-Location'] = 'https://example.com/fakeimage'
+        headers['X-Image-Meta-Size'] = str(FIVE_GB)
         path = "https://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
@@ -678,7 +672,7 @@ class TestSSL(functional.FunctionalTest):
         response, content = https.request(path, 'POST',
                             body=test_data_file.name)
         self.assertEqual(response.status, 400)
-        expected = "Content-Type must be application/octet-stream"
+        expected = "Data supplied was not valid. Details: 400 Bad Request"
         self.assertTrue(expected in content,
                         "Could not find '%s' in '%s'" % (expected, content))
 
@@ -956,9 +950,7 @@ class TestSSL(functional.FunctionalTest):
         self.assertEqual(content, '{"images": []}')
 
         # 1. POST /images with three public images with various attributes
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image1')
         path = "https://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
@@ -967,9 +959,7 @@ class TestSSL(functional.FunctionalTest):
 
         image_ids = [data['image']['id']]
 
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image2',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image2')
         path = "https://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
@@ -978,9 +968,7 @@ class TestSSL(functional.FunctionalTest):
 
         image_ids.append(data['image']['id'])
 
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image3',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image3')
         path = "https://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)

@@ -230,7 +230,10 @@ class TestHelpers(unittest.TestCase):
         response.headers = headers
         result = utils.get_image_meta_from_headers(response)
         for k, v in fixture.iteritems():
-            self.assertEqual(v, result[k])
+            if v is not None:
+                self.assertEqual(v, result[k])
+            else:
+                self.assertFalse(k in result)
 
     def test_boolean_header_values(self):
         """

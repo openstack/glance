@@ -131,8 +131,8 @@ like so::
   name                A name for the image.
   is_public           If specified, interpreted as a boolean value
                       and sets or unsets the image's availability to the public.
-  disk_format         Format of the disk image
-  container_format    Format of the container
+  disk_format         Format of the disk image (required)
+  container_format    Format of the container (required)
 
   All other field names are considered to be custom properties so be careful
   to spell field names correctly. :)
@@ -186,21 +186,27 @@ that the image should be public -- anyone should be able to fetch it.
 Here is how we'd upload this image to Glance. Change example IP number to your
 server IP number.::
 
-  $> glance add name="My Image" is_public=true < /tmp/images/myimage.iso \
-  --host=65.114.169.29
+  $> glance add name="My Image" is_public=true \
+       container_format=ovf disk_format=raw \
+       --host=65.114.169.29 < /tmp/images/myimage.iso
+
+Note that the disk container formats are no longer defaulted and are thus
+strictly required.
 
 If Glance was able to successfully upload and store your VM image data and
 metadata attributes, you would see something like this::
 
-  $> glance add name="My Image" is_public=true < /tmp/images/myimage.iso \
-  --host=65.114.169.29
+  $> glance add name="My Image" is_public=true \
+       container_format=ovf disk_format=raw \
+       --host=65.114.169.29 < /tmp/images/myimage.iso
   Added new image with ID: 991baaf9-cc0d-4183-a201-8facdf1a1430
 
 You can use the ``--verbose`` (or ``-v``) command-line option to print some more
 information about the metadata that was saved with the image::
 
-  $> glance --verbose add name="My Image" is_public=true < \
-  /tmp/images/myimage.iso --host=65.114.169.29
+  $> glance --verbose add name="My Image" is_public=true \
+       container_format=ovf disk_format=raw \
+       --host=65.114.169.29 < /tmp/images/myimage.iso
   Added new image with ID: 541424be-27b1-49d6-a55b-6430b8ae0f5f
   Returned the following metadata for the new image:
                  container_format => ovf
@@ -221,8 +227,9 @@ information about the metadata that was saved with the image::
 If you are unsure about what will be added, you can use the ``--dry-run``
 command-line option, which will simply show you what *would* have happened::
 
-  $> glance --dry-run add name="Foo" distro="Ubuntu" is_public=True < \
-  /tmp/images/myimage.iso --host=65.114.169.29
+  $> glance --dry-run add name="Foo" distro="Ubuntu" is_public=True \
+       container_format=ovf disk_format=raw \
+       --host=65.114.169.29 < /tmp/images/myimage.iso
   Dry run. We would have done the following:
   Add new image with metadata:
                  container_format => ovf
@@ -243,42 +250,46 @@ Examples of uploading different kinds of images
 
 To upload an EC2 tarball VM image::
 
-  $> glance add name="ubuntu-10.10-amd64" is_public=true < \
-     /root/maverick-server-uec-amd64.tar.gz
+  $> glance add name="ubuntu-10.10-amd64" is_public=true \
+     container_format=ovf disk_format=raw \
+     < /root/maverick-server-uec-amd64.tar.gz
 
 To upload an EC2 tarball VM image with an associated property (e.g., distro)::
 
   $> glance add name="ubuntu-10.10-amd64" is_public=true \
+     container_format=ovf disk_format=raw \
      distro="ubuntu 10.10" < /root/maverick-server-uec-amd64.tar.gz
 
 To upload an EC2 tarball VM image from a URL::
 
   $> glance add name="uubntu-10.04-amd64" is_public=true \
+     container_format=ovf disk_format=raw \
      location="http://uec-images.ubuntu.com/lucid/current/\
      lucid-server-uec-amd64.tar.gz"
 
 To upload a qcow2 image::
 
   $> glance add name="ubuntu-11.04-amd64" is_public=true \
-     distro="ubuntu 11.04" disk_format="qcow2" < /data/images/rock_natty.qcow2
+     container_format=ovf disk_format=qcow2 \
+     distro="ubuntu 11.04" < /data/images/rock_natty.qcow2
 
 To upload a kernel file, ramdisk file and filesystem image file::
 
-  $> glance add --disk-format=aki --container-format=aki \
+  $> glance add disk_format=aki container_format=aki \
      ./maverick-server-uec-amd64-vmlinuz-virtual \
      maverick-server-uec-amd64-vmlinuz-virtual
-  $> glance add --disk-format=ari --container-format=ari \
+  $> glance add disk_format=ari container_format=ari \
      ./maverick-server-uec-amd64-loader maverick-server-uec-amd64-loader
   # Determine what the ids associated with the kernel and ramdisk files
   $> glance index
   # Assuming the ids are 7 and 8:
-  $> glance add --disk-format=ami --container-format=ami --kernel=7 \
+  $> glance add disk_format=ami container_format=ami --kernel=7 \
      --ramdisk=8 ./maverick-server-uec-amd64.img maverick-server-uec-amd64.img
 
 To upload a raw image file::
 
-  $> glance add --disk_format=raw ./maverick-server-uec-amd64.img \
-     maverick-server-uec-amd64.img_v2
+  $> glance add disk_format=raw container_format=ovf \
+     ./maverick-server-uec-amd64.img maverick-server-uec-amd64.img_v2
 
 
 Register a virtual machine image in another location

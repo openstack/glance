@@ -35,7 +35,9 @@ import httplib2
 from glance.tests import functional
 from glance.tests.utils import (skip_if_disabled,
                                 execute,
-                                xattr_writes_supported)
+                                xattr_writes_supported,
+                                minimal_headers,
+                               )
 
 
 FIVE_KB = 5 * 1024
@@ -90,9 +92,7 @@ class BaseCacheMiddlewareTest(object):
 
         # Add an image and verify a 200 OK is returned
         image_data = "*" * FIVE_KB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
@@ -177,6 +177,8 @@ class BaseCacheMiddlewareTest(object):
         # Add a remote image and verify a 201 Created is returned
         remote_uri = 'http://%s:%d/images/2' % (remote_ip, remote_port)
         headers = {'X-Image-Meta-Name': 'Image2',
+                   'X-Image-Meta-disk_format': 'raw',
+                   'X-Image-Meta-container_format': 'ovf',
                    'X-Image-Meta-Is-Public': 'True',
                    'X-Image-Meta-Location': remote_uri}
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
@@ -226,9 +228,8 @@ class BaseCacheManageMiddlewareTest(object):
         identifier
         """
         image_data = "*" * FIVE_KB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': '%s' % name,
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('%s' % name)
+
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,

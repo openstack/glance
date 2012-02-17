@@ -181,8 +181,8 @@ following shows an example of the HTTP headers returned from the above
 
   x-image-meta-uri              http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9
   x-image-meta-name             Ubuntu 10.04 Plain 5GB
-  x-image-meta-disk-format      vhd
-  x-image-meta-container-format ovf
+  x-image-meta-disk_format      vhd
+  x-image-meta-container_format ovf
   x-image-meta-size             5368709120
   x-image-meta-checksum         c2e5db72bd7fd153f53ede5da5a06de3
   x-image-meta-created_at       2010-02-03 09:34:01
@@ -244,8 +244,8 @@ returned from the above ``GET`` request::
 
   x-image-meta-uri              http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9
   x-image-meta-name             Ubuntu 10.04 Plain 5GB
-  x-image-meta-disk-format      vhd
-  x-image-meta-container-format ovf
+  x-image-meta-disk_format      vhd
+  x-image-meta-container_format ovf
   x-image-meta-size             5368709120
   x-image-meta-checksum         c2e5db72bd7fd153f53ede5da5a06de3
   x-image-meta-created_at       2010-02-03 09:34:01
@@ -353,14 +353,14 @@ The list of metadata headers that Glance accepts are listed below.
   store that is marked default. See the configuration option ``default_store``
   for more information.
 
-* ``x-image-meta-disk-format``
+* ``x-image-meta-disk_format``
 
   This header is optional. Valid values are one of ``aki``, ``ari``, ``ami``,
   ``raw``, ``iso``, ``vhd``, ``vdi``, ``qcow2``, or ``vmdk``.
 
   For more information, see :doc:`About Disk and Container Formats <formats>`
 
-* ``x-image-meta-container-format``
+* ``x-image-meta-container_format``
 
   This header is optional. Valid values are one of ``aki``, ``ari``, ``ami``,
   ``bare``, or ``ovf``.

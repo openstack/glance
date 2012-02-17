@@ -23,7 +23,7 @@ import tempfile
 
 from glance.common import utils
 from glance.tests import functional
-from glance.tests.utils import execute
+from glance.tests.utils import execute, minimal_add_command
 
 
 class TestBinGlance(functional.FunctionalTest):
@@ -54,8 +54,9 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual('', out.strip())
 
         # 1. Add public image
-        cmd = "bin/glance --port=%d add is_public=True"\
-              " name=MyImage location=http://example.com" % api_port
+        cmd = minimal_add_command(api_port,
+                                  'MyImage',
+                                  'location=http://example.com')
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
@@ -99,8 +100,10 @@ class TestBinGlance(functional.FunctionalTest):
             image_file.write("XXX")
             image_file.flush()
             file_name = image_file.name
-            cmd = "bin/glance --port=%d add is_public=True name=MyImage " \
-                  "location=http://example.com < %s" % (api_port, file_name)
+            cmd = minimal_add_command(api_port,
+                                     'MyImage',
+                                     'location=http://example.com < %s' %
+                                     file_name)
             exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
@@ -153,8 +156,9 @@ class TestBinGlance(functional.FunctionalTest):
             image_file.write("XXX")
             image_file.flush()
             image_file_name = image_file.name
-            cmd = "bin/glance --port=%d add is_public=True"\
-                  " name=MyImage < %s" % (api_port, image_file_name)
+            cmd = minimal_add_command(api_port,
+                                     'MyImage',
+                                     '< %s' % image_file_name)
 
             exitcode, out, err = execute(cmd)
 
@@ -227,7 +231,10 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual('', out.strip())
 
         # 1. Add public image
-        cmd = "bin/glance --port=%d add name=MyImage" % api_port
+        cmd = minimal_add_command(api_port,
+                                  'MyImage',
+                                  'location=http://example.com',
+                                  public=False)
 
         exitcode, out, err = execute(cmd)
 
@@ -355,8 +362,9 @@ class TestBinGlance(functional.FunctionalTest):
 
         # 1. Add some images
         for i in range(1, 5):
-            cmd = "bin/glance --port=%d add is_public=True name=MyName " \
-                  " foo=bar" % api_port
+            cmd = minimal_add_command(api_port,
+                                      'MyImage',
+                                      'foo=bar')
             exitcode, out, err = execute(cmd)
 
             self.assertEqual(0, exitcode)
@@ -705,7 +713,11 @@ class TestBinGlance(functional.FunctionalTest):
             image_file.flush()
             image_file_name = image_file.name
             cmd = "bin/glance --port=%d add is_public=True"\
+                  " disk_format=raw container_format=ovf " \
                   " name=MyImage < %s" % (api_port, image_file_name)
+            cmd = minimal_add_command(api_port,
+                                      'MyImage',
+                                      '< %s' % image_file_name)
 
             exitcode, out, err = execute(cmd)
 
@@ -771,8 +783,10 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual('', out.strip())
 
         # 1. Add public image
-        cmd = "echo testdata | bin/glance --port=%d add is_public=True"\
-              " protected=True name=MyImage" % api_port
+        cmd = ("echo testdata | " +
+               minimal_add_command(api_port,
+                                   'MyImage',
+                                   'protected=True'))
 
         exitcode, out, err = execute(cmd)
 

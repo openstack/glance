@@ -141,7 +141,7 @@ def print_image_formatted(client, image):
     print "Container format: %s" % image['container_format']
     print "Minimum Ram Required (MB): %s" % image['min_ram']
     print "Minimum Disk Required (GB): %s" % image['min_disk']
-    if image['owner']:
+    if image.get('owner'):
         print "Owner: %s" % image['owner']
     if len(image['properties']) > 0:
         for k, v in image['properties'].items():
@@ -173,10 +173,9 @@ is_public           Optional. If specified, interpreted as a boolean value
 protected           Optional. If specified, interpreted as a boolean value
                     and enables or disables deletion protection.
                     The default value is False.
-disk_format         Optional. Possible values are 'vhd','vmdk','raw', 'qcow2',
-                    and 'ami'. Default value is 'raw'.
-container_format    Optional. Possible values are 'ovf' and 'ami'.
-                    Default value is 'ovf'.
+disk_format         Required. Possible values are 'vhd','vmdk','raw', 'qcow2',
+                    and 'ami'.
+container_format    Required. Possible values are 'ovf' and 'ami'.
 location            Optional. When specified, should be a readable location
                     in the form of a URI: $STORE://LOCATION. For example, if
                     the image data is stored in a file on the local
@@ -202,7 +201,8 @@ EXAMPLES
     location=http://images.ubuntu.org/images/lucid-10.04-i686.iso \\
     distro="Ubuntu 10.04 LTS"
 
-%(prog)s add name="My Image" distro="Ubuntu 10.04 LTS" < /tmp/myimage.iso"""
+%(prog)s add name="My Image" disk_format=raw container_format=ovf \\
+    distro="Ubuntu 10.04 LTS" < /tmp/myimage.iso"""
     c = get_client(options)
 
     try:
@@ -220,10 +220,13 @@ EXAMPLES
                       fields.pop('is_public', False)),
                   'protected': utils.bool_from_string(
                       fields.pop('protected', False)),
-                  'disk_format': fields.pop('disk_format', 'raw'),
                   'min_disk': fields.pop('min_disk', 0),
                   'min_ram': fields.pop('min_ram', 0),
-                  'container_format': fields.pop('container_format', 'ovf')}
+    }
+
+    for format in ['disk_format', 'container_format']:
+        if format in fields:
+            image_meta[format] = fields.pop(format)
 
     # Strip any args that are not supported
     unsupported_fields = ['status', 'size']

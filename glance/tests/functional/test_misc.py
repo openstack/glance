@@ -22,7 +22,7 @@ import os
 import tempfile
 
 from glance.tests import functional
-from glance.tests.utils import execute
+from glance.tests.utils import execute, minimal_headers, minimal_add_command
 
 FIVE_KB = 5 * 1024
 FIVE_GB = 5 * 1024 * 1024 * 1024
@@ -44,9 +44,7 @@ class TestMiscellaneous(functional.FunctionalTest):
         # 1. POST /images with public image named Image1
         # attribute and no custom properties. Verify a 200 OK is returned
         image_data = "*" * FIVE_KB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
@@ -132,8 +130,9 @@ class TestMiscellaneous(functional.FunctionalTest):
             image_file.write("XXX")
             image_file.flush()
             image_file_name = image_file.name
-            cmd = "bin/glance --port=%d add is_public=True name=MyImage "\
-                  "size=12345 < %s" % (self.api_port, image_file_name)
+            cmd = minimal_add_command(self.api_port,
+                                      'MyImage',
+                                      'size=12345 < %s' % image_file_name)
 
             exitcode, out, err = execute(cmd)
 

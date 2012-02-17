@@ -313,11 +313,11 @@ def validate_image(values):
         msg = "Invalid image status '%s' for image." % status
         raise exception.Invalid(msg)
 
-    if disk_format and disk_format not in DISK_FORMATS:
+    if not disk_format or disk_format not in DISK_FORMATS:
         msg = "Invalid disk format '%s' for image." % disk_format
         raise exception.Invalid(msg)
 
-    if container_format and container_format not in CONTAINER_FORMATS:
+    if not container_format or container_format not in CONTAINER_FORMATS:
         msg = "Invalid container format '%s' for image." % container_format
         raise exception.Invalid(msg)
 

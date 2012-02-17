@@ -310,3 +310,21 @@ def xattr_writes_supported(path):
             os.unlink(fake_filepath)
 
     return result
+
+
+def minimal_headers(name, public=True):
+    headers = {'Content-Type': 'application/octet-stream',
+               'X-Image-Meta-Name': name,
+               'X-Image-Meta-disk_format': 'raw',
+               'X-Image-Meta-container_format': 'ovf',
+    }
+    if public:
+        headers['X-Image-Meta-Is-Public'] = 'True'
+    return headers
+
+
+def minimal_add_command(port, name, suffix='', public=True):
+    visibility = 'is_public=True' if public else ''
+    return ("bin/glance --port=%d add %s"
+            " disk_format=raw container_format=ovf"
+            " name=%s %s" % (port, visibility, name, suffix))

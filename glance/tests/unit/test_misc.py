@@ -145,3 +145,32 @@ class UtilsTestCase(unittest.TestCase):
                 self.assertTrue(ciphertext != plaintext)
                 text = crypt.urlsafe_decrypt(key, ciphertext)
                 self.assertTrue(plaintext == text)
+
+    def test_empty_metadata_headers(self):
+        """Ensure unset metadata is not encoded in HTTP headers"""
+
+        metadata = {
+            'foo': 'bar',
+            'snafu': None,
+            'bells': 'whistles',
+            'unset': None,
+            'empty': '',
+            'properties': {
+                'distro': '',
+                'arch': None,
+                'user': 'nobody',
+            },
+        }
+
+        headers = utils.image_meta_to_http_headers(metadata)
+
+        self.assertFalse('x-image-meta-snafu' in headers)
+        self.assertFalse('x-image-meta-uset' in headers)
+        self.assertFalse('x-image-meta-snafu' in headers)
+        self.assertFalse('x-image-meta-property-arch' in headers)
+
+        self.assertEquals(headers.get('x-image-meta-foo'), 'bar')
+        self.assertEquals(headers.get('x-image-meta-bells'), 'whistles')
+        self.assertEquals(headers.get('x-image-meta-empty'), '')
+        self.assertEquals(headers.get('x-image-meta-property-distro'), '')
+        self.assertEquals(headers.get('x-image-meta-property-user'), 'nobody')

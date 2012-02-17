@@ -2194,6 +2194,32 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 401)
 
+    def _do_test_add_image_missing_format(self, missing):
+        """Tests creation of an image with missing format"""
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        header = 'x-image-meta-' + missing.replace('_', '-')
+
+        del fixture_headers[header]
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.BAD_REQUEST)
+
+    def test_add_image_missing_disk_format(self):
+        """Tests creation of an image with missing disk format"""
+        self._do_test_add_image_missing_format('disk_format')
+
+    def test_add_image_missing_container_type(self):
+        """Tests creation of an image with missing container format"""
+        self._do_test_add_image_missing_format('container_format')
+
     def test_register_and_upload(self):
         """
         Test that the process of registering an image with
@@ -2714,6 +2740,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         # We will stop the process after the reservation stage, then
         # try to delete the image.
         fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
                            'x-image-meta-name': 'fake image #3'}
 
         req = webob.Request.blank("/images")
@@ -2735,6 +2763,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_delete_protected_image(self):
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-name': 'fake image #3',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
                            'x-image-meta-protected': 'True'}
 
         req = webob.Request.blank("/images")
