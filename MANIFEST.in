@@ -1,5 +1,5 @@
 include run_tests.sh ChangeLog
-include README builddeb.sh
+include README.rst builddeb.sh
 include MANIFEST.in pylintrc
 include Authors
 include run_tests.py
