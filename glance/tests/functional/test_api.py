@@ -631,8 +631,7 @@ class TestApi(functional.FunctionalTest):
         response, content = http.request(path, 'POST',
                             body=test_data_file.name)
         self.assertEqual(response.status, 400)
-        expected = ("Failed to reserve image. Got error: "
-                    "Data supplied was not valid. Details: 400 Bad Request")
+        expected = "Content-Type must be application/octet-stream"
         self.assertTrue(expected in content,
                         "Could not find '%s' in '%s'" % (expected, content))
 
@@ -1319,7 +1318,7 @@ class TestApi(functional.FunctionalTest):
                           expected_exitcode=255,
                           **self.__dict__.copy())
 
-    def _do_test_unset_required_format(self, format):
+    def _do_test_post_image_content_missing_format(self, format):
         """
         We test that missing container/disk format fails with 400 "Bad Request"
 
@@ -1349,9 +1348,60 @@ class TestApi(functional.FunctionalTest):
         self.stop_servers()
 
     @skip_if_disabled
-    def test_unset_container_format(self):
-        self._do_test_unset_required_format('container_format')
+    def _do_test_post_image_content_missing_diskformat(self):
+        self._do_test_post_image_content_missing_format('container_format')
 
     @skip_if_disabled
-    def test_unset_disk_format(self):
-        self._do_test_unset_required_format('disk_format')
+    def _do_test_post_image_content_missing_disk_format(self):
+        self._do_test_post_image_content_missing_format('disk_format')
+
+    def _do_test_put_image_content_missing_format(self, format):
+        """
+        We test that missing container/disk format only fails with
+        400 "Bad Request" when the image content is PUT (i.e. not
+        on the original POST of a queued image).
+
+        :see https://bugs.launchpad.net/glance/+bug/937216
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        # POST queued image
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        headers = {
+           'X-Image-Meta-Name': 'Image1',
+           'X-Image-Meta-Is-Public': 'True',
+        }
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        image_id = data['image']['id']
+
+        # PUT image content images without given format being specified
+        path = ("http://%s:%d/v1/images/%s" %
+                ("0.0.0.0", self.api_port, image_id))
+        headers = minimal_headers('Image1')
+        del headers['X-Image-Meta-' + format]
+        with tempfile.NamedTemporaryFile() as test_data_file:
+            test_data_file.write("XXX")
+            test_data_file.flush()
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT',
+                            headers=headers,
+                            body=test_data_file.name)
+        self.assertEqual(response.status, 400)
+        type = format.replace('_format', '')
+        expected = "Details: Invalid %s format 'None' for image" % type
+        self.assertTrue(expected in content,
+                        "Could not find '%s' in '%s'" % (expected, content))
+
+        self.stop_servers()
+
+    @skip_if_disabled
+    def _do_test_put_image_content_missing_diskformat(self):
+        self._do_test_put_image_content_missing_format('container_format')
+
+    @skip_if_disabled
+    def _do_test_put_image_content_missing_disk_format(self):
+        self._do_test_put_image_content_missing_format('disk_format')

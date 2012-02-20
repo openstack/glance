@@ -313,11 +313,21 @@ def validate_image(values):
         msg = "Invalid image status '%s' for image." % status
         raise exception.Invalid(msg)
 
-    if not disk_format or disk_format not in DISK_FORMATS:
+    def _required_format_absent(format, formats):
+        activating = status == 'active'
+        unrecognized = format not in formats
+        # We don't mind having format = None when we're just registering
+        # an image, but if the image is being activated, make sure that the
+        # format is valid. Conversely if the format happens to be set on
+        # registration, it must be one of the recognized formats.
+        return ((activating and (not format or unrecognized))
+                or (not activating and format and unrecognized))
+
+    if _required_format_absent(disk_format, DISK_FORMATS):
         msg = "Invalid disk format '%s' for image." % disk_format
         raise exception.Invalid(msg)
 
-    if not container_format or container_format not in CONTAINER_FORMATS:
+    if _required_format_absent(container_format, CONTAINER_FORMATS):
         msg = "Invalid container format '%s' for image." % container_format
         raise exception.Invalid(msg)
 

@@ -444,8 +444,18 @@ class Controller(controller.BaseController):
         image_meta = {}
         image_meta['location'] = location
         image_meta['status'] = 'active'
-        return registry.update_image_metadata(req.context, image_id,
-                                              image_meta)
+
+        try:
+            return registry.update_image_metadata(req.context,
+                                                  image_id,
+                                                  image_meta)
+        except exception.Invalid, e:
+            msg = (_("Failed to activate image. Got error: %(e)s")
+                   % locals())
+            for line in msg.split('\n'):
+                logger.error(line)
+            self.notifier.error('image.update', msg)
+            raise HTTPBadRequest(msg, request=req, content_type="text/plain")
 
     def _kill(self, req, image_id):
         """

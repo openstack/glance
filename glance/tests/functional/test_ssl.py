@@ -672,7 +672,7 @@ class TestSSL(functional.FunctionalTest):
         response, content = https.request(path, 'POST',
                             body=test_data_file.name)
         self.assertEqual(response.status, 400)
-        expected = "Data supplied was not valid. Details: 400 Bad Request"
+        expected = "Content-Type must be application/octet-stream"
         self.assertTrue(expected in content,
                         "Could not find '%s' in '%s'" % (expected, content))
 
