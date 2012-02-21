@@ -844,6 +844,7 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
         os.environ.pop('OS_AUTH_STRATEGY', None)
         os.environ.pop('OS_AUTH_USER', None)
         os.environ.pop('OS_AUTH_KEY', None)
+        os.environ.pop('OS_REGION_NAME', None)
 
     @skip_if_disabled
     def test_glance_cli_noauth_strategy(self):
@@ -878,6 +879,7 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
         os.environ['OS_AUTH_STRATEGY'] = 'keystone'
         os.environ['OS_AUTH_USER'] = 'pattieblack'
         os.environ['OS_AUTH_KEY'] = 'secrete'
+        os.environ['OS_REGION_NAME'] = 'RegionOne'
         cmd = minimal_add_command(self.api_port, 'MyImage', public=False)
         self._do_test_glance_cli(cmd)
 

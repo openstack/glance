@@ -40,6 +40,63 @@ class FakeResponse(object):
         return self.resp.status_int
 
 
+class V2Token(object):
+    def __init__(self):
+        self.tok = self.base_token
+
+    def add_service(self, s_type, region_list=[]):
+        catalog = self.tok['access']['serviceCatalog']
+        service_type = {"type": s_type, "name": "glance"}
+        catalog.append(service_type)
+        service = catalog[-1]
+        endpoint_list = []
+
+        if region_list == []:
+            endpoint_list.append(self.base_endpoint)
+        else:
+            for region in region_list:
+                endpoint = self.base_endpoint
+                endpoint['region'] = region
+                endpoint_list.append(endpoint)
+
+        service['endpoints'] = endpoint_list
+
+    @property
+    def token(self):
+        return self.tok
+
+    @property
+    def base_endpoint(self):
+        return {
+            "adminURL": "http://localhost:9292",
+            "internalURL": "http://localhost:9292",
+            "publicURL": "http://localhost:9292"
+    }
+
+    @property
+    def base_token(self):
+        return {
+            "access": {
+                "token": {
+                    "expires": "2010-11-23T16:40:53.321584",
+                    "id": "5c7f8799-2e54-43e4-851b-31f81871b6c",
+                    "tenant": {"id": "1", "name": "tenant-ok"}
+                },
+                "serviceCatalog": [
+                ],
+                "user": {
+                    "id": "2",
+                    "roles": [{
+                        "tenantId": "1",
+                        "id": "1",
+                        "name": "Admin"
+                    }],
+                    "name": "joeadmin"
+                }
+            }
+        }
+
+
 class TestKeystoneAuthPlugin(unittest.TestCase):
     """Test that the Keystone auth plugin works properly"""
 
@@ -78,10 +135,10 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
             try:
                 plugin = auth.KeystoneStrategy(creds)
                 plugin.authenticate()
+                self.fail("Failed to raise correct exception when supplying "
+                          "bad credentials: %r" % creds)
             except exception.MissingCredentialError:
                 continue  # Expected
-            self.fail("Failed to raise correct exception when supplying bad "
-                      "credentials: %r" % creds)
 
     def test_invalid_auth_url(self):
         """
@@ -94,13 +151,17 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
             {
                 'username': 'user1',
                 'auth_url': 'http://localhost/badauthurl/',
-                'password': 'pass'
+                'password': 'pass',
+                'strategy': 'keystone',
+                'region': 'RegionOne'
             },  # v1 Keystone
             {
                 'username': 'user1',
                 'auth_url': 'http://localhost/badauthurl/v2.0/',
                 'password': 'pass',
-                'tenant': 'tenant1'
+                'tenant': 'tenant1',
+                'strategy': 'keystone',
+                'region': 'RegionOne'
             }  # v2 Keystone
         ]
 
@@ -138,11 +199,15 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
             {
                 'username': 'wronguser',
                 'auth_url': 'http://localhost/badauthurl/',
+                'strategy': 'keystone',
+                'region': 'RegionOne',
                 'password': 'pass'
             },  # wrong username
             {
                 'username': 'user1',
                 'auth_url': 'http://localhost/badauthurl/',
+                'strategy': 'keystone',
+                'region': 'RegionOne',
                 'password': 'badpass'
             },  # bad password...
         ]
@@ -151,16 +216,33 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
             try:
                 plugin = auth.KeystoneStrategy(creds)
                 plugin.authenticate()
+                self.fail("Failed to raise NotAuthorized when supplying bad "
+                          "credentials: %r" % creds)
             except exception.NotAuthorized:
                 continue  # Expected
-            self.fail("Failed to raise NotAuthorized when supplying bad "
-                      "credentials: %r" % creds)
+
+        no_strategy_creds = {
+                'username': 'user1',
+                'auth_url': 'http://localhost/redirect/',
+                'password': 'pass',
+                'region': 'RegionOne'
+        }
+
+        try:
+            plugin = auth.KeystoneStrategy(no_strategy_creds)
+            plugin.authenticate()
+            self.fail("Failed to raise MissingCredentialError when "
+                      "supplying no strategy: %r" % no_strategy_creds)
+        except exception.MissingCredentialError:
+            pass  # Expected
 
         good_creds = [
             {
                 'username': 'user1',
                 'auth_url': 'http://localhost/redirect/',
-                'password': 'pass'
+                'password': 'pass',
+                'strategy': 'keystone',
+                'region': 'RegionOne'
             }
         ]
 
@@ -170,39 +252,7 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
 
     def test_v2_auth(self):
         """Test v2 auth code paths"""
-        service_type = "image"
-
-        def v2_token(service_type="image"):
-            # Mock up a token to satisfy v2 auth
-            token = {
-                "access": {
-                    "token": {
-                        "expires": "2010-11-23T16:40:53.321584",
-                        "id": "5c7f8799-2e54-43e4-851b-31f81871b6c",
-                        "tenant": {"id": "1", "name": "tenant-ok"}
-                    },
-                    "serviceCatalog": [{
-                        "endpoints": [{
-                            "region": "RegionOne",
-                            "adminURL": "http://localhost:9292",
-                            "internalURL": "http://localhost:9292",
-                            "publicURL": "http://localhost:9292"
-                        }],
-                        "type": service_type,
-                        "name": "glance"
-                    }],
-                    "user": {
-                        "id": "2",
-                        "roles": [{
-                            "tenantId": "1",
-                            "id": "1",
-                            "name": "Admin"
-                        }],
-                        "name": "joeadmin"
-                    }
-                }
-            }
-            return token
+        mock_token = None
 
         def fake_do_request(cls, url, method, headers=None, body=None):
             if (not url.rstrip('/').endswith('v2.0/tokens') or
@@ -220,10 +270,12 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
                 resp.status = 401
             else:
                 resp.status = 200
-                body = v2_token(service_type)
+                body = mock_token.token
 
             return FakeResponse(resp), json.dumps(body)
 
+        mock_token = V2Token()
+        mock_token.add_service('image', ['RegionOne'])
         self.stubs.Set(auth.KeystoneStrategy, '_do_request', fake_do_request)
 
         unauthorized_creds = [
@@ -231,19 +283,25 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
                 'username': 'wronguser',
                 'auth_url': 'http://localhost/v2.0',
                 'password': 'pass',
-                'tenant': 'tenant-ok'
+                'tenant': 'tenant-ok',
+                'strategy': 'keystone',
+                'region': 'RegionOne'
             },  # wrong username
             {
                 'username': 'user1',
                 'auth_url': 'http://localhost/v2.0',
                 'password': 'badpass',
-                'tenant': 'tenant-ok'
+                'tenant': 'tenant-ok',
+                'strategy': 'keystone',
+                'region': 'RegionOne'
             },  # bad password...
             {
                 'username': 'user1',
                 'auth_url': 'http://localhost/v2.0',
                 'password': 'pass',
-                'tenant': 'carterhayes'
+                'tenant': 'carterhayes',
+                'strategy': 'keystone',
+                'region': 'RegionOne'
             },  # bad tenant...
         ]
 
@@ -251,43 +309,157 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
             try:
                 plugin = auth.KeystoneStrategy(creds)
                 plugin.authenticate()
+                self.fail("Failed to raise NotAuthorized when supplying bad "
+                          "credentials: %r" % creds)
             except exception.NotAuthorized:
                 continue  # Expected
-            self.fail("Failed to raise NotAuthorized when supplying bad "
-                      "credentials: %r" % creds)
+
+        no_region_creds = {
+                'username': 'user1',
+                'tenant': 'tenant-ok',
+                'auth_url': 'http://localhost/redirect/v2.0/',
+                'password': 'pass',
+                'strategy': 'keystone'
+        }
+
+        plugin = auth.KeystoneStrategy(no_region_creds)
+        self.assertTrue(plugin.authenticate() is None)
+        self.assertEquals(plugin.management_url, 'http://localhost:9292')
+
+        # Add another image service, with a different region
+        mock_token.add_service('image', ['RegionTwo'])
+
+        try:
+            plugin = auth.KeystoneStrategy(no_region_creds)
+            plugin.authenticate()
+            self.fail("Failed to raise RegionAmbiguity when no region present "
+                      "and multiple regions exist: %r" % no_region_creds)
+        except exception.RegionAmbiguity:
+            pass  # Expected
+
+        wrong_region_creds = {
+                'username': 'user1',
+                'tenant': 'tenant-ok',
+                'auth_url': 'http://localhost/redirect/v2.0/',
+                'password': 'pass',
+                'strategy': 'keystone',
+                'region': 'NonExistantRegion'
+        }
+
+        try:
+            plugin = auth.KeystoneStrategy(wrong_region_creds)
+            plugin.authenticate()
+            self.fail("Failed to raise NoServiceEndpoint when supplying "
+                      "wrong region: %r" % wrong_region_creds)
+        except exception.NoServiceEndpoint:
+            pass  # Expected
+
+        no_strategy_creds = {
+                'username': 'user1',
+                'tenant': 'tenant-ok',
+                'auth_url': 'http://localhost/redirect/v2.0/',
+                'password': 'pass',
+                'region': 'RegionOne'
+        }
+
+        try:
+            plugin = auth.KeystoneStrategy(no_strategy_creds)
+            plugin.authenticate()
+            self.fail("Failed to raise MissingCredentialError when "
+                      "supplying no strategy: %r" % no_strategy_creds)
+        except exception.MissingCredentialError:
+            pass  # Expected
+
+        bad_strategy_creds = {
+            'username': 'user1',
+            'tenant': 'tenant-ok',
+            'auth_url': 'http://localhost/redirect/v2.0/',
+            'password': 'pass',
+            'region': 'RegionOne',
+            'strategy': 'keypebble'
+        }
+
+        try:
+            plugin = auth.KeystoneStrategy(bad_strategy_creds)
+            plugin.authenticate()
+            self.fail("Failed to raise BadAuthStrategy when supplying "
+                      "bad auth strategy: %r" % bad_strategy_creds)
+        except exception.BadAuthStrategy:
+            pass  # Expected
+
+        mock_token = V2Token()
+        mock_token.add_service('image', ['RegionOne', 'RegionTwo'])
 
         good_creds = [
             {
                 'username': 'user1',
                 'auth_url': 'http://localhost/v2.0/',
                 'password': 'pass',
-                'tenant': 'tenant-ok'
+                'tenant': 'tenant-ok',
+                'strategy': 'keystone',
+                'region': 'RegionOne'
             },  # auth_url with trailing '/'
             {
                 'username': 'user1',
                 'auth_url': 'http://localhost/v2.0',
                 'password': 'pass',
-                'tenant': 'tenant-ok'
-            }   # auth_url without trailing '/'
+                'tenant': 'tenant-ok',
+                'strategy': 'keystone',
+                'region': 'RegionOne'
+            },   # auth_url without trailing '/'
+            {
+                'username': 'user1',
+                'auth_url': 'http://localhost/v2.0',
+                'password': 'pass',
+                'tenant': 'tenant-ok',
+                'strategy': 'keystone',
+                'region': 'RegionTwo'
+            }   # Second region
         ]
 
         for creds in good_creds:
             plugin = auth.KeystoneStrategy(creds)
             self.assertTrue(plugin.authenticate() is None)
+            self.assertEquals(plugin.management_url, 'http://localhost:9292')
 
-        creds = {
-                    'username': 'user1',
-                    'auth_url': 'http://localhost/v2.0/',
-                    'password': 'pass',
-                    'tenant': 'tenant-ok'
+        ambiguous_region_creds = {
+            'username': 'user1',
+            'auth_url': 'http://localhost/v2.0/',
+            'password': 'pass',
+            'tenant': 'tenant-ok',
+            'strategy': 'keystone',
+            'region': 'RegionOne'
         }
 
-        service_type = "bad-image"
+        mock_token = V2Token()
+        # Add two identical services
+        mock_token.add_service('image', ['RegionOne'])
+        mock_token.add_service('image', ['RegionOne'])
 
         try:
-            plugin = auth.KeystoneStrategy(creds)
+            plugin = auth.KeystoneStrategy(ambiguous_region_creds)
+            plugin.authenticate()
+            self.fail("Failed to raise RegionAmbiguity when "
+                      "non-unique regions exist: %r" % ambiguous_region_creds)
+        except exception.RegionAmbiguity:
+            pass
+
+        mock_token = V2Token()
+        mock_token.add_service('bad-image', ['RegionOne'])
+
+        good_creds = {
+            'username': 'user1',
+            'auth_url': 'http://localhost/v2.0/',
+            'password': 'pass',
+            'tenant': 'tenant-ok',
+            'strategy': 'keystone',
+            'region': 'RegionOne'
+        }
+
+        try:
+            plugin = auth.KeystoneStrategy(good_creds)
             plugin.authenticate()
             self.fail("Failed to raise NoServiceEndpoint when bad service "
-               "type encountered: %r" % service_type)
+                      "type encountered")
         except exception.NoServiceEndpoint:
             pass

@@ -339,8 +339,7 @@ class BaseClient(object):
         Returns an instantiated authentication plugin.
         """
         strategy = creds.get('strategy', 'noauth')
-        plugin_class = auth.get_plugin_from_strategy(strategy)
-        plugin = plugin_class(creds)
+        plugin = auth.get_plugin_from_strategy(strategy, creds)
         return plugin
 
     def get_connection_type(self):
