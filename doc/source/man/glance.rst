@@ -99,6 +99,13 @@ OPTIONS
         The server certificate will not be verified against any certificate
         authorities. This option should be used with caution.
 
+  **-R REGION, --region=REGION**
+        When using keystone authentication version 2.0 or later this
+        identifies the region name to use when selecting the service
+        endpoint. If no region is specified and only one region is
+        available that region will be used by default. Where more than
+        one region endpoint is available a region must be provided.
+
   **-A TOKEN, --auth_token=TOKEN**
         Authentication token to use to identify the client to the glance server
 

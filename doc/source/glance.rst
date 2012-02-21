@@ -104,6 +104,12 @@ a brief help message, like so::
                           requests. The server certificate will not be
                           verified against any certificate authorities.
                           This option should be used with caution.
+    -R REGION, --region=REGION
+                          When using keystone authentication version 2.0
+                          or later this identifies the region name to
+                          use when selecting the service endpoint. Where
+                          more than one region endpoint is available a
+                          region must be provided.
     --limit=LIMIT         Page size to use while requesting image metadata
     --marker=MARKER       Image index after which to begin pagination
     --sort_key=KEY        Sort results by this image attribute.

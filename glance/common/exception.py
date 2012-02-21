@@ -63,6 +63,11 @@ class MissingCredentialError(GlanceException):
     message = _("Missing required credential: %(required)s")
 
 
+class BadAuthStrategy(GlanceException):
+    message = _("Incorrect auth strategy, expected \"%(expected)s\" but "
+                "received \"%(received)s\"")
+
+
 class NotFound(GlanceException):
     message = _("An object with the specified identifier was not found.")
 
@@ -180,3 +185,9 @@ class InvalidRedirect(GlanceException):
 
 class NoServiceEndpoint(GlanceException):
     message = _("Response from Keystone does not contain a Glance endpoint.")
+
+
+class RegionAmbiguity(GlanceException):
+    message = _("Multiple 'image' service matches for region %(region)s. This "
+                "generally means that a region is required and you have not "
+                "supplied one.")
