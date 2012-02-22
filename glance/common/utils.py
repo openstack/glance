@@ -89,6 +89,19 @@ def image_meta_to_http_headers(image_meta):
     return headers
 
 
+def add_features_to_http_headers(features, headers):
+    """
+    Adds additional headers representing glance features to be enabled.
+
+    :param headers: Base set of headers
+    :param features: Map of enabled features
+    """
+    if features:
+        for k, v in features.items():
+            if v is not None:
+                headers[k.lower()] = unicode(v)
+
+
 def get_image_meta_from_headers(response):
     """
     Processes HTTP headers from a supplied response that

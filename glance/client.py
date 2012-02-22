@@ -130,7 +130,7 @@ class V1Client(base_client.BaseClient):
                 else:
                     raise
 
-    def add_image(self, image_meta=None, image_data=None):
+    def add_image(self, image_meta=None, image_data=None, features=None):
         """
         Tells Glance about an image's metadata as well
         as optionally the image_data itself
@@ -140,6 +140,7 @@ class V1Client(base_client.BaseClient):
         :param image_data: Optional string of raw image data
                            or file-like object that can be
                            used to read the image data
+        :param features: Optional map of features
 
         :retval The newly-stored image's metadata.
         """
@@ -154,6 +155,8 @@ class V1Client(base_client.BaseClient):
                 headers['content-length'] = image_size
         else:
             body = None
+
+        utils.add_features_to_http_headers(features, headers)
 
         res = self.do_request("POST", "/images", body, headers)
         data = json.loads(res.read())

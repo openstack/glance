@@ -261,7 +261,7 @@ class TestStore(unittest.TestCase):
         loc = get_location_from_uri(expected_location)
         (new_image_swift, new_image_size) = self.store.get(loc)
         new_image_contents = new_image_swift.getvalue()
-        new_image_swift_size = new_image_swift.len
+        new_image_swift_size = len(new_image_swift)
 
         self.assertEquals(expected_swift_contents, new_image_contents)
         self.assertEquals(expected_swift_size, new_image_swift_size)
@@ -318,7 +318,7 @@ class TestStore(unittest.TestCase):
             loc = get_location_from_uri(expected_location)
             (new_image_swift, new_image_size) = self.store.get(loc)
             new_image_contents = new_image_swift.getvalue()
-            new_image_swift_size = new_image_swift.len
+            new_image_swift_size = len(new_image_swift)
 
             self.assertEquals(expected_swift_contents, new_image_contents)
             self.assertEquals(expected_swift_size, new_image_swift_size)
@@ -382,7 +382,7 @@ class TestStore(unittest.TestCase):
         loc = get_location_from_uri(expected_location)
         (new_image_swift, new_image_size) = self.store.get(loc)
         new_image_contents = new_image_swift.getvalue()
-        new_image_swift_size = new_image_swift.len
+        new_image_swift_size = len(new_image_swift)
 
         self.assertEquals(expected_swift_contents, new_image_contents)
         self.assertEquals(expected_swift_size, new_image_swift_size)
@@ -430,7 +430,7 @@ class TestStore(unittest.TestCase):
         loc = get_location_from_uri(expected_location)
         (new_image_swift, new_image_size) = self.store.get(loc)
         new_image_contents = new_image_swift.getvalue()
-        new_image_swift_size = new_image_swift.len
+        new_image_swift_size = len(new_image_swift)
 
         self.assertEquals(expected_swift_contents, new_image_contents)
         self.assertEquals(expected_swift_size, new_image_swift_size)
@@ -491,7 +491,7 @@ class TestStore(unittest.TestCase):
         loc = get_location_from_uri(expected_location)
         (new_image_swift, new_image_size) = self.store.get(loc)
         new_image_contents = new_image_swift.getvalue()
-        new_image_swift_size = new_image_swift.len
+        new_image_swift_size = len(new_image_swift)
 
         self.assertEquals(expected_swift_contents, new_image_contents)
         self.assertEquals(expected_swift_size, new_image_swift_size)

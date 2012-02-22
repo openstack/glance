@@ -23,7 +23,10 @@ import tempfile
 
 from glance.common import utils
 from glance.tests import functional
-from glance.tests.utils import execute, minimal_add_command
+from glance.tests.utils import execute, requires, minimal_add_command
+from glance.tests.functional.store_utils import (setup_http,
+                                                 teardown_http,
+                                                 get_http_uri)
 
 
 class TestBinGlance(functional.FunctionalTest):
@@ -79,6 +82,48 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual('0', size, "Expected image to be 0 bytes in size, "
                                     "but got %s. " % size)
+
+    @requires(setup_http, teardown_http)
+    def test_add_copying_from(self):
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 0. Verify no public images
+        cmd = "bin/glance --port=%d index" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('', out.strip())
+
+        # 1. Add public image
+        suffix = 'copy_from=%s' % get_http_uri(self, 'foobar')
+        cmd = minimal_add_command(api_port, 'MyImage', suffix)
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(out.strip().startswith('Added new image with ID:'))
+
+        # 2. Verify image added as public image
+        cmd = "bin/glance --port=%d index" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        lines = out.split("\n")[2:-1]
+        self.assertEqual(1, len(lines))
+
+        line = lines[0]
+
+        image_id, name, disk_format, container_format, size = \
+            [c.strip() for c in line.split()]
+        self.assertEqual('MyImage', name)
+
+        self.assertEqual('5120', size, "Expected image to be 0 bytes in size,"
+                                       " but got %s. " % size)
 
     def test_add_with_location_and_stdin(self):
         self.cleanup()

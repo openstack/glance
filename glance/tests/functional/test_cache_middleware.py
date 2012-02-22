@@ -29,51 +29,20 @@ import shutil
 import thread
 import time
 
-import BaseHTTPServer
 import httplib2
 
 from glance.tests import functional
 from glance.tests.utils import (skip_if_disabled,
+                                requires,
                                 execute,
                                 xattr_writes_supported,
-                                minimal_headers,
-                               )
+                                minimal_headers)
 
+from glance.tests.functional.store_utils import (setup_http,
+                                                 teardown_http,
+                                                 get_http_uri)
 
 FIVE_KB = 5 * 1024
-
-
-class RemoteImageHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    def do_HEAD(self):
-        """
-        Respond to an image HEAD request fake metadata
-        """
-        if 'images' in self.path:
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/octet-stream')
-            self.send_header('Content-Length', FIVE_KB)
-            self.end_headers()
-            return
-        else:
-            self.send_error(404, 'File Not Found: %s' % self.path)
-            return
-
-    def do_GET(self):
-        """
-        Respond to an image GET request with fake image content.
-        """
-        if 'images' in self.path:
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/octet-stream')
-            self.send_header('Content-Length', FIVE_KB)
-            self.end_headers()
-            image_data = '*' * FIVE_KB
-            self.wfile.write(image_data)
-            self.wfile.close()
-            return
-        else:
-            self.send_error(404, 'File Not Found: %s' % self.path)
-            return
 
 
 class BaseCacheMiddlewareTest(object):
@@ -153,6 +122,7 @@ class BaseCacheMiddlewareTest(object):
 
         self.stop_servers()
 
+    @requires(setup_http, teardown_http)
     @skip_if_disabled
     def test_cache_remote_image(self):
         """
@@ -164,18 +134,8 @@ class BaseCacheMiddlewareTest(object):
         api_port = self.api_port
         registry_port = self.registry_port
 
-        # set up "remote" image server
-        server_class = BaseHTTPServer.HTTPServer
-        remote_server = server_class(('127.0.0.1', 0), RemoteImageHandler)
-        remote_ip, remote_port = remote_server.server_address
-
-        def serve_requests(httpd):
-            httpd.serve_forever()
-
-        thread.start_new_thread(serve_requests, (remote_server,))
-
         # Add a remote image and verify a 201 Created is returned
-        remote_uri = 'http://%s:%d/images/2' % (remote_ip, remote_port)
+        remote_uri = get_http_uri(self, '2')
         headers = {'X-Image-Meta-Name': 'Image2',
                    'X-Image-Meta-disk_format': 'raw',
                    'X-Image-Meta-container_format': 'ovf',
@@ -203,8 +163,6 @@ class BaseCacheMiddlewareTest(object):
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
         self.assertEqual(int(response['content-length']), FIVE_KB)
-
-        remote_server.shutdown()
 
         self.stop_servers()
 

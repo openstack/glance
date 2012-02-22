@@ -25,6 +25,7 @@ import urlparse
 
 from glance.common import cfg
 from glance.common import exception
+from glance.common import utils
 import glance.store
 import glance.store.base
 import glance.store.location
@@ -250,7 +251,13 @@ class Store(glance.store.base.Store):
         key = self._retrieve_key(location)
 
         key.BufferSize = self.CHUNKSIZE
-        return (ChunkedFile(key), key.size)
+
+        class ChunkedIndexable(glance.store.Indexable):
+            def another(self):
+                return (self.wrapped.fp.read(ChunkedFile.CHUNKSIZE)
+                        if self.wrapped.fp else None)
+
+        return (ChunkedIndexable(ChunkedFile(key), key.size), key.size)
 
     def get_size(self, location):
         """
@@ -361,11 +368,9 @@ class Store(glance.store.base.Store):
         tmpdir = self.s3_store_object_buffer_dir
         temp_file = tempfile.NamedTemporaryFile(dir=tmpdir)
         checksum = hashlib.md5()
-        chunk = image_file.read(self.CHUNKSIZE)
-        while chunk:
+        for chunk in utils.chunkreadable(image_file, self.CHUNKSIZE):
             checksum.update(chunk)
             temp_file.write(chunk)
-            chunk = image_file.read(self.CHUNKSIZE)
         temp_file.flush()
 
         msg = _("Uploading temporary file to S3 for %s") % loc.get_uri()

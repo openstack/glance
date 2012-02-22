@@ -30,18 +30,25 @@ If a connection cannot be established, all the test cases are
 skipped.
 """
 
-import ConfigParser
 import hashlib
 import httplib
 import httplib2
 import json
-import os
 
 from glance.common import crypt
 import glance.store.swift  # Needed to register driver for location
 from glance.store.location import get_location_from_uri
 from glance.tests.functional import test_api
-from glance.tests.utils import skip_if_disabled
+from glance.tests.utils import skip_if_disabled, requires, minimal_headers
+from glance.tests.functional.store_utils import (setup_swift,
+                                                 teardown_swift,
+                                                 get_swift_uri,
+                                                 setup_s3,
+                                                 teardown_s3,
+                                                 get_s3_uri,
+                                                 setup_http,
+                                                 teardown_http,
+                                                 get_http_uri)
 
 FIVE_KB = 5 * 1024
 FIVE_MB = 5 * 1024 * 1024
@@ -51,89 +58,17 @@ class TestSwift(test_api.TestApi):
 
     """Functional tests for the Swift backend"""
 
-    # Test machines can set the GLANCE_TEST_SWIFT_CONF variable
-    # to override the location of the config file for migration testing
-    CONFIG_FILE_PATH = os.environ.get('GLANCE_TEST_SWIFT_CONF')
-
     def setUp(self):
         """
         Test a connection to an Swift store using the credentials
         found in the environs or /tests/functional/test_swift.conf, if found.
         If the connection fails, mark all tests to skip.
         """
-        self.inited = False
-        self.disabled = True
-
-        if self.inited:
+        if self.disabled:
             return
 
-        if not self.CONFIG_FILE_PATH:
-            self.disabled_message = "GLANCE_TEST_SWIFT_CONF environ not set."
-            self.inited = True
-            return
+        setup_swift(self)
 
-        if os.path.exists(TestSwift.CONFIG_FILE_PATH):
-            cp = ConfigParser.RawConfigParser()
-            try:
-                cp.read(TestSwift.CONFIG_FILE_PATH)
-                defaults = cp.defaults()
-                for key, value in defaults.items():
-                    self.__dict__[key] = value
-            except ConfigParser.ParsingError, e:
-                self.disabled_message = ("Failed to read test_swift.conf "
-                                         "file. Got error: %s" % e)
-                self.inited = True
-                return
-
-        from swift.common import client as swift_client
-
-        try:
-            swift_host = self.swift_store_auth_address
-            if not swift_host.startswith('http'):
-                swift_host = 'https://' + swift_host
-            user = self.swift_store_user
-            key = self.swift_store_key
-            container_name = self.swift_store_container
-        except AttributeError, e:
-            self.disabled_message = ("Failed to find required configuration "
-                                     "options for Swift store. "
-                                     "Got error: %s" % e)
-            self.inited = True
-            return
-
-        self.swift_conn = swift_conn = swift_client.Connection(
-            authurl=swift_host, user=user, key=key, snet=False, retries=1)
-
-        try:
-            _resp_headers, containers = swift_conn.get_account()
-        except Exception, e:
-            self.disabled_message = ("Failed to get_account from Swift "
-                                     "Got error: %s" % e)
-            self.inited = True
-            return
-
-        try:
-            for container in containers:
-                if container == container_name:
-                    swift_conn.delete_container(container)
-        except swift_client.ClientException, e:
-            self.disabled_message = ("Failed to delete container from Swift "
-                                     "Got error: %s" % e)
-            self.inited = True
-            return
-
-        self.swift_conn = swift_conn
-
-        try:
-            swift_conn.put_container(container_name)
-        except swift_client.ClientException, e:
-            self.disabled_message = ("Failed to create container. "
-                                     "Got error: %s" % e)
-            self.inited = True
-            return
-
-        self.disabled = False
-        self.inited = True
         self.default_store = 'swift'
 
         super(TestSwift, self).setUp()
@@ -185,9 +120,7 @@ class TestSwift(test_api.TestApi):
         # POST /images with public image named Image1
         # attribute and no custom properties. Verify a 200 OK is returned
         image_data = "*" * FIVE_MB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
@@ -224,8 +157,8 @@ class TestSwift(test_api.TestApi):
             'x-image-meta-name': 'Image1',
             'x-image-meta-is_public': 'True',
             'x-image-meta-status': 'active',
-            'x-image-meta-disk_format': '',
-            'x-image-meta-container_format': '',
+            'x-image-meta-disk_format': 'raw',
+            'x-image-meta-container_format': 'ovf',
             'x-image-meta-size': str(FIVE_MB)
         }
 
@@ -335,9 +268,7 @@ class TestSwift(test_api.TestApi):
         # 1. POST /images with public image named Image1
         # attribute and no custom properties. Verify a 200 OK is returned
         image_data = "*" * FIVE_MB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
@@ -374,8 +305,8 @@ class TestSwift(test_api.TestApi):
             'x-image-meta-name': 'Image1',
             'x-image-meta-is_public': 'True',
             'x-image-meta-status': 'active',
-            'x-image-meta-disk_format': '',
-            'x-image-meta-container_format': '',
+            'x-image-meta-disk_format': 'raw',
+            'x-image-meta-container_format': 'ovf',
             'x-image-meta-size': str(FIVE_MB)
         }
 
@@ -423,9 +354,7 @@ class TestSwift(test_api.TestApi):
 
         # POST /images with public image named Image1
         image_data = "*" * FIVE_KB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Is-Public': 'True'}
+        headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
@@ -470,10 +399,8 @@ class TestSwift(test_api.TestApi):
 
         # POST /images with public image named Image1 without uploading data
         image_data = "*" * FIVE_KB
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Is-Public': 'True',
-                   'X-Image-Meta-Location': swift_location}
+        headers = minimal_headers('Image1')
+        headers['X-Image-Meta-Location'] = swift_location
         path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
@@ -507,6 +434,159 @@ class TestSwift(test_api.TestApi):
         self.assertEqual(response.status, 200)
         path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
                                               image_id2)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
+        self.stop_servers()
+
+    def _do_test_copy_from(self, from_store, get_uri):
+        """
+        Ensure we can copy from an external image in from_store.
+        """
+        self.cleanup()
+
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # POST /images with public image to be stored in from_store,
+        # to stand in for the 'external' image
+        image_data = "*" * FIVE_KB
+        headers = minimal_headers('external')
+        headers['X-Image-Meta-Store'] = from_store
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=image_data)
+        self.assertEqual(response.status, 201, content)
+        data = json.loads(content)
+
+        original_image_id = data['image']['id']
+
+        copy_from = get_uri(self, original_image_id)
+
+        # POST /images with public image copied from_store (to Swift)
+        headers = {'X-Image-Meta-Name': 'copied',
+                   'X-Image-Meta-disk_format': 'raw',
+                   'X-Image-Meta-container_format': 'ovf',
+                   'X-Image-Meta-Is-Public': 'True',
+                   'X-Glance-API-Copy-From': copy_from}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201, content)
+        data = json.loads(content)
+
+        copy_image_id = data['image']['id']
+
+        # GET image and make sure image content is as expected
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              copy_image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['content-length'], str(FIVE_KB))
+
+        self.assertEqual(content, "*" * FIVE_KB)
+        self.assertEqual(hashlib.md5(content).hexdigest(),
+                         hashlib.md5("*" * FIVE_KB).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_KB)
+        self.assertEqual(data['image']['name'], "copied")
+
+        # DELETE original image
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              original_image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
+        # GET image again to make sure the existence of the original
+        # image in from_store is not depended on
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              copy_image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['content-length'], str(FIVE_KB))
+
+        self.assertEqual(content, "*" * FIVE_KB)
+        self.assertEqual(hashlib.md5(content).hexdigest(),
+                         hashlib.md5("*" * FIVE_KB).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_KB)
+        self.assertEqual(data['image']['name'], "copied")
+
+        # DELETE copied image
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              copy_image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
+        self.stop_servers()
+
+    @skip_if_disabled
+    def test_copy_from_swift(self):
+        """
+        Ensure we can copy from an external image in Swift.
+        """
+        self._do_test_copy_from('swift', get_swift_uri)
+
+    @requires(setup_s3, teardown_s3)
+    @skip_if_disabled
+    def test_copy_from_s3(self):
+        """
+        Ensure we can copy from an external image in S3.
+        """
+        self._do_test_copy_from('s3', get_s3_uri)
+
+    @requires(setup_http, teardown_http)
+    @skip_if_disabled
+    def test_copy_from_http(self):
+        """
+        Ensure we can copy from an external image in HTTP.
+        """
+        self.cleanup()
+
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        copy_from = get_http_uri(self, 'foobar')
+
+        # POST /images with public image copied HTTP (to Swift)
+        headers = {'X-Image-Meta-Name': 'copied',
+                   'X-Image-Meta-disk_format': 'raw',
+                   'X-Image-Meta-container_format': 'ovf',
+                   'X-Image-Meta-Is-Public': 'True',
+                   'X-Glance-API-Copy-From': copy_from}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201, content)
+        data = json.loads(content)
+
+        copy_image_id = data['image']['id']
+
+        # GET image and make sure image content is as expected
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              copy_image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['content-length'], str(FIVE_KB))
+
+        self.assertEqual(content, "*" * FIVE_KB)
+        self.assertEqual(hashlib.md5(content).hexdigest(),
+                         hashlib.md5("*" * FIVE_KB).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_KB)
+        self.assertEqual(data['image']['name'], "copied")
+
+        # DELETE copied image
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              copy_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 200)
