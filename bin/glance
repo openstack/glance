@@ -241,6 +241,8 @@ EXAMPLES
         if 'location' in fields.keys():
             source = fields.pop('location')
             image_meta['location'] = source
+            if 'checksum' in fields.keys():
+                image_meta['checksum'] = fields.pop('checksum')
         elif 'copy_from' in fields.keys():
             source = fields.pop('copy_from')
             features['x-glance-api-copy-from'] = source

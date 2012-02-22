@@ -393,6 +393,70 @@ class TestBinGlance(functional.FunctionalTest):
         self.stop_servers()
 
     @functional.runs_sql
+    def test_add_location_with_checksum(self):
+        """
+        We test the following:
+
+            1. Add an image with location and checksum
+            2. Run SQL against DB to verify checksum was entered correctly
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 1. Add public image
+        cmd = minimal_add_command(api_port,
+                                 'MyImage',
+                                 'location=http://example.com checksum=1')
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(out.strip().startswith('Added new image with ID:'))
+
+        image_id = out.split(":")[1].strip()
+
+        sql = 'SELECT checksum FROM images WHERE id = "%s"' % image_id
+        recs = self.run_sql_cmd(sql)
+
+        self.assertEqual('1', recs.first()[0])
+
+        self.stop_servers()
+
+    @functional.runs_sql
+    def test_add_location_without_checksum(self):
+        """
+        We test the following:
+
+            1. Add an image with location and no checksum
+            2. Run SQL against DB to verify checksum is NULL
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 1. Add public image
+        cmd = minimal_add_command(api_port,
+                                 'MyImage',
+                                 'location=http://example.com')
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(out.strip().startswith('Added new image with ID:'))
+
+        image_id = out.split(":")[1].strip()
+
+        sql = 'SELECT checksum FROM images WHERE id = "%s"' % image_id
+        recs = self.run_sql_cmd(sql)
+
+        self.assertEqual(None, recs.first()[0])
+
+        self.stop_servers()
+
+    @functional.runs_sql
     def test_add_clear(self):
         """
         We test the following:
