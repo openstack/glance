@@ -283,8 +283,8 @@ To upload a kernel file, ramdisk file and filesystem image file::
   # Determine what the ids associated with the kernel and ramdisk files
   $> glance index
   # Assuming the ids are 7 and 8:
-  $> glance add disk_format=ami container_format=ami --kernel=7 \
-     --ramdisk=8 ./maverick-server-uec-amd64.img maverick-server-uec-amd64.img
+  $> glance add disk_format=ami container_format=ami kernel_id=7 \
+     ramdisk_id=8 ./maverick-server-uec-amd64.img maverick-server-uec-amd64.img
 
 To upload a raw image file::
 
