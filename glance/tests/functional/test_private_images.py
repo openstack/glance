@@ -760,11 +760,11 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
         self.start_servers()
 
         # Add a non-public image using the given glance command line
-        exitcode, out, err = execute("echo testdata | %s" % cmd)
+        exitcode, out, err = execute("echo testdata | %s" % cmd +
+                                    " --silent-upload")
 
         self.assertEqual(0, exitcode)
         image_id = out.strip()[25:]
-
         # Verify the attributes of the image
         headers = {'X-Auth-Token': keystone_utils.pattieblack_token}
         path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,

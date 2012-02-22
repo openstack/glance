@@ -163,7 +163,9 @@ class TestBinGlance(functional.FunctionalTest):
             exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertTrue(out.strip().startswith('Added new image with ID:'))
+        msg = out.split("\n")
+        self.assertTrue(msg[0].startswith('Uploading image'))
+        self.assertTrue(msg[1].startswith('Added new image with ID:'))
 
         # 2. Verify image added as public image
         cmd = "bin/glance --port=%d index" % api_port
@@ -239,7 +241,8 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertTrue(out.strip().startswith('Added new image with ID:'))
+        msg = out.split('\n')
+        self.assertTrue(msg[0].startswith('Added new image with ID:'))
 
         image_id = out.strip().split(':')[1].strip()
 
@@ -791,7 +794,8 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertTrue(out.strip().startswith('Added new image with ID:'))
+        msg = out.split("\n")
+        self.assertTrue(msg[3].startswith('Added new image with ID:'))
 
         # 2. Verify image added as public image
         cmd = "bin/glance --port=%d index" % api_port
