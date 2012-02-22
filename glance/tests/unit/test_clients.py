@@ -1837,7 +1837,7 @@ class TestClient(base.IsolatedUnitTest):
                    'properties': {'distro': 'Ubuntu 10.04 LTS'},
                   }
 
-        class Zeros:
+        class Zeros(object):
             def __init__(self, chunks):
                 self.chunks = chunks
                 self.zeros = open('/dev/zero', 'rb')
