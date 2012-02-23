@@ -18,6 +18,8 @@
 """Functional test case that utilizes the bin/glance CLI tool"""
 
 import datetime
+import httplib2
+import json
 import os
 import tempfile
 
@@ -122,8 +124,62 @@ class TestBinGlance(functional.FunctionalTest):
             [c.strip() for c in line.split()]
         self.assertEqual('MyImage', name)
 
-        self.assertEqual('5120', size, "Expected image to be 0 bytes in size,"
-                                       " but got %s. " % size)
+        self.assertEqual('5120', size, "Expected image to be 5120 bytes "
+                                       " in size, but got %s. " % size)
+
+    def _do_test_update_external_source(self, source):
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 1. Add public image with no image content
+        headers = {'X-Image-Meta-Name': 'MyImage',
+                   'X-Image-Meta-disk_format': 'raw',
+                   'X-Image-Meta-container_format': 'ovf',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        self.assertEqual(data['image']['name'], 'MyImage')
+        image_id = data['image']['id']
+
+        # 2. Update image with external source
+        source = '%s=%s' % (source, get_http_uri(self, 'foobar'))
+        cmd = "bin/glance update %s %s -p %d" % (image_id, source, api_port)
+        exitcode, out, err = execute(cmd, raise_error=False)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(out.strip().endswith('Updated image %s' % image_id))
+
+        # 3. Verify image added as public image
+        cmd = "bin/glance --port=%d index" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        lines = out.split("\n")[2:-1]
+        self.assertEqual(1, len(lines))
+
+        line = lines[0]
+
+        image_id, name, disk_format, container_format, size = \
+            [c.strip() for c in line.split()]
+        self.assertEqual('MyImage', name)
+
+        self.assertEqual('5120', size, "Expected image to be 5120 bytes "
+                                       " in size, but got %s. " % size)
+
+    @requires(setup_http, teardown_http)
+    def test_update_copying_from(self):
+        """
+        Tests creating an queued image then subsequently updating
+        with a copy-from source
+        """
+        self._do_test_update_external_source('copy_from')
 
     def test_add_with_location_and_stdin(self):
         self.cleanup()

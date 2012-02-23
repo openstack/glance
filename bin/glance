@@ -182,6 +182,12 @@ location            Optional. When specified, should be a readable location
                     filesystem at /usr/share/images/some.image.tar.gz
                     you would specify:
                     location=file:///usr/share/images/some.image.tar.gz
+copy_from           Optional. An external location (HTTP, S3 or Swift URI) to
+                    copy image content from. For example, if the image data is
+                    stored as an object called fedora16 in an S3 bucket named
+                    images, you would specify (with the approriate access and
+                    secret keys):
+                    copy_from=s3://akey:skey@s3.amazonaws.com/images/fedora16
 
 Any other field names are considered to be custom properties so be careful
 to spell field names correctly. :)
@@ -317,7 +323,8 @@ Field names that can be specified:
 
 name                A name for the image.
 location            An external location to serve out from.
-copy_from           An external location (HTTP, S3 or Swift URI) to copy from.
+copy_from           An external location (HTTP, S3 or Swift URI) to copy image
+                    content from.
 is_public           If specified, interpreted as a boolean value
                     and sets or unsets the image's availability to the public.
 protected           If specified, interpreted as a boolean value
@@ -351,6 +358,11 @@ to spell field names correctly. :)"""
             print 'Found non-modifiable field %s. Removing.' % field
             fields.pop(field)
 
+    features = {}
+    if 'location' not in fields and 'copy_from' in fields:
+        source = fields.pop('copy_from')
+        features['x-glance-api-copy-from'] = source
+
     base_image_fields = ['disk_format', 'container_format', 'name',
                          'min_disk', 'min_ram', 'location', 'owner']
     for field in base_image_fields:
@@ -371,7 +383,8 @@ to spell field names correctly. :)"""
 
     if not options.dry_run:
         try:
-            image_meta = c.update_image(image_id, image_meta=image_meta)
+            image_meta = c.update_image(image_id, image_meta=image_meta,
+                                        features=features)
             print "Updated image %s" % image_id
 
             if options.verbose:
@@ -387,10 +400,18 @@ to spell field names correctly. :)"""
                 print piece
             return FAILURE
     else:
+        def _dump(dict):
+            for k, v in sorted(dict.items()):
+                print " %(k)30s => %(v)s" % locals()
+
         print "Dry run. We would have done the following:"
         print "Update existing image with metadata:"
-        for k, v in sorted(image_meta.items()):
-            print " %(k)30s => %(v)s" % locals()
+        _dump(image_meta)
+
+        if features:
+            print "with features enabled:"
+            _dump(features)
+
     return SUCCESS
 
 

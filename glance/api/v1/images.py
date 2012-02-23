@@ -636,7 +636,8 @@ class Controller(controller.BaseController):
             image_meta = registry.update_image_metadata(req.context, id,
                                                         image_meta,
                                                         purge_props)
-            if image_data is not None:
+
+            if self._copy_from(req) or image_data is not None:
                 image_meta = self._upload_and_activate(req, image_meta)
         except exception.Invalid, e:
             msg = (_("Failed to update image metadata. Got error: %(e)s")

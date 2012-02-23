@@ -140,7 +140,7 @@ class V1Client(base_client.BaseClient):
         :param image_data: Optional string of raw image data
                            or file-like object that can be
                            used to read the image data
-        :param features: Optional map of features
+        :param features:   Optional map of features
 
         :retval The newly-stored image's metadata.
         """
@@ -162,9 +162,18 @@ class V1Client(base_client.BaseClient):
         data = json.loads(res.read())
         return data['image']
 
-    def update_image(self, image_id, image_meta=None, image_data=None):
+    def update_image(self, image_id, image_meta=None, image_data=None,
+                     features=None):
         """
         Updates Glance's information about an image
+
+        :param image_id:   Required image ID
+        :param image_meta: Optional Mapping of information about the
+                           image
+        :param image_data: Optional string of raw image data
+                           or file-like object that can be
+                           used to read the image data
+        :param features:   Optional map of features
         """
         if image_meta is None:
             image_meta = {}
@@ -180,6 +189,8 @@ class V1Client(base_client.BaseClient):
                 headers['content-length'] = image_size
         else:
             body = None
+
+        utils.add_features_to_http_headers(features, headers)
 
         res = self.do_request("PUT", "/images/%s" % image_id, body, headers)
         data = json.loads(res.read())
