@@ -116,7 +116,7 @@ class UploadProgressStatus(threading.Thread):
             sys.stdout.write(bar + padding + rate + eta)
             sys.stdout.flush()
 
-        except (exception.DataInvalid, NotImplementedError):
+        except (exception.Invalid, NotImplementedError):
 
             sys.stdout.write("\b" * 6)  # use the len of [%3d%%]
             percent = (str_percent + ' '

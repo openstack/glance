@@ -363,10 +363,10 @@ def get_terminal_size():
     height_width = func.get(platform.os.name, _get_terminal_size_unknownOS)()
 
     if height_width == None:
-        raise exception.DataInvalid()
+        raise exception.Invalid()
 
     for i in height_width:
         if not isinstance(i, int) or i <= 0:
-            raise exception.DataInvalid()
+            raise exception.Invalid()
 
     return height_width[0], height_width[1]
