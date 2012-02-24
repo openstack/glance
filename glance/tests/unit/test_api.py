@@ -2089,7 +2089,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEquals(res.status_int, httplib.OK)
 
         res_body = json.loads(res.body)['image']
-        self.assertEquals('queued', res_body['status'])
+        # Once the location is set, the image should be activated
+        # see LP Bug #939484
+        self.assertEquals('active', res_body['status'])
         self.assertFalse('location' in res_body)  # location never shown
 
     def test_add_image_no_location_no_content_type(self):

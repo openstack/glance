@@ -155,23 +155,27 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         self.assertTrue(out.strip().endswith('Updated image %s' % image_id))
 
-        # 3. Verify image added as public image
-        cmd = "bin/glance --port=%d index" % api_port
+        # 3. Verify image is now active and of the correct size
+        cmd = "bin/glance --port=%d show %s" % (api_port, image_id)
 
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        lines = out.split("\n")[2:-1]
-        self.assertEqual(1, len(lines))
 
-        line = lines[0]
-
-        image_id, name, disk_format, container_format, size = \
-            [c.strip() for c in line.split()]
-        self.assertEqual('MyImage', name)
-
-        self.assertEqual('5120', size, "Expected image to be 5120 bytes "
-                                       " in size, but got %s. " % size)
+        expected_lines = [
+            'URI: http://0.0.0.0:%s/v1/images/%s' % (api_port, image_id),
+            'Id: %s' % image_id,
+            'Public: Yes',
+            'Name: MyImage',
+            'Status: active',
+            'Size: 5120',
+            'Disk format: raw',
+            'Container format: ovf',
+            'Minimum Ram Required (MB): 0',
+            'Minimum Disk Required (GB): 0',
+        ]
+        lines = out.split("\n")
+        self.assertTrue(set(lines) >= set(expected_lines))
 
     @requires(setup_http, teardown_http)
     def test_update_copying_from(self):
@@ -180,6 +184,14 @@ class TestBinGlance(functional.FunctionalTest):
         with a copy-from source
         """
         self._do_test_update_external_source('copy_from')
+
+    @requires(setup_http, teardown_http)
+    def test_update_location(self):
+        """
+        Tests creating an queued image then subsequently updating
+        with a location source
+        """
+        self._do_test_update_external_source('location')
 
     def test_add_with_location_and_stdin(self):
         self.cleanup()
