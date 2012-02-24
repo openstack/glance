@@ -3,7 +3,9 @@ include README.rst builddeb.sh
 include MANIFEST.in pylintrc
 include Authors
 include run_tests.py
+include HACKING.rst
 include LICENSE
+include tox.ini
 include glance/registry/db/migrate_repo/README
 include glance/registry/db/migrate_repo/migrate.cfg
 include glance/registry/db/migrate_repo/versions/*.sql
