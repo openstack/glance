@@ -10,9 +10,7 @@ PasteDeploy
 routes
 webob==1.0.8
 wsgiref
-sphinx
 argparse
-mox
 boto==2.1.1
 swift
 sqlalchemy-migrate>=0.7
@@ -41,11 +39,3 @@ lxml
 Paste
 
 passlib
-
-# Needed for testing
-nose
-nose-exclude
-nosexcover
-openstack.nose_plugin
-pep8==0.6.1
-pylint==0.19
