@@ -397,13 +397,16 @@ class Controller(object):
             raise exc.HTTPNotFound(body='Image not found',
                                request=req,
                                content_type='text/plain')
+        except exception.NotAuthorizedPublicImage:
+            msg = _("Access by %(user)s to update public image %(id)s denied")
+            logger.info(msg % {'user': req.context.user, 'id': id})
+            raise exc.HTTPForbidden()
+
         except exception.NotAuthorized:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            msg = _("Access by %(user)s to image %(id)s "
-                    "denied") % ({'user': req.context.user,
-                    'id': id})
-            logger.info(msg)
+            msg = _("Access by %(user)s to update private image %(id)s denied")
+            logger.info(msg % {'user': req.context.user, 'id': id})
             raise exc.HTTPNotFound(body='Image not found',
                                request=req,
                                content_type='text/plain')

@@ -256,12 +256,12 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
 
         # Froggy still can't change is-public
         headers = {'X-Auth-Token': keystone_utils.froggy_token,
-                   'X-Image-Meta-Is-Public': 'True'}
+                   'X-Image-Meta-Is-Public': 'False'}
         path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'PUT', headers=headers)
-        self.assertEqual(response.status, 404)
+        self.assertEqual(response.status, 403)
 
         # Or give themselves ownership
         headers = {'X-Auth-Token': keystone_utils.froggy_token,
@@ -270,7 +270,7 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'PUT', headers=headers)
-        self.assertEqual(response.status, 404)
+        self.assertEqual(response.status, 403)
 
         # Froggy can't delete it, either
         headers = {'X-Auth-Token': keystone_utils.froggy_token}
@@ -278,7 +278,7 @@ class TestPrivateImagesApi(keystone_utils.KeystoneTests):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE', headers=headers)
-        self.assertEqual(response.status, 404)
+        self.assertEqual(response.status, 403)
 
         # But pattieblack can
         headers = {'X-Auth-Token': keystone_utils.pattieblack_token}
