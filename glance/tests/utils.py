@@ -190,7 +190,8 @@ def execute(cmd,
             no_venv=False,
             exec_env=None,
             expect_exit=True,
-            expected_exitcode=0):
+            expected_exitcode=0,
+            context=None):
     """
     Executes a command in a subprocess. Returns a tuple
     of (exitcode, out, err), where out is the string output
@@ -207,6 +208,7 @@ def execute(cmd,
                      environment variable
     :param expect_exit: Optional flag true iff timely exit is expected
     :param expected_exitcode: expected exitcode from the launcher
+    :param context: additional context for error message
     """
 
     env = os.environ.copy()
@@ -254,6 +256,8 @@ def execute(cmd,
               "code of %(exitcode)d."\
               "\n\nSTDOUT: %(out)s"\
               "\n\nSTDERR: %(err)s" % locals()
+        if context:
+            msg += "\n\nCONTEXT: %s" % context
         raise RuntimeError(msg)
     return exitcode, out, err
 
