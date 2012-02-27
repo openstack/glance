@@ -227,12 +227,29 @@ class Controller(controller.BaseController):
         }
 
     @staticmethod
+    def _validate_source(source, req):
+        """
+        External sources (as specified via the location or copy-from headers)
+        are supported only over non-local store types, i.e. S3, Swift, HTTP.
+        Note the absence of file:// for security reasons, see LP bug #942118.
+        If the above constraint is violated, we reject with 400 "Bad Request".
+        """
+        if source:
+            for scheme in ['s3', 'swift', 'http']:
+                if source.lower().startswith(scheme):
+                    return source
+            msg = _("External sourcing not supported for store %s") % source
+            logger.error(msg)
+            raise HTTPBadRequest(msg, request=req, content_type="text/plain")
+
+    @staticmethod
     def _copy_from(req):
         return req.headers.get('x-glance-api-copy-from')
 
     @staticmethod
     def _external_source(image_meta, req):
-        return image_meta.get('location', Controller._copy_from(req))
+        source = image_meta.get('location', Controller._copy_from(req))
+        return Controller._validate_source(source, req)
 
     @staticmethod
     def _get_from_store(where):

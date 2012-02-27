@@ -43,6 +43,10 @@ class TestBinGlance(functional.FunctionalTest):
         # NoAuth strategy.
         os.environ['OS_AUTH_STRATEGY'] = 'noauth'
 
+    def _assertStartsWith(self, str, prefix):
+        msg = 'expected "%s" to start with "%s"' % (str, prefix)
+        self.assertTrue(str.startswith(prefix), msg)
+
     def test_add_with_location(self):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
@@ -257,16 +261,15 @@ class TestBinGlance(functional.FunctionalTest):
             image_file.write("XXX")
             image_file.flush()
             image_file_name = image_file.name
-            cmd = minimal_add_command(api_port,
-                                     'MyImage',
-                                     '< %s' % image_file_name)
+            suffix = '--silent-upload < %s' % image_file_name
+            cmd = minimal_add_command(api_port, 'MyImage', suffix)
 
             exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
         msg = out.split("\n")
-        self.assertTrue(msg[0].startswith('Uploading image'))
-        self.assertTrue(msg[1].startswith('Added new image with ID:'))
+
+        self._assertStartsWith(msg[0], 'Added new image with ID:')
 
         # 2. Verify image added as public image
         cmd = "bin/glance --port=%d index" % api_port

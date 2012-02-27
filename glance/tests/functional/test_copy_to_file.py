@@ -43,6 +43,7 @@ established, then the relevant test case is skipped.
 import hashlib
 import httplib2
 import json
+import tempfile
 
 from glance.tests import functional
 from glance.tests.utils import skip_if_disabled, requires
@@ -97,7 +98,7 @@ class TestCopyToFile(functional.FunctionalTest):
 
         copy_from = get_uri(self, original_image_id)
 
-        # POST /images with public image copied from_store (to Swift)
+        # POST /images with public image copied from_store (to file)
         headers = {'X-Image-Meta-Name': 'copied',
                    'X-Image-Meta-disk_format': 'raw',
                    'X-Image-Meta-container_format': 'ovf',
@@ -187,7 +188,7 @@ class TestCopyToFile(functional.FunctionalTest):
 
         copy_from = get_http_uri(self, 'foobar')
 
-        # POST /images with public image copied HTTP (to Swift)
+        # POST /images with public image copied from HTTP (to file)
         headers = {'X-Image-Meta-Name': 'copied',
                    'X-Image-Meta-disk_format': 'raw',
                    'X-Image-Meta-container_format': 'ovf',
@@ -221,5 +222,39 @@ class TestCopyToFile(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 200)
+
+        self.stop_servers()
+
+    @skip_if_disabled
+    def test_copy_from_file(self):
+        """
+        Ensure we can't copy from file
+        """
+        self.cleanup()
+
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        with tempfile.NamedTemporaryFile() as image_file:
+            image_file.write("XXX")
+            image_file.flush()
+            copy_from = 'file://' + image_file.name
+
+        # POST /images with public image copied from file (to file)
+        headers = {'X-Image-Meta-Name': 'copied',
+                   'X-Image-Meta-disk_format': 'raw',
+                   'X-Image-Meta-container_format': 'ovf',
+                   'X-Image-Meta-Is-Public': 'True',
+                   'X-Glance-API-Copy-From': copy_from}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 400, content)
+
+        expected = 'External sourcing not supported for store ' + copy_from
+        msg = 'expected "%s" in "%s"' % (expected, content)
+        self.assertTrue(expected in content, msg)
 
         self.stop_servers()
