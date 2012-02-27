@@ -651,6 +651,12 @@ class Controller(controller.BaseController):
                 logger.info(line)
             self.notifier.info('image.update', msg)
             raise HTTPNotFound(msg, request=req, content_type="text/plain")
+        except exception.NotAuthorized, e:
+            msg = ("Unable to update image: %(e)s" % locals())
+            for line in msg.split('\n'):
+                logger.info(line)
+            self.notifier.info('image.update', msg)
+            raise HTTPForbidden(msg, request=req, content_type="text/plain")
         else:
             self.notifier.info('image.update', image_meta)
 
@@ -701,6 +707,12 @@ class Controller(controller.BaseController):
                 logger.info(line)
             self.notifier.info('image.delete', msg)
             raise HTTPNotFound(msg, request=req, content_type="text/plain")
+        except exception.NotAuthorized, e:
+            msg = ("Unable to delete image: %(e)s" % locals())
+            for line in msg.split('\n'):
+                logger.info(line)
+            self.notifier.info('image.delete', msg)
+            raise HTTPForbidden(msg, request=req, content_type="text/plain")
         else:
             self.notifier.info('image.delete', id)
 

@@ -863,7 +863,7 @@ class TestBinGlance(functional.FunctionalTest):
         exitcode, out, err = execute(cmd, raise_error=False)
 
         self.assertNotEqual(0, exitcode)
-        self.assertTrue('Image is protected' in err)
+        self.assertTrue(out.startswith('You do not have permission'))
 
         # 4. Remove image protection
         cmd = "bin/glance --port=%d --force update %s" \

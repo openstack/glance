@@ -380,6 +380,9 @@ to spell field names correctly. :)"""
         except exception.NotFound:
             print "No image with ID %s was found" % image_id
             return FAILURE
+        except exception.NotAuthorized:
+            print "You do not have permission to update image %s" % image_id
+            return FAILURE
         except Exception, e:
             print "Failed to update image. Got error:"
             pieces = unicode(e).split('\n')
@@ -419,6 +422,9 @@ Deletes an image from Glance"""
         return SUCCESS
     except exception.NotFound:
         print "No image with ID %s was found" % image_id
+        return FAILURE
+    except exception.NotAuthorized:
+        print "You do not have permission to delete image %s" % image_id
         return FAILURE
 
 
