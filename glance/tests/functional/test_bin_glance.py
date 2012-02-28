@@ -880,12 +880,8 @@ class TestBinGlance(functional.FunctionalTest):
             image_file.write("XXX")
             image_file.flush()
             image_file_name = image_file.name
-            cmd = "bin/glance --port=%d add is_public=True"\
-                  " disk_format=raw container_format=ovf " \
-                  " name=MyImage < %s" % (api_port, image_file_name)
-            cmd = minimal_add_command(api_port,
-                                      'MyImage',
-                                      '< %s' % image_file_name)
+            suffix = ' --silent-upload < %s' % image_file_name
+            cmd = minimal_add_command(api_port, 'MyImage', suffix)
 
             exitcode, out, err = execute(cmd)
 

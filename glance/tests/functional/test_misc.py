@@ -130,9 +130,8 @@ class TestMiscellaneous(functional.FunctionalTest):
             image_file.write("XXX")
             image_file.flush()
             image_file_name = image_file.name
-            cmd = minimal_add_command(self.api_port,
-                                      'MyImage',
-                                      'size=12345 < %s' % image_file_name)
+            suffix = 'size=12345 --silent-upload < %s' % image_file_name
+            cmd = minimal_add_command(self.api_port, 'MyImage', suffix)
 
             exitcode, out, err = execute(cmd)
 
