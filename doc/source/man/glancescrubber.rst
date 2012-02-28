@@ -18,6 +18,25 @@ SYNOPSIS
 
   glance-scrubber [options]
 
+DESCRIPTION
+===========
+
+glance-scrubber is an utility that cleans up images that have been deleted. The
+mechanics of this differ depending on the backend store and pending_deletion
+options chosen.
+
+Multiple glance-scrubbers can be run in a single deployment, but only one of
+them may be designated as the 'cleanup_scrubber' in the glance-scrubber.conf
+file. The 'cleanup_scrubber' coordinates other glance-scrubbers by maintaining
+the master queue of images that need to be removed.
+
+The glance-scubber.conf file also specifies important configuration items such
+as the time between runs ('wakeup_time' in seconds), length of time images
+can be pending before their deletion ('cleanup_scrubber_time' in seconds) as
+well as registry connectivity options.
+
+glance-scrubber can run as a periodic job or long-running daemon.
+
 OPTIONS
 =======
 
@@ -84,10 +103,7 @@ OPTIONS
         wakeup_time interval as specified in the config.
 
   **--nodaemon**
-        Run as a long-running process. When not specified (the
-        default) run the scrub operation once and then exits.
-        When specified do not exit and run scrub on
-        wakeup_time interval as specified in the config.
+        The inverse of --daemon. Runs the scrub operation once and then exits.
 
 SEE ALSO
 ========
