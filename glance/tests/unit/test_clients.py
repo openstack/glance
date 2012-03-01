@@ -1616,7 +1616,7 @@ class TestClient(base.IsolatedUnitTest):
                    'container_format': 'bare',
                    'status': 'active',
                    'size': 19,
-                   'location': "file:///tmp/glance-tests/3",
+                   'location': "http://localhost/glance-tests/3",
                    'properties': {}}
 
         new_image = self.client.add_image(fixture)
@@ -1653,7 +1653,7 @@ class TestClient(base.IsolatedUnitTest):
                    'disk_format': 'vhd',
                    'container_format': 'ovf',
                    'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
+                   'location': "http://localhost/glance-tests/2",
                   }
         new_image = self.client.add_image(fixture)
         new_image_id = new_image['id']
@@ -1676,7 +1676,7 @@ class TestClient(base.IsolatedUnitTest):
                    'disk_format': 'vhd',
                    'container_format': 'ovf',
                    'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
+                   'location': "http://localhost/glance-tests/2",
                    'properties': {'distro': 'Ubuntu 10.04 LTS'},
                   }
         new_image = self.client.add_image(fixture)
@@ -1700,7 +1700,7 @@ class TestClient(base.IsolatedUnitTest):
                    'disk_format': 'iso',
                    'container_format': 'bare',
                    'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
+                   'location': "http://localhost/glance-tests/2",
                    'properties': {'install': 'Bindows Heaven'},
                   }
         new_image = self.client.add_image(fixture)
@@ -1728,7 +1728,7 @@ class TestClient(base.IsolatedUnitTest):
                    'disk_format': 'iso',
                    'container_format': 'vhd',
                    'size': 19,
-                   'location': "file:///tmp/glance-tests/3",
+                   'location': "http://localhost/glance-tests/3",
                    'properties': {'install': 'Bindows Heaven'},
                   }
 
@@ -1745,7 +1745,7 @@ class TestClient(base.IsolatedUnitTest):
                    'container_format': 'ovf',
                    'status': 'bad status',
                    'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
+                   'location': "http://localhost/glance-tests/2",
                   }
 
         self.assertRaises(exception.Duplicate,
@@ -1760,7 +1760,7 @@ class TestClient(base.IsolatedUnitTest):
                    'container_format': 'ovf',
                    'status': 'bad status',
                    'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
+                   'location': "http://localhost/glance-tests/2",
                   }
 
         new_image = self.client.add_image(fixture)

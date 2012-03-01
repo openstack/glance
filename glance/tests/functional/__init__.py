@@ -92,7 +92,9 @@ class Server(object):
     def write_conf(self, **kwargs):
         """
         Writes the configuration file for the server to its intended
-        destination.  Returns the name of the configuration file.
+        destination.  Returns the name of the configuration file and
+        the over-ridden config content (may be useful for populating
+        error messages).
         """
 
         if self.conf_file_name:
@@ -112,22 +114,24 @@ class Server(object):
         paste_conf_filepath = conf_filepath.replace(".conf", "-paste.ini")
         utils.safe_mkdirs(conf_dir)
 
-        def override_conf(filepath, base, override):
+        def override_conf(filepath, overridden):
             with open(filepath, 'wb') as conf_file:
-                conf_file.write(base % override)
+                conf_file.write(overridden)
                 conf_file.flush()
                 return conf_file.name
 
-        self.conf_file_name = override_conf(conf_filepath,
-                                            self.conf_base,
-                                            conf_override)
+        overridden_core = self.conf_base % conf_override
+        self.conf_file_name = override_conf(conf_filepath, overridden_core)
 
+        overridden_paste = ''
         if self.paste_conf_base:
-            override_conf(paste_conf_filepath,
-                          self.paste_conf_base,
-                          conf_override)
+            overridden_paste = self.paste_conf_base % conf_override
+            override_conf(paste_conf_filepath, overridden_paste)
 
-        return self.conf_file_name
+        overridden = ('==Core config==\n%s\n==Paste config==\n%s' %
+                      (overridden_core, overridden_paste))
+
+        return self.conf_file_name, overridden
 
     def start(self, expect_exit=True, expected_exitcode=0, **kwargs):
         """
@@ -138,7 +142,7 @@ class Server(object):
         """
 
         # Ensure the configuration file is written
-        self.write_conf(**kwargs)
+        overridden = self.write_conf(**kwargs)[1]
 
         cmd = ("%(server_control)s %(server_name)s start "
                "%(conf_file_name)s --pid-file=%(pid_file)s "
@@ -148,7 +152,8 @@ class Server(object):
                        no_venv=self.no_venv,
                        exec_env=self.exec_env,
                        expect_exit=expect_exit,
-                       expected_exitcode=expected_exitcode)
+                       expected_exitcode=expected_exitcode,
+                       context=overridden)
 
     def stop(self):
         """

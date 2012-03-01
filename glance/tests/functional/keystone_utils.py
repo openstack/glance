@@ -245,7 +245,7 @@ class KeystoneTests(functional.FunctionalTest):
         super(KeystoneTests, self).start_servers(**kwargs)
 
         # Set up the data store
-        keystone_conf = self.auth_server.write_conf(**kwargs)
+        keystone_conf = self.auth_server.write_conf(**kwargs)[0]
         datafile = os.path.join(os.path.dirname(__file__), 'data',
                                 'keystone_data.py')
 
