@@ -798,7 +798,9 @@ def get_client(options):
                                  os.getenv('OS_TENANT_NAME')),
                  auth_url=options.auth_url or os.getenv('OS_AUTH_URL'),
                  strategy=force_strategy or options.auth_strategy or \
-                          os.getenv('OS_AUTH_STRATEGY', 'noauth'))
+                          os.getenv('OS_AUTH_STRATEGY', 'noauth'),
+                 region=options.region or os.getenv('OS_REGION_NAME'),
+    )
 
     if creds['strategy'] == 'keystone' and not creds['auth_url']:
         msg = ("--auth_url option or OS_AUTH_URL environment variable "
@@ -865,6 +867,13 @@ def create_options(parser):
     parser.add_option('-K', '--password', dest="password",
                       metavar="PASSWORD", default=None,
                       help="Password used to acquire an authentication token")
+    parser.add_option('-R', '--region', dest="region",
+                      metavar="REGION", default=None,
+                      help="Region name. When using keystone authentication "
+                      "version 2.0 or later this identifies the region "
+                      "name to use when selecting the service endpoint. A "
+                      "region name must be provided if more than one "
+                      "region endpoint is available")
     parser.add_option('-T', '--tenant', dest="tenant",
                       metavar="TENANT", default=None,
                       help="Tenant name")

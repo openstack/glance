@@ -38,13 +38,9 @@ from glance.common import exception
 
 
 class BaseStrategy(object):
-    def __init__(self, creds):
-        self.creds = creds
+    def __init__(self):
         self.auth_token = None
-
-        # TODO(sirp): For now we're just dealing with one endpoint, eventually
-        # this should expose the entire service catalog so that the client can
-        # choose which service/region/(public/private net) combo they want.
+        # TODO(sirp): Should expose selecting public/internal/admin URL.
         self.management_url = None
 
     def authenticate(self):
@@ -52,6 +48,10 @@ class BaseStrategy(object):
 
     @property
     def is_authenticated(self):
+        raise NotImplementedError
+
+    @property
+    def strategy(self):
         raise NotImplementedError
 
 
@@ -63,9 +63,31 @@ class NoAuthStrategy(BaseStrategy):
     def is_authenticated(self):
         return True
 
+    @property
+    def strategy(self):
+        return 'noauth'
+
 
 class KeystoneStrategy(BaseStrategy):
     MAX_REDIRECTS = 10
+
+    def __init__(self, creds):
+        self.creds = creds
+        super(KeystoneStrategy, self).__init__()
+
+    def check_auth_params(self):
+        # Ensure that supplied credential parameters are as required
+        for required in ('username', 'password', 'auth_url',
+                         'strategy'):
+            if required not in self.creds:
+                raise exception.MissingCredentialError(required=required)
+        if self.creds['strategy'] != 'keystone':
+            raise exception.BadAuthStrategy(expected='keystone',
+                                            received=self.creds['strategy'])
+        # For v2.0 also check tenant is present
+        if self.creds['auth_url'].rstrip('/').endswith('v2.0'):
+            if 'tenant' not in self.creds:
+                raise exception.MissingCredentialError(required='tenant')
 
     def authenticate(self):
         """Authenticate with the Keystone service.
@@ -82,16 +104,6 @@ class KeystoneStrategy(BaseStrategy):
            case, we rewrite the url to contain /v2.0/ and retry using the v2
            protocol.
         """
-        def check_auth_params():
-            # Ensure that supplied credential parameters are as required
-            for required in ('username', 'password', 'auth_url'):
-                if required not in self.creds:
-                    raise exception.MissingCredentialError(required=required)
-            # For v2.0 also check tenant is present
-            if self.creds['auth_url'].rstrip('/').endswith('v2.0'):
-                if 'tenant' not in self.creds:
-                    raise exception.MissingCredentialError(required='tenant')
-
         def _authenticate(auth_url):
             # If OS_AUTH_URL is missing a trailing slash add one
             if not auth_url.endswith('/'):
@@ -104,7 +116,7 @@ class KeystoneStrategy(BaseStrategy):
             else:
                 self._v1_auth(token_url)
 
-        check_auth_params()
+        self.check_auth_params()
         auth_url = self.creds['auth_url']
         for _ in range(self.MAX_REDIRECTS):
             try:
@@ -168,6 +180,32 @@ class KeystoneStrategy(BaseStrategy):
             raise Exception(_('Unexpected response: %s' % resp.status))
 
     def _v2_auth(self, token_url):
+        def get_endpoint(service_catalog):
+            """
+            Select an endpoint from the service catalog
+
+            We search the full service catalog for services
+            matching both type and region. If the client
+            supplied no region then any 'image' endpoint
+            is considered a match. There must be one -- and
+            only one -- successful match in the catalog,
+            otherwise we will raise an exception.
+            """
+            # FIXME(sirp): for now just use the public url.
+            endpoint = None
+            region = self.creds.get('region')
+            for service in service_catalog:
+                if service['type'] == 'image':
+                    for ep in service['endpoints']:
+                        if region is None or region == ep['region']:
+                            if endpoint is not None:
+                                # This is a second match, abort
+                                raise exception.RegionAmbiguity(region=region)
+                            endpoint = ep
+            if endpoint is None:
+                raise exception.NoServiceEndpoint()
+            return endpoint['publicURL']
+
         creds = self.creds
 
         creds = {
@@ -189,17 +227,7 @@ class KeystoneStrategy(BaseStrategy):
 
         if resp.status == 200:
             resp_auth = json.loads(resp_body)['access']
-
-            # FIXME(sirp): for now just using the first endpoint we get back
-            # from the service catalog for glance, and using the public url.
-            for service in resp_auth['serviceCatalog']:
-                if service['type'] == 'image':
-                    glance_endpoint = service['endpoints'][0]['publicURL']
-                    break
-            else:
-                raise exception.NoServiceEndpoint()
-
-            self.management_url = glance_endpoint
+            self.management_url = get_endpoint(resp_auth['serviceCatalog'])
             self.auth_token = resp_auth['token']['id']
         elif resp.status == 305:
             raise exception.RedirectException(resp['location'])
@@ -216,6 +244,10 @@ class KeystoneStrategy(BaseStrategy):
     def is_authenticated(self):
         return self.auth_token is not None
 
+    @property
+    def strategy(self):
+        return 'keystone'
+
     @staticmethod
     def _do_request(url, method, headers=None, body=None):
         headers = headers or {}
@@ -226,10 +258,10 @@ class KeystoneStrategy(BaseStrategy):
         return resp, resp_body
 
 
-def get_plugin_from_strategy(strategy):
+def get_plugin_from_strategy(strategy, creds=None):
     if strategy == 'noauth':
-        return NoAuthStrategy
+        return NoAuthStrategy()
     elif strategy == 'keystone':
-        return KeystoneStrategy
+        return KeystoneStrategy(creds)
     else:
         raise Exception(_("Unknown auth strategy '%s'") % strategy)
