@@ -67,7 +67,7 @@ Filtering Images Returned via ``get_images()`` and ``get_images_detailed()``
 ----------------------------------------------------------------------------
 
 Both the ``get_images()`` and ``get_images_detailed()`` methods take query
-parameters that serve to filter the returned list of images. 
+parameters that serve to filter the returned list of images.
 
 When calling, simply pass an optional dictionary to the method containing
 the filters by which you wish to limit results, with the filter keys being one
@@ -219,7 +219,7 @@ The method signature is as follows::
 
   glance.client.Client.add_image(image_meta, image_data=None)
 
-The `image_meta` argument is a mapping containing various image metadata. 
+The `image_meta` argument is a mapping containing various image metadata.
 The `image_data` argument is the disk image data and is an optional argument.
 
 The list of metadata that `image_meta` can contain are listed below.
@@ -234,7 +234,7 @@ The list of metadata that `image_meta` can contain are listed below.
 
 * `id`
 
-  This key/value is optional. 
+  This key/value is optional.
 
   When present, Glance will use the supplied identifier for the image.
   If the identifier already exists in that Glance node, then a

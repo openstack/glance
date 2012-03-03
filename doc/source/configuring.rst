@@ -278,7 +278,7 @@ Can only be specified in configuration files.
 
 Sets the authentication URL supplied to Swift when making calls to its storage
 system. For more information about the Swift authentication system, please
-see the `Swift auth <http://swift.openstack.org/overview_auth.html>`_ 
+see the `Swift auth <http://swift.openstack.org/overview_auth.html>`_
 documentation and the
 `overview of Swift authentication <http://docs.openstack.org/openstack-object-storage/admin/content/ch02s02.html>`_.
 
@@ -366,7 +366,7 @@ Default: s3.amazonaws.com
 
 Sets the main service URL supplied to S3 when making calls to its storage
 system. For more information about the S3 authentication system, please
-see the `S3 documentation <http://aws.amazon.com/documentation/s3/>`_ 
+see the `S3 documentation <http://aws.amazon.com/documentation/s3/>`_
 
 * ``s3_store_access_key=ACCESS_KEY``
 

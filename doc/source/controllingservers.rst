@@ -66,7 +66,7 @@ If no configuration file is found, you will see an error, like::
 
 Here is an example showing how you can manually start the ``glance-api`` server and ``glance-registry`` in a shell.::
 
-  $ sudo glance-api glance-api.conf --debug &  
+  $ sudo glance-api glance-api.conf --debug &
   jsuh@mc-ats1:~$ 2011-04-13 14:50:12    DEBUG [glance-api] ********************************************************************************
   2011-04-13 14:50:12    DEBUG [glance-api] Configuration options gathered from config file:
   2011-04-13 14:50:12    DEBUG [glance-api] /home/jsuh/glance-api.conf
@@ -83,7 +83,7 @@ Here is an example showing how you can manually start the ``glance-api`` server 
   2011-04-13 14:50:12    DEBUG [routes.middleware] Initialized with method overriding = True, and path info altering = True
   2011-04-13 14:50:12    DEBUG [eventlet.wsgi.server] (21354) wsgi starting up on http://65.114.169.29:9292/
 
-  $ sudo glance-registry glance-registry.conf &  
+  $ sudo glance-registry glance-registry.conf &
   jsuh@mc-ats1:~$ 2011-04-13 14:51:16     INFO [sqlalchemy.engine.base.Engine.0x...feac] PRAGMA table_info("images")
   2011-04-13 14:51:16     INFO [sqlalchemy.engine.base.Engine.0x...feac] ()
   2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Col ('cid', 'name', 'type', 'notnull', 'dflt_value', 'pk')
@@ -171,7 +171,7 @@ with the ``glance-control`` wrapper script. ::
   root     20039  6.0  0.1  25188 13356 ?        Ss   12:51   0:00 /usr/bin/python /usr/bin/glance-registry /home/jsuh/glance-registry.conf
   jsuh     20042  0.0  0.0   3368   744 pts/1    S+   12:51   0:00 grep glance
 
- 
+
 The same configuration files are used by ``glance-control`` to start the
 Glance server programs, and you can specify (as the example above shows)
 a configuration file when starting the server.

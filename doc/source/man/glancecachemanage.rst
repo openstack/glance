@@ -56,7 +56,7 @@ OPTIONS
 
   **-h, --help**
         show this help message and exit
-        
+
   **-v, --verbose**
         Print more verbose output
 

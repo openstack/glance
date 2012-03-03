@@ -385,7 +385,7 @@ The list of metadata headers that Glance accepts are listed below.
   checksum of the image file data.
 
   When present, Glance will verify the checksum generated from the backend
-  store when storing your image against this value and return a 
+  store when storing your image against this value and return a
   **400 Bad Request** if the values do not match.
 
 * ``x-image-meta-is-public``

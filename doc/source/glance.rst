@@ -410,9 +410,9 @@ custom image properties.
 The 'limit' and 'marker' options are used by the index and details commands
 to  control pagination. The 'marker' indicates the last record that was seen
 by the user. The page of results returned will begin after the provided image
-ID. The 'limit' param indicates the page size. Each request to the api will be 
+ID. The 'limit' param indicates the page size. Each request to the api will be
 restricted to returning a maximum number of results. Without the 'force'
-option, the user will be prompted before each page of results is fetched 
+option, the user will be prompted before each page of results is fetched
 from the API.
 
 Results from index and details commands may be ordered using the 'sort_key'
@@ -474,7 +474,7 @@ available in Glance, as shown below::
 The ``show`` command
 --------------------
 
-The ``show`` command displays detailed information about a specific image, 
+The ``show`` command displays detailed information about a specific image,
 specified with ``<ID>``, as shown below::
 
   $> glance show 771c0223-27b4-4789-a83d-79eb9c166578 --host=65.114.169.29

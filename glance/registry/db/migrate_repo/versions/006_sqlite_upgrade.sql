@@ -5,14 +5,14 @@
 BEGIN TRANSACTION;
 
 CREATE TEMPORARY TABLE image_properties_backup (
-	id INTEGER NOT NULL, 
-	image_id INTEGER NOT NULL, 
-	name VARCHAR(255) NOT NULL, 
-	value TEXT, 
-	created_at DATETIME NOT NULL, 
-	updated_at DATETIME, 
-	deleted_at DATETIME, 
-	deleted BOOLEAN NOT NULL, 
+	id INTEGER NOT NULL,
+	image_id INTEGER NOT NULL,
+	name VARCHAR(255) NOT NULL,
+	value TEXT,
+	created_at DATETIME NOT NULL,
+	updated_at DATETIME,
+	deleted_at DATETIME,
+	deleted BOOLEAN NOT NULL,
 	PRIMARY KEY (id)
 );
 
@@ -23,17 +23,17 @@ FROM image_properties;
 DROP TABLE image_properties;
 
 CREATE TABLE image_properties (
-	id INTEGER NOT NULL, 
-	image_id INTEGER NOT NULL, 
-	name VARCHAR(255) NOT NULL, 
-	value TEXT, 
-	created_at DATETIME NOT NULL, 
-	updated_at DATETIME, 
-	deleted_at DATETIME, 
-	deleted BOOLEAN NOT NULL, 
-	PRIMARY KEY (id), 
-	CHECK (deleted IN (0, 1)), 
-	UNIQUE (image_id, name), 
+	id INTEGER NOT NULL,
+	image_id INTEGER NOT NULL,
+	name VARCHAR(255) NOT NULL,
+	value TEXT,
+	created_at DATETIME NOT NULL,
+	updated_at DATETIME,
+	deleted_at DATETIME,
+	deleted BOOLEAN NOT NULL,
+	PRIMARY KEY (id),
+	CHECK (deleted IN (0, 1)),
+	UNIQUE (image_id, name),
 	FOREIGN KEY(image_id) REFERENCES images (id)
 );
 CREATE INDEX ix_image_properties_name ON image_properties (name);
