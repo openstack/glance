@@ -18,16 +18,19 @@
 import logging
 import unittest
 
+import kombu.entity
 import mox
 try:
     import qpid
     import qpid.messaging
 except ImportError:
     qpid = None
+import stubout
 
 from glance.common import exception
 from glance.common import utils as common_utils
 from glance import notifier
+import glance.notifier.notify_kombu
 from glance.tests import utils
 
 
@@ -112,7 +115,7 @@ class TestRabbitNotifier(unittest.TestCase):
     def _send_message(self, message, routing_key):
         self.called = {
             "message": message,
-            "routing_key": routing_key
+            "routing_key": routing_key,
         }
 
     def test_warn(self):
@@ -351,3 +354,48 @@ class TestQpidNotifier(unittest.TestCase):
     @utils.skip_if(qpid is None, "qpid not installed")
     def test_error(self):
         self._test_notify('error')
+
+
+class TestRabbitContentType(unittest.TestCase):
+    """Test AMQP/Rabbit notifier works."""
+
+    def setUp(self):
+        self.stubs = stubout.StubOutForTesting()
+
+        def _fake_connect(rabbit_self):
+            rabbit_self.connection_errors = ()
+            rabbit_self.connection = 'fake_connection'
+            rabbit_self.exchange = self._fake_exchange()
+            return None
+
+        def dummy(*args, **kwargs):
+            pass
+
+        self.stubs.Set(kombu.entity.Exchange, 'publish', dummy)
+        self.stubs.Set(glance.notifier.notify_kombu.RabbitStrategy, '_connect',
+                       _fake_connect)
+        self.called = False
+        self.conf = utils.TestConfigOpts({"notifier_strategy": "rabbit",
+                                          "rabbit_retry_backoff": 0,
+                                          "rabbit_notification_topic":
+                                                "fake_topic"})
+        self.notifier = notifier.Notifier(self.conf)
+        super(TestRabbitContentType, self).setUp()
+
+    def _fake_exchange(self):
+        class Dummy(object):
+            class Message(object):
+                def __init__(message_self, message, content_type):
+                    self.called = {
+                        'message': message,
+                        'content_type': content_type
+                    }
+
+            @classmethod
+            def publish(*args, **kwargs):
+                pass
+        return Dummy
+
+    def test_content_type_passed(self):
+        self.notifier.warn("test_event", "test_message")
+        self.assertEquals(self.called['content_type'], 'application/json')
