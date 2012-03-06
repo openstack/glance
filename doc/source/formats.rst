@@ -51,7 +51,7 @@ You can set your image's container format to one of the following:
 
 * **iso**
 
-  An archive format for the data contents of an optical disc (e.g. CDROM). 
+  An archive format for the data contents of an optical disc (e.g. CDROM).
 
 * **qcow2**
 

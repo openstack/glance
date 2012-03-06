@@ -125,7 +125,7 @@ OPTIONS
         Prevent select actions from requesting user confirmation
 
   **--dry-run**
-        Don't actually execute the command, just print output showing what 
+        Don't actually execute the command, just print output showing what
         WOULD happen.
 
   **--can-share**

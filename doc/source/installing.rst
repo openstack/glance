@@ -89,12 +89,12 @@ Debian, Ubuntu
    to install the python-sphinx package
 
 2. Clone Glance's trunk branch from GitHub::
-   
+
    $> git clone git://github.com/openstack/glance
    $> cd glance
 
 3. Install Glance::
-   
+
    $> sudo python setup.py install
 
 Red Hat, Fedora

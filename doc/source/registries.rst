@@ -95,7 +95,7 @@ These two resources also accept sort parameters:
 
   Results will be sorted in the direction ``DIR``. Accepted values are ``asc``
   for ascending or ``desc`` (default) for descending.
-  
+
 
 ``POST /images``
 ----------------
