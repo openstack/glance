@@ -1,6 +1,9 @@
 # Packages needed for dev testing
 distribute>=0.6.24
 
+# For translations processing
+Babel
+
 # Needed for testing
 mox
 nose
