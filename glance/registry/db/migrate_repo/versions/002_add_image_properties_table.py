@@ -42,7 +42,7 @@ def define_image_properties_table(meta):
                index=True),
         UniqueConstraint('image_id', 'key'),
         mysql_engine='InnoDB',
-        useexisting=True)
+        extend_existing=True)
 
     Index('ix_image_properties_image_id_key', image_properties.c.image_id,
           image_properties.c.key)

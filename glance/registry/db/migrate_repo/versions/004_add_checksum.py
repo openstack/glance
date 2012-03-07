@@ -45,7 +45,7 @@ def get_images_table(meta):
                index=True),
         Column('checksum', String(32)),
         mysql_engine='InnoDB',
-        useexisting=True)
+        extend_existing=True)
 
     return images
 

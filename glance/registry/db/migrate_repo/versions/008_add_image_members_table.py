@@ -61,7 +61,7 @@ def get_image_members_table(meta):
                index=True),
         UniqueConstraint('image_id', 'member'),
         mysql_engine='InnoDB',
-        useexisting=True)
+        extend_existing=True)
 
     Index('ix_image_members_image_id_member', image_members.c.image_id,
           image_members.c.member)
