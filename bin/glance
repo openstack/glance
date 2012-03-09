@@ -1000,6 +1000,10 @@ def user_confirm(prompt, default=False):
     else:
         prompt_default = "[y/N]"
 
+    # for bug 884116, don't issue the prompt if stdin isn't a tty
+    if not hasattr(sys.stdin, 'isatty') or not sys.stdin.isatty():
+        return default
+
     answer = raw_input("%s %s " % (prompt, prompt_default))
 
     if answer == "":
