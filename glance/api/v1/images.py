@@ -187,8 +187,8 @@ class Controller(controller.BaseController):
         params = {'filters': self._get_filters(req)}
 
         for PARAM in SUPPORTED_PARAMS:
-            if PARAM in req.str_params:
-                params[PARAM] = req.str_params.get(PARAM)
+            if PARAM in req.params:
+                params[PARAM] = req.params.get(PARAM)
         return params
 
     def _get_filters(self, req):
@@ -199,9 +199,9 @@ class Controller(controller.BaseController):
         :retval a dict of key/value filters
         """
         query_filters = {}
-        for param in req.str_params:
+        for param in req.params:
             if param in SUPPORTED_FILTERS or param.startswith('property-'):
-                query_filters[param] = req.str_params.get(param)
+                query_filters[param] = req.params.get(param)
                 if not filters.validate(param, query_filters[param]):
                     raise HTTPBadRequest('Bad value passed to filter %s '
                                          'got %s' % (param,
