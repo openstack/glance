@@ -47,7 +47,7 @@ def get_images_table(meta):
         Column('checksum', String(32)),
         Column('owner', String(255)),
         mysql_engine='InnoDB',
-        useexisting=True)
+        extend_existing=True)
 
     return images
 
