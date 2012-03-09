@@ -221,7 +221,8 @@ EXAMPLES
         print "Please specify a name for the image using name=VALUE"
         return FAILURE
 
-    image_meta = {'name': fields.pop('name'),
+    image_meta = {'id': fields.pop('id', None),
+                  'name': fields.pop('name'),
                   'is_public': utils.bool_from_string(
                       fields.pop('is_public', False)),
                   'protected': utils.bool_from_string(
