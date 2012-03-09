@@ -20,6 +20,7 @@ Registry API
 """
 
 import logging
+import os
 
 from glance.common import cfg
 from glance.common import exception
@@ -27,6 +28,7 @@ from glance.registry import client
 
 logger = logging.getLogger('glance.registry')
 
+_CLIENT_CREDS = None
 _CLIENT_HOST = None
 _CLIENT_PORT = None
 _CLIENT_KWARGS = {}
@@ -45,7 +47,14 @@ registry_client_opts = [
     cfg.StrOpt('registry_client_ca_file'),
     cfg.StrOpt('metadata_encryption_key'),
     ]
-admin_token_opt = cfg.StrOpt('admin_token')
+registry_client_ctx_opts = [
+    cfg.StrOpt('admin_user'),
+    cfg.StrOpt('admin_password'),
+    cfg.StrOpt('admin_tenant_name'),
+    cfg.StrOpt('auth_url'),
+    cfg.StrOpt('auth_strategy', default='noauth'),
+    cfg.StrOpt('auth_region'),
+    ]
 
 
 def get_registry_addr(conf):
@@ -84,16 +93,33 @@ def configure_registry_client(conf):
         }
 
 
-def get_client_context(conf, **kwargs):
-    conf.register_opt(admin_token_opt)
-    from glance.common import context
-    return context.RequestContext(auth_tok=conf.admin_token, **kwargs)
+def configure_registry_admin_creds(conf):
+    global _CLIENT_CREDS
+    conf.register_opts(registry_client_ctx_opts)
+
+    if conf.auth_url or os.getenv('OS_AUTH_URL'):
+        strategy = 'keystone'
+    else:
+        strategy = conf.auth_strategy
+
+    _CLIENT_CREDS = {
+        'user': conf.admin_user,
+        'password': conf.admin_password,
+        'username': conf.admin_user,
+        'tenant': conf.admin_tenant_name,
+        'auth_url': conf.auth_url,
+        'strategy': strategy,
+        'region': conf.auth_region,
+    }
 
 
 def get_registry_client(cxt):
-    global _CLIENT_KWARGS, _CLIENT_HOST, _CLIENT_PORT, _METADATA_ENCRYPTION_KEY
+    global _CLIENT_CREDS, _CLIENT_KWARGS, _CLIENT_HOST, _CLIENT_PORT
+    global _METADATA_ENCRYPTION_KEY
     kwargs = _CLIENT_KWARGS.copy()
     kwargs['auth_tok'] = cxt.auth_tok
+    if _CLIENT_CREDS:
+        kwargs['creds'] = _CLIENT_CREDS
     return client.RegistryClient(_CLIENT_HOST, _CLIENT_PORT,
                                  _METADATA_ENCRYPTION_KEY, **kwargs)
 

@@ -41,10 +41,10 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 gettext.install('glance', unicode=1)
 
-from glance import version
 from glance import client as glance_client
 from glance.common import exception
 from glance.common import utils
+from glance import version
 
 
 SUCCESS = 0
@@ -784,43 +784,16 @@ def get_client(options):
     specified by the --host and --port options
     supplied to the CLI
     """
-
-    if options.auth_url or os.getenv('OS_AUTH_URL'):
-        force_strategy = 'keystone'
-    else:
-        force_strategy = None
-
-    creds = dict(username=options.username or \
-                         os.getenv('OS_AUTH_USER', os.getenv('OS_USERNAME')),
-                 password=options.password or \
-                         os.getenv('OS_AUTH_KEY', os.getenv('OS_PASSWORD')),
-                 tenant=options.tenant or \
-                         os.getenv('OS_AUTH_TENANT',
-                                 os.getenv('OS_TENANT_NAME')),
-                 auth_url=options.auth_url or os.getenv('OS_AUTH_URL'),
-                 strategy=force_strategy or options.auth_strategy or \
-                          os.getenv('OS_AUTH_STRATEGY', 'noauth'),
-                 region=options.region or os.getenv('OS_REGION_NAME'),
-    )
-
-    if creds['strategy'] == 'keystone' and not creds['auth_url']:
-        msg = ("--auth_url option or OS_AUTH_URL environment variable "
-               "required when keystone authentication strategy is enabled\n")
-        raise exception.ClientConfigurationError(msg)
-
-    use_ssl = (options.use_ssl or (
-        creds['auth_url'] is not None and
-        creds['auth_url'].find('https') != -1))
-
-    client = (glance_client.ProgressClient if not options.is_silent_upload
-                                        else glance_client.Client)
-
-    return client(host=options.host,
+    return glance_client.get_client(host=options.host,
                 port=options.port,
-                use_ssl=use_ssl,
-                auth_tok=options.auth_token or
-                os.getenv('OS_TOKEN'),
-                creds=creds,
+                username=options.username,
+                password=options.password,
+                tenant=options.tenant,
+                auth_url=options.auth_url,
+                auth_strategy=options.auth_strategy,
+                auth_token=options.auth_token,
+                region=options.region,
+                is_silent_upload=options.is_silent_upload,
                 insecure=options.insecure)
 
 

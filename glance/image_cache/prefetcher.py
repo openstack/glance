@@ -26,6 +26,7 @@ import eventlet
 from glance.common import exception
 from glance.image_cache import ImageCache
 from glance import registry
+from glance.registry import context
 import glance.store
 import glance.store.filesystem
 import glance.store.http
@@ -45,10 +46,11 @@ class Prefetcher(object):
         glance.store.create_stores(conf)
         self.cache = ImageCache(conf)
         registry.configure_registry_client(conf)
+        registry.configure_registry_admin_creds(conf)
 
     def fetch_image_into_cache(self, image_id):
-        ctx = registry.get_client_context(self.conf,
-                                          is_admin=True, show_deleted=True)
+        ctx = context.RequestContext(is_admin=True, show_deleted=True)
+
         try:
             image_meta = registry.get_image_metadata(ctx, image_id)
             if image_meta['status'] != 'active':

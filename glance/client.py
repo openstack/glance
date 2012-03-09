@@ -399,3 +399,51 @@ class ProgressClient(V1Client):
         return transfer_info
 
 Client = V1Client
+
+
+def get_client(host, port=None, username=None,
+               password=None, tenant=None,
+               auth_url=None, auth_strategy=None,
+               auth_token=None, region=None,
+               is_silent_upload=False, insecure=False):
+    """
+    Returns a new client Glance client object based on common kwargs.
+    If an option isn't specified falls back to common environment variable
+    defaults.
+    """
+
+    if auth_url or os.getenv('OS_AUTH_URL'):
+        force_strategy = 'keystone'
+    else:
+        force_strategy = None
+
+    creds = dict(username=username or
+                         os.getenv('OS_AUTH_USER', os.getenv('OS_USERNAME')),
+                 password=password or
+                         os.getenv('OS_AUTH_KEY', os.getenv('OS_PASSWORD')),
+                 tenant=tenant or
+                         os.getenv('OS_AUTH_TENANT',
+                                 os.getenv('OS_TENANT_NAME')),
+                 auth_url=auth_url or os.getenv('OS_AUTH_URL'),
+                 strategy=force_strategy or auth_strategy or
+                          os.getenv('OS_AUTH_STRATEGY', 'noauth'),
+                 region=region or os.getenv('OS_REGION_NAME'),
+    )
+
+    if creds['strategy'] == 'keystone' and not creds['auth_url']:
+        msg = ("--auth_url option or OS_AUTH_URL environment variable "
+               "required when keystone authentication strategy is enabled\n")
+        raise exception.ClientConfigurationError(msg)
+
+    use_ssl = (creds['auth_url'] is not None and
+        creds['auth_url'].find('https') != -1)
+
+    client = (ProgressClient if not is_silent_upload else Client)
+
+    return client(host=host,
+                port=port,
+                use_ssl=use_ssl,
+                auth_tok=auth_token or
+                os.getenv('OS_TOKEN'),
+                creds=creds,
+                insecure=insecure)

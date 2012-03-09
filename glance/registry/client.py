@@ -40,7 +40,11 @@ class RegistryClient(BaseClient):
         :param metadata_encryption_key: Key used to encrypt 'location' metadata
         """
         self.metadata_encryption_key = metadata_encryption_key
-        BaseClient.__init__(self, host, port, **kwargs)
+        # NOTE (dprince): by default base client overwrites host and port
+        # settings when using keystone. configure_via_auth=False disables
+        # this behaviour to ensure we still send requests to the Registry API
+        BaseClient.__init__(self, host, port, configure_via_auth=False,
+                            **kwargs)
 
     def decrypt_metadata(self, image_metadata):
         if (self.metadata_encryption_key is not None

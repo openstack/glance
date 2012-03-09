@@ -211,7 +211,8 @@ class BaseClient(object):
 
     def __init__(self, host, port=None, use_ssl=False, auth_tok=None,
                  creds=None, doc_root=None, key_file=None,
-                 cert_file=None, ca_file=None, insecure=False):
+                 cert_file=None, ca_file=None, insecure=False,
+                 configure_via_auth=True):
         """
         Creates a new client to some service.
 
@@ -247,6 +248,7 @@ class BaseClient(object):
         self.auth_tok = auth_tok
         self.creds = creds or {}
         self.connection = None
+        self.configure_via_auth = configure_via_auth
         # doc_root can be a nullstring, which is valid, and why we
         # cannot simply do doc_root or self.DEFAULT_DOC_ROOT below.
         self.doc_root = (doc_root if doc_root is not None
@@ -365,7 +367,7 @@ class BaseClient(object):
         self.auth_tok = auth_plugin.auth_token
 
         management_url = auth_plugin.management_url
-        if management_url:
+        if management_url and self.configure_via_auth:
             self.configure_from_url(management_url)
 
     @handle_unauthorized
@@ -385,7 +387,6 @@ class BaseClient(object):
             self._authenticate()
 
         url = self._construct_url(action, params)
-
         return self._do_request(method=method, url=url, body=body,
                                 headers=headers)
 

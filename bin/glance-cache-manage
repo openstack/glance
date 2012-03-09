@@ -38,9 +38,9 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 gettext.install('glance', unicode=1)
 
 from glance import client as glance_client
-from glance import version
 from glance.common import exception
 from glance.common import utils
+from glance import version
 
 
 SUCCESS = 0
@@ -259,19 +259,16 @@ def get_client(options):
     specified by the --host and --port options
     supplied to the CLI
     """
-    creds = dict(username=os.getenv('OS_AUTH_USER'),
-                 password=os.getenv('OS_AUTH_KEY'),
-                 tenant=os.getenv('OS_AUTH_TENANT'),
-                 auth_url=os.getenv('OS_AUTH_URL'),
-                 strategy=os.getenv('OS_AUTH_STRATEGY', 'noauth'))
-
-    use_ssl = (options.host.find('https') != -1 or (
-        creds['auth_url'] is not None and
-        creds['auth_url'].find('https') != -1))
-
-    return glance_client.Client(host=options.host, port=options.port,
-                                use_ssl=use_ssl, auth_tok=options.auth_token,
-                                creds=creds)
+    return glance_client.get_client(host=options.host,
+                port=options.port,
+                username=options.username,
+                password=options.password,
+                tenant=options.tenant,
+                auth_url=options.auth_url,
+                auth_strategy=options.auth_strategy,
+                auth_token=options.auth_token,
+                region=options.region,
+                insecure=options.insecure)
 
 
 def create_options(parser):
@@ -296,6 +293,34 @@ def create_options(parser):
                       metavar="TOKEN", default=None,
                       help="Authentication token to use to identify the "
                            "client to the glance server")
+    parser.add_option('-I', '--username', dest="username",
+                      metavar="USER", default=None,
+                      help="User name used to acquire an authentication token")
+    parser.add_option('-K', '--password', dest="password",
+                      metavar="PASSWORD", default=None,
+                      help="Password used to acquire an authentication token")
+    parser.add_option('-R', '--region', dest="region",
+                      metavar="REGION", default=None,
+                      help="Region name. When using keystone authentication "
+                      "version 2.0 or later this identifies the region "
+                      "name to use when selecting the service endpoint. A "
+                      "region name must be provided if more than one "
+                      "region endpoint is available")
+    parser.add_option('-T', '--tenant', dest="tenant",
+                      metavar="TENANT", default=None,
+                      help="Tenant name")
+    parser.add_option('-N', '--auth_url', dest="auth_url",
+                      metavar="AUTH_URL", default=None,
+                      help="Authentication URL")
+    parser.add_option('-k', '--insecure', dest="insecure",
+                      default=False, action="store_true",
+                      help="Explicitly allow glance to perform \"insecure\" "
+                      "SSL (https) requests. The server's certificate will "
+                      "not be verified against any certificate authorities. "
+                      "This option should be used with caution.")
+    parser.add_option('-S', '--auth_strategy', dest="auth_strategy",
+                      metavar="STRATEGY", default=None,
+                      help="Authentication strategy (keystone or noauth)")
     parser.add_option('-f', '--force', dest="force", metavar="FORCE",
                       default=False, action="store_true",
                       help="Prevent select actions from requesting "
