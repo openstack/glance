@@ -254,18 +254,25 @@ class BaseClient(object):
         self.doc_root = (doc_root if doc_root is not None
                          else self.DEFAULT_DOC_ROOT)
         self.auth_plugin = self.make_auth_plugin(self.creds)
-        self.connect_kwargs = {}
 
-        if use_ssl:
-            if key_file is None:
-                key_file = os.environ.get('GLANCE_CLIENT_KEY_FILE')
-            if cert_file is None:
-                cert_file = os.environ.get('GLANCE_CLIENT_CERT_FILE')
-            if ca_file is None:
-                ca_file = os.environ.get('GLANCE_CLIENT_CA_FILE')
+        self.key_file = key_file
+        self.cert_file = cert_file
+        self.ca_file = ca_file
+        self.insecure = insecure
+        self.connect_kwargs = self.get_connect_kwargs()
+
+    def get_connect_kwargs(self):
+        connect_kwargs = {}
+        if self.use_ssl:
+            if self.key_file is None:
+                self.key_file = os.environ.get('GLANCE_CLIENT_KEY_FILE')
+            if self.cert_file is None:
+                self.cert_file = os.environ.get('GLANCE_CLIENT_CERT_FILE')
+            if self.ca_file is None:
+                self.ca_file = os.environ.get('GLANCE_CLIENT_CA_FILE')
 
             # Check that key_file/cert_file are either both set or both unset
-            if cert_file is not None and key_file is None:
+            if self.cert_file is not None and self.key_file is None:
                 msg = _("You have selected to use SSL in connecting, "
                         "and you have supplied a cert, "
                         "however you have failed to supply either a "
@@ -273,7 +280,7 @@ class BaseClient(object):
                         "GLANCE_CLIENT_KEY_FILE environ variable")
                 raise exception.ClientConnectionError(msg)
 
-            if key_file is not None and cert_file is None:
+            if self.key_file is not None and self.cert_file is None:
                 msg = _("You have selected to use SSL in connecting, "
                         "and you have supplied a key, "
                         "however you have failed to supply either a "
@@ -281,31 +288,36 @@ class BaseClient(object):
                         "GLANCE_CLIENT_CERT_FILE environ variable")
                 raise exception.ClientConnectionError(msg)
 
-            if key_file is not None and not os.path.exists(key_file):
+            if (self.key_file is not None and
+                not os.path.exists(self.key_file)):
                 msg = _("The key file you specified %s does not "
-                        "exist") % key_file
+                        "exist") % self.key_file
                 raise exception.ClientConnectionError(msg)
-            self.connect_kwargs['key_file'] = key_file
+            connect_kwargs['key_file'] = self.key_file
 
-            if cert_file is not None and not os.path.exists(cert_file):
+            if (self.cert_file is not None and
+                not os.path.exists(self.cert_file)):
                 msg = _("The cert file you specified %s does not "
-                        "exist") % cert_file
+                        "exist") % self.cert_file
                 raise exception.ClientConnectionError(msg)
-            self.connect_kwargs['cert_file'] = cert_file
+            connect_kwargs['cert_file'] = self.cert_file
 
-            if ca_file is not None and not os.path.exists(ca_file):
+            if (self.ca_file is not None and
+                not os.path.exists(self.ca_file)):
                 msg = _("The CA file you specified %s does not "
-                        "exist") % ca_file
+                        "exist") % self.ca_file
                 raise exception.ClientConnectionError(msg)
 
-            if ca_file is None:
+            if self.ca_file is None:
                 for ca in self.DEFAULT_CA_FILE_PATH.split(":"):
                     if os.path.exists(ca):
-                        ca_file = ca
+                        self.ca_file = ca
                         break
 
-            self.connect_kwargs['ca_file'] = ca_file
-            self.connect_kwargs['insecure'] = insecure
+            connect_kwargs['ca_file'] = self.ca_file
+            connect_kwargs['insecure'] = self.insecure
+
+        return connect_kwargs
 
     def set_auth_token(self, auth_tok):
         """
@@ -335,6 +347,10 @@ class BaseClient(object):
         self.host = parsed.hostname
         self.port = parsed.port or 80
         self.doc_root = parsed.path
+
+        # ensure connection kwargs are re-evaluated after the service catalog
+        # publicURL is parsed for potential SSL usage
+        self.connect_kwargs = self.get_connect_kwargs()
 
     def make_auth_plugin(self, creds):
         """
