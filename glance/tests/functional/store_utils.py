@@ -173,7 +173,9 @@ def teardown_swift(test):
 
 
 def get_swift_uri(test, image_id):
-    uri = ('swift+http://%(swift_store_user)s:%(swift_store_key)s' %
+    # Apparently we must use HTTPS with Cloud Files now, otherwise
+    # we will get a 301 Moved.... :(
+    uri = ('swift+https://%(swift_store_user)s:%(swift_store_key)s' %
            test.__dict__)
     uri += ('@%(swift_store_auth_address)s/%(swift_store_container)s/' %
            test.__dict__)

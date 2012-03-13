@@ -145,6 +145,47 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual('0', size, "Expected image to be 0 bytes in size, "
                                     "but got %s. " % size)
 
+    def test_add_no_name(self):
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        # 0. Verify no public images
+        cmd = "bin/glance --port=%d index" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('', out.strip())
+
+        # 1. Add public image
+        # Can't use minimal_add_command since that uses
+        # name...
+        cmd = ("bin/glance --port=%d add is_public=True"
+               " disk_format=raw container_format=ovf"
+               " %s" % (api_port, 'location=http://example.com'))
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(out.strip().startswith('Added new image with ID:'))
+
+        # 2. Verify image added as public image
+        cmd = "bin/glance --port=%d index" % api_port
+
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        lines = out.split("\n")[2:-1]
+        self.assertEqual(1, len(lines))
+
+        line = lines[0]
+
+        image_id, name, disk_format, container_format, size = \
+            [c.strip() for c in line.split()]
+        self.assertEqual('None', name)
+
     @requires(setup_http, teardown_http)
     def test_add_copying_from(self):
         self.cleanup()

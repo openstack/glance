@@ -164,7 +164,7 @@ Field names of note:
 
 id                  Optional. If not specified, an image identifier will be
                     automatically assigned.
-name                Required. A name for the image.
+name                Optional. A name for the image.
 size                Optional. Should be size in bytes of the image if
                     specified.
 is_public           Optional. If specified, interpreted as a boolean value
@@ -217,12 +217,8 @@ EXAMPLES
         print e
         return FAILURE
 
-    if 'name' not in fields.keys():
-        print "Please specify a name for the image using name=VALUE"
-        return FAILURE
-
     image_meta = {'id': fields.pop('id', None),
-                  'name': fields.pop('name'),
+                  'name': fields.pop('name', None),
                   'is_public': utils.bool_from_string(
                       fields.pop('is_public', False)),
                   'protected': utils.bool_from_string(
