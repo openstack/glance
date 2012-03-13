@@ -120,24 +120,24 @@ a brief help message, like so::
                           (https) requests. The server's certificate will not be
                           verified against any certificate authorities. This
                           option should be used with caution.
-    -A TOKEN, --auth_token=TOKEN
+    -A TOKEN, --os_auth_token=TOKEN
                           Authentication token to use to identify the client to
                           the glance server
-    -I USER, --username=USER
+    -I USER, --os_username=USER
                           User name used to acquire an authentication token
-    -K PASSWORD, --password=PASSWORD
+    -K PASSWORD, --os_password=PASSWORD
                           Password used to acquire an authentication token
-    -R REGION, --region=REGION
+    -R REGION, --os_region_name=REGION
                           Region name. When using keystone authentication
                           version 2.0 or later this identifies the region name
                           to use when selecting the service endpoint. A region
                           name must be provided if more than one region endpoint
                           is available
-    -T TENANT, --tenant=TENANT
+    -T TENANT, --os_tenant_name=TENANT
                           Tenant name
-    -N AUTH_URL, --auth_url=AUTH_URL
+    -N AUTH_URL, --os_auth_url=AUTH_URL
                           Authentication URL
-    -S STRATEGY, --auth_strategy=STRATEGY
+    -S STRATEGY, --os_auth_strategy=STRATEGY
                           Authentication strategy (keystone or noauth)
     --limit=LIMIT         Page size to use while requesting image metadata
     --marker=MARKER       Image index after which to begin pagination

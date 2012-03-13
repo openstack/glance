@@ -18,10 +18,8 @@ Glance Authentication With Keystone
 ===================================
 
 Glance may optionally be integrated with Keystone.  Setting this up is
-relatively straightforward: the Keystone distribution includes the
-requisite middleware and examples of appropriately modified
-``glance-api.conf`` and ``glance-registry.conf`` configuration files
-in the ``examples/paste`` directory.  Once you have installed Keystone
+relatively straightforward, as the Keystone distribution includes the
+necessary middleware. Once you have installed Keystone
 and edited your configuration files, newly created images will have
 their `owner` attribute set to the tenant of the authenticated users,
 and the `is_public` attribute will cause access to those images for
@@ -35,79 +33,6 @@ which it is `false` to be restricted to only the owner.
   appear in the list of public images.  This allows the Glance
   Registry owner to publish images for beta testing without allowing
   those images to show up in lists, potentially confusing users.
-
-
-Configuring the Glance Client to use Keystone
----------------------------------------------
-
-Once the Glance API and Registry servers have been configured to use Keystone, you
-will need to configure the Glance client (``bin/glance``) to use Keystone as
-well.
-
-Just as with Nova, the specifying of authentication credentials is done via
-environment variables. The only difference being that Glance environment
-variables start with `OS_AUTH_` while Nova's begin with `NOVA_`.
-
-If you already have Nova credentials present in your environment, you can use
-the included tool, ``tools/nova_to_os_env.sh``, to create Glance-style
-credentials. To use this tool, verify that Nova credentials are present by
-running::
-
-  $ env | grep NOVA_
-  NOVA_USERNAME=<YOUR USERNAME>
-  NOVA_API_KEY=<YOUR API KEY>
-  NOVA_PROJECT_ID=<YOUR TENANT ID>
-  NOVA_URL=<THIS SHOULD POINT TO KEYSTONE>
-  NOVA_AUTH_STRATEGY=keystone
-
-.. note::
-
-  If `NOVA_AUTH_STRATEGY=keystone` is not present, add that to your ``novarc`` file
-  and re-source it. If the command produces no output at all, then you will need
-  to source your ``novarc``.
-
-  Also, make sure that `NOVA_URL` points to Keystone and not the Nova API
-  server. Keystone will return the address for Nova and Glance's API servers
-  via its "service catalog".
-
-Once Nova credentials are present in the environment, you will need to source
-the conervsion script::
-
-  $ source ./tools/nova_to_os_env.sh
-
-The final step is to verify that the `OS_AUTH_` crednetials are present::
-
-  $ env | grep OS_AUTH
-  OS_AUTH_USER=<YOUR USERNAME>
-  OS_AUTH_KEY=<YOUR API KEY>
-  OS_AUTH_TENANT=<YOUR TENANT ID>
-  OS_AUTH_URL=<THIS SHOULD POINT TO KEYSTONE>
-  OS_AUTH_STRATEGY=keystone
-
-Alternatively, these credentials may be specified using the following
-switches to the ``bin/glance`` command:
-
-  -I USER, --username=USER
-                        User name used to acquire an authentication token
-  -K PASSWORD, --password=PASSWORD
-                        Password used to acquire an authentication token
-  -T TENANT, --tenant=TENANT
-                        Tenant name
-  -N AUTH_URL, --auth_url=AUTH_URL
-                        Authentication URL
-  -S STRATEGY, --auth_strategy=STRATEGY
-                        Authentication strategy (keystone or noauth)
-
-Or, if a pre-authenticated token is preferred, the following option allows
-the client-side interaction with keystone to be by-passed (useful if a long
-sequence of commands is being scripted):
-
-  -A TOKEN, --auth_token=TOKEN
-                        Authentication token to use to identify the client to
-                        the glance server
-
-In general the command line switch takes precedence over the corresponding
-OS_AUTH_* environment variable, if both are set.
 
 
 Configuring the Glance servers to use Keystone
@@ -155,6 +80,9 @@ an example for ``authtoken``::
   auth_protocol = http
   auth_uri = http://127.0.0.1:5000/
   admin_token = 999888777666
+  admin_user = glance_admin
+  admin_tenant_name = service_admins
+  admin_password = password1234
 
 The actual values for these variables will need to be set depending on
 your situation.  For more information, please refer to the Keystone
@@ -173,12 +101,16 @@ documentation on the ``auth_token`` middleware, but in short:
   to this URI to obtain one.
 * The ``admin_token`` variable specifies the administrative token that
   Glance uses in its query to the Keystone Admin service.
+* If no ``admin_token`` is provided, or it becomes invalid, the admin auth
+  credentials (``admin_user``, ``admin_tenant_name``, ``admin_password``)
+  will be used to retrieve a new admin token
 
 The other piece of middleware needed for Glance API is the
 ``auth-context``::
 
   [filter:auth_context]
-  paste.filter_factory = keystone.middleware.glance_auth_token:filter_factory
+  paste.filter_factory = glance.common.wsgi:filter_factory
+  glance.filter_factory = keystone.middleware.glance_auth_token:KeystoneContextMiddleware
 
 Finally, to actually enable using Keystone authentication, the
 application pipeline must be modified.  By default, it looks like::
@@ -205,7 +137,8 @@ which should look like this::
 
   [filter:auth-context]
   context_class = glance.registry.context.RequestContext
-  paste.filter_factory = keystone.middleware.glance_auth_token:filter_factory
+  paste.filter_factory = glance.common.wsgi:filter_factory
+  glance.filter_factory = keystone.middleware.glance_auth_token:KeystoneContextMiddleware
 
 The ``context_class`` variable is needed to specify the
 Registry-specific request context, which contains the extra access
@@ -218,7 +151,8 @@ application pipeline must be selected.  By default, it looks like:
   pipeline = authtoken auth-context registryapp
 
 To enable the above application pipeline, in your main ``glance-registry.conf``
-configuration file, select the appropriate deployment flavor like so::
+configuration file, select the appropriate deployment flavor by adding a
+``flavor`` attribute in the ``paste_deploy`` group::
 
   [paste_deploy]
   flavor = keystone
@@ -234,3 +168,37 @@ association between an image and a tenant which has permission to
 access that image.  These membership associations may also have a
 `can_share` attribute, which, if set to `true`, delegates the
 authority to share an image to the named tenant.
+
+Configuring the Glance Client to use Keystone
+---------------------------------------------
+
+Once the Glance API and Registry servers have been configured to use
+Keystone, you will need to configure the Glance client (``bin/glance``)
+to use Keystone as well. Like the other OpenStack projects, this is
+done through a common set of environment variables. These credentials may
+may alternatively be specified using the following switches to
+the ``bin/glance`` command:
+
+  OS_USERNAME=<USERNAME>, -I <USERNAME>, --os_username=<USERNAME>
+                        User name used to acquire an authentication token
+  OS_PASSWORD=<PASSWORD>, -K <PASSWORD>, --os_password=<PASSWORD>
+                        Password used to acquire an authentication token
+  OS_TENANT_NAME=<TENANT_NAME> -T <TENANT_NAME>, --os_tenant_name=<TENANT_NAME>
+                        Tenant name
+  OS_AUTH_URL=<AUTH_URL>, -N <AUTH_URL>, --os_auth_url=<AUTH_URL>
+                        Authentication endpoint
+  OS_REGION_NAME=<REGION_NAME>, -R <REGION_NAME>, --os_region_name=<REGION_NAME>
+                        Used to select a specific region while
+                        authenticating against Keystone
+
+Or, if a pre-authenticated token is preferred, the following option allows
+the client-side interaction with keystone to be bypassed (useful if a long
+sequence of commands is being scripted):
+
+  OS_TOKEN=<TOKEN>, -A <TOKEN>, --os_auth_token=<TOKEN>
+                        User's authentication token that identifies the
+                        client to the glance server. This is not
+                        an admin token.
+
+In general the command line switch takes precedence over the corresponding
+OS_* environment variable, if both are set.
