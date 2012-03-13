@@ -112,7 +112,7 @@ in size and in the `saving` status.
 
   c = Client("glance.example.com", 9292)
 
-  filters = {'status': 'saving', 'size_max': (5 * 1024 * 1024 * 1024)}
+  filters = {'status': 'saving', 'size_max': 5368709120}
   print c.get_images_detailed(filters=filters)
 
 Sorting Images Returned via ``get_images()`` and ``get_images_detailed()``
@@ -151,12 +151,11 @@ We want to see detailed information for a specific virtual machine image
 that the Glance server knows about.
 
 We have queried the Glance server for a list of public images and the
-data returned includes the `uri` field for each available image. This
-`uri` field value contains the exact location needed to get the metadata
-for a specific image.
+data returned includes the `id` field for each available image. This
+`id` field value is needed to get the metadata for a specific image.
 
-Continuing the example from above, in order to get metadata about the
-first public image returned, we can use the following code
+In order to get metadata for a specific image using an id, we can use the
+following code
 
 .. code-block:: python
 
@@ -164,18 +163,13 @@ first public image returned, we can use the following code
 
   c = Client("glance.example.com", 9292)
 
-  print c.get_image_meta("http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9")
+  print c.get_image_meta("71c675ab-d94f-49cd-a114-e12490b328d9")
 
 Retrieving a Virtual Machine Image
 ----------------------------------
 
 We want to retrieve that actual raw data for a specific virtual machine image
 that the Glance server knows about.
-
-We have queried the Glance server for a list of public images and the
-data returned includes the `uri` field for each available image. This
-`uri` field value contains the exact location needed to get the metadata
-for a specific image.
 
 Continuing the example from above, in order to get both the metadata about the
 first public image returned and its image data, we can use the following code
@@ -186,7 +180,7 @@ first public image returned and its image data, we can use the following code
 
   c = Client("glance.example.com", 9292)
 
-  meta, image_file = c.get_image("http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9")
+  meta, image_file = c.get_image("71c675ab-d94f-49cd-a114-e12490b328d9")
 
   print meta
 
@@ -197,7 +191,7 @@ first public image returned and its image data, we can use the following code
 
 .. note::
 
-  The return from Client.get_image() is a tuple of (`metadata`, `file`)
+  The return from Client.get_image is a tuple of (`metadata`, `file`)
   where `metadata` is a mapping of metadata about the image and `file` is a
   generator that yields chunks of image data.
 
@@ -205,7 +199,7 @@ Adding a New Virtual Machine Image
 ----------------------------------
 
 We have created a new virtual machine image in some way (created a
-"golden image" or snapshotted/backed up an existing image) and we
+"golden" image or snapshotted/backed up an existing image) and we
 wish to do two things:
 
 * Store the disk image data in Glance
@@ -219,95 +213,12 @@ The method signature is as follows::
 
   glance.client.Client.add_image(image_meta, image_data=None)
 
-The `image_meta` argument is a mapping containing various image metadata.
+The `image_meta` argument is a dictionary containing various image metadata.
+The keys in this dictionary map directly to the 'x-image-meta-*' headers
+accepted in the Glance API. Simply drop the leading 'x-image-meta-' from each
+header to determine what key should be used in the metadata dictionary. See the
+:doc:`API docs <glanceapi>` for a complete list of acceptable attributes.
 The `image_data` argument is the disk image data and is an optional argument.
-
-The list of metadata that `image_meta` can contain are listed below.
-
-* `name`
-
-  This key/value is required. Its value should be the name of the image.
-
-  Note that the name of an image *is not unique to a Glance node*. It
-  would be an unrealistic expectation of users to know all the unique
-  names of all other user's images.
-
-* `id`
-
-  This key/value is optional.
-
-  When present, Glance will use the supplied identifier for the image.
-  If the identifier already exists in that Glance node, then a
-  `glance.common.exception.Duplicate` will be raised. The value of the header
-  must be a properly formatted uuid (i.e. 71c675ab-d94f-49cd-a114-e12490b328d9).
-
-  When this key/value is *not* present, Glance will generate an identifier
-  for the image and return this identifier in the response (see below).
-
-* `store`
-
-  This key/value is optional. Valid values are one of `file`, `s3` or `swift`
-
-  When present, Glance will attempt to store the disk image data in the
-  backing store indicated by the value. If the Glance node does not support
-  the backing store, Glance will raise a `glance.common.exception.BadRequest`
-
-  When not present, Glance will store the disk image data in the backing
-  store that is marked default. See the configuration option `default_store`
-  for more information.
-
-* `type`
-
-  This key/values is required. Valid values are one of `kernel`, `machine`,
-  `raw`, or `ramdisk`.
-
-* `size`
-
-  This key/value is optional.
-
-  When present, Glance assumes that the expected size of the request body
-  will be the value. If the length in bytes of the request body *does not
-  match* the value, Glance will raise a `glance.common.exception.BadRequest`
-
-  When not present, Glance will calculate the image's size based on the size
-  of the request body.
-
-* `is_public`
-
-  This key/value is optional.
-
-  When present, Glance converts the value to a boolean value, so "on, 1, true"
-  are all true values. When true, the image is marked as a public image,
-  meaning that any user may view its metadata and may read the disk image from
-  Glance.
-
-  When not present, the image is assumed to be *not public* and specific to
-  a user.
-
-* `properties`
-
-  This key/value is optional.
-
-  When present, the value is assumed to be a mapping of free-form key/value
-  attributes to store with the image.
-
-  For example, if the following is the value of the `properties` key in the
-  `image_meta` argument::
-
-    {'distro': 'Ubuntu 10.10'}
-
-  Then a key/value pair of "distro"/"Ubuntu 10.10" will be stored with the
-  image in Glance.
-
-  There is no limit on the number of free-form key/value attributes that can
-  be attached to the image with `properties`.  However, keep in mind that there
-  is a 8K limit on the size of all HTTP headers sent in a request and this
-  number will effectively limit the number of image properties.
-
-  If the `image_data` argument is omitted, Glance will add the `image_meta`
-  mapping to its registries and return the newly-registered image metadata,
-  including the new image's identifier. The `status` of the image will be
-  set to the value `queued`.
 
 As a complete example, the following code would add a new machine image to
 Glance
@@ -319,7 +230,8 @@ Glance
   c = Client("glance.example.com", 9292)
 
   meta = {'name': 'Ubuntu 10.10 5G',
-          'type': 'machine',
+          'container_format': 'ovf',
+          'disk_format': 'vhd',
           'is_public': True,
           'properties': {'distro': 'Ubuntu 10.10'}}
 

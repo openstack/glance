@@ -49,7 +49,7 @@ The PasteDeploy configuration (controlling the deployment of the WSGI
 application for each component) may be found by default in
 <component>-paste.ini alongside the main configuration file, <component>.conf.
 For example, ``glance-api-paste.ini`` corresponds to ``glance-api.conf``.
-This pathname for the paste config is configurable, as follows:
+This pathname for the paste config is configurable, as follows::
 
   [paste_deploy]
   config_file = /path/to/paste/config
