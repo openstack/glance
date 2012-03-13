@@ -47,10 +47,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.ifconfig',
               'sphinx.ext.intersphinx',
               'sphinx.ext.pngmath',
-              'sphinx.ext.graphviz',
-              'sphinx.ext.todo']
-
-todo_include_todos = True
+              'sphinx.ext.graphviz']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = []

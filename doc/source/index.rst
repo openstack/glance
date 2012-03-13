@@ -76,11 +76,6 @@ Developer Docs
    architecture
    community
 
-Outstanding Documentation Tasks
-===============================
-
-.. todolist::
-
 Indices and tables
 ==================
 

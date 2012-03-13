@@ -47,11 +47,6 @@ Install Glance::
    $ su -
    # yum install openstack-glance
 
-Mac OSX
-#######
-
-.. todo:: No idea how to do install on Mac OSX. Somebody with a Mac should complete this section
-
 Installing from source tarballs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -140,8 +135,3 @@ Once Glance is built and tested, install it::
 
    $ su -
    # python setup.py install
-
-Mac OSX
-#######
-
-.. todo:: No idea how to do install on Mac OSX. Somebody with a Mac should complete this section
