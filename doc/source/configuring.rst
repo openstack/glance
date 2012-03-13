@@ -602,9 +602,8 @@ to be run via cron on a regular basis. See more about this executable in
 Configuring the Glance Registry
 -------------------------------
 
-Glance ships with a default, reference implementation registry server. There
-are a number of configuration options in Glance that control how this registry
-server operates. These configuration options are specified in the
+There are a number of configuration options in Glance that control how 
+this registry server operates. These configuration options are specified in the
 ``glance-registry.conf`` config file in the section ``[DEFAULT]``.
 
 * ``sql_connection=CONNECTION_STRING`` (``--sql-connection`` when specified

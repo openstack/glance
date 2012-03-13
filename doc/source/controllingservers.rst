@@ -24,13 +24,13 @@ Starting a server
 -----------------
 
 There are two ways to start a Glance server (either the API server or the
-reference implementation registry server that ships with Glance):
+registry server):
 
 * Manually calling the server program
 
 * Using the ``glance-control`` server daemon wrapper program
 
-We recommend using the second way.
+We recommend using the second method.
 
 Manually starting the server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

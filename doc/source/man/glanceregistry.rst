@@ -21,8 +21,8 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-glance-registry is the reference implementation of a server daemon that serves
-image metadata based on the Glance Registry REST-like API.
+glance-registry is a server daemon that serves image metadata through a
+REST-like API.
 
 OPTIONS
 =======
