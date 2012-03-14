@@ -25,6 +25,7 @@ import functools
 import httplib
 import logging
 import os
+import select
 import urllib
 import urlparse
 
@@ -129,10 +130,23 @@ class SendFileIterator:
                 return self.len
 
         while self.sending:
-            sent = sendfile.sendfile(self.connection.sock.fileno(),
-                                     self.body.fileno(),
-                                     self.offset,
-                                     CHUNKSIZE)
+            try:
+                sent = sendfile.sendfile(self.connection.sock.fileno(),
+                                         self.body.fileno(),
+                                         self.offset,
+                                         CHUNKSIZE)
+            except OSError as e:
+                # suprisingly, sendfile may fail transiently instead of
+                # blocking, in which case we select on the socket in order
+                # to wait on its return to a writeable state before resuming
+                # the send loop
+                if e.errno in (errno.EAGAIN, errno.EBUSY):
+                    wlist = [self.connection.sock.fileno()]
+                    rfds, wfds, efds = select.select([], wlist, [])
+                    if wfds:
+                        continue
+                raise
+
             self.sending = (sent != 0)
             self.offset += sent
             yield OfLength(sent)
