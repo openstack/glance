@@ -22,8 +22,6 @@ Base attribute driver class
 import logging
 import os.path
 
-from contextlib import contextmanager
-
 from glance.common import exception
 from glance.common import utils
 

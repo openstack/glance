@@ -17,9 +17,9 @@
 
 import routes
 
+from glance.common import wsgi
 from glance.registry.api.v1 import images
 from glance.registry.api.v1 import members
-from glance.common import wsgi
 
 
 class API(wsgi.Router):

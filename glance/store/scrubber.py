@@ -29,8 +29,6 @@ from glance import registry
 from glance import store
 from glance.common import cfg
 from glance.common import utils
-from glance.common import exception
-from glance.registry import context
 from glance.registry import client
 
 
@@ -121,7 +119,7 @@ class Scrubber(object):
         pool.starmap(self._delete, delete_work)
 
         if self.cleanup:
-            self._cleanup()
+            self._cleanup(pool)
 
     def _delete(self, id, uri, now):
         file_path = os.path.join(self.datadir, str(id))
@@ -136,7 +134,7 @@ class Scrubber(object):
         self.registry.update_image(id, {'status': 'deleted'})
         utils.safe_remove(file_path)
 
-    def _cleanup(self):
+    def _cleanup(self, pool):
         now = time.time()
         cleanup_file = os.path.join(self.datadir, self.CLEANUP_FILE)
         if not os.path.exists(cleanup_file):

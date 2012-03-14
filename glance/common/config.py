@@ -26,9 +26,9 @@ import logging.handlers
 import os
 import sys
 
-from glance import version
 from glance.common import cfg
 from glance.common import wsgi
+from glance import version
 
 
 paste_deploy_group = cfg.OptGroup('paste_deploy')
@@ -168,8 +168,6 @@ def load_paste_app(conf, app_name=None):
     try:
         # Setup logging early
         setup_logging(conf)
-
-        logger = logging.getLogger(app_name)
 
         app = wsgi.paste_deploy_app(conf_file, app_name, conf)
 

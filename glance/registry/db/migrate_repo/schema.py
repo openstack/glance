@@ -22,7 +22,6 @@ Various conveniences used for migration scripts
 import logging
 
 import sqlalchemy.types
-from sqlalchemy.schema import MetaData
 
 
 logger = logging.getLogger('glance.registry.db.migrate_repo.schema')

@@ -21,13 +21,9 @@ Controller for Image Cache Management API
 
 import logging
 
-import webob.exc
-
-from glance.common import exception
-from glance.common import wsgi
 from glance.api.v1 import controller
+from glance.common import wsgi
 from glance import image_cache
-from glance import registry
 
 logger = logging.getLogger(__name__)
 

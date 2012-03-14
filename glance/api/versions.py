@@ -24,8 +24,6 @@ import json
 
 import webob.dec
 
-from glance.common import wsgi
-
 
 class Controller(object):
 

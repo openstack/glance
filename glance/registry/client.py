@@ -21,7 +21,6 @@ the Glance Registry API
 """
 
 import json
-import urllib
 
 from glance.common.client import BaseClient
 from glance.common import crypt

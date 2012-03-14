@@ -23,7 +23,6 @@ import hashlib
 import httplib
 import logging
 import math
-import tempfile
 import urlparse
 
 from glance.common import cfg
@@ -266,13 +265,6 @@ class Store(glance.store.base.Store):
             else:
                 raise
 
-        #if expected_size:
-        #    obj_size = int(resp_headers['content-length'])
-        #    if  obj_size != expected_size:
-        #        raise glance.store.BackendException(
-        #            "Expected %s byte file, Swift has %s bytes" %
-        #            (expected_size, obj_size))
-
         class ResponseIndexable(glance.store.Indexable):
             def another(self):
                 try:
@@ -448,8 +440,8 @@ class Store(glance.store.base.Store):
                 # of each chunk...so we ignore this result in favour of
                 # the MD5 of the entire image file contents, so that
                 # users can verify the image file contents accordingly
-                _ignored = swift_conn.put_object(self.container, obj_name,
-                                                 None, headers=headers)
+                swift_conn.put_object(self.container, obj_name,
+                                      None, headers=headers)
                 obj_etag = checksum.hexdigest()
 
             # NOTE: We return the user and key here! Have to because

@@ -16,16 +16,14 @@
 #    under the License.
 
 import logging
-import optparse
 import os
 import sys
 import time
-import urlparse
 
-from glance import registry
 from glance.common import cfg
 from glance.common import exception
 from glance.common import utils
+from glance import registry
 from glance.store import location
 
 logger = logging.getLogger('glance.store')

@@ -57,7 +57,6 @@ from __future__ import absolute_import
 from contextlib import contextmanager
 import datetime
 import errno
-import itertools
 import logging
 import os
 import stat

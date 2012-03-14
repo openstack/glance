@@ -30,9 +30,10 @@ Keystone (an identity management system).
     > auth_plugin.management_url
     http://service_endpoint/
 """
-import httplib2
 import json
 import urlparse
+
+import httplib2
 
 from glance.common import exception
 
