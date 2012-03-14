@@ -521,6 +521,10 @@ class BaseClient(object):
                 raise TypeError('Unsupported image type: %s' % body.__class__)
 
             res = c.getresponse()
+
+            def _retry(res):
+                return res.getheader('Retry-After')
+
             status_code = self.get_status_code(res)
             if status_code in self.OK_RESPONSE_CODES:
                 return res
@@ -538,8 +542,13 @@ class BaseClient(object):
                 raise exception.Invalid(res.read())
             elif status_code == httplib.MULTIPLE_CHOICES:
                 raise exception.MultipleChoices(body=res.read())
+            elif status_code == httplib.REQUEST_ENTITY_TOO_LARGE:
+                raise exception.LimitExceeded(retry=_retry(res),
+                                              body=res.read())
             elif status_code == httplib.INTERNAL_SERVER_ERROR:
                 raise Exception("Internal Server error: %s" % res.read())
+            elif status_code == httplib.SERVICE_UNAVAILABLE:
+                raise exception.ServiceUnavailable(retry=_retry(res))
             else:
                 raise Exception("Unknown error occurred! %s" % res.read())
 
