@@ -781,7 +781,8 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
 
         # Test that we can update is_public through the CLI
         args = (self.api_port, keystone_utils.pattieblack_token, image_id)
-        cmd = "bin/glance --port=%d --auth_token=%s update %s is_public=True"
+        cmd = ("bin/glance --port=%d --os_auth_token=%s update %s "
+               "is_public=True")
         exitcode, out, err = execute(cmd % args)
 
         self.assertEqual(0, exitcode)
@@ -801,7 +802,7 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
 
         # Test that admin can change the owner
         args = (self.api_port, keystone_utils.admin_token, image_id)
-        cmd = "bin/glance --port=%d --auth_token=%s update %s owner=froggy"
+        cmd = "bin/glance --port=%d --os_auth_token=%s update %s owner=froggy"
         exitcode, out, err = execute(cmd % args)
 
         self.assertEqual(0, exitcode)
@@ -820,7 +821,7 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
 
         # Test that admin can remove the owner
         args = (self.api_port, keystone_utils.admin_token, image_id)
-        cmd = "bin/glance --port=%d --auth_token=%s update %s owner="
+        cmd = "bin/glance --port=%d --os_auth_token=%s update %s owner="
         exitcode, out, err = execute(cmd % args)
 
         self.assertEqual(0, exitcode)
@@ -851,7 +852,7 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
         """
         Test the CLI with the noauth strategy defaulted to.
         """
-        suffix = '--auth_token=%s' % keystone_utils.pattieblack_token
+        suffix = '--os_auth_token=%s' % keystone_utils.pattieblack_token
         cmd = minimal_add_command(self.api_port, 'MyImage', suffix, False)
         self._do_test_glance_cli(cmd)
 
@@ -863,8 +864,8 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
         """
         substitutions = (self.auth_port, 'keystone',
                          'pattieblack', 'secrete')
-        suffix = ("--auth_url=http://localhost:%d/v1.0 "
-                  "--auth_strategy=%s --username=%s --password=%s "
+        suffix = ("--os_auth_url=http://localhost:%d/v1.0 "
+                  "--os_auth_strategy=%s --os_username=%s --os_password=%s "
                   % substitutions)
         cmd = minimal_add_command(self.api_port, 'MyImage', suffix, False)
         self._do_test_glance_cli(cmd)
@@ -890,13 +891,13 @@ class TestPrivateImagesCli(keystone_utils.KeystoneTests):
         auth url missing.
         """
         substitutions = (self.api_port, 'keystone', 'pattieblack', 'secrete')
-        cmd = ("bin/glance --port=%d --auth_strategy=%s "
-               "--username=%s --password=%s index" % substitutions)
+        cmd = ("bin/glance --port=%d --os_auth_strategy=%s "
+               "--os_username=%s --os_password=%s index" % substitutions)
 
         exitcode, out, err = execute(cmd, raise_error=False)
 
         self.assertEqual(1, exitcode)
 
-        msg = ("--auth_url option or OS_AUTH_URL environment variable "
+        msg = ("--os_auth_url option or OS_AUTH_URL environment variable "
                "required when keystone authentication strategy is enabled")
         self.assertTrue(msg in err, 'expected "%s" in "%s"' % (msg, err))

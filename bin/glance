@@ -782,13 +782,13 @@ def get_client(options):
     """
     return glance_client.get_client(host=options.host,
                 port=options.port,
-                username=options.username,
-                password=options.password,
-                tenant=options.tenant,
-                auth_url=options.auth_url,
-                auth_strategy=options.auth_strategy,
-                auth_token=options.auth_token,
-                region=options.region,
+                username=options.os_username,
+                password=options.os_password,
+                tenant=options.os_tenant_name,
+                auth_url=options.os_auth_url,
+                auth_strategy=options.os_auth_strategy,
+                auth_token=options.os_auth_token,
+                region=options.os_region_name,
                 is_silent_upload=options.is_silent_upload,
                 insecure=options.insecure)
 
@@ -827,30 +827,31 @@ def create_options(parser):
                       "SSL (https) requests. The server's certificate will "
                       "not be verified against any certificate authorities. "
                       "This option should be used with caution.")
-    parser.add_option('-A', '--auth_token', dest="auth_token",
-                      metavar="TOKEN", default=None,
+    parser.add_option('-A', '--os_auth_token', '--auth_token',
+                      dest="os_auth_token", metavar="TOKEN", default=None,
                       help="Authentication token to use to identify the "
-                           "client to the glance server")
-    parser.add_option('-I', '--username', dest="username",
+                           "client to the glance server.  --auth_token"
+                           "is deprecated and will be removed")
+    parser.add_option('-I', '--os_username', dest="os_username",
                       metavar="USER", default=None,
                       help="User name used to acquire an authentication token")
-    parser.add_option('-K', '--password', dest="password",
+    parser.add_option('-K', '--os_password', dest="os_password",
                       metavar="PASSWORD", default=None,
                       help="Password used to acquire an authentication token")
-    parser.add_option('-R', '--region', dest="region",
+    parser.add_option('-R', '--os_region_name', dest="os_region_name",
                       metavar="REGION", default=None,
                       help="Region name. When using keystone authentication "
                       "version 2.0 or later this identifies the region "
                       "name to use when selecting the service endpoint. A "
                       "region name must be provided if more than one "
                       "region endpoint is available")
-    parser.add_option('-T', '--tenant', dest="tenant",
+    parser.add_option('-T', '--os_tenant_name', dest="os_tenant_name",
                       metavar="TENANT", default=None,
                       help="Tenant name")
-    parser.add_option('-N', '--auth_url', dest="auth_url",
+    parser.add_option('-N', '--os_auth_url', dest="os_auth_url",
                       metavar="AUTH_URL", default=None,
                       help="Authentication URL")
-    parser.add_option('-S', '--auth_strategy', dest="auth_strategy",
+    parser.add_option('-S', '--os_auth_strategy', dest="os_auth_strategy",
                       metavar="STRATEGY", default=None,
                       help="Authentication strategy (keystone or noauth)")
     parser.add_option('--limit', dest="limit", metavar="LIMIT", default=10,
