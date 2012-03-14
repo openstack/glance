@@ -30,12 +30,12 @@ import re
 
 import webob
 
-from glance import image_cache
-from glance import registry
 from glance.api.v1 import images
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
+from glance import image_cache
+from glance import registry
 
 logger = logging.getLogger(__name__)
 get_images_re = re.compile(r'^(/v\d+)*/images/([^\/]+)$')

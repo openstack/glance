@@ -19,7 +19,6 @@ from glance.common import cfg
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
-from glance.registry.db import api as db_api
 
 
 class RequestContext(object):

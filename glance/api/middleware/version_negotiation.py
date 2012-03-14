@@ -24,9 +24,6 @@ return
 import logging
 import re
 
-import routes
-
-from glance.api import v1
 from glance.api import versions
 from glance.common import wsgi
 

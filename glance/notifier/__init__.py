@@ -17,8 +17,8 @@
 
 
 import datetime
-import uuid
 import socket
+import uuid
 
 from glance.common import cfg
 from glance.common import exception
@@ -46,7 +46,7 @@ class Notifier(object):
         strategy = conf.notifier_strategy
         try:
             self.strategy = utils.import_class(_STRATEGIES[strategy])(conf)
-        except KeyError, ImportError:
+        except (KeyError, ImportError):
             raise exception.InvalidNotifierStrategy(strategy=strategy)
 
     @staticmethod

@@ -388,7 +388,7 @@ class Controller(controller.BaseController):
                         "%(max_image_size)d. Supplied image size was "
                         "%(image_size)d") % locals()
                 logger.warn(msg)
-                raise HTTPBadRequest(msg, request=request)
+                raise HTTPBadRequest(msg, request=req)
 
             location, size, checksum = store.add(image_meta['id'],
                                                  image_data,

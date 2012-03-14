@@ -20,7 +20,6 @@ LRU Cache for Image Data
 """
 
 import logging
-import os
 
 from glance.common import cfg
 from glance.common import exception

@@ -23,7 +23,6 @@ import collections
 import errno
 import functools
 import httplib
-import logging
 import os
 import select
 import urllib
