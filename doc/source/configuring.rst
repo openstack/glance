@@ -597,7 +597,12 @@ image file would put the total cache size over this size. The
 ``glance-cache-pruner`` executable is what prunes the image cache to be equal
 to or less than this value. The ``glance-cache-pruner`` executable is designed
 to be run via cron on a regular basis. See more about this executable in
-`Controlling the Growth of the Image Cache`
+:doc:`Controlling the Growth of the Image Cache <cache>`
+
+.. note::
+
+  These configuration options must be set in both the glance-cache
+  and glance-api configuration files.
 
 Configuring the Glance Registry
 -------------------------------
