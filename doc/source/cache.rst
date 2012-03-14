@@ -97,10 +97,7 @@ To queue an image for prefetching, you can use one of the following methods:
 
 Once you have queued the images you wish to prefetch, call the
 ``glance-cache-prefetcher`` executable, which will prefetch all queued images
-concurrently, reporting the results of the fetch for each image, as shown
-below::
-
-  TODO
+concurrently, logging the results of the fetch for each image.
 
 Finding Which Images are in the Image Cache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,7 +105,7 @@ Finding Which Images are in the Image Cache
 You can find out which images are in the image cache using one of the
 following methods:
 
-  * If the ``cache_manage`` middleware is enabled in the application pipeline,
+  * If the ``cachemanage`` middleware is enabled in the application pipeline,
     you may call ``GET /cached-images`` to see a JSON-serialized list of
     mappings that show cached images, the number of cache hits on each image,
     the size of the image, and the times they were last accessed.
@@ -132,7 +129,7 @@ following methods:
 Manually Removing Images from the Image Cache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If the ``cache_manage`` middleware is enabled, you may call
+If the ``cachemanage`` middleware is enabled, you may call
 ``DELETE /cached-images/<IMAGE_ID>`` to remove the image file for image
 with identifier ``<IMAGE_ID>`` from the cache.
 
