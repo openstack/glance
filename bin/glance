@@ -190,7 +190,7 @@ copy_from           Optional. An external location (HTTP, S3 or Swift URI) to
                     copy_from=s3://akey:skey@s3.amazonaws.com/images/fedora16
 
 Any other field names are considered to be custom properties so be careful
-to spell field names correctly. :)
+to spell field names correctly.
 
 STREAMING IMAGE DATA
 ===============================================================================
@@ -332,7 +332,7 @@ disk_format         Format of the disk image
 container_format    Format of the container
 
 All other field names are considered to be custom properties so be careful
-to spell field names correctly. :)"""
+to spell field names correctly."""
     c = get_client(options)
     try:
         image_id = args.pop(0)
