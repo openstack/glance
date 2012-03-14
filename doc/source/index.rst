@@ -48,7 +48,6 @@ Concepts
    :maxdepth: 1
 
    identifiers
-   registries
    statuses
    formats
 
@@ -58,7 +57,6 @@ Using Glance
 .. toctree::
    :maxdepth: 1
 
-   gettingstarted
    installing
    controllingservers
    configuring

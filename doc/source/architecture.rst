@@ -55,11 +55,9 @@ like so:
 What is a Registry Server?
 ==========================
 
-A registry server is any service that publishes image metadata that conforms
-to the Glance Registry REST-ful API. Glance comes with a reference
-implementation of a registry server called ``glance-registry``, but this is
-only a reference implementation that uses a SQL database for its metdata
-storage.
+A registry server is a service that publishes image metadata for internal
+consumption by the Glance API server. The Glance registry server uses a
+SQL database for its metdata storage.
 
 What is a Store?
 ================
