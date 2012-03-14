@@ -550,7 +550,7 @@ def create_container_if_missing(container, swift_conn, conf):
             if conf.swift_store_create_container_on_put:
                 try:
                     swift_conn.put_container(container)
-                except ClientException, e:
+                except swift_client.ClientException, e:
                     msg = _("Failed to add container to Swift.\n"
                            "Got error from Swift: %(e)s") % locals()
                     raise glance.store.BackendException(msg)
