@@ -85,16 +85,6 @@ To queue an image for prefetching, you can use one of the following methods:
 
    This will queue the image with identifier ``<IMAGE_ID>`` for prefetching
 
- * You may use the ``glance-cache-queue-image`` executable, supplying a list
-   of image identifiers to queue for prefetching into the cache.
-
-   Example usage::
-
-     $> glance-cache-queue-image 12345 ABCDE
-
-   would queue the images with identifiers ``12345`` and ``ABCDE`` for
-   prefetching.
-
 Once you have queued the images you wish to prefetch, call the
 ``glance-cache-prefetcher`` executable, which will prefetch all queued images
 concurrently, logging the results of the fetch for each image.

@@ -108,7 +108,6 @@ setup(
              'bin/glance-api',
              'bin/glance-cache-prefetcher',
              'bin/glance-cache-pruner',
-             'bin/glance-cache-queue-image',
              'bin/glance-cache-manage',
              'bin/glance-cache-cleaner',
              'bin/glance-control',
