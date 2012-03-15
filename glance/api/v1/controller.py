@@ -47,6 +47,11 @@ class BaseController(object):
         except exception.NotAuthorized:
             msg = _("Unauthorized image access")
             logger.debug(msg)
+            raise webob.exc.HTTPUnauthorized(msg, request=request,
+                                content_type='text/plain')
+        except exception.Forbidden:
+            msg = _("Forbidden image access")
+            logger.debug(msg)
             raise webob.exc.HTTPForbidden(msg, request=request,
                                 content_type='text/plain')
 

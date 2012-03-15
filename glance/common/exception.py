@@ -113,6 +113,10 @@ class NotAuthorized(GlanceException):
     message = _("You are not authorized to complete this action.")
 
 
+class Forbidden(GlanceException):
+    message = _("That action is forbidden.")
+
+
 class NotAuthorizedPublicImage(NotAuthorized):
     message = _("You are not authorized to complete this action.")
 

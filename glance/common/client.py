@@ -56,7 +56,7 @@ def handle_unauthorized(func):
     def wrapped(self, *args, **kwargs):
         try:
             return func(self, *args, **kwargs)
-        except exception.NotAuthorized:
+        except (exception.NotAuthorized, exception.Forbidden):
             self._authenticate(force_reauth=True)
             return func(self, *args, **kwargs)
     return wrapped
@@ -533,7 +533,7 @@ class BaseClient(object):
             elif status_code == httplib.UNAUTHORIZED:
                 raise exception.NotAuthorized(res.read())
             elif status_code == httplib.FORBIDDEN:
-                raise exception.NotAuthorized(res.read())
+                raise exception.Forbidden(res.read())
             elif status_code == httplib.NOT_FOUND:
                 raise exception.NotFound(res.read())
             elif status_code == httplib.CONFLICT:
