@@ -326,7 +326,9 @@ def get_terminal_size():
                 p = subprocess.Popen(['stty', 'size'],
                                     shell=False,
                                     stdout=subprocess.PIPE)
-                return tuple(int(x) for x in p.communicate()[0].split())
+                result = p.communicate()
+                if p.returncode == 0:
+                    return tuple(int(x) for x in result[0].split())
             except:
                 pass
 
