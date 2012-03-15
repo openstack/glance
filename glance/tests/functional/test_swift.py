@@ -480,6 +480,7 @@ class TestSwift(test_api.TestApi):
         data = json.loads(content)
 
         copy_image_id = data['image']['id']
+        self.assertNotEqual(copy_image_id, original_image_id)
 
         # GET image and make sure image content is as expected
         path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
