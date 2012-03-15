@@ -21,7 +21,11 @@ Controller for Image Cache Management API
 
 import logging
 
+import webob.exc
+
+from glance.api import policy
 from glance.api.v1 import controller
+from glance.common import exception
 from glance.common import wsgi
 from glance import image_cache
 
@@ -36,6 +40,14 @@ class Controller(controller.BaseController):
     def __init__(self, conf):
         self.conf = conf
         self.cache = image_cache.ImageCache(self.conf)
+        self.policy = policy.Enforcer(conf)
+
+    def _enforce(self, req):
+        """Authorize request against 'manage_image_cache' policy"""
+        try:
+            self.policy.enforce(req.context, 'manage_image_cache', {})
+        except exception.NotAuthorized:
+            raise webob.exc.HTTPForbidden()
 
     def get_cached_images(self, req):
         """
@@ -43,6 +55,7 @@ class Controller(controller.BaseController):
 
         Returns a mapping of records about cached images.
         """
+        self._enforce(req)
         images = self.cache.get_cached_images()
         return dict(cached_images=images)
 
@@ -52,6 +65,7 @@ class Controller(controller.BaseController):
 
         Removes an image from the cache.
         """
+        self._enforce(req)
         self.cache.delete_cached_image(image_id)
 
     def delete_cached_images(self, req):
@@ -60,6 +74,7 @@ class Controller(controller.BaseController):
 
         Removes all images from the cache.
         """
+        self._enforce(req)
         return dict(num_deleted=self.cache.delete_all_cached_images())
 
     def get_queued_images(self, req):
@@ -68,6 +83,7 @@ class Controller(controller.BaseController):
 
         Returns a mapping of records about queued images.
         """
+        self._enforce(req)
         images = self.cache.get_queued_images()
         return dict(queued_images=images)
 
@@ -79,6 +95,7 @@ class Controller(controller.BaseController):
         the image is in the registry here. That is done by the
         prefetcher...
         """
+        self._enforce(req)
         self.cache.queue_image(image_id)
 
     def delete_queued_image(self, req, image_id):
@@ -87,6 +104,7 @@ class Controller(controller.BaseController):
 
         Removes an image from the cache.
         """
+        self._enforce(req)
         self.cache.delete_queued_image(image_id)
 
     def delete_queued_images(self, req):
@@ -95,6 +113,7 @@ class Controller(controller.BaseController):
 
         Removes all images from the cache.
         """
+        self._enforce(req)
         return dict(num_deleted=self.cache.delete_all_queued_images())
 
 

@@ -215,6 +215,69 @@ class BaseCacheManageMiddlewareTest(object):
         self.assertEqual(data['cached_images'], [])
 
     @skip_if_disabled
+    def test_user_not_authorized(self):
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+        self.verify_no_images()
+
+        image_id1 = self.add_image("Image1")
+        image_id2 = self.add_image("Image2")
+
+        # Verify image does not yet show up in cache (we haven't "hit"
+        # it yet using a GET /images/1 ...
+        self.verify_no_cached_images()
+
+        # Grab the image
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id1)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        # Verify image now in cache
+        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        data = json.loads(content)
+        self.assertTrue('cached_images' in data)
+
+        cached_images = data['cached_images']
+        self.assertEqual(1, len(cached_images))
+        self.assertEqual(image_id1, cached_images[0]['image_id'])
+
+        # Set policy to disallow access to cache management
+        rules = {"manage_image_cache": [["false:false"]]}
+        self.set_policy_rules(rules)
+
+        # Verify an unprivileged user cannot see cached images
+        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 403)
+
+        # Verify an unprivileged user cannot delete images from the cache
+        path = "http://%s:%d/v1/cached_images/%s" % ("0.0.0.0", self.api_port,
+                                                     image_id1)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 403)
+
+        # Verify an unprivileged user cannot delete all cached images
+        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 403)
+
+        # Verify an unprivileged user cannot queue an image
+        path = "http://%s:%d/v1/queued_images/%s" % ("0.0.0.0", self.api_port,
+                                                     image_id2)
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT')
+        self.assertEqual(response.status, 403)
+
+    @skip_if_disabled
     def test_cache_manage_get_cached_images(self):
         """
         Tests that cached images are queryable

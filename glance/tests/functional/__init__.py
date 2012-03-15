@@ -25,6 +25,7 @@ and spinning down the servers.
 
 import datetime
 import functools
+import json
 import os
 import re
 import shutil
@@ -403,6 +404,11 @@ class FunctionalTest(unittest.TestCase):
             # and recreate it, which ensures that we have no side-effects
             # from the tests
             self._reset_database(self.registry_server.sql_connection)
+
+    def set_policy_rules(self, rules):
+        fap = open(self.policy_file, 'w')
+        fap.write(json.dumps(rules))
+        fap.close()
 
     def _reset_database(self, conn_string):
         conn_pieces = urlparse.urlparse(conn_string)
