@@ -431,7 +431,7 @@ def get_client(host, port=None, username=None,
     )
 
     if creds['strategy'] == 'keystone' and not creds['auth_url']:
-        msg = ("--auth_url option or OS_AUTH_URL environment variable "
+        msg = ("--os_auth_url option or OS_AUTH_URL environment variable "
                "required when keystone authentication strategy is enabled\n")
         raise exception.ClientConfigurationError(msg)
 

@@ -417,7 +417,7 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
         # Test that we can add froggy as a shared image member
         args = (self.api_port, keystone_utils.pattieblack_token,
                 image_id, keystone_utils.froggy_id)
-        cmd = "bin/glance --port=%d --auth_token=%s member-add %s %s" % args
+        cmd = "bin/glance --port=%d --os_auth_token=%s member-add %s %s" % args
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
@@ -435,7 +435,7 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
         self.assertEqual(data['members'][0]['can_share'], False)
 
         # Test that we can replace a shared image membership list
-        cmd = ("bin/glance --port=%d --auth_token=%s members-replace %s %s "
+        cmd = ("bin/glance --port=%d --os_auth_token=%s members-replace %s %s "
                "--can-share" %
                (self.api_port, keystone_utils.pattieblack_token,
                 image_id, keystone_utils.bacon_id))
@@ -456,7 +456,7 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
         self.assertEqual(data['members'][0]['can_share'], True)
 
         # Test that we can delete an image membership
-        cmd = ("bin/glance --port=%d --auth_token=%s member-delete %s %s" %
+        cmd = ("bin/glance --port=%d --os_auth_token=%s member-delete %s %s" %
                (self.api_port, keystone_utils.pattieblack_token,
                 image_id, keystone_utils.bacon_id))
         exitcode, out, err = execute(cmd)
@@ -490,23 +490,23 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
         image2_id = data['image']['id']
 
         # Share images with froggy and bacon
-        cmd = ("bin/glance --port=%d --auth_token=%s member-add %s %s" %
+        cmd = ("bin/glance --port=%d --os_auth_token=%s member-add %s %s" %
                (self.api_port, keystone_utils.pattieblack_token,
                 image1_id, keystone_utils.froggy_id))
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
-        cmd = ("bin/glance --port=%d --auth_token=%s member-add %s %s" %
+        cmd = ("bin/glance --port=%d --os_auth_token=%s member-add %s %s" %
                (self.api_port, keystone_utils.pattieblack_token,
                 image1_id, keystone_utils.bacon_id))
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
-        cmd = ("bin/glance --port=%d --auth_token=%s member-add %s %s "
+        cmd = ("bin/glance --port=%d --os_auth_token=%s member-add %s %s "
                "--can-share" %
                (self.api_port, keystone_utils.pattieblack_token,
                 image2_id, keystone_utils.froggy_id))
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
-        cmd = ("bin/glance --port=%d --auth_token=%s member-add %s %s "
+        cmd = ("bin/glance --port=%d --os_auth_token=%s member-add %s %s "
                "--can-share" %
                (self.api_port, keystone_utils.pattieblack_token,
                 image2_id, keystone_utils.bacon_id))
@@ -514,7 +514,7 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
         self.assertEqual(0, exitcode)
 
         # Get the list of image members
-        cmd = ("bin/glance --port=%d --auth_token=%s image-members %s" %
+        cmd = ("bin/glance --port=%d --os_auth_token=%s image-members %s" %
                (self.api_port, keystone_utils.pattieblack_token, image1_id))
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
@@ -524,7 +524,7 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
         self.assertTrue(keystone_utils.bacon_id in result)
 
         # Try again for can_share
-        cmd = ("bin/glance --port=%d --auth_token=%s image-members %s" %
+        cmd = ("bin/glance --port=%d --os_auth_token=%s image-members %s" %
                (self.api_port, keystone_utils.pattieblack_token, image2_id))
         exitcode, out, err = execute(cmd)
         self.assertEqual(0, exitcode)
@@ -535,7 +535,7 @@ class TestSharedImagesCli(keystone_utils.KeystoneTests):
         self.assertTrue(keystone_utils.bacon_id + ' *' in result[:-2])
 
         # Get the list of member images
-        cmd = ("bin/glance --port=%d --auth_token=%s member-images %s" %
+        cmd = ("bin/glance --port=%d --os_auth_token=%s member-images %s" %
                (self.api_port, keystone_utils.pattieblack_token,
                 keystone_utils.froggy_id))
         exitcode, out, err = execute(cmd)
