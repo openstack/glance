@@ -143,6 +143,28 @@ class MultipleChoices(GlanceException):
                 "request URI.\n\nThe body of response returned:\n%(body)s")
 
 
+class LimitExceeded(GlanceException):
+    message = _("The request returned a 413 Request Entity Too Large. This "
+                "generally means that rate limiting or a quota threshold was "
+                "breached.\n\nThe response body:\n%(body)s")
+
+    def __init__(self, *args, **kwargs):
+        self.retry_after = (int(kwargs['retry']) if kwargs.get('retry')
+                            else None)
+        super(LimitExceeded, self).__init__(*args, **kwargs)
+
+
+class ServiceUnavailable(GlanceException):
+    message = _("The request returned a 503 ServiceUnavilable. This "
+                "generally occurs on service overload or other transient "
+                "outage.")
+
+    def __init__(self, *args, **kwargs):
+        self.retry_after = (int(kwargs['retry']) if kwargs.get('retry')
+                            else None)
+        super(ServiceUnavailable, self).__init__(*args, **kwargs)
+
+
 class InvalidContentType(GlanceException):
     message = _("Invalid content type %(content_type)s")
 
