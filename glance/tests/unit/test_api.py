@@ -2194,7 +2194,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.headers['Content-Type'] = 'application/octet-stream'
         req.body = "chunk00000remainder"
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 401)
+        self.assertEquals(res.status_int, 403)
 
     def _do_test_post_image_content_missing_format(self, missing):
         """Tests creation of an image with missing format"""
@@ -2563,14 +2563,14 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.set_policy_rules(rules)
         req = webob.Request.blank('/images/detail')
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 401)
+        self.assertEquals(res.status_int, 403)
 
     def test_get_images_unauthorized(self):
         rules = {"get_images": [["false:false"]]}
         self.set_policy_rules(rules)
         req = webob.Request.blank('/images/detail')
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 401)
+        self.assertEquals(res.status_int, 403)
 
     def test_store_location_not_revealed(self):
         """
@@ -2732,7 +2732,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'HEAD'
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 401)
+        self.assertEquals(res.status_int, 403)
 
     def test_show_image_basic(self):
         req = webob.Request.blank("/images/%s" % UUID2)
@@ -2751,7 +2751,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.set_policy_rules(rules)
         req = webob.Request.blank("/images/%s" % UUID2)
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 401)
+        self.assertEqual(res.status_int, 403)
 
     def test_delete_image(self):
         req = webob.Request.blank("/images/%s" % UUID2)
@@ -2833,7 +2833,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'DELETE'
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 401)
+        self.assertEquals(res.status_int, 403)
 
     def test_get_details_invalid_marker(self):
         """

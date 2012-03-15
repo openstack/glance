@@ -29,7 +29,6 @@ from webob.exc import (HTTPError,
                        HTTPConflict,
                        HTTPBadRequest,
                        HTTPForbidden,
-                       HTTPUnauthorized,
                        HTTPRequestEntityTooLarge,
                        HTTPServiceUnavailable,
                       )
@@ -104,7 +103,7 @@ class Controller(controller.BaseController):
         try:
             self.policy.enforce(req.context, action, {})
         except exception.NotAuthorized:
-            raise HTTPUnauthorized()
+            raise HTTPForbidden()
 
     def index(self, req):
         """
