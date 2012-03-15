@@ -49,12 +49,18 @@ class ExceptionTestApp(object):
             request.response.retry_after = 10
             request.response.status = 413
 
-        if path == "/service-unavailable":
+        elif path == "/service-unavailable":
             request.response = webob.exc.HTTPServiceUnavailable()
 
         elif path == "/service-unavailable-retry":
             request.response.retry_after = 10
             request.response.status = 503
+
+        elif path == "/expectation-failed":
+            request.response = webob.exc.HTTPExpectationFailed()
+
+        elif path == "/server-error":
+            request.response = webob.exc.HTTPServerError()
 
 
 class TestClientExceptions(functional.FunctionalTest):
@@ -72,7 +78,8 @@ class TestClientExceptions(functional.FunctionalTest):
             self.client.do_request("GET", path)
             self.fail('expected %s' % exc_type)
         except exc_type as e:
-            self.assertEquals('retry' in path, e.retry_after == 10)
+            if 'retry' in path:
+                self.assertEquals(e.retry_after, 10)
 
     def test_rate_limited(self):
         """
@@ -99,3 +106,17 @@ class TestClientExceptions(functional.FunctionalTest):
         """
         self._do_test_exception('/service-unavailable-retry',
                                 exception.ServiceUnavailable)
+
+    def test_expectation_failed(self):
+        """
+        Test expectation failed response
+        """
+        self._do_test_exception('/expectation-failed',
+                                exception.UnexpectedStatus)
+
+    def test_server_error(self):
+        """
+        Test server error response
+        """
+        self._do_test_exception('/server-error',
+                                exception.ServerError)

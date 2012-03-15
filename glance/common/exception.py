@@ -155,7 +155,7 @@ class LimitExceeded(GlanceException):
 
 
 class ServiceUnavailable(GlanceException):
-    message = _("The request returned a 503 ServiceUnavilable. This "
+    message = _("The request returned 503 Service Unavilable. This "
                 "generally occurs on service overload or other transient "
                 "outage.")
 
@@ -163,6 +163,16 @@ class ServiceUnavailable(GlanceException):
         self.retry_after = (int(kwargs['retry']) if kwargs.get('retry')
                             else None)
         super(ServiceUnavailable, self).__init__(*args, **kwargs)
+
+
+class ServerError(GlanceException):
+    message = _("The request returned 500 Internal Server Error"
+                "\n\nThe response body:\n%(body)s")
+
+
+class UnexpectedStatus(GlanceException):
+    message = _("The request returned an unexpected status: %(status)s."
+                "\n\nThe response body:\n%(body)s")
 
 
 class InvalidContentType(GlanceException):

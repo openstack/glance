@@ -546,11 +546,12 @@ class BaseClient(object):
                 raise exception.LimitExceeded(retry=_retry(res),
                                               body=res.read())
             elif status_code == httplib.INTERNAL_SERVER_ERROR:
-                raise Exception("Internal Server error: %s" % res.read())
+                raise exception.ServerError(body=res.read())
             elif status_code == httplib.SERVICE_UNAVAILABLE:
                 raise exception.ServiceUnavailable(retry=_retry(res))
             else:
-                raise Exception("Unknown error occurred! %s" % res.read())
+                raise exception.UnexpectedStatus(status=status_code,
+                                                 body=res.read())
 
         except (socket.error, IOError), e:
             raise exception.ClientConnectionError(e)
