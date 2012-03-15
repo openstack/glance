@@ -31,11 +31,15 @@ Keystone (an identity management system).
     http://service_endpoint/
 """
 import json
+import logging
 import urlparse
 
 import httplib2
 
 from glance.common import exception
+
+
+logger = logging.getLogger('glance.common.auth')
 
 
 class BaseStrategy(object):
@@ -196,7 +200,14 @@ class KeystoneStrategy(BaseStrategy):
             endpoint = None
             region = self.creds.get('region')
             for service in service_catalog:
-                if service['type'] == 'image':
+                try:
+                    service_type = service['type']
+                except KeyError:
+                    msg = _('Encountered service with no "type": %s' % service)
+                    logger.warn(msg)
+                    continue
+
+                if service_type == 'image':
                     for ep in service['endpoints']:
                         if region is None or region == ep['region']:
                             if endpoint is not None:
