@@ -782,6 +782,7 @@ def get_client(options):
     """
     return glance_client.get_client(host=options.host,
                 port=options.port,
+                use_ssl=options.use_ssl,
                 username=options.os_username,
                 password=options.os_password,
                 tenant=options.os_tenant_name,
@@ -815,12 +816,16 @@ def create_options(parser):
                       type=int, default=DEFAULT_PORT,
                       help="Port the Glance API host listens on. "
                            "Default: %default")
+    parser.add_option('--ssl', dest='use_ssl',
+                      default=False, action="store_true",
+                      help="Use SSL when talking to Glance API host")
     parser.add_option('-U', '--url', metavar="URL", default=None,
                       help="URL of Glance service. This option can be used "
                            "to specify the hostname, port and protocol "
                            "(http/https) of the glance server, for example "
                            "-U https://localhost:" + str(DEFAULT_PORT) +
-                           "/v1 Default: None")
+                           "/v1 Default: None. If given, this option will "
+                           "override settings for --host, --port, and --ssl.")
     parser.add_option('-k', '--insecure', dest="insecure",
                       default=False, action="store_true",
                       help="Explicitly allow glance to perform \"insecure\" "
@@ -890,8 +895,7 @@ def parse_options(parser, cli_args):
         u = urlparse(options.url)
         options.port = u.port
         options.host = u.hostname
-
-    options.use_ssl = (options.url is not None and u.scheme == 'https')
+        options.use_ssl = (u.scheme == 'https')
 
     # HACK(sirp): Make the parser available to the print_help method
     # print_help is a command, so it only accepts (options, args); we could

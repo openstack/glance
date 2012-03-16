@@ -401,7 +401,7 @@ class ProgressClient(V1Client):
 Client = V1Client
 
 
-def get_client(host, port=None, username=None,
+def get_client(host, port=None, use_ssl=False, username=None,
                password=None, tenant=None,
                auth_url=None, auth_strategy=None,
                auth_token=None, region=None,
@@ -434,9 +434,6 @@ def get_client(host, port=None, username=None,
         msg = ("--os_auth_url option or OS_AUTH_URL environment variable "
                "required when keystone authentication strategy is enabled\n")
         raise exception.ClientConfigurationError(msg)
-
-    use_ssl = (creds['auth_url'] is not None and
-        creds['auth_url'].find('https') != -1)
 
     client = (ProgressClient if not is_silent_upload else Client)
 
