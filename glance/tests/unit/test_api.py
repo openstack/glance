@@ -3055,3 +3055,44 @@ class TestImageSerializer(base.IsolatedUnitTest):
         self.serializer.image_send_notification(17, 19, image_meta, req)
 
         self.assertTrue(called['notified'])
+
+
+class TestContextMiddleware(base.IsolatedUnitTest):
+    def _build_request(self, roles=None):
+        req = webob.Request.blank('/')
+        req.headers['x-auth-token'] = 'token1'
+        req.headers['x-identity-status'] = 'Confirmed'
+        req.headers['x-user'] = 'user1'
+        req.headers['x-tenant'] = 'tenant1'
+        _roles = roles or ['role1', 'role2']
+        req.headers['x-role'] = ','.join(_roles)
+        return req
+
+    def _build_middleware(self, **extra_config):
+        for k, v in extra_config.items():
+            setattr(self.conf, k, v)
+        return context.ContextMiddleware(None, self.conf)
+
+    def test_header_parsing(self):
+        req = self._build_request()
+        self._build_middleware().process_request(req)
+        self.assertEqual(req.context.auth_tok, 'token1')
+        self.assertEqual(req.context.user, 'user1')
+        self.assertEqual(req.context.tenant, 'tenant1')
+        self.assertEqual(req.context.roles, ['role1', 'role2'])
+
+    def test_is_admin_flag(self):
+        # is_admin check should look for 'admin' role by default
+        req = self._build_request(roles=['admin', 'role2'])
+        self._build_middleware().process_request(req)
+        self.assertTrue(req.context.is_admin)
+
+        # without the 'admin' role, is_admin shoud be False
+        req = self._build_request()
+        self._build_middleware().process_request(req)
+        self.assertFalse(req.context.is_admin)
+
+        # if we change the admin_role attribute, we should be able to use it
+        req = self._build_request()
+        self._build_middleware(admin_role='role1').process_request(req)
+        self.assertTrue(req.context.is_admin)

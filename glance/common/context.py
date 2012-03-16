@@ -56,6 +56,7 @@ class ContextMiddleware(wsgi.Middleware):
 
     opts = [
         cfg.BoolOpt('owner_is_tenant', default=True),
+        cfg.StrOpt('admin_role', default='admin'),
         ]
 
     def __init__(self, app, conf, **local_conf):
@@ -106,7 +107,7 @@ class ContextMiddleware(wsgi.Middleware):
                 tenant = req.headers.get('X-Tenant')
                 roles = [r.strip()
                          for r in req.headers.get('X-Role', '').split(',')]
-                is_admin = 'Admin' in roles
+                is_admin = self.conf.admin_role in roles
             else:
                 # 2. Indentity-Status not confirmed
                 # FIXME(sirp): not sure what the correct behavior in this case
