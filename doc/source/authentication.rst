@@ -79,7 +79,6 @@ an example for ``authtoken``::
   auth_port = 35357
   auth_protocol = http
   auth_uri = http://127.0.0.1:5000/
-  admin_token = 999888777666
   admin_user = glance_admin
   admin_tenant_name = service_admins
   admin_password = password1234
@@ -99,11 +98,9 @@ documentation on the ``auth_token`` middleware, but in short:
   which is the service users use to obtain Keystone tokens.  If the
   user does not have a valid Keystone token, they will be redirected
   to this URI to obtain one.
-* The ``admin_token`` variable specifies the administrative token that
-  Glance uses in its query to the Keystone Admin service.
-* If no ``admin_token`` is provided, or it becomes invalid, the admin auth
-  credentials (``admin_user``, ``admin_tenant_name``, ``admin_password``)
-  will be used to retrieve a new admin token
+* The admin auth credentials (``admin_user``, ``admin_tenant_name``,
+  ``admin_password``) will be used to retrieve an admin token. That
+  token will be used to authorize user tokens behind the scenes.
 
 The other piece of middleware needed for Glance API is the
 ``auth-context``::
