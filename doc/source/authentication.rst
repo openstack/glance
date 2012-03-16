@@ -38,25 +38,16 @@ which it is `false` to be restricted to only the owner.
 Configuring the Glance servers to use Keystone
 ----------------------------------------------
 
-Keystone is integrated with Glance through the use of middleware.  The
+Keystone is integrated with Glance through the use of middleware. The
 default configuration files for both the Glance API and the Glance
 Registry use a single piece of middleware called ``context``, which
-generates a request context without any knowledge of Keystone.  In
-order to configure Glance to use Keystone, this ``context`` middleware
-must be replaced with two other pieces of middleware: the
-``authtoken`` middleware and the ``auth-context`` middleware, both of
-which may be found in the Keystone distribution.  The ``authtoken``
-middleware performs the Keystone token validation, which is the heart
-of Keystone authentication.  On the other hand, the ``auth-context``
-middleware performs the necessary tie-in between Keystone and Glance;
-it is the component which replaces the ``context`` middleware that
-Glance uses by default.
+generates a request context containing all the necesary authorization
+information. In order to configure Glance to use Keystone, the
+``authtoken`` middleware must also be deployed (which may be found in the
+Keystone distribution). The ``authtoken`` middleware performs the Keystone
+token validation, which is the heart of Keystone authentication.
 
-One other important concept to keep in mind is the *request context*.
-In the default Glance configuration, the ``context`` middleware sets
-up a basic request context; configuring Glance to use
-``auth_context`` causes a more advanced context to be configured.  It
-is also important to note that the Glance API and the Glance Registry
+It is important to note that the Glance API and the Glance Registry
 use two different context classes; this is because the registry needs
 advanced methods that are not available in the default context class.
 The implications of this will be obvious in the below example for
@@ -102,13 +93,6 @@ documentation on the ``auth_token`` middleware, but in short:
   ``admin_password``) will be used to retrieve an admin token. That
   token will be used to authorize user tokens behind the scenes.
 
-The other piece of middleware needed for Glance API is the
-``auth-context``::
-
-  [filter:auth_context]
-  paste.filter_factory = glance.common.wsgi:filter_factory
-  glance.filter_factory = keystone.middleware.glance_auth_token:KeystoneContextMiddleware
-
 Finally, to actually enable using Keystone authentication, the
 application pipeline must be modified.  By default, it looks like::
 
@@ -116,36 +100,25 @@ application pipeline must be modified.  By default, it looks like::
   pipeline = versionnegotiation context apiv1app
 
 (Your particular pipeline may vary depending on other options, such as
-the image cache.)  This must be changed by replacing ``context`` with
-``authtoken`` and ``auth-context``::
+the image cache.)  This must be changed by inserting ``authtoken``
+before ``context``::
 
   [pipeline:glance-api]
-  pipeline = versionnegotiation authtoken auth-context apiv1app
+  pipeline = versionnegotiation authtoken context apiv1app
 
 Configuring Glance Registry to use Keystone
 -------------------------------------------
 
 Configuring Glance Registry to use Keystone is also relatively
-straight forward.  The same pieces of middleware need to be added
-to ``glance-registry-paste.ini`` as are needed by Glance API;
+straight forward.  The same middleware needs to be added
+to ``glance-registry-paste.ini`` as was needed by Glance API;
 see above for an example of the ``authtoken`` configuration.
-There is a slight difference for the ``auth-context`` middleware,
-which should look like this::
-
-  [filter:auth-context]
-  context_class = glance.registry.context.RequestContext
-  paste.filter_factory = glance.common.wsgi:filter_factory
-  glance.filter_factory = keystone.middleware.glance_auth_token:KeystoneContextMiddleware
-
-The ``context_class`` variable is needed to specify the
-Registry-specific request context, which contains the extra access
-checks used by the Registry.
 
 Again, to enable using Keystone authentication, the appropriate
-application pipeline must be selected.  By default, it looks like:
+application pipeline must be selected.  By default, it looks like::
 
   [pipeline:glance-registry-keystone]
-  pipeline = authtoken auth-context registryapp
+  pipeline = authtoken context registryapp
 
 To enable the above application pipeline, in your main ``glance-registry.conf``
 configuration file, select the appropriate deployment flavor by adding a
