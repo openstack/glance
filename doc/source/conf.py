@@ -135,8 +135,6 @@ man_pages = [
      u'Glance Cache Pre-fetcher', [u'OpenStack'], 1),
     ('man/glancecachepruner', 'glance-cache-pruner', u'Glance Cache Pruner',
      [u'OpenStack'], 1),
-    ('man/glancecachequeueimage', 'glance-cache-queue-image',
-     u'Glance Cache Queue Image', [u'OpenStack'], 1),
     ('man/glancecontrol', 'glance-control', u'Glance Daemon Control Helper ',
      [u'OpenStack'], 1),
     ('man/glancemanage', 'glance-manage', u'Glance Management Utility',
