@@ -59,6 +59,8 @@ import sys
 
 gettext.install('glance', unicode=1)
 
+from glance.tests import logcapture
+
 from nose import config
 from nose import result
 from nose import core
@@ -290,4 +292,5 @@ if __name__ == '__main__':
     runner = GlanceTestRunner(stream=c.stream,
                             verbosity=c.verbosity,
                             config=c)
-    sys.exit(not core.run(config=c, testRunner=runner))
+    sys.exit(not core.run(config=c, testRunner=runner,
+                          addplugins=[logcapture.GlanceLogCapture()]))
