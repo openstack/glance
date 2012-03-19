@@ -1039,7 +1039,6 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(response.status, 200)
         images = json.loads(content)['images']
         self.assertEqual(len(images), 3)
-        print images
 
         # 3. GET /images with limit of 2
         # Verify only two images were returned

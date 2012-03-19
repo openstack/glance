@@ -62,6 +62,12 @@ class RemoteImageHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_error(404, 'File Not Found: %s' % self.path)
             return
 
+    def log_message(self, format, *args):
+        """
+        Simple override to prevent writing crap to stderr...
+        """
+        pass
+
 
 def setup_http(test):
     server_class = BaseHTTPServer.HTTPServer
