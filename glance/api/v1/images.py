@@ -29,6 +29,7 @@ from webob.exc import (HTTPError,
                        HTTPConflict,
                        HTTPBadRequest,
                        HTTPForbidden,
+                       HTTPUnauthorized,
                        HTTPRequestEntityTooLarge,
                        HTTPServiceUnavailable,
                       )
@@ -103,7 +104,7 @@ class Controller(controller.BaseController):
         try:
             self.policy.enforce(req.context, action, {})
         except exception.NotAuthorized:
-            raise HTTPForbidden()
+            raise HTTPUnauthorized()
 
     def index(self, req):
         """
@@ -327,8 +328,11 @@ class Controller(controller.BaseController):
         except exception.NotAuthorized:
             msg = _("Not authorized to reserve image.")
             logger.error(msg)
-            raise HTTPForbidden(msg, request=req,
-                                content_type="text/plain")
+            raise HTTPUnauthorized(msg, request=req, content_type="text/plain")
+        except exception.Forbidden:
+            msg = _("Forbidden to reserve image.")
+            logger.error(msg)
+            raise HTTPForbidden(msg, request=req, content_type="text/plain")
 
     def _upload(self, req, image_meta):
         """
@@ -430,8 +434,15 @@ class Controller(controller.BaseController):
             logger.error(msg)
             self._safe_kill(req, image_id)
             self.notifier.error('image.upload', msg)
-            raise HTTPForbidden(msg, request=req,
-                                content_type='text/plain')
+            raise HTTPUnauthorized(msg, request=req,
+                                   content_type='text/plain')
+
+        except exception.Forbidden, e:
+            msg = _("Forbidden upload attempt: %s") % e
+            logger.error(msg)
+            self._safe_kill(req, image_id)
+            self.notifier.error('image.upload', msg)
+            raise HTTPForbidden(msg, request=req, content_type="text/plain")
 
         except exception.StorageFull, e:
             msg = _("Image storage media is full: %s") % e
@@ -688,6 +699,12 @@ class Controller(controller.BaseController):
             for line in msg.split('\n'):
                 logger.info(line)
             self.notifier.info('image.update', msg)
+            raise HTTPUnauthorized(msg, request=req, content_type="text/plain")
+        except exception.Forbidden, e:
+            msg = ("Forbidden to update image: %(e)s" % locals())
+            for line in msg.split('\n'):
+                logger.info(line)
+            self.notifier.info('image.update', msg)
             raise HTTPForbidden(msg, request=req, content_type="text/plain")
         else:
             self.notifier.info('image.update', image_meta)
@@ -707,7 +724,7 @@ class Controller(controller.BaseController):
 
         :raises HttpBadRequest if image registry is invalid
         :raises HttpNotFound if image or any chunk is not available
-        :raises HttpNotAuthorized if image or any chunk is not
+        :raises HttpUnauthorized if image or any chunk is not
                 deleteable by the requesting user
         """
         self._enforce(req, 'delete_image')
@@ -741,6 +758,12 @@ class Controller(controller.BaseController):
             raise HTTPNotFound(msg, request=req, content_type="text/plain")
         except exception.NotAuthorized, e:
             msg = ("Unable to delete image: %(e)s" % locals())
+            for line in msg.split('\n'):
+                logger.info(line)
+            self.notifier.info('image.delete', msg)
+            raise HTTPUnauthorized(msg, request=req, content_type="text/plain")
+        except exception.Forbidden, e:
+            msg = ("Forbidden to delete image: %(e)s" % locals())
             for line in msg.split('\n'):
                 logger.info(line)
             self.notifier.info('image.delete', msg)
