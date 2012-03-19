@@ -68,12 +68,14 @@ class TestConfigOpts(config.GlanceConfigOpts):
                         DEFAULT group
     :param groups:      nested dictionary of key-value pairs for
                         non-default groups
+    :param clean:       flag to trigger clean up of temporary directory
     """
 
-    def __init__(self, test_values={}, groups={}):
+    def __init__(self, test_values={}, groups={}, clean=True):
         super(TestConfigOpts, self).__init__()
         self._test_values = test_values
         self._test_groups = groups
+        self.clean = clean
 
         self.temp_file = os.path.join(tempfile.mkdtemp(), 'testcfg.conf')
 
@@ -85,7 +87,9 @@ class TestConfigOpts(config.GlanceConfigOpts):
             super(TestConfigOpts, self).\
                 __call__(['--config-file', self.temp_file])
         finally:
-            os.remove(self.temp_file)
+            if self.clean:
+                os.remove(self.temp_file)
+                os.rmdir(os.path.dirname(self.temp_file))
 
     def _write_tmp_config_file(self):
         contents = '[DEFAULT]\n'
@@ -102,7 +106,9 @@ class TestConfigOpts(config.GlanceConfigOpts):
                 f.write(contents)
                 f.flush()
         except Exception, e:
-            os.remove(self.temp_file)
+            if self.clean:
+                os.remove(self.temp_file)
+                os.rmdir(os.path.dirname(self.temp_file))
             raise e
 
 

@@ -41,7 +41,8 @@ class TestPasteApp(unittest.TestCase):
                                 paste_copy=True,
                                 paste_append=None):
 
-        conf = test_utils.TestConfigOpts(groups=paste_group)
+        conf = test_utils.TestConfigOpts(groups=paste_group,
+                                         clean=False)
 
         def _appendto(orig, copy, str):
             shutil.copy(orig, copy)
@@ -49,16 +50,21 @@ class TestPasteApp(unittest.TestCase):
                 f.write(str or '')
                 f.flush()
 
+        paste_to = os.path.join(conf.temp_file.replace('.conf',
+                                                       '-paste.ini'))
         if paste_copy:
             paste_from = os.path.join(os.getcwd(),
                                       'etc/glance-registry-paste.ini')
-            paste_to = os.path.join(conf.temp_file.replace('.conf',
-                                                       '-paste.ini'))
             _appendto(paste_from, paste_to, paste_append)
 
         app = config.load_paste_app(conf, 'glance-registry')
 
         self.assertEquals(expected_app_type, type(app))
+
+        if paste_copy:
+            os.remove(conf.temp_file)
+            os.remove(paste_to)
+            os.rmdir(os.path.dirname(conf.temp_file))
 
     def test_load_paste_app(self):
         expected_middleware = context.ContextMiddleware
