@@ -27,7 +27,7 @@ iso8601>=0.1.4
 # commit hash so we can code to a constant version of keystone.
 # Trying to hit a moving target causes our local unittests to fail 
 # when they should remain unaffected.
--e git://github.com/openstack/keystone.git@b9dde8d0e317203e349b8e4bca5bc9923c11974e#egg=keystone
+-e git://github.com/openstack/keystone.git@ab6be05068068b0902db44b1d60f56eea4fe1215#egg=keystone
 
 # Note you will need gcc buildtools installed and must
 # have installed libxml headers for lxml to be successfully
