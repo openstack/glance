@@ -3062,10 +3062,10 @@ class TestContextMiddleware(base.IsolatedUnitTest):
         req = webob.Request.blank('/')
         req.headers['x-auth-token'] = 'token1'
         req.headers['x-identity-status'] = 'Confirmed'
-        req.headers['x-user'] = 'user1'
-        req.headers['x-tenant'] = 'tenant1'
+        req.headers['x-user-name'] = 'user1'
+        req.headers['x-tenant-name'] = 'tenant1'
         _roles = roles or ['role1', 'role2']
-        req.headers['x-role'] = ','.join(_roles)
+        req.headers['x-roles'] = ','.join(_roles)
         return req
 
     def _build_middleware(self, **extra_config):

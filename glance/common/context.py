@@ -103,10 +103,10 @@ class ContextMiddleware(wsgi.Middleware):
         if auth_tok:
             if req.headers.get('X-Identity-Status') == 'Confirmed':
                 # 1. Auth-token is passed, check other headers
-                user = req.headers.get('X-User')
-                tenant = req.headers.get('X-Tenant')
+                user = req.headers.get('X-User-Name')
+                tenant = req.headers.get('X-Tenant-Name')
                 roles = [r.strip()
-                         for r in req.headers.get('X-Role', '').split(',')]
+                         for r in req.headers.get('X-Roles', '').split(',')]
                 is_admin = self.conf.admin_role in roles
             else:
                 # 2. Indentity-Status not confirmed
