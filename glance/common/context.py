@@ -95,16 +95,13 @@ class ContextMiddleware(wsgi.Middleware):
            tokenauth middleware would have rejected the request, so we must be
            using NoAuth. In that case, assume that is_admin=True.
         """
-        # TODO(sirp): should we be using the glance_tokeauth shim from
-        # Keystone here? If we do, we need to make sure it handles the NoAuth
-        # case
         auth_tok = req.headers.get('X-Auth-Token',
                                    req.headers.get('X-Storage-Token'))
         if auth_tok:
             if req.headers.get('X-Identity-Status') == 'Confirmed':
                 # 1. Auth-token is passed, check other headers
-                user = req.headers.get('X-User-Name')
-                tenant = req.headers.get('X-Tenant-Name')
+                user = req.headers.get('X-User-Id')
+                tenant = req.headers.get('X-Tenant-Id')
                 roles = [r.strip()
                          for r in req.headers.get('X-Roles', '').split(',')]
                 is_admin = self.conf.admin_role in roles
