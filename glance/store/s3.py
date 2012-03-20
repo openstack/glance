@@ -20,6 +20,7 @@
 import logging
 import hashlib
 import httplib
+import re
 import tempfile
 import urlparse
 
@@ -335,10 +336,16 @@ class Store(glance.store.base.Store):
         bucket_obj = get_bucket(s3_conn, self.bucket)
         obj_name = str(image_id)
 
+        def _sanitize(uri):
+            return re.sub('//.*:.*@',
+                          '//s3_store_secret_key:s3_store_access_key@',
+                          uri)
+
         key = bucket_obj.get_key(obj_name)
         if key and key.exists():
             raise exception.Duplicate(_("S3 already has an image at "
-                                      "location %s") % loc.get_uri())
+                                      "location %s") %
+                                      _sanitize(loc.get_uri()))
 
         msg = _("Adding image object to S3 using (s3_host=%(s3_host)s, "
                 "access_key=%(access_key)s, bucket=%(bucket)s, "
@@ -362,7 +369,7 @@ class Store(glance.store.base.Store):
         # writing the tempfile, so we don't need to call key.compute_md5()
 
         msg = _("Writing request body file to temporary file "
-                "for %s") % loc.get_uri()
+                "for %s") % _sanitize(loc.get_uri())
         logger.debug(msg)
 
         tmpdir = self.s3_store_object_buffer_dir
@@ -373,7 +380,8 @@ class Store(glance.store.base.Store):
             temp_file.write(chunk)
         temp_file.flush()
 
-        msg = _("Uploading temporary file to S3 for %s") % loc.get_uri()
+        msg = (_("Uploading temporary file to S3 for %s") %
+               _sanitize(loc.get_uri()))
         logger.debug(msg)
 
         # OK, now upload the data into the key
