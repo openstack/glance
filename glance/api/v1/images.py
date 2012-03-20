@@ -605,6 +605,8 @@ class Controller(controller.BaseController):
                 image data.
         """
         self._enforce(req, 'add_image')
+        if image_meta.get('is_public'):
+            self._enforce(req, 'publicize_image')
         if req.context.read_only:
             msg = _("Read-only access")
             logger.debug(msg)
@@ -632,6 +634,8 @@ class Controller(controller.BaseController):
         :retval Returns the updated image information as a mapping
         """
         self._enforce(req, 'modify_image')
+        if image_meta.get('is_public'):
+            self._enforce(req, 'publicize_image')
         if req.context.read_only:
             msg = _("Read-only access")
             logger.debug(msg)

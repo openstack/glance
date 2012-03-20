@@ -2196,6 +2196,25 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 401)
 
+    def test_add_public_image_unauthorized(self):
+        rules = {"add_image": [], "publicize_image": [["false:false"]]}
+        self.set_policy_rules(rules)
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-is-public': 'true',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.body = "chunk00000remainder"
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 401)
+
     def _do_test_post_image_content_missing_format(self, missing):
         """Tests creation of an image with missing format"""
         fixture_headers = {'x-image-meta-store': 'file',
@@ -2404,6 +2423,31 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertTrue('x-image-meta-property-key3' in res.headers,
                         "Did not find required property in headers. "
                         "Got headers: %r" % res.headers)
+
+    def test_publicize_image_unauthorized(self):
+        """Create a non-public image then fail to make public"""
+        rules = {"add_image": [], "publicize_image": [["false:false"]]}
+        self.set_policy_rules(rules)
+
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-is-public': 'false',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.CREATED)
+
+        res_body = json.loads(res.body)['image']
+        req = webob.Request.blank("/images/%s" % res_body['id'])
+        req.method = 'PUT'
+        req.headers['x-image-meta-is-public'] = 'true'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 401)
 
     def test_get_index_sort_name_asc(self):
         """

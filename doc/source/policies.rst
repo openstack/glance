@@ -49,7 +49,12 @@ The actions that may have a rule enforced on them are:
 
 * ``modify_image`` - Allowed to call the ``PUT /images/<IMAGE_ID>`` API call
 
+* ``publicize_image`` - Allowed to create or update images with attribute ``is_public=true``
+
 * ``delete_image`` - Allowed to call the ``DELETE /images/<IMAGE_ID>`` API call
+
+* ``manage_image_cache`` - Allowed to use the image cache management API
+
 
 To limit an action to a particular role or roles, you list the roles like so ::
 
