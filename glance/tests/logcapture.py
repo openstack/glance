@@ -53,8 +53,10 @@ class GlanceLogCapture(Plugin):
     def _dump_logs(self, ev, test):
         ret = ev
         if isinstance(test.test, functional.FunctionalTest):
-            ret = '\n'.join([safe_str(ev),
-                             ln('>> begin captured glance logging <<')] +
-                            [test.test.dump_logs()] +
-                            [ln('>> end captured glance logging <<')])
+            dump = test.test.dump_logs()
+            if dump:
+                ret = '\n'.join([safe_str(ev),
+                                ln('>> begin captured glance logging <<')] +
+                                [dump] +
+                                [ln('>> end captured glance logging <<')])
         return ret
