@@ -31,6 +31,37 @@ from glance.tests.functional.store_utils import (setup_http,
                                                  get_http_uri)
 
 
+class TestBinGlanceAuth(functional.FunctionalTest):
+    """Functional tests for bin/glance with some amount of auth"""
+
+    def assertIn(self, key, bag):
+        msg = 'Expected to find substring "%s" in "%s"' % (key, bag)
+        self.assertTrue(key in bag, msg)
+
+    def assertNotIn(self, key, bag):
+        msg = 'Expected not to find substring "%s" in "%s"' % (key, bag)
+        self.assertFalse(key in bag, msg)
+
+    def test_index_with_https_auth(self):
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        cmd = ("bin/glance --port=%d -N https://this.url.doesnt.matter/ "
+               "-A aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa index") % api_port
+        exitcode, out, err = execute(cmd, raise_error=False)
+
+        #NOTE(markwash): we should expect the command to fail because the
+        # testing glance api server is not configured to authenticate, and the
+        # token we provide is invalid. However, it should fail due to
+        # NotAuthorized, rather than because of an SSL error.
+
+        self.assertNotEqual(0, exitcode)
+        self.assertNotIn('SSL23_GET_SERVER_HELLO', out)
+        self.assertIn('NotAuthorized: You are not authorized to complete '
+                      'this action.', out)
+
+
 class TestBinGlance(functional.FunctionalTest):
     """Functional tests for the bin/glance CLI tool"""
 
