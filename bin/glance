@@ -173,9 +173,10 @@ is_public           Optional. If specified, interpreted as a boolean value
 protected           Optional. If specified, interpreted as a boolean value
                     and enables or disables deletion protection.
                     The default value is False.
-disk_format         Required. Possible values are 'vhd','vmdk','raw', 'qcow2',
-                    and 'ami'.
-container_format    Required. Possible values are 'ovf' and 'ami'.
+disk_format         Required. Possible values are 'ami','ari','aki', 'vhd',
+                    'vmk', 'raw', 'qcow2' and 'vdi'.
+container_format    Required. Possible values are 'ami', 'ari', 'aki' 'bare'
+                    and 'ovf'.
 location            Optional. When specified, should be a readable location
                     in the form of a URI: $STORE://LOCATION. For example, if
                     the image data is stored in a file on the local
