@@ -21,7 +21,7 @@ except ImportError:
                     'revision_id': 'LOCALREVISION',
                     'revno': 0}
 
-GLANCE_VERSION = ['2012', '1', None]
+GLANCE_VERSION = ['2012', '2', None]
 YEAR, COUNT, REVSISION = GLANCE_VERSION
 
 FINAL = False   # This becomes true at Release Candidate time
