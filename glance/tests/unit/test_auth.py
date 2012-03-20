@@ -223,9 +223,9 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
             try:
                 plugin = auth.KeystoneStrategy(creds)
                 plugin.authenticate()
-                self.fail("Failed to raise NotAuthorized when supplying bad "
-                          "credentials: %r" % creds)
-            except exception.NotAuthorized:
+                self.fail("Failed to raise NotAuthenticated when supplying "
+                          "bad credentials: %r" % creds)
+            except exception.NotAuthenticated:
                 continue  # Expected
 
         no_strategy_creds = {
@@ -316,9 +316,9 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
             try:
                 plugin = auth.KeystoneStrategy(creds)
                 plugin.authenticate()
-                self.fail("Failed to raise NotAuthorized when supplying bad "
-                          "credentials: %r" % creds)
-            except exception.NotAuthorized:
+                self.fail("Failed to raise NotAuthenticated when supplying "
+                          "bad credentials: %r" % creds)
+            except exception.NotAuthenticated:
                 continue  # Expected
 
         no_region_creds = {

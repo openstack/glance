@@ -155,7 +155,7 @@ class Store(glance.store.base.Store):
                   from glance.store.location.get_location_from_uri()
 
         :raises NotFound if image does not exist
-        :raises NotAuthorized if cannot delete because of permissions
+        :raises Forbidden if cannot delete because of permissions
         """
         loc = location.store_location
         fn = loc.path
@@ -164,8 +164,7 @@ class Store(glance.store.base.Store):
                 logger.debug(_("Deleting image at %(fn)s") % locals())
                 os.unlink(fn)
             except OSError:
-                raise exception.NotAuthorized(_("You cannot delete file %s")
-                                                % fn)
+                raise exception.Forbidden(_("You cannot delete file %s") % fn)
         else:
             raise exception.NotFound(_("Image file %s does not exist") % fn)
 

@@ -60,7 +60,7 @@ def catch_error(action):
                 print ("Cache management middleware not enabled on host %s" %
                        options.host)
                 return FAILURE
-            except exception.NotAuthorized:
+            except exception.Forbidden:
                 print "Not authorized to make this request. Check "\
                       "your credentials (OS_AUTH_USER, OS_AUTH_KEY, ...)."
                 return FAILURE

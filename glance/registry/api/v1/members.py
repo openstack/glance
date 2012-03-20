@@ -41,7 +41,7 @@ class Controller(object):
             image = db_api.image_get(req.context, image_id)
         except exception.NotFound:
             raise webob.exc.HTTPNotFound()
-        except exception.NotAuthorized:
+        except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
             msg = _("Access by %(user)s to image %(id)s "
@@ -75,7 +75,7 @@ class Controller(object):
             image = db_api.image_get(req.context, image_id, session=session)
         except exception.NotFound:
             raise webob.exc.HTTPNotFound()
-        except exception.NotAuthorized:
+        except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
             msg = _("Access by %(user)s to image %(id)s "
@@ -177,7 +177,7 @@ class Controller(object):
             image = db_api.image_get(req.context, image_id)
         except exception.NotFound:
             raise webob.exc.HTTPNotFound()
-        except exception.NotAuthorized:
+        except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
             msg = _("Access by %(user)s to image %(id)s "
@@ -232,7 +232,7 @@ class Controller(object):
             image = db_api.image_get(req.context, image_id)
         except exception.NotFound:
             raise webob.exc.HTTPNotFound()
-        except exception.NotAuthorized:
+        except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
             msg = _("Access by %(user)s to image %(id)s "

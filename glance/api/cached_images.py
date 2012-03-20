@@ -46,7 +46,7 @@ class Controller(controller.BaseController):
         """Authorize request against 'manage_image_cache' policy"""
         try:
             self.policy.enforce(req.context, 'manage_image_cache', {})
-        except exception.NotAuthorized:
+        except exception.Forbidden:
             raise webob.exc.HTTPForbidden()
 
     def get_cached_images(self, req):

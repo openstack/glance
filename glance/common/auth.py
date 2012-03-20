@@ -178,7 +178,7 @@ class KeystoneStrategy(BaseStrategy):
         elif resp.status == 400:
             raise exception.AuthBadRequest(url=token_url)
         elif resp.status == 401:
-            raise exception.NotAuthorized()
+            raise exception.NotAuthenticated()
         elif resp.status == 404:
             raise exception.AuthUrlNotFound(url=token_url)
         else:
@@ -246,7 +246,7 @@ class KeystoneStrategy(BaseStrategy):
         elif resp.status == 400:
             raise exception.AuthBadRequest(url=token_url)
         elif resp.status == 401:
-            raise exception.NotAuthorized()
+            raise exception.NotAuthenticated()
         elif resp.status == 404:
             raise exception.AuthUrlNotFound(url=token_url)
         else:

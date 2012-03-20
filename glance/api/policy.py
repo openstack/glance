@@ -84,7 +84,7 @@ class Enforcer(object):
            :param context: Glance request context
            :param action: String representing the action to be checked
            :param object: Dictionary representing the object of the action.
-           :raises: `glance.common.exception.NotAuthorized`
+           :raises: `glance.common.exception.Forbidden`
            :returns: None
         """
         self.load_rules()
@@ -99,4 +99,4 @@ class Enforcer(object):
         try:
             policy.enforce(match_list, target, credentials)
         except policy.NotAuthorized:
-            raise exception.NotAuthorized(action=action)
+            raise exception.Forbidden(action=action)

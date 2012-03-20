@@ -1127,18 +1127,18 @@ class TestRegistryClient(base.IsolatedUnitTest):
 
     def test_replace_members(self):
         """Tests replacing image members"""
-        self.assertRaises(exception.NotAuthorized,
+        self.assertRaises(exception.NotAuthenticated,
                           self.client.replace_members, UUID2,
                           dict(member_id='pattieblack'))
 
     def test_add_member(self):
         """Tests adding image members"""
-        self.assertRaises(exception.NotAuthorized,
+        self.assertRaises(exception.NotAuthenticated,
                           self.client.add_member, UUID2, 'pattieblack')
 
     def test_delete_member(self):
         """Tests deleting image members"""
-        self.assertRaises(exception.NotAuthorized,
+        self.assertRaises(exception.NotAuthenticated,
                           self.client.delete_member, UUID2, 'pattieblack')
 
 
@@ -1991,18 +1991,18 @@ class TestClient(base.IsolatedUnitTest):
 
     def test_replace_members(self):
         """Tests replacing image members"""
-        self.assertRaises(exception.NotAuthorized,
+        self.assertRaises(exception.NotAuthenticated,
                           self.client.replace_members, UUID2,
                           dict(member_id='pattieblack'))
 
     def test_add_member(self):
         """Tests adding image members"""
-        self.assertRaises(exception.NotAuthorized,
+        self.assertRaises(exception.NotAuthenticated,
                           self.client.add_member, UUID2, 'pattieblack')
 
     def test_delete_member(self):
         """Tests deleting image members"""
-        self.assertRaises(exception.NotAuthorized,
+        self.assertRaises(exception.NotAuthenticated,
                           self.client.delete_member, UUID2, 'pattieblack')
 
 

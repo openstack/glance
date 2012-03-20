@@ -52,10 +52,6 @@ class Controller(object):
             msg = _("Image with identifier %s not found") % image_id
             logger.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
-        except exception.NotAuthorized:
-            msg = _("Unauthorized image access")
-            logger.debug(msg)
-            raise webob.exc.HTTPUnauthorized(msg)
         except exception.Forbidden:
             msg = _("Unauthorized image access")
             logger.debug(msg)
@@ -77,7 +73,7 @@ class Controller(object):
             msg = "%s" % e
             logger.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
-        except (exception.NotAuthorized, exception.Forbidden), e:
+        except exception.Forbidden, e:
             msg = "%s" % e
             logger.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
@@ -120,7 +116,7 @@ class Controller(object):
             msg = "%s" % e
             logger.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
-        except (exception.NotAuthorized, exception.Forbidden), e:
+        except exception.Forbidden, e:
             msg = "%s" % e
             logger.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
@@ -152,7 +148,7 @@ class Controller(object):
             msg = "%s" % e
             logger.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
-        except (exception.NotAuthorized, exception.Forbidden), e:
+        except exception.Forbidden, e:
             msg = "%s" % e
             logger.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
@@ -178,7 +174,7 @@ class Controller(object):
             msg = "%s" % e
             logger.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
-        except (exception.NotAuthorized, exception.Forbidden), e:
+        except exception.Forbidden, e:
             msg = "%s" % e
             logger.debug(msg)
             raise webob.exc.HTTPForbidden(msg)

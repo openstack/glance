@@ -54,12 +54,11 @@ class TestBinGlanceAuth(functional.FunctionalTest):
         #NOTE(markwash): we should expect the command to fail because the
         # testing glance api server is not configured to authenticate, and the
         # token we provide is invalid. However, it should fail due to
-        # NotAuthorized, rather than because of an SSL error.
+        # NotAuthenticated, rather than because of an SSL error.
 
         self.assertNotEqual(0, exitcode)
         self.assertNotIn('SSL23_GET_SERVER_HELLO', out)
-        self.assertIn('NotAuthorized: You are not authorized to complete '
-                      'this action.', out)
+        self.assertIn('NotAuthenticated: You are not authenticated.', out)
 
 
 class TestBinGlance(functional.FunctionalTest):

@@ -89,7 +89,7 @@ class ContextMiddleware(wsgi.Middleware):
            to determine permissions.
 
         2. An X-Auth-Token was passed in, but the Identity-Status is not
-           confirmed. For now, just raising a NotAuthorized exception.
+           confirmed. For now, just raising a NotAuthenticated exception.
 
         3. X-Auth-Token is omitted. If we were using Keystone, then the
            tokenauth middleware would have rejected the request, so we must be
@@ -108,8 +108,8 @@ class ContextMiddleware(wsgi.Middleware):
             else:
                 # 2. Indentity-Status not confirmed
                 # FIXME(sirp): not sure what the correct behavior in this case
-                # is; just raising NotAuthorized for now
-                raise exception.NotAuthorized()
+                # is; just raising NotAuthenticated for now
+                raise exception.NotAuthenticated()
         else:
             # 3. Auth-token is ommited, assume NoAuth
             user = None

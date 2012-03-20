@@ -62,7 +62,7 @@ def catch_error(action):
             try:
                 ret = func(*args, **kwargs)
                 return SUCCESS if ret is None else ret
-            except (exception.NotAuthorized, exception.Forbidden):
+            except exception.Forbidden:
                 print "Not authorized to make this request. Check "\
                       "your credentials (OS_AUTH_USER, OS_AUTH_KEY, ...)."
                 return FAILURE
@@ -392,7 +392,7 @@ to spell field names correctly."""
         except exception.NotFound:
             print "No image with ID %s was found" % image_id
             return FAILURE
-        except (exception.NotAuthorized, exception.Forbidden):
+        except exception.Forbidden:
             print "You do not have permission to update image %s" % image_id
             return FAILURE
         except Exception, e:
@@ -443,7 +443,7 @@ Deletes an image from Glance"""
     except exception.NotFound:
         print "No image with ID %s was found" % image_id
         return FAILURE
-    except (exception.NotAuthorized, exception.Forbidden):
+    except exception.Forbidden:
         print "You do not have permission to delete image %s" % image_id
         return FAILURE
 

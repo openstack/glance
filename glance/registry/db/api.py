@@ -136,9 +136,9 @@ def check_mutate_authorization(context, image_ref):
         logger.info(_("Attempted to modify image user did not own."))
         msg = _("You do not own this image")
         if image_ref.is_public:
-            exc_class = exception.NotAuthorizedPublicImage
+            exc_class = exception.ForbiddenPublicImage
         else:
-            exc_class = exception.NotAuthorized
+            exc_class = exception.Forbidden
 
         raise exc_class(msg)
 
@@ -207,7 +207,7 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
 
     # Make sure they can look at it
     if not context.is_image_visible(image):
-        raise exception.NotAuthorized("Image not visible to you")
+        raise exception.Forbidden("Image not visible to you")
 
     return image
 
@@ -618,7 +618,7 @@ def image_member_get(context, member_id, session=None):
 
     # Make sure they can look at it
     if not context.is_image_visible(member.image):
-        raise exception.NotAuthorized("Image not visible to you")
+        raise exception.Forbidden("Image not visible to you")
 
     return member
 

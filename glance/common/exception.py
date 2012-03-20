@@ -109,15 +109,20 @@ class AuthorizationFailure(GlanceException):
     message = _("Authorization failed.")
 
 
-class NotAuthorized(GlanceException):
-    message = _("You are not authorized to complete this action.")
+class NotAuthenticated(GlanceException):
+    message = _("You are not authenticated.")
 
 
 class Forbidden(GlanceException):
-    message = _("That action is forbidden.")
+    message = _("You are not authorized to complete this action.")
 
 
-class NotAuthorizedPublicImage(NotAuthorized):
+class ForbiddenPublicImage(Forbidden):
+    message = _("You are not authorized to complete this action.")
+
+
+#NOTE(bcwaldon): here for backwards-compatability, need to deprecate.
+class NotAuthorized(Forbidden):
     message = _("You are not authorized to complete this action.")
 
 

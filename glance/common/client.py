@@ -48,7 +48,7 @@ from glance.common import exception, utils
 CHUNKSIZE = 65536
 
 
-def handle_unauthorized(func):
+def handle_unauthenticated(func):
     """
     Wrap a function to re-authenticate and retry.
     """
@@ -56,7 +56,7 @@ def handle_unauthorized(func):
     def wrapped(self, *args, **kwargs):
         try:
             return func(self, *args, **kwargs)
-        except (exception.NotAuthorized, exception.Forbidden):
+        except exception.NotAuthenticated:
             self._authenticate(force_reauth=True)
             return func(self, *args, **kwargs)
     return wrapped
@@ -399,7 +399,7 @@ class BaseClient(object):
         if management_url and self.configure_via_auth:
             self.configure_from_url(management_url)
 
-    @handle_unauthorized
+    @handle_unauthenticated
     def do_request(self, method, action, body=None, headers=None,
                    params=None):
         """
@@ -531,7 +531,7 @@ class BaseClient(object):
             elif status_code in self.REDIRECT_RESPONSE_CODES:
                 raise exception.RedirectException(res.getheader('Location'))
             elif status_code == httplib.UNAUTHORIZED:
-                raise exception.NotAuthorized(res.read())
+                raise exception.NotAuthenticated(res.read())
             elif status_code == httplib.FORBIDDEN:
                 raise exception.Forbidden(res.read())
             elif status_code == httplib.NOT_FOUND:
