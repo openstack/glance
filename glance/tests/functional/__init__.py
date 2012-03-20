@@ -371,6 +371,7 @@ class FunctionalTest(unittest.TestCase):
 
     inited = False
     disabled = False
+    log_files = []
 
     def setUp(self):
         self.test_id, self.test_dir = test_utils.get_isolated_test_env()
