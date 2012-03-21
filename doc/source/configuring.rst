@@ -139,14 +139,14 @@ Configurating SSL Support
 
 * ``cert_file=PATH``
 
-Path to the the certificate file the server should use when binding to an
+Path to the certificate file the server should use when binding to an
 SSL-wrapped socket.
 
 Optional. Default: not enabled.
 
 * ``key_file=PATH``
 
-Path to the the private key file the server should use when binding to an
+Path to the private key file the server should use when binding to an
 SSL-wrapped socket.
 
 Optional. Default: not enabled.
