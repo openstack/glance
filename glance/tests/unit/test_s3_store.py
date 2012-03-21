@@ -31,7 +31,7 @@ from glance.common import exception
 from glance.common import utils
 from glance.store import BackendException, UnsupportedBackend
 from glance.store.location import get_location_from_uri
-from glance.store.s3 import Store
+from glance.store.s3 import Store, get_s3_location
 from glance.tests import utils as test_utils
 
 
@@ -335,3 +335,38 @@ class TestStore(unittest.TestCase):
         uri = "s3://user:key@auth_address/glance/noexist"
         loc = get_location_from_uri(uri)
         self.assertRaises(exception.NotFound, self.store.delete, loc)
+
+    def _do_test_get_s3_location(self, host, loc):
+        self.assertEquals(get_s3_location(host), loc)
+        self.assertEquals(get_s3_location(host + ':80'), loc)
+        self.assertEquals(get_s3_location('http://' + host), loc)
+        self.assertEquals(get_s3_location('http://' + host + ':80'), loc)
+        self.assertEquals(get_s3_location('https://' + host), loc)
+        self.assertEquals(get_s3_location('https://' + host + ':80'), loc)
+
+    def test_get_s3_good_location(self):
+        """
+        Test that the s3 location can be derived from the host
+        """
+        good_locations = [
+            ('s3.amazonaws.com', ''),
+            ('s3-eu-west-1.amazonaws.com', 'EU'),
+            ('s3-us-west-1.amazonaws.com', 'us-west-1'),
+            ('s3-ap-southeast-1.amazonaws.com', 'ap-southeast-1'),
+            ('s3-ap-northeast-1.amazonaws.com', 'ap-northeast-1'),
+        ]
+        for (url, expected) in good_locations:
+            self._do_test_get_s3_location(url, expected)
+
+    def test_get_s3_bad_location(self):
+        """
+        Test that the s3 location cannot be derived from an unexpected host
+        """
+        bad_locations = [
+            ('', ''),
+            ('s3.amazon.co.uk', ''),
+            ('s3-govcloud.amazonaws.com', ''),
+            ('cloudfiles.rackspace.com', ''),
+        ]
+        for (url, expected) in bad_locations:
+            self._do_test_get_s3_location(url, expected)
