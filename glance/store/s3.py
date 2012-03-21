@@ -442,6 +442,22 @@ def get_bucket(conn, bucket_id):
     return bucket
 
 
+def get_s3_location(s3_host):
+    from boto.s3.connection import Location
+    locations = {
+        's3.amazonaws.com': Location.DEFAULT,
+        's3-eu-west-1.amazonaws.com': Location.EU,
+        's3-us-west-1.amazonaws.com': Location.USWest,
+        's3-ap-southeast-1.amazonaws.com': Location.APSoutheast,
+        's3-ap-northeast-1.amazonaws.com': Location.APNortheast,
+    }
+    # strip off scheme and port if present
+    key = re.sub('^(https?://)?(?P<host>[^:]+)(:[0-9]+)?$',
+                 '\g<host>',
+                 s3_host)
+    return locations.get(key, Location.DEFAULT)
+
+
 def create_bucket_if_missing(bucket, s3_conn, conf):
     """
     Creates a missing bucket in S3 if the
@@ -457,8 +473,9 @@ def create_bucket_if_missing(bucket, s3_conn, conf):
     except S3ResponseError, e:
         if e.status == httplib.NOT_FOUND:
             if conf.s3_store_create_bucket_on_put:
+                location = get_s3_location(conf.s3_store_host)
                 try:
-                    s3_conn.create_bucket(bucket)
+                    s3_conn.create_bucket(bucket, location=location)
                 except S3ResponseError, e:
                     msg = ("Failed to add bucket to S3.\n"
                            "Got error from S3: %(e)s" % locals())
