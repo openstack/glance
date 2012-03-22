@@ -735,10 +735,13 @@ class OptDumpingTestCase(BaseTestCase):
 
     def test_log_opt_values(self):
         self.conf.register_cli_opt(StrOpt('foo'))
+        self.conf.register_cli_opt(StrOpt('passwd', secret=True))
         self.conf.register_group(OptGroup('blaa'))
         self.conf.register_cli_opt(StrOpt('bar'), 'blaa')
+        self.conf.register_cli_opt(StrOpt('key', secret=True), 'blaa')
 
-        self.conf(['--foo', 'this', '--blaa-bar', 'that'])
+        self.conf(['--foo', 'this', '--blaa-bar', 'that',
+                   '--blaa-key', 'admin', '--passwd', 'hush'])
 
         logger = self.FakeLogger(self, 666)
 
@@ -747,12 +750,15 @@ class OptDumpingTestCase(BaseTestCase):
         self.assertEquals(logger.logged, [
                 "*" * 80,
                 "Configuration options gathered from:",
-                "command line args: ['--foo', 'this', '--blaa-bar', 'that']",
+                "command line args: ['--foo', 'this', '--blaa-bar', 'that', "\
+                "'--blaa-key', 'admin', '--passwd', 'hush']",
                 "config files: []",
                 "=" * 80,
                 "config_file                    = []",
                 "foo                            = this",
+                "passwd                         = ****",
                 "blaa.bar                       = that",
+                "blaa.key                       = *****",
                 "*" * 80,
                 ])
 
