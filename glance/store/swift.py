@@ -190,8 +190,8 @@ class Store(glance.store.base.Store):
     opts = [
         cfg.BoolOpt('swift_enable_snet', default=False),
         cfg.StrOpt('swift_store_auth_address'),
-        cfg.StrOpt('swift_store_user'),
-        cfg.StrOpt('swift_store_key'),
+        cfg.StrOpt('swift_store_user', secret=True),
+        cfg.StrOpt('swift_store_key', secret=True),
         cfg.StrOpt('swift_store_container',
                    default=DEFAULT_CONTAINER),
         cfg.IntOpt('swift_store_large_object_size',

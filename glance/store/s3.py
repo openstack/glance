@@ -191,8 +191,8 @@ class Store(glance.store.base.Store):
 
     opts = [
         cfg.StrOpt('s3_store_host'),
-        cfg.StrOpt('s3_store_access_key'),
-        cfg.StrOpt('s3_store_secret_key'),
+        cfg.StrOpt('s3_store_access_key', secret=True),
+        cfg.StrOpt('s3_store_secret_key', secret=True),
         cfg.StrOpt('s3_store_bucket'),
         cfg.StrOpt('s3_store_object_buffer_dir'),
         cfg.BoolOpt('s3_store_create_bucket_on_put', default=False),
