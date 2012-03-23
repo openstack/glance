@@ -29,6 +29,7 @@ import nose.plugins.skip
 
 from glance.common import config
 from glance.common import utils
+from glance.common import wsgi
 
 
 def get_isolated_test_env():
@@ -355,3 +356,18 @@ def minimal_add_command(port, name, suffix='', public=True):
     return ("bin/glance --port=%d add %s"
             " disk_format=raw container_format=ovf"
             " name=%s %s" % (port, visibility, name, suffix))
+
+
+class FakeAuthMiddleware(wsgi.Middleware):
+
+    def __init__(self, app, conf, **local_conf):
+        super(FakeAuthMiddleware, self).__init__(app)
+
+    def process_request(self, req):
+        auth_tok = req.headers.get('X-Auth-Token')
+        if auth_tok:
+            status, user, tenant, role = auth_tok.split(':')
+            req.headers['X-Identity-Status'] = status
+            req.headers['X-User-Id'] = user
+            req.headers['X-Tenant-Id'] = tenant
+            req.headers['X-Role'] = role
