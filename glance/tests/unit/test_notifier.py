@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
 import logging
 import unittest
 
@@ -315,6 +316,8 @@ class TestQpidNotifier(unittest.TestCase):
         super(TestQpidNotifier, self).tearDown()
 
     def _test_notify(self, priority):
+        test_msg = json.dumps({'a': 'b'})
+
         self.mock_connection = self.mocker.CreateMock(self.orig_connection)
         self.mock_session = self.mocker.CreateMock(self.orig_session)
         self.mock_sender = self.mocker.CreateMock(self.orig_sender)
@@ -328,18 +331,18 @@ class TestQpidNotifier(unittest.TestCase):
                 '"type": "topic"}, "create": "always"}' % p)
             self.mock_session.sender(expected_address).AndReturn(
                     self.mock_sender)
-        self.mock_sender.send('stuff')
+        self.mock_sender.send(mox.IgnoreArg())
 
         self.mocker.ReplayAll()
 
         conf = utils.TestConfigOpts({"notifier_strategy": "qpid"})
         notifier = self.notify_qpid.QpidStrategy(conf)
-        if priority == "info":
-            notifier.info("stuff")
-        elif priority == "warn":
-            notifier.warn("stuff")
-        elif priority == "error":
-            notifier.error("stuff")
+        if priority == 'info':
+            notifier.info(test_msg)
+        elif priority == 'warn':
+            notifier.warn(test_msg)
+        elif priority == 'error':
+            notifier.error(test_msg)
 
         self.mocker.VerifyAll()
 
