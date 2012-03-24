@@ -91,6 +91,8 @@ def configure_db(conf):
         try:
             _ENGINE = create_engine(sql_connection, **engine_args)
             _ENGINE.create = wrap_db_error(_ENGINE.create)
+            _ENGINE.connect = wrap_db_error(_ENGINE.connect)
+            _ENGINE.connect()
         except Exception, err:
             msg = _("Error configuring registry database with supplied "
                     "sql_connection '%(sql_connection)s'. "
@@ -137,7 +139,9 @@ def get_session(autocommit=True, expire_on_commit=False):
 
 def is_db_connection_error(args):
     """Return True if error in connecting to db."""
-    conn_err_codes = ('2002', '2006')
+    # NOTE(adam_g): This is currently MySQL specific and needs to be extended
+    #               to support Postgres and others.
+    conn_err_codes = ('2002', '2003', '2006')
     for err_code in conn_err_codes:
         if args.find(err_code) != -1:
             return True
