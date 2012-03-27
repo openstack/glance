@@ -37,6 +37,7 @@ from sqlalchemy.pool import NullPool
 from glance.common import cfg
 from glance.common import exception
 import glance.registry.db.migration as migration_api
+from glance.registry.db import models
 from glance.tests import utils
 
 
@@ -130,7 +131,38 @@ class TestMigrations(unittest.TestCase):
             conf.register_opt(cfg.StrOpt('sql_connection'))
             self._walk_versions(conf)
 
-    def _walk_versions(self, conf):
+    def test_version_control_existing_db(self):
+        """
+        Creates a DB without version control information, places it
+        under version control and checks that it can be upgraded
+        without errors.
+        """
+        for key, engine in self.engines.items():
+            conf = utils.TestConfigOpts({
+                    'sql_connection': TestMigrations.TEST_DATABASES[key]})
+            conf.register_opt(cfg.StrOpt('sql_connection'))
+            self._create_unversioned_001_db(engine)
+            self._walk_versions(conf, initial_version=1)
+
+    def _create_unversioned_001_db(self, engine):
+        # Create the initial version of the images table
+        meta = MetaData()
+        meta.bind = engine
+        images_001 = Table('images', meta,
+            Column('id', models.Integer, primary_key=True),
+            Column('name', String(255)),
+            Column('type', String(30)),
+            Column('size', Integer),
+            Column('status', String(30)),
+            Column('is_public', Boolean, default=False),
+            Column('location', Text),
+            Column('created_at', DateTime(), nullable=False),
+            Column('updated_at', DateTime()),
+            Column('deleted_at', DateTime()),
+            Column('deleted', Boolean(), nullable=False, default=False))
+        images_001.create()
+
+    def _walk_versions(self, conf, initial_version=0):
         # Determine latest version script from the repo, then
         # upgrade from 1 through to the latest, with no data
         # in the databases. This just checks that the schema itself
@@ -141,13 +173,14 @@ class TestMigrations(unittest.TestCase):
                           migration_api.db_version,
                           conf)
         # Place the database under version control
-        migration_api.version_control(conf)
+        migration_api.version_control(conf, version=initial_version)
 
         cur_version = migration_api.db_version(conf)
-        self.assertEqual(0, cur_version)
+        self.assertEqual(initial_version, cur_version)
 
-        for version in xrange(1, TestMigrations.REPOSITORY.latest + 1):
-            migration_api.upgrade(conf, version)
+        for version in xrange(initial_version + 1,
+                              TestMigrations.REPOSITORY.latest + 1):
+            migration_api.db_sync(conf, version)
             cur_version = migration_api.db_version(conf)
             self.assertEqual(cur_version, version)
 
@@ -174,7 +207,7 @@ class TestMigrations(unittest.TestCase):
             self._no_data_loss_2_to_3_to_2(engine, conf)
 
     def _no_data_loss_2_to_3_to_2(self, engine, conf):
-        migration_api.version_control(conf)
+        migration_api.version_control(conf, version=0)
         migration_api.upgrade(conf, 2)
 
         cur_version = migration_api.db_version(conf)
