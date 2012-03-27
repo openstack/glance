@@ -260,6 +260,9 @@ pipeline = versionnegotiation context cache apiv1app
 [pipeline:glance-api-cachemanagement]
 pipeline = versionnegotiation context cache cache_manage apiv1app
 
+[pipeline:glance-api-fakeauth]
+pipeline = versionnegotiation fakeauth context apiv1app
+
 [app:apiv1app]
 paste.app_factory = glance.common.wsgi:app_factory
 glance.app_factory = glance.api.v1.router:API
@@ -280,6 +283,10 @@ glance.filter_factory = glance.api.middleware.cache_manage:CacheManageFilter
 [filter:context]
 paste.filter_factory = glance.common.wsgi:filter_factory
 glance.filter_factory = glance.common.context:ContextMiddleware
+
+[filter:fakeauth]
+paste.filter_factory = glance.common.wsgi:filter_factory
+glance.filter_factory = glance.tests.utils:FakeAuthMiddleware
 """
 
 
@@ -319,6 +326,9 @@ flavor = %(deployment_flavor)s
         self.paste_conf_base = """[pipeline:glance-registry]
 pipeline = context registryapp
 
+[pipeline:glance-registry-fakeauth]
+pipeline = fakeauth context registryapp
+
 [app:registryapp]
 paste.app_factory = glance.common.wsgi:app_factory
 glance.app_factory = glance.registry.api.v1:API
@@ -327,6 +337,10 @@ glance.app_factory = glance.registry.api.v1:API
 context_class = glance.registry.context.RequestContext
 paste.filter_factory = glance.common.wsgi:filter_factory
 glance.filter_factory = glance.common.context:ContextMiddleware
+
+[filter:fakeauth]
+paste.filter_factory = glance.common.wsgi:filter_factory
+glance.filter_factory = glance.tests.utils:FakeAuthMiddleware
 """
 
 

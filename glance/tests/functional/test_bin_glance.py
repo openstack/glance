@@ -175,6 +175,59 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual('0', size, "Expected image to be 0 bytes in size, "
                                     "but got %s. " % size)
 
+    def _verify_owner(self, owner, image_id):
+        cmd = "bin/glance --port=%d show %s" % (self.api_port, image_id)
+        exitcode, out, err = execute(cmd)
+        self.assertEqual(0, exitcode)
+
+        # verify expected owner as first class attribute
+        self.assertTrue(('Owner: %s' % owner) in out)
+        # ensure owner does not appear as a custom property
+        self.assertFalse("Property 'owner':" in out)
+
+    def test_add_with_owner_admin(self):
+        """Test setting ownership of new image by admin user"""
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        # ownership set by admin user (defaults as such due to no-auth)
+        cmd = minimal_add_command(self.api_port,
+                                  'MyImage',
+                                  '--silent-upload owner=42')
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(out.strip().startswith('Added new image with ID:'))
+
+        image_id = out.strip().replace('Added new image with ID: ', '')
+
+        self._verify_owner('42', image_id)
+
+    def test_add_with_owner_non_admin(self):
+        """Test setting ownership of new image by non-admin user"""
+        self.cleanup()
+        self.api_server.deployment_flavor = 'fakeauth'
+        self.registry_server.deployment_flavor = 'fakeauth'
+        self.start_servers(**self.__dict__.copy())
+
+        # ownership set by non-admin user (setup as such by fakeauth pipeline)
+        headers = {'X-Image-Meta-Name': 'MyImage',
+                   'X-Image-Meta-disk_format': 'raw',
+                   'X-Image-Meta-container_format': 'ovf',
+                   'X-Image-Meta-Is-Public': 'True',
+                   'X-Image-Meta-Owner': '42',
+                   'X-Auth-Token': 'Confirmed:pattieblack:froggy:demo',
+        }
+
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        image_id = data['image']['id']
+
+        self._verify_owner('froggy', image_id)
+
     def test_add_no_name(self):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())

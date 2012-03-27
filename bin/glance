@@ -260,6 +260,10 @@ EXAMPLES
         # otherwise error out
         image_data = sys.stdin
 
+    # allow owner to be set when image is created
+    if 'owner' in fields.keys():
+        image_meta['owner'] = fields.pop('owner')
+
     # Add custom attributes, which are all the arguments remaining
     image_meta['properties'] = fields
 
