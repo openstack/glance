@@ -131,39 +131,18 @@ def get_image_meta_from_headers(response):
             raise exception.Invalid
     for key in ('is_public', 'deleted', 'protected'):
         if key in result:
-            result[key] = bool_from_header_value(result[key])
+            result[key] = bool_from_string(result[key])
     return result
 
 
-def bool_from_header_value(value):
-    """
-    Returns True if value is a boolean True or the
-    string 'true', case-insensitive, False otherwise
-    """
-    if isinstance(value, bool):
-        return value
-    elif isinstance(value, (basestring, unicode)):
-        if str(value).lower() == 'true':
-            return True
-    return False
-
-
 def bool_from_string(subject):
-    """
-    Interpret a string as a boolean.
-
-    Any string value in:
-        ('True', 'true', 'On', 'on', '1')
-    is interpreted as a boolean True.
-
-    Useful for JSON-decoded stuff and config file parsing
-    """
+    """Interpret a string as a boolean-like value."""
     if isinstance(subject, bool):
         return subject
     elif isinstance(subject, int):
         return subject == 1
     if hasattr(subject, 'startswith'):  # str or unicode...
-        if subject.strip().lower() in ('true', 'on', '1'):
+        if subject.strip().lower() in ('true', 'on', '1', 'yes', 'y'):
             return True
     return False
 
