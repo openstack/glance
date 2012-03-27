@@ -25,6 +25,7 @@ try:
     from migrate.versioning import exceptions as versioning_exceptions
 except ImportError:
     from migrate import exceptions as versioning_exceptions
+from migrate.versioning import repository as versioning_repository
 
 from glance.common import exception
 
@@ -82,7 +83,7 @@ def downgrade(options, version):
     return versioning_api.downgrade(sql_connection, repo_path, version)
 
 
-def version_control(options):
+def version_control(options, version=None):
     """
     Place a database under migration control
 
@@ -90,14 +91,14 @@ def version_control(options):
     """
     sql_connection = options['sql_connection']
     try:
-        _version_control(options)
+        _version_control(options, version)
     except versioning_exceptions.DatabaseAlreadyControlledError, e:
         msg = (_("database '%(sql_connection)s' is already under migration "
                "control") % locals())
         raise exception.DatabaseMigrationError(msg)
 
 
-def _version_control(options):
+def _version_control(options, version=None):
     """
     Place a database under migration control
 
@@ -105,20 +106,27 @@ def _version_control(options):
     """
     repo_path = get_migrate_repo_path()
     sql_connection = options['sql_connection']
-    return versioning_api.version_control(sql_connection, repo_path)
+    if version is None:
+        version = versioning_repository.Repository(repo_path).latest
+    return versioning_api.version_control(sql_connection, repo_path, version)
 
 
-def db_sync(options, version=None):
+def db_sync(options, version=None, current_version=None):
     """
     Place a database under migration control and perform an upgrade
 
     :param options: options dict
     :retval version number
     """
+    sql_connection = options['sql_connection']
     try:
-        _version_control(options)
+        _version_control(options, current_version)
     except versioning_exceptions.DatabaseAlreadyControlledError, e:
         pass
+        if current_version is not None:
+            msg = (_("database '%(sql_connection)s' is already under "
+                     "migration control") % locals())
+            raise exception.DatabaseMigrationError(msg)
 
     upgrade(options, version=version)
 

@@ -67,42 +67,35 @@ def do_db_version(options, args):
 
 def do_upgrade(options, args):
     """Upgrade the database's migration level"""
-    try:
-        db_version = args[1]
-    except IndexError:
-        db_version = None
-
-    glance.registry.db.migration.upgrade(options, version=db_version)
+    version = args.pop(0) if args else None
+    glance.registry.db.migration.upgrade(options, version)
 
 
 def do_downgrade(options, args):
     """Downgrade the database's migration level"""
-    try:
-        db_version = args[1]
-    except IndexError:
+    if not args:
         raise exception.MissingArgumentError(
             "downgrade requires a version argument")
-
-    glance.registry.db.migration.downgrade(options, version=db_version)
+    version = args.pop(0)
+    glance.registry.db.migration.downgrade(options, version)
 
 
 def do_version_control(options, args):
     """Place a database under migration control"""
-    glance.registry.db.migration.version_control(options)
+    version = args.pop(0) if args else None
+    glance.registry.db.migration.version_control(options, version)
 
 
 def do_db_sync(options, args):
     """Place a database under migration control and upgrade"""
-    try:
-        db_version = args[1]
-    except IndexError:
-        db_version = None
-    glance.registry.db.migration.db_sync(options, version=db_version)
+    version = args.pop(0) if args else None
+    current_version = args.pop(0) if args else None
+    glance.registry.db.migration.db_sync(options, version, current_version)
 
 
 def dispatch_cmd(options, args):
     """Search for do_* cmd in this module and then run it"""
-    cmd = args[0]
+    cmd = args.pop(0)
     try:
         cmd_func = globals()['do_%s' % cmd]
     except KeyError:
