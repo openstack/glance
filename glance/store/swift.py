@@ -192,6 +192,7 @@ class Store(glance.store.base.Store):
         cfg.StrOpt('swift_store_auth_address'),
         cfg.StrOpt('swift_store_user', secret=True),
         cfg.StrOpt('swift_store_key', secret=True),
+        cfg.StrOpt('swift_store_auth_version', default='2'),
         cfg.StrOpt('swift_store_container',
                    default=DEFAULT_CONTAINER),
         cfg.IntOpt('swift_store_large_object_size',
@@ -204,6 +205,7 @@ class Store(glance.store.base.Store):
     def configure(self):
         self.conf.register_opts(self.opts)
         self.snet = self.conf.swift_enable_snet
+        self.auth_version = self._option_get('swift_store_auth_version')
 
     def configure_add(self):
         """
@@ -300,11 +302,14 @@ class Store(glance.store.base.Store):
         Creates a connection using the Swift client library.
         """
         snet = self.snet
+        auth_version = self.auth_version
         logger.debug(_("Creating Swift connection with "
                      "(auth_address=%(auth_url)s, user=%(user)s, "
-                     "snet=%(snet)s)") % locals())
+                     "snet=%(snet)s, auth_version=%(auth_version)s)") %
+                     locals())
         return swift_client.Connection(
-            authurl=auth_url, user=user, key=key, snet=snet)
+            authurl=auth_url, user=user, key=key, snet=snet,
+            auth_version=auth_version)
 
     def _option_get(self, param):
         result = getattr(self.conf, param)
