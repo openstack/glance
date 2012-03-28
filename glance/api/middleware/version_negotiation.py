@@ -65,6 +65,8 @@ class VersionNegotiationFilter(wsgi.Middleware):
                              req.environ['api.minor_version'])
                 # Strip the version from the path
                 req.path_info_pop()
+                args = (req.environ['api.major_version'], req.path_info)
+                req.path_info = '/v%s%s' % args
                 return None
             else:
                 logger.debug(_("Unknown version in versioned URI: %d.%d. "
@@ -85,6 +87,8 @@ class VersionNegotiationFilter(wsgi.Middleware):
                                  "Version: %d.%d"),
                                  req.environ['api.major_version'],
                                  req.environ['api.minor_version'])
+                    args = (req.environ['api.major_version'], req.path_info)
+                    req.path_info = '/v%s%s' % args
                     return None
                 else:
                     logger.debug(_("Unknown version in accept header: %d.%d..."

@@ -56,7 +56,7 @@ class TestRootApi(functional.FunctionalTest):
         # 0. GET / with no Accept: header
         # Verify version choices returned.
         # Bug lp:803260  no Accept header causes a 500 in glance-api
-        path = 'http://%s:%d/' % ('0.0.0.0', self.api_port)
+        path = 'http://%s:%d' % ('0.0.0.0', self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 300)
