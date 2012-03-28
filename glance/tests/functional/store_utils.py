@@ -24,7 +24,10 @@ import BaseHTTPServer
 import ConfigParser
 import httplib
 import os
+import random
 import thread
+
+from glance.store.s3 import get_s3_location
 
 
 FIVE_KB = 5 * 1024
@@ -199,13 +202,17 @@ def setup_s3(test):
         test.disabled = True
         return
 
+    def _uniq(value):
+        return '%s.%d' % (value, random.randint(0, 99999))
+
     if os.path.exists(CONFIG_FILE_PATH):
         cp = ConfigParser.RawConfigParser()
         try:
             cp.read(CONFIG_FILE_PATH)
             defaults = cp.defaults()
             for key, value in defaults.items():
-                test.__dict__[key] = value
+                test.__dict__[key] = (_uniq(value)
+                                      if key == 's3_store_bucket' else value)
         except ConfigParser.ParsingError, e:
             test.disabled_message = ("Failed to read test_s3.conf config "
                                      "file. Got error: %s" % e)
@@ -251,9 +258,11 @@ def setup_s3(test):
     test.s3_conn = s3_conn
 
     if not test.bucket:
+        location = get_s3_location(test.s3_store_host)
         try:
-            test.bucket = s3_conn.create_bucket(bucket_name)
-        except boto.exception.S3ResponseError, e:
+            test.bucket = s3_conn.create_bucket(bucket_name,
+                                                location=location)
+        except S3ResponseError, e:
             test.disabled_message = ("Failed to create bucket. "
                                      "Got error: %s" % e)
             test.disabled = True
@@ -270,6 +279,7 @@ def teardown_s3(test):
         # all first...
         for key in test.bucket.list():
             key.delete()
+        test.s3_conn.delete_bucket(test.s3_store_bucket)
 
 
 def get_s3_uri(test, image_id):
