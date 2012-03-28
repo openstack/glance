@@ -267,6 +267,7 @@ pipeline = versionnegotiation fakeauth context rootapp
 use = egg:Paste#urlmap
 /: apiversions
 /v1: apiv1app
+/v2: apiv2app
 
 [app:apiversions]
 paste.app_factory = glance.api.versions:create_resource
@@ -274,6 +275,10 @@ paste.app_factory = glance.api.versions:create_resource
 [app:apiv1app]
 paste.app_factory = glance.common.wsgi:app_factory
 glance.app_factory = glance.api.v1.router:API
+
+[app:apiv2app]
+paste.app_factory = glance.common.wsgi:app_factory
+glance.app_factory = glance.api.v2.router:API
 
 [filter:versionnegotiation]
 paste.filter_factory = glance.common.wsgi:filter_factory

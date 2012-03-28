@@ -87,8 +87,6 @@ class TestRootApi(functional.FunctionalTest):
         response, content = http.request(path, 'GET', headers=headers)
         self.assertEqual(response.status, 300)
         self.assertEqual(content, versions_json)
-        self.assertTrue('Unknown accept header'
-                        in open(self.api_server.log_file).read())
 
         # 4. GET / with an Accept: application/vnd.openstack.images-v1
         # Verify empty image list returned
@@ -108,24 +106,20 @@ class TestRootApi(functional.FunctionalTest):
         response, content = http.request(path, 'GET', headers=headers)
         self.assertEqual(response.status, 300)
         self.assertEqual(content, versions_json)
-        self.assertTrue('Unknown accept header'
-                        in open(self.api_server.log_file).read())
 
         # 6. GET /v1.0/images with no Accept: header
-        # Verify empty image list returned
-        path = 'http://%s:%d/v1.0/images' % ('0.0.0.0', self.api_port)
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(content, images_json)
-
-        # 7. GET /v1.a/images with no Accept: header
-        # Verify empty image list returned
+        # Verify version choices returned
         path = 'http://%s:%d/v1.a/images' % ('0.0.0.0', self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(content, images_json)
+        self.assertEqual(response.status, 300)
+
+        # 7. GET /v1.a/images with no Accept: header
+        # Verify version choices returned
+        path = 'http://%s:%d/v1.a/images' % ('0.0.0.0', self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 300)
 
         # 8. GET /va.1/images with no Accept: header
         # Verify version choices returned
@@ -159,9 +153,8 @@ class TestRootApi(functional.FunctionalTest):
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 404)
 
-        # 12. GET /v2/versions with no Accept: header
         # Verify version choices returned
-        path = 'http://%s:%d/v2/versions' % ('0.0.0.0', self.api_port)
+        path = 'http://%s:%d/v10' % ('0.0.0.0', self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 300)
@@ -172,12 +165,10 @@ class TestRootApi(functional.FunctionalTest):
         # about unknown version in accept header.
         path = 'http://%s:%d/images' % ('0.0.0.0', self.api_port)
         http = httplib2.Http()
-        headers = {'Accept': 'application/vnd.openstack.images-v2'}
+        headers = {'Accept': 'application/vnd.openstack.images-v10'}
         response, content = http.request(path, 'GET', headers=headers)
         self.assertEqual(response.status, 300)
         self.assertEqual(content, versions_json)
-        self.assertTrue('Unknown accept header'
-                        in open(self.api_server.log_file).read())
 
         # 14. GET /v1.2/images with no Accept: header
         # Verify version choices returned
@@ -186,7 +177,5 @@ class TestRootApi(functional.FunctionalTest):
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 300)
         self.assertEqual(content, versions_json)
-        self.assertTrue('Unknown version in versioned URI'
-                        in open(self.api_server.log_file).read())
 
         self.stop_servers()
