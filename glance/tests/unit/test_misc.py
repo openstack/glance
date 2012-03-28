@@ -75,7 +75,8 @@ class AuthorsTestCase(unittest.TestCase):
 class UtilsTestCase(unittest.TestCase):
 
     def test_bool_from_string(self):
-        true_values = ['True', True, 'true', 'TRUE', '1', 1, 'on', 'ON']
+        true_values = ['True', True, 'true', 'TRUE', '1', 1, 'on',
+                       'ON', 'y', 'yes', 'Y', 'YES']
 
         i = 0
         for value in true_values:
@@ -84,7 +85,7 @@ class UtilsTestCase(unittest.TestCase):
             i = i + 1
 
         false_values = ['False', False, 'false', 'T', 'F', 'FALSE',
-                        '0', 0, 9, 'off', 'OFF']
+                        '0', 0, 9, 'off', 'OFF', 'no', 'n', 'NO', 'N']
 
         for value in false_values:
             self.assertFalse(utils.bool_from_string(value),
