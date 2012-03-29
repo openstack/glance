@@ -1061,6 +1061,57 @@ class TestRegistryClient(base.IsolatedUnitTest):
                           self.client.add_image,
                           fixture)
 
+    def test_add_image_with_acceptably_long_name(self):
+        """Tests adding image with acceptably long name"""
+        name = 'x' * 255
+        fixture = {'name': name,
+                   'is_public': True,
+                   'disk_format': 'vmdk',
+                   'container_format': 'ovf',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                  }
+
+        new_image = self.client.add_image(fixture)
+
+        data = self.client.get_image(new_image['id'])
+        self.assertEquals(name, data['name'])
+
+    def test_add_image_with_excessively_long_name(self):
+        """Tests adding image with excessively long name"""
+        name = 'x' * 256
+        fixture = {'name': name,
+                   'is_public': True,
+                   'disk_format': 'vmdk',
+                   'container_format': 'ovf',
+                   'size': 19,
+                   'location': "file:///tmp/glance-tests/2",
+                  }
+
+        self.assertRaises(exception.Invalid,
+                          self.client.add_image,
+                          fixture)
+
+    def test_update_image_with_acceptably_long_name(self):
+        """Tests updating image with acceptably long name"""
+        name = 'x' * 255
+        fixture = {'name': name}
+
+        self.assertTrue(self.client.update_image(UUID2, fixture))
+
+        data = self.client.get_image(UUID2)
+        self.assertEquals(name, data['name'])
+
+    def test_update_image_with_excessively_long_name(self):
+        """Tests updating image with excessively long name"""
+        name = 'x' * 256
+        fixture = {'name': name}
+
+        self.assertRaises(exception.Invalid,
+                          self.client.update_image,
+                          UUID2,
+                          fixture)
+
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
