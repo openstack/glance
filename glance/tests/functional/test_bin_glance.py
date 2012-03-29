@@ -185,21 +185,24 @@ class TestBinGlance(functional.FunctionalTest):
         # ensure owner does not appear as a custom property
         self.assertFalse("Property 'owner':" in out)
 
-    def test_add_with_owner_admin(self):
-        """Test setting ownership of new image by admin user"""
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
-
+    def _create_by_admin(self, owner):
         # ownership set by admin user (defaults as such due to no-auth)
         cmd = minimal_add_command(self.api_port,
                                   'MyImage',
-                                  '--silent-upload owner=42')
+                                  '--silent-upload owner=%s' % owner)
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
         self.assertTrue(out.strip().startswith('Added new image with ID:'))
 
-        image_id = out.strip().replace('Added new image with ID: ', '')
+        return out.strip().replace('Added new image with ID: ', '')
+
+    def test_add_with_owner_admin(self):
+        """Test setting ownership of new image by admin user"""
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        image_id = self._create_by_admin('42')
 
         self._verify_owner('42', image_id)
 
@@ -227,6 +230,47 @@ class TestBinGlance(functional.FunctionalTest):
         image_id = data['image']['id']
 
         self._verify_owner('froggy', image_id)
+
+    def test_update_with_owner_admin(self):
+        """Test updating ownership of existing image by admin user"""
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        image_id = self._create_by_admin('user1')
+
+        self._verify_owner('user1', image_id)
+
+        # ownership updated by admin user (defaults as such due to no-auth)
+        cmd = "bin/glance update %s owner=user2 -p %d" % (image_id,
+                                                          self.api_port)
+        exitcode, out, err = execute(cmd, raise_error=False)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(out.strip().endswith('Updated image %s' % image_id))
+
+        self._verify_owner('user2', image_id)
+
+    def test_update_with_owner_non_admin(self):
+        """Test updating ownership of existing image by non-admin user"""
+        self.cleanup()
+        self.api_server.deployment_flavor = 'fakeauth'
+        self.registry_server.deployment_flavor = 'fakeauth'
+        self.start_servers(**self.__dict__.copy())
+
+        image_id = self._create_by_admin('user1')
+
+        # ownership update attempted by non-admin user
+        # (setup as such by fakeauth pipeline)
+        headers = {'X-Image-Meta-Owner': 'user2',
+                   'X-Auth-Token': 'Confirmed:pattieblack:froggy:demo',
+        }
+
+        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0",
+                                              self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT', headers=headers)
+        self.assertEqual(response.status, 403)
 
     def test_add_no_name(self):
         self.cleanup()
