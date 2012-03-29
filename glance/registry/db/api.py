@@ -465,6 +465,11 @@ def validate_image(values):
                    "and disk formats must match.")
             raise exception.Invalid(msg)
 
+    name = values.get('name')
+    if name and len(name) > 255:
+        msg = _('Image name too long: %d') % len(name)
+        raise exception.Invalid(msg)
+
 
 def _image_update(context, values, image_id, purge_props=False):
     """
