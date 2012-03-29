@@ -52,7 +52,7 @@ SWIFT_CONF = {'verbose': True,
 # We stub out as little as possible to ensure that the code paths
 # between glance.store.swift and swift.common.client are tested
 # thoroughly
-def stub_out_swift_common_client(stubs):
+def stub_out_swift_common_client(stubs, conf):
 
     fixture_containers = ['glance']
     fixture_headers = {'glance/%s' % FAKE_UUID:
@@ -158,9 +158,13 @@ def stub_out_swift_common_client(stubs):
     def fake_http_connection(*args, **kwargs):
         return None
 
-    def fake_get_auth(url, *args, **kwargs):
+    def fake_get_auth(url, user, key, snet, auth_version, **kwargs):
         if 'http' in url and '://' not in url:
             raise ValueError('Invalid url %s' % url)
+        # Check the auth version against the configured value
+        if conf['swift_store_auth_version'] != auth_version:
+            msg = 'AUTHENTICATION failed (version mismatch)'
+            raise swift.common.client.ClientException(msg)
         return None, None
 
     stubs.Set(swift.common.client,
@@ -181,17 +185,16 @@ def stub_out_swift_common_client(stubs):
               'http_connection', fake_http_connection)
 
 
-class TestStore(unittest.TestCase):
+class SwiftTests(object):
 
-    def setUp(self):
-        """Establish a clean test environment"""
-        self.stubs = stubout.StubOutForTesting()
-        stub_out_swift_common_client(self.stubs)
-        self.store = Store(test_utils.TestConfigOpts(SWIFT_CONF))
-
-    def tearDown(self):
-        """Clear the test environment"""
-        self.stubs.UnsetAll()
+    def test_get_size(self):
+        """
+        Test that we can get the size of an object in the swift store
+        """
+        uri = "swift://user:key@auth_address/glance/%s" % FAKE_UUID
+        loc = get_location_from_uri(uri)
+        image_size = self.store.get_size(loc)
+        self.assertEqual(image_size, 5120)
 
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
@@ -298,15 +301,14 @@ class TestStore(unittest.TestCase):
             expected_swift_contents = "*" * expected_swift_size
             expected_checksum = \
                     hashlib.md5(expected_swift_contents).hexdigest()
-            new_conf = SWIFT_CONF.copy()
-            new_conf['swift_store_auth_address'] = variation
+            self.conf['swift_store_auth_address'] = variation
 
             image_swift = StringIO.StringIO(expected_swift_contents)
 
             global SWIFT_PUT_OBJECT_CALLS
             SWIFT_PUT_OBJECT_CALLS = 0
 
-            self.store = Store(test_utils.TestConfigOpts(new_conf))
+            self.store = Store(test_utils.TestConfigOpts(self.conf))
             location, size, checksum = self.store.add(image_id, image_swift,
                                                       expected_swift_size)
 
@@ -328,11 +330,10 @@ class TestStore(unittest.TestCase):
         Tests that adding an image with a non-existing container
         raises an appropriate exception
         """
-        conf = SWIFT_CONF.copy()
-        conf['swift_store_create_container_on_put'] = 'False'
-        conf['swift_store_container'] = 'noexist'
+        self.conf['swift_store_create_container_on_put'] = 'False'
+        self.conf['swift_store_container'] = 'noexist'
         image_swift = StringIO.StringIO("nevergonnamakeit")
-        self.store = Store(test_utils.TestConfigOpts(conf))
+        self.store = Store(test_utils.TestConfigOpts(self.conf))
 
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS = 0
@@ -355,9 +356,8 @@ class TestStore(unittest.TestCase):
         Tests that adding an image with a non-existing container
         creates the container automatically if flag is set
         """
-        conf = SWIFT_CONF.copy()
-        conf['swift_store_create_container_on_put'] = 'True'
-        conf['swift_store_container'] = 'noexist'
+        self.conf['swift_store_create_container_on_put'] = 'True'
+        self.conf['swift_store_container'] = 'noexist'
         expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
         expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
@@ -369,7 +369,7 @@ class TestStore(unittest.TestCase):
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS = 0
 
-        self.store = Store(test_utils.TestConfigOpts(conf))
+        self.store = Store(test_utils.TestConfigOpts(self.conf))
         location, size, checksum = self.store.add(expected_image_id,
                                                   image_swift,
                                                   expected_swift_size)
@@ -394,8 +394,7 @@ class TestStore(unittest.TestCase):
         and then verify that there have been a number of calls to
         put_object()...
         """
-        conf = SWIFT_CONF.copy()
-        conf['swift_store_container'] = 'glance'
+        self.conf['swift_store_container'] = 'glance'
         expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
         expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
@@ -407,7 +406,7 @@ class TestStore(unittest.TestCase):
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS = 0
 
-        self.store = Store(test_utils.TestConfigOpts(conf))
+        self.store = Store(test_utils.TestConfigOpts(self.conf))
         orig_max_size = self.store.large_object_size
         orig_temp_size = self.store.large_object_chunk_size
         try:
@@ -446,8 +445,7 @@ class TestStore(unittest.TestCase):
 
         Bug lp:891738
         """
-        conf = SWIFT_CONF.copy()
-        conf['swift_store_container'] = 'glance'
+        self.conf['swift_store_container'] = 'glance'
 
         # Set up a 'large' image of 5KB
         expected_swift_size = FIVE_KB
@@ -463,7 +461,7 @@ class TestStore(unittest.TestCase):
 
         # Temporarily set Swift MAX_SWIFT_OBJECT_SIZE to 1KB and add our image,
         # explicitly setting the image_length to 0
-        self.store = Store(test_utils.TestConfigOpts(conf))
+        self.store = Store(test_utils.TestConfigOpts(self.conf))
         orig_max_size = self.store.large_object_size
         orig_temp_size = self.store.large_object_chunk_size
         global MAX_SWIFT_OBJECT_SIZE
@@ -507,11 +505,10 @@ class TestStore(unittest.TestCase):
                           FAKE_UUID, image_swift, 0)
 
     def _option_required(self, key):
-        conf = SWIFT_CONF.copy()
-        del conf[key]
+        del self.conf[key]
 
         try:
-            self.store = Store(test_utils.TestConfigOpts(conf))
+            self.store = Store(test_utils.TestConfigOpts(self.conf))
             return self.store.add == self.store.add_disabled
         except:
             return False
@@ -552,6 +549,32 @@ class TestStore(unittest.TestCase):
         """
         loc = get_location_from_uri("swift://user:key@authurl/glance/noexist")
         self.assertRaises(exception.NotFound, self.store.delete, loc)
+
+
+class TestStoreAuthV1(unittest.TestCase, SwiftTests):
+
+    def setUp(self):
+        """Establish a clean test environment"""
+        self.conf = SWIFT_CONF.copy()
+        self.conf['swift_store_auth_version'] = '1'
+        self.stubs = stubout.StubOutForTesting()
+        stub_out_swift_common_client(self.stubs, self.conf)
+        self.store = Store(test_utils.TestConfigOpts(self.conf))
+
+    def tearDown(self):
+        """Clear the test environment"""
+        self.stubs.UnsetAll()
+
+
+class TestStoreAuthV2(TestStoreAuthV1):
+
+    def setUp(self):
+        """Establish a clean test environment"""
+        self.conf = SWIFT_CONF.copy()
+        self.conf['swift_store_auth_version'] = '2'
+        self.stubs = stubout.StubOutForTesting()
+        stub_out_swift_common_client(self.stubs, self.conf)
+        self.store = Store(test_utils.TestConfigOpts(self.conf))
 
 
 class TestChunkReader(unittest.TestCase):
