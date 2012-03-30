@@ -36,6 +36,7 @@ from sqlalchemy.sql import or_, and_
 from glance.common import cfg
 from glance.common import exception
 from glance.common import utils
+from glance.registry.db import migration
 from glance.registry.db import models
 
 _ENGINE = None
@@ -107,6 +108,11 @@ def configure_db(conf):
             sa_logger.setLevel(logging.INFO)
 
         models.register_models(_ENGINE)
+        try:
+            migration.version_control(conf)
+        except exception.DatabaseMigrationError:
+            # only arises when the DB exists and is under version control
+            pass
 
 
 def check_mutate_authorization(context, image_ref):
