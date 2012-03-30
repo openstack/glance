@@ -70,7 +70,7 @@ def upgrade(migrate_engine):
         '004_add_checksum', ['get_image_properties_table'])
     image_properties = get_image_properties_table(meta)
 
-    index = Index('ix_image_properties_image_id_get',
+    index = Index('ix_image_properties_image_id_key',
                   image_properties.c.image_id,
           image_properties.c.key)
     index.rename('ix_image_properties_image_id_name')
