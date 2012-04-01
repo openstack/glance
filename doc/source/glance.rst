@@ -220,13 +220,13 @@ you will use a standard shell redirect to stream the image data file to
 ``glance``.
 
 Let's walk through a simple example. Suppose we have a virtual disk image
-stored on our local filesystem at ``/tmp/images/myimage.iso``. We'd also 
-like to tell Glance that this image should be called "My Image", and
+in qcow2 format stored on our local filesystem at ``/tmp/images/myimage.img``.
+We'd also like to tell Glance that this image should be called "My Image", and
 that the image should be public -- anyone should be able to fetch it.
 Here is how we'd upload this image to Glance::
 
   $> glance add name="My Image" is_public=true \
-       container_format=ovf disk_format=raw < /tmp/images/myimage.iso
+       container_format=bare disk_format=qcow2 < /tmp/images/myimage.img
 
 Note that the disk container formats are no longer defaulted and are thus
 strictly required.
@@ -235,22 +235,22 @@ If Glance was able to successfully upload and store your VM image data and
 metadata attributes, you would see something like this::
 
   $> glance add name="My Image" is_public=true \
-       container_format=ovf disk_format=raw < /tmp/images/myimage.iso
+       container_format=bare disk_format=qcow2 < /tmp/images/myimage.img
   Added new image with ID: 991baaf9-cc0d-4183-a201-8facdf1a1430
 
 You can use the ``--verbose`` (or ``-v``) command-line option to print some more
 information about the metadata that was saved with the image::
 
   $> glance --verbose add name="My Image" is_public=true \
-       container_format=ovf disk_format=raw < /tmp/images/myimage.iso
+       container_format=bare disk_format=qcow2 < /tmp/images/myimage.img
   Added new image with ID: 541424be-27b1-49d6-a55b-6430b8ae0f5f
   Returned the following metadata for the new image:
                          checksum => 2cec138d7dae2aa59038ef8c9aec2390
-                 container_format => ovf
+                 container_format => bare
                        created_at => 2011-02-22T19:20:53.298556
                           deleted => False
                        deleted_at => None
-                      disk_format => raw
+                      disk_format => qcow2
                                id => 541424be-27b1-49d6-a55b-6430b8ae0f5f
                         is_public => True
                          min_disk => 0
@@ -268,11 +268,11 @@ If you are unsure about what will be added, you can use the ``--dry-run``
 command-line option, which will simply show you what *would* have happened::
 
   $> glance --dry-run add name="Foo" distro="Ubuntu" is_public=True \
-       container_format=ovf disk_format=raw < /tmp/images/myimage.iso
+       container_format=bare disk_format=qcow2 < /tmp/images/myimage.img
   Dry run. We would have done the following:
   Add new image with metadata:
-                 container_format => ovf
-                      disk_format => raw
+                 container_format => bare
+                      disk_format => qcow2
                                id => None
                         is_public => False
                          min_disk => 0
@@ -313,13 +313,13 @@ To reference an EC2 tarball VM image available at an external URL::
 To upload a copy of that same EC2 tarball VM image::
 
   $> glance add name="ubuntu-10.04-amd64" is_public=true \
-       container_format=ovf disk_format=raw \
+       container_format=bare disk_format=raw \
        copy_from="http://uec-images.ubuntu.com/lucid/current/lucid-server-uec-amd64.tar.gz"
 
 To upload a qcow2 image::
 
   $> glance add name="ubuntu-11.04-amd64" is_public=true \
-       container_format=ovf disk_format=qcow2 \
+       container_format=bare disk_format=qcow2 \
        distro="ubuntu 11.04" < /data/images/rock_natty.qcow2
 
 To upload kernel, ramdisk and machine image files::
@@ -341,7 +341,7 @@ To upload kernel, ramdisk and machine image files::
 
 To upload a raw image file::
 
-  $> glance add disk_format=raw container_format=ovf \
+  $> glance add disk_format=raw container_format=bare \
        name="maverick-server-uec-amd64.img_v2" < maverick-server-uec-amd64.img
 
 Register a virtual machine image in another location
