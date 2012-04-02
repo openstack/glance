@@ -19,13 +19,14 @@
 
 import datetime
 import hashlib
-import httplib2
 import json
 import tempfile
 
+import httplib2
+
 from glance.common import utils
 from glance.tests import functional
-from glance.tests.utils import execute, skip_if_disabled, minimal_headers
+from glance.tests.utils import skip_if_disabled, minimal_headers
 
 FIVE_KB = 5 * 1024
 FIVE_GB = 5 * 1024 * 1024 * 1024
@@ -400,170 +401,6 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 200)
-
-        self.stop_servers()
-
-    @skip_if_disabled
-    def test_version_variations(self):
-        """
-        We test that various calls to the images and root endpoints are
-        handled properly, and that usage of the Accept: header does
-        content negotiation properly.
-        """
-
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
-
-        versions = {'versions': [{
-            "id": "v1.1",
-            "status": "CURRENT",
-            "links": [{
-                "rel": "self",
-                "href": "http://0.0.0.0:%d/v1/" % self.api_port}]}, {
-            "id": "v1.0",
-            "status": "SUPPORTED",
-            "links": [{
-                "rel": "self",
-                "href": "http://0.0.0.0:%d/v1/" % self.api_port}]}]}
-        versions_json = json.dumps(versions)
-        images = {'images': []}
-        images_json = json.dumps(images)
-
-        # 0. GET / with no Accept: header
-        # Verify version choices returned.
-        # Bug lp:803260  no Accept header causes a 500 in glance-api
-        path = "http://%s:%d/" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 300)
-        self.assertEqual(content, versions_json)
-
-        # 1. GET /images with no Accept: header
-        # Verify version choices returned.
-        path = "http://%s:%d/images" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 300)
-        self.assertEqual(content, versions_json)
-
-        # 2. GET /v1/images with no Accept: header
-        # Verify empty images list returned.
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(content, images_json)
-
-        # 3. GET / with Accept: unknown header
-        # Verify version choices returned. Verify message in API log about
-        # unknown accept header.
-        path = "http://%s:%d/" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        headers = {'Accept': 'unknown'}
-        response, content = http.request(path, 'GET', headers=headers)
-        self.assertEqual(response.status, 300)
-        self.assertEqual(content, versions_json)
-        self.assertTrue('Unknown accept header'
-                        in open(self.api_server.log_file).read())
-
-        # 4. GET / with an Accept: application/vnd.openstack.images-v1
-        # Verify empty image list returned
-        path = "http://%s:%d/images" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        headers = {'Accept': 'application/vnd.openstack.images-v1'}
-        response, content = http.request(path, 'GET', headers=headers)
-        self.assertEqual(response.status, 200)
-        self.assertEqual(content, images_json)
-
-        # 5. GET /images with a Accept: application/vnd.openstack.compute-v1
-        # header. Verify version choices returned. Verify message in API log
-        # about unknown accept header.
-        path = "http://%s:%d/images" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        headers = {'Accept': 'application/vnd.openstack.compute-v1'}
-        response, content = http.request(path, 'GET', headers=headers)
-        self.assertEqual(response.status, 300)
-        self.assertEqual(content, versions_json)
-        self.assertTrue('Unknown accept header'
-                        in open(self.api_server.log_file).read())
-
-        # 6. GET /v1.0/images with no Accept: header
-        # Verify empty image list returned
-        path = "http://%s:%d/v1.0/images" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(content, images_json)
-
-        # 7. GET /v1.a/images with no Accept: header
-        # Verify empty image list returned
-        path = "http://%s:%d/v1.a/images" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(content, images_json)
-
-        # 8. GET /va.1/images with no Accept: header
-        # Verify version choices returned
-        path = "http://%s:%d/va.1/images" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 300)
-        self.assertEqual(content, versions_json)
-
-        # 9. GET /versions with no Accept: header
-        # Verify version choices returned
-        path = "http://%s:%d/versions" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 300)
-        self.assertEqual(content, versions_json)
-
-        # 10. GET /versions with a Accept: application/vnd.openstack.images-v1
-        # header. Verify version choices returned.
-        path = "http://%s:%d/versions" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        headers = {'Accept': 'application/vnd.openstack.images-v1'}
-        response, content = http.request(path, 'GET', headers=headers)
-        self.assertEqual(response.status, 300)
-        self.assertEqual(content, versions_json)
-
-        # 11. GET /v1/versions with no Accept: header
-        # Verify 404 returned
-        path = "http://%s:%d/v1/versions" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 404)
-
-        # 12. GET /v2/versions with no Accept: header
-        # Verify version choices returned
-        path = "http://%s:%d/v2/versions" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 300)
-        self.assertEqual(content, versions_json)
-
-        # 13. GET /images with a Accept: application/vnd.openstack.compute-v2
-        # header. Verify version choices returned. Verify message in API log
-        # about unknown version in accept header.
-        path = "http://%s:%d/images" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        headers = {'Accept': 'application/vnd.openstack.images-v2'}
-        response, content = http.request(path, 'GET', headers=headers)
-        self.assertEqual(response.status, 300)
-        self.assertEqual(content, versions_json)
-        self.assertTrue('Unknown accept header'
-                        in open(self.api_server.log_file).read())
-
-        # 14. GET /v1.2/images with no Accept: header
-        # Verify version choices returned
-        path = "http://%s:%d/v1.2/images" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 300)
-        self.assertEqual(content, versions_json)
-        self.assertTrue('Unknown version in versioned URI'
-                        in open(self.api_server.log_file).read())
 
         self.stop_servers()
 

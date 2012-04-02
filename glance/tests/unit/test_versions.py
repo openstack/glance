@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2010-2011 OpenStack LLC.
+# Copyright 2012 OpenStack LLC.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -19,51 +19,45 @@ import json
 
 import webob
 
-from glance import client
-from glance.common import config
-from glance.common import exception
 from glance.api import versions
-from glance.tests import utils
+from glance import client
+from glance.common import exception
 from glance.tests.unit import base
+from glance.tests import utils
 
 
 class VersionsTest(base.IsolatedUnitTest):
 
-    """
-    Test the version information returned from
-    the API service
-    """
+    """Test the version information returned from the API service."""
 
     def test_get_version_list(self):
-        req = webob.Request.blank('/', base_url="http://0.0.0.0:9292/")
-        req.accept = "application/json"
-        conf = utils.TestConfigOpts({
-                'bind_host': '0.0.0.0',
-                'bind_port': 9292
-                })
+        req = webob.Request.blank('/', base_url='http://0.0.0.0:9292/')
+        req.accept = 'application/json'
+        config_opts = {'bind_host': '0.0.0.0', 'bind_port': 9292}
+        conf = utils.TestConfigOpts(config_opts)
         res = req.get_response(versions.Controller(conf))
         self.assertEqual(res.status_int, 300)
-        self.assertEqual(res.content_type, "application/json")
-        results = json.loads(res.body)["versions"]
+        self.assertEqual(res.content_type, 'application/json')
+        results = json.loads(res.body)['versions']
         expected = [
             {
-                "id": "v1.1",
-                "status": "CURRENT",
-                "links": [
-                    {
-                        "rel": "self",
-                        "href": "http://0.0.0.0:9292/v1/"}]},
+                'id': 'v2',
+                'status': 'EXPERIMENTAL',
+                'links': [{'rel': 'self', 'href': 'http://0.0.0.0:9292/v2/'}],
+            },
             {
-                "id": "v1.0",
-                "status": "SUPPORTED",
-                "links": [
-                    {
-                        "rel": "self",
-                        "href": "http://0.0.0.0:9292/v1/"}]}]
+                'id': 'v1.1',
+                'status': 'CURRENT',
+                'links': [{'rel': 'self', 'href': 'http://0.0.0.0:9292/v1/'}],
+            },
+            {
+                'id': 'v1.0',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self', 'href': 'http://0.0.0.0:9292/v1/'}],
+            },
+        ]
         self.assertEqual(results, expected)
 
     def test_client_handles_versions(self):
-        api_client = client.Client("0.0.0.0", doc_root="")
-
-        self.assertRaises(exception.MultipleChoices,
-                          api_client.get_images)
+        api_client = client.Client('0.0.0.0', doc_root='')
+        self.assertRaises(exception.MultipleChoices, api_client.get_images)
