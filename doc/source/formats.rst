@@ -76,19 +76,19 @@ Container Format
 The container format refers to whether the virtual machine image is in a
 file format that also contains metadata about the actual virtual machine.
 
-There are two main types of container formats: OVF and Amazon's AMI. In
-addition, a virtual machine image may have no container format at all --
-basically, it's just a blob of unstructured data...
+Note that the container format string is not currently used by Glance or
+other OpenStack components, so it is safe to simply specify **bare** as
+the container format if you are unsure.
 
 You can set your image's container format to one of the following:
-
-* **ovf**
-
-  This is the OVF container format
 
 * **bare**
 
   This indicates there is no container or metadata envelope for the image
+
+* **ovf**
+
+  This is the OVF container format
 
 * **aki**
 
