@@ -26,12 +26,18 @@ from sqlalchemy.orm import relationship, backref, object_mapper
 from sqlalchemy import Column, Integer, String, BigInteger
 from sqlalchemy import ForeignKey, DateTime, Boolean, Text
 from sqlalchemy import UniqueConstraint
+from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.declarative import declarative_base
 
 import glance.registry.db.api
 from glance.common import utils
 
 BASE = declarative_base()
+
+
+@compiles(BigInteger, 'sqlite')
+def compile_big_int_sqlite(type_, compiler, **kw):
+    return 'INTEGER'
 
 
 class ModelBase(object):
