@@ -225,18 +225,24 @@ def _get_table(table_name, metadata):
 
 def _get_foreign_keys(t_images, t_image_members, t_image_properties):
     """Retrieve and return foreign keys for members/properties tables."""
-    image_members_fk_name = list(t_image_members.foreign_keys)[0].name
-    image_properties_fk_name = list(t_image_properties.foreign_keys)[0].name
+    foreign_keys = []
+    if t_image_members.foreign_keys:
+        img_members_fk_name = list(t_image_members.foreign_keys)[0].name
 
-    fk1 = migrate.ForeignKeyConstraint([t_image_members.c.image_id],
-                                       [t_images.c.id],
-                                       name=image_members_fk_name)
+        fk1 = migrate.ForeignKeyConstraint([t_image_members.c.image_id],
+                                           [t_images.c.id],
+                                           name=img_members_fk_name)
+        foreign_keys.append(fk1)
 
-    fk2 = migrate.ForeignKeyConstraint([t_image_properties.c.image_id],
-                                       [t_images.c.id],
-                                       name=image_properties_fk_name)
+    if t_image_properties.foreign_keys:
+        img_properties_fk_name = list(t_image_properties.foreign_keys)[0].name
 
-    return fk1, fk2
+        fk2 = migrate.ForeignKeyConstraint([t_image_properties.c.image_id],
+                                           [t_images.c.id],
+                                           name=img_properties_fk_name)
+        foreign_keys.append(fk2)
+
+    return foreign_keys
 
 
 def _update_all_ids_to_uuids(t_images, t_image_members, t_image_properties):
