@@ -2012,6 +2012,28 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         db_models.unregister_models(db_api._ENGINE)
         db_models.register_models(db_api._ENGINE)
 
+    def _do_test_defaulted_format(self, format_key, format_value):
+        fixture_headers = {'x-image-meta-name': 'defaulted',
+                           'x-image-meta-location': 'http://foo.com/image',
+                           format_key: format_value}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 201)
+        res_body = json.loads(res.body)['image']
+        self.assertEquals(format_value, res_body['disk_format'])
+        self.assertEquals(format_value, res_body['container_format'])
+
+    def test_defaulted_amazon_format(self):
+        for key in ('x-image-meta-disk-format',
+                    'x-image-meta-container-format'):
+            for value in ('aki', 'ari', 'ami'):
+                self._do_test_defaulted_format(key, value)
+
     def test_bad_disk_format(self):
         fixture_headers = {'x-image-meta-store': 'bad',
                    'x-image-meta-name': 'bogus',

@@ -463,6 +463,30 @@ def validate_image(values):
         msg = "Invalid image status '%s' for image." % status
         raise exception.Invalid(msg)
 
+    def _amazon_format(disk, container):
+        amazon_formats = ('aki', 'ari', 'ami')
+        return ((disk in amazon_formats and
+                 (container in CONTAINER_FORMATS or container is None)) or
+                (container in amazon_formats and
+                 (disk in DISK_FORMATS or disk is None)))
+
+    def _only_one_of(a, b):
+        return (a and b is None) or (b and a is None)
+
+    if _amazon_format(disk_format, container_format):
+        if _only_one_of(container_format, disk_format):
+            container_format = (container_format if disk_format is None
+                                else disk_format)
+            values['container_format'] = container_format
+            disk_format = container_format
+            values['disk_format'] = disk_format
+        elif container_format != disk_format:
+            msg = ("Invalid mix of disk and container formats. "
+                   "When setting a disk or container format to "
+                   "one of 'aki', 'ari', or 'ami', the container "
+                   "and disk formats must match.")
+            raise exception.Invalid(msg)
+
     def _required_format_absent(format, formats):
         activating = status == 'active'
         unrecognized = format not in formats
@@ -481,19 +505,18 @@ def validate_image(values):
         msg = "Invalid container format '%s' for image." % container_format
         raise exception.Invalid(msg)
 
-    if disk_format in ('aki', 'ari', 'ami') or\
-            container_format in ('aki', 'ari', 'ami'):
-        if container_format != disk_format:
-            msg = ("Invalid mix of disk and container formats. "
-                   "When setting a disk or container format to "
-                   "one of 'ami', 'ari', or 'ami', the container "
-                   "and disk formats must match.")
-            raise exception.Invalid(msg)
-
     name = values.get('name')
     if name and len(name) > 255:
         msg = _('Image name too long: %d') % len(name)
         raise exception.Invalid(msg)
+
+    return values
+
+
+def _update_values(image_ref, values):
+    for k in values.keys():
+        if getattr(image_ref, k) != values[k]:
+            setattr(image_ref, k, values[k])
 
 
 def _image_update(context, values, image_id, purge_props=False):
@@ -547,7 +570,8 @@ def _image_update(context, values, image_id, purge_props=False):
         # investigation, the @validates decorator does not validate
         # on new records, only on existing records, which is, well,
         # idiotic.
-        validate_image(image_ref.to_dict())
+        values = validate_image(image_ref.to_dict())
+        _update_values(image_ref, values)
 
         try:
             image_ref.save(session=session)
