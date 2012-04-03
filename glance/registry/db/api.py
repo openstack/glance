@@ -27,7 +27,8 @@ import time
 
 import sqlalchemy
 from sqlalchemy import asc, create_engine, desc
-from sqlalchemy.exc import IntegrityError, OperationalError, DBAPIError
+from sqlalchemy.exc import IntegrityError, OperationalError, DBAPIError,\
+    DisconnectionError
 from sqlalchemy.orm import exc
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import sessionmaker
@@ -71,6 +72,27 @@ db_opts = [
     ]
 
 
+class MySQLPingListener(object):
+
+    """
+    Ensures that MySQL connections checked out of the
+    pool are alive.
+
+    Borrowed from:
+    http://groups.google.com/group/sqlalchemy/msg/a4ce563d802c929f
+    """
+
+    def checkout(self, dbapi_con, con_record, con_proxy):
+        try:
+            dbapi_con.cursor().execute('select 1')
+        except dbapi_con.OperationalError, ex:
+            if ex.args[0] in (2006, 2013, 2014, 2045, 2055):
+                logger.warn('Got mysql server has gone away: %s', ex)
+                raise DisconnectionError("Database server went away")
+            else:
+                raise
+
+
 def configure_db(conf):
     """
     Establish the database, create an engine if needed, and
@@ -89,9 +111,11 @@ def configure_db(conf):
                        'echo': False,
                        'convert_unicode': True
                        }
+        if 'mysql' in connection_dict.drivername:
+            engine_args['listeners'] = [MySQLPingListener()]
+
         try:
             _ENGINE = create_engine(sql_connection, **engine_args)
-            _ENGINE.create = wrap_db_error(_ENGINE.create)
             _ENGINE.connect = wrap_db_error(_ENGINE.connect)
             _ENGINE.connect()
         except Exception, err:
@@ -135,12 +159,7 @@ def get_session(autocommit=True, expire_on_commit=False):
         _MAKER = sessionmaker(bind=_ENGINE,
                               autocommit=autocommit,
                               expire_on_commit=expire_on_commit)
-    session = _MAKER()
-    session.query = wrap_db_error(session.query)
-    session.flush = wrap_db_error(session.flush)
-    session.execute = wrap_db_error(session.execute)
-    session.begin = wrap_db_error(session.begin)
-    return session
+    return _MAKER()
 
 
 def is_db_connection_error(args):
