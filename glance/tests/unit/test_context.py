@@ -17,8 +17,6 @@
 
 import unittest
 
-import stubout
-
 from glance.registry import context
 
 

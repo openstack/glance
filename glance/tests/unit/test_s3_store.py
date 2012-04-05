@@ -19,17 +19,14 @@
 
 import StringIO
 import hashlib
-import httplib
-import sys
 import unittest
-import urlparse
 
 import stubout
 import boto.s3.connection
 
 from glance.common import exception
 from glance.common import utils
-from glance.store import BackendException, UnsupportedBackend
+from glance.store import UnsupportedBackend
 from glance.store.location import get_location_from_uri
 from glance.store.s3 import Store, get_s3_location
 from glance.tests import utils as test_utils

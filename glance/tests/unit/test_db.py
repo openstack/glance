@@ -19,7 +19,6 @@
 import datetime
 import random
 
-from glance.common import context
 from glance.common import exception
 from glance.common import utils
 from glance.registry import context as rcontext

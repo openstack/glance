@@ -16,25 +16,17 @@
 #    under the License.
 
 import datetime
-import json
 import os
-import StringIO
 import tempfile
 import unittest
 
-import stubout
-import webob
-
 from glance import client
-from glance.common import context
 from glance.common import exception
 from glance.common import utils
 from glance.registry.db import api as db_api
 from glance.registry.db import models as db_models
 from glance.registry import client as rclient
 from glance.registry import context as rcontext
-from glance.tests import stubs
-from glance.tests import utils as test_utils
 from glance.tests.unit import base
 
 CONF = {'sql_connection': 'sqlite://'}

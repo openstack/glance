@@ -41,7 +41,6 @@ from glance.store.location import get_location_from_uri
 from glance.tests.functional.v1 import test_api
 from glance.tests.utils import skip_if_disabled, requires, minimal_headers
 from glance.tests.functional.store_utils import (setup_swift,
-                                                 teardown_swift,
                                                  get_swift_uri,
                                                  setup_s3,
                                                  teardown_s3,

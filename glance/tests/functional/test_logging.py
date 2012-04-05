@@ -20,10 +20,8 @@
 import httplib2
 import os
 import stat
-import unittest
 
 from glance.tests import functional
-from glance.tests.utils import execute
 
 
 class TestLogging(functional.FunctionalTest):

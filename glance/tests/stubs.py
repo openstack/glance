@@ -18,7 +18,6 @@
 """Stubouts, mocks and fixtures for the test suite"""
 
 import os
-import shutil
 
 try:
     import sendfile
@@ -32,7 +31,6 @@ from glance.api.middleware import version_negotiation
 from glance.api.v1 import router
 import glance.common.client
 from glance.common import context
-from glance.common import exception
 from glance.registry.api import v1 as rserver
 from glance.tests import utils
 

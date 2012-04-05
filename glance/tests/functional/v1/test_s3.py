@@ -32,16 +32,13 @@ skipped.
 
 import hashlib
 import json
-import tempfile
-import unittest
 
 import httplib2
 
 from glance.common import crypt
 from glance.common import utils
 from glance.tests.functional.v1 import test_api
-from glance.tests.utils import (execute,
-                                skip_if_disabled,
+from glance.tests.utils import (skip_if_disabled,
                                 requires,
                                 minimal_headers)
 from glance.tests.functional.store_utils import (setup_s3,

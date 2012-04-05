@@ -25,7 +25,7 @@ import sys
 import time
 
 from glance.tests import functional
-from glance.tests.utils import execute, skip_if_disabled
+from glance.tests.utils import skip_if_disabled
 
 
 class TestRespawn(functional.FunctionalTest):

@@ -20,9 +20,6 @@
 import errno
 import StringIO
 import hashlib
-import unittest
-
-import stubout
 
 from glance.common import exception
 from glance.common import utils

@@ -17,15 +17,11 @@
 
 """Functional test case that utilizes the bin/glance-cache-manage CLI tool"""
 
-import datetime
 import hashlib
 import httplib2
 import json
 import os
-import time
-import unittest
 
-from glance.common import utils
 from glance.tests import functional
 from glance.tests.utils import execute, minimal_headers
 

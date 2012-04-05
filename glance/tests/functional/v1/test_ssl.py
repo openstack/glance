@@ -30,22 +30,18 @@ If a connection cannot be established, all the test cases are
 skipped.
 """
 
-import ConfigParser
 import datetime
 import hashlib
-import httplib
 import httplib2
 import json
 import os
 import tempfile
-import unittest
 
 from glance import client as glance_client
 from glance.common import exception
 from glance.common import utils
-from glance.store.location import get_location_from_uri
 from glance.tests import functional
-from glance.tests.utils import execute, skip_if_disabled, minimal_headers
+from glance.tests.utils import skip_if_disabled, minimal_headers
 
 FIVE_KB = 5 * 1024
 FIVE_GB = 5 * 1024 * 1024 * 1024
