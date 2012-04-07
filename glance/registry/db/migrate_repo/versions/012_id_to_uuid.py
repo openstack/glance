@@ -29,6 +29,8 @@ import glance.common.utils
 
 
 meta = sqlalchemy.MetaData()
+and_ = sqlalchemy.and_
+or_ = sqlalchemy.or_
 
 
 def upgrade(migrate_engine):
@@ -43,10 +45,9 @@ def upgrade(migrate_engine):
 
     if migrate_engine.url.get_dialect().name == "sqlite":
         _upgrade_sqlite(t_images, t_image_members, t_image_properties)
+        _update_all_ids_to_uuids(t_images, t_image_members, t_image_properties)
     else:
         _upgrade_other(t_images, t_image_members, t_image_properties)
-
-    _update_all_ids_to_uuids(t_images, t_image_members, t_image_properties)
 
 
 def downgrade(migrate_engine):
@@ -61,10 +62,9 @@ def downgrade(migrate_engine):
 
     if migrate_engine.url.get_dialect().name == "sqlite":
         _downgrade_sqlite(t_images, t_image_members, t_image_properties)
+        _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties)
     else:
         _downgrade_other(t_images, t_image_members, t_image_properties)
-
-    _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties)
 
 
 def _upgrade_sqlite(t_images, t_image_members, t_image_properties):
@@ -265,6 +265,12 @@ def _update_all_ids_to_uuids(t_images, t_image_members, t_image_properties):
             where(t_image_properties.c.image_id == old_id).\
             values(image_id=new_id).execute()
 
+        t_image_properties.update().\
+            where(and_(or_(t_image_properties.c.name == 'kernel_id',
+                           t_image_properties.c.name == 'ramdisk_id'),
+                       t_image_properties.c.value == old_id)).\
+            values(value=new_id).execute()
+
 
 def _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties):
     """Transition from VARCHAR(36) id to INTEGER id."""
@@ -285,5 +291,11 @@ def _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties):
         t_image_properties.update().\
             where(t_image_properties.c.image_id == old_id).\
             values(image_id=new_id).execute()
+
+        t_image_properties.update().\
+            where(and_(or_(t_image_properties.c.name == 'kernel_id',
+                           t_image_properties.c.name == 'ramdisk_id'),
+                       t_image_properties.c.value == old_id)).\
+            values(value=new_id).execute()
 
         new_id += 1
