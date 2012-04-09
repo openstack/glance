@@ -252,16 +252,24 @@ policy_default_rule = %(policy_default_rule)s
 flavor = %(deployment_flavor)s
 """
         self.paste_conf_base = """[pipeline:glance-api]
-pipeline = versionnegotiation context apiv1app
+pipeline = versionnegotiation context rootapp
 
 [pipeline:glance-api-caching]
-pipeline = versionnegotiation context cache apiv1app
+pipeline = versionnegotiation context cache rootapp
 
 [pipeline:glance-api-cachemanagement]
-pipeline = versionnegotiation context cache cache_manage apiv1app
+pipeline = versionnegotiation context cache cache_manage rootapp
 
 [pipeline:glance-api-fakeauth]
-pipeline = versionnegotiation fakeauth context apiv1app
+pipeline = versionnegotiation fakeauth context rootapp
+
+[composite:rootapp]
+use = egg:Paste#urlmap
+/: apiversions
+/v1: apiv1app
+
+[app:apiversions]
+paste.app_factory = glance.api.versions:create_resource
 
 [app:apiv1app]
 paste.app_factory = glance.common.wsgi:app_factory

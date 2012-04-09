@@ -77,7 +77,7 @@ class CacheManageFilter(wsgi.Middleware):
 
     def process_request(self, request):
         # Map request to our resource object if we can handle it
-        match = self._mapper.match(request.path, request.environ)
+        match = self._mapper.match(request.path_info, request.environ)
         if match:
             request.environ['wsgiorg.routing_args'] = (None, match)
             return self._resource(request)

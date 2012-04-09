@@ -20,6 +20,8 @@ import json
 
 import webob.dec
 
+from glance.common import wsgi
+
 
 class Controller(object):
 
@@ -28,8 +30,7 @@ class Controller(object):
     def __init__(self, conf):
         self.conf = conf
 
-    @webob.dec.wsgify
-    def __call__(self, req):
+    def index(self, req):
         """Respond to a request for all OpenStack API versions."""
         def build_version_object(version, path, status):
             return {
@@ -55,5 +56,10 @@ class Controller(object):
         response.body = json.dumps(dict(versions=version_objs))
         return response
 
-    def get_href(self, req, version):
-        return "%s/v%s/" % (req.host_url, version)
+    @webob.dec.wsgify(RequestClass=wsgi.Request)
+    def __call__(self, req):
+        return self.index(req)
+
+
+def create_resource(conf):
+    return wsgi.Resource(Controller(conf))

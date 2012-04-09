@@ -27,7 +27,6 @@ except ImportError:
 
 import webob
 
-from glance.api.middleware import version_negotiation
 from glance.api.v1 import router
 import glance.common.client
 from glance.common import context
@@ -116,8 +115,12 @@ def stub_out_registry_and_store_server(stubs, base_dir):
         def close(self):
             return True
 
+        def _clean_url(self, url):
+            #TODO(bcwaldon): Fix the hack that strips off v1
+            return url.replace('/v1', '', 1) if url.startswith('/v1') else url
+
         def putrequest(self, method, url):
-            self.req = webob.Request.blank("/" + url.lstrip("/"))
+            self.req = webob.Request.blank(self._clean_url(url))
             if SENDFILE_SUPPORTED:
                 fake_sendfile = FakeSendFile(self.req)
                 stubs.Set(sendfile, 'sendfile', fake_sendfile.sendfile)
@@ -136,7 +139,7 @@ def stub_out_registry_and_store_server(stubs, base_dir):
             self.req.body += data.split("\r\n")[1]
 
         def request(self, method, url, body=None, headers={}):
-            self.req = webob.Request.blank("/" + url.lstrip("/"))
+            self.req = webob.Request.blank(self._clean_url(url))
             self.req.method = method
             if headers:
                 self.req.headers = headers
@@ -155,9 +158,7 @@ def stub_out_registry_and_store_server(stubs, base_dir):
                     'filesystem_store_datadir': base_dir,
                     'policy_file': os.path.join(base_dir, 'policy.json'),
                     })
-            api = version_negotiation.VersionNegotiationFilter(
-                context.ContextMiddleware(router.API(conf), conf),
-                conf)
+            api = context.ContextMiddleware(router.API(conf), conf)
             res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out

@@ -20,8 +20,6 @@ import json
 import webob
 
 from glance.api import versions
-from glance import client
-from glance.common import exception
 from glance.tests.unit import base
 from glance.tests import utils
 
@@ -35,7 +33,7 @@ class VersionsTest(base.IsolatedUnitTest):
         req.accept = 'application/json'
         config_opts = {'bind_host': '0.0.0.0', 'bind_port': 9292}
         conf = utils.TestConfigOpts(config_opts)
-        res = req.get_response(versions.Controller(conf))
+        res = versions.Controller(conf).index(req)
         self.assertEqual(res.status_int, 300)
         self.assertEqual(res.content_type, 'application/json')
         results = json.loads(res.body)['versions']
@@ -57,7 +55,3 @@ class VersionsTest(base.IsolatedUnitTest):
             },
         ]
         self.assertEqual(results, expected)
-
-    def test_client_handles_versions(self):
-        api_client = client.Client('0.0.0.0', doc_root='')
-        self.assertRaises(exception.MultipleChoices, api_client.get_images)
