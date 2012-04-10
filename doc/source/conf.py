@@ -18,7 +18,7 @@
 # Glance documentation build configuration file, created by
 # sphinx-quickstart on Tue May 18 13:50:15 2010.
 #
-# This file is execfile()'d with the current directory set to it's containing
+# This file is execfile()'d with the current directory set to its containing
 # dir.
 #
 # Note that not all possible configuration values are present in this

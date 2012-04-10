@@ -533,7 +533,7 @@ class BasePasteFactory(object):
         """Import an app/filter class.
 
         Lookup the KEY from the PasteDeploy local conf and import the
-        class named there. This class can then be used as an app or
+        class named therein. This class can then be used as an app or
         filter factory.
 
         Note we support the <module>:<class> format.

@@ -403,7 +403,7 @@ Can only be specified in configuration files.
 
 Sets the name of the bucket to use for Glance images in S3.
 
-Note that the namespace for S3 buckets is **global**, and
+Note that the namespace for S3 buckets is **global**,
 therefore you must use a name for the bucket that is unique. It
 is recommended that you use a combination of your AWS access key,
 **lowercased** with "glance".
