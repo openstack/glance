@@ -37,48 +37,9 @@ class TestSchemasController(unittest.TestCase):
     def test_image(self):
         req = test_utils.FakeRequest()
         output = self.controller.image(req)
-        expected = {
-            'name': 'image',
-            'properties': {
-                'id': {
-                    'type': 'string',
-                    'description': 'An identifier for the image',
-                    'required': True,
-                    'maxLength': 32,
-                    'readonly': True
-                },
-                'name': {
-                    'type': 'string',
-                    'description': 'Descriptive name for the image',
-                    'required': True,
-                },
-            },
-        }
-        self.assertEqual(expected, output)
+        self.assertEqual(glance.api.v2.schemas.IMAGE_SCHEMA, output)
 
     def test_access(self):
         req = test_utils.FakeRequest()
         output = self.controller.access(req)
-        expected = {
-            'name': 'access',
-            'properties': {
-               "image_id": {
-                  "type": "string",
-                  "description": "The image identifier",
-                  "required": True,
-                  "maxLength": 32,
-                },
-                "tenant_id": {
-                  "type": "string",
-                  "description": "The tenant identifier",
-                  "required": True,
-                },
-                "can_share": {
-                  "type": "boolean",
-                  "description": "Ability of tenant to share with others",
-                  "required": True,
-                  "default": False,
-                },
-            },
-        }
-        self.assertEqual(output, expected)
+        self.assertEqual(glance.api.v2.schemas.ACCESS_SCHEMA, output)
