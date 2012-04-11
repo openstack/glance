@@ -21,6 +21,9 @@ import subprocess
 from setuptools import setup, find_packages
 from setuptools.command.sdist import sdist
 
+from glance.common.setup import parse_requirements
+from glance.common.setup import parse_dependency_links
+
 gettext.install('glance', unicode=1)
 
 from glance import version
@@ -83,6 +86,8 @@ try:
 except:
     pass
 
+requires = parse_requirements()
+depend_links = parse_dependency_links()
 
 setup(
     name='glance',
@@ -97,6 +102,8 @@ setup(
     test_suite='nose.collector',
     cmdclass=cmdclass,
     include_package_data=True,
+    install_requires=requires,
+    dependency_links=depend_links,
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
