@@ -152,8 +152,9 @@ class Server(object):
         """
         def kill_children(*args):
             """Kills the entire process group."""
-            self.logger.error(_('SIGTERM received'))
+            self.logger.error(_('SIGTERM or SIGINT received'))
             signal.signal(signal.SIGTERM, signal.SIG_IGN)
+            signal.signal(signal.SIGINT, signal.SIG_IGN)
             self.running = False
             os.killpg(0, signal.SIGTERM)
 
@@ -179,6 +180,7 @@ class Server(object):
 
         self.logger.info(_("Starting %d workers") % conf.workers)
         signal.signal(signal.SIGTERM, kill_children)
+        signal.signal(signal.SIGINT, kill_children)
         signal.signal(signal.SIGHUP, hup)
         while len(self.children) < conf.workers:
             self.run_child()
@@ -195,7 +197,6 @@ class Server(object):
                 if err.errno not in (errno.EINTR, errno.ECHILD):
                     raise
             except KeyboardInterrupt:
-                sys.exit(1)
                 self.logger.info(_('Caught keyboard interrupt. Exiting.'))
                 break
         eventlet.greenio.shutdown_safe(self.sock)
@@ -217,6 +218,10 @@ class Server(object):
         if pid == 0:
             signal.signal(signal.SIGHUP, signal.SIG_DFL)
             signal.signal(signal.SIGTERM, signal.SIG_DFL)
+            # ignore the interrupt signal to avoid a race whereby
+            # a child worker receives the signal before the parent
+            # and is respawned unneccessarily as a result
+            signal.signal(signal.SIGINT, signal.SIG_IGN)
             self.run_server()
             self.logger.info(_('Child %d exiting normally') % os.getpid())
             return
