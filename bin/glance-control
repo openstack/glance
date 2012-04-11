@@ -133,7 +133,7 @@ def do_start(verb, server, conf, args):
                     pass
 
     def redirect_to_syslog(fds, server):
-        log_cmd = '/usr/bin/logger -t "%s[%d]"' % (server, os.getpid())
+        log_cmd = 'logger -t "%s[%d]"' % (server, os.getpid())
         process = subprocess.Popen(log_cmd,
                                    shell=True,
                                    stdin=subprocess.PIPE)
