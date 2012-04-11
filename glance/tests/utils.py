@@ -178,6 +178,24 @@ class requires(object):
         return _runner
 
 
+class depends_on_exe(object):
+    """Decorator to skip test if an executable is unavailable"""
+    def __init__(self, exe):
+        self.exe = exe
+
+    def __call__(self, func):
+        def _runner(*args, **kw):
+            cmd = 'which %s' % self.exe
+            exitcode, out, err = execute(cmd, raise_error=False)
+            if exitcode != 0:
+                args[0].disabled_message = 'test requires exe: %s' % self.exe
+                args[0].disabled = True
+            func(*args, **kw)
+        _runner.__name__ = func.__name__
+        _runner.__doc__ = func.__doc__
+        return _runner
+
+
 def skip_if_disabled(func):
     """Decorator that skips a test if test case is disabled."""
     @functools.wraps(func)
