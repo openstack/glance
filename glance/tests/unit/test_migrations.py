@@ -89,10 +89,19 @@ class TestMigrations(unittest.TestCase):
         self._reset_databases()
 
     def _reset_databases(self):
+        def _is_sqlite(conn_string):
+            return conn_string.startswith('sqlite')
+
+        def _is_mysql(conn_string):
+            return conn_string.startswith('mysql')
+
+        def _is_postgresql(conn_string):
+            return conn_string.startswith('postgresql')
+
         for key, engine in self.engines.items():
             conn_string = TestMigrations.TEST_DATABASES[key]
             conn_pieces = urlparse.urlparse(conn_string)
-            if conn_string.startswith('sqlite'):
+            if _is_sqlite(conn_string):
                 # We can just delete the SQLite database, which is
                 # the easiest and cleanest solution
                 db_path = conn_pieces.path.strip('/')
@@ -100,7 +109,7 @@ class TestMigrations(unittest.TestCase):
                     os.unlink(db_path)
                 # No need to recreate the SQLite DB. SQLite will
                 # create it for us if it's not there...
-            elif conn_string.startswith('mysql'):
+            elif _is_mysql(conn_string) or _is_postgresql(conn_string):
                 # We can execute the MySQL client to destroy and re-create
                 # the MYSQL database, which is easier and less error-prone
                 # than using SQLAlchemy to do this via MetaData...trust me.
@@ -113,10 +122,20 @@ class TestMigrations(unittest.TestCase):
                 if len(auth_pieces) > 1:
                     if auth_pieces[1].strip():
                         password = "-p%s" % auth_pieces[1]
-                sql = ("drop database if exists %(database)s; "
-                       "create database %(database)s;") % locals()
-                cmd = ("mysql -u%(user)s %(password)s -h%(host)s "
-                       "-e\"%(sql)s\"") % locals()
+                if _is_mysql(conn_string):
+                    sql = ("drop database if exists %(database)s; "
+                           "create database %(database)s;") % locals()
+                    cmd = ("mysql -u%(user)s %(password)s -h%(host)s "
+                           "-e\"%(sql)s\"") % locals()
+                if _is_postgresql(conn_string):
+                    cmd = ("dropdb %(database)s ; "
+                           "createdb %(database)s -O %(user)s ; "
+                           "echo \"select 'drop table if exists ' "
+                           "|| tablename || ' cascade;' "
+                           "from pg_tables where schemaname = 'public';\" | "
+                           "psql -d %(database)s | grep '^\s*drop' | "
+                           "psql -d %(database)s"
+                          ) % locals()
                 exitcode, out, err = utils.execute(cmd)
                 self.assertEqual(0, exitcode)
 
