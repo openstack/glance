@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import webob
+
 from glance.common import exception
 
 
@@ -23,7 +25,11 @@ TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
 TENANT2 = '2c014f32-55eb-467d-8fcb-4bd706012f81'
 
 
-class FakeRequest(object):
+class FakeRequest(webob.Request):
+    def __init__(self):
+        #TODO(bcwaldon): figure out how to fake this out cleanly
+        super(FakeRequest, self).__init__({'REQUEST_METHOD': 'POST'})
+
     @property
     def context(self):
         return
@@ -44,6 +50,9 @@ class FakeDB(object):
             UUID2: [],
         }
 
+        self.images[UUID1]['members'] = self.members[UUID1]
+        self.images[UUID2]['members'] = self.members[UUID2]
+
     def reset(self):
         self.images = {}
         self.members = {}
@@ -59,21 +68,38 @@ class FakeDB(object):
         }
 
     def _image_format(self, image_id):
-        return {'id': image_id, 'name': 'image-name', 'foo': 'bar'}
+        return {'id': image_id, 'name': 'image-name'}
 
     def image_get(self, context, image_id):
         try:
-            return self.images[image_id]
+            image = self.images[image_id]
         except KeyError:
-            raise exception.ImageNotFound(image_id=image_id)
+            raise exception.NotFound(image_id=image_id)
+
+        #NOTE(bcwaldon: this is a hack until we can get image members with
+        # a direct db call
+        image['members'] = self.members.get(image_id, [])
+
+        return image
 
     def image_get_all(self, context):
         return self.images.values()
 
-    def get_image_members(self, context, image_id):
+    def image_member_find(self, context, image_id, tenant_id):
         try:
             self.images[image_id]
         except KeyError:
-            raise exception.ImageNotFound()
-        else:
-            return self.members.get(image_id, [])
+            raise exception.NotFound()
+
+        for member in self.members.get(image_id, []):
+            if member['member'] == tenant_id:
+                return member
+
+        raise exception.NotFound()
+
+    def image_member_create(self, context, values):
+        member = self._image_member_format(values['image_id'],
+                                           values['member'],
+                                           values['can_share'])
+        self.members[values['image_id']] = member
+        return member

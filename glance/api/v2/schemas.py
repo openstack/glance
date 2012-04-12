@@ -17,6 +17,48 @@ import glance.api.v2.base
 from glance.common import wsgi
 
 
+#NOTE(bcwaldon): this is temporary until we generate them on the fly
+IMAGE_SCHEMA = {
+    "name": "image",
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "An identifier for the image",
+            "required": False,
+            "maxLength": 36,
+        },
+        "name": {
+            "type": "string",
+            "description": "Descriptive name for the image",
+            "required": True,
+        },
+    },
+}
+
+ACCESS_SCHEMA = {
+    'name': 'access',
+    'properties': {
+        "image_id": {
+          "type": "string",
+          "description": "The image identifier",
+          "required": True,
+          "maxLength": 36,
+        },
+        "tenant_id": {
+          "type": "string",
+          "description": "The tenant identifier",
+          "required": True,
+        },
+        "can_share": {
+          "type": "boolean",
+          "description": "Ability of tenant to share with others",
+          "required": True,
+          "default": False,
+        },
+    },
+}
+
+
 class SchemasController(glance.api.v2.base.Controller):
     def index(self, req):
         links = [
@@ -26,47 +68,10 @@ class SchemasController(glance.api.v2.base.Controller):
         return {'links': links}
 
     def image(self, req):
-        return {
-            "name": "image",
-            "properties": {
-                "id": {
-                    "type": "string",
-                    "description": "An identifier for the image",
-                    "required": True,
-                    "maxLength": 32,
-                    "readonly": True
-                },
-                "name": {
-                    "type": "string",
-                    "description": "Descriptive name for the image",
-                    "required": True,
-                },
-            },
-        }
+        return IMAGE_SCHEMA
 
     def access(self, req):
-        return {
-            'name': 'access',
-            'properties': {
-                "image_id": {
-                  "type": "string",
-                  "description": "The image identifier",
-                  "required": True,
-                  "maxLength": 32,
-                },
-                "tenant_id": {
-                  "type": "string",
-                  "description": "The tenant identifier",
-                  "required": True,
-                },
-                "can_share": {
-                  "type": "boolean",
-                  "description": "Ability of tenant to share with others",
-                  "required": True,
-                  "default": False,
-                },
-            },
-        }
+        return ACCESS_SCHEMA
 
 
 def create_resource(conf):

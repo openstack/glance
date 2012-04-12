@@ -13,21 +13,55 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import webob.exc
+import json
 
-import glance.api.v2.base
-from glance.common import exception
+import jsonschema
+
+from glance.api.v2 import base
+from glance.api.v2 import schemas
 from glance.common import wsgi
 import glance.registry.db.api
 
 
-class ImagesController(glance.api.v2.base.Controller):
-    """WSGI controller for images resource in Glance v2 API."""
-
+class ImagesController(base.Controller):
     def __init__(self, conf, db=None):
         super(ImagesController, self).__init__(conf)
         self.db_api = db or glance.registry.db.api
         self.db_api.configure_db(conf)
+
+    def index(self, req):
+        return self.db_api.image_get_all(req.context)
+
+    def show(self, req, id):
+        return self.db_api.image_get(req.context, id)
+
+
+class RequestDeserializer(wsgi.JSONRequestDeserializer):
+    def __init__(self, conf):
+        super(RequestDeserializer, self).__init__()
+        self.conf = conf
+
+    def _validate(self, request, obj):
+        schema = schemas.SchemasController(self.conf).image(request)
+        jsonschema.validate(obj, schema)
+
+    def create(self, request):
+        output = super(RequestDeserializer, self).default(request)
+        body = output.pop('body')
+        self._validate(request, body)
+        output['image'] = body
+        return output
+
+
+class ResponseSerializer(wsgi.JSONResponseSerializer):
+    def _get_image_href(self, image):
+        return '/v2/images/%s' % image['id']
+
+    def _get_image_links(self, image):
+        return [
+            {'rel': 'self', 'href': self._get_image_href(image)},
+            {'rel': 'describedby', 'href': '/v2/schemas/image'},
+        ]
 
     def _format_image(self, image):
         props = ['id', 'name']
@@ -36,30 +70,19 @@ class ImagesController(glance.api.v2.base.Controller):
         obj['links'] = self._get_image_links(image)
         return obj
 
-    def _get_image_links(self, image):
-        image_id = image['id']
-        return [
-            {'rel': 'self', 'href': '/v2/images/%s' % image_id},
-            {'rel': 'access', 'href': '/v2/images/%s/access' % image_id},
-            {'rel': 'describedby', 'href': '/v2/schemas/image'},
-        ]
+    def create(self, response, image):
+        response.body = json.dumps({'image': self._format_image(image)})
+        response.location = self._get_image_href(image)
 
-    def _get_container_links(self, images):
-        return []
+    def show(self, response, image):
+        response.body = json.dumps({'image': self._format_image(image)})
 
-    def index(self, req):
-        images = self.db_api.image_get_all(req.context)
-        return {
+    def index(self, response, images):
+        body = {
             'images': [self._format_image(i) for i in images],
-            'links': self._get_container_links(images),
+            'links': [],
         }
-
-    def show(self, req, id):
-        try:
-            image = self.db_api.image_get(req.context, id)
-        except exception.ImageNotFound:
-            raise webob.exc.HTTPNotFound()
-        return self._format_image(image)
+        response.body = json.dumps(body)
 
 
 def create_resource(conf):

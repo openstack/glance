@@ -72,10 +72,6 @@ class NotFound(GlanceException):
     message = _("An object with the specified identifier was not found.")
 
 
-class ImageNotFound(NotFound):
-    message = _("Image %(image_id)s was not found.")
-
-
 class UnknownScheme(GlanceException):
     message = _("Unknown scheme '%(scheme)s' found in URI")
 
