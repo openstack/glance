@@ -15,9 +15,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import time
+
 import httplib2
 
 from glance.tests import functional
+from glance.tests.utils import execute
 
 
 class TestMultiprocessing(functional.FunctionalTest):
@@ -37,4 +40,32 @@ class TestMultiprocessing(functional.FunctionalTest):
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
         self.assertEqual(content, '{"images": []}')
+        self.stop_servers()
+
+    def _get_children(self):
+        cmd = ("ps -fu $USER | grep glance-api | "
+               "grep -v grep | awk '{print $2}' | sort -nr")
+        _, out, _ = execute(cmd, raise_error=True)
+        return out.split('\n')[0:-2]
+
+    def test_interrupt_avoids_respawn_storm(self):
+        """
+        Ensure an interrupt signal does not cause a respawn storm.
+        See bug #978130
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        children = self._get_children()
+        cmd = "kill -INT %s" % ' '.join(children)
+        execute(cmd, raise_error=True)
+
+        for _ in range(0, 9):
+            time.sleep(0.05)
+            # ensure number of children hasn't grown
+            self.assertTrue(len(children) > len(self._get_children()))
+            for child in self._get_children():
+                # ensure no new children spawned
+                self.assertTrue(child in children)
+
         self.stop_servers()
