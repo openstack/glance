@@ -303,12 +303,14 @@ class Store(glance.store.base.Store):
         """
         snet = self.snet
         auth_version = self.auth_version
+        full_auth_url = (auth_url if not auth_url or auth_url.endswith('/')
+                         else auth_url + '/')
         logger.debug(_("Creating Swift connection with "
-                     "(auth_address=%(auth_url)s, user=%(user)s, "
+                     "(auth_address=%(full_auth_url)s, user=%(user)s, "
                      "snet=%(snet)s, auth_version=%(auth_version)s)") %
                      locals())
         return swift_client.Connection(
-            authurl=auth_url, user=user, key=key, snet=snet,
+            authurl=full_auth_url, user=user, key=key, snet=snet,
             auth_version=auth_version)
 
     def _option_get(self, param):
