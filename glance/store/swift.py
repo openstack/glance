@@ -309,9 +309,18 @@ class Store(glance.store.base.Store):
                      "(auth_address=%(full_auth_url)s, user=%(user)s, "
                      "snet=%(snet)s, auth_version=%(auth_version)s)") %
                      locals())
+        tenant_name = None
+        if self.auth_version == '2':
+            tenant_user = user.split(':')
+            if len(tenant_user) != 2:
+                reason = (_("Badly formed tenant:user '%(tenant_user)s' in "
+                            "Swift URI") % locals())
+                raise exception.BadStoreUri(auth_url, reason)
+            (tenant_name, user) = tenant_user
+
         return swift_client.Connection(
             authurl=full_auth_url, user=user, key=key, snet=snet,
-            auth_version=auth_version)
+            tenant_name=tenant_name, auth_version=auth_version)
 
     def _option_get(self, param):
         result = getattr(self.conf, param)
