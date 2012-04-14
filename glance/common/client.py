@@ -506,12 +506,17 @@ class BaseClient(object):
             elif _filelike(body) or self._iterable(body):
                 c.putrequest(method, path)
 
+                use_sendfile = self._sendable(body)
+
+                # According to HTTP/1.1, Content-Length and Transfer-Encoding
+                # conflict.
                 for header, value in headers.items():
-                    c.putheader(header, value)
+                    if use_sendfile or header.lower() != 'content-length':
+                        c.putheader(header, value)
 
                 iter = self.image_iterator(c, headers, body)
 
-                if self._sendable(body):
+                if use_sendfile:
                     # send actual file without copying into userspace
                     _sendbody(c, iter)
                 else:

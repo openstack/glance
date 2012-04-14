@@ -59,7 +59,7 @@ def stub_out_registry_and_store_server(stubs, base_dir):
         def close(self):
             return True
 
-        def request(self, method, url, body=None, headers={}):
+        def request(self, method, url, body=None, headers=None):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
             self.req.method = method
             if headers:
@@ -110,7 +110,8 @@ def stub_out_registry_and_store_server(stubs, base_dir):
 
         def __init__(self, *args, **kwargs):
             self.sock = FakeSocket()
-            pass
+            self.stub_force_sendfile = kwargs.get('stub_force_sendfile',
+                                                  SENDFILE_SUPPORTED)
 
         def connect(self):
             return True
@@ -120,7 +121,7 @@ def stub_out_registry_and_store_server(stubs, base_dir):
 
         def putrequest(self, method, url):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
-            if SENDFILE_SUPPORTED:
+            if self.stub_force_sendfile:
                 fake_sendfile = FakeSendFile(self.req)
                 stubs.Set(sendfile, 'sendfile', fake_sendfile.sendfile)
             self.req.method = method
@@ -129,7 +130,10 @@ def stub_out_registry_and_store_server(stubs, base_dir):
             self.req.headers[key] = value
 
         def endheaders(self):
-            pass
+            hl = [i.lower() for i in self.req.headers.keys()]
+            assert not ('content-length' in hl and
+                        'transfer-encoding' in hl), \
+                'Content-Length and Transfer-Encoding are mutually exclusive'
 
         def send(self, data):
             # send() is called during chunked-transfer encoding, and
@@ -137,7 +141,7 @@ def stub_out_registry_and_store_server(stubs, base_dir):
             # only write the actual data in tests.
             self.req.body += data.split("\r\n")[1]
 
-        def request(self, method, url, body=None, headers={}):
+        def request(self, method, url, body=None, headers=None):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
             self.req.method = method
             if headers:
@@ -187,8 +191,21 @@ def stub_out_registry_and_store_server(stubs, base_dir):
         for i in self.source.app_iter:
             yield i
 
+    def fake_sendable(self, body):
+        force = getattr(self, 'stub_force_sendfile', None)
+        if force is None:
+            return self._stub_orig_sendable(body)
+        else:
+            if force:
+                assert glance.common.client.SENDFILE_SUPPORTED
+            return force
+
     stubs.Set(glance.common.client.BaseClient, 'get_connection_type',
               fake_get_connection_type)
+    setattr(glance.common.client.BaseClient, '_stub_orig_sendable',
+              glance.common.client.BaseClient._sendable)
+    stubs.Set(glance.common.client.BaseClient, '_sendable',
+              fake_sendable)
     stubs.Set(glance.common.client.ImageBodyIterator, '__iter__',
               fake_image_iter)
 
@@ -211,7 +228,7 @@ def stub_out_registry_server(stubs, **kwargs):
         def close(self):
             return True
 
-        def request(self, method, url, body=None, headers={}):
+        def request(self, method, url, body=None, headers=None):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
             self.req.method = method
             if headers:
