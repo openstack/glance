@@ -95,7 +95,7 @@ def stub_out_registry_and_store_server(stubs):
         def close(self):
             return True
 
-        def request(self, method, url, body=None, headers={}):
+        def request(self, method, url, body=None, headers=None):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
             self.req.method = method
             if headers:
@@ -138,7 +138,10 @@ def stub_out_registry_and_store_server(stubs):
             self.req.headers[key] = value
 
         def endheaders(self):
-            pass
+            hl = [i.lower() for i in self.req.headers.keys()]
+            assert not ('content-length' in hl and
+                        'transfer-encoding' in hl), \
+                'Content-Length and Transfer-Encoding are mutually exclusive'
 
         def send(self, data):
             # send() is called during chunked-transfer encoding, and
@@ -146,7 +149,7 @@ def stub_out_registry_and_store_server(stubs):
             # only write the actual data in tests.
             self.req.body += data.split("\r\n")[1]
 
-        def request(self, method, url, body=None, headers={}):
+        def request(self, method, url, body=None, headers=None):
             self.req = webob.Request.blank("/" + url.lstrip("/"))
             self.req.method = method
             if headers:

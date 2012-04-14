@@ -198,8 +198,12 @@ class BaseClient(object):
                 # Chunk it, baby...
                 c.putrequest(method, action)
 
+                # According to HTTP/1.1, Content-Length and Transfer-Encoding
+                # conflict.
                 for header, value in headers.items():
-                    c.putheader(header, value)
+                    if header.lower() != 'content-length':
+                        c.putheader(header, value)
+
                 c.putheader('Transfer-Encoding', 'chunked')
                 c.endheaders()
 
