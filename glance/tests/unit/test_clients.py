@@ -21,6 +21,7 @@ import tempfile
 import unittest
 
 from glance import client
+from glance.common import client as base_client
 from glance.common import exception
 from glance.common import utils
 from glance.registry.db import api as db_api
@@ -28,6 +29,7 @@ from glance.registry.db import models as db_models
 from glance.registry import client as rclient
 from glance.registry import context as rcontext
 from glance.tests.unit import base
+from glance.tests import utils as test_utils
 
 CONF = {'sql_connection': 'sqlite://'}
 
@@ -1834,7 +1836,7 @@ class TestClient(base.IsolatedUnitTest):
         for k, v in fixture.items():
             self.assertEquals(v, new_meta[k])
 
-    def test_add_image_with_image_data_as_file(self):
+    def add_image_with_image_data_as_file(self, sendfile):
         """Tests can add image by passing image data as file"""
         fixture = {'name': 'fake public image',
                    'is_public': True,
@@ -1843,6 +1845,8 @@ class TestClient(base.IsolatedUnitTest):
                    'size': 19,
                    'properties': {'distro': 'Ubuntu 10.04 LTS'},
                   }
+
+        self.client.stub_force_sendfile = sendfile
 
         image_data_fixture = r"chunk00000remainder"
 
@@ -1870,6 +1874,14 @@ class TestClient(base.IsolatedUnitTest):
         self.assertEquals(image_data_fixture, new_image_data)
         for k, v in fixture.items():
             self.assertEquals(v, new_meta[k])
+
+    @test_utils.skip_if(not base_client.SENDFILE_SUPPORTED,
+                        'sendfile not supported')
+    def test_add_image_with_image_data_as_file_with_sendfile(self):
+        self.add_image_with_image_data_as_file(sendfile=True)
+
+    def test_add_image_with_image_data_as_file_without_sendfile(self):
+        self.add_image_with_image_data_as_file(sendfile=False)
 
     def _add_image_as_iterable(self):
         fixture = {'name': 'fake public image',
