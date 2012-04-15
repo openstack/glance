@@ -580,8 +580,8 @@ The ``member-add`` command grants a member, specified with ``<MEMBER>``, access
 to a private image, specified with ``<ID>``.  The ``--can-share`` flag can be
 given to allow the member to share the image, as shown below::
 
-  $> glance member-add ab15b8d3-8f33-4467-abf2-9f89a042a8c4 tenant1
-  $> glance member-add ab15b8d3-8f33-4467-abf2-9f89a042a8c4 tenant2 --can-share
+  $> glance member-add ab15b8d3-8f33-4467-abf2-9f89a042a8c4 tenantId1
+  $> glance member-add ab15b8d3-8f33-4467-abf2-9f89a042a8c4 tenantId2 --can-share
 
 The ``member-delete`` Command
 -----------------------------
