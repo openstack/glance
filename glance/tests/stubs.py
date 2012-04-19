@@ -107,7 +107,6 @@ def stub_out_registry_and_store_server(stubs, base_dir):
 
         def __init__(self, *args, **kwargs):
             self.sock = FakeSocket()
-            pass
 
         def connect(self):
             return True
