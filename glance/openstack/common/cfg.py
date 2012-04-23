@@ -90,16 +90,21 @@ the purposes of --help and CLI arg validation)::
     def add_common_opts(conf):
         conf.register_cli_opts(cli_opts)
 
-The config manager has a single CLI option defined by default, --config-file::
+The config manager has two CLI options defined by default, --config-file
+and --config-dir::
 
     class ConfigOpts(object):
 
-        config_file_opt = MultiStrOpt('config-file',
-                                      ...
-
         def __init__(self, ...):
-            ...
-            self.register_cli_opt(self.config_file_opt)
+
+            opts = [
+                MultiStrOpt('config-file',
+                        ...),
+                StrOpt('config-dir',
+                       ...),
+            ]
+
+            self.register_cli_opts(opts)
 
 Option values are parsed from any supplied config files using
 openstack.common.iniparser. If none are specified, a default set is used
@@ -221,6 +226,7 @@ log files:
 
 import collections
 import copy
+import glob
 import functools
 import optparse
 import os
@@ -826,14 +832,26 @@ class ConfigOpts(collections.Mapping):
 
         self.__cache = {}
 
-        self.register_cli_opt(
-            MultiStrOpt('config-file',
-                        default=self.default_config_files,
-                        metavar='PATH',
-                        help='Path to a config file to use. Multiple config '
-                             'files can be specified, with values in later '
-                             'files taking precedence. The default files used '
-                             'are: %s' % (self.default_config_files, )))
+        opts = [
+             MultiStrOpt('config-file',
+                         default=self.default_config_files,
+                         metavar='PATH',
+                         help='Path to a config file to use. Multiple config '
+                              'files can be specified, with values in later '
+                              'files taking precedence. The default files '
+                              ' used are: %s' %
+                              (self.default_config_files, )),
+            StrOpt('config-dir',
+                   metavar='DIR',
+                   help='Path to a config directory to pull *.conf '
+                        'files from. This file set is sorted, so as to '
+                        'provide a predictable parse order if individual '
+                        'options are over-ridden. The set is parsed after '
+                        'the file(s), if any, specified via --config-file, '
+                        'hence over-ridden options in the directory take '
+                        'precedence.'),
+            ]
+        self.register_cli_opts(opts)
 
     def __clear_cache(f):
         @functools.wraps(f)
@@ -854,6 +872,10 @@ class ConfigOpts(collections.Mapping):
         The object may be called multiple times, each time causing the previous
         set of values to be overwritten.
 
+        If the --config-dir option is set, any *.conf files from this
+        directory are pulled in, after all the file(s) specified by the
+        --config-file option.
+
         :params args: command line arguments (defaults to sys.argv[1:])
         :returns: the list of arguments left over after parsing options
         :raises: SystemExit, ConfigFilesNotFoundError, ConfigFileParseError
@@ -866,8 +888,14 @@ class ConfigOpts(collections.Mapping):
 
         self._cli_values = vars(values)
 
-        if self.config_file:
-            self._parse_config_files(self.config_file)
+        def _list_config_dir():
+            return sorted(glob.glob(os.path.join(self.config_dir, '*.conf')))
+
+        from_file = list(self.config_file)
+
+        from_dir = _list_config_dir() if self.config_dir else []
+
+        self._parse_config_files(from_file + from_dir)
 
         return args
 
