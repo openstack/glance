@@ -43,6 +43,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         # spin up won't have keystone support, so we need to switch to the
         # NoAuth strategy.
         os.environ['OS_AUTH_STRATEGY'] = 'noauth'
+        os.environ['OS_AUTH_URL'] = ''
 
     def add_image(self, name):
         """

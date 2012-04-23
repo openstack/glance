@@ -32,6 +32,16 @@ class TestMiscellaneous(functional.FunctionalTest):
 
     """Some random tests for various bugs and stuff"""
 
+    def setUp(self):
+        super(TestMiscellaneous, self).setUp()
+
+        # NOTE(sirp): This is needed in case we are running the tests under an
+        # environment in which OS_AUTH_STRATEGY=keystone. The test server we
+        # spin up won't have keystone support, so we need to switch to the
+        # NoAuth strategy.
+        os.environ['OS_AUTH_STRATEGY'] = 'noauth'
+        os.environ['OS_AUTH_URL'] = ''
+
     def test_api_response_when_image_deleted_from_filesystem(self):
         """
         A test for LP bug #781410 -- glance should fail more gracefully

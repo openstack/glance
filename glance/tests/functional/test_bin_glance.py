@@ -72,6 +72,7 @@ class TestBinGlance(functional.FunctionalTest):
         # spin up won't have keystone support, so we need to switch to the
         # NoAuth strategy.
         os.environ['OS_AUTH_STRATEGY'] = 'noauth'
+        os.environ['OS_AUTH_URL'] = ''
 
     def _assertStartsWith(self, str, prefix):
         msg = 'expected "%s" to start with "%s"' % (str, prefix)
