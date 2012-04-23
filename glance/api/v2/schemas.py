@@ -62,8 +62,8 @@ ACCESS_SCHEMA = {
 class SchemasController(glance.api.v2.base.Controller):
     def index(self, req):
         links = [
-            {'rel': 'image', 'href': '/schemas/image'},
-            {'rel': 'access', 'href': '/schemas/image/access'},
+            {'rel': 'image', 'href': '/v2/schemas/image'},
+            {'rel': 'access', 'href': '/v2/schemas/image/access'},
         ]
         return {'links': links}
 

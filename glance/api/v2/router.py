@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2011 OpenStack LLC.
+# Copyright 2012 OpenStack LLC.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -19,9 +19,8 @@ import logging
 
 import routes
 
-#from glance.api.v1 import images
-#from glance.api.v1 import members
 from glance.api.v2 import root
+from glance.api.v2 import schemas
 from glance.common import wsgi
 
 logger = logging.getLogger(__name__)
@@ -29,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 class API(wsgi.Router):
 
-    """WSGI router for Glance v1 API requests."""
+    """WSGI router for Glance v2 API requests."""
 
     def __init__(self, conf, **local_conf):
         self.conf = conf
@@ -37,5 +36,19 @@ class API(wsgi.Router):
 
         root_resource = root.create_resource(conf)
         mapper.connect('/', controller=root_resource, action='index')
+
+        schemas_resource = schemas.create_resource(conf)
+        mapper.connect('/schemas',
+                       controller=schemas_resource,
+                       action='index',
+                       conditions={'method': ['GET']})
+        mapper.connect('/schemas/image',
+                       controller=schemas_resource,
+                       action='image',
+                       conditions={'method': ['GET']})
+        mapper.connect('/schemas/image/access',
+                       controller=schemas_resource,
+                       action='access',
+                       conditions={'method': ['GET']})
 
         super(API, self).__init__(mapper)

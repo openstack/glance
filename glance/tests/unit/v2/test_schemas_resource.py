@@ -29,8 +29,8 @@ class TestSchemasController(unittest.TestCase):
         req = test_utils.FakeRequest()
         output = self.controller.index(req)
         expected = {'links': [
-            {'rel': 'image', 'href': '/schemas/image'},
-            {'rel': 'access', 'href': '/schemas/image/access'},
+            {'rel': 'image', 'href': '/v2/schemas/image'},
+            {'rel': 'access', 'href': '/v2/schemas/image/access'},
         ]}
         self.assertEqual(expected, output)
 
