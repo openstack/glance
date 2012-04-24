@@ -316,7 +316,7 @@ class TestQpidNotifier(unittest.TestCase):
         super(TestQpidNotifier, self).tearDown()
 
     def _test_notify(self, priority):
-        test_msg = json.dumps({'a': 'b'})
+        test_msg = {'a': 'b'}
 
         self.mock_connection = self.mocker.CreateMock(self.orig_connection)
         self.mock_session = self.mocker.CreateMock(self.orig_session)

@@ -135,16 +135,13 @@ class QpidStrategy(strategy.Strategy):
         return self.session.sender(address)
 
     def warn(self, msg):
-        qpid_msg = qpid.messaging.Message(content=msg,
-                                          content_type='application/json')
+        qpid_msg = qpid.messaging.Message(content=msg)
         self.sender_warn.send(qpid_msg)
 
     def info(self, msg):
-        qpid_msg = qpid.messaging.Message(content=msg,
-                                          content_type='application/json')
+        qpid_msg = qpid.messaging.Message(content=msg)
         self.sender_info.send(qpid_msg)
 
     def error(self, msg):
-        qpid_msg = qpid.messaging.Message(content=msg,
-                                          content_type='application/json')
+        qpid_msg = qpid.messaging.Message(content=msg)
         self.sender_error.send(qpid_msg)
