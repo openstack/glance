@@ -5,6 +5,7 @@ include AUTHORS
 include run_tests.py
 include HACKING.rst
 include LICENSE
+include ChangeLog
 include babel.cfg tox.ini
 include glance/locale/glance.pot
 include glance/registry/db/migrate_repo/README
