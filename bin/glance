@@ -844,7 +844,7 @@ def create_options(parser):
     parser.add_option('-A', '--os_auth_token', '--auth_token',
                       dest="os_auth_token", metavar="TOKEN", default=None,
                       help="Authentication token to use to identify the "
-                           "client to the glance server.  --auth_token"
+                           "client to the glance server.  --auth_token "
                            "is deprecated and will be removed")
     parser.add_option('-I', '--os_username', dest="os_username",
                       metavar="USER", default=None,
