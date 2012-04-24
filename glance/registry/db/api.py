@@ -34,9 +34,9 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import or_, and_
 
-from glance.common import cfg
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import cfg
 from glance.registry.db import migration
 from glance.registry.db import models
 

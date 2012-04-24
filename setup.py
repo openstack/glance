@@ -21,8 +21,8 @@ import subprocess
 from setuptools import setup, find_packages
 from setuptools.command.sdist import sdist
 
-from glance.common.setup import parse_requirements
-from glance.common.setup import parse_dependency_links
+from glance.openstack.common.setup import parse_requirements
+from glance.openstack.common.setup import parse_dependency_links
 
 gettext.install('glance', unicode=1)
 

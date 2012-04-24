@@ -34,8 +34,8 @@ from migrate.versioning.repository import Repository
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 
-from glance.common import cfg
 from glance.common import exception
+from glance.openstack.common import cfg
 import glance.registry.db.migration as migration_api
 from glance.registry.db import models
 from glance.tests import utils

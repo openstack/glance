@@ -22,8 +22,8 @@ Registry API
 import logging
 import os
 
-from glance.common import cfg
 from glance.common import exception
+from glance.openstack.common import cfg
 from glance.registry import client
 
 logger = logging.getLogger('glance.registry')

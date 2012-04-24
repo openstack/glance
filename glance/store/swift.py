@@ -25,8 +25,8 @@ import logging
 import math
 import urlparse
 
-from glance.common import cfg
 from glance.common import exception
+from glance.openstack.common import cfg
 import glance.store
 import glance.store.base
 import glance.store.location

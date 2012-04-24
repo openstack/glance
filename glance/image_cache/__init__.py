@@ -21,9 +21,9 @@ LRU Cache for Image Data
 
 import logging
 
-from glance.common import cfg
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import cfg
 
 logger = logging.getLogger(__name__)
 DEFAULT_MAX_CACHE_SIZE = 10 * 1024 * 1024 * 1024  # 10 GB

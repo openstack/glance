@@ -26,8 +26,8 @@ import logging.handlers
 import os
 import sys
 
-from glance.common import cfg
 from glance.common import wsgi
+from glance.openstack.common import cfg
 from glance import version
 
 

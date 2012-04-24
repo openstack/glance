@@ -17,7 +17,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glance.common import cfg
+from glance.openstack.common import cfg
 
 
 def add_options(conf):

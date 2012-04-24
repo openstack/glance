@@ -25,8 +25,8 @@ import unittest
 import stubout
 
 from glance import image_cache
-from glance.common import cfg
 from glance.common import utils
+from glance.openstack.common import cfg
 from glance.tests import utils as test_utils
 from glance.tests.utils import skip_if_disabled, xattr_writes_supported
 

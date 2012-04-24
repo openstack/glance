@@ -20,9 +20,9 @@ import datetime
 import socket
 import uuid
 
-from glance.common import cfg
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import cfg
 
 
 _STRATEGIES = {

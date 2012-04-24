@@ -20,9 +20,9 @@
 import json
 import os.path
 
-from glance.common import cfg
 from glance.common import exception
 from glance.common import policy
+from glance.openstack.common import cfg
 
 
 class Enforcer(object):
@@ -58,7 +58,7 @@ class Enforcer(object):
         if conf.policy_file:
             return conf.policy_file
 
-        matches = cfg.find_config_files('glance', 'policy', 'json')
+        matches = cfg.find_config_files('glance', 'policy', '.json')
 
         try:
             return matches[0]

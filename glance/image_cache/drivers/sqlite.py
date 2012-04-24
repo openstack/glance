@@ -29,9 +29,9 @@ import time
 from eventlet import sleep, timeout
 import sqlite3
 
-from glance.common import cfg
 from glance.common import exception
 from glance.image_cache.drivers import base
+from glance.openstack.common import cfg
 
 logger = logging.getLogger(__name__)
 DEFAULT_SQL_CALL_TIMEOUT = 2

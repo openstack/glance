@@ -43,8 +43,8 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 gettext.install('glance', unicode=1)
 
-from glance.common import cfg
 from glance.common import config
+from glance.openstack.common import cfg
 
 ALL_COMMANDS = ['start', 'stop', 'shutdown', 'restart',
                 'reload', 'force-reload']

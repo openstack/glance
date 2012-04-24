@@ -21,8 +21,8 @@ import time
 import kombu.connection
 import kombu.entity
 
-from glance.common import cfg
 from glance.notifier import strategy
+from glance.openstack.common import cfg
 
 
 logger = logging.getLogger('glance.notifier.notify_kombu')

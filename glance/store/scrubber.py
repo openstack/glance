@@ -27,8 +27,8 @@ import glance.store.s3
 import glance.store.swift
 from glance import registry
 from glance import store
-from glance.common import cfg
 from glance.common import utils
+from glance.openstack.common import cfg
 from glance.registry import client
 
 

@@ -40,9 +40,9 @@ import routes.middleware
 import webob.dec
 import webob.exc
 
-from glance.common import cfg
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import cfg
 
 
 bind_opts = [

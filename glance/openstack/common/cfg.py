@@ -17,7 +17,9 @@
 r"""
 Configuration options which may be set on the command line or in config files.
 
-The schema for each option is defined using the Opt sub-classes e.g.
+The schema for each option is defined using the Opt sub-classes, e.g.:
+
+::
 
     common_opts = [
         cfg.StrOpt('bind_host',
@@ -28,22 +30,20 @@ The schema for each option is defined using the Opt sub-classes e.g.
                    help='Port number to listen on')
     ]
 
-Options can be strings, integers, floats, booleans, lists or 'multi strings':
+Options can be strings, integers, floats, booleans, lists or 'multi strings'::
 
-    enabled_apis_opt = \
-        cfg.ListOpt('enabled_apis',
-                    default=['ec2', 'osapi'],
-                    help='List of APIs to enable by default')
+    enabled_apis_opt = cfg.ListOpt('enabled_apis',
+                                   default=['ec2', 'osapi_compute'],
+                                   help='List of APIs to enable by default')
 
     DEFAULT_EXTENSIONS = [
-        'nova.api.openstack.contrib.standard_extensions'
+        'nova.api.openstack.compute.contrib.standard_extensions'
     ]
-    osapi_extension_opt = \
-        cfg.MultiStrOpt('osapi_extension',
-                        default=DEFAULT_EXTENSIONS)
+    osapi_compute_extension_opt = cfg.MultiStrOpt('osapi_compute_extension',
+                                                  default=DEFAULT_EXTENSIONS)
 
 Option schemas are registered with with the config manager at runtime, but
-before the option is referenced:
+before the option is referenced::
 
     class ExtensionManager(object):
 
@@ -55,11 +55,11 @@ before the option is referenced:
             ...
 
         def _load_extensions(self):
-            for ext_factory in self.conf.osapi_extension:
+            for ext_factory in self.conf.osapi_compute_extension:
                 ....
 
 A common usage pattern is for each option schema to be defined in the module or
-class which uses the option:
+class which uses the option::
 
     opts = ...
 
@@ -74,7 +74,7 @@ class which uses the option:
 
 An option may optionally be made available via the command line. Such options
 must registered with the config manager before the command line is parsed (for
-the purposes of --help and CLI arg validation):
+the purposes of --help and CLI arg validation)::
 
     cli_opts = [
         cfg.BoolOpt('verbose',
@@ -90,21 +90,20 @@ the purposes of --help and CLI arg validation):
     def add_common_opts(conf):
         conf.register_cli_opts(cli_opts)
 
-The config manager has a single CLI option defined by default, --config-file:
+The config manager has a single CLI option defined by default, --config-file::
 
     class ConfigOpts(object):
 
-        config_file_opt = \
-            MultiStrOpt('config-file',
-                        ...
+        config_file_opt = MultiStrOpt('config-file',
+                                      ...
 
         def __init__(self, ...):
             ...
             self.register_cli_opt(self.config_file_opt)
 
-Option values are parsed from any supplied config files using SafeConfigParser.
-If none are specified, a default set is used e.g. glance-api.conf and
-glance-common.conf:
+Option values are parsed from any supplied config files using
+openstack.common.iniparser. If none are specified, a default set is used
+e.g. glance-api.conf and glance-common.conf::
 
     glance-api.conf:
       [DEFAULT]
@@ -119,7 +118,7 @@ are parsed in order, with values in later files overriding those in earlier
 files.
 
 The parsing of CLI args and config files is initiated by invoking the config
-manager e.g.
+manager e.g.::
 
     conf = ConfigOpts()
     conf.register_opt(BoolOpt('verbose', ...))
@@ -127,34 +126,26 @@ manager e.g.
     if conf.verbose:
         ...
 
-Options can be registered as belonging to a group:
+Options can be registered as belonging to a group::
 
-    rabbit_group = cfg.OptionGroup(name='rabbit',
-                                   title='RabbitMQ options')
+    rabbit_group = cfg.OptGroup(name='rabbit',
+                                title='RabbitMQ options')
 
-    rabbit_host_opt = \
-        cfg.StrOpt('host',
-                   group='rabbit',
-                   default='localhost',
-                   help='IP/hostname to listen on'),
-    rabbit_port_opt = \
-        cfg.IntOpt('port',
-                   default=5672,
-                   help='Port number to listen on')
-    rabbit_ssl_opt = \
-        conf.BoolOpt('use_ssl',
-                     default=False,
-                     help='Whether to support SSL connections')
+    rabbit_host_opt = cfg.StrOpt('host',
+                                 default='localhost',
+                                 help='IP/hostname to listen on'),
+    rabbit_port_opt = cfg.IntOpt('port',
+                                 default=5672,
+                                 help='Port number to listen on')
 
     def register_rabbit_opts(conf):
         conf.register_group(rabbit_group)
-        # options can be registered under a group in any of these ways:
-        conf.register_opt(rabbit_host_opt)
+        # options can be registered under a group in either of these ways:
+        conf.register_opt(rabbit_host_opt, group=rabbit_group)
         conf.register_opt(rabbit_port_opt, group='rabbit')
-        conf.register_opt(rabbit_ssl_opt, group=rabbit_group)
 
 If no group is specified, options belong to the 'DEFAULT' section of config
-files:
+files::
 
     glance-api.conf:
       [DEFAULT]
@@ -169,13 +160,14 @@ files:
       password = guest
       virtual_host = /
 
-Command-line options in a group are automatically prefixed with the group name:
+Command-line options in a group are automatically prefixed with the
+group name::
 
-    --rabbit-host localhost --rabbit-use-ssl False
+    --rabbit-host localhost --rabbit-port 9999
 
 Option values in the default group are referenced as attributes/properties on
 the config manager; groups are also attributes on the config manager, with
-attributes for each of the options associated with the group:
+attributes for each of the options associated with the group::
 
     server.start(app, conf.bind_port, conf.bind_host, conf)
 
@@ -184,7 +176,7 @@ attributes for each of the options associated with the group:
         port=conf.rabbit.port,
         ...)
 
-Option values may reference other values using PEP 292 string substitution:
+Option values may reference other values using PEP 292 string substitution::
 
     opts = [
         cfg.StrOpt('state_path',
@@ -200,6 +192,22 @@ Option values may reference other values using PEP 292 string substitution:
 
 Note that interpolation can be avoided by using '$$'.
 
+For command line utilities that dispatch to other command line utilities, the
+disable_interspersed_args() method is available. If this this method is called,
+then parsing e.g.::
+
+  script --verbose cmd --debug /tmp/mything
+
+will no longer return::
+
+  ['cmd', '/tmp/mything']
+
+as the leftover arguments, but will instead return::
+
+  ['cmd', '--debug', '/tmp/mything']
+
+i.e. argument parsing is stopped at the first non-option argument.
+
 Options may be declared as secret so that their values are not leaked into
 log files:
 
@@ -211,12 +219,15 @@ log files:
 
 """
 
-import sys
-import ConfigParser
+import collections
 import copy
+import functools
 import optparse
 import os
 import string
+import sys
+
+from glance.openstack.common import iniparser
 
 
 class Error(Exception):
@@ -239,7 +250,7 @@ class ArgsAlreadyParsedError(Error):
         return ret
 
 
-class NoSuchOptError(Error):
+class NoSuchOptError(Error, AttributeError):
     """Raised if an opt which doesn't exist is referenced."""
 
     def __init__(self, opt_name, group=None):
@@ -288,8 +299,8 @@ class ConfigFilesNotFoundError(Error):
         self.config_files = config_files
 
     def __str__(self):
-        return 'Failed to read some config files: %s' % \
-            string.join(self.config_files, ',')
+        return ('Failed to read some config files: %s' %
+                string.join(self.config_files, ','))
 
 
 class ConfigFileParseError(Error):
@@ -308,12 +319,16 @@ class ConfigFileValueError(Error):
     pass
 
 
-def find_config_files(project=None, prog=None, filetype="conf"):
+def find_config_files(project=None, prog=None, extension='.conf'):
     """Return a list of default configuration files.
+
+    :param project: an optional project name
+    :param prog: the program name, defaulting to the basename of sys.argv[0]
+    :param extension: the type of the config file
 
     We default to two config files: [${project}.conf, ${prog}.conf]
 
-    And we look for those config files in the following directories:
+    And we look for those config files in the following directories::
 
       ~/.${project}/
       ~/
@@ -328,9 +343,6 @@ def find_config_files(project=None, prog=None, filetype="conf"):
     '~/.foo/bar.conf']
 
     If no project name is supplied, we only look for ${prog.conf}.
-
-    :param project: an optional project name
-    :param prog: the program name, defaulting to the basename of sys.argv[0]
     """
     if prog is None:
         prog = os.path.basename(sys.argv[0])
@@ -342,23 +354,20 @@ def find_config_files(project=None, prog=None, filetype="conf"):
         fix_path('~'),
         os.path.join('/etc', project) if project else None,
         '/etc',
-        'etc',
+        'etc'
         ]
     cfg_dirs = filter(bool, cfg_dirs)
 
-    def search_dirs(dirs, basename):
+    def search_dirs(dirs, basename, extension):
         for d in dirs:
-            path = os.path.join(d, basename)
+            path = os.path.join(d, '%s%s' % (basename, extension))
             if os.path.exists(path):
                 return path
 
     config_files = []
-
     if project:
-        project_config = search_dirs(cfg_dirs, '%s.%s' % (project, filetype))
-        config_files.append(project_config)
-
-    config_files.append(search_dirs(cfg_dirs, '%s.%s' % (prog, filetype)))
+        config_files.append(search_dirs(cfg_dirs, project, extension))
+    config_files.append(search_dirs(cfg_dirs, prog, extension))
 
     return filter(bool, config_files)
 
@@ -403,6 +412,7 @@ class Opt(object):
       help:
         an string explaining how the options value is used
     """
+    multi = False
 
     def __init__(self, name, dest=None, short=None, default=None,
                  metavar=None, help=None, secret=False):
@@ -431,7 +441,7 @@ class Opt(object):
         self.secret = secret
 
     def _get_from_config_parser(self, cparser, section):
-        """Retrieves the option value from a ConfigParser object.
+        """Retrieves the option value from a MultiConfigParser object.
 
         This is the method ConfigOpts uses to look up the option value from
         config files. Most opt types override this method in order to perform
@@ -542,9 +552,19 @@ class BoolOpt(Opt):
     1/0, yes/no, true/false or on/off.
     """
 
+    _boolean_states = {'1': True, 'yes': True, 'true': True, 'on': True,
+                       '0': False, 'no': False, 'false': False, 'off': False}
+
     def _get_from_config_parser(self, cparser, section):
         """Retrieve the opt value as a boolean from ConfigParser."""
-        return cparser.getboolean(section, self.dest)
+        def convert_bool(v):
+            value = self._boolean_states.get(v.lower())
+            if value is None:
+                raise ValueError('Unexpected boolean value %r' % v)
+
+            return value
+
+        return [convert_bool(v) for v in cparser.get(section, self.dest)]
 
     def _add_to_cli(self, parser, group=None):
         """Extends the base class method to add the --nooptname option."""
@@ -571,7 +591,7 @@ class IntOpt(Opt):
 
     def _get_from_config_parser(self, cparser, section):
         """Retrieve the opt value as a integer from ConfigParser."""
-        return cparser.getint(section, self.dest)
+        return [int(v) for v in cparser.get(section, self.dest)]
 
     def _get_optparse_kwargs(self, group, **kwargs):
         """Extends the base optparse keyword dict for integer options."""
@@ -585,7 +605,7 @@ class FloatOpt(Opt):
 
     def _get_from_config_parser(self, cparser, section):
         """Retrieve the opt value as a float from ConfigParser."""
-        return cparser.getfloat(section, self.dest)
+        return [float(v) for v in cparser.get(section, self.dest)]
 
     def _get_optparse_kwargs(self, group, **kwargs):
         """Extends the base optparse keyword dict for float options."""
@@ -602,7 +622,7 @@ class ListOpt(Opt):
 
     def _get_from_config_parser(self, cparser, section):
         """Retrieve the opt value as a list from ConfigParser."""
-        return cparser.get(section, self.dest).split(',')
+        return [v.split(',') for v in cparser.get(section, self.dest)]
 
     def _get_optparse_kwargs(self, group, **kwargs):
         """Extends the base optparse keyword dict for list options."""
@@ -624,14 +644,7 @@ class MultiStrOpt(Opt):
     Multistr opt values are string opts which may be specified multiple times.
     The opt value is a list containing all the string values specified.
     """
-
-    def _get_from_config_parser(self, cparser, section):
-        """Retrieve the opt value as a multistr from ConfigParser."""
-        # FIXME(markmc): values spread across the CLI and multiple
-        #                config files should be appended
-        value = \
-            super(MultiStrOpt, self)._get_from_config_parser(cparser, section)
-        return value if value is None else [value]
+    multi = True
 
     def _get_optparse_kwargs(self, group, **kwargs):
         """Extends the base optparse keyword dict for multi str options."""
@@ -673,7 +686,7 @@ class OptGroup(object):
             self.title = title
         self.help = help
 
-        self._opts = {}  # dict of dicts of {opt:, override:, default:)
+        self._opts = {}  # dict of dicts of (opt:, override:, default:)
         self._optparse_group = None
 
     def _register_opt(self, opt):
@@ -693,12 +706,75 @@ class OptGroup(object):
     def _get_optparse_group(self, parser):
         """Build an optparse.OptionGroup for this group."""
         if self._optparse_group is None:
-            self._optparse_group = \
-                optparse.OptionGroup(parser, self.title, self.help)
+            self._optparse_group = optparse.OptionGroup(parser, self.title,
+                                                        self.help)
         return self._optparse_group
 
 
-class ConfigOpts(object):
+class ParseError(iniparser.ParseError):
+    def __init__(self, msg, lineno, line, filename):
+        super(ParseError, self).__init__(msg, lineno, line)
+        self.filename = filename
+
+    def __str__(self):
+        return 'at %s:%d, %s: %r' % (self.filename, self.lineno,
+                                     self.msg, self.line)
+
+
+class ConfigParser(iniparser.BaseParser):
+    def __init__(self, filename, sections):
+        super(ConfigParser, self).__init__()
+        self.filename = filename
+        self.sections = sections
+        self.section = None
+
+    def parse(self):
+        with open(self.filename) as f:
+            return super(ConfigParser, self).parse(f)
+
+    def new_section(self, section):
+        self.section = section
+        self.sections.setdefault(self.section, {})
+
+    def assignment(self, key, value):
+        if not self.section:
+            raise self.error_no_section()
+
+        self.sections[self.section].setdefault(key, [])
+        self.sections[self.section][key].append('\n'.join(value))
+
+    def parse_exc(self, msg, lineno, line=None):
+        return ParseError(msg, lineno, line, self.filename)
+
+    def error_no_section(self):
+        return self.parse_exc('Section must be started before assignment',
+                              self.lineno)
+
+
+class MultiConfigParser(object):
+    def __init__(self):
+        self.sections = {}
+
+    def read(self, config_files):
+        read_ok = []
+
+        for filename in config_files:
+            parser = ConfigParser(filename, self.sections)
+
+            try:
+                parser.parse()
+            except IOError:
+                continue
+
+            read_ok.append(filename)
+
+        return read_ok
+
+    def get(self, section, name):
+        return self.sections[section][name]
+
+
+class ConfigOpts(collections.Mapping):
 
     """
     Config options which may be set on the command line or in config files.
@@ -748,7 +824,9 @@ class ConfigOpts(object):
                                               usage=self.usage)
         self._cparser = None
 
-        self.register_cli_opt(\
+        self.__cache = {}
+
+        self.register_cli_opt(
             MultiStrOpt('config-file',
                         default=self.default_config_files,
                         metavar='PATH',
@@ -756,6 +834,15 @@ class ConfigOpts(object):
                              'files can be specified, with values in later '
                              'files taking precedence. The default files used '
                              'are: %s' % (self.default_config_files, )))
+
+    def __clear_cache(f):
+        @functools.wraps(f)
+        def __inner(self, *args, **kwargs):
+            if kwargs.pop('clear_cache', True):
+                self.__cache.clear()
+            return f(self, *args, **kwargs)
+
+        return __inner
 
     def __call__(self, args=None):
         """Parse command line arguments and config files.
@@ -791,14 +878,33 @@ class ConfigOpts(object):
         :returns: the option value (after string subsititution) or a GroupAttr
         :raises: NoSuchOptError,ConfigFileValueError,TemplateSubstitutionError
         """
-        return self._substitute(self._get(name))
+        return self._get(name)
 
+    def __getitem__(self, key):
+        """Look up an option value and perform string substitution."""
+        return self.__getattr__(key)
+
+    def __contains__(self, key):
+        """Return True if key is the name of a registered opt or group."""
+        return key in self._opts or key in self._groups
+
+    def __iter__(self):
+        """Iterate over all registered opt and group names."""
+        for key in self._opts.keys() + self._groups.keys():
+            yield key
+
+    def __len__(self):
+        """Return the number of options and option groups."""
+        return len(self._opts) + len(self._groups)
+
+    @__clear_cache
     def reset(self):
         """Reset the state of the object to before it was called."""
         self._args = None
         self._cli_values = None
         self._cparser = None
 
+    @__clear_cache
     def register_opt(self, opt, group=None):
         """Register an option schema.
 
@@ -821,11 +927,13 @@ class ConfigOpts(object):
 
         return True
 
+    @__clear_cache
     def register_opts(self, opts, group=None):
         """Register multiple option schemas at once."""
         for opt in opts:
-            self.register_opt(opt, group)
+            self.register_opt(opt, group, clear_cache=False)
 
+    @__clear_cache
     def register_cli_opt(self, opt, group=None):
         """Register a CLI option schema.
 
@@ -838,10 +946,10 @@ class ConfigOpts(object):
         :return: False if the opt was already register, True otherwise
         :raises: DuplicateOptError, ArgsAlreadyParsedError
         """
-        if self._args != None:
+        if self._args is not None:
             raise ArgsAlreadyParsedError("cannot register CLI option")
 
-        if not self.register_opt(opt, group):
+        if not self.register_opt(opt, group, clear_cache=False):
             return False
 
         if group is not None:
@@ -851,10 +959,11 @@ class ConfigOpts(object):
 
         return True
 
+    @__clear_cache
     def register_cli_opts(self, opts, group=None):
         """Register multiple CLI option schemas at once."""
         for opt in opts:
-            self.register_cli_opt(opt, group)
+            self.register_cli_opt(opt, group, clear_cache=False)
 
     def register_group(self, group):
         """Register an option group.
@@ -869,6 +978,7 @@ class ConfigOpts(object):
 
         self._groups[group.name] = copy.copy(group)
 
+    @__clear_cache
     def set_override(self, name, override, group=None):
         """Override an opt value.
 
@@ -883,6 +993,7 @@ class ConfigOpts(object):
         opt_info = self._get_opt_info(name, group)
         opt_info['override'] = override
 
+    @__clear_cache
     def set_default(self, name, default, group=None):
         """Override an opt's default value.
 
@@ -896,6 +1007,31 @@ class ConfigOpts(object):
         """
         opt_info = self._get_opt_info(name, group)
         opt_info['default'] = default
+
+    def disable_interspersed_args(self):
+        """Set parsing to stop on the first non-option.
+
+        If this this method is called, then parsing e.g.
+
+          script --verbose cmd --debug /tmp/mything
+
+        will no longer return:
+
+          ['cmd', '/tmp/mything']
+
+        as the leftover arguments, but will instead return:
+
+          ['cmd', '--debug', '/tmp/mything']
+
+        i.e. argument parsing is stopped at the first non-option argument.
+        """
+        self._oparser.disable_interspersed_args()
+
+    def enable_interspersed_args(self):
+        """Set parsing to not stop on the first non-option.
+
+        This it the default behaviour."""
+        self._oparser.enable_interspersed_args()
 
     def log_opt_values(self, logger, lvl):
         """Log the value of all registered opts.
@@ -923,7 +1059,7 @@ class ConfigOpts(object):
                        _sanitize(opt, getattr(self, opt_name)))
 
         for group_name in self._groups:
-            group_attr = self.GroupAttr(self, group_name)
+            group_attr = self.GroupAttr(self, self._get_group(group_name))
             for opt_name in sorted(self._groups[group_name]._opts):
                 opt = self._get_opt_info(opt_name, group_name)['opt']
                 logger.log(lvl, "%-30s = %s",
@@ -936,20 +1072,33 @@ class ConfigOpts(object):
         """Print the usage message for the current program."""
         self._oparser.print_usage(file)
 
+    def print_help(self, file=None):
+        """Print the help message for the current program."""
+        self._oparser.print_help(file)
+
     def _get(self, name, group=None):
+        if isinstance(group, OptGroup):
+            key = (group.name, name)
+        else:
+            key = (group, name)
+        try:
+            return self.__cache[key]
+        except KeyError:
+            value = self._substitute(self._do_get(name, group))
+            self.__cache[key] = value
+            return value
+
+    def _do_get(self, name, group=None):
         """Look up an option value.
 
         :param name: the opt name (or 'dest', more precisely)
-        :param group: an option OptGroup
+        :param group: an OptGroup
         :returns: the option value, or a GroupAttr object
         :raises: NoSuchOptError, NoSuchGroupError, ConfigFileValueError,
                  TemplateSubstitutionError
         """
         if group is None and name in self._groups:
-            return self.GroupAttr(self, name)
-
-        if group is not None:
-            group = self._get_group(group)
+            return self.GroupAttr(self, self._get_group(name))
 
         info = self._get_opt_info(name, group)
         default, opt, override = map(lambda k: info[k], sorted(info.keys()))
@@ -957,20 +1106,31 @@ class ConfigOpts(object):
         if override is not None:
             return override
 
+        values = []
         if self._cparser is not None:
             section = group.name if group is not None else 'DEFAULT'
             try:
-                return opt._get_from_config_parser(self._cparser, section)
-            except (ConfigParser.NoOptionError,
-                    ConfigParser.NoSectionError):
+                value = opt._get_from_config_parser(self._cparser, section)
+            except KeyError:
                 pass
-            except ValueError, ve:
+            except ValueError as ve:
                 raise ConfigFileValueError(str(ve))
+            else:
+                if not opt.multi:
+                    # No need to continue since the last value wins
+                    return value[-1]
+                values.extend(value)
 
         name = name if group is None else group.name + '_' + name
-        value = self._cli_values.get(name, None)
+        value = self._cli_values.get(name)
         if value is not None:
-            return value
+            if not opt.multi:
+                return value
+
+            return value + values
+
+        if values:
+            return values
 
         if default is not None:
             return default
@@ -1040,35 +1200,53 @@ class ConfigOpts(object):
 
         :raises: ConfigFilesNotFoundError, ConfigFileParseError
         """
-        self._cparser = ConfigParser.SafeConfigParser()
+        self._cparser = MultiConfigParser()
 
         try:
             read_ok = self._cparser.read(config_files)
-        except ConfigParser.ParsingError, cpe:
-            raise ConfigFileParseError(cpe.filename, cpe.message)
+        except iniparser.ParseError as pe:
+            raise ConfigFileParseError(pe.filename, str(pe))
 
         if read_ok != config_files:
             not_read_ok = filter(lambda f: f not in read_ok, config_files)
             raise ConfigFilesNotFoundError(not_read_ok)
 
-    class GroupAttr(object):
+    class GroupAttr(collections.Mapping):
 
         """
-        A helper class representing the option values of a group as attributes.
+        A helper class representing the option values of a group as a mapping
+        and attributes.
         """
 
         def __init__(self, conf, group):
             """Construct a GroupAttr object.
 
             :param conf: a ConfigOpts object
-            :param group: a group name or OptGroup object
+            :param group: an OptGroup object
             """
             self.conf = conf
             self.group = group
 
         def __getattr__(self, name):
             """Look up an option value and perform template substitution."""
-            return self.conf._substitute(self.conf._get(name, self.group))
+            return self.conf._get(name, self.group)
+
+        def __getitem__(self, key):
+            """Look up an option value and perform string substitution."""
+            return self.__getattr__(key)
+
+        def __contains__(self, key):
+            """Return True if key is the name of a registered opt or group."""
+            return key in self.group._opts
+
+        def __iter__(self):
+            """Iterate over all registered opt and group names."""
+            for key in self.group._opts.keys():
+                yield key
+
+        def __len__(self):
+            """Return the number of options and option groups."""
+            return len(self.group._opts)
 
     class StrSubWrapper(object):
 
@@ -1099,8 +1277,7 @@ class ConfigOpts(object):
 
 class CommonConfigOpts(ConfigOpts):
 
-    DEFAULT_LOG_FORMAT = ('%(asctime)s %(process)d %(levelname)8s '
-                          '[%(name)s] %(message)s')
+    DEFAULT_LOG_FORMAT = "%(asctime)s %(levelname)8s [%(name)s] %(message)s"
     DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
     common_cli_opts = [

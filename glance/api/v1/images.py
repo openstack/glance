@@ -37,10 +37,10 @@ from glance.api import policy
 import glance.api.v1
 from glance.api.v1 import controller
 from glance.api.v1 import filters
-from glance.common import cfg
 from glance.common import exception
 from glance.common import wsgi
 from glance.common import utils
+from glance.openstack.common import cfg
 import glance.store
 import glance.store.filesystem
 import glance.store.http
