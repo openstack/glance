@@ -7,7 +7,6 @@ import keystoneclient.v2_0.client
 
 import glance.common.context
 import glance.common.cfg
-import glance.registry.context
 import glance.registry.db.api as db_api
 
 
@@ -77,7 +76,7 @@ if __name__ == "__main__":
 
     db_api.configure_db(config)
 
-    context = glance.registry.context.RequestContext(is_admin=True)
+    context = glance.common.context.RequestContext(is_admin=True)
 
     auth_uri = config.keystone_auth_uri
     admin_tenant_name = config.keystone_admin_tenant_name

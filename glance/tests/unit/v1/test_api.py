@@ -29,7 +29,6 @@ from glance.api.v1 import images
 from glance.api.v1 import router
 from glance.common import context
 from glance.common import utils
-from glance.registry import context as rcontext
 from glance.registry.api import v1 as rserver
 from glance.registry.db import api as db_api
 from glance.registry.db import models as db_models
@@ -94,10 +93,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestRegistryAPI, self).setUp()
-        context_class = 'glance.registry.context.RequestContext'
-        self.api = context.ContextMiddleware(rserver.API(self.conf),
-                                             self.conf,
-                                             context_class=context_class)
+        self.api = context.ContextMiddleware(rserver.API(self.conf), self.conf)
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',
@@ -131,7 +127,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
              'size': 19,
              'location': "file:///%s/%s" % (self.test_dir, UUID2),
              'properties': {}}]
-        self.context = rcontext.RequestContext(is_admin=True)
+        self.context = context.RequestContext(is_admin=True)
         db_api.configure_db(self.conf)
         self.destroy_fixtures()
         self.create_fixtures()
@@ -1989,7 +1985,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
              'size': 19,
              'location': "file:///%s/%s" % (self.test_dir, UUID2),
              'properties': {}}]
-        self.context = rcontext.RequestContext(is_admin=True)
+        self.context = context.RequestContext(is_admin=True)
         db_api.configure_db(self.conf)
         self.destroy_fixtures()
         self.create_fixtures()
@@ -2991,9 +2987,9 @@ class TestImageSerializer(base.IsolatedUnitTest):
         super(TestImageSerializer, self).setUp()
         self.receiving_user = 'fake_user'
         self.receiving_tenant = 2
-        self.context = rcontext.RequestContext(is_admin=True,
-                                               user=self.receiving_user,
-                                               tenant=self.receiving_tenant)
+        self.context = context.RequestContext(is_admin=True,
+                                              user=self.receiving_user,
+                                              tenant=self.receiving_tenant)
         self.serializer = images.ImageSerializer(self.conf)
 
         def image_iter():

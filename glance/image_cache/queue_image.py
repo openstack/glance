@@ -23,10 +23,10 @@ import logging
 
 import eventlet
 
+from glance.common import context
 from glance.common import exception
 from glance.image_cache import ImageCache
 from glance import registry
-from glance.registry import context
 
 
 logger = logging.getLogger(__name__)

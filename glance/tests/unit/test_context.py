@@ -17,7 +17,7 @@
 
 import unittest
 
-from glance.registry import context
+from glance.common import context
 
 
 class FakeImage(object):
