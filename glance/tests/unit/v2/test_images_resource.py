@@ -20,7 +20,6 @@ import jsonschema
 import webob
 
 import glance.api.v2.images
-from glance.common import exception
 from glance.common import utils
 import glance.tests.unit.utils as test_utils
 
@@ -46,12 +45,38 @@ class TestImagesController(unittest.TestCase):
 
     def test_show(self):
         request = test_utils.FakeRequest()
-        output = self.controller.show(request, id=test_utils.UUID2)
+        output = self.controller.show(request, image_id=test_utils.UUID2)
         self.assertEqual(output['id'], test_utils.UUID2)
 
     def test_show_non_existant(self):
-        self.assertRaises(exception.NotFound, self.controller.show,
-                test_utils.FakeRequest(), id=utils.generate_uuid())
+        self.assertRaises(webob.exc.HTTPNotFound, self.controller.show,
+                test_utils.FakeRequest(), image_id=utils.generate_uuid())
+
+    def test_create(self):
+        request = test_utils.FakeRequest()
+        image = {'name': 'image-1'}
+        output = self.controller.create(request, image)
+        output.pop('id')
+        self.assertEqual(image, output)
+
+    def test_create_with_owner_forbidden(self):
+        request = test_utils.FakeRequest()
+        image = {'name': 'image-1', 'owner': utils.generate_uuid()}
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.create,
+                          request, image)
+
+    def test_update(self):
+        request = test_utils.FakeRequest()
+        image = {'name': 'image-2'}
+        output = self.controller.update(request, test_utils.UUID1, image)
+        output.pop('id')
+        self.assertEqual(image, output)
+
+    def test_update_non_existant(self):
+        request = test_utils.FakeRequest()
+        image = {'name': 'image-2'}
+        self.assertRaises(webob.exc.HTTPNotFound, self.controller.update,
+                          request, utils.generate_uuid(), image)
 
 
 class TestImagesDeserializer(unittest.TestCase):
@@ -62,15 +87,21 @@ class TestImagesDeserializer(unittest.TestCase):
         request = test_utils.FakeRequest()
         request.body = json.dumps({'name': 'image-1'})
         output = self.deserializer.create(request)
-        self.assertEqual(output, {'image': {'name': 'image-1'}})
+        expected = {'image': {'name': 'image-1'}}
+        self.assertEqual(expected, output)
 
     def test_create_with_id(self):
         request = test_utils.FakeRequest()
         image_id = utils.generate_uuid()
         request.body = json.dumps({'id': image_id, 'name': 'image-1'})
         output = self.deserializer.create(request)
-        self.assertEqual(output,
-                         {'image': {'id': image_id, 'name': 'image-1'}})
+        expected = {
+            'image': {
+                'id': image_id,
+                'name': 'image-1',
+            },
+        }
+        self.assertEqual(expected, output)
 
     def _test_create_fails(self, body):
         request = test_utils.FakeRequest()
@@ -80,6 +111,13 @@ class TestImagesDeserializer(unittest.TestCase):
 
     def test_create_no_name(self):
         self._test_create_fails({})
+
+    def test_update(self):
+        request = test_utils.FakeRequest()
+        request.body = json.dumps({'name': 'image-1'})
+        output = self.deserializer.update(request)
+        expected = {'image': {'name': 'image-1'}}
+        self.assertEqual(expected, output)
 
 
 class TestImagesSerializer(unittest.TestCase):
@@ -139,4 +177,45 @@ class TestImagesSerializer(unittest.TestCase):
         }
         response = webob.Response()
         self.serializer.show(response, fixture)
+        self.assertEqual(expected, json.loads(response.body))
+
+    def test_create(self):
+        fixture = {'id': test_utils.UUID2, 'name': 'image-2'}
+        self_link = '/v2/images/%s' % test_utils.UUID2
+        expected = {
+            'image': {
+                'id': test_utils.UUID2,
+                'name': 'image-2',
+                'links': [
+                    {
+                        'rel': 'self',
+                        'href': self_link,
+                    },
+                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
+                ],
+            },
+        }
+        response = webob.Response()
+        self.serializer.create(response, fixture)
+        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual(response.location, self_link)
+
+    def test_update(self):
+        fixture = {'id': test_utils.UUID2, 'name': 'image-2'}
+        self_link = '/v2/images/%s' % test_utils.UUID2
+        expected = {
+            'image': {
+                'id': test_utils.UUID2,
+                'name': 'image-2',
+                'links': [
+                    {
+                        'rel': 'self',
+                        'href': self_link,
+                    },
+                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
+                ],
+            },
+        }
+        response = webob.Response()
+        self.serializer.update(response, fixture)
         self.assertEqual(expected, json.loads(response.body))

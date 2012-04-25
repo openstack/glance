@@ -268,6 +268,9 @@ pipeline =
 [pipeline:glance-api-fakeauth]
 pipeline = versionnegotiation fakeauth context rootapp
 
+[pipeline:glance-api-noauth]
+pipeline = versionnegotiation context rootapp
+
 [composite:rootapp]
 use = egg:Paste#urlmap
 /: apiversions

@@ -13,10 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
+import uuid
+
 import webob
 
+import glance.common.context
 from glance.common import exception
 
+LOG = logging.getLogger(__name__)
 
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
 UUID2 = '971ec09a-8067-4bc8-a91f-ae3557f1c4c7'
@@ -24,15 +29,22 @@ UUID2 = '971ec09a-8067-4bc8-a91f-ae3557f1c4c7'
 TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
 TENANT2 = '2c014f32-55eb-467d-8fcb-4bd706012f81'
 
+USER1 = '54492ba0-f4df-4e4e-be62-27f4d76b29cf'
+USER2 = '0b3b3006-cb76-4517-ae32-51397e22c754'
+
 
 class FakeRequest(webob.Request):
     def __init__(self):
         #TODO(bcwaldon): figure out how to fake this out cleanly
         super(FakeRequest, self).__init__({'REQUEST_METHOD': 'POST'})
 
-    @property
-    def context(self):
-        return
+        kwargs = {
+            'user': USER1,
+            'tenant': TENANT1,
+            'roles': [],
+            'is_admin': False,
+        }
+        self.context = glance.common.context.RequestContext(**kwargs)
 
 
 class FakeDB(object):
@@ -50,9 +62,6 @@ class FakeDB(object):
             UUID2: [],
         }
 
-        self.images[UUID1]['members'] = self.members[UUID1]
-        self.images[UUID2]['members'] = self.members[UUID2]
-
     def reset(self):
         self.images = {}
         self.members = {}
@@ -67,12 +76,15 @@ class FakeDB(object):
             'can_share': can_share,
         }
 
-    def _image_format(self, image_id):
-        return {'id': image_id, 'name': 'image-name'}
+    def _image_format(self, image_id, **values):
+        image = {'id': image_id, 'name': 'image-name'}
+        image.update(values)
+        return image
 
     def image_get(self, context, image_id):
         try:
             image = self.images[image_id]
+            LOG.info('Found image %s: %s' % (image_id, str(image)))
         except KeyError:
             raise exception.NotFound(image_id=image_id)
 
@@ -82,7 +94,7 @@ class FakeDB(object):
 
         return image
 
-    def image_get_all(self, context):
+    def image_get_all(self, context, filters=None):
         return self.images.values()
 
     def image_member_find(self, context, image_id, tenant_id):
@@ -103,3 +115,25 @@ class FakeDB(object):
                                            values['can_share'])
         self.members[values['image_id']] = member
         return member
+
+    def image_create(self, context, image_values):
+        new_uuid = str(uuid.uuid4())
+        image = self._image_format(new_uuid, **image_values)
+        self.images[new_uuid] = image
+        LOG.info('Created image %s with values %s' %
+                 (new_uuid, str(image_values)))
+        return image
+
+    def image_update(self, context, image_id, image_values):
+        LOG.info('Updating image %s with values %s' %
+                 (image_id, str(image_values)))
+        try:
+            image = self.images[image_id]
+            LOG.info('Found image %s: %s' % (image_id, str(image)))
+        except KeyError:
+            raise exception.NotFound(image_id=image_id)
+
+        image.update(image_values)
+        self.images[image_id] = image
+        LOG.info('Image %s updated to %s' % (image_id, str(image)))
+        return image

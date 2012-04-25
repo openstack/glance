@@ -16,9 +16,11 @@
 import json
 
 import jsonschema
+import webob.exc
 
 from glance.api.v2 import base
 from glance.api.v2 import schemas
+from glance.common import exception
 from glance.common import wsgi
 import glance.registry.db.api
 
@@ -29,11 +31,38 @@ class ImagesController(base.Controller):
         self.db_api = db or glance.registry.db.api
         self.db_api.configure_db(conf)
 
-    def index(self, req):
-        return self.db_api.image_get_all(req.context)
+    def create(self, req, image):
+        if 'owner' not in image:
+            image['owner'] = req.context.owner
+        elif not req.context.is_admin:
+            raise webob.exc.HTTPForbidden()
 
-    def show(self, req, id):
-        return self.db_api.image_get(req.context, id)
+        #TODO(bcwaldon): this should eventually be settable through the API
+        image['status'] = 'queued'
+
+        return self.db_api.image_create(req.context, image)
+
+    def index(self, req):
+        filters = {'deleted': False}
+        return self.db_api.image_get_all(req.context, filters=filters)
+
+    def show(self, req, image_id):
+        try:
+            return self.db_api.image_get(req.context, image_id)
+        except exception.NotFound:
+            raise webob.exc.HTTPNotFound()
+
+    def update(self, req, image_id, image):
+        try:
+            return self.db_api.image_update(req.context, image_id, image)
+        except exception.NotFound:
+            raise webob.exc.HTTPNotFound()
+
+    def delete(self, req, image_id):
+        try:
+            return self.db_api.image_destroy(req.context, image_id)
+        except exception.NotFound:
+            raise webob.exc.HTTPNotFound()
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
@@ -52,6 +81,14 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         output['image'] = body
         return output
 
+    def update(self, request):
+        output = super(RequestDeserializer, self).default(request)
+        body = output.pop('body')
+        self._validate(request, body)
+        output['image'] = body
+
+        return output
+
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
     def _get_image_href(self, image):
@@ -65,7 +102,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def _format_image(self, image):
         props = ['id', 'name']
-        items = filter(lambda item: item[0] in props, image.iteritems())
+        items = filter(lambda item: item[0] in props, image.items())
         obj = dict(items)
         obj['links'] = self._get_image_links(image)
         return obj
@@ -75,6 +112,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.location = self._get_image_href(image)
 
     def show(self, response, image):
+        response.body = json.dumps({'image': self._format_image(image)})
+
+    def update(self, response, image):
         response.body = json.dumps({'image': self._format_image(image)})
 
     def index(self, response, images):
@@ -87,5 +127,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
 def create_resource(conf):
     """Images resource factory method"""
+    deserializer = RequestDeserializer(conf)
+    serializer = ResponseSerializer()
     controller = ImagesController(conf)
-    return wsgi.Resource(controller)
+    return wsgi.Resource(controller, deserializer, serializer)

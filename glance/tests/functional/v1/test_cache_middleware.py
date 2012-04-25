@@ -558,6 +558,7 @@ class TestImageCacheXattr(functional.FunctionalTest,
             return
 
     def tearDown(self):
+        super(TestImageCacheXattr, self).tearDown()
         if os.path.exists(self.api_server.image_cache_dir):
             shutil.rmtree(self.api_server.image_cache_dir)
 
@@ -603,6 +604,7 @@ class TestImageCacheManageXattr(functional.FunctionalTest,
             return
 
     def tearDown(self):
+        super(TestImageCacheManageXattr, self).tearDown()
         if os.path.exists(self.api_server.image_cache_dir):
             shutil.rmtree(self.api_server.image_cache_dir)
 
@@ -641,6 +643,7 @@ class TestImageCacheSqlite(functional.FunctionalTest,
         self.api_server.deployment_flavor = "caching"
 
     def tearDown(self):
+        super(TestImageCacheSqlite, self).tearDown()
         if os.path.exists(self.api_server.image_cache_dir):
             shutil.rmtree(self.api_server.image_cache_dir)
 
@@ -680,5 +683,6 @@ class TestImageCacheManageSqlite(functional.FunctionalTest,
         self.api_server.deployment_flavor = "cachemanagement"
 
     def tearDown(self):
+        super(TestImageCacheManageSqlite, self).tearDown()
         if os.path.exists(self.api_server.image_cache_dir):
             shutil.rmtree(self.api_server.image_cache_dir)
