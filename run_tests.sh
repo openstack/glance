@@ -25,6 +25,7 @@ function process_option {
     -p|--pep8) let just_pep8=1;;
     -f|--force) let force=1;;
     --unittests-only) noseargs="$noseargs --exclude-dir=glance/tests/functional";;
+    -c|--coverage) noseargs="$noseargs --with-coverage --cover-package=glance";;
     *) noseargs="$noseargs $1"
   esac
 }
