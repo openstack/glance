@@ -47,12 +47,6 @@ information. In order to configure Glance to use Keystone, the
 Keystone distribution). The ``authtoken`` middleware performs the Keystone
 token validation, which is the heart of Keystone authentication.
 
-It is important to note that the Glance API and the Glance Registry
-use two different context classes; this is because the registry needs
-advanced methods that are not available in the default context class.
-The implications of this will be obvious in the below example for
-configuring the Glance Registry.
-
 Configuring Glance API to use Keystone
 --------------------------------------
 

@@ -22,12 +22,12 @@ import unittest
 
 from glance import client
 from glance.common import client as base_client
+from glance.common import context
 from glance.common import exception
 from glance.common import utils
 from glance.registry.db import api as db_api
 from glance.registry.db import models as db_models
 from glance.registry import client as rclient
-from glance.registry import context as rcontext
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
@@ -149,7 +149,7 @@ class TestRegistryClient(base.IsolatedUnitTest):
         """Establish a clean test environment"""
         super(TestRegistryClient, self).setUp()
         db_api.configure_db(self.conf)
-        self.context = rcontext.RequestContext(is_admin=True)
+        self.context = context.RequestContext(is_admin=True)
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',
@@ -1228,7 +1228,7 @@ class TestClient(base.IsolatedUnitTest):
              'size': 19,
              'location': "file:///%s/%s" % (self.test_dir, UUID2),
              'properties': {}}]
-        self.context = rcontext.RequestContext(is_admin=True)
+        self.context = context.RequestContext(is_admin=True)
         self.destroy_fixtures()
         self.create_fixtures()
 

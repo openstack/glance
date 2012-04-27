@@ -67,14 +67,12 @@ def stub_out_registry_and_store_server(stubs, base_dir):
         def getresponse(self):
             sql_connection = os.environ.get('GLANCE_SQL_CONNECTION',
                                             "sqlite://")
-            context_class = 'glance.registry.context.RequestContext'
             conf = utils.TestConfigOpts({
                     'sql_connection': sql_connection,
                     'verbose': VERBOSE,
                     'debug': DEBUG
                     })
-            api = context.ContextMiddleware(rserver.API(conf),
-                                            conf, context_class=context_class)
+            api = context.ContextMiddleware(rserver.API(conf), conf)
             res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out
@@ -237,14 +235,12 @@ def stub_out_registry_server(stubs, **kwargs):
 
         def getresponse(self):
             sql_connection = kwargs.get('sql_connection', "sqlite:///")
-            context_class = 'glance.registry.context.RequestContext'
             conf = utils.TestConfigOpts({
                     'sql_connection': sql_connection,
                     'verbose': VERBOSE,
                     'debug': DEBUG
                     })
-            api = context.ContextMiddleware(rserver.API(conf),
-                                            conf, context_class=context_class)
+            api = context.ContextMiddleware(rserver.API(conf), conf)
             res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out

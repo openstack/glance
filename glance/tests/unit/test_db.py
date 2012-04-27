@@ -19,9 +19,9 @@
 import datetime
 import random
 
+from glance.common import context
 from glance.common import exception
 from glance.common import utils
-from glance.registry import context as rcontext
 from glance.registry.db import api as db_api
 from glance.registry.db import models as db_models
 from glance.tests.unit import base
@@ -90,8 +90,8 @@ class TestRegistryDb(base.IsolatedUnitTest):
         """Establish a clean test environment"""
         super(TestRegistryDb, self).setUp()
         conf = test_utils.TestConfigOpts(CONF)
-        self.adm_context = rcontext.RequestContext(is_admin=True)
-        self.context = rcontext.RequestContext(is_admin=False)
+        self.adm_context = context.RequestContext(is_admin=True)
+        self.context = context.RequestContext(is_admin=False)
         db_api.configure_db(conf)
         self.destroy_fixtures()
         self.create_fixtures()
@@ -186,8 +186,8 @@ class TestPagingOrder(base.IsolatedUnitTest):
         """Establish a clean test environment"""
         super(TestPagingOrder, self).setUp()
         conf = test_utils.TestConfigOpts(CONF)
-        self.adm_context = rcontext.RequestContext(is_admin=True)
-        self.context = rcontext.RequestContext(is_admin=False)
+        self.adm_context = context.RequestContext(is_admin=True)
+        self.context = context.RequestContext(is_admin=False)
         db_api.configure_db(conf)
         self.destroy_fixtures()
         self.create_fixtures()
