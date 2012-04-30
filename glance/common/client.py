@@ -23,7 +23,9 @@ import collections
 import errno
 import functools
 import httplib
+import logging
 import os
+import re
 import select
 import urllib
 import urlparse
@@ -43,9 +45,12 @@ except ImportError:
 from glance.common import auth
 from glance.common import exception, utils
 
+LOG = logging.getLogger(__name__)
 
 # common chunk size for get and put
 CHUNKSIZE = 65536
+
+VERSION_REGEX = re.compile(r"v[0-9\.]+")
 
 
 def handle_unauthenticated(func):
@@ -254,6 +259,10 @@ class BaseClient(object):
                         GLANCE_CLIENT_CA_FILE is looked for.
         :param insecure: Optional. If set then the server's certificate
                          will not be verified.
+        :param configure_via_auth: Optional. Defaults to True. If set, the
+                         URL returned from the service catalog for the image
+                         endpoint will **override** the URL supplied to in
+                         the host parameter.
         """
         self.host = host
         self.port = port or self.DEFAULT_PORT
@@ -355,11 +364,20 @@ class BaseClient(object):
 
             <http|https>://<host>:port/doc_root
         """
+        LOG.debug(_("Configuring from URL: %s"), url)
         parsed = urlparse.urlparse(url)
         self.use_ssl = parsed.scheme == 'https'
         self.host = parsed.hostname
         self.port = parsed.port or 80
-        self.doc_root = parsed.path
+        self.doc_root = parsed.path.rstrip('/')
+
+        # We need to ensure a version identifier is appended to the doc_root
+        if not VERSION_REGEX.match(self.doc_root):
+            if self.DEFAULT_DOC_ROOT:
+                doc_root = self.DEFAULT_DOC_ROOT.lstrip('/')
+                self.doc_root += '/' + doc_root
+                msg = _("Appending doc_root %(doc_root)s to URL %(url)s")
+                LOG.debug(msg % locals())
 
         # ensure connection kwargs are re-evaluated after the service catalog
         # publicURL is parsed for potential SSL usage
@@ -435,7 +453,10 @@ class BaseClient(object):
         else:
             query = None
 
-        return urlparse.ParseResult(scheme, netloc, path, '', query, '')
+        url = urlparse.ParseResult(scheme, netloc, path, '', query, '')
+        log_msg = _("Constructed URL: %s")
+        LOG.debug(log_msg, url.geturl())
+        return url
 
     @handle_redirects
     def _do_request(self, method, url, body, headers):

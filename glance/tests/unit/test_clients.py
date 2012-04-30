@@ -2063,7 +2063,7 @@ class TestClient(base.IsolatedUnitTest):
 
 class TestConfigureClientFromURL(unittest.TestCase):
     def setUp(self):
-        self.client = client.Client("0.0.0.0", doc_root="")
+        self.client = client.Client("0.0.0.0")
 
     def assertConfiguration(self, url, host, port, use_ssl, doc_root):
         self.client.configure_from_url(url)
@@ -2078,7 +2078,7 @@ class TestConfigureClientFromURL(unittest.TestCase):
             host='www.example.com',
             port=80,
             use_ssl=False,
-            doc_root=''
+            doc_root='/v1'
         )
 
     def test_port_ssl_doc_root(self):
@@ -2087,5 +2087,5 @@ class TestConfigureClientFromURL(unittest.TestCase):
             host='www.example.com',
             port=8000,
             use_ssl=True,
-            doc_root='/prefix/'
+            doc_root='/prefix/v1'
         )
