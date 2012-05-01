@@ -21,6 +21,7 @@ import subprocess
 from setuptools import setup, find_packages
 from setuptools.command.sdist import sdist
 
+from glance.openstack.common.setup import generate_authors
 from glance.openstack.common.setup import parse_requirements
 from glance.openstack.common.setup import parse_dependency_links
 
@@ -65,6 +66,7 @@ class local_sdist(sdist):
             changelog = log_cmd.communicate()[0]
             with open("ChangeLog", "w") as changelog_file:
                 changelog_file.write(changelog)
+        generate_authors()
         sdist.run(self)
 
 cmdclass = {'sdist': local_sdist}

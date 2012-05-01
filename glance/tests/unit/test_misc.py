@@ -26,52 +26,6 @@ from glance.common import exception
 from glance.common import utils
 
 
-def parse_mailmap(mailmap='.mailmap'):
-    mapping = {}
-    if os.path.exists(mailmap):
-        fp = open(mailmap, 'r')
-        for l in fp:
-            l = l.strip()
-            if not l.startswith('#') and ' ' in l:
-                canonical_email, alias = l.split(' ')
-                mapping[alias] = canonical_email
-    return mapping
-
-
-def str_dict_replace(s, mapping):
-    for s1, s2 in mapping.iteritems():
-        s = s.replace(s1, s2)
-    return s
-
-
-class AuthorsTestCase(unittest.TestCase):
-    def test_authors_up_to_date(self):
-
-        topdir = os.path.normpath(os.path.dirname(__file__) + '/../../..')
-        contributors = set()
-        missing = set()
-        authors_file = open(os.path.join(topdir, 'Authors'), 'r').read()
-
-        if os.path.exists(os.path.join(topdir, '.git')):
-            mailmap = parse_mailmap(os.path.join(topdir, '.mailmap'))
-            for email in commands.getoutput('git log --format=%ae').split():
-                if not email:
-                    continue
-                if "jenkins" in email and "openstack.org" in email:
-                    continue
-                email = '<' + email + '>'
-                contributors.add(str_dict_replace(email, mailmap))
-
-        for contributor in contributors:
-            if contributor == 'glance-core':
-                continue
-            if not contributor in authors_file:
-                missing.add(contributor)
-
-        self.assertTrue(len(missing) == 0,
-                        '%r not listed in Authors' % missing)
-
-
 class UtilsTestCase(unittest.TestCase):
 
     def test_bool_from_string(self):

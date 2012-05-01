@@ -4,6 +4,7 @@
 .glance-venv
 .venv
 .tox
+AUTHORS
 build
 dist
 glance.egg-info
