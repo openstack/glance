@@ -31,36 +31,6 @@ from glance.tests.functional.store_utils import (setup_http,
                                                  get_http_uri)
 
 
-class TestBinGlanceAuth(functional.FunctionalTest):
-    """Functional tests for bin/glance with some amount of auth"""
-
-    def assertIn(self, key, bag):
-        msg = 'Expected to find substring "%s" in "%s"' % (key, bag)
-        self.assertTrue(key in bag, msg)
-
-    def assertNotIn(self, key, bag):
-        msg = 'Expected not to find substring "%s" in "%s"' % (key, bag)
-        self.assertFalse(key in bag, msg)
-
-    def test_index_with_https_auth(self):
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
-
-        api_port = self.api_port
-        cmd = ("bin/glance --port=%d -N https://this.url.doesnt.matter/ "
-               "-A aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa index") % api_port
-        exitcode, out, err = execute(cmd, raise_error=False)
-
-        #NOTE(markwash): we should expect the command to fail because the
-        # testing glance api server is not configured to authenticate, and the
-        # token we provide is invalid. However, it should fail due to
-        # NotAuthenticated, rather than because of an SSL error.
-
-        self.assertNotEqual(0, exitcode)
-        self.assertNotIn('SSL23_GET_SERVER_HELLO', out)
-        self.assertIn('NotAuthenticated: You are not authenticated.', out)
-
-
 class TestBinGlance(functional.FunctionalTest):
     """Functional tests for the bin/glance CLI tool"""
 
@@ -77,6 +47,20 @@ class TestBinGlance(functional.FunctionalTest):
     def _assertStartsWith(self, str, prefix):
         msg = 'expected "%s" to start with "%s"' % (str, prefix)
         self.assertTrue(str.startswith(prefix), msg)
+
+    def _assertNotIn(self, key, bag):
+        msg = 'Expected not to find substring "%s" in "%s"' % (key, bag)
+        self.assertFalse(key in bag, msg)
+
+    def test_index_with_https(self):
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        cmd = ("bin/glance -N https://auth/ --port=%d index") % self.api_port
+        exitcode, out, err = execute(cmd, raise_error=False)
+
+        self.assertNotEqual(0, exitcode)
+        self._assertNotIn('SSL23_GET_SERVER_HELLO', out)
 
     def test_add_with_location_and_id(self):
         self.cleanup()
@@ -175,103 +159,6 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual('0', size, "Expected image to be 0 bytes in size, "
                                     "but got %s. " % size)
-
-    def _verify_owner(self, owner, image_id):
-        cmd = "bin/glance --port=%d show %s" % (self.api_port, image_id)
-        exitcode, out, err = execute(cmd)
-        self.assertEqual(0, exitcode)
-
-        # verify expected owner as first class attribute
-        self.assertTrue(('Owner: %s' % owner) in out)
-        # ensure owner does not appear as a custom property
-        self.assertFalse("Property 'owner':" in out)
-
-    def _create_by_admin(self, owner):
-        # ownership set by admin user (defaults as such due to no-auth)
-        cmd = minimal_add_command(self.api_port,
-                                  'MyImage',
-                                  '--silent-upload owner=%s' % owner)
-        exitcode, out, err = execute(cmd)
-
-        self.assertEqual(0, exitcode)
-        self.assertTrue(out.strip().startswith('Added new image with ID:'))
-
-        return out.strip().replace('Added new image with ID: ', '')
-
-    def test_add_with_owner_admin(self):
-        """Test setting ownership of new image by admin user"""
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
-
-        image_id = self._create_by_admin('42')
-
-        self._verify_owner('42', image_id)
-
-    def test_add_with_owner_non_admin(self):
-        """Test setting ownership of new image by non-admin user"""
-        self.cleanup()
-        self.api_server.deployment_flavor = 'fakeauth'
-        self.registry_server.deployment_flavor = 'fakeauth'
-        self.start_servers(**self.__dict__.copy())
-
-        # ownership set by non-admin user (setup as such by fakeauth pipeline)
-        headers = {'X-Image-Meta-Name': 'MyImage',
-                   'X-Image-Meta-disk_format': 'raw',
-                   'X-Image-Meta-container_format': 'ovf',
-                   'X-Image-Meta-Is-Public': 'True',
-                   'X-Image-Meta-Owner': '42',
-                   'X-Auth-Token': 'Confirmed:pattieblack:froggy:demo',
-        }
-
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
-        http = httplib2.Http()
-        response, content = http.request(path, 'POST', headers=headers)
-        self.assertEqual(response.status, 201)
-        data = json.loads(content)
-        image_id = data['image']['id']
-
-        self._verify_owner('froggy', image_id)
-
-    def test_update_with_owner_admin(self):
-        """Test updating ownership of existing image by admin user"""
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
-
-        image_id = self._create_by_admin('user1')
-
-        self._verify_owner('user1', image_id)
-
-        # ownership updated by admin user (defaults as such due to no-auth)
-        cmd = "bin/glance update %s owner=user2 -p %d" % (image_id,
-                                                          self.api_port)
-        exitcode, out, err = execute(cmd, raise_error=False)
-
-        self.assertEqual(0, exitcode)
-        self.assertTrue(out.strip().endswith('Updated image %s' % image_id))
-
-        self._verify_owner('user2', image_id)
-
-    def test_update_with_owner_non_admin(self):
-        """Test updating ownership of existing image by non-admin user"""
-        self.cleanup()
-        self.api_server.deployment_flavor = 'fakeauth'
-        self.registry_server.deployment_flavor = 'fakeauth'
-        self.start_servers(**self.__dict__.copy())
-
-        image_id = self._create_by_admin('user1')
-
-        # ownership update attempted by non-admin user
-        # (setup as such by fakeauth pipeline)
-        headers = {'X-Image-Meta-Owner': 'user2',
-                   'X-Auth-Token': 'Confirmed:pattieblack:froggy:demo',
-        }
-
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0",
-                                              self.api_port,
-                                              image_id)
-        http = httplib2.Http()
-        response, content = http.request(path, 'PUT', headers=headers)
-        self.assertEqual(response.status, 403)
 
     def test_add_no_name(self):
         self.cleanup()

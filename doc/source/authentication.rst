@@ -40,12 +40,13 @@ Configuring the Glance servers to use Keystone
 
 Keystone is integrated with Glance through the use of middleware. The
 default configuration files for both the Glance API and the Glance
-Registry use a single piece of middleware called ``context``, which
-generates a request context containing all the necesary authorization
+Registry use a single piece of middleware called ``unauthenticated-context``, 
+which generates a request context containing blank authentication
 information. In order to configure Glance to use Keystone, the
-``authtoken`` middleware must also be deployed (which may be found in the
-Keystone distribution). The ``authtoken`` middleware performs the Keystone
-token validation, which is the heart of Keystone authentication.
+``authtoken`` and ``context`` middlewares must be deployed in place of the
+``unauthenticated-context`` middleware. The ``authtoken`` middleware performs
+the authentication token validation and retrieves actual user authentication
+information. It can be found in the Keystone distribution.
 
 Configuring Glance API to use Keystone
 --------------------------------------
@@ -80,11 +81,11 @@ Finally, to actually enable using Keystone authentication, the
 application pipeline must be modified.  By default, it looks like::
 
   [pipeline:glance-api]
-  pipeline = versionnegotiation context apiv1app
+  pipeline = versionnegotiation unauthenticated-context apiv1app
 
-(Your particular pipeline may vary depending on other options, such as
-the image cache.)  This must be changed by inserting ``authtoken``
-before ``context``::
+Your particular pipeline may vary depending on other options, such as
+the image cache. This must be changed by replacing ``unauthenticated-context``
+with ``authtoken`` and ``context``::
 
   [pipeline:glance-api]
   pipeline = versionnegotiation authtoken context apiv1app

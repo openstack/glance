@@ -93,7 +93,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestRegistryAPI, self).setUp()
-        self.api = context.ContextMiddleware(rserver.API(self.conf), self.conf)
+        self.api = context.UnauthenticatedContextMiddleware(
+                rserver.API(self.conf), self.conf)
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',
@@ -1867,15 +1868,6 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         self.assertEquals(res.status_int,
                           webob.exc.HTTPNotFound.code)
 
-    def test_delete_image_public_not_owned(self):
-        req = webob.Request.blank('/images/%s' % UUID2)
-        req.method = 'DELETE'
-        req.headers['x-auth-token'] = 'toke'
-        req.headers['x-identity-status'] = 'Confirmed'
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 403)
-
     def test_get_image_members(self):
         """
         Tests members listing for existing images
@@ -1955,7 +1947,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestGlanceAPI, self).setUp()
-        self.api = context.ContextMiddleware(router.API(self.conf), self.conf)
+        self.api = context.UnauthenticatedContextMiddleware(
+                router.API(self.conf), self.conf)
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',

@@ -384,8 +384,8 @@ class FakeAuthMiddleware(wsgi.Middleware):
     def process_request(self, req):
         auth_tok = req.headers.get('X-Auth-Token')
         if auth_tok:
-            status, user, tenant, role = auth_tok.split(':')
-            req.headers['X-Identity-Status'] = status
+            user, tenant, role = auth_tok.split(':')
             req.headers['X-User-Id'] = user
             req.headers['X-Tenant-Id'] = tenant
-            req.headers['X-Role'] = role
+            req.headers['X-Roles'] = role
+            req.headers['X-Identity-Status'] = 'Confirmed'

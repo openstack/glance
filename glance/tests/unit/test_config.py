@@ -67,7 +67,7 @@ class TestPasteApp(unittest.TestCase):
             os.rmdir(os.path.dirname(conf.temp_file))
 
     def test_load_paste_app(self):
-        expected_middleware = context.ContextMiddleware
+        expected_middleware = context.UnauthenticatedContextMiddleware
         self._do_test_load_paste_app(expected_middleware)
 
     def test_load_paste_app_with_paste_flavor(self):
@@ -83,7 +83,7 @@ class TestPasteApp(unittest.TestCase):
                                          'etc/glance-registry-paste.ini')
         paste_group = {'paste_deploy': {'config_file': paste_config_file}}
 
-        expected_middleware = context.ContextMiddleware
+        expected_middleware = context.UnauthenticatedContextMiddleware
         self._do_test_load_paste_app(expected_middleware,
                                      paste_group, paste_copy=False)
 

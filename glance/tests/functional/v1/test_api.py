@@ -1241,3 +1241,115 @@ class TestApi(functional.FunctionalTest):
     @skip_if_disabled
     def _do_test_put_image_content_missing_disk_format(self):
         self._do_test_put_image_content_missing_format('disk_format')
+
+    @skip_if_disabled
+    def test_ownership(self):
+        self.cleanup()
+        self.api_server.deployment_flavor = 'fakeauth'
+        self.registry_server.deployment_flavor = 'fakeauth'
+        self.start_servers(**self.__dict__.copy())
+
+        # Add an image with admin privileges and ensure the owner
+        # can be set to something other than what was used to authenticate
+        auth_headers = {
+            'X-Auth-Token': 'user1:tenant1:admin',
+        }
+
+        create_headers = {
+            'X-Image-Meta-Name': 'MyImage',
+            'X-Image-Meta-disk_format': 'raw',
+            'X-Image-Meta-container_format': 'ovf',
+            'X-Image-Meta-Is-Public': 'True',
+            'X-Image-Meta-Owner': 'tenant2',
+        }
+        create_headers.update(auth_headers)
+
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=create_headers)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        image_id = data['image']['id']
+
+        path = ("http://%s:%d/v1/images/%s" %
+                ("0.0.0.0", self.api_port, image_id))
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD', headers=auth_headers)
+        self.assertEqual(response.status, 200)
+        self.assertEqual('tenant2', response['x-image-meta-owner'])
+
+        # Now add an image without admin privileges and ensure the owner
+        # cannot be set to something other than what was used to authenticate
+        auth_headers = {
+            'X-Auth-Token': 'user1:tenant1:role1',
+        }
+        create_headers.update(auth_headers)
+
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=create_headers)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        image_id = data['image']['id']
+
+        # We have to be admin to see the owner
+        auth_headers = {
+            'X-Auth-Token': 'user1:tenant1:admin',
+        }
+        create_headers.update(auth_headers)
+
+        path = ("http://%s:%d/v1/images/%s" %
+                ("0.0.0.0", self.api_port, image_id))
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD', headers=auth_headers)
+        self.assertEqual(response.status, 200)
+        self.assertEqual('tenant1', response['x-image-meta-owner'])
+
+        # Make sure the non-privileged user can't update their owner either
+        update_headers = {
+            'X-Image-Meta-Name': 'MyImage2',
+            'X-Image-Meta-Owner': 'tenant2',
+            'X-Auth-Token': 'user1:tenant1:role1',
+        }
+
+        path = ("http://%s:%d/v1/images/%s" %
+                ("0.0.0.0", self.api_port, image_id))
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT', headers=update_headers)
+        self.assertEqual(response.status, 200)
+
+        # We have to be admin to see the owner
+        auth_headers = {
+            'X-Auth-Token': 'user1:tenant1:admin',
+        }
+
+        path = ("http://%s:%d/v1/images/%s" %
+                ("0.0.0.0", self.api_port, image_id))
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD', headers=auth_headers)
+        self.assertEqual(response.status, 200)
+        self.assertEqual('tenant1', response['x-image-meta-owner'])
+
+        # An admin user should be able to update the owner
+        auth_headers = {
+            'X-Auth-Token': 'user1:tenant3:admin',
+        }
+
+        update_headers = {
+            'X-Image-Meta-Name': 'MyImage2',
+            'X-Image-Meta-Owner': 'tenant2',
+        }
+        update_headers.update(auth_headers)
+
+        path = ("http://%s:%d/v1/images/%s" %
+                ("0.0.0.0", self.api_port, image_id))
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT', headers=update_headers)
+        self.assertEqual(response.status, 200)
+
+        path = ("http://%s:%d/v1/images/%s" %
+                ("0.0.0.0", self.api_port, image_id))
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD', headers=auth_headers)
+        self.assertEqual(response.status, 200)
+        self.assertEqual('tenant2', response['x-image-meta-owner'])

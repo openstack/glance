@@ -72,7 +72,8 @@ def stub_out_registry_and_store_server(stubs, base_dir):
                     'verbose': VERBOSE,
                     'debug': DEBUG
                     })
-            api = context.ContextMiddleware(rserver.API(conf), conf)
+            api = context.UnauthenticatedContextMiddleware(
+                    rserver.API(conf), conf)
             res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out
@@ -160,7 +161,8 @@ def stub_out_registry_and_store_server(stubs, base_dir):
                     'filesystem_store_datadir': base_dir,
                     'policy_file': os.path.join(base_dir, 'policy.json'),
                     })
-            api = context.ContextMiddleware(router.API(conf), conf)
+            api = context.UnauthenticatedContextMiddleware(
+                    router.API(conf), conf)
             res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out
@@ -240,7 +242,8 @@ def stub_out_registry_server(stubs, **kwargs):
                     'verbose': VERBOSE,
                     'debug': DEBUG
                     })
-            api = context.ContextMiddleware(rserver.API(conf), conf)
+            api = context.UnauthenticatedContextMiddleware(
+                    rserver.API(conf), conf)
             res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out
