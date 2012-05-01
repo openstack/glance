@@ -50,7 +50,7 @@ LOG = logging.getLogger(__name__)
 # common chunk size for get and put
 CHUNKSIZE = 65536
 
-VERSION_REGEX = re.compile(r"v[0-9\.]+")
+VERSION_REGEX = re.compile(r"/?v[0-9\.]+")
 
 
 def handle_unauthenticated(func):

@@ -2072,6 +2072,15 @@ class TestConfigureClientFromURL(unittest.TestCase):
         self.assertEquals(use_ssl, self.client.use_ssl)
         self.assertEquals(doc_root, self.client.doc_root)
 
+    def test_version_specified_in_url(self):
+        self.assertConfiguration(
+            url='http://www.example.com/v1',
+            host='www.example.com',
+            port=80,
+            use_ssl=False,
+            doc_root='/v1'
+        )
+
     def test_no_port_no_ssl_no_doc_root(self):
         self.assertConfiguration(
             url='http://www.example.com',
