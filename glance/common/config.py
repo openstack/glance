@@ -46,6 +46,7 @@ class GlanceConfigOpts(cfg.CommonConfigOpts):
             version='%%prog %s' % version.version_string(),
             default_config_files=default_config_files,
             **kwargs)
+        self.default_paste_file = self.prog + '-paste.ini'
 
 
 class GlanceCacheConfigOpts(GlanceConfigOpts):
@@ -54,6 +55,7 @@ class GlanceCacheConfigOpts(GlanceConfigOpts):
         config_files = cfg.find_config_files(project='glance',
                                              prog='glance-cache')
         super(GlanceCacheConfigOpts, self).__init__(config_files, **kwargs)
+        self.default_paste_file = 'glance-cache-paste.ini'
 
 
 def setup_logging(conf):
@@ -128,12 +130,13 @@ def _get_deployment_flavor(conf):
 def _get_paste_config_path(conf):
     paste_suffix = '-paste.ini'
     conf_suffix = '.conf'
-    if conf.config_dir:
-        return os.path.join(conf.config_dir, conf.prog + paste_suffix)
-    else:
+    if conf.config_file:
         # Assume paste config is in a paste.ini file corresponding
         # to the last config file
-        return conf.config_file[-1].replace(conf_suffix, paste_suffix)
+        path = conf.config_file[-1].replace(conf_suffix, paste_suffix)
+    else:
+        path = conf.default_paste_file
+    return conf.find_file(os.path.basename(path))
 
 
 def _get_deployment_config_file(conf):
@@ -174,12 +177,16 @@ def load_paste_app(conf, app_name=None):
     try:
         # Setup logging early
         setup_logging(conf)
+        logger = logging.getLogger(app_name)
+
+        logger.debug(_("Loading %(app_name)s from %(conf_file)s"),
+                     {'conf_file': conf_file, 'app_name': app_name})
 
         app = wsgi.paste_deploy_app(conf_file, app_name, conf)
 
         # Log the options used when starting if we're in debug mode...
         if conf.debug:
-            conf.log_opt_values(logging.getLogger(app_name), logging.DEBUG)
+            conf.log_opt_values(logger, logging.DEBUG)
 
         return app
     except (LookupError, ImportError), e:

@@ -18,11 +18,14 @@
 """Policy Engine For Glance"""
 
 import json
+import logging
 import os.path
 
 from glance.common import exception
 from glance.common import policy
 from glance.openstack.common import cfg
+
+logger = logging.getLogger(__name__)
 
 
 class Enforcer(object):
@@ -58,12 +61,11 @@ class Enforcer(object):
         if conf.policy_file:
             return conf.policy_file
 
-        matches = cfg.find_config_files('glance', 'policy', '.json')
-
-        try:
-            return matches[0]
-        except IndexError:
+        policy_file = conf.find_file('policy.json')
+        if not policy_file:
             raise cfg.ConfigFilesNotFoundError(('policy.json',))
+
+        return policy_file
 
     def _read_policy_file(self):
         """Read contents of the policy file
@@ -72,6 +74,7 @@ class Enforcer(object):
         """
         mtime = os.path.getmtime(self.policy_path)
         if not self.policy_file_contents or mtime != self.policy_file_mtime:
+            logger.debug(_("Loading policy from %s") % self.policy_path)
             with open(self.policy_path) as fap:
                 raw_contents = fap.read()
                 self.policy_file_contents = json.loads(raw_contents)
