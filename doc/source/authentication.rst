@@ -57,13 +57,9 @@ an example for ``authtoken``::
 
   [filter:authtoken]
   paste.filter_factory = keystone.middleware.auth_token:filter_factory
-  service_protocol = http
-  service_host = 127.0.0.1
-  service_port = 5000
   auth_host = 127.0.0.1
   auth_port = 35357
   auth_protocol = http
-  auth_uri = http://127.0.0.1:5000/
   admin_user = glance_admin
   admin_tenant_name = service_admins
   admin_password = password1234
@@ -72,17 +68,10 @@ The actual values for these variables will need to be set depending on
 your situation.  For more information, please refer to the Keystone
 documentation on the ``auth_token`` middleware, but in short:
 
-* Those variables beginning with ``service_`` are only needed if you
-  are using a proxy; they define the actual location of Glance.  That
-  said, they must be present.
-* Except for ``auth_uri``, those variables beginning with ``auth_``
-  point to the Keystone Admin service.  This information is used by
-  the middleware to actually query Keystone about the validity of the
+* Those variables beginning with ``auth_`` point to the Keystone 
+  Admin service.  This information is used by the middleware to actually 
+  query Keystone about the validity of the
   authentication tokens.
-* The ``auth_uri`` variable must point to the Keystone Auth service,
-  which is the service users use to obtain Keystone tokens.  If the
-  user does not have a valid Keystone token, they will be redirected
-  to this URI to obtain one.
 * The admin auth credentials (``admin_user``, ``admin_tenant_name``,
   ``admin_password``) will be used to retrieve an admin token. That
   token will be used to authorize user tokens behind the scenes.
