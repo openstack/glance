@@ -125,6 +125,17 @@ def _get_deployment_flavor(conf):
     return '' if not flavor else ('-' + flavor)
 
 
+def _get_paste_config_path(conf):
+    paste_suffix = '-paste.ini'
+    conf_suffix = '.conf'
+    if conf.config_dir:
+        return os.path.join(conf.config_dir, conf.prog + paste_suffix)
+    else:
+        # Assume paste config is in a paste.ini file corresponding
+        # to the last config file
+        return conf.config_file[-1].replace(conf_suffix, paste_suffix)
+
+
 def _get_deployment_config_file(conf):
     """
     Retrieve the deployment_config_file config item, formatted as an
@@ -134,12 +145,7 @@ def _get_deployment_config_file(conf):
     """
     _register_paste_deploy_opts(conf)
     config_file = conf.paste_deploy.config_file
-    if not config_file:
-        # Assume paste config is in a paste.ini file corresponding
-        # to the last config file
-        path = conf.config_file[-1].replace(".conf", "-paste.ini")
-    else:
-        path = config_file
+    path = _get_paste_config_path(conf) if not config_file else config_file
     return os.path.abspath(path)
 
 

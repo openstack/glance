@@ -79,7 +79,7 @@ Turns on the DEBUG level in logging.
 
 * ``--config-file=PATH``
 
-Optional. Default: ``None``
+Optional. Default: See below for default search order.
 
 Specified on the command line only.
 
@@ -97,6 +97,35 @@ following order:
 The filename that is searched for depends on the server application name. So,
 if you are starting up the API server, ``glance-api.conf`` is searched for,
 otherwise ``glance-registry.conf``.
+
+* ``--config-dir=DIR``
+
+Optional. Default: ``None``
+
+Specified on the command line only.
+
+Takes a path to a configuration directory from which all *.conf fragments
+are loaded. This provides an alternative to multiple --config-file options
+when it is inconvenient to explicitly enumerate all the config files, for
+example when an unknown number of config fragments are being generated
+by a deployment framework.
+
+If --config-dir is set, then --config-file is ignored.
+
+An example usage would be:
+
+  $ glance-api --config-dir=/etc/glance/glance-api.d
+
+  $ ls /etc/glance/glance-api.d
+   00-core.conf
+   01-s3.conf
+   02-swift.conf
+   03-ssl.conf
+   ... etc.
+
+The numeric prefixes in the example above are only necessary if a specific
+parse ordering is required (i.e. if an individual config option set in an
+earlier fragment is overridden in a later fragment).
 
 Configuring Server Startup Options
 ----------------------------------
