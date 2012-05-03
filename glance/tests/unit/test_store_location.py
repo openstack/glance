@@ -40,8 +40,8 @@ class TestStoreLocation(unittest.TestCase):
         good_store_uris = [
             'https://user:pass@example.com:80/images/some-id',
             'http://images.oracle.com/123456',
-            'swift://account:user:pass@authurl.com/container/obj-id',
-            'swift+https://account:user:pass@authurl.com/container/obj-id',
+            'swift://account%3Auser:pass@authurl.com/container/obj-id',
+            'swift+https://account%3Auser:pass@authurl.com/container/obj-id',
             's3://accesskey:secretkey@s3.amazonaws.com/bucket/key-id',
             's3://accesskey:secretwith/aslash@s3.amazonaws.com/bucket/key-id',
             's3+http://accesskey:secret@s3.amazonaws.com/bucket/key-id',
@@ -172,7 +172,8 @@ class TestStoreLocation(unittest.TestCase):
         self.assertEqual("pass", loc.key)
         self.assertEqual(uri, loc.get_uri())
 
-        uri = 'swift+http://account:user:pass@authurl.com/v1/container/12345'
+        uri = ('swift+http://a%3Auser%40example.com:p%40ss@authurl.com/'
+               'v1/container/12345')
         loc.parse_uri(uri)
 
         self.assertEqual("swift+http", loc.scheme)
@@ -180,8 +181,8 @@ class TestStoreLocation(unittest.TestCase):
         self.assertEqual("http://authurl.com/v1", loc.swift_auth_url)
         self.assertEqual("container", loc.container)
         self.assertEqual("12345", loc.obj)
-        self.assertEqual("account:user", loc.user)
-        self.assertEqual("pass", loc.key)
+        self.assertEqual("a:user@example.com", loc.user)
+        self.assertEqual("p@ss", loc.key)
         self.assertEqual(uri, loc.get_uri())
 
         bad_uri = 'swif://'

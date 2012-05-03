@@ -23,6 +23,7 @@ import hashlib
 import httplib
 import logging
 import math
+import urllib
 import urlparse
 
 from glance.common import exception
@@ -70,7 +71,7 @@ class StoreLocation(glance.store.location.StoreLocation):
 
     def _get_credstring(self):
         if self.user:
-            return '%s:%s@' % (self.user, self.key)
+            return '%s:%s@' % (urllib.quote(self.user), urllib.quote(self.key))
         return ''
 
     def get_uri(self):
@@ -133,21 +134,13 @@ class StoreLocation(glance.store.location.StoreLocation):
             path = path[path.find('/'):].strip('/')
         if creds:
             cred_parts = creds.split(':')
-
-            # User can be account:user, in which case cred_parts[0:2] will be
-            # the account and user. Combine them into a single username of
-            # account:user
-            if len(cred_parts) == 1:
+            if len(cred_parts) != 2:
                 reason = (_("Badly formed credentials '%(creds)s' in Swift "
                             "URI") % locals())
                 raise exception.BadStoreUri(uri, reason)
-            elif len(cred_parts) == 3:
-                user = ':'.join(cred_parts[0:2])
-            else:
-                user = cred_parts[0]
-            key = cred_parts[-1]
-            self.user = user
-            self.key = key
+            user, key = cred_parts
+            self.user = urllib.unquote(user)
+            self.key = urllib.unquote(key)
         else:
             self.user = None
         path_parts = path.split('/')
