@@ -279,3 +279,8 @@ def schedule_delete_from_backend(uri, conf, context, image_id, **kwargs):
 
     registry.update_image_metadata(context, image_id,
                                    {'status': 'pending_delete'})
+
+
+def add_to_backend(scheme, image_id, data, size):
+    store = get_store_from_scheme(scheme)
+    return store.add(image_id, data, size)
