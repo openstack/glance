@@ -20,26 +20,16 @@ import unittest
 from glance.common import context
 
 
-class FakeImage(object):
-    """
-    Fake image for providing the image attributes needed for
-    TestContext.
-    """
-
-    def __init__(self, owner, is_public):
-        self.id = None
-        self.owner = owner
-        self.is_public = is_public
+def _fake_image(owner, is_public):
+    return {
+        'id': None,
+        'owner': owner,
+        'is_public': is_public,
+    }
 
 
-class FakeMembership(object):
-    """
-    Fake membership for providing the membership attributes needed for
-    TestContext.
-    """
-
-    def __init__(self, can_share=False):
-        self.can_share = can_share
+def _fake_membership(can_share=False):
+    return {'can_share': can_share}
 
 
 class TestContext(unittest.TestCase):
@@ -52,7 +42,7 @@ class TestContext(unittest.TestCase):
         context.
         """
 
-        img = FakeImage(img_owner, img_public)
+        img = _fake_image(img_owner, img_public)
         ctx = context.RequestContext(**kwargs)
 
         self.assertEqual(ctx.is_image_visible(img), exp_res)
@@ -68,7 +58,7 @@ class TestContext(unittest.TestCase):
         is_image_sharable().
         """
 
-        img = FakeImage(img_owner, True)
+        img = _fake_image(img_owner, True)
         ctx = context.RequestContext(**kwargs)
 
         sharable_args = {}
@@ -111,7 +101,7 @@ class TestContext(unittest.TestCase):
         not share an image, with or without membership.
         """
         self.do_sharable(False, 'pattieblack', None, is_admin=True)
-        self.do_sharable(False, 'pattieblack', FakeMembership(True),
+        self.do_sharable(False, 'pattieblack', _fake_membership(True),
                          is_admin=True)
 
     def test_anon_public(self):
@@ -148,7 +138,7 @@ class TestContext(unittest.TestCase):
         not share an image, with or without membership.
         """
         self.do_sharable(False, 'pattieblack', None)
-        self.do_sharable(False, 'pattieblack', FakeMembership(True))
+        self.do_sharable(False, 'pattieblack', _fake_membership(True))
 
     def test_auth_public(self):
         """
@@ -227,7 +217,7 @@ class TestContext(unittest.TestCase):
         False) cannot share an image it does not own even if it is
         shared with it, but with can_share = False.
         """
-        self.do_sharable(False, 'pattieblack', FakeMembership(False),
+        self.do_sharable(False, 'pattieblack', _fake_membership(False),
                          tenant='froggy')
 
     def test_auth_sharable_can_share(self):
@@ -236,5 +226,5 @@ class TestContext(unittest.TestCase):
         False) can share an image it does not own if it is shared with
         it with can_share = True.
         """
-        self.do_sharable(True, 'pattieblack', FakeMembership(True),
+        self.do_sharable(True, 'pattieblack', _fake_membership(True),
                          tenant='froggy')

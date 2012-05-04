@@ -60,21 +60,21 @@ class RequestContext(object):
             return True
 
         # No owner == image visible
-        if image.owner is None:
+        if image['owner'] is None:
             return True
 
         # Image is_public == image visible
-        if image.is_public:
+        if image['is_public']:
             return True
 
         # Perform tests based on whether we have an owner
         if self.owner is not None:
-            if self.owner == image.owner:
+            if self.owner == image['owner']:
                 return True
 
             # Figure out if this image is shared with that tenant
             try:
-                tmp = db_api.image_member_find(self, image.id, self.owner)
+                tmp = db_api.image_member_find(self, image['id'], self.owner)
                 return not tmp['deleted']
             except exception.NotFound:
                 pass
@@ -89,11 +89,11 @@ class RequestContext(object):
             return True
 
         # No owner == image not mutable
-        if image.owner is None or self.owner is None:
+        if image['owner'] is None or self.owner is None:
             return False
 
         # Image only mutable by its owner
-        return image.owner == self.owner
+        return image['owner'] == self.owner
 
     def is_image_sharable(self, image, **kwargs):
         """Return True if the image can be shared to others in this context."""
@@ -106,7 +106,7 @@ class RequestContext(object):
             return True
 
         # If we own the image, we can share it
-        if self.owner == image.owner:
+        if self.owner == image['owner']:
             return True
 
         # Let's get the membership association
@@ -117,14 +117,14 @@ class RequestContext(object):
                 return False
         else:
             try:
-                membership = db_api.image_member_find(self, image.id,
+                membership = db_api.image_member_find(self, image['id'],
                                                       self.owner)
             except exception.NotFound:
                 # Not shared with us anyway
                 return False
 
         # It's the can_share attribute we're now interested in
-        return membership.can_share
+        return membership['can_share']
 
 
 class ContextMiddleware(wsgi.Middleware):

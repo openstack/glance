@@ -78,11 +78,15 @@ class FakeDB(object):
     def configure_db(*args, **kwargs):
         pass
 
+    def get_session(self):
+        pass
+
     def _image_member_format(self, image_id, tenant_id, can_share):
         return {
             'image_id': image_id,
             'member': tenant_id,
             'can_share': can_share,
+            'deleted': False,
         }
 
     def _image_format(self, image_id, **values):
@@ -96,7 +100,7 @@ class FakeDB(object):
         image.update(values)
         return image
 
-    def image_get(self, context, image_id):
+    def image_get(self, context, image_id, session=None):
         try:
             image = self.images[image_id]
             LOG.info('Found image %s: %s' % (image_id, str(image)))

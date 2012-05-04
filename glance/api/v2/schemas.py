@@ -38,12 +38,6 @@ IMAGE_SCHEMA = {
 ACCESS_SCHEMA = {
     'name': 'access',
     'properties': {
-        "image_id": {
-          "type": "string",
-          "description": "The image identifier",
-          "required": True,
-          "maxLength": 36,
-        },
         "tenant_id": {
           "type": "string",
           "description": "The tenant identifier",
