@@ -63,6 +63,11 @@ class TestImagesController(unittest.TestCase):
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.upload,
                           request, utils.generate_uuid(), 'YYYY')
 
+    def test_upload_data_exists(self):
+        request = test_utils.FakeRequest()
+        self.assertRaises(webob.exc.HTTPConflict, self.controller.upload,
+                          request, test_utils.UUID1, 'YYYY')
+
 
 class TestImageDataDeserializer(unittest.TestCase):
     def setUp(self):

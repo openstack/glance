@@ -140,3 +140,36 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(0, len(images))
 
         self.stop_servers()
+
+    def test_upload_duplicate_data(self):
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-1'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+
+        # Returned image entity should have a generated id
+        image = json.loads(response.text)['image']
+        image_id = image['id']
+
+        # Upload some image data
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers()
+        response = requests.put(path, headers=headers, data='ZZZZZ')
+        self.assertEqual(200, response.status_code)
+
+        # Uploading duplicate data should be rejected with a 409
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers()
+        response = requests.put(path, headers=headers, data='XXX')
+        self.assertEqual(409, response.status_code)
+
+        # Data should not have been overwritten
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers()
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(response.text, 'ZZZZZ')
+
+        self.stop_servers()

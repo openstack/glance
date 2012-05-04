@@ -52,7 +52,7 @@ class FakeDB(object):
 
     def __init__(self):
         self.images = {
-            UUID1: self._image_format(UUID1, location='1'),
+            UUID1: self._image_format(UUID1, location=UUID1),
             UUID2: self._image_format(UUID2),
         }
         self.members = {
@@ -180,8 +180,7 @@ class FakeDB(object):
 class FakeStoreAPI(object):
     def __init__(self):
         self.data = {
-            '1': ('XXX', 3),
-            '2': ('FFFFF', 5),
+            UUID1: ('XXX', 3),
         }
 
     def create_stores(self, conf):
@@ -199,7 +198,8 @@ class FakeStoreAPI(object):
         return self.get_from_backend(location)[1]
 
     def add_to_backend(self, scheme, image_id, data, size):
-        location = utils.generate_uuid()
-        self.data[location] = (data, size)
+        if image_id in self.data:
+            raise exception.Duplicate()
+        self.data[image_id] = (data, size)
         checksum = 'Z'
-        return (location, size, checksum)
+        return (image_id, size, checksum)

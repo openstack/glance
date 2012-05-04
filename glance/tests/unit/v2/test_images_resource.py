@@ -79,7 +79,7 @@ class TestImagesController(unittest.TestCase):
         expected = {
             'name': 'image-2',
             'owner': test_utils.TENANT1,
-            'location': '1',
+            'location': test_utils.UUID1,
             'status': 'queued',
         }
         self.assertEqual(expected, output)

@@ -43,9 +43,12 @@ class ImageDataController(base.Controller):
 
     def upload(self, req, image_id, data):
         self._get_image(req.context, image_id)
-        size = len(data)
-        location, size, checksum = self.store_api.add_to_backend(
-                'file', image_id, data, size)
+        try:
+            location, size, checksum = self.store_api.add_to_backend(
+                    'file', image_id, data, len(data))
+        except exception.Duplicate:
+            raise webob.exc.HTTPConflict()
+
         self.db_api.image_update(req.context, image_id, {'location': location})
 
     def download(self, req, image_id):
