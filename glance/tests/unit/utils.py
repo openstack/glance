@@ -62,10 +62,18 @@ class FakeDB(object):
             ],
             UUID2: [],
         }
+        self.tags = {
+            UUID1: {
+                'ping': {'image_id': UUID1, 'value': 'ping'},
+                'pong': {'image_id': UUID1, 'value': 'pong'},
+            },
+            UUID2: [],
+        }
 
     def reset(self):
         self.images = {}
         self.members = {}
+        self.tags = {}
 
     def configure_db(*args, **kwargs):
         pass
@@ -144,6 +152,29 @@ class FakeDB(object):
         self.images[image_id] = image
         LOG.info('Image %s updated to %s' % (image_id, str(image)))
         return image
+
+    def image_tag_get_all(self, context, image_id):
+        return [
+            {'image_id': image_id, 'value': 'ping'},
+            {'image_id': image_id, 'value': 'pong'},
+        ]
+
+    def image_tag_get(self, context, image_id, value):
+        try:
+            return self.tags[image_id][value]
+        except KeyError:
+            raise exception.NotFound()
+
+    def image_tag_create(self, context, image_id, value):
+        tag = {'image_id': image_id, 'value': value}
+        self.tags[image_id][value] = tag.copy()
+        return tag
+
+    def image_tag_delete(self, context, image_id, value):
+        try:
+            del self.tags[image_id][value]
+        except KeyError:
+            raise exception.NotFound()
 
 
 class FakeStoreAPI(object):

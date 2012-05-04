@@ -20,6 +20,7 @@ import logging
 import routes
 
 from glance.api.v2 import image_data
+from glance.api.v2 import image_tags
 from glance.api.v2 import images
 from glance.api.v2 import root
 from glance.api.v2 import schemas
@@ -84,5 +85,19 @@ class API(wsgi.Router):
                        controller=image_data_resource,
                        action='upload',
                        conditions={'method': ['PUT']})
+
+        image_tags_resource = image_tags.create_resource(conf)
+        mapper.connect('/images/{image_id}/tags',
+                       controller=image_tags_resource,
+                       action='index',
+                       conditions={'method': ['GET']})
+        mapper.connect('/images/{image_id}/tags/{tag_value}',
+                       controller=image_tags_resource,
+                       action='update',
+                       conditions={'method': ['PUT']})
+        mapper.connect('/images/{image_id}/tags/{tag_value}',
+                       controller=image_tags_resource,
+                       action='delete',
+                       conditions={'method': ['DELETE']})
 
         super(API, self).__init__(mapper)

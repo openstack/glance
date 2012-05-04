@@ -44,6 +44,7 @@ class TestImages(functional.FunctionalTest):
         base_headers.update(custom_headers or {})
         return base_headers
 
+    @functional.runs_sql
     def test_image_lifecycle(self):
         # Image list should be empty
         path = self._url('/v2/images')

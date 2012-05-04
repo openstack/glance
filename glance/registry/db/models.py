@@ -131,6 +131,15 @@ class ImageProperty(BASE, ModelBase):
     value = Column(Text)
 
 
+class ImageTag(BASE, ModelBase):
+    """Represents an image tag in the datastore"""
+    __tablename__ = 'image_tags'
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    image_id = Column(String(36), ForeignKey('images.id'), nullable=False)
+    value = Column(String(255), nullable=False)
+
+
 class ImageMember(BASE, ModelBase):
     """Represents an image members in the datastore"""
     __tablename__ = 'image_members'

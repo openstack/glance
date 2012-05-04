@@ -768,3 +768,36 @@ def can_show_deleted(context):
     if not hasattr(context, 'get'):
         return False
     return context.get('deleted', False)
+
+
+def image_tag_create(context, image_id, value):
+    """Create an image tag."""
+    session = get_session()
+    tag_ref = models.ImageTag(image_id=image_id, value=value)
+    tag_ref.save(session=session)
+    return tag_ref
+
+
+def image_tag_delete(context, image_id, value):
+    """Delete an image tag."""
+    session = get_session()
+    query = session.query(models.ImageTag).\
+                         filter_by(image_id=image_id).\
+                         filter_by(value=value).\
+                         filter_by(deleted=False)
+    try:
+        tag_ref = query.one()
+    except exc.NoResultFound:
+        raise exception.NotFound()
+
+    tag_ref.delete(session=session)
+
+
+def image_tag_get_all(context, image_id):
+    """Get a list of tags for a specific image."""
+    session = get_session()
+    tags = session.query(models.ImageTag).\
+                         filter_by(image_id=image_id).\
+                         filter_by(deleted=False).\
+                         all()
+    return tags

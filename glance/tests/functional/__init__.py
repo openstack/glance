@@ -53,14 +53,19 @@ def runs_sql(func):
     @functools.wraps(func)
     def wrapped(*a, **kwargs):
         test_obj = a[0]
-        orig_sql_connection = test_obj.registry_server.sql_connection
+        orig_reg_sql_connection = test_obj.registry_server.sql_connection
+        orig_api_sql_connection = test_obj.api_server.sql_connection
         try:
-            if orig_sql_connection.startswith('sqlite'):
+            if orig_reg_sql_connection.startswith('sqlite'):
                 test_obj.registry_server.sql_connection =\
+                        "sqlite:///tests.sqlite"
+            if orig_api_sql_connection.startswith('sqlite'):
+                test_obj.api_server.sql_connection =\
                         "sqlite:///tests.sqlite"
             func(*a, **kwargs)
         finally:
-            test_obj.registry_server.sql_connection = orig_sql_connection
+            test_obj.registry_server.sql_connection = orig_reg_sql_connection
+            test_obj.api_server.sql_connection = orig_api_sql_connection
     return wrapped
 
 
@@ -212,6 +217,11 @@ class ApiServer(Server):
         self.policy_file = policy_file
         self.policy_default_rule = 'default'
         self.server_control_options = '--capture-output'
+
+        default_sql_connection = 'sqlite:///'
+        self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
+                                             default_sql_connection)
+
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
@@ -248,6 +258,7 @@ image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
 policy_file = %(policy_file)s
 policy_default_rule = %(policy_default_rule)s
+sql_connection = %(sql_connection)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
 """
@@ -448,6 +459,7 @@ class FunctionalTest(unittest.TestCase):
             # and recreate it, which ensures that we have no side-effects
             # from the tests
             self._reset_database(self.registry_server.sql_connection)
+            self._reset_database(self.api_server.sql_connection)
 
     def set_policy_rules(self, rules):
         fap = open(self.policy_file, 'w')

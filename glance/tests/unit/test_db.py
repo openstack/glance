@@ -48,6 +48,26 @@ CONF = {'sql_connection': 'sqlite://',
         'debug': False}
 
 
+class BaseDBTestCase(base.IsolatedUnitTest):
+
+    def setUp(self):
+        super(BaseDBTestCase, self).setUp()
+        conf = test_utils.TestConfigOpts(CONF)
+        self.adm_context = context.RequestContext(is_admin=True)
+        self.context = context.RequestContext(is_admin=False)
+        db_api.configure_db(conf)
+        self.destroy_fixtures()
+        self.create_fixtures()
+
+    def create_fixtures(self):
+        pass
+
+    def destroy_fixtures(self):
+        # Easiest to just drop the models and re-create them...
+        db_models.unregister_models(db_api._ENGINE)
+        db_models.register_models(db_api._ENGINE)
+
+
 def build_fixtures(t1, t2):
     return [
     {'id': UUID1,
@@ -84,17 +104,7 @@ def build_fixtures(t1, t2):
      'properties': {}}]
 
 
-class TestRegistryDb(base.IsolatedUnitTest):
-
-    def setUp(self):
-        """Establish a clean test environment"""
-        super(TestRegistryDb, self).setUp()
-        conf = test_utils.TestConfigOpts(CONF)
-        self.adm_context = context.RequestContext(is_admin=True)
-        self.context = context.RequestContext(is_admin=False)
-        db_api.configure_db(conf)
-        self.destroy_fixtures()
-        self.create_fixtures()
+class TestRegistryDb(BaseDBTestCase):
 
     def create_fixtures(self):
         self.fixtures = self.build_fixtures()
@@ -105,11 +115,6 @@ class TestRegistryDb(base.IsolatedUnitTest):
         t1 = datetime.datetime.utcnow()
         t2 = t1 + datetime.timedelta(microseconds=1)
         return build_fixtures(t1, t2)
-
-    def destroy_fixtures(self):
-        # Easiest to just drop the models and re-create them...
-        db_models.unregister_models(db_api._ENGINE)
-        db_models.register_models(db_api._ENGINE)
 
     def test_image_get(self):
         image = db_api.image_get(self.context, UUID1)
@@ -158,6 +163,48 @@ class TestRegistryDb(base.IsolatedUnitTest):
         images = db_api.image_get_all(self.context, marker=UUID1,
                                       filters=filters)
         self.assertEquals(len(images), 0)
+
+
+class TestDBImageTags(BaseDBTestCase):
+
+    def create_fixtures(self):
+        fixtures = [
+            {'id': UUID1, 'status': 'queued'},
+            {'id': UUID2, 'status': 'queued'},
+        ]
+        for fixture in fixtures:
+            db_api.image_create(self.adm_context, fixture)
+
+    def test_image_tag_create(self):
+        tag_ref = db_api.image_tag_create(self.context, UUID1, 'snap')
+        self.assertEqual(UUID1, tag_ref.image_id)
+        self.assertEqual('snap', tag_ref.value)
+
+    def test_image_tag_get_all(self):
+        db_api.image_tag_create(self.context, UUID1, 'snap')
+        db_api.image_tag_create(self.context, UUID1, 'snarf')
+        db_api.image_tag_create(self.context, UUID2, 'snarf')
+
+        # Check the tags for the first image
+        tag_refs = db_api.image_tag_get_all(self.context, UUID1)
+        tags = [(t.image_id, t.value) for t in tag_refs]
+        expected = [(UUID1, 'snap'), (UUID1, 'snarf')]
+        self.assertEqual(expected, tags)
+
+        # Check the tags for the second image
+        tag_refs = db_api.image_tag_get_all(self.context, UUID2)
+        tags = [(t.image_id, t.value) for t in tag_refs]
+        expected = [(UUID2, 'snarf')]
+        self.assertEqual(expected, tags)
+
+    def test_image_tag_get_all_no_tags(self):
+        self.assertEqual([], db_api.image_tag_get_all(self.context, UUID1))
+
+    def test_image_tag_delete(self):
+        db_api.image_tag_create(self.context, UUID1, 'snap')
+        db_api.image_tag_delete(self.context, UUID1, 'snap')
+        self.assertRaises(exception.NotFound, db_api.image_tag_delete,
+                          self.context, UUID1, 'snap')
 
 
 class TestRegistryDbWithSameTime(TestRegistryDb):
