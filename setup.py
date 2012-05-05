@@ -14,55 +14,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import gettext
 import os
 import subprocess
 
-from setuptools import setup, find_packages
-from setuptools.command.sdist import sdist
+import setuptools
+from setuptools.command import sdist
 
-from glance.openstack.common.setup import generate_authors
-from glance.openstack.common.setup import parse_dependency_links
-from glance.openstack.common.setup import parse_requirements
-from glance.openstack.common.setup import write_git_changelog
-from glance.openstack.common.setup import write_vcsversion
+from glance.openstack.common import setup
 
-gettext.install('glance', unicode=1)
+setup.write_vcsversion('glance/vcsversion.py')
 
-
-class local_sdist(sdist):
-    """Customized sdist hook - builds the ChangeLog file from VC first"""
-
-    def run(self):
-        write_git_changelog()
-        generate_authors()
-        sdist.run(self)
-cmdclass = {'sdist': local_sdist}
-
-# If Sphinx is installed on the box running setup.py,
-# enable setup.py to build the documentation, otherwise,
-# just ignore it
-try:
-    from sphinx.setup_command import BuildDoc
-
-    class local_BuildDoc(BuildDoc):
-        def run(self):
-            for builder in ['html', 'man']:
-                self.builder = builder
-                self.finalize_options()
-                BuildDoc.run(self)
-    cmdclass['build_sphinx'] = local_BuildDoc
-
-except:
-    pass
-
-requires = parse_requirements()
-depend_links = parse_dependency_links()
-write_vcsversion('glance/vcsversion.py')
-
+# import this after write_vcsversion because version imports vcsversion
 from glance import version
 
-setup(
+
+requires = setup.parse_requirements()
+depend_links = setup.parse_dependency_links()
+
+setuptools.setup(
     name='glance',
     version=version.canonical_version_string(),
     description='The Glance project provides services for discovering, '
@@ -71,9 +40,9 @@ setup(
     author='OpenStack',
     author_email='openstack@lists.launchpad.net',
     url='http://glance.openstack.org/',
-    packages=find_packages(exclude=['bin']),
+    packages=setuptools.find_packages(exclude=['bin']),
     test_suite='nose.collector',
-    cmdclass=cmdclass,
+    cmdclass=setup.get_cmdclass(),
     include_package_data=True,
     install_requires=requires,
     dependency_links=depend_links,
