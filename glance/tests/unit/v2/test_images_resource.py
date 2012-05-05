@@ -93,7 +93,9 @@ class TestImagesController(unittest.TestCase):
 
 class TestImagesDeserializer(unittest.TestCase):
     def setUp(self):
-        self.deserializer = glance.api.v2.images.RequestDeserializer({})
+        schema_api = glance.schema.API()
+        self.deserializer = glance.api.v2.images.RequestDeserializer(
+                {}, schema_api)
 
     def test_create(self):
         request = test_utils.FakeRequest()

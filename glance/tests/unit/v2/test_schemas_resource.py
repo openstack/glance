@@ -15,15 +15,17 @@
 
 import unittest
 
-import glance.api.v2.schemas
+from glance.api.v2 import schemas
 import glance.tests.unit.utils as test_utils
+import glance.schema
 
 
 class TestSchemasController(unittest.TestCase):
 
     def setUp(self):
         super(TestSchemasController, self).setUp()
-        self.controller = glance.api.v2.schemas.SchemasController({})
+        self.schema_api = glance.schema.API()
+        self.controller = schemas.Controller({}, self.schema_api)
 
     def test_index(self):
         req = test_utils.FakeRequest()
@@ -37,9 +39,9 @@ class TestSchemasController(unittest.TestCase):
     def test_image(self):
         req = test_utils.FakeRequest()
         output = self.controller.image(req)
-        self.assertEqual(glance.api.v2.schemas.IMAGE_SCHEMA, output)
+        self.assertEqual(self.schema_api.get_schema('image'), output)
 
     def test_access(self):
         req = test_utils.FakeRequest()
         output = self.controller.access(req)
-        self.assertEqual(glance.api.v2.schemas.ACCESS_SCHEMA, output)
+        self.assertEqual(self.schema_api.get_schema('access'), output)

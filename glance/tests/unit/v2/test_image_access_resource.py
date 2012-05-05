@@ -21,6 +21,7 @@ import webob
 from glance.api.v2 import image_access
 from glance.common import exception
 from glance.common import utils
+import glance.schema
 import glance.tests.unit.utils as test_utils
 
 
@@ -108,7 +109,8 @@ class TestImageAccessController(unittest.TestCase):
 
 class TestImageAccessDeserializer(unittest.TestCase):
     def setUp(self):
-        self.deserializer = image_access.RequestDeserializer({})
+        schema_api = glance.schema.API()
+        self.deserializer = image_access.RequestDeserializer({}, schema_api)
 
     def test_create(self):
         fixture = {

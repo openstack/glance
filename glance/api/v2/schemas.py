@@ -15,45 +15,14 @@
 
 import glance.api.v2.base
 from glance.common import wsgi
+import glance.schema
 
 
-#NOTE(bcwaldon): this is temporary until we generate them on the fly
-IMAGE_SCHEMA = {
-    "name": "image",
-    "properties": {
-        "id": {
-            "type": "string",
-            "description": "An identifier for the image",
-            "required": False,
-            "maxLength": 36,
-        },
-        "name": {
-            "type": "string",
-            "description": "Descriptive name for the image",
-            "required": True,
-        },
-    },
-}
+class Controller(glance.api.v2.base.Controller):
+    def __init__(self, conf, schema_api):
+        super(Controller, self).__init__(conf)
+        self.schema_api = schema_api
 
-ACCESS_SCHEMA = {
-    'name': 'access',
-    'properties': {
-        "tenant_id": {
-          "type": "string",
-          "description": "The tenant identifier",
-          "required": True,
-        },
-        "can_share": {
-          "type": "boolean",
-          "description": "Ability of tenant to share with others",
-          "required": True,
-          "default": False,
-        },
-    },
-}
-
-
-class SchemasController(glance.api.v2.base.Controller):
     def index(self, req):
         links = [
             {'rel': 'image', 'href': '/v2/schemas/image'},
@@ -62,12 +31,12 @@ class SchemasController(glance.api.v2.base.Controller):
         return {'links': links}
 
     def image(self, req):
-        return IMAGE_SCHEMA
+        return self.schema_api.get_schema('image')
 
     def access(self, req):
-        return ACCESS_SCHEMA
+        return self.schema_api.get_schema('access')
 
 
-def create_resource(conf):
-    controller = SchemasController(conf)
+def create_resource(conf, schema_api):
+    controller = Controller(conf, schema_api)
     return wsgi.Resource(controller)

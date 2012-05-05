@@ -66,12 +66,13 @@ class ImagesController(base.Controller):
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
-    def __init__(self, conf):
+    def __init__(self, conf, schema_api):
         super(RequestDeserializer, self).__init__()
         self.conf = conf
+        self.schema_api = schema_api
 
     def _validate(self, request, obj):
-        schema = schemas.SchemasController(self.conf).image(request)
+        schema = self.schema_api.get_schema('image')
         jsonschema.validate(obj, schema)
 
     def create(self, request):
@@ -131,9 +132,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.status_int = 204
 
 
-def create_resource(conf):
+def create_resource(conf, schema_api):
     """Images resource factory method"""
-    deserializer = RequestDeserializer(conf)
+    deserializer = RequestDeserializer(conf, schema_api)
     serializer = ResponseSerializer()
     controller = ImagesController(conf)
     return wsgi.Resource(controller, deserializer, serializer)

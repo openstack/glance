@@ -26,6 +26,7 @@ from glance.api.v2 import images
 from glance.api.v2 import root
 from glance.api.v2 import schemas
 from glance.common import wsgi
+import glance.schema
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +39,12 @@ class API(wsgi.Router):
         self.conf = conf
         mapper = routes.Mapper()
 
+        schema_api = glance.schema.API()
+
         root_resource = root.create_resource(conf)
         mapper.connect('/', controller=root_resource, action='index')
 
-        schemas_resource = schemas.create_resource(conf)
+        schemas_resource = schemas.create_resource(conf, schema_api)
         mapper.connect('/schemas',
                        controller=schemas_resource,
                        action='index',
@@ -55,7 +58,7 @@ class API(wsgi.Router):
                        action='access',
                        conditions={'method': ['GET']})
 
-        images_resource = images.create_resource(conf)
+        images_resource = images.create_resource(conf, schema_api)
         mapper.connect('/images',
                        controller=images_resource,
                        action='index',
@@ -101,7 +104,7 @@ class API(wsgi.Router):
                        action='delete',
                        conditions={'method': ['DELETE']})
 
-        image_access_resource = image_access.create_resource(conf)
+        image_access_resource = image_access.create_resource(conf, schema_api)
         mapper.connect('/images/{image_id}/access',
                        controller=image_access_resource,
                        action='index',

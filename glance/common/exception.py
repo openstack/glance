@@ -236,3 +236,7 @@ class RegionAmbiguity(GlanceException):
 
 class WorkerCreationFailure(GlanceException):
     message = _("Server worker creation failed: %(reason)s.")
+
+
+class SchemaLoadError(GlanceException):
+    message = _("Unable to load schema: %(reason)s")
