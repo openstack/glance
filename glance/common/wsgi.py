@@ -192,7 +192,15 @@ class Server(object):
                 if os.WIFEXITED(status) or os.WIFSIGNALED(status):
                     self.logger.error(_('Removing dead child %s') % pid)
                     self.children.remove(pid)
-                    self.run_child()
+                    if os.WIFEXITED(status) and os.WEXITSTATUS(status) == 2:
+                        self.logger.error(_('Not respawning child %d, cannot '
+                                            'recover from termination') % pid)
+                        if not self.children:
+                            self.logger.error(
+                                _('All workers have terminated. Exiting'))
+                            self.running = False
+                    else:
+                        self.run_child()
             except OSError, err:
                 if err.errno not in (errno.EINTR, errno.ECHILD):
                     raise
@@ -232,7 +240,11 @@ class Server(object):
     def run_server(self):
         """Run a WSGI server."""
         eventlet.wsgi.HttpProtocol.default_request_version = "HTTP/1.0"
-        eventlet.hubs.use_hub('poll')
+        try:
+            eventlet.hubs.use_hub('poll')
+        except Exception:
+            msg = _("eventlet 'poll' hub is not available on this platform")
+            raise exception.WorkerCreationFailure(reason=msg)
         eventlet.patcher.monkey_patch(all=False, socket=True)
         self.pool = eventlet.GreenPool(size=self.threads)
         try:

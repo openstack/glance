@@ -38,6 +38,12 @@ gettext.install('glance', unicode=1)
 
 from glance.common import config
 from glance.common import wsgi
+from glance.common import exception
+
+
+def fail(returncode, e):
+    sys.stderr.write("ERROR: %s\n" % e)
+    sys.exit(returncode)
 
 
 if __name__ == '__main__':
@@ -50,6 +56,7 @@ if __name__ == '__main__':
         server = wsgi.Server()
         server.start(app, conf, default_port=9292)
         server.wait()
+    except exception.WorkerCreationFailure, e:
+        fail(2, e)
     except RuntimeError, e:
-        sys.stderr.write("ERROR: %s\n" % e)
-        sys.exit(1)
+        fail(1, e)
