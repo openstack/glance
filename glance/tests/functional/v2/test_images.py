@@ -99,7 +99,7 @@ class TestImages(functional.FunctionalTest):
         # Deletion should work
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(204, response.status_code)
 
         # This image should be no longer be directly accessible
         path = self._url('/v2/images/%s' % image_id)

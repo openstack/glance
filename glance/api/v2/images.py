@@ -60,7 +60,7 @@ class ImagesController(base.Controller):
 
     def delete(self, req, image_id):
         try:
-            return self.db_api.image_destroy(req.context, image_id)
+            self.db_api.image_destroy(req.context, image_id)
         except exception.NotFound:
             raise webob.exc.HTTPNotFound()
 
@@ -123,6 +123,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             'links': [],
         }
         response.body = json.dumps(body)
+
+    def delete(self, response, result):
+        response.status_int = 204
 
 
 def create_resource(conf):
