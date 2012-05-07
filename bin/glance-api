@@ -51,4 +51,5 @@ if __name__ == '__main__':
         server.start(app, conf, default_port=9292)
         server.wait()
     except RuntimeError, e:
-        sys.exit("ERROR: %s" % e)
+        sys.stderr.write("ERROR: %s\n" % e)
+        sys.exit(1)
