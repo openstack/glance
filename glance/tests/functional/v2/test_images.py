@@ -96,6 +96,25 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(image_id, image['id'])
         self.assertEqual('image-2', image['name'])
 
+        # Try to download data before its uploaded
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers()
+        response = requests.get(path, headers=headers)
+        self.assertEqual(404, response.status_code)
+
+        # Upload some image data
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers()
+        response = requests.put(path, headers=headers, data='ZZZZZ')
+        self.assertEqual(200, response.status_code)
+
+        # Try to download the data that was just uploaded
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers()
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(response.text, 'ZZZZZ')
+
         # Deletion should work
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
@@ -104,6 +123,12 @@ class TestImages(functional.FunctionalTest):
         # This image should be no longer be directly accessible
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
+        self.assertEqual(404, response.status_code)
+
+        # And neither should its data
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers()
+        response = requests.get(path, headers=headers)
         self.assertEqual(404, response.status_code)
 
         # Image list should now be empty

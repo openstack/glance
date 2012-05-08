@@ -19,6 +19,7 @@ import logging
 
 import routes
 
+from glance.api.v2 import image_data
 from glance.api.v2 import images
 from glance.api.v2 import root
 from glance.api.v2 import schemas
@@ -73,5 +74,15 @@ class API(wsgi.Router):
                        controller=images_resource,
                        action='delete',
                        conditions={'method': ['DELETE']})
+
+        image_data_resource = image_data.create_resource(conf)
+        mapper.connect('/images/{image_id}/file',
+                       controller=image_data_resource,
+                       action='download',
+                       conditions={'method': ['GET']})
+        mapper.connect('/images/{image_id}/file',
+                       controller=image_data_resource,
+                       action='upload',
+                       conditions={'method': ['PUT']})
 
         super(API, self).__init__(mapper)

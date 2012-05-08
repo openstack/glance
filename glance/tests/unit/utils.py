@@ -20,6 +20,7 @@ import webob
 
 import glance.common.context
 from glance.common import exception
+from glance.common import utils
 
 LOG = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ class FakeDB(object):
 
     def __init__(self):
         self.images = {
-            UUID1: self._image_format(UUID1),
+            UUID1: self._image_format(UUID1, location='1'),
             UUID2: self._image_format(UUID2),
         }
         self.members = {
@@ -77,7 +78,13 @@ class FakeDB(object):
         }
 
     def _image_format(self, image_id, **values):
-        image = {'id': image_id, 'name': 'image-name'}
+        image = {
+            'id': image_id,
+            'name': 'image-name',
+            'owner': TENANT1,
+            'location': None,
+            'status': 'queued',
+        }
         image.update(values)
         return image
 
@@ -137,3 +144,31 @@ class FakeDB(object):
         self.images[image_id] = image
         LOG.info('Image %s updated to %s' % (image_id, str(image)))
         return image
+
+
+class FakeStoreAPI(object):
+    def __init__(self):
+        self.data = {
+            '1': ('XXX', 3),
+            '2': ('FFFFF', 5),
+        }
+
+    def create_stores(self, conf):
+        pass
+
+    def get_from_backend(self, location):
+        try:
+            #NOTE(bcwaldon): This fake API is store-agnostic, so we only
+            # care about location being some unique string
+            return self.data[location]
+        except KeyError:
+            raise exception.NotFound()
+
+    def get_size_from_backend(self, location):
+        return self.get_from_backend(location)[1]
+
+    def add_to_backend(self, scheme, image_id, data, size):
+        location = utils.generate_uuid()
+        self.data[location] = (data, size)
+        checksum = 'Z'
+        return (location, size, checksum)

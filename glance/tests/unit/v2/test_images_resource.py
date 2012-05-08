@@ -57,7 +57,13 @@ class TestImagesController(unittest.TestCase):
         image = {'name': 'image-1'}
         output = self.controller.create(request, image)
         output.pop('id')
-        self.assertEqual(image, output)
+        expected = {
+            'name': 'image-1',
+            'owner': test_utils.TENANT1,
+            'location': None,
+            'status': 'queued',
+        }
+        self.assertEqual(expected, output)
 
     def test_create_with_owner_forbidden(self):
         request = test_utils.FakeRequest()
@@ -70,7 +76,13 @@ class TestImagesController(unittest.TestCase):
         image = {'name': 'image-2'}
         output = self.controller.update(request, test_utils.UUID1, image)
         output.pop('id')
-        self.assertEqual(image, output)
+        expected = {
+            'name': 'image-2',
+            'owner': test_utils.TENANT1,
+            'location': '1',
+            'status': 'queued',
+        }
+        self.assertEqual(expected, output)
 
     def test_update_non_existant(self):
         request = test_utils.FakeRequest()
@@ -139,6 +151,10 @@ class TestImagesSerializer(unittest.TestCase):
                             'rel': 'self',
                             'href': '/v2/images/%s' % test_utils.UUID1,
                         },
+                        {
+                            'rel': 'file',
+                            'href': '/v2/images/%s/file' % test_utils.UUID1,
+                        },
                         {'rel': 'describedby', 'href': '/v2/schemas/image'}
                     ],
                 },
@@ -149,6 +165,10 @@ class TestImagesSerializer(unittest.TestCase):
                         {
                             'rel': 'self',
                             'href': '/v2/images/%s' % test_utils.UUID2,
+                        },
+                        {
+                            'rel': 'file',
+                            'href': '/v2/images/%s/file' % test_utils.UUID2,
                         },
                         {'rel': 'describedby', 'href': '/v2/schemas/image'}
                     ],
@@ -171,6 +191,10 @@ class TestImagesSerializer(unittest.TestCase):
                         'rel': 'self',
                         'href': '/v2/images/%s' % test_utils.UUID2,
                     },
+                    {
+                        'rel': 'file',
+                        'href': '/v2/images/%s/file' % test_utils.UUID2,
+                    },
                     {'rel': 'describedby', 'href': '/v2/schemas/image'}
                 ],
             },
@@ -187,10 +211,8 @@ class TestImagesSerializer(unittest.TestCase):
                 'id': test_utils.UUID2,
                 'name': 'image-2',
                 'links': [
-                    {
-                        'rel': 'self',
-                        'href': self_link,
-                    },
+                    {'rel': 'self', 'href': self_link},
+                    {'rel': 'file', 'href': '%s/file' % self_link},
                     {'rel': 'describedby', 'href': '/v2/schemas/image'}
                 ],
             },
@@ -208,10 +230,8 @@ class TestImagesSerializer(unittest.TestCase):
                 'id': test_utils.UUID2,
                 'name': 'image-2',
                 'links': [
-                    {
-                        'rel': 'self',
-                        'href': self_link,
-                    },
+                    {'rel': 'self', 'href': self_link},
+                    {'rel': 'file', 'href': '%s/file' % self_link},
                     {'rel': 'describedby', 'href': '/v2/schemas/image'}
                 ],
             },

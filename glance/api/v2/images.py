@@ -26,9 +26,9 @@ import glance.registry.db.api
 
 
 class ImagesController(base.Controller):
-    def __init__(self, conf, db=None):
+    def __init__(self, conf, db_api=None):
         super(ImagesController, self).__init__(conf)
-        self.db_api = db or glance.registry.db.api
+        self.db_api = db_api or glance.registry.db.api
         self.db_api.configure_db(conf)
 
     def create(self, req, image):
@@ -86,17 +86,20 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         body = output.pop('body')
         self._validate(request, body)
         output['image'] = body
-
         return output
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
-    def _get_image_href(self, image):
-        return '/v2/images/%s' % image['id']
+    def _get_image_href(self, image, subcollection=''):
+        base_href = '/v2/images/%s' % image['id']
+        if subcollection:
+            base_href = '%s/%s' % (base_href, subcollection)
+        return base_href
 
     def _get_image_links(self, image):
         return [
             {'rel': 'self', 'href': self._get_image_href(image)},
+            {'rel': 'file', 'href': self._get_image_href(image, 'file')},
             {'rel': 'describedby', 'href': '/v2/schemas/image'},
         ]
 
