@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import StringIO
 import unittest
 
 import webob
@@ -53,7 +54,7 @@ class TestImagesController(unittest.TestCase):
 
     def test_upload_download(self):
         request = test_utils.FakeRequest()
-        self.controller.upload(request, test_utils.UUID2, 'YYYY')
+        self.controller.upload(request, test_utils.UUID2, 'YYYY', 4)
         output = self.controller.download(request, test_utils.UUID2)
         expected = {'data': 'YYYY', 'size': 4}
         self.assertEqual(expected, output)
@@ -61,12 +62,19 @@ class TestImagesController(unittest.TestCase):
     def test_upload_non_existant_image(self):
         request = test_utils.FakeRequest()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.upload,
-                          request, utils.generate_uuid(), 'YYYY')
+                          request, utils.generate_uuid(), 'YYYY', 4)
 
     def test_upload_data_exists(self):
         request = test_utils.FakeRequest()
         self.assertRaises(webob.exc.HTTPConflict, self.controller.upload,
-                          request, test_utils.UUID1, 'YYYY')
+                          request, test_utils.UUID1, 'YYYY', 4)
+
+    def test_upload_download_no_size(self):
+        request = test_utils.FakeRequest()
+        self.controller.upload(request, test_utils.UUID2, 'YYYY', None)
+        output = self.controller.download(request, test_utils.UUID2)
+        expected = {'data': 'YYYY', 'size': 4}
+        self.assertEqual(expected, output)
 
 
 class TestImageDataDeserializer(unittest.TestCase):
@@ -75,10 +83,60 @@ class TestImageDataDeserializer(unittest.TestCase):
 
     def test_upload(self):
         request = test_utils.FakeRequest()
+        request.headers['Content-Type'] = 'application/octet-stream'
         request.body = 'YYY'
+        request.headers['Content-Length'] = 3
         output = self.deserializer.upload(request)
-        expected = {'data': 'YYY'}
+        data = output.pop('data')
+        self.assertEqual(data.getvalue(), 'YYY')
+        expected = {'size': 3}
         self.assertEqual(expected, output)
+
+    def test_upload_chunked(self):
+        request = test_utils.FakeRequest()
+        request.headers['Content-Type'] = 'application/octet-stream'
+        # If we use body_file, webob assumes we want to do a chunked upload,
+        # ignoring the Content-Length header
+        request.body_file = StringIO.StringIO('YYY')
+        output = self.deserializer.upload(request)
+        data = output.pop('data')
+        self.assertEqual(data.getvalue(), 'YYY')
+        expected = {'size': None}
+        self.assertEqual(expected, output)
+
+    def test_upload_chunked_with_content_length(self):
+        request = test_utils.FakeRequest()
+        request.headers['Content-Type'] = 'application/octet-stream'
+        request.body_file = StringIO.StringIO('YYY')
+        # The deserializer shouldn't care if the Content-Length is
+        # set when the user is attempting to send chunked data.
+        request.headers['Content-Length'] = 3
+        output = self.deserializer.upload(request)
+        data = output.pop('data')
+        self.assertEqual(data.getvalue(), 'YYY')
+        expected = {'size': 3}
+        self.assertEqual(expected, output)
+
+    def test_upload_with_incorrect_content_length(self):
+        request = test_utils.FakeRequest()
+        request.headers['Content-Type'] = 'application/octet-stream'
+        # The deserializer shouldn't care if the Content-Length and
+        # actual request body length differ. That job is left up
+        # to the controller
+        request.body = 'YYY'
+        request.headers['Content-Length'] = 4
+        output = self.deserializer.upload(request)
+        data = output.pop('data')
+        self.assertEqual(data.getvalue(), 'YYY')
+        expected = {'size': 4}
+        self.assertEqual(expected, output)
+
+    def test_upload_wrong_content_type(self):
+        request = test_utils.FakeRequest()
+        request.headers['Content-Type'] = 'application/json'
+        request.body = 'YYYYY'
+        self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
+            self.deserializer.upload, request)
 
 
 class TestImageDataSerializer(unittest.TestCase):

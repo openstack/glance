@@ -41,15 +41,16 @@ class ImageDataController(base.Controller):
         except exception.NotFound:
             raise webob.exc.HTTPNotFound(_("Image does not exist"))
 
-    def upload(self, req, image_id, data):
+    def upload(self, req, image_id, data, size):
         self._get_image(req.context, image_id)
         try:
             location, size, checksum = self.store_api.add_to_backend(
-                    'file', image_id, data, len(data))
+                    'file', image_id, data, size)
         except exception.Duplicate:
             raise webob.exc.HTTPConflict()
 
-        self.db_api.image_update(req.context, image_id, {'location': location})
+        values = {'location': location, 'size': size}
+        self.db_api.image_update(req.context, image_id, values)
 
     def download(self, req, image_id):
         image = self._get_image(req.context, image_id)
@@ -63,7 +64,13 @@ class ImageDataController(base.Controller):
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
     def upload(self, request):
-        return {'data': request.body}
+        try:
+            request.get_content_type('application/octet-stream')
+        except exception.InvalidContentType:
+            raise webob.exc.HTTPUnsupportedMediaType()
+
+        image_size = request.content_length or None
+        return {'size': image_size, 'data': request.body_file}
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):

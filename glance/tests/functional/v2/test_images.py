@@ -105,7 +105,7 @@ class TestImages(functional.FunctionalTest):
 
         # Upload some image data
         path = self._url('/v2/images/%s/file' % image_id)
-        headers = self._headers()
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
         self.assertEqual(200, response.status_code)
 
@@ -155,13 +155,13 @@ class TestImages(functional.FunctionalTest):
 
         # Upload some image data
         path = self._url('/v2/images/%s/file' % image_id)
-        headers = self._headers()
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
         self.assertEqual(200, response.status_code)
 
         # Uploading duplicate data should be rejected with a 409
         path = self._url('/v2/images/%s/file' % image_id)
-        headers = self._headers()
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='XXX')
         self.assertEqual(409, response.status_code)
 
