@@ -98,6 +98,9 @@ class Store(glance.store.base.Store):
 
     datadir_opt = cfg.StrOpt('filesystem_store_datadir')
 
+    def get_schemes(self):
+        return ('file', 'filesystem')
+
     def configure_add(self):
         """
         Configure the Store to use the stored configuration options
@@ -216,6 +219,3 @@ class Store(glance.store.base.Store):
         logger.debug(_("Wrote %(bytes_written)d bytes to %(filepath)s with "
                      "checksum %(checksum_hex)s") % locals())
         return ('file://%s' % filepath, bytes_written, checksum_hex)
-
-
-glance.store.register_store(__name__, ['filesystem', 'file'])

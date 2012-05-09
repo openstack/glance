@@ -20,13 +20,15 @@ import unittest
 
 import stubout
 
+from glance.common import config
 from glance.common import exception, context
 from glance.registry.db import api as db_api
-from glance.store import (create_stores,
-                          delete_from_backend,
+from glance.registry import configure_registry_client
+from glance.store import (delete_from_backend,
                           schedule_delete_from_backend)
 from glance.store.http import Store
 from glance.store.location import get_location_from_uri
+from glance.tests.unit import base
 from glance.tests import utils, stubs as test_stubs
 
 
@@ -73,13 +75,13 @@ def stub_out_http_backend(stubs):
     stubs.Set(Store, '_get_conn_class', fake_get_conn_class)
 
 
-def stub_out_registry_image_update(stubs):
+def stub_out_registry_image_update(stubs, conf):
     """
     Stubs an image update on the registry.
 
     :param stubs: Set of stubout stubs
     """
-    test_stubs.stub_out_registry_server(stubs)
+    test_stubs.stub_out_registry_server(stubs, conf)
 
     def fake_image_update(ctx, image_id, values, purge_props=False):
         return {'properties': {}}
@@ -87,13 +89,19 @@ def stub_out_registry_image_update(stubs):
     stubs.Set(db_api, 'image_update', fake_image_update)
 
 
-class TestHttpStore(unittest.TestCase):
+class TestHttpStore(base.StoreClearingUnitTest):
 
     def setUp(self):
+        super(TestHttpStore, self).setUp()
         self.stubs = stubout.StubOutForTesting()
         stub_out_http_backend(self.stubs)
         Store.CHUNKSIZE = 2
         self.store = Store({})
+        self.conf = utils.TestConfigOpts({
+            'default_store': 'http',
+            'known_stores': "glance.store.http.Store",
+        })
+        configure_registry_client(self.conf)
 
     def test_http_get(self):
         uri = "http://netloc/path/to/file.tar.gz"
@@ -102,7 +110,6 @@ class TestHttpStore(unittest.TestCase):
         loc = get_location_from_uri(uri)
         (image_file, image_size) = self.store.get(loc)
         self.assertEqual(image_size, 31)
-
         chunks = [c for c in image_file]
         self.assertEqual(chunks, expected_returns)
 
@@ -121,19 +128,14 @@ class TestHttpStore(unittest.TestCase):
         uri = "https://netloc/path/to/file.tar.gz"
         loc = get_location_from_uri(uri)
         self.assertRaises(NotImplementedError, self.store.delete, loc)
-
-        create_stores(utils.TestConfigOpts({}))
         self.assertRaises(exception.StoreDeleteNotSupported,
                           delete_from_backend, uri)
 
     def test_http_schedule_delete_swallows_error(self):
-        stub_out_registry_image_update(self.stubs)
         uri = "https://netloc/path/to/file.tar.gz"
         ctx = context.RequestContext()
-        conf = utils.TestConfigOpts({})
-        create_stores(conf)
-
+        stub_out_registry_image_update(self.stubs, self.conf)
         try:
-            schedule_delete_from_backend(uri, conf, ctx, 'image_id')
+            schedule_delete_from_backend(uri, self.conf, ctx, 'image_id')
         except exception.StoreDeleteNotSupported:
             self.fail('StoreDeleteNotSupported should be swallowed')

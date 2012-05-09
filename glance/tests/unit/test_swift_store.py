@@ -31,6 +31,7 @@ from glance.common import utils
 from glance.store import BackendException
 import glance.store.swift
 from glance.store.location import get_location_from_uri
+from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
 
@@ -43,6 +44,8 @@ MAX_SWIFT_OBJECT_SIZE = FIVE_GB
 SWIFT_PUT_OBJECT_CALLS = 0
 SWIFT_CONF = {'verbose': True,
               'debug': True,
+              'known_stores': "glance.store.swift.Store",
+              'default_store': 'swift',
               'swift_store_user': 'user',
               'swift_store_key': 'key',
               'swift_store_auth_address': 'localhost:8080',
@@ -562,44 +565,48 @@ class SwiftTests(object):
         self.assertRaises(exception.NotFound, self.store.delete, loc)
 
 
-class TestStoreAuthV1(unittest.TestCase, SwiftTests):
+class TestStoreAuthV1(base.StoreClearingUnitTest, SwiftTests):
+
+    def getConfig(self):
+        conf = SWIFT_CONF.copy()
+        conf['swift_store_auth_version'] = '1'
+        conf['swift_store_user'] = 'user'
+        return conf
 
     def setUp(self):
         """Establish a clean test environment"""
-        self.conf = SWIFT_CONF.copy()
-        self.conf['swift_store_auth_version'] = '1'
-        self.conf['swift_store_user'] = 'user'
+        super(TestStoreAuthV1, self).setUp()
+        self.conf = self.getConfig()
         self.stubs = stubout.StubOutForTesting()
         stub_out_swift_common_client(self.stubs, self.conf)
         self.store = Store(test_utils.TestConfigOpts(self.conf))
 
     def tearDown(self):
         """Clear the test environment"""
+        super(TestStoreAuthV1, self).tearDown()
         self.stubs.UnsetAll()
 
 
 class TestStoreAuthV2(TestStoreAuthV1):
 
-    def setUp(self):
-        """Establish a clean test environment"""
-        self.conf = SWIFT_CONF.copy()
-        self.conf['swift_store_user'] = 'tenant:user'
-        self.conf['swift_store_auth_version'] = '2'
-        self.stubs = stubout.StubOutForTesting()
-        stub_out_swift_common_client(self.stubs, self.conf)
-        self.store = Store(test_utils.TestConfigOpts(self.conf))
+    def getConfig(self):
+        conf = super(TestStoreAuthV2, self).getConfig()
+        conf['swift_store_user'] = 'tenant:user'
+        conf['swift_store_auth_version'] = '2'
+        return conf
 
     def test_v2_with_no_tenant(self):
-        self.conf['swift_store_user'] = 'failme'
+        conf = self.getConfig()
+        conf['swift_store_user'] = 'failme'
         uri = "swift://%s:key@auth_address/glance/%s" % (
-            self.conf['swift_store_user'], FAKE_UUID)
+            conf['swift_store_user'], FAKE_UUID)
         loc = get_location_from_uri(uri)
         self.assertRaises(exception.BadStoreUri,
                           self.store.get,
                           loc)
 
 
-class TestChunkReader(unittest.TestCase):
+class TestChunkReader(base.StoreClearingUnitTest):
 
     def test_read_all_data(self):
         """

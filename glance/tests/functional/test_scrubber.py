@@ -47,7 +47,7 @@ class TestScrubber(functional.FunctionalTest):
         """
 
         self.cleanup()
-        self.start_servers()
+        self.start_servers(**self.__dict__.copy())
 
         client = self._get_client()
         registry = self._get_registry_client()

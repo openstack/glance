@@ -183,6 +183,7 @@ class ApiServer(Server):
         super(ApiServer, self).__init__(test_dir, port)
         self.server_name = 'api'
         self.default_store = 'file'
+        self.known_stores = test_utils.get_default_stores()
         self.key_file = ""
         self.cert_file = ""
         self.metadata_encryption_key = "012345678901234567890123456789ab"
@@ -227,6 +228,7 @@ verbose = %(verbose)s
 debug = %(debug)s
 filesystem_store_datadir=%(image_dir)s
 default_store = %(default_store)s
+known_stores = %(known_stores)s
 bind_host = 0.0.0.0
 bind_port = %(bind_port)s
 key_file = %(key_file)s

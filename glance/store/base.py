@@ -20,6 +20,7 @@
 import logging
 
 from glance.common import exception
+from glance.common import utils
 
 logger = logging.getLogger('glance.store.base')
 
@@ -35,7 +36,7 @@ class Store(object):
         :param conf: Optional dictionary of configuration options
         """
         self.conf = conf
-
+        self.store_location_class = None
         self.configure()
 
         try:
@@ -53,6 +54,22 @@ class Store(object):
         this method.
         """
         pass
+
+    def get_schemes(self):
+        """
+        Returns a tuple of schemes which this store can handle.
+        """
+        raise NotImplementedError
+
+    def get_store_location_class(self):
+        """
+        Returns the store location class that is used by this store.
+        """
+        if not self.store_location_class:
+            class_name = "%s.StoreLocation" % (self.__module__)
+            logger.debug("Late loading location class %s", class_name)
+            self.store_location_class = utils.import_class(class_name)
+        return self.store_location_class
 
     def configure_add(self):
         """

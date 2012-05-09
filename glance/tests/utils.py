@@ -30,6 +30,7 @@ import nose.plugins.skip
 from glance.common import config
 from glance.common import utils
 from glance.common import wsgi
+from glance import store
 
 
 def get_isolated_test_env():
@@ -81,6 +82,7 @@ class TestConfigOpts(config.GlanceConfigOpts):
         self.temp_file = os.path.join(tempfile.mkdtemp(), 'testcfg.conf')
 
         self()
+        store.create_stores(self)
 
     def __call__(self):
         self._write_tmp_config_file()
@@ -312,6 +314,19 @@ def find_executable(cmdname):
 
     # No dice...
     return None
+
+
+def get_default_stores():
+    # Default test stores
+    known_stores = [
+        "glance.store.filesystem.Store",
+        "glance.store.http.Store",
+        "glance.store.rbd.Store",
+        "glance.store.s3.Store",
+        "glance.store.swift.Store",
+    ]
+    # Made in a format that the config can read
+    return ", ".join(known_stores)
 
 
 def get_unused_port():

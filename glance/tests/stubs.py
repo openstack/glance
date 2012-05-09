@@ -38,7 +38,7 @@ VERBOSE = False
 DEBUG = False
 
 
-def stub_out_registry_and_store_server(stubs, base_dir):
+def stub_out_registry_and_store_server(stubs, conf, base_dir):
     """
     Mocks calls to 127.0.0.1 on 9191 and 9292 for testing so
     that a real Glance server does not need to be up and
@@ -67,11 +67,6 @@ def stub_out_registry_and_store_server(stubs, base_dir):
         def getresponse(self):
             sql_connection = os.environ.get('GLANCE_SQL_CONNECTION',
                                             "sqlite://")
-            conf = utils.TestConfigOpts({
-                    'sql_connection': sql_connection,
-                    'verbose': VERBOSE,
-                    'debug': DEBUG
-                    })
             api = context.UnauthenticatedContextMiddleware(
                     rserver.API(conf), conf)
             res = self.req.get_response(api)
@@ -150,17 +145,7 @@ def stub_out_registry_and_store_server(stubs, base_dir):
                 self.req.body = body
 
         def getresponse(self):
-            conf = utils.TestConfigOpts({
-                    'verbose': VERBOSE,
-                    'debug': DEBUG,
-                    'bind_host': '0.0.0.0',
-                    'bind_port': '9999999',
-                    'registry_host': '0.0.0.0',
-                    'registry_port': '9191',
-                    'default_store': 'file',
-                    'filesystem_store_datadir': base_dir,
-                    'policy_file': os.path.join(base_dir, 'policy.json'),
-                    })
+
             api = context.UnauthenticatedContextMiddleware(
                     router.API(conf), conf)
             res = self.req.get_response(api)
@@ -209,7 +194,7 @@ def stub_out_registry_and_store_server(stubs, base_dir):
               fake_image_iter)
 
 
-def stub_out_registry_server(stubs, **kwargs):
+def stub_out_registry_server(stubs, conf, **kwargs):
     """
     Mocks calls to 127.0.0.1 on 9191 for testing so
     that a real Glance Registry server does not need to be up and
@@ -237,11 +222,6 @@ def stub_out_registry_server(stubs, **kwargs):
 
         def getresponse(self):
             sql_connection = kwargs.get('sql_connection', "sqlite:///")
-            conf = utils.TestConfigOpts({
-                    'sql_connection': sql_connection,
-                    'verbose': VERBOSE,
-                    'debug': DEBUG
-                    })
             api = context.UnauthenticatedContextMiddleware(
                     rserver.API(conf), conf)
             res = self.req.get_response(api)

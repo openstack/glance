@@ -29,6 +29,7 @@ from glance.common import utils
 from glance.store import UnsupportedBackend
 from glance.store.location import get_location_from_uri
 from glance.store.s3 import Store, get_s3_location
+from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
 
@@ -37,6 +38,8 @@ FAKE_UUID = utils.generate_uuid()
 FIVE_KB = (5 * 1024)
 S3_CONF = {'verbose': True,
            'debug': True,
+           'default_store': 's3',
+           'known_stores': test_utils.get_default_stores(),
            's3_store_access_key': 'user',
            's3_store_secret_key': 'key',
            's3_store_host': 'localhost:8080',
@@ -155,16 +158,18 @@ def format_s3_location(user, key, authurl, bucket, obj):
                                     bucket, obj)
 
 
-class TestStore(unittest.TestCase):
+class TestStore(base.StoreClearingUnitTest):
 
     def setUp(self):
         """Establish a clean test environment"""
+        super(TestStore, self).setUp()
         self.stubs = stubout.StubOutForTesting()
         stub_out_s3(self.stubs)
         self.store = Store(test_utils.TestConfigOpts(S3_CONF))
 
     def tearDown(self):
         """Clear the test environment"""
+        super(TestStore, self).tearDown()
         self.stubs.UnsetAll()
 
     def test_get(self):

@@ -24,12 +24,18 @@ import glance.store.http
 import glance.store.filesystem
 import glance.store.swift
 import glance.store.s3
+from glance.tests.unit import base
 from glance.tests import utils
 
-glance.store.create_stores(utils.TestConfigOpts({}))
 
+class TestStoreLocation(base.StoreClearingUnitTest):
 
-class TestStoreLocation(unittest.TestCase):
+    def setUp(self):
+        super(TestStoreLocation, self).setUp()
+        self.conf = utils.TestConfigOpts({
+            'known_stores': utils.get_default_stores(),
+            'default_store': 'file',
+        })
 
     def test_get_location_from_uri_back_to_uri(self):
         """

@@ -28,9 +28,6 @@ from glance.store import location
 
 logger = logging.getLogger('glance.store')
 
-# Set of known store modules
-REGISTERED_STORE_MODULES = []
-
 # Set of store objects, constructed in create_stores()
 STORES = {}
 
@@ -128,50 +125,68 @@ class Indexable(object):
         return self.size
 
 
-def register_store(store_module, schemes):
-    """
-    Registers a store module and a set of schemes
-    for which a particular URI request should be routed.
-
-    :param store_module: String representing the store module
-    :param schemes: List of strings representing schemes for
-                    which this store should be used in routing
-    """
+def _get_store_class(store_entry):
+    store_cls = None
     try:
-        utils.import_class(store_module + '.Store')
+        logger.debug("Attempting to import store %s", store_entry)
+        store_cls = utils.import_class(store_entry)
     except exception.NotFound:
-        raise BackendException('Unable to register store. Could not find '
-                               'a class named Store in module %s.'
-                               % store_module)
-    REGISTERED_STORE_MODULES.append(store_module)
-    scheme_map = {}
-    for scheme in schemes:
-        scheme_map[scheme] = store_module
-    location.register_scheme_map(scheme_map)
+        raise BackendException('Unable to load store. '
+                               'Could not find a class named %s.'
+                               % store_entry)
+    return store_cls
+
+
+known_stores_opt = cfg.ListOpt('known_stores',
+                               default=('glance.store.filesystem.Store',))
 
 
 def create_stores(conf):
     """
-    Construct the store objects with supplied configuration options
+    Registers all store modules and all schemes
+    from the given config. Duplicates are not re-registered.
     """
-    for store_module in REGISTERED_STORE_MODULES:
-        try:
-            store_class = utils.import_class(store_module + '.Store')
-        except exception.NotFound:
-            raise BackendException('Unable to create store. Could not find '
-                                   'a class named Store in module %s.'
-                                   % store_module)
-        STORES[store_module] = store_class(conf)
+    conf.register_opt(known_stores_opt)
+    store_count = 0
+    for store_entry in conf.known_stores:
+        store_entry = store_entry.strip()
+        if not store_entry:
+            continue
+        store_cls = _get_store_class(store_entry)
+        store_instance = store_cls(conf)
+        schemes = store_instance.get_schemes()
+        if not schemes:
+            raise BackendException('Unable to register store %s. '
+                                   'No schemes associated with it.'
+                                   % store_cls)
+        else:
+            if store_cls not in STORES:
+                logger.debug("Registering store %s with schemes %s",
+                         store_cls, schemes)
+                STORES[store_cls] = store_instance
+                scheme_map = {}
+                for scheme in schemes:
+                    loc_cls = store_instance.get_store_location_class()
+                    scheme_map[scheme] = {
+                        'store_class': store_cls,
+                        'location_class': loc_cls,
+                    }
+                location.register_scheme_map(scheme_map)
+                store_count += 1
+            else:
+                logger.debug("Store %s already registered", store_cls)
+    return store_count
 
 
 def get_store_from_scheme(scheme):
     """
     Given a scheme, return the appropriate store object
-    for handling that scheme
+    for handling that scheme.
     """
-    if scheme not in location.SCHEME_TO_STORE_MAP:
+    if scheme not in location.SCHEME_TO_CLS_MAP:
         raise exception.UnknownScheme(scheme=scheme)
-    return STORES[location.SCHEME_TO_STORE_MAP[scheme]]
+    scheme_info = location.SCHEME_TO_CLS_MAP[scheme]
+    return STORES[scheme_info['store_class']]
 
 
 def get_store_from_uri(uri):

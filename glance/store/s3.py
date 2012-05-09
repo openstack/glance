@@ -198,6 +198,9 @@ class Store(glance.store.base.Store):
         cfg.BoolOpt('s3_store_create_bucket_on_put', default=False),
         ]
 
+    def get_schemes(self):
+        return ('s3', 's3+http', 's3+https')
+
     def configure_add(self):
         """
         Configure the Store to use the stored configuration options
@@ -504,6 +507,3 @@ def get_key(bucket, obj):
         logger.error(msg)
         raise exception.NotFound(msg)
     return key
-
-
-glance.store.register_store(__name__, ['s3', 's3+http', 's3+https'])

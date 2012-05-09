@@ -21,10 +21,11 @@ import webob
 import glance.api.v2.image_data
 from glance.common import utils
 import glance.tests.unit.utils as test_utils
+from glance.tests.unit import base
 import glance.tests.utils
 
 
-class TestImagesController(unittest.TestCase):
+class TestImagesController(base.StoreClearingUnitTest):
     def setUp(self):
         super(TestImagesController, self).setUp()
 

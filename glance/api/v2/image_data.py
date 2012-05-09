@@ -20,11 +20,6 @@ from glance.common import exception
 from glance.common import wsgi
 import glance.registry.db.api
 import glance.store
-import glance.store.filesystem
-import glance.store.http
-import glance.store.rbd
-import glance.store.s3
-import glance.store.swift
 
 
 class ImageDataController(base.Controller):

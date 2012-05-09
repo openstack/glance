@@ -41,13 +41,8 @@ from glance.common import exception
 from glance.common import wsgi
 from glance.common import utils
 from glance.openstack.common import cfg
-import glance.store
-import glance.store.filesystem
-import glance.store.http
-import glance.store.rbd
-import glance.store.s3
-import glance.store.swift
-from glance.store import (get_from_backend,
+from glance.store import (create_stores,
+                          get_from_backend,
                           get_size_from_backend,
                           schedule_delete_from_backend,
                           get_store_from_location,
@@ -66,6 +61,10 @@ SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
 # We have a known limit of 1 << 63 in the database -- images.size is declared
 # as a BigInteger.
 IMAGE_SIZE_CAP = 1 << 50
+
+# Defined at module level due to _is_opt_registered
+# identity check (not equality).
+default_store_opt = cfg.StrOpt('default_store', default='file')
 
 
 class Controller(controller.BaseController):
@@ -87,13 +86,11 @@ class Controller(controller.BaseController):
         DELETE /images/<ID> -- Delete the image with id <ID>
     """
 
-    default_store_opt = cfg.StrOpt('default_store', default='file')
-
     def __init__(self, conf):
         self.conf = conf
-        self.conf.register_opt(self.default_store_opt)
-        glance.store.create_stores(conf)
-        self.verify_store_or_exit(self.conf.default_store)
+        self.conf.register_opt(default_store_opt)
+        create_stores(self.conf)
+        self.verify_scheme_or_exit(self.conf.default_store)
         self.notifier = notifier.Notifier(conf)
         registry.configure_registry_client(conf)
         self.policy = policy.Enforcer(conf)
@@ -333,8 +330,8 @@ class Controller(controller.BaseController):
         """
         Uploads the payload of the request to a backend store in
         Glance. If the `x-image-meta-store` header is set, Glance
-        will attempt to use that store, if not, Glance will use the
-        store set by the flag `default_store`.
+        will attempt to use that scheme; if not, Glance will use the
+        scheme set by the flag `default_store` to find the backing store.
 
         :param req: The WSGI/Webob Request object
         :param image_meta: Mapping of metadata about image
@@ -367,10 +364,10 @@ class Controller(controller.BaseController):
                                "x-image-meta-size header"))
                 image_size = 0
 
-        store_name = req.headers.get('x-image-meta-store',
-                                     self.conf.default_store)
+        scheme = req.headers.get('x-image-meta-store',
+                                 self.conf.default_store)
 
-        store = self.get_store_or_400(req, store_name)
+        store = self.get_store_or_400(req, scheme)
 
         image_id = image_meta['id']
         logger.debug(_("Setting image %s to status 'saving'"), image_id)
@@ -378,7 +375,7 @@ class Controller(controller.BaseController):
                                        {'status': 'saving'})
         try:
             logger.debug(_("Uploading image data for image %(image_id)s "
-                         "to %(store_name)s store"), locals())
+                           "to %(scheme)s store"), locals())
 
             if image_size > IMAGE_SIZE_CAP:
                 max_image_size = IMAGE_SIZE_CAP
@@ -750,41 +747,39 @@ class Controller(controller.BaseController):
         else:
             self.notifier.info('image.delete', id)
 
-    def get_store_or_400(self, request, store_name):
+    def get_store_or_400(self, request, scheme):
         """
         Grabs the storage backend for the supplied store name
         or raises an HTTPBadRequest (400) response
 
         :param request: The WSGI/Webob Request object
-        :param store_name: The backend store name
+        :param scheme: The backend store scheme
 
         :raises HTTPNotFound if store does not exist
         """
         try:
-            return get_store_from_scheme(store_name)
+            return get_store_from_scheme(scheme)
         except exception.UnknownScheme:
-            msg = (_("Requested store %s not available on this Glance server")
-                   % store_name)
-            logger.error(msg)
+            msg = _("Store for scheme %s not found")
+            logger.error(msg % scheme)
             raise HTTPBadRequest(msg, request=request,
                                  content_type='text/plain')
 
-    def verify_store_or_exit(self, store_name):
+    def verify_scheme_or_exit(self, scheme):
         """
         Verifies availability of the storage backend for the
-        given store name or exits
+        given scheme or exits
 
-        :param store_name: The backend store name
+        :param scheme: The backend store scheme
         """
         try:
-            get_store_from_scheme(store_name)
+            get_store_from_scheme(scheme)
         except exception.UnknownScheme:
-            msg = (_("Default store %s not available on this Glance server\n")
-                   % store_name)
-            logger.error(msg)
+            msg = _("Store for scheme %s not found")
+            logger.error(msg % scheme)
             # message on stderr will only be visible if started directly via
             # bin/glance-api, as opposed to being daemonized by glance-control
-            sys.stderr.write(msg)
+            sys.stderr.write(msg % scheme)
             sys.exit(255)
 
 

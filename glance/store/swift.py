@@ -202,6 +202,9 @@ class Store(glance.store.base.Store):
         cfg.BoolOpt('swift_store_create_container_on_put', default=False),
         ]
 
+    def get_schemes(self):
+        return ('swift+https', 'swift', 'swift+http')
+
     def configure(self):
         self.conf.register_opts(self.opts)
         self.snet = self.conf.swift_enable_snet
@@ -571,6 +574,3 @@ def create_container_if_missing(container, swift_conn, conf):
                 raise glance.store.BackendException(msg)
         else:
             raise
-
-
-glance.store.register_store(__name__, ['swift', 'swift+http', 'swift+https'])

@@ -536,8 +536,12 @@ class TestBinGlance(functional.FunctionalTest):
         self.cleanup()
 
         # Start servers with a Swift backend and a bad auth URL
-        options = {'default_store': 'swift',
-                   'swift_store_auth_address': 'badurl'}
+        override_options = {
+            'default_store': 'swift',
+            'swift_store_auth_address': 'badurl',
+        }
+        options = self.__dict__.copy()
+        options.update(override_options)
         self.start_servers(**options)
 
         api_port = self.api_port
