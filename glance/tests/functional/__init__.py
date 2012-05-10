@@ -433,8 +433,12 @@ class FunctionalTest(unittest.TestCase):
         self.api_port = get_unused_port()
         self.registry_port = get_unused_port()
 
-        self.copy_data_file('policy.json', self.test_dir)
-        self.policy_file = os.path.join(self.test_dir, 'policy.json')
+        conf_dir = os.path.join(self.test_dir, 'etc')
+        utils.safe_mkdirs(conf_dir)
+        self.copy_data_file('schema-image.json', conf_dir)
+        self.copy_data_file('schema-access.json', conf_dir)
+        self.copy_data_file('policy.json', conf_dir)
+        self.policy_file = os.path.join(conf_dir, 'policy.json')
 
         self.api_server = ApiServer(self.test_dir,
                                     self.api_port,

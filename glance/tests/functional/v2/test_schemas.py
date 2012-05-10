@@ -45,11 +45,12 @@ class TestSchemas(functional.FunctionalTest):
         path = 'http://%s:%d%s' % ('0.0.0.0', self.api_port, links['image'])
         response = requests.get(path)
         self.assertEqual(response.status_code, 200)
-        #TODO(bcwaldon): use the schema to actually validate something
-        json.loads(response.text)
+        schema = json.loads(response.text)
+        #NOTE(bcwaldon): The custom schema properties should be loaded
+        expected = set(['id', 'name', 'type', 'format'])
+        self.assertEqual(expected, set(schema['properties'].keys()))
 
         path = 'http://%s:%d%s' % ('0.0.0.0', self.api_port, links['access'])
         response = requests.get(path)
         self.assertEqual(response.status_code, 200)
-        #TODO(bcwaldon): use the schema to actually validate something
         json.loads(response.text)

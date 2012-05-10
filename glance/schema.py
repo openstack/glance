@@ -14,8 +14,13 @@
 #    under the License.
 
 import copy
+import json
+import logging
 
 from glance.common import exception
+
+
+logger = logging.getLogger(__name__)
 
 
 _BASE_SCHEMA_PROPERTIES = {
@@ -78,3 +83,25 @@ class API(object):
 
         schema_properties.update(copy.deepcopy(custom_properties))
         self.schema_properties[schema_name] = schema_properties
+
+
+def read_schema_properties_file(conf, schema_name):
+    """Find the schema properties files and load them into a dict."""
+    schema_filename = 'schema-%s.json' % schema_name
+    match = conf.find_file(schema_filename)
+    if match:
+        schema_file = open(match)
+        schema_data = schema_file.read()
+        return json.loads(schema_data)
+    else:
+        msg = _('Could not find schema properties file %s. Continuing '
+                'without custom properties')
+        logger.warn(msg % schema_filename)
+        return {}
+
+
+def load_custom_schema_properties(conf, api):
+    """Extend base image and access schemas with custom properties."""
+    for schema_name in ('image', 'access'):
+        image_properties = read_schema_properties_file(conf, schema_name)
+        api.set_custom_schema_properties(schema_name, image_properties)

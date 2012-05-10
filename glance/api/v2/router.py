@@ -40,6 +40,7 @@ class API(wsgi.Router):
         mapper = routes.Mapper()
 
         schema_api = glance.schema.API()
+        glance.schema.load_custom_schema_properties(conf, schema_api)
 
         root_resource = root.create_resource(conf)
         mapper.connect('/', controller=root_resource, action='index')
