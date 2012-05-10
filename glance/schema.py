@@ -63,6 +63,7 @@ class API(object):
         return {
             'name': name,
             'properties': self.schema_properties[name],
+            'additionalProperties': False
         }
 
     def set_custom_schema_properties(self, schema_name, custom_properties):

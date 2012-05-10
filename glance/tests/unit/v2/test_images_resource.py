@@ -21,6 +21,7 @@ import webob
 
 import glance.api.v2.images
 from glance.common import utils
+import glance.schema
 import glance.tests.unit.utils as test_utils
 
 
@@ -62,6 +63,7 @@ class TestImagesController(unittest.TestCase):
             'owner': test_utils.TENANT1,
             'location': None,
             'status': 'queued',
+            'properties': [],
         }
         self.assertEqual(expected, output)
 
@@ -81,6 +83,7 @@ class TestImagesController(unittest.TestCase):
             'owner': test_utils.TENANT1,
             'location': test_utils.UUID1,
             'status': 'queued',
+            'properties': [],
         }
         self.assertEqual(expected, output)
 
@@ -177,12 +180,13 @@ class TestImagesDeserializerWithExtendedSchema(unittest.TestCase):
 
 class TestImagesSerializer(unittest.TestCase):
     def setUp(self):
-        self.serializer = glance.api.v2.images.ResponseSerializer()
+        schema_api = glance.schema.API()
+        self.serializer = glance.api.v2.images.ResponseSerializer(schema_api)
 
     def test_index(self):
         fixtures = [
-            {'id': test_utils.UUID1, 'name': 'image-1'},
-            {'id': test_utils.UUID2, 'name': 'image-2'},
+            {'id': test_utils.UUID1, 'name': 'image-1', 'properties': []},
+            {'id': test_utils.UUID2, 'name': 'image-2', 'properties': []},
         ]
         expected = {
             'images': [
@@ -224,7 +228,7 @@ class TestImagesSerializer(unittest.TestCase):
         self.assertEqual(expected, json.loads(response.body))
 
     def test_show(self):
-        fixture = {'id': test_utils.UUID2, 'name': 'image-2'}
+        fixture = {'id': test_utils.UUID2, 'name': 'image-2', 'properties': []}
         expected = {
             'image': {
                 'id': test_utils.UUID2,
@@ -247,7 +251,7 @@ class TestImagesSerializer(unittest.TestCase):
         self.assertEqual(expected, json.loads(response.body))
 
     def test_create(self):
-        fixture = {'id': test_utils.UUID2, 'name': 'image-2'}
+        fixture = {'id': test_utils.UUID2, 'name': 'image-2', 'properties': []}
         self_link = '/v2/images/%s' % test_utils.UUID2
         expected = {
             'image': {
@@ -266,7 +270,7 @@ class TestImagesSerializer(unittest.TestCase):
         self.assertEqual(response.location, self_link)
 
     def test_update(self):
-        fixture = {'id': test_utils.UUID2, 'name': 'image-2'}
+        fixture = {'id': test_utils.UUID2, 'name': 'image-2', 'properties': []}
         self_link = '/v2/images/%s' % test_utils.UUID2
         expected = {
             'image': {
@@ -281,4 +285,74 @@ class TestImagesSerializer(unittest.TestCase):
         }
         response = webob.Response()
         self.serializer.update(response, fixture)
+        self.assertEqual(expected, json.loads(response.body))
+
+
+class TestImagesSerializerWithExtendedSchema(unittest.TestCase):
+    def setUp(self):
+        self.schema_api = glance.schema.API()
+        props = {
+            'color': {
+                'type': 'string',
+                'required': True,
+                'enum': ['red', 'green'],
+            },
+        }
+        self.schema_api.set_custom_schema_properties('image', props)
+        self.fixture = {
+            'id': test_utils.UUID2,
+            'name': 'image-2',
+            'properties': {
+                'color': 'green',
+                'mood': 'grouchy',
+            },
+        }
+
+    def test_show(self):
+        serializer = glance.api.v2.images.ResponseSerializer(self.schema_api)
+        expected = {
+            'image': {
+                'id': test_utils.UUID2,
+                'name': 'image-2',
+                'color': 'green',
+                'links': [
+                    {
+                        'rel': 'self',
+                        'href': '/v2/images/%s' % test_utils.UUID2,
+                    },
+                    {
+                        'rel': 'file',
+                        'href': '/v2/images/%s/file' % test_utils.UUID2,
+                    },
+                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
+                ],
+            },
+        }
+        response = webob.Response()
+        serializer.show(response, self.fixture)
+        self.assertEqual(expected, json.loads(response.body))
+
+    def test_show_reports_invalid_data(self):
+        serializer = glance.api.v2.images.ResponseSerializer(self.schema_api)
+        self.fixture['properties']['color'] = 'invalid'
+        expected = {
+            'image': {
+                'id': test_utils.UUID2,
+                'name': 'image-2',
+                'color': 'invalid',
+                'links': [
+                    {
+                        'rel': 'self',
+                        'href': '/v2/images/%s' % test_utils.UUID2,
+                    },
+                    {
+                        'rel': 'file',
+                        'href': '/v2/images/%s/file' % test_utils.UUID2,
+                    },
+                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
+                ],
+            },
+        }
+        response = webob.Response()
+        serializer.show(response, self.fixture)
         self.assertEqual(expected, json.loads(response.body))

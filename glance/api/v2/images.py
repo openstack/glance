@@ -91,6 +91,10 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
+    def __init__(self, schema_api):
+        super(ResponseSerializer, self).__init__()
+        self.schema_api = schema_api
+
     def _get_image_href(self, image, subcollection=''):
         base_href = '/v2/images/%s' % image['id']
         if subcollection:
@@ -104,12 +108,20 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             {'rel': 'describedby', 'href': '/v2/schemas/image'},
         ]
 
+    def _filter_allowed_image_attributes(self, image):
+        schema = self.schema_api.get_schema('image')
+        attrs = schema['properties'].keys()
+        return dict((k, v) for (k, v) in image.iteritems() if k in attrs)
+
     def _format_image(self, image):
-        props = ['id', 'name']
-        items = filter(lambda item: item[0] in props, image.items())
-        obj = dict(items)
-        obj['links'] = self._get_image_links(image)
-        return obj
+        _image = dict(image['properties'])
+        _image = self._filter_allowed_image_attributes(_image)
+
+        for key in ['id', 'name']:
+            _image[key] = image[key]
+
+        _image['links'] = self._get_image_links(image)
+        return _image
 
     def create(self, response, image):
         response.body = json.dumps({'image': self._format_image(image)})
@@ -135,6 +147,6 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 def create_resource(conf, schema_api):
     """Images resource factory method"""
     deserializer = RequestDeserializer(conf, schema_api)
-    serializer = ResponseSerializer()
+    serializer = ResponseSerializer(schema_api)
     controller = ImagesController(conf)
     return wsgi.Resource(controller, deserializer, serializer)

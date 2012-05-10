@@ -57,6 +57,7 @@ class TestSchemaAPI(unittest.TestCase):
                     'required': True,
                 },
             },
+            'additionalProperties': False,
         }
         self.assertEqual(output, expected)
 
@@ -94,6 +95,7 @@ class TestSchemaAPI(unittest.TestCase):
                     'maxLength': 128,
                 },
             },
+            'additionalProperties': False,
         }
         self.assertEqual(output, expected)
 
@@ -127,6 +129,7 @@ class TestSchemaAPI(unittest.TestCase):
                     'required': True,
                 },
             },
+            'additionalProperties': False,
         }
         self.assertEqual(output, expected)
 
@@ -158,5 +161,6 @@ class TestSchemaAPI(unittest.TestCase):
                     'required': True,
                 },
             },
+            'additionalProperties': False,
         }
         self.assertEqual(output, expected)
