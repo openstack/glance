@@ -229,7 +229,9 @@ Here is how we'd upload this image to Glance::
        container_format=ovf disk_format=raw < /tmp/images/myimage.iso
 
 Note that the disk container formats are no longer defaulted and are thus
-strictly required.
+strictly required. However, if only one of disk or container format is specified
+and is in Amazon format, the other parameter defaults to the specified
+disk or container format value.
 
 If Glance was able to successfully upload and store your VM image data and
 metadata attributes, you would see something like this::
