@@ -134,6 +134,47 @@ class TestImagesDeserializer(unittest.TestCase):
         self.assertEqual(expected, output)
 
 
+class TestImagesDeserializerWithExtendedSchema(unittest.TestCase):
+    def setUp(self):
+        schema_api = glance.schema.API()
+        props = {
+            'pants': {
+              'type': 'string',
+              'required': True,
+              'enum': ['on', 'off'],
+            },
+        }
+        schema_api.set_custom_schema_properties('image', props)
+        self.deserializer = glance.api.v2.images.RequestDeserializer(
+                {}, schema_api)
+
+    def test_create(self):
+        request = test_utils.FakeRequest()
+        request.body = json.dumps({'name': 'image-1', 'pants': 'on'})
+        output = self.deserializer.create(request)
+        expected = {'image': {'name': 'image-1', 'pants': 'on'}}
+        self.assertEqual(expected, output)
+
+    def test_create_bad_data(self):
+        request = test_utils.FakeRequest()
+        request.body = json.dumps({'name': 'image-1', 'pants': 'borked'})
+        self.assertRaises(jsonschema.ValidationError,
+                self.deserializer.create, request)
+
+    def test_update(self):
+        request = test_utils.FakeRequest()
+        request.body = json.dumps({'name': 'image-1', 'pants': 'off'})
+        output = self.deserializer.update(request)
+        expected = {'image': {'name': 'image-1', 'pants': 'off'}}
+        self.assertEqual(expected, output)
+
+    def test_update_bad_data(self):
+        request = test_utils.FakeRequest()
+        request.body = json.dumps({'name': 'image-1', 'pants': 'borked'})
+        self.assertRaises(jsonschema.ValidationError,
+                self.deserializer.update, request)
+
+
 class TestImagesSerializer(unittest.TestCase):
     def setUp(self):
         self.serializer = glance.api.v2.images.ResponseSerializer()

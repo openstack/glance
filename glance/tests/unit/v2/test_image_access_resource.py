@@ -16,6 +16,7 @@
 import json
 import unittest
 
+import jsonschema
 import webob
 
 from glance.api.v2 import image_access
@@ -127,6 +128,49 @@ class TestImageAccessDeserializer(unittest.TestCase):
         request.body = json.dumps(fixture)
         output = self.deserializer.create(request)
         self.assertEqual(expected, output)
+
+
+class TestImageAccessDeserializerWithExtendedSchema(unittest.TestCase):
+    def setUp(self):
+        schema_api = glance.schema.API()
+        props = {
+            'color': {
+              'type': 'string',
+              'required': True,
+              'enum': ['blue', 'red'],
+            },
+        }
+        schema_api.set_custom_schema_properties('access', props)
+        self.deserializer = image_access.RequestDeserializer({}, schema_api)
+
+    def test_create(self):
+        fixture = {
+            'tenant_id': test_utils.TENANT1,
+            'can_share': False,
+            'color': 'blue',
+        }
+        expected = {
+            'access_record': {
+                'member': test_utils.TENANT1,
+                'can_share': False,
+                'color': 'blue',
+            },
+        }
+        request = test_utils.FakeRequest()
+        request.body = json.dumps(fixture)
+        output = self.deserializer.create(request)
+        self.assertEqual(expected, output)
+
+    def test_create_bad_data(self):
+        fixture = {
+            'tenant_id': test_utils.TENANT1,
+            'can_share': False,
+            'color': 'purple',
+        }
+        request = test_utils.FakeRequest()
+        request.body = json.dumps(fixture)
+        self.assertRaises(jsonschema.ValidationError,
+                self.deserializer.create, request)
 
 
 class TestImageAccessSerializer(unittest.TestCase):
