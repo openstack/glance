@@ -915,7 +915,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
                     bytes_written += len(chunk)
             except Exception, err:
                 msg = _("An error occurred reading from backend storage "
-                        "for image %(image_id): %(err)s") % locals()
+                        "for image %(image_id)s: %(err)s") % locals()
                 logger.error(msg)
                 raise
 
