@@ -15,7 +15,6 @@
 
 import json
 
-import jsonschema
 import webob.exc
 
 from glance.api.v2 import base
@@ -81,14 +80,10 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         self.conf = conf
         self.schema_api = schema_api
 
-    def _validate(self, request, obj):
-        schema = self.schema_api.get_schema('access')
-        jsonschema.validate(obj, schema)
-
     def create(self, request):
         output = super(RequestDeserializer, self).default(request)
         body = output.pop('body')
-        self._validate(request, body)
+        self.schema_api.validate('access', body)
         body['member'] = body.pop('tenant_id')
         output['access_record'] = body
         return output

@@ -240,3 +240,8 @@ class WorkerCreationFailure(GlanceException):
 
 class SchemaLoadError(GlanceException):
     message = _("Unable to load schema: %(reason)s")
+
+
+class InvalidObject(GlanceException):
+    message = _("Provided object does not match schema "
+                "'%(schema)s': %(reason)s")

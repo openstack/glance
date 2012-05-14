@@ -16,10 +16,10 @@
 import json
 import unittest
 
-import jsonschema
 import webob
 
 import glance.api.v2.images
+from glance.common import exception
 from glance.common import utils
 import glance.schema
 import glance.tests.unit.utils as test_utils
@@ -123,7 +123,7 @@ class TestImagesDeserializer(unittest.TestCase):
     def _test_create_fails(self, body):
         request = test_utils.FakeRequest()
         request.body = json.dumps(body)
-        self.assertRaises(jsonschema.ValidationError,
+        self.assertRaises(exception.InvalidObject,
                 self.deserializer.create, request)
 
     def test_create_no_name(self):
@@ -161,7 +161,7 @@ class TestImagesDeserializerWithExtendedSchema(unittest.TestCase):
     def test_create_bad_data(self):
         request = test_utils.FakeRequest()
         request.body = json.dumps({'name': 'image-1', 'pants': 'borked'})
-        self.assertRaises(jsonschema.ValidationError,
+        self.assertRaises(exception.InvalidObject,
                 self.deserializer.create, request)
 
     def test_update(self):
@@ -174,7 +174,7 @@ class TestImagesDeserializerWithExtendedSchema(unittest.TestCase):
     def test_update_bad_data(self):
         request = test_utils.FakeRequest()
         request.body = json.dumps({'name': 'image-1', 'pants': 'borked'})
-        self.assertRaises(jsonschema.ValidationError,
+        self.assertRaises(exception.InvalidObject,
                 self.deserializer.update, request)
 
 
