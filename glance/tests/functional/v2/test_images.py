@@ -20,6 +20,13 @@ import json
 import requests
 
 from glance.tests import functional
+from glance.common import utils
+
+
+TENANT1 = utils.generate_uuid()
+TENANT2 = utils.generate_uuid()
+TENANT3 = utils.generate_uuid()
+TENANT4 = utils.generate_uuid()
 
 
 class TestImages(functional.FunctionalTest):
@@ -31,14 +38,14 @@ class TestImages(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
 
     def _url(self, path):
-        return 'http://0.0.0.0:%d%s' % (self.api_port, path)
+        return 'http://0.0.0.0:%d/v2%s' % (self.api_port, path)
 
     def _headers(self, custom_headers=None):
         base_headers = {
             'X-Identity-Status': 'Confirmed',
             'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
             'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
-            'X-Tenant-Id': '38b7149a-b564-48dd-a0a5-aa7e643368c0',
+            'X-Tenant-Id': TENANT1,
             'X-Roles': 'member',
         }
         base_headers.update(custom_headers or {})
@@ -47,14 +54,14 @@ class TestImages(functional.FunctionalTest):
     @functional.runs_sql
     def test_image_lifecycle(self):
         # Image list should be empty
-        path = self._url('/v2/images')
+        path = self._url('/images')
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         images = json.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
         # Create an image
-        path = self._url('/v2/images')
+        path = self._url('/images')
         headers = self._headers({'content-type': 'application/json'})
         data = json.dumps({'name': 'image-1'})
         response = requests.post(path, headers=headers, data=data)
@@ -66,7 +73,7 @@ class TestImages(functional.FunctionalTest):
         image_id = image['id']
 
         # Image list should now have one entry
-        path = self._url('/v2/images')
+        path = self._url('/images')
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         images = json.loads(response.text)['images']
@@ -80,7 +87,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(image_id, image['id'])
 
         # The image should be mutable
-        path = self._url('/v2/images/%s' % image_id)
+        path = self._url('/images/%s' % image_id)
         data = json.dumps({'name': 'image-2'})
         response = requests.put(path, headers=self._headers(), data=data)
         self.assertEqual(200, response.status_code)
@@ -90,7 +97,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual('image-2', image['name'])
 
         # Updates should persist across requests
-        path = self._url('/v2/images/%s' % image_id)
+        path = self._url('/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         image = json.loads(response.text)['image']
@@ -98,42 +105,42 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual('image-2', image['name'])
 
         # Try to download data before its uploaded
-        path = self._url('/v2/images/%s/file' % image_id)
+        path = self._url('/images/%s/file' % image_id)
         headers = self._headers()
         response = requests.get(path, headers=headers)
         self.assertEqual(404, response.status_code)
 
         # Upload some image data
-        path = self._url('/v2/images/%s/file' % image_id)
+        path = self._url('/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
         self.assertEqual(200, response.status_code)
 
         # Try to download the data that was just uploaded
-        path = self._url('/v2/images/%s/file' % image_id)
+        path = self._url('/images/%s/file' % image_id)
         headers = self._headers()
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         self.assertEqual(response.text, 'ZZZZZ')
 
         # Deletion should work
-        path = self._url('/v2/images/%s' % image_id)
+        path = self._url('/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
         self.assertEqual(204, response.status_code)
 
         # This image should be no longer be directly accessible
-        path = self._url('/v2/images/%s' % image_id)
+        path = self._url('/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(404, response.status_code)
 
         # And neither should its data
-        path = self._url('/v2/images/%s/file' % image_id)
+        path = self._url('/images/%s/file' % image_id)
         headers = self._headers()
         response = requests.get(path, headers=headers)
         self.assertEqual(404, response.status_code)
 
         # Image list should now be empty
-        path = self._url('/v2/images')
+        path = self._url('/images')
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         images = json.loads(response.text)['images']
@@ -143,7 +150,7 @@ class TestImages(functional.FunctionalTest):
 
     def test_upload_duplicate_data(self):
         # Create an image
-        path = self._url('/v2/images')
+        path = self._url('/images')
         headers = self._headers({'content-type': 'application/json'})
         data = json.dumps({'name': 'image-1'})
         response = requests.post(path, headers=headers, data=data)
@@ -154,22 +161,174 @@ class TestImages(functional.FunctionalTest):
         image_id = image['id']
 
         # Upload some image data
-        path = self._url('/v2/images/%s/file' % image_id)
+        path = self._url('/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
         self.assertEqual(200, response.status_code)
 
         # Uploading duplicate data should be rejected with a 409
-        path = self._url('/v2/images/%s/file' % image_id)
+        path = self._url('/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='XXX')
         self.assertEqual(409, response.status_code)
 
         # Data should not have been overwritten
-        path = self._url('/v2/images/%s/file' % image_id)
+        path = self._url('/images/%s/file' % image_id)
         headers = self._headers()
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         self.assertEqual(response.text, 'ZZZZZ')
+
+        self.stop_servers()
+
+    @functional.runs_sql
+    def test_access_lifecycle(self):
+        # Create an image for our tests
+        path = self._url('/images')
+        headers = self._headers({'Content-Type': 'application/json'})
+        data = json.dumps({'name': 'image-1'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+        image_id = json.loads(response.text)['image']['id']
+
+        # Image acccess list should be empty
+        path = self._url('/images/%s/access' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        access_records = json.loads(response.text)['access_records']
+        self.assertEqual(0, len(access_records))
+
+        # Other tenants shouldn't be able to share by default, and shouldn't
+        # even know the image exists
+        path = self._url('/images/%s/access' % image_id)
+        data = json.dumps({'tenant_id': TENANT3, 'can_share': False})
+        request_headers = {
+            'Content-Type': 'application/json',
+            'X-Tenant-Id': TENANT2,
+        }
+        headers = self._headers(request_headers)
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(404, response.status_code)
+
+        # Share the image with another tenant
+        path = self._url('/images/%s/access' % image_id)
+        data = json.dumps({'tenant_id': TENANT2, 'can_share': True})
+        headers = self._headers({'Content-Type': 'application/json'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        access_location = response.headers['Location']
+
+        # Ensure the access record was actually created
+        response = requests.get(access_location, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+
+        # Make sure the sharee can further share the image
+        path = self._url('/images/%s/access' % image_id)
+        data = json.dumps({'tenant_id': TENANT3, 'can_share': False})
+        request_headers = {
+            'Content-Type': 'application/json',
+            'X-Tenant-Id': TENANT2,
+        }
+        headers = self._headers(request_headers)
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        access_location = response.headers['Location']
+
+        # Ensure the access record was actually created
+        response = requests.get(access_location, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+
+        # The third tenant should not be able to share it further
+        path = self._url('/images/%s/access' % image_id)
+        data = json.dumps({'tenant_id': TENANT4, 'can_share': False})
+        request_headers = {
+            'Content-Type': 'application/json',
+            'X-Tenant-Id': TENANT3,
+        }
+        headers = self._headers(request_headers)
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(403, response.status_code)
+
+        # Image acccess list should now contain 2 entries
+        path = self._url('/images/%s/access' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        access_records = json.loads(response.text)['access_records']
+        self.assertEqual(2, len(access_records))
+
+        # Delete an access record
+        response = requests.delete(access_location, headers=self._headers())
+        self.assertEqual(204, response.status_code)
+
+        # Ensure the access record was actually deleted
+        response = requests.get(access_location, headers=self._headers())
+        self.assertEqual(404, response.status_code)
+
+        # Image acccess list should now contain 1 entry
+        path = self._url('/images/%s/access' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        access_records = json.loads(response.text)['access_records']
+        self.assertEqual(1, len(access_records))
+
+        self.stop_servers()
+
+    @functional.runs_sql
+    def test_tag_lifecycle(self):
+        # Create an image for our tests
+        path = self._url('/images')
+        headers = self._headers({'Content-Type': 'application/json'})
+        data = json.dumps({'name': 'image-1'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+        image_id = json.loads(response.text)['image']['id']
+
+        # List of image tags should be empty
+        path = self._url('/images/%s/tags' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        tags = json.loads(response.text)
+        self.assertEqual([], tags)
+
+        # Create a tag
+        path = self._url('/images/%s/tags/sniff' % image_id)
+        response = requests.put(path, headers=self._headers())
+        self.assertEqual(204, response.status_code)
+
+        # List should now have an entry
+        path = self._url('/images/%s/tags' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        tags = json.loads(response.text)
+        self.assertEqual(['sniff'], tags)
+
+        # Create a more complex tag
+        path = self._url('/images/%s/tags/someone%%40example.com' % image_id)
+        response = requests.put(path, headers=self._headers())
+        self.assertEqual(204, response.status_code)
+
+        # List should reflect our new tag
+        path = self._url('/images/%s/tags' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        tags = json.loads(response.text)
+        self.assertEqual(['sniff', 'someone@example.com'], tags)
+
+        # The tag should be deletable
+        path = self._url('/images/%s/tags/someone%%40example.com' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(204, response.status_code)
+
+        # List should reflect the deletion
+        path = self._url('/images/%s/tags' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        tags = json.loads(response.text)
+        self.assertEqual(['sniff'], tags)
+
+        # Deleting the same tag should return a 404
+        path = self._url('/images/%s/tags/someonei%%40example.com' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(404, response.status_code)
 
         self.stop_servers()
