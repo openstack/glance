@@ -54,6 +54,14 @@ _BASE_SCHEMA_PROPERTIES = {
           'description': 'Date and time of the last image modification',
           #'format': 'date-time',
         },
+        'tags': {
+            'type': 'array',
+            'description': 'List of strings related to the image',
+            'items': {
+                'type': 'string',
+                'maxLength': 255,
+            },
+        },
     },
     'access': {
         'tenant_id': {

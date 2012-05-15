@@ -29,16 +29,8 @@ class Controller(base.Controller):
         self.db_api = db or glance.registry.db.api
         self.db_api.configure_db(conf)
 
-    @staticmethod
-    def _build_tag(image_tag):
-        return {
-            'value': image_tag['value'],
-            'image_id': image_tag['image_id'],
-        }
-
     def index(self, req, image_id):
-        tags = self.db_api.image_tag_get_all(req.context, image_id)
-        return [self._build_tag(t) for t in tags]
+        return self.db_api.image_tag_get_all(req.context, image_id)
 
     def update(self, req, image_id, tag_value):
         self.db_api.image_tag_create(req.context, image_id, tag_value)
@@ -51,13 +43,9 @@ class Controller(base.Controller):
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
-    @staticmethod
-    def _format_tag(tag):
-        return tag['value']
-
     def index(self, response, tags):
         response.content_type = 'application/json'
-        response.body = json.dumps([self._format_tag(t) for t in tags])
+        response.body = json.dumps(tags)
 
     def update(self, response, result):
         response.status_int = 204

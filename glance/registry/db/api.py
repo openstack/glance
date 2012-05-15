@@ -778,17 +778,31 @@ def can_show_deleted(context):
     return context.get('deleted', False)
 
 
-def image_tag_create(context, image_id, value):
-    """Create an image tag."""
+def image_tag_set_all(context, image_id, tags):
     session = get_session()
+    existing_tags = set(image_tag_get_all(context, image_id, session))
+    tags = set(tags)
+
+    tags_to_create = tags - existing_tags
+    for tag in tags_to_create:
+        image_tag_create(context, image_id, tag, session)
+
+    tags_to_delete = existing_tags - tags
+    for tag in tags_to_delete:
+        image_tag_delete(context, image_id, tag, session)
+
+
+def image_tag_create(context, image_id, value, session=None):
+    """Create an image tag."""
+    session = session or get_session()
     tag_ref = models.ImageTag(image_id=image_id, value=value)
     tag_ref.save(session=session)
-    return tag_ref
+    return tag_ref['value']
 
 
-def image_tag_delete(context, image_id, value):
+def image_tag_delete(context, image_id, value, session=None):
     """Delete an image tag."""
-    session = get_session()
+    session = session or get_session()
     query = session.query(models.ImageTag).\
                     filter_by(image_id=image_id).\
                     filter_by(value=value).\
@@ -801,11 +815,11 @@ def image_tag_delete(context, image_id, value):
     tag_ref.delete(session=session)
 
 
-def image_tag_get_all(context, image_id):
+def image_tag_get_all(context, image_id, session=None):
     """Get a list of tags for a specific image."""
-    session = get_session()
+    session = session or get_session()
     tags = session.query(models.ImageTag).\
                    filter_by(image_id=image_id).\
                    filter_by(deleted=False).\
                    all()
-    return tags
+    return [tag['value'] for tag in tags]

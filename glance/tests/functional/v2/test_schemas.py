@@ -52,6 +52,7 @@ class TestSchemas(functional.FunctionalTest):
             'visibility',
             'created_at',
             'updated_at',
+            'tags',
             'type',
             'format',
         ])

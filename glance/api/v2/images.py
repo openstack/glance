@@ -44,6 +44,16 @@ class ImagesController(base.Controller):
         image['properties'] = dict(properties)
         return image
 
+    def _extract_tags(self, image):
+        try:
+            return image.pop('tags')
+        except KeyError:
+            pass
+
+    def _append_tags(self, context, image):
+        image['tags'] = self.db_api.image_tag_get_all(context, image['id'])
+        return image
+
     def create(self, req, image):
         if 'owner' not in image:
             image['owner'] = req.context.owner
@@ -53,7 +63,16 @@ class ImagesController(base.Controller):
         #TODO(bcwaldon): this should eventually be settable through the API
         image['status'] = 'queued'
 
-        image = self.db_api.image_create(req.context, image)
+        tags = self._extract_tags(image)
+
+        image = dict(self.db_api.image_create(req.context, image))
+
+        if tags is not None:
+            self.db_api.image_tag_set_all(req.context, image['id'], tags)
+            image['tags'] = tags
+        else:
+            image['tags'] = []
+
         return self._normalize_properties(dict(image))
 
     def index(self, req):
@@ -61,21 +80,34 @@ class ImagesController(base.Controller):
         # owned by the authenticated tenant
         filters = {'deleted': False, 'is_public': True}
         images = self.db_api.image_get_all(req.context, filters=filters)
-        return [self._normalize_properties(dict(image)) for image in images]
+        images = [self._normalize_properties(dict(image)) for image in images]
+        return [self._append_tags(req.context, image) for image in images]
 
     def show(self, req, image_id):
         try:
             image = self.db_api.image_get(req.context, image_id)
         except (exception.NotFound, exception.Forbidden):
             raise webob.exc.HTTPNotFound()
-        return self._normalize_properties(dict(image))
+        image = self._normalize_properties(dict(image))
+        return self._append_tags(req.context, image)
 
     def update(self, req, image_id, image):
+        tags = self._extract_tags(image)
+
         try:
             image = self.db_api.image_update(req.context, image_id, image)
         except (exception.NotFound, exception.Forbidden):
             raise webob.exc.HTTPNotFound()
-        return self._normalize_properties(dict(image))
+
+        image = self._normalize_properties(dict(image))
+
+        if tags is not None:
+            self.db_api.image_tag_set_all(req.context, image_id, tags)
+            image['tags'] = tags
+        else:
+            self._append_tags(req.context, image)
+
+        return image
 
     def delete(self, req, image_id):
         try:
@@ -98,7 +130,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         # Create a dict of base image properties, with user- and deployer-
         # defined properties contained in a 'properties' dictionary
         image = {'properties': body}
-        for key in ['id', 'name', 'visibility', 'created_at', 'updated_at']:
+        for key in ['id', 'name', 'visibility', 'created_at', 'updated_at',
+                    'tags']:
             try:
                 image[key] = image['properties'].pop(key)
             except KeyError:
@@ -151,7 +184,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
     def _format_image(self, image):
         _image = image['properties']
         _image = self._filter_allowed_image_attributes(_image)
-        for key in ['id', 'name', 'created_at', 'updated_at']:
+        for key in ['id', 'name', 'created_at', 'updated_at', 'tags']:
             _image[key] = image[key]
         _image['visibility'] = 'public' if image['is_public'] else 'private'
         _image['links'] = self._get_image_links(image)

@@ -176,9 +176,8 @@ class TestDBImageTags(BaseDBTestCase):
             db_api.image_create(self.adm_context, fixture)
 
     def test_image_tag_create(self):
-        tag_ref = db_api.image_tag_create(self.context, UUID1, 'snap')
-        self.assertEqual(UUID1, tag_ref.image_id)
-        self.assertEqual('snap', tag_ref.value)
+        tag = db_api.image_tag_create(self.context, UUID1, 'snap')
+        self.assertEqual('snap', tag)
 
     def test_image_tag_get_all(self):
         db_api.image_tag_create(self.context, UUID1, 'snap')
@@ -186,15 +185,13 @@ class TestDBImageTags(BaseDBTestCase):
         db_api.image_tag_create(self.context, UUID2, 'snarf')
 
         # Check the tags for the first image
-        tag_refs = db_api.image_tag_get_all(self.context, UUID1)
-        tags = [(t.image_id, t.value) for t in tag_refs]
-        expected = [(UUID1, 'snap'), (UUID1, 'snarf')]
+        tags = db_api.image_tag_get_all(self.context, UUID1)
+        expected = ['snap', 'snarf']
         self.assertEqual(expected, tags)
 
         # Check the tags for the second image
-        tag_refs = db_api.image_tag_get_all(self.context, UUID2)
-        tags = [(t.image_id, t.value) for t in tag_refs]
-        expected = [(UUID2, 'snarf')]
+        tags = db_api.image_tag_get_all(self.context, UUID2)
+        expected = ['snarf']
         self.assertEqual(expected, tags)
 
     def test_image_tag_get_all_no_tags(self):

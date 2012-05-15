@@ -53,7 +53,20 @@ class TestImagesController(unittest.TestCase):
     def test_show(self):
         request = test_utils.FakeRequest()
         output = self.controller.show(request, image_id=test_utils.UUID2)
-        self.assertEqual(output['id'], test_utils.UUID2)
+        for key in ['created_at', 'updated_at']:
+            output.pop(key)
+        expected = {
+            'id': test_utils.UUID2,
+            'name': 'image-name',
+            'owner': test_utils.TENANT1,
+            'location': None,
+            'status': 'queued',
+            'is_public': False,
+            'tags': [],
+            'members': [],
+            'properties': {},
+        }
+        self.assertEqual(expected, output)
 
     def test_show_non_existant(self):
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.show,
@@ -72,6 +85,7 @@ class TestImagesController(unittest.TestCase):
             'status': 'queued',
             'is_public': False,
             'properties': {},
+            'tags': [],
         }
         self.assertEqual(expected, output)
 
@@ -93,6 +107,7 @@ class TestImagesController(unittest.TestCase):
             'location': None,
             'status': 'queued',
             'is_public': True,
+            'tags': [],
             'properties': {},
         }
         self.assertEqual(expected, output)
@@ -109,6 +124,7 @@ class TestImagesController(unittest.TestCase):
             'location': test_utils.UUID1,
             'status': 'queued',
             'is_public': False,
+            'tags': ['ping', 'pong'],
             'properties': {},
         }
         self.assertEqual(expected, output)
@@ -163,6 +179,13 @@ class TestImagesDeserializer(unittest.TestCase):
             output = self.deserializer.create(request)
             expected = {'image': {'properties': {}}}
             self.assertEqual(expected, output)
+
+    def test_create_with_tags(self):
+        request = test_utils.FakeRequest()
+        request.body = json.dumps({'tags': ['one', 'two']})
+        output = self.deserializer.create(request)
+        expected = {'image': {'tags': ['one', 'two'], 'properties': {}}}
+        self.assertEqual(expected, output)
 
     def test_update(self):
         request = test_utils.FakeRequest()
@@ -302,6 +325,7 @@ class TestImagesSerializer(unittest.TestCase):
                 'properties': {},
                 'created_at': DATETIME,
                 'updated_at': DATETIME,
+                'tags': ['one', 'two'],
             },
             {
                 'id': test_utils.UUID2,
@@ -310,6 +334,7 @@ class TestImagesSerializer(unittest.TestCase):
                 'properties': {},
                 'created_at': DATETIME,
                 'updated_at': DATETIME,
+                'tags': [],
             },
         ]
         expected = {
@@ -320,6 +345,7 @@ class TestImagesSerializer(unittest.TestCase):
                     'visibility': 'public',
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
+                    'tags': ['one', 'two'],
                     'links': [
                         {
                             'rel': 'self',
@@ -338,6 +364,7 @@ class TestImagesSerializer(unittest.TestCase):
                     'visibility': 'private',
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
+                    'tags': [],
                     'links': [
                         {
                             'rel': 'self',
@@ -365,6 +392,7 @@ class TestImagesSerializer(unittest.TestCase):
             'properties': {},
             'created_at': DATETIME,
             'updated_at': DATETIME,
+            'tags': ['three', 'four'],
         }
         expected = {
             'image': {
@@ -373,6 +401,7 @@ class TestImagesSerializer(unittest.TestCase):
                 'visibility': 'public',
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
+                'tags': ['three', 'four'],
                 'links': [
                     {
                         'rel': 'self',
@@ -398,6 +427,7 @@ class TestImagesSerializer(unittest.TestCase):
             'properties': {},
             'created_at': DATETIME,
             'updated_at': DATETIME,
+            'tags': [],
         }
         self_link = '/v2/images/%s' % test_utils.UUID2
         expected = {
@@ -407,6 +437,7 @@ class TestImagesSerializer(unittest.TestCase):
                 'visibility': 'private',
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
+                'tags': [],
                 'links': [
                     {'rel': 'self', 'href': self_link},
                     {'rel': 'file', 'href': '%s/file' % self_link},
@@ -427,6 +458,7 @@ class TestImagesSerializer(unittest.TestCase):
             'properties': {},
             'created_at': DATETIME,
             'updated_at': DATETIME,
+            'tags': ['five'],
         }
         self_link = '/v2/images/%s' % test_utils.UUID2
         expected = {
@@ -436,6 +468,7 @@ class TestImagesSerializer(unittest.TestCase):
                 'visibility': 'public',
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
+                'tags': ['five'],
                 'links': [
                     {'rel': 'self', 'href': self_link},
                     {'rel': 'file', 'href': '%s/file' % self_link},
@@ -467,6 +500,7 @@ class TestImagesSerializerWithExtendedSchema(unittest.TestCase):
             'is_public': False,
             'created_at': DATETIME,
             'updated_at': DATETIME,
+            'tags': [],
             'properties': {'color': 'green', 'mood': 'grouchy'},
         }
 
@@ -479,6 +513,7 @@ class TestImagesSerializerWithExtendedSchema(unittest.TestCase):
                 'visibility': 'private',
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
+                'tags': [],
                 'color': 'green',
                 'links': [
                     {
@@ -507,6 +542,7 @@ class TestImagesSerializerWithExtendedSchema(unittest.TestCase):
                 'visibility': 'private',
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
+                'tags': [],
                 'color': 'invalid',
                 'links': [
                     {
@@ -540,6 +576,7 @@ class TestImagesSerializerWithAdditionalProperties(unittest.TestCase):
             'properties': {
                 'marx': 'groucho',
             },
+            'tags': [],
         }
 
     def test_show(self):
@@ -552,6 +589,7 @@ class TestImagesSerializerWithAdditionalProperties(unittest.TestCase):
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
                 'marx': 'groucho',
+                'tags': [],
                 'links': [
                     {
                         'rel': 'self',
@@ -583,6 +621,7 @@ class TestImagesSerializerWithAdditionalProperties(unittest.TestCase):
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
                 'marx': 123,
+                'tags': [],
                 'links': [
                     {
                         'rel': 'self',
@@ -610,6 +649,7 @@ class TestImagesSerializerWithAdditionalProperties(unittest.TestCase):
                 'visibility': 'private',
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
+                'tags': [],
                 'links': [
                     {
                         'rel': 'self',

@@ -34,6 +34,7 @@ class TestSchemaAPI(unittest.TestCase):
             'visibility',
             'created_at',
             'updated_at',
+            'tags',
         ])
         self.assertEqual(expected_keys, set(output['properties'].keys()))
 
