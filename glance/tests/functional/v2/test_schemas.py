@@ -47,7 +47,7 @@ class TestSchemas(functional.FunctionalTest):
         self.assertEqual(response.status_code, 200)
         schema = json.loads(response.text)
         #NOTE(bcwaldon): The custom schema properties should be loaded
-        expected = set(['id', 'name', 'type', 'format'])
+        expected = set(['id', 'name', 'visibility', 'type', 'format'])
         self.assertEqual(expected, set(schema['properties'].keys()))
 
         path = 'http://%s:%d%s' % ('0.0.0.0', self.api_port, links['access'])

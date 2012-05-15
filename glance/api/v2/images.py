@@ -41,25 +41,27 @@ class ImagesController(base.Controller):
         return self.db_api.image_create(req.context, image)
 
     def index(self, req):
-        filters = {'deleted': False}
+        #NOTE(bcwaldon): is_public=True gets public images and those
+        # owned by the authenticated tenant
+        filters = {'deleted': False, 'is_public': True}
         return self.db_api.image_get_all(req.context, filters=filters)
 
     def show(self, req, image_id):
         try:
             return self.db_api.image_get(req.context, image_id)
-        except exception.NotFound:
+        except (exception.NotFound, exception.Forbidden):
             raise webob.exc.HTTPNotFound()
 
     def update(self, req, image_id, image):
         try:
             return self.db_api.image_update(req.context, image_id, image)
-        except exception.NotFound:
+        except (exception.NotFound, exception.Forbidden):
             raise webob.exc.HTTPNotFound()
 
     def delete(self, req, image_id):
         try:
             self.db_api.image_destroy(req.context, image_id)
-        except exception.NotFound:
+        except (exception.NotFound, exception.Forbidden):
             raise webob.exc.HTTPNotFound()
 
 
@@ -69,19 +71,20 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         self.conf = conf
         self.schema_api = schema_api
 
-    def create(self, request):
+    def _parse_image(self, request):
         output = super(RequestDeserializer, self).default(request)
         body = output.pop('body')
         self.schema_api.validate('image', body)
         output['image'] = body
+        if 'visibility' in body:
+            output['image']['is_public'] = body.pop('visibility') == 'public'
         return output
 
+    def create(self, request):
+        return self._parse_image(request)
+
     def update(self, request):
-        output = super(RequestDeserializer, self).default(request)
-        body = output.pop('body')
-        self.schema_api.validate('image', body)
-        output['image'] = body
-        return output
+        return self._parse_image(request)
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
@@ -114,6 +117,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         for key in ['id', 'name']:
             _image[key] = image[key]
 
+        _image['visibility'] = 'public' if image['is_public'] else 'private'
         _image['links'] = self._get_image_links(image)
         return _image
 

@@ -94,6 +94,7 @@ class FakeDB(object):
             'owner': TENANT1,
             'location': None,
             'status': 'queued',
+            'is_public': False,
             'properties': [],
         }
         image.update(values)

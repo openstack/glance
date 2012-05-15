@@ -24,8 +24,8 @@ class TestSchemaAPI(unittest.TestCase):
         schema_api = glance.schema.API()
         output = schema_api.get_schema('image')
         self.assertEqual('image', output['name'])
-        expected_keys = ['id', 'name']
-        self.assertEqual(expected_keys, output['properties'].keys())
+        expected_keys = set(['id', 'name', 'visibility'])
+        self.assertEqual(expected_keys, set(output['properties'].keys()))
 
     def test_load_access_schema(self):
         schema_api = glance.schema.API()
