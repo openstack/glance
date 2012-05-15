@@ -12,7 +12,6 @@ webob==1.0.8
 wsgiref
 argparse
 boto==2.1.1
-swift
 sqlalchemy-migrate>=0.7
 httplib2
 xattr>=0.6.0
@@ -28,6 +27,7 @@ iso8601>=0.1.4
 # Trying to hit a moving target causes our local unittests to fail 
 # when they should remain unaffected.
 -e git://github.com/openstack/keystone.git@ab6be05068068b0902db44b1d60f56eea4fe1215#egg=keystone
+-e git://github.com/openstack/swift.git@208b8e85a80e46ddb49dc2035cb292570a20c7db#egg=swift
 
 # Note you will need gcc buildtools installed and must
 # have installed libxml headers for lxml to be successfully
