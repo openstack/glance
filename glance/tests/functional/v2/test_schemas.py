@@ -41,13 +41,20 @@ class TestSchemas(functional.FunctionalTest):
         # We should only have links for image and access schemas
         self.assertEqual(set(['image', 'access']), set(links.keys()))
 
-        # Ensure the schema links provide valid schemas
+        # Ensure the link works and custom properties are loaded
         path = 'http://%s:%d%s' % ('0.0.0.0', self.api_port, links['image'])
         response = requests.get(path)
         self.assertEqual(response.status_code, 200)
         schema = json.loads(response.text)
-        #NOTE(bcwaldon): The custom schema properties should be loaded
-        expected = set(['id', 'name', 'visibility', 'type', 'format'])
+        expected = set([
+            'id',
+            'name',
+            'visibility',
+            'created_at',
+            'updated_at',
+            'type',
+            'format',
+        ])
         self.assertEqual(expected, set(schema['properties'].keys()))
 
         path = 'http://%s:%d%s' % ('0.0.0.0', self.api_port, links['access'])

@@ -13,12 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import json
 
 import webob.exc
 
 from glance.api.v2 import base
 from glance.common import exception
+from glance.common import utils
 from glance.common import wsgi
 import glance.registry.db.api
 
@@ -96,7 +98,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         # Create a dict of base image properties, with user- and deployer-
         # defined properties contained in a 'properties' dictionary
         image = {'properties': body}
-        for key in ['id', 'name', 'visibility']:
+        for key in ['id', 'name', 'visibility', 'created_at', 'updated_at']:
             try:
                 image[key] = image['properties'].pop(key)
             except KeyError:
@@ -105,7 +107,14 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         if 'visibility' in image:
             image['is_public'] = image.pop('visibility') == 'public'
 
+        self._remove_readonly(image)
         return {'image': image}
+
+    @staticmethod
+    def _remove_readonly(image):
+        for key in ['created_at', 'updated_at']:
+            if key in image:
+                del image[key]
 
     def create(self, request):
         return self._parse_image(request)
@@ -142,13 +151,18 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
     def _format_image(self, image):
         _image = image['properties']
         _image = self._filter_allowed_image_attributes(_image)
-
-        for key in ['id', 'name']:
+        for key in ['id', 'name', 'created_at', 'updated_at']:
             _image[key] = image[key]
-
         _image['visibility'] = 'public' if image['is_public'] else 'private'
         _image['links'] = self._get_image_links(image)
+        self._serialize_datetimes(_image)
         return _image
+
+    @staticmethod
+    def _serialize_datetimes(image):
+        for (key, value) in image.iteritems():
+            if isinstance(value, datetime.datetime):
+                image[key] = utils.isotime(value)
 
     def create(self, response, image):
         response.body = json.dumps({'image': self._format_image(image)})

@@ -28,7 +28,13 @@ class TestSchemaAPI(unittest.TestCase):
     def test_load_image_schema(self):
         output = self.schema_api.get_schema('image')
         self.assertEqual('image', output['name'])
-        expected_keys = set(['id', 'name', 'visibility'])
+        expected_keys = set([
+            'id',
+            'name',
+            'visibility',
+            'created_at',
+            'updated_at',
+        ])
         self.assertEqual(expected_keys, set(output['properties'].keys()))
 
     def test_load_access_schema(self):

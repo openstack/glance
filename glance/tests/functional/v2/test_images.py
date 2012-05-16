@@ -85,6 +85,9 @@ class TestImages(functional.FunctionalTest):
         image = json.loads(response.text)['image']
         self.assertEqual(image_id, image['id'])
         self.assertEqual('bar', image['foo'])
+        self.assertTrue(image['created_at'])
+        self.assertTrue(image['updated_at'])
+        self.assertEqual(image['updated_at'], image['created_at'])
 
         # The image should be mutable, including adding new properties
         path = self._url('/images/%s' % image_id)
