@@ -15,11 +15,9 @@
 
 import json
 
-import jsonschema
 import webob.exc
 
 from glance.api.v2 import base
-from glance.api.v2 import schemas
 from glance.common import exception
 from glance.common import wsgi
 import glance.registry.db.api
@@ -71,21 +69,17 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         self.conf = conf
         self.schema_api = schema_api
 
-    def _validate(self, request, obj):
-        schema = self.schema_api.get_schema('image')
-        jsonschema.validate(obj, schema)
-
     def create(self, request):
         output = super(RequestDeserializer, self).default(request)
         body = output.pop('body')
-        self._validate(request, body)
+        self.schema_api.validate('image', body)
         output['image'] = body
         return output
 
     def update(self, request):
         output = super(RequestDeserializer, self).default(request)
         body = output.pop('body')
-        self._validate(request, body)
+        self.schema_api.validate('image', body)
         output['image'] = body
         return output
 

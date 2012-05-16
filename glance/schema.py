@@ -17,6 +17,8 @@ import copy
 import json
 import logging
 
+import jsonschema
+
 from glance.common import exception
 
 
@@ -84,6 +86,13 @@ class API(object):
 
         schema_properties.update(copy.deepcopy(custom_properties))
         self.schema_properties[schema_name] = schema_properties
+
+    def validate(self, schema_name, obj):
+        schema = self.get_schema(schema_name)
+        try:
+            jsonschema.validate(obj, schema)
+        except jsonschema.ValidationError as e:
+            raise exception.InvalidObject(schema=schema_name, reason=str(e))
 
 
 def read_schema_properties_file(conf, schema_name):

@@ -16,7 +16,6 @@
 import json
 import unittest
 
-import jsonschema
 import webob
 
 from glance.api.v2 import image_access
@@ -169,7 +168,7 @@ class TestImageAccessDeserializerWithExtendedSchema(unittest.TestCase):
         }
         request = test_utils.FakeRequest()
         request.body = json.dumps(fixture)
-        self.assertRaises(jsonschema.ValidationError,
+        self.assertRaises(exception.InvalidObject,
                 self.deserializer.create, request)
 
 
