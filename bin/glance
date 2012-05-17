@@ -173,6 +173,12 @@ is_public           Optional. If specified, interpreted as a boolean value
 protected           Optional. If specified, interpreted as a boolean value
                     and enables or disables deletion protection.
                     The default value is False.
+min_disk            Optional. The minimum disk size in gigabytes required to
+                    boot the image. If unspecified, this value defaults to 0
+                    (no minimum).
+min_ram             Optional. The minimum ram size in megabytes required to
+                    boot the image. If unspecified, this value defaults to 0
+                    (no minimum).
 disk_format         Required. If unspecified and container_format is specified
                     as 'ami', 'ari' or 'aki', disk_format will default to the
                     container_format value. Possible values are 'ami', 'ari',
@@ -339,6 +345,10 @@ protected           If specified, interpreted as a boolean value
                     and enables or disables deletion protection for the image.
 disk_format         Format of the disk image
 container_format    Format of the container
+min_disk            If specified, gives the minimum number of gigabytes of
+                    space a disk must have to successfully boot the image.
+min_ram             If specified, gives the minimum number of megabytes of
+                    ram required to successfully boot the image.
 
 All other field names are considered to be custom properties so be careful
 to spell field names correctly."""
