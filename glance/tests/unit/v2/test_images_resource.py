@@ -63,6 +63,7 @@ class TestImagesController(unittest.TestCase):
             'owner': test_utils.TENANT1,
             'location': None,
             'status': 'queued',
+            'is_public': False,
             'properties': [],
         }
         self.assertEqual(expected, output)
@@ -72,6 +73,21 @@ class TestImagesController(unittest.TestCase):
         image = {'name': 'image-1', 'owner': utils.generate_uuid()}
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.create,
                           request, image)
+
+    def test_create_public_image_as_admin(self):
+        request = test_utils.FakeRequest()
+        image = {'name': 'image-1', 'is_public': True}
+        output = self.controller.create(request, image)
+        output.pop('id')
+        expected = {
+            'name': 'image-1',
+            'owner': test_utils.TENANT1,
+            'location': None,
+            'status': 'queued',
+            'is_public': True,
+            'properties': [],
+        }
+        self.assertEqual(expected, output)
 
     def test_update(self):
         request = test_utils.FakeRequest()
@@ -83,6 +99,7 @@ class TestImagesController(unittest.TestCase):
             'owner': test_utils.TENANT1,
             'location': test_utils.UUID1,
             'status': 'queued',
+            'is_public': False,
             'properties': [],
         }
         self.assertEqual(expected, output)
@@ -100,40 +117,40 @@ class TestImagesDeserializer(unittest.TestCase):
         self.deserializer = glance.api.v2.images.RequestDeserializer(
                 {}, schema_api)
 
-    def test_create(self):
-        request = test_utils.FakeRequest()
-        request.body = json.dumps({'name': 'image-1'})
-        output = self.deserializer.create(request)
-        expected = {'image': {'name': 'image-1'}}
-        self.assertEqual(expected, output)
-
     def test_create_with_id(self):
         request = test_utils.FakeRequest()
         image_id = utils.generate_uuid()
-        request.body = json.dumps({'id': image_id, 'name': 'image-1'})
+        request.body = json.dumps({'id': image_id})
         output = self.deserializer.create(request)
-        expected = {
-            'image': {
-                'id': image_id,
-                'name': 'image-1',
-            },
-        }
+        expected = {'image': {'id': image_id}}
         self.assertEqual(expected, output)
 
-    def _test_create_fails(self, body):
+    def test_create_with_name(self):
         request = test_utils.FakeRequest()
-        request.body = json.dumps(body)
-        self.assertRaises(exception.InvalidObject,
-                self.deserializer.create, request)
+        request.body = json.dumps({'name': 'image-1'})
+        output = self.deserializer.create(request)
+        expected = {'image': {'name': 'image-1'}}
+        self.assertEqual(expected, output)
 
-    def test_create_no_name(self):
-        self._test_create_fails({})
+    def test_create_public(self):
+        request = test_utils.FakeRequest()
+        request.body = json.dumps({'visibility': 'public'})
+        output = self.deserializer.create(request)
+        expected = {'image': {'is_public': True}}
+        self.assertEqual(expected, output)
+
+    def test_create_private(self):
+        request = test_utils.FakeRequest()
+        request.body = json.dumps({'visibility': 'private'})
+        output = self.deserializer.create(request)
+        expected = {'image': {'is_public': False}}
+        self.assertEqual(expected, output)
 
     def test_update(self):
         request = test_utils.FakeRequest()
-        request.body = json.dumps({'name': 'image-1'})
+        request.body = json.dumps({'name': 'image-1', 'visibility': 'public'})
         output = self.deserializer.update(request)
-        expected = {'image': {'name': 'image-1'}}
+        expected = {'image': {'name': 'image-1', 'is_public': True}}
         self.assertEqual(expected, output)
 
 
@@ -185,14 +202,25 @@ class TestImagesSerializer(unittest.TestCase):
 
     def test_index(self):
         fixtures = [
-            {'id': test_utils.UUID1, 'name': 'image-1', 'properties': []},
-            {'id': test_utils.UUID2, 'name': 'image-2', 'properties': []},
+            {
+                'id': test_utils.UUID1,
+                'name': 'image-1',
+                'is_public': True,
+                'properties': [],
+            },
+            {
+                'id': test_utils.UUID2,
+                'name': 'image-2',
+                'is_public': False,
+                'properties': [],
+            },
         ]
         expected = {
             'images': [
                 {
                     'id': test_utils.UUID1,
                     'name': 'image-1',
+                    'visibility': 'public',
                     'links': [
                         {
                             'rel': 'self',
@@ -208,6 +236,7 @@ class TestImagesSerializer(unittest.TestCase):
                 {
                     'id': test_utils.UUID2,
                     'name': 'image-2',
+                    'visibility': 'private',
                     'links': [
                         {
                             'rel': 'self',
@@ -228,11 +257,17 @@ class TestImagesSerializer(unittest.TestCase):
         self.assertEqual(expected, json.loads(response.body))
 
     def test_show(self):
-        fixture = {'id': test_utils.UUID2, 'name': 'image-2', 'properties': []}
+        fixture = {
+            'id': test_utils.UUID2,
+            'name': 'image-2',
+            'is_public': True,
+            'properties': [],
+        }
         expected = {
             'image': {
                 'id': test_utils.UUID2,
                 'name': 'image-2',
+                'visibility': 'public',
                 'links': [
                     {
                         'rel': 'self',
@@ -251,12 +286,18 @@ class TestImagesSerializer(unittest.TestCase):
         self.assertEqual(expected, json.loads(response.body))
 
     def test_create(self):
-        fixture = {'id': test_utils.UUID2, 'name': 'image-2', 'properties': []}
+        fixture = {
+            'id': test_utils.UUID2,
+            'name': 'image-2',
+            'is_public': False,
+            'properties': [],
+        }
         self_link = '/v2/images/%s' % test_utils.UUID2
         expected = {
             'image': {
                 'id': test_utils.UUID2,
                 'name': 'image-2',
+                'visibility': 'private',
                 'links': [
                     {'rel': 'self', 'href': self_link},
                     {'rel': 'file', 'href': '%s/file' % self_link},
@@ -270,12 +311,18 @@ class TestImagesSerializer(unittest.TestCase):
         self.assertEqual(response.location, self_link)
 
     def test_update(self):
-        fixture = {'id': test_utils.UUID2, 'name': 'image-2', 'properties': []}
+        fixture = {
+            'id': test_utils.UUID2,
+            'name': 'image-2',
+            'is_public': True,
+            'properties': [],
+        }
         self_link = '/v2/images/%s' % test_utils.UUID2
         expected = {
             'image': {
                 'id': test_utils.UUID2,
                 'name': 'image-2',
+                'visibility': 'public',
                 'links': [
                     {'rel': 'self', 'href': self_link},
                     {'rel': 'file', 'href': '%s/file' % self_link},
@@ -302,6 +349,7 @@ class TestImagesSerializerWithExtendedSchema(unittest.TestCase):
         self.fixture = {
             'id': test_utils.UUID2,
             'name': 'image-2',
+            'is_public': False,
             'properties': {
                 'color': 'green',
                 'mood': 'grouchy',
@@ -314,6 +362,7 @@ class TestImagesSerializerWithExtendedSchema(unittest.TestCase):
             'image': {
                 'id': test_utils.UUID2,
                 'name': 'image-2',
+                'visibility': 'private',
                 'color': 'green',
                 'links': [
                     {
@@ -339,6 +388,7 @@ class TestImagesSerializerWithExtendedSchema(unittest.TestCase):
             'image': {
                 'id': test_utils.UUID2,
                 'name': 'image-2',
+                'visibility': 'private',
                 'color': 'invalid',
                 'links': [
                     {

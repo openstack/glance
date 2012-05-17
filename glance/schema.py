@@ -30,26 +30,27 @@ _BASE_SCHEMA_PROPERTIES = {
         'id': {
             'type': 'string',
             'description': 'An identifier for the image',
-            'required': False,
             'maxLength': 36,
         },
         'name': {
             'type': 'string',
             'description': 'Descriptive name for the image',
-            'required': True,
             'maxLength': 255,
+        },
+        'visibility': {
+            'type': 'string',
+            'description': 'Scope of image accessibility',
+            'enum': ['public', 'private'],
         },
     },
     'access': {
         'tenant_id': {
           'type': 'string',
           'description': 'The tenant identifier',
-          'required': True,
         },
         'can_share': {
           'type': 'boolean',
           'description': 'Ability of tenant to share with others',
-          'required': True,
           'default': False,
         },
     },
