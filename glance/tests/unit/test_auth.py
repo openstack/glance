@@ -147,41 +147,50 @@ class TestKeystoneAuthPlugin(unittest.TestCase):
             except exception.MissingCredentialError:
                 continue  # Expected
 
-    def test_invalid_auth_url(self):
+    def test_invalid_auth_url_v1(self):
         """
-        Test invalid auth URL returns a 404/400 in authenticate().
-        '404' if an attempt is made to access an invalid url on a
-        server, '400' if an attempt is made to access a url on a
-        non-existent server.
+        Test that a 400 during authenticate raises exception.AuthBadRequst
         """
-        bad_creds = [
-            {
-                'username': 'user1',
-                'auth_url': 'http://localhost/badauthurl/',
-                'password': 'pass',
-                'strategy': 'keystone',
-                'region': 'RegionOne'
-            },  # v1 Keystone
-            {
-                'username': 'user1',
-                'auth_url': 'http://localhost/badauthurl/v2.0/',
-                'password': 'pass',
-                'tenant': 'tenant1',
-                'strategy': 'keystone',
-                'region': 'RegionOne'
-            }  # v2 Keystone
-        ]
+        def fake_do_request(*args, **kwargs):
+            resp = webob.Response()
+            resp.status = 400
+            return FakeResponse(resp), ""
 
-        for creds in bad_creds:
-            try:
-                plugin = auth.KeystoneStrategy(creds)
-                plugin.authenticate()
-            except exception.AuthUrlNotFound:
-                continue  # Expected if web server running
-            except exception.AuthBadRequest:
-                continue  # Expected if no web server running
-            self.fail("Failed to raise Exception when supplying bad "
-                      "credentials: %r" % creds)
+        self.stubs.Set(auth.KeystoneStrategy, '_do_request', fake_do_request)
+
+        bad_creds = {
+            'username': 'user1',
+            'auth_url': 'http://localhost/badauthurl/',
+            'password': 'pass',
+            'strategy': 'keystone',
+            'region': 'RegionOne'
+        }
+
+        plugin = auth.KeystoneStrategy(bad_creds)
+        self.assertRaises(exception.AuthBadRequest, plugin.authenticate)
+
+    def test_invalid_auth_url_v2(self):
+        """
+        Test that a 400 during authenticate raises exception.AuthBadRequst
+        """
+        def fake_do_request(*args, **kwargs):
+            resp = webob.Response()
+            resp.status = 400
+            return FakeResponse(resp), ""
+
+        self.stubs.Set(auth.KeystoneStrategy, '_do_request', fake_do_request)
+
+        bad_creds = {
+            'username': 'user1',
+            'auth_url': 'http://localhost/badauthurl/v2.0/',
+            'password': 'pass',
+            'tenant': 'tenant1',
+            'strategy': 'keystone',
+            'region': 'RegionOne'
+        }
+
+        plugin = auth.KeystoneStrategy(bad_creds)
+        self.assertRaises(exception.AuthBadRequest, plugin.authenticate)
 
     def test_v1_auth(self):
         """Test v1 auth code paths"""
