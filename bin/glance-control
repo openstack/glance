@@ -94,8 +94,8 @@ def do_start(verb, server, conf, args):
     if verb != 'Respawn':
         for pid_file, pid in pid_files(server, conf):
             if os.path.exists('/proc/%s' % pid):
-                print "%s appears to already be running: %s" % \
-                      (server, pid_file)
+                print ("%s appears to already be running: %s" %
+                       (server, pid_file))
                 return
             else:
                 print "Removing stale pid file %s" % pid_file
@@ -205,8 +205,8 @@ def do_start(verb, server, conf, args):
 
 
 def get_pid_file(pid, conf):
-    return os.path.abspath(conf.pid_file) if conf.pid_file else \
-           '/var/run/glance/%s.pid' % server
+    return (os.path.abspath(conf.pid_file) if conf.pid_file else
+            '/var/run/glance/%s.pid' % server)
 
 
 def do_stop(server, conf, args, graceful=False):
@@ -234,8 +234,8 @@ def do_stop(server, conf, args, graceful=False):
                 break
             time.sleep(0.1)
         else:
-            print 'Waited 15 seconds for pid %s (%s) to die; giving up' % \
-                  (pid, pid_file)
+            print ('Waited 15 seconds for pid %s (%s) to die; giving up' %
+                   (pid, pid_file))
     if not did_anything:
         print 'No %s running' % server
 

@@ -229,8 +229,7 @@ class Store(glance.store.base.Store):
         else:  # Defaults http
             self.full_s3_host = 'http://' + self.s3_host
 
-        self.s3_store_object_buffer_dir = \
-            self.conf.s3_store_object_buffer_dir
+        self.s3_store_object_buffer_dir = self.conf.s3_store_object_buffer_dir
 
     def _option_get(self, param):
         result = getattr(self.conf, param)

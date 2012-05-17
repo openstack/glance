@@ -27,8 +27,8 @@ import time
 
 import sqlalchemy
 from sqlalchemy import asc, create_engine, desc
-from sqlalchemy.exc import IntegrityError, OperationalError, DBAPIError,\
-    DisconnectionError
+from sqlalchemy.exc import (IntegrityError, OperationalError, DBAPIError,
+                            DisconnectionError)
 from sqlalchemy.orm import exc
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import sessionmaker
@@ -193,8 +193,8 @@ def wrap_db_error(f):
                 try:
                     return f(*args, **kwargs)
                 except OperationalError, e:
-                    if remaining_attempts == 0 or \
-                       not is_db_connection_error(e.args[0]):
+                    if (remaining_attempts == 0 or
+                        not is_db_connection_error(e.args[0])):
                         raise
                 except DBAPIError:
                     raise
@@ -374,8 +374,8 @@ def image_get_all(context, filters=None, marker=None, limit=None,
 
     session = get_session()
     query = session.query(models.Image).\
-                   options(joinedload(models.Image.properties)).\
-                   options(joinedload(models.Image.members))
+                    options(joinedload(models.Image.properties)).\
+                    options(joinedload(models.Image.members))
 
     if 'size_min' in filters:
         query = query.filter(models.Image.size >= filters['size_min'])
@@ -737,8 +737,8 @@ def image_member_get_memberships(context, member, marker=None, limit=None,
 
     session = get_session()
     query = session.query(models.ImageMember).\
-                   options(joinedload(models.ImageMember.image)).\
-                   filter_by(member=member)
+                    options(joinedload(models.ImageMember.image)).\
+                    filter_by(member=member)
 
     if not can_show_deleted(context):
         query = query.filter_by(deleted=False)
@@ -782,9 +782,9 @@ def image_tag_delete(context, image_id, value):
     """Delete an image tag."""
     session = get_session()
     query = session.query(models.ImageTag).\
-                         filter_by(image_id=image_id).\
-                         filter_by(value=value).\
-                         filter_by(deleted=False)
+                    filter_by(image_id=image_id).\
+                    filter_by(value=value).\
+                    filter_by(deleted=False)
     try:
         tag_ref = query.one()
     except exc.NoResultFound:
@@ -797,7 +797,7 @@ def image_tag_get_all(context, image_id):
     """Get a list of tags for a specific image."""
     session = get_session()
     tags = session.query(models.ImageTag).\
-                         filter_by(image_id=image_id).\
-                         filter_by(deleted=False).\
-                         all()
+                   filter_by(image_id=image_id).\
+                   filter_by(deleted=False).\
+                   all()
     return tags

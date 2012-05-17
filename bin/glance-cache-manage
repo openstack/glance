@@ -61,8 +61,8 @@ def catch_error(action):
                        options.host)
                 return FAILURE
             except exception.Forbidden:
-                print "Not authorized to make this request. Check "\
-                      "your credentials (OS_AUTH_USER, OS_AUTH_KEY, ...)."
+                print ("Not authorized to make this request. Check "
+                       "your credentials (OS_AUTH_USER, OS_AUTH_KEY, ...).")
                 return FAILURE
             except Exception, e:
                 options = args[0]
@@ -147,9 +147,9 @@ Queues an image for caching"""
         print "from the cache as the first argument"
         return FAILURE
 
-    if not options.force and \
-       not user_confirm("Queue image %s for caching?" % (image_id,),
-       default=False):
+    if (not options.force and
+        not user_confirm("Queue image %s for caching?" % (image_id,),
+                         default=False)):
         return SUCCESS
 
     client = get_client(options)
@@ -174,9 +174,9 @@ Deletes an image from the cache"""
         print "from the cache as the first argument"
         return FAILURE
 
-    if not options.force and \
-       not user_confirm("Delete cached image %s?" % (image_id,),
-               default=False):
+    if (not options.force and
+        not user_confirm("Delete cached image %s?" % (image_id,),
+                         default=False)):
         return SUCCESS
 
     client = get_client(options)
@@ -194,8 +194,8 @@ def delete_all_cached_images(options, args):
 %(prog)s delete-all-cached-images [options]
 
 Removes all images from the cache"""
-    if not options.force and \
-       not user_confirm("Delete all cached images?", default=False):
+    if (not options.force and
+        not user_confirm("Delete all cached images?", default=False)):
         return SUCCESS
 
     client = get_client(options)
@@ -220,9 +220,9 @@ Deletes an image from the cache"""
         print "from the cache as the first argument"
         return FAILURE
 
-    if not options.force and \
-       not user_confirm("Delete queued image %s?" % (image_id,),
-               default=False):
+    if (not options.force and
+        not user_confirm("Delete queued image %s?" % (image_id,),
+                         default=False)):
         return SUCCESS
 
     client = get_client(options)
@@ -240,8 +240,8 @@ def delete_all_queued_images(options, args):
 %(prog)s delete-all-queued-images [options]
 
 Removes all images from the cache queue"""
-    if not options.force and \
-       not user_confirm("Delete all queued images?", default=False):
+    if (not options.force and
+        not user_confirm("Delete all queued images?", default=False)):
         return SUCCESS
 
     client = get_client(options)

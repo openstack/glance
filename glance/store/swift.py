@@ -225,10 +225,10 @@ class Store(glance.store.base.Store):
             # The config file has swift_store_large_object_*size in MB, but
             # internally we store it in bytes, since the image_size parameter
             # passed to add() is also in bytes.
-            self.large_object_size = \
-                self.conf.swift_store_large_object_size * ONE_MB
-            self.large_object_chunk_size = \
-                self.conf.swift_store_large_object_chunk_size * ONE_MB
+            _obj_size = self.conf.swift_store_large_object_size
+            self.large_object_size = _obj_size * ONE_MB
+            _obj_chunk_size = self.conf.swift_store_large_object_chunk_size
+            self.large_object_chunk_size = _obj_chunk_size * ONE_MB
         except cfg.ConfigFileValueError, e:
             reason = _("Error in configuration conf: %s") % e
             logger.error(reason)

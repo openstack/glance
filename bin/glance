@@ -63,8 +63,8 @@ def catch_error(action):
                 ret = func(*args, **kwargs)
                 return SUCCESS if ret is None else ret
             except exception.Forbidden:
-                print "Not authorized to make this request. Check "\
-                      "your credentials (OS_AUTH_USER, OS_AUTH_KEY, ...)."
+                print ("Not authorized to make this request. Check "
+                       "your credentials (OS_AUTH_USER, OS_AUTH_KEY, ...).")
                 return FAILURE
             except exception.ClientConfigurationError:
                 raise
@@ -214,11 +214,11 @@ the command line using standard redirection. For example:
 EXAMPLES
 ===============================================================================
 
-%(prog)s add name="My Image" disk_format=raw container_format=ovf \\
-    location=http://images.ubuntu.org/images/lucid-10.04-i686.iso \\
+%(prog)s add name="My Image" disk_format=raw container_format=ovf \
+    location=http://images.ubuntu.org/images/lucid-10.04-i686.iso \
     distro="Ubuntu 10.04 LTS"
 
-%(prog)s add name="My Image" disk_format=raw container_format=ovf \\
+%(prog)s add name="My Image" disk_format=raw container_format=ovf \
     distro="Ubuntu 10.04 LTS" < /tmp/myimage.iso"""
     c = get_client(options)
 
@@ -448,8 +448,8 @@ Deletes an image from Glance"""
         print "as the first argument"
         return FAILURE
 
-    if not options.force and \
-       not user_confirm("Delete image %s?" % (image_id,), default=False):
+    if not (options.force or
+            user_confirm("Delete image %s?" % (image_id,), default=False)):
         print 'Not deleting image %s' % (image_id,)
         return FAILURE
 
@@ -534,8 +534,8 @@ def _images_index(client, filters, limit, print_header=False, **kwargs):
     suppress_pagination = (options.force or
         (getattr(os, 'isatty') and not os.isatty(sys.stdout.fileno())))
 
-    if not suppress_pagination and len(images) == limit and \
-       not user_confirm("Fetch next page?", True):
+    if not (suppress_pagination or len(images) != limit or
+            user_confirm("Fetch next page?", True)):
         return SUCCESS
 
     parameters['marker'] = images[-1]['id']
@@ -593,8 +593,8 @@ def _images_details(client, filters, limit, print_header=False, **kwargs):
         print_image_formatted(client, image)
         print "=" * 80
 
-    if not options.force and len(images) == limit and \
-       not user_confirm("Fetch next page?", True):
+    if not (options.force or len(images) != limit or
+            user_confirm("Fetch next page?", True)):
         return SUCCESS
 
     parameters["marker"] = images[-1]['id']
@@ -633,8 +633,8 @@ def images_clear(options, args):
 %(prog)s clear [options]
 
 Deletes all images from a Glance server"""
-    if not options.force and \
-       not user_confirm("Delete all images?", default=False):
+    if not (options.force or
+            user_confirm("Delete all images?", default=False)):
         print 'Not deleting any images'
         return FAILURE
 
@@ -998,7 +998,7 @@ def user_confirm(prompt, default=False):
         prompt_default = "[y/N]"
 
     # for bug 884116, don't issue the prompt if stdin isn't a tty
-    if not hasattr(sys.stdin, 'isatty') or not sys.stdin.isatty():
+    if not (hasattr(sys.stdin, 'isatty') and sys.stdin.isatty()):
         return default
 
     answer = raw_input("%s %s " % (prompt, prompt_default))

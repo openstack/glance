@@ -99,12 +99,11 @@ def main():
     try:
         # We load the glance-registry config section because
         # sql_connection is only part of the glance registry.
-        default_config_files = \
-            cfg.find_config_files(project='glance', prog='glance-registry')
+        default_cfg_files = cfg.find_config_files(project='glance',
+                                                  prog='glance-registry')
 
-        conf = \
-            config.GlanceConfigOpts(default_config_files=default_config_files,
-                                    usage="%prog [options] <cmd>")
+        conf = config.GlanceConfigOpts(default_config_files=default_cfg_files,
+                                       usage="%prog [options] <cmd>")
         glance.registry.db.add_options(conf)
         args = conf()
         config.setup_logging(conf)

@@ -225,8 +225,8 @@ paste.app_factory = glance.common.wsgi:app_factory
 glance.app_factory = glance.image_cache.queue_image:Queuer
 """)
 
-        cmd = "bin/glance-cache-prefetcher --config-file %s" % \
-            cache_config_filepath
+        cmd = ("bin/glance-cache-prefetcher --config-file %s" %
+               cache_config_filepath)
 
         exitcode, out, err = execute(cmd)
 
