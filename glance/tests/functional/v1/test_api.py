@@ -1353,3 +1353,5 @@ class TestApi(functional.FunctionalTest):
         response, content = http.request(path, 'HEAD', headers=auth_headers)
         self.assertEqual(response.status, 200)
         self.assertEqual('tenant2', response['x-image-meta-owner'])
+
+        self.stop_servers()

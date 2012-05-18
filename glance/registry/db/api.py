@@ -68,7 +68,8 @@ db_opts = [
     cfg.IntOpt('sql_idle_timeout', default=3600),
     cfg.StrOpt('sql_connection', default='sqlite:///glance.sqlite'),
     cfg.IntOpt('sql_max_retries', default=10),
-    cfg.IntOpt('sql_retry_interval', default=1)
+    cfg.IntOpt('sql_retry_interval', default=1),
+    cfg.BoolOpt('db_auto_create', default=True),
     ]
 
 
@@ -102,7 +103,10 @@ def configure_db(conf):
     """
     global _ENGINE, sa_logger, logger, _MAX_RETRIES, _RETRY_INTERVAL
     if not _ENGINE:
-        conf.register_opts(db_opts)
+        for opt in db_opts:
+            # avoid duplicate registration
+            if not opt.name in conf:
+                conf.register_opt(opt)
         sql_connection = conf.sql_connection
         _MAX_RETRIES = conf.sql_max_retries
         _RETRY_INTERVAL = conf.sql_retry_interval
@@ -131,12 +135,16 @@ def configure_db(conf):
         elif conf.verbose:
             sa_logger.setLevel(logging.INFO)
 
-        models.register_models(_ENGINE)
-        try:
-            migration.version_control(conf)
-        except exception.DatabaseMigrationError:
-            # only arises when the DB exists and is under version control
-            pass
+        if conf.db_auto_create:
+            logger.info('auto-creating glance registry DB')
+            models.register_models(_ENGINE)
+            try:
+                migration.version_control(conf)
+            except exception.DatabaseMigrationError:
+                # only arises when the DB exists and is under version control
+                pass
+        else:
+            logger.info('not auto-creating glance registry DB')
 
 
 def check_mutate_authorization(context, image_ref):

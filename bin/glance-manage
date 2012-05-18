@@ -44,6 +44,7 @@ from glance.common import config
 from glance.common import exception
 from glance.openstack.common import cfg
 import glance.registry.db
+import glance.registry.db.api
 import glance.registry.db.migration
 
 
@@ -75,7 +76,14 @@ def do_version_control(conf, args):
 
 
 def do_db_sync(conf, args):
-    """Place a database under migration control and upgrade"""
+    """
+    Place a database under migration control and upgrade,
+    creating first if necessary.
+    """
+    # override auto-create flag, as complete DB should always
+    # be created on sync if not already existing
+    conf.db_auto_create = True
+    glance.registry.db.api.configure_db(conf)
     version = args.pop(0) if args else None
     current_version = args.pop(0) if args else None
     glance.registry.db.migration.db_sync(conf, version, current_version)
