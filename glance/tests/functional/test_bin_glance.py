@@ -17,11 +17,14 @@
 
 """Functional test case that utilizes the bin/glance CLI tool"""
 
+import BaseHTTPServer
 import datetime
 import httplib2
 import json
 import os
 import tempfile
+import thread
+import time
 
 from glance.common import utils
 from glance.tests import functional
@@ -1135,3 +1138,35 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual('', out.strip())
 
         self.stop_servers()
+
+    def test_timeout(self):
+        self.cleanup()
+
+        keep_sleeping = True
+
+        #start a simple HTTP server in a thread that hangs for a bit
+        class RemoteImageHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+            def do_GET(self):
+                cnt = 1
+                while (keep_sleeping):
+                    cnt += 1
+                    time.sleep(0.1)
+                    if cnt > 100:
+                        break
+
+        server_class = BaseHTTPServer.HTTPServer
+        local_server = server_class(('127.0.0.1', 0), RemoteImageHandler)
+        local_ip, local_port = local_server.server_address
+
+        def serve_requests(httpd):
+            httpd.serve_forever()
+
+        thread.start_new_thread(serve_requests, (local_server,))
+
+        cmd = ("bin/glance --port=%d index --timeout=1") % local_port
+        exitcode, out, err = execute(cmd, raise_error=False)
+
+        keep_sleeping = False
+        local_server.shutdown()
+        self.assertNotEqual(0, exitcode)
+        self.assertTrue("timed out" in out)

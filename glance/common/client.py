@@ -227,8 +227,8 @@ class BaseClient(object):
         httplib.TEMPORARY_REDIRECT,
     )
 
-    def __init__(self, host, port=None, use_ssl=False, auth_tok=None,
-                 creds=None, doc_root=None, key_file=None,
+    def __init__(self, host, port=None, timeout=None, use_ssl=False,
+                 auth_tok=None, creds=None, doc_root=None, key_file=None,
                  cert_file=None, ca_file=None, insecure=False,
                  configure_via_auth=True):
         """
@@ -236,6 +236,7 @@ class BaseClient(object):
 
         :param host: The host where service resides
         :param port: The port where service resides
+        :param timeout: Connection timeout.
         :param use_ssl: Should we use HTTPS?
         :param auth_tok: The auth token to pass to the server
         :param creds: The credentials to pass to the auth plugin
@@ -266,6 +267,7 @@ class BaseClient(object):
         """
         self.host = host
         self.port = port or self.DEFAULT_PORT
+        self.timeout = timeout
         self.use_ssl = use_ssl
         self.auth_tok = auth_tok
         self.creds = creds or {}
@@ -285,6 +287,10 @@ class BaseClient(object):
 
     def get_connect_kwargs(self):
         connect_kwargs = {}
+
+        # Both secure and insecure connections have a timeout option
+        connect_kwargs['timeout'] = self.timeout
+
         if self.use_ssl:
             if self.key_file is None:
                 self.key_file = os.environ.get('GLANCE_CLIENT_KEY_FILE')

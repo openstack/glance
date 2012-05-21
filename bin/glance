@@ -805,6 +805,7 @@ def get_client(options):
     """
     return glance_client.get_client(host=options.host,
                 port=options.port,
+                timeout=options.timeout,
                 use_ssl=options.use_ssl,
                 username=options.os_username,
                 password=options.os_password,
@@ -839,6 +840,9 @@ def create_options(parser):
                       type=int, default=DEFAULT_PORT,
                       help="Port the Glance API host listens on. "
                            "Default: %default")
+    parser.add_option('-t', '--timeout', dest="timeout", metavar="TIMEOUT",
+                      type=int, default=None,
+                      help="Connection timeout.")
     parser.add_option('--ssl', dest='use_ssl',
                       default=False, action="store_true",
                       help="Use SSL when talking to Glance API host")

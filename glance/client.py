@@ -401,7 +401,7 @@ class ProgressClient(V1Client):
 Client = V1Client
 
 
-def get_client(host, port=None, use_ssl=False, username=None,
+def get_client(host, port=None, timeout=None, use_ssl=False, username=None,
                password=None, tenant=None,
                auth_url=None, auth_strategy=None,
                auth_token=None, region=None,
@@ -439,6 +439,7 @@ def get_client(host, port=None, use_ssl=False, username=None,
 
     return client(host=host,
                 port=port,
+                timeout=timeout,
                 use_ssl=use_ssl,
                 auth_tok=auth_token or
                 os.getenv('OS_TOKEN'),
