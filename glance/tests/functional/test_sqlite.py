@@ -25,7 +25,6 @@ from glance.tests.utils import execute, depends_on_exe, skip_if_disabled
 class TestSqlite(functional.FunctionalTest):
     """Functional tests for sqlite-specific logic"""
 
-    @functional.runs_sql
     @depends_on_exe('sqlite3')
     @skip_if_disabled
     def test_big_int_mapping(self):

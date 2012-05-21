@@ -51,7 +51,6 @@ class TestImages(functional.FunctionalTest):
         base_headers.update(custom_headers or {})
         return base_headers
 
-    @functional.runs_sql
     def test_image_lifecycle(self):
         # Image list should be empty
         path = self._url('/images')
@@ -181,7 +180,6 @@ class TestImages(functional.FunctionalTest):
 
         self.stop_servers()
 
-    @functional.runs_sql
     def test_permissions(self):
         # Create an image that belongs to TENANT1
         path = self._url('/images')
@@ -410,7 +408,6 @@ class TestImages(functional.FunctionalTest):
 
         self.stop_servers()
 
-    @functional.runs_sql
     def test_tag_lifecycle(self):
         # Create an image for our tests
         path = self._url('/images')
