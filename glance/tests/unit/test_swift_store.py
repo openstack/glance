@@ -24,7 +24,7 @@ import tempfile
 import urllib
 
 import stubout
-import swift.common.client
+import swiftclient
 
 from glance.common import exception
 from glance.common import utils
@@ -33,7 +33,6 @@ from glance.store import BackendException
 import glance.store.swift
 from glance.store.location import get_location_from_uri
 from glance.tests.unit import base
-from glance.tests import utils as test_utils
 
 CONF = cfg.CONF
 
@@ -55,10 +54,9 @@ SWIFT_CONF = {'verbose': True,
 
 
 # We stub out as little as possible to ensure that the code paths
-# between glance.store.swift and swift.common.client are tested
+# between glance.store.swift and swiftclient are tested
 # thoroughly
-def stub_out_swift_common_client(stubs, swift_store_auth_version):
-
+def stub_out_swiftclient(stubs, swift_store_auth_version):
     fixture_containers = ['glance']
     fixture_headers = {'glance/%s' % FAKE_UUID:
                 {'content-length': FIVE_KB,
@@ -69,7 +67,7 @@ def stub_out_swift_common_client(stubs, swift_store_auth_version):
     def fake_head_container(url, token, container, **kwargs):
         if container not in fixture_containers:
             msg = "No container %s found" % container
-            raise swift.common.client.ClientException(msg,
+            raise swiftclient.ClientException(msg,
                         http_status=httplib.NOT_FOUND)
 
     def fake_put_container(url, token, container, **kwargs):
@@ -103,7 +101,7 @@ def stub_out_swift_common_client(stubs, swift_store_auth_version):
             if read_len > MAX_SWIFT_OBJECT_SIZE:
                 msg = ('Image size:%d exceeds Swift max:%d' %
                         (read_len, MAX_SWIFT_OBJECT_SIZE))
-                raise swift.common.client.ClientException(
+                raise swiftclient.ClientException(
                         msg, http_status=httplib.REQUEST_ENTITY_TOO_LARGE)
             fixture_objects[fixture_key] = fixture_object
             fixture_headers[fixture_key] = {
@@ -113,7 +111,7 @@ def stub_out_swift_common_client(stubs, swift_store_auth_version):
         else:
             msg = ("Object PUT failed - Object with key %s already exists"
                    % fixture_key)
-            raise swift.common.client.ClientException(msg,
+            raise swiftclient.ClientException(msg,
                         http_status=httplib.CONFLICT)
 
     def fake_get_object(url, token, container, name, **kwargs):
@@ -121,7 +119,7 @@ def stub_out_swift_common_client(stubs, swift_store_auth_version):
         fixture_key = "%s/%s" % (container, name)
         if not fixture_key in fixture_headers:
             msg = "Object GET failed"
-            raise swift.common.client.ClientException(msg,
+            raise swiftclient.ClientException(msg,
                         http_status=httplib.NOT_FOUND)
 
         fixture = fixture_headers[fixture_key]
@@ -146,7 +144,7 @@ def stub_out_swift_common_client(stubs, swift_store_auth_version):
             return fixture_headers[fixture_key]
         except KeyError:
             msg = "Object HEAD failed - Object does not exist"
-            raise swift.common.client.ClientException(msg,
+            raise swiftclient.ClientException(msg,
                         http_status=httplib.NOT_FOUND)
 
     def fake_delete_object(url, token, container, name, **kwargs):
@@ -154,7 +152,7 @@ def stub_out_swift_common_client(stubs, swift_store_auth_version):
         fixture_key = "%s/%s" % (container, name)
         if fixture_key not in fixture_headers.keys():
             msg = "Object DELETE failed - Object does not exist"
-            raise swift.common.client.ClientException(msg,
+            raise swiftclient.ClientException(msg,
                         http_status=httplib.NOT_FOUND)
         else:
             del fixture_headers[fixture_key]
@@ -169,24 +167,24 @@ def stub_out_swift_common_client(stubs, swift_store_auth_version):
         # Check the auth version against the configured value
         if swift_store_auth_version != auth_version:
             msg = 'AUTHENTICATION failed (version mismatch)'
-            raise swift.common.client.ClientException(msg)
+            raise swiftclient.ClientException(msg)
         return None, None
 
-    stubs.Set(swift.common.client,
+    stubs.Set(swiftclient.client,
               'head_container', fake_head_container)
-    stubs.Set(swift.common.client,
+    stubs.Set(swiftclient.client,
               'put_container', fake_put_container)
-    stubs.Set(swift.common.client,
+    stubs.Set(swiftclient.client,
               'put_object', fake_put_object)
-    stubs.Set(swift.common.client,
+    stubs.Set(swiftclient.client,
               'delete_object', fake_delete_object)
-    stubs.Set(swift.common.client,
+    stubs.Set(swiftclient.client,
               'head_object', fake_head_object)
-    stubs.Set(swift.common.client,
+    stubs.Set(swiftclient.client,
               'get_object', fake_get_object)
-    stubs.Set(swift.common.client,
+    stubs.Set(swiftclient.client,
               'get_auth', fake_get_auth)
-    stubs.Set(swift.common.client,
+    stubs.Set(swiftclient.client,
               'http_connection', fake_http_connection)
 
 
@@ -587,7 +585,7 @@ class TestStoreAuthV1(base.StoreClearingUnitTest, SwiftTests):
         self.config(**conf)
         super(TestStoreAuthV1, self).setUp()
         self.stubs = stubout.StubOutForTesting()
-        stub_out_swift_common_client(self.stubs,
+        stub_out_swiftclient(self.stubs,
                                      conf['swift_store_auth_version'])
         self.store = Store()
 

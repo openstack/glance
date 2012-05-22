@@ -78,10 +78,10 @@ class TestSwift(test_api.TestApi):
         super(TestSwift, self).tearDown()
 
     def clear_container(self):
-        from swift.common import client as swift_client
+        import swiftclient
         try:
             self.swift_conn.delete_container(self.swift_store_container)
-        except swift_client.ClientException, e:
+        except swiftclient.ClientException, e:
             if e.http_status == httplib.CONFLICT:
                 pass
             else:
@@ -203,8 +203,8 @@ class TestSwift(test_api.TestApi):
         image_loc = get_location_from_uri(image_loc)
         swift_loc = image_loc.store_location
 
-        from swift.common import client as swift_client
-        swift_conn = swift_client.Connection(
+        import swiftclient
+        swift_conn = swiftclient.Connection(
             authurl=swift_loc.swift_auth_url,
             user=swift_loc.user, key=swift_loc.key)
 
@@ -235,7 +235,7 @@ class TestSwift(test_api.TestApi):
 
         # Verify the segments no longer exist
         for segment in segments:
-            self.assertRaises(swift_client.ClientException,
+            self.assertRaises(swiftclient.ClientException,
                               swift_conn.head_object,
                               obj_container, segment)
 

@@ -27,7 +27,9 @@ iso8601>=0.1.4
 # Trying to hit a moving target causes our local unittests to fail 
 # when they should remain unaffected.
 -e git://github.com/openstack/keystone.git@ab6be05068068b0902db44b1d60f56eea4fe1215#egg=keystone
--e git://github.com/openstack/swift.git@208b8e85a80e46ddb49dc2035cb292570a20c7db#egg=swift
+
+# For Swift storage backend.
+-e git://github.com/openstack/python-swiftclient.git@dec11f6ec9#egg=python-swiftclient
 
 # Note you will need gcc buildtools installed and must
 # have installed libxml headers for lxml to be successfully
