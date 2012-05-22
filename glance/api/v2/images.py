@@ -134,6 +134,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def _filter_allowed_image_attributes(self, image):
         schema = self.schema_api.get_schema('image')
+        if schema.get('additionalProperties', True):
+            return dict(image.iteritems())
         attrs = schema['properties'].keys()
         return dict((k, v) for (k, v) in image.iteritems() if k in attrs)
 

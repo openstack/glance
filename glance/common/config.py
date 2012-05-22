@@ -36,6 +36,11 @@ paste_deploy_opts = [
     cfg.StrOpt('flavor'),
     cfg.StrOpt('config_file'),
     ]
+common_opts = [
+    cfg.BoolOpt('allow_additional_image_properties', default=True,
+                help='Whether to allow users to specify image properties '
+                'beyond what the image schema provides'),
+]
 
 
 class GlanceConfigOpts(cfg.CommonConfigOpts):
@@ -46,6 +51,7 @@ class GlanceConfigOpts(cfg.CommonConfigOpts):
             version='%%prog %s' % version.version_string(),
             default_config_files=default_config_files,
             **kwargs)
+        self.register_opts(common_opts)
         self.default_paste_file = self.prog + '-paste.ini'
 
 

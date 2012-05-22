@@ -16,15 +16,17 @@
 import unittest
 
 from glance.api.v2 import schemas
-import glance.tests.unit.utils as test_utils
 import glance.schema
+import glance.tests.unit.utils as test_utils
+import glance.tests.utils
 
 
 class TestSchemasController(unittest.TestCase):
 
     def setUp(self):
         super(TestSchemasController, self).setUp()
-        self.schema_api = glance.schema.API()
+        conf = glance.tests.utils.TestConfigOpts()
+        self.schema_api = glance.schema.API(conf)
         self.controller = schemas.Controller({}, self.schema_api)
 
     def test_index(self):

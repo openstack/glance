@@ -23,6 +23,7 @@ from glance.common import exception
 from glance.common import utils
 import glance.schema
 import glance.tests.unit.utils as test_utils
+import glance.tests.utils
 
 
 class TestImagesController(unittest.TestCase):
@@ -113,7 +114,8 @@ class TestImagesController(unittest.TestCase):
 
 class TestImagesDeserializer(unittest.TestCase):
     def setUp(self):
-        schema_api = glance.schema.API()
+        self.conf = glance.tests.utils.TestConfigOpts()
+        schema_api = glance.schema.API(self.conf)
         self.deserializer = glance.api.v2.images.RequestDeserializer(
                 {}, schema_api)
 
@@ -162,7 +164,8 @@ class TestImagesDeserializer(unittest.TestCase):
 
 class TestImagesDeserializerWithExtendedSchema(unittest.TestCase):
     def setUp(self):
-        schema_api = glance.schema.API()
+        conf = glance.tests.utils.TestConfigOpts()
+        schema_api = glance.schema.API(conf)
         props = {
             'pants': {
               'type': 'string',
@@ -211,9 +214,59 @@ class TestImagesDeserializerWithExtendedSchema(unittest.TestCase):
                 self.deserializer.update, request)
 
 
+class TestImagesDeserializerWithAdditionalProperties(unittest.TestCase):
+    def setUp(self):
+        self.conf = glance.tests.utils.TestConfigOpts()
+        self.conf.allow_additional_image_properties = True
+        schema_api = glance.schema.API(self.conf)
+        self.deserializer = glance.api.v2.images.RequestDeserializer(
+                {}, schema_api)
+
+    def test_create(self):
+        request = test_utils.FakeRequest()
+        request.body = json.dumps({'foo': 'bar'})
+        output = self.deserializer.create(request)
+        expected = {'image': {'properties': {'foo': 'bar'}}}
+        self.assertEqual(expected, output)
+
+    def test_create_with_additional_properties_disallowed(self):
+        self.conf.allow_additional_image_properties = False
+        request = test_utils.FakeRequest()
+        request.body = json.dumps({'foo': 'bar'})
+        self.assertRaises(exception.InvalidObject,
+                          self.deserializer.create, request)
+
+    def test_create_with_numeric_property(self):
+        request = test_utils.FakeRequest()
+        request.body = json.dumps({'abc': 123})
+        self.assertRaises(exception.InvalidObject,
+                          self.deserializer.create, request)
+
+    def test_create_with_list_property(self):
+        request = test_utils.FakeRequest()
+        request.body = json.dumps({'foo': ['bar']})
+        self.assertRaises(exception.InvalidObject,
+                          self.deserializer.create, request)
+
+    def test_update(self):
+        request = test_utils.FakeRequest()
+        request.body = json.dumps({'foo': 'bar'})
+        output = self.deserializer.update(request)
+        expected = {'image': {'properties': {'foo': 'bar'}}}
+        self.assertEqual(expected, output)
+
+    def test_update_with_additional_properties_disallowed(self):
+        self.conf.allow_additional_image_properties = False
+        request = test_utils.FakeRequest()
+        request.body = json.dumps({'foo': 'bar'})
+        self.assertRaises(exception.InvalidObject,
+                          self.deserializer.update, request)
+
+
 class TestImagesSerializer(unittest.TestCase):
     def setUp(self):
-        schema_api = glance.schema.API()
+        conf = glance.tests.utils.TestConfigOpts()
+        schema_api = glance.schema.API(conf)
         self.serializer = glance.api.v2.images.ResponseSerializer(schema_api)
 
     def test_index(self):
@@ -353,7 +406,9 @@ class TestImagesSerializer(unittest.TestCase):
 
 class TestImagesSerializerWithExtendedSchema(unittest.TestCase):
     def setUp(self):
-        self.schema_api = glance.schema.API()
+        self.conf = glance.tests.utils.TestConfigOpts()
+        self.conf.allow_additional_image_properties = False
+        self.schema_api = glance.schema.API(self.conf)
         props = {
             'color': {
                 'type': 'string',
@@ -403,6 +458,100 @@ class TestImagesSerializerWithExtendedSchema(unittest.TestCase):
                 'name': 'image-2',
                 'visibility': 'private',
                 'color': 'invalid',
+                'links': [
+                    {
+                        'rel': 'self',
+                        'href': '/v2/images/%s' % test_utils.UUID2,
+                    },
+                    {
+                        'rel': 'file',
+                        'href': '/v2/images/%s/file' % test_utils.UUID2,
+                    },
+                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
+                ],
+            },
+        }
+        response = webob.Response()
+        serializer.show(response, self.fixture)
+        self.assertEqual(expected, json.loads(response.body))
+
+
+class TestImagesSerializerWithAdditionalProperties(unittest.TestCase):
+    def setUp(self):
+        self.conf = glance.tests.utils.TestConfigOpts()
+        self.conf.allow_additional_image_properties = True
+        self.schema_api = glance.schema.API(self.conf)
+        self.fixture = {
+            'id': test_utils.UUID2,
+            'name': 'image-2',
+            'is_public': False,
+            'properties': {
+                'marx': 'groucho',
+            },
+        }
+
+    def test_show(self):
+        serializer = glance.api.v2.images.ResponseSerializer(self.schema_api)
+        expected = {
+            'image': {
+                'id': test_utils.UUID2,
+                'name': 'image-2',
+                'visibility': 'private',
+                'marx': 'groucho',
+                'links': [
+                    {
+                        'rel': 'self',
+                        'href': '/v2/images/%s' % test_utils.UUID2,
+                    },
+                    {
+                        'rel': 'file',
+                        'href': '/v2/images/%s/file' % test_utils.UUID2,
+                    },
+                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
+                ],
+            },
+        }
+        response = webob.Response()
+        serializer.show(response, self.fixture)
+        self.assertEqual(expected, json.loads(response.body))
+
+    def test_show_invalid_additional_property(self):
+        """Ensure that the serializer passes through invalid additional
+        properties (i.e. non-string) without complaining.
+        """
+        serializer = glance.api.v2.images.ResponseSerializer(self.schema_api)
+        self.fixture['properties']['marx'] = 123
+        expected = {
+            'image': {
+                'id': test_utils.UUID2,
+                'name': 'image-2',
+                'visibility': 'private',
+                'marx': 123,
+                'links': [
+                    {
+                        'rel': 'self',
+                        'href': '/v2/images/%s' % test_utils.UUID2,
+                    },
+                    {
+                        'rel': 'file',
+                        'href': '/v2/images/%s/file' % test_utils.UUID2,
+                    },
+                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
+                ],
+            },
+        }
+        response = webob.Response()
+        serializer.show(response, self.fixture)
+        self.assertEqual(expected, json.loads(response.body))
+
+    def test_show_with_additional_properties_disabled(self):
+        self.conf.allow_additional_image_properties = False
+        serializer = glance.api.v2.images.ResponseSerializer(self.schema_api)
+        expected = {
+            'image': {
+                'id': test_utils.UUID2,
+                'name': 'image-2',
+                'visibility': 'private',
                 'links': [
                     {
                         'rel': 'self',

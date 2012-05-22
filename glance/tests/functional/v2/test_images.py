@@ -62,7 +62,7 @@ class TestImages(functional.FunctionalTest):
         # Create an image (with a deployer-defined property)
         path = self._url('/images')
         headers = self._headers({'content-type': 'application/json'})
-        data = json.dumps({'name': 'image-1', 'type': 'kernel'})
+        data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar'})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(200, response.status_code)
         image_location_header = response.headers['Location']
@@ -84,10 +84,12 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         image = json.loads(response.text)['image']
         self.assertEqual(image_id, image['id'])
+        self.assertEqual('bar', image['foo'])
 
-        # The image should be mutable
+        # The image should be mutable, including adding new properties
         path = self._url('/images/%s' % image_id)
-        data = json.dumps({'name': 'image-2', 'format': 'vhd'})
+        data = json.dumps({'name': 'image-2', 'format': 'vhd',
+                           'foo': 'baz', 'ping': 'pong'})
         response = requests.put(path, headers=self._headers(), data=data)
         self.assertEqual(200, response.status_code)
 
@@ -95,6 +97,8 @@ class TestImages(functional.FunctionalTest):
         image = json.loads(response.text)['image']
         self.assertEqual('image-2', image['name'])
         self.assertEqual('vhd', image['format'])
+        self.assertEqual('baz', image['foo'])
+        self.assertEqual('pong', image['ping'])
 
         # Updates should persist across requests
         path = self._url('/images/%s' % image_id)
@@ -103,6 +107,8 @@ class TestImages(functional.FunctionalTest):
         image = json.loads(response.text)['image']
         self.assertEqual(image_id, image['id'])
         self.assertEqual('image-2', image['name'])
+        self.assertEqual('baz', image['foo'])
+        self.assertEqual('pong', image['ping'])
 
         # Try to download data before its uploaded
         path = self._url('/images/%s/file' % image_id)
