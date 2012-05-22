@@ -64,7 +64,7 @@ class TestImagesController(unittest.TestCase):
             'location': None,
             'status': 'queued',
             'is_public': False,
-            'properties': [],
+            'properties': {},
         }
         self.assertEqual(expected, output)
 
@@ -85,7 +85,7 @@ class TestImagesController(unittest.TestCase):
             'location': None,
             'status': 'queued',
             'is_public': True,
-            'properties': [],
+            'properties': {},
         }
         self.assertEqual(expected, output)
 
@@ -100,7 +100,7 @@ class TestImagesController(unittest.TestCase):
             'location': test_utils.UUID1,
             'status': 'queued',
             'is_public': False,
-            'properties': [],
+            'properties': {},
         }
         self.assertEqual(expected, output)
 
@@ -122,35 +122,41 @@ class TestImagesDeserializer(unittest.TestCase):
         image_id = utils.generate_uuid()
         request.body = json.dumps({'id': image_id})
         output = self.deserializer.create(request)
-        expected = {'image': {'id': image_id}}
+        expected = {'image': {'id': image_id, 'properties': {}}}
         self.assertEqual(expected, output)
 
     def test_create_with_name(self):
         request = test_utils.FakeRequest()
         request.body = json.dumps({'name': 'image-1'})
         output = self.deserializer.create(request)
-        expected = {'image': {'name': 'image-1'}}
+        expected = {'image': {'name': 'image-1', 'properties': {}}}
         self.assertEqual(expected, output)
 
     def test_create_public(self):
         request = test_utils.FakeRequest()
         request.body = json.dumps({'visibility': 'public'})
         output = self.deserializer.create(request)
-        expected = {'image': {'is_public': True}}
+        expected = {'image': {'is_public': True, 'properties': {}}}
         self.assertEqual(expected, output)
 
     def test_create_private(self):
         request = test_utils.FakeRequest()
         request.body = json.dumps({'visibility': 'private'})
         output = self.deserializer.create(request)
-        expected = {'image': {'is_public': False}}
+        expected = {'image': {'is_public': False, 'properties': {}}}
         self.assertEqual(expected, output)
 
     def test_update(self):
         request = test_utils.FakeRequest()
         request.body = json.dumps({'name': 'image-1', 'visibility': 'public'})
         output = self.deserializer.update(request)
-        expected = {'image': {'name': 'image-1', 'is_public': True}}
+        expected = {
+            'image': {
+                'name': 'image-1',
+                'is_public': True,
+                'properties': {},
+            },
+        }
         self.assertEqual(expected, output)
 
 
@@ -172,7 +178,12 @@ class TestImagesDeserializerWithExtendedSchema(unittest.TestCase):
         request = test_utils.FakeRequest()
         request.body = json.dumps({'name': 'image-1', 'pants': 'on'})
         output = self.deserializer.create(request)
-        expected = {'image': {'name': 'image-1', 'pants': 'on'}}
+        expected = {
+            'image': {
+                'name': 'image-1',
+                'properties': {'pants': 'on'},
+            },
+        }
         self.assertEqual(expected, output)
 
     def test_create_bad_data(self):
@@ -185,7 +196,12 @@ class TestImagesDeserializerWithExtendedSchema(unittest.TestCase):
         request = test_utils.FakeRequest()
         request.body = json.dumps({'name': 'image-1', 'pants': 'off'})
         output = self.deserializer.update(request)
-        expected = {'image': {'name': 'image-1', 'pants': 'off'}}
+        expected = {
+            'image': {
+                'name': 'image-1',
+                'properties': {'pants': 'off'},
+            },
+        }
         self.assertEqual(expected, output)
 
     def test_update_bad_data(self):
@@ -206,13 +222,13 @@ class TestImagesSerializer(unittest.TestCase):
                 'id': test_utils.UUID1,
                 'name': 'image-1',
                 'is_public': True,
-                'properties': [],
+                'properties': {},
             },
             {
                 'id': test_utils.UUID2,
                 'name': 'image-2',
                 'is_public': False,
-                'properties': [],
+                'properties': {},
             },
         ]
         expected = {
@@ -261,7 +277,7 @@ class TestImagesSerializer(unittest.TestCase):
             'id': test_utils.UUID2,
             'name': 'image-2',
             'is_public': True,
-            'properties': [],
+            'properties': {},
         }
         expected = {
             'image': {
@@ -290,7 +306,7 @@ class TestImagesSerializer(unittest.TestCase):
             'id': test_utils.UUID2,
             'name': 'image-2',
             'is_public': False,
-            'properties': [],
+            'properties': {},
         }
         self_link = '/v2/images/%s' % test_utils.UUID2
         expected = {
@@ -315,7 +331,7 @@ class TestImagesSerializer(unittest.TestCase):
             'id': test_utils.UUID2,
             'name': 'image-2',
             'is_public': True,
-            'properties': [],
+            'properties': {},
         }
         self_link = '/v2/images/%s' % test_utils.UUID2
         expected = {
@@ -350,10 +366,7 @@ class TestImagesSerializerWithExtendedSchema(unittest.TestCase):
             'id': test_utils.UUID2,
             'name': 'image-2',
             'is_public': False,
-            'properties': {
-                'color': 'green',
-                'mood': 'grouchy',
-            },
+            'properties': {'color': 'green', 'mood': 'grouchy'},
         }
 
     def test_show(self):

@@ -29,6 +29,19 @@ class ImagesController(base.Controller):
         self.db_api = db_api or glance.registry.db.api
         self.db_api.configure_db(conf)
 
+    def _normalize_properties(self, image):
+        """Convert the properties from the stored format to a dict
+
+        The db api returns a list of dicts that look like
+        {'name': <key>, 'value': <value>}, while it expects a format
+        like {<key>: <value>} in image create and update calls. This
+        function takes the extra step that the db api should be
+        responsible for in the image get calls.
+        """
+        properties = [(p['name'], p['value']) for p in image['properties']]
+        image['properties'] = dict(properties)
+        return image
+
     def create(self, req, image):
         if 'owner' not in image:
             image['owner'] = req.context.owner
@@ -38,25 +51,29 @@ class ImagesController(base.Controller):
         #TODO(bcwaldon): this should eventually be settable through the API
         image['status'] = 'queued'
 
-        return self.db_api.image_create(req.context, image)
+        image = self.db_api.image_create(req.context, image)
+        return self._normalize_properties(dict(image))
 
     def index(self, req):
         #NOTE(bcwaldon): is_public=True gets public images and those
         # owned by the authenticated tenant
         filters = {'deleted': False, 'is_public': True}
-        return self.db_api.image_get_all(req.context, filters=filters)
+        images = self.db_api.image_get_all(req.context, filters=filters)
+        return [self._normalize_properties(dict(image)) for image in images]
 
     def show(self, req, image_id):
         try:
-            return self.db_api.image_get(req.context, image_id)
+            image = self.db_api.image_get(req.context, image_id)
         except (exception.NotFound, exception.Forbidden):
             raise webob.exc.HTTPNotFound()
+        return self._normalize_properties(dict(image))
 
     def update(self, req, image_id, image):
         try:
-            return self.db_api.image_update(req.context, image_id, image)
+            image = self.db_api.image_update(req.context, image_id, image)
         except (exception.NotFound, exception.Forbidden):
             raise webob.exc.HTTPNotFound()
+        return self._normalize_properties(dict(image))
 
     def delete(self, req, image_id):
         try:
@@ -75,10 +92,20 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         output = super(RequestDeserializer, self).default(request)
         body = output.pop('body')
         self.schema_api.validate('image', body)
-        output['image'] = body
-        if 'visibility' in body:
-            output['image']['is_public'] = body.pop('visibility') == 'public'
-        return output
+
+        # Create a dict of base image properties, with user- and deployer-
+        # defined properties contained in a 'properties' dictionary
+        image = {'properties': body}
+        for key in ['id', 'name', 'visibility']:
+            try:
+                image[key] = image['properties'].pop(key)
+            except KeyError:
+                pass
+
+        if 'visibility' in image:
+            image['is_public'] = image.pop('visibility') == 'public'
+
+        return {'image': image}
 
     def create(self, request):
         return self._parse_image(request)
@@ -111,7 +138,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         return dict((k, v) for (k, v) in image.iteritems() if k in attrs)
 
     def _format_image(self, image):
-        _image = dict(image['properties'])
+        _image = image['properties']
         _image = self._filter_allowed_image_attributes(_image)
 
         for key in ['id', 'name']:
