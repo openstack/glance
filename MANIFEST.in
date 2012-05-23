@@ -7,7 +7,8 @@ include HACKING.rst
 include LICENSE
 include ChangeLog
 include babel.cfg tox.ini
-include glance/locale/glance.pot
+include openstack-common.conf
+include glance/openstack/common/README
 include glance/registry/db/migrate_repo/README
 include glance/registry/db/migrate_repo/migrate.cfg
 include glance/registry/db/migrate_repo/versions/*.sql
@@ -17,4 +18,5 @@ include glance/tests/etc/*
 include glance/tests/var/*
 graft doc
 graft etc
+graft glance/locale
 graft tools
