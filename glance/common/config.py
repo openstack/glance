@@ -149,6 +149,11 @@ def _get_deployment_config_file(conf):
     _register_paste_deploy_opts(conf)
     config_file = conf.paste_deploy.config_file
     path = _get_paste_config_path(conf) if not config_file else config_file
+
+    if not path:
+        msg = "Unable to locate paste config file for %s." % conf.prog
+        raise RuntimeError(msg)
+
     return os.path.abspath(path)
 
 
