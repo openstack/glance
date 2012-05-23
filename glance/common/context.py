@@ -132,6 +132,7 @@ class ContextMiddleware(wsgi.Middleware):
     opts = [
         cfg.BoolOpt('owner_is_tenant', default=True),
         cfg.StrOpt('admin_role', default='admin'),
+        cfg.BoolOpt('allow_anonymous_access', default=False),
     ]
 
     def __init__(self, app, conf, **local_conf):
@@ -140,7 +141,7 @@ class ContextMiddleware(wsgi.Middleware):
         super(ContextMiddleware, self).__init__(app)
 
     def process_request(self, req):
-        """Convert authentication informtion into a request context
+        """Convert authentication information into a request context
 
         Generate a RequestContext object from the available
         authentication headers and store on the 'context' attribute
@@ -148,11 +149,27 @@ class ContextMiddleware(wsgi.Middleware):
 
         :param req: wsgi request object that will be given the context object
         :raises webob.exc.HTTPUnauthorized: when value of the X-Identity-Status
-                                            header is not 'Confirmed'
+                                            header is not 'Confirmed' and
+                                            anonymous access is disallowed
         """
-        if req.headers.get('X-Identity-Status') != 'Confirmed':
+        if req.headers.get('X-Identity-Status') == 'Confirmed':
+            req.context = self._get_authenticated_context(req)
+        elif self.conf.allow_anonymous_access:
+            req.context = self._get_anonymous_context()
+        else:
             raise webob.exc.HTTPUnauthorized()
 
+    def _get_anonymous_context(self):
+        kwargs = {
+            'user': None,
+            'tenant': None,
+            'roles': [],
+            'is_admin': False,
+            'read_only': True,
+        }
+        return RequestContext(**kwargs)
+
+    def _get_authenticated_context(self, req):
         #NOTE(bcwaldon): X-Roles is a csv string, but we need to parse
         # it into a list to be useful
         roles_header = req.headers.get('X-Roles', '')
@@ -170,7 +187,7 @@ class ContextMiddleware(wsgi.Middleware):
             'owner_is_tenant': self.conf.owner_is_tenant,
         }
 
-        req.context = RequestContext(**kwargs)
+        return RequestContext(**kwargs)
 
 
 class UnauthenticatedContextMiddleware(wsgi.Middleware):
