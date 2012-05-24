@@ -23,6 +23,7 @@ from glance.common import exception
 from glance.common import utils
 import glance.schema
 import glance.tests.unit.utils as test_utils
+import glance.tests.utils
 
 
 class TestImageAccessController(unittest.TestCase):
@@ -109,7 +110,8 @@ class TestImageAccessController(unittest.TestCase):
 
 class TestImageAccessDeserializer(unittest.TestCase):
     def setUp(self):
-        schema_api = glance.schema.API()
+        conf = glance.tests.utils.TestConfigOpts()
+        schema_api = glance.schema.API(conf)
         self.deserializer = image_access.RequestDeserializer({}, schema_api)
 
     def test_create(self):
@@ -131,7 +133,8 @@ class TestImageAccessDeserializer(unittest.TestCase):
 
 class TestImageAccessDeserializerWithExtendedSchema(unittest.TestCase):
     def setUp(self):
-        schema_api = glance.schema.API()
+        conf = glance.tests.utils.TestConfigOpts()
+        schema_api = glance.schema.API(conf)
         props = {
             'color': {
               'type': 'string',

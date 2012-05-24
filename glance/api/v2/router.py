@@ -39,7 +39,7 @@ class API(wsgi.Router):
         self.conf = conf
         mapper = routes.Mapper()
 
-        schema_api = glance.schema.API()
+        schema_api = glance.schema.API(self.conf)
         glance.schema.load_custom_schema_properties(conf, schema_api)
 
         root_resource = root.create_resource(conf)
