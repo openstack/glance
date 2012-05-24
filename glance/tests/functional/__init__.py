@@ -214,7 +214,7 @@ class ApiServer(Server):
         self.server_control_options = '--capture-output'
 
         self.needs_database = True
-        default_sql_connection = 'sqlite:///tests.sqlite'
+        default_sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
                                              default_sql_connection)
 
@@ -335,7 +335,7 @@ class RegistryServer(Server):
         self.server_name = 'registry'
 
         self.needs_database = True
-        default_sql_connection = 'sqlite:///tests.sqlite'
+        default_sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
                                              default_sql_connection)
 
@@ -473,13 +473,11 @@ class FunctionalTest(unittest.TestCase):
     def _reset_database(self, conn_string):
         conn_pieces = urlparse.urlparse(conn_string)
         if conn_string.startswith('sqlite'):
-            # We can just delete the SQLite database, which is
-            # the easiest and cleanest solution
-            db_path = conn_pieces.path.strip('/')
-            if db_path and os.path.exists(db_path):
-                os.unlink(db_path)
-            # No need to recreate the SQLite DB. SQLite will
-            # create it for us if it's not there...
+            # We leave behind the sqlite DB for failing tests to aid
+            # in diagnosis, as the file size is relatively small and
+            # won't interfere with subsequent tests as it's in a per-
+            # test directory (which is blown-away if the test is green)
+            pass
         elif conn_string.startswith('mysql'):
             # We can execute the MySQL client to destroy and re-create
             # the MYSQL database, which is easier and less error-prone

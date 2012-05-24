@@ -32,7 +32,7 @@ class TestGlanceManage(functional.FunctionalTest):
         conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(conf_dir)
         self.conf_filepath = os.path.join(conf_dir, 'glance-manage.conf')
-        self.db_filepath = os.path.join(conf_dir, 'test.sqlite')
+        self.db_filepath = os.path.join(self.test_dir, 'tests.sqlite')
         self.connection = ('sql_connection = sqlite:///%s' %
                            self.db_filepath)
 
