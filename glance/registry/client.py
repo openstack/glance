@@ -151,8 +151,10 @@ class RegistryClient(BaseClient):
         """
         Deletes Registry's information about an image
         """
-        self.do_request("DELETE", "/images/%s" % image_id)
-        return True
+        res = self.do_request("DELETE", "/images/%s" % image_id)
+        data = json.loads(res.read())
+        image = data['image']
+        return image
 
     def get_image_members(self, image_id):
         """Returns a list of membership associations from Registry"""

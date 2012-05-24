@@ -292,13 +292,15 @@ class Controller(object):
         :param req: wsgi Request object
         :param id:  The opaque internal identifier for the image
 
-        :retval Returns 200 if delete was successful, a fault if not.
+        :retval Returns 200 if delete was successful, a fault if not. On
+        success, the body contains the deleted image information as a mapping.
         """
         if req.context.read_only:
             raise exc.HTTPForbidden()
 
         try:
-            db_api.image_destroy(req.context, id)
+            deleted_image = db_api.image_destroy(req.context, id)
+            return dict(image=make_image_dict(deleted_image))
 
         except exception.ForbiddenPublicImage:
             # If it's private and doesn't belong to them, don't let on
