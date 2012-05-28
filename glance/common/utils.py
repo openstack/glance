@@ -22,6 +22,7 @@ System-level utilities and helper functions.
 
 import datetime
 import errno
+import functools
 import logging
 import os
 import platform
@@ -30,6 +31,7 @@ import sys
 import uuid
 
 import iso8601
+from webob import exc
 
 from glance.common import exception
 
@@ -349,3 +351,16 @@ def get_terminal_size():
             raise exception.Invalid()
 
     return height_width[0], height_width[1]
+
+
+def mutating(func):
+    """Decorator to enforce read-only logic"""
+    @functools.wraps(func)
+    def wrapped(self, req, *args, **kwargs):
+        if req.context.read_only:
+            msg = _("Read-only access")
+            logger.debug(msg)
+            raise exc.HTTPForbidden(msg, request=req,
+                                    content_type="text/plain")
+        return func(self, req, *args, **kwargs)
+    return wrapped

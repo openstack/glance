@@ -17,6 +17,7 @@ import webob.exc
 
 from glance.api.v2 import base
 from glance.common import exception
+from glance.common import utils
 from glance.common import wsgi
 import glance.registry.db.api
 import glance.store
@@ -36,6 +37,7 @@ class ImageDataController(base.Controller):
         except exception.NotFound:
             raise webob.exc.HTTPNotFound(_("Image does not exist"))
 
+    @utils.mutating
     def upload(self, req, image_id, data, size):
         self._get_image(req.context, image_id)
         try:

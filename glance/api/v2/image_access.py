@@ -19,6 +19,7 @@ import webob.exc
 
 from glance.api.v2 import base
 from glance.common import exception
+from glance.common import utils
 from glance.common import wsgi
 import glance.registry.db.api
 
@@ -42,6 +43,7 @@ class Controller(base.Controller):
         except exception.NotFound:
             raise webob.exc.HTTPNotFound()
 
+    @utils.mutating
     def create(self, req, image_id, access_record):
         #TODO(bcwaldon): Refactor these methods so we don't need to
         # explicitly retrieve a session object here
@@ -65,6 +67,7 @@ class Controller(base.Controller):
         access_record['image_id'] = image_id
         return self.db_api.image_member_create(req.context, access_record)
 
+    @utils.mutating
     def delete(self, req, image_id, tenant_id):
         #TODO(bcwaldon): Refactor these methods so we don't need to explicitly
         # retrieve a session object here

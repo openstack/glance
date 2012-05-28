@@ -54,6 +54,7 @@ class ImagesController(base.Controller):
         image['tags'] = self.db_api.image_tag_get_all(context, image['id'])
         return image
 
+    @utils.mutating
     def create(self, req, image):
         if 'owner' not in image:
             image['owner'] = req.context.owner
@@ -91,6 +92,7 @@ class ImagesController(base.Controller):
         image = self._normalize_properties(dict(image))
         return self._append_tags(req.context, image)
 
+    @utils.mutating
     def update(self, req, image_id, image):
         tags = self._extract_tags(image)
 
@@ -109,6 +111,7 @@ class ImagesController(base.Controller):
 
         return image
 
+    @utils.mutating
     def delete(self, req, image_id):
         try:
             self.db_api.image_destroy(req.context, image_id)

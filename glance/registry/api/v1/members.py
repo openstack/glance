@@ -20,6 +20,7 @@ import logging
 import webob.exc
 
 from glance.common import exception
+from glance.common import utils
 from glance.common import wsgi
 from glance.registry.db import api as db_api
 
@@ -54,6 +55,7 @@ class Controller(object):
                                              member_id='member',
                                              can_share='can_share'))
 
+    @utils.mutating
     def update_all(self, req, image_id, body):
         """
         Replaces the members of the image with those specified in the
@@ -64,9 +66,7 @@ class Controller(object):
                  ["can_share": [True|False]]}, ...
             ]}
         """
-        if req.context.read_only:
-            raise webob.exc.HTTPForbidden()
-        elif req.context.owner is None:
+        if req.context.owner is None:
             raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
 
         # Make sure the image exists
@@ -154,6 +154,7 @@ class Controller(object):
         # Make an appropriate result
         return webob.exc.HTTPNoContent()
 
+    @utils.mutating
     def update(self, req, image_id, id, body=None):
         """
         Adds a membership to the image, or updates an existing one.
@@ -167,9 +168,7 @@ class Controller(object):
         set accordingly.  If it is not provided, existing memberships
         remain unchanged and new memberships default to False.
         """
-        if req.context.read_only:
-            raise webob.exc.HTTPForbidden()
-        elif req.context.owner is None:
+        if req.context.owner is None:
             raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
 
         # Make sure the image exists
@@ -218,13 +217,12 @@ class Controller(object):
 
         return webob.exc.HTTPNoContent()
 
+    @utils.mutating
     def delete(self, req, image_id, id):
         """
         Removes a membership from the image.
         """
-        if req.context.read_only:
-            raise webob.exc.HTTPForbidden()
-        elif req.context.owner is None:
+        if req.context.owner is None:
             raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
 
         # Make sure the image exists

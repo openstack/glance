@@ -285,6 +285,7 @@ class Controller(object):
 
         return dict(image=make_image_dict(image))
 
+    @utils.mutating
     def delete(self, req, id):
         """
         Deletes an existing image with the registry.
@@ -294,9 +295,6 @@ class Controller(object):
 
         :retval Returns 200 if delete was successful, a fault if not.
         """
-        if req.context.read_only:
-            raise exc.HTTPForbidden()
-
         try:
             db_api.image_destroy(req.context, id)
 
@@ -317,6 +315,7 @@ class Controller(object):
         except exception.NotFound:
             return exc.HTTPNotFound()
 
+    @utils.mutating
     def create(self, req, body):
         """
         Registers a new image with the registry.
@@ -328,9 +327,6 @@ class Controller(object):
                 which will include the newly-created image's internal id
                 in the 'id' field
         """
-        if req.context.read_only:
-            raise exc.HTTPForbidden()
-
         image_data = body['image']
 
         # Ensure the image has a status set
@@ -358,6 +354,7 @@ class Controller(object):
             logger.error(msg)
             return exc.HTTPBadRequest(msg)
 
+    @utils.mutating
     def update(self, req, id, body):
         """
         Updates an existing image with the registry.
@@ -368,9 +365,6 @@ class Controller(object):
 
         :retval Returns the updated image information as a mapping,
         """
-        if req.context.read_only:
-            raise exc.HTTPForbidden()
-
         image_data = body['image']
 
         # Prohibit modification of 'owner'

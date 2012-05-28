@@ -546,6 +546,7 @@ class Controller(controller.BaseController):
                 image_meta = self._activate(req, image_id, location)
         return image_meta
 
+    @utils.mutating
     def create(self, req, image_meta, image_data):
         """
         Adds a new image to Glance. Four scenarios exist when creating an
@@ -591,11 +592,6 @@ class Controller(controller.BaseController):
         self._enforce(req, 'add_image')
         if image_meta.get('is_public'):
             self._enforce(req, 'publicize_image')
-        if req.context.read_only:
-            msg = _("Read-only access")
-            logger.debug(msg)
-            raise HTTPForbidden(msg, request=req,
-                                content_type="text/plain")
 
         image_meta = self._reserve(req, image_meta)
         id = image_meta['id']
@@ -608,6 +604,7 @@ class Controller(controller.BaseController):
 
         return {'image_meta': image_meta}
 
+    @utils.mutating
     def update(self, req, id, image_meta, image_data):
         """
         Updates an existing image with the registry.
@@ -620,11 +617,6 @@ class Controller(controller.BaseController):
         self._enforce(req, 'modify_image')
         if image_meta.get('is_public'):
             self._enforce(req, 'publicize_image')
-        if req.context.read_only:
-            msg = _("Read-only access")
-            logger.debug(msg)
-            raise HTTPForbidden(msg, request=req,
-                                content_type="text/plain")
 
         orig_image_meta = self.get_image_meta_or_404(req, id)
         orig_status = orig_image_meta['status']
@@ -697,6 +689,7 @@ class Controller(controller.BaseController):
 
         return {'image_meta': image_meta}
 
+    @utils.mutating
     def delete(self, req, id):
         """
         Deletes the image and all its chunks from the Glance
@@ -710,11 +703,6 @@ class Controller(controller.BaseController):
                 deleteable by the requesting user
         """
         self._enforce(req, 'delete_image')
-        if req.context.read_only:
-            msg = _("Read-only access")
-            logger.debug(msg)
-            raise HTTPForbidden(msg, request=req,
-                                content_type="text/plain")
 
         image = self.get_image_meta_or_404(req, id)
         if image['protected']:

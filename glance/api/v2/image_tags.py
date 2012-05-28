@@ -19,6 +19,7 @@ import webob.exc
 
 from glance.api.v2 import base
 from glance.common import exception
+from glance.common import utils
 from glance.common import wsgi
 import glance.registry.db.api
 
@@ -32,9 +33,11 @@ class Controller(base.Controller):
     def index(self, req, image_id):
         return self.db_api.image_tag_get_all(req.context, image_id)
 
+    @utils.mutating
     def update(self, req, image_id, tag_value):
         self.db_api.image_tag_create(req.context, image_id, tag_value)
 
+    @utils.mutating
     def delete(self, req, image_id, tag_value):
         try:
             self.db_api.image_tag_delete(req.context, image_id, tag_value)
