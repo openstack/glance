@@ -73,7 +73,7 @@ if __name__ == "__main__":
     config.register_cli_opts(extra_cli_opts)
     config(project='glance', prog='glance-registry')
 
-    db_api.configure_db(config)
+    db_api.configure_db()
 
     context = glance.common.context.RequestContext(is_admin=True)
 

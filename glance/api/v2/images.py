@@ -18,7 +18,6 @@ import json
 
 import webob.exc
 
-from glance.api.v2 import base
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
@@ -26,11 +25,10 @@ import glance.db.sqlalchemy.api
 from glance.openstack.common import timeutils
 
 
-class ImagesController(base.Controller):
-    def __init__(self, conf, db_api=None):
-        super(ImagesController, self).__init__(conf)
+class ImagesController(object):
+    def __init__(self, db_api=None):
         self.db_api = db_api or glance.db.sqlalchemy.api
-        self.db_api.configure_db(conf)
+        self.db_api.configure_db()
 
     def _normalize_properties(self, image):
         """Convert the properties from the stored format to a dict
@@ -121,9 +119,8 @@ class ImagesController(base.Controller):
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
-    def __init__(self, conf, schema_api):
+    def __init__(self, schema_api):
         super(RequestDeserializer, self).__init__()
-        self.conf = conf
         self.schema_api = schema_api
 
     def _parse_image(self, request):
@@ -222,9 +219,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.status_int = 204
 
 
-def create_resource(conf, schema_api):
+def create_resource(schema_api):
     """Images resource factory method"""
-    deserializer = RequestDeserializer(conf, schema_api)
+    deserializer = RequestDeserializer(schema_api)
     serializer = ResponseSerializer(schema_api)
-    controller = ImagesController(conf)
+    controller = ImagesController()
     return wsgi.Resource(controller, deserializer, serializer)

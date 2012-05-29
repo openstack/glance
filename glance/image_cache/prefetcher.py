@@ -42,11 +42,10 @@ logger = logging.getLogger(__name__)
 class Prefetcher(object):
 
     def __init__(self, conf, **local_conf):
-        self.conf = conf
-        glance.store.create_stores(conf)
-        self.cache = ImageCache(conf)
-        registry.configure_registry_client(conf)
-        registry.configure_registry_admin_creds(conf)
+        glance.store.create_stores()
+        self.cache = ImageCache()
+        registry.configure_registry_client()
+        registry.configure_registry_admin_creds()
 
     def fetch_image_into_cache(self, image_id):
         ctx = context.RequestContext(is_admin=True, show_deleted=True)

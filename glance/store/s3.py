@@ -231,10 +231,10 @@ class Store(glance.store.base.Store):
         else:  # Defaults http
             self.full_s3_host = 'http://' + self.s3_host
 
-        self.s3_store_object_buffer_dir = self.conf.s3_store_object_buffer_dir
+        self.s3_store_object_buffer_dir = CONF.s3_store_object_buffer_dir
 
     def _option_get(self, param):
-        result = getattr(self.conf, param)
+        result = getattr(CONF, param)
         if not result:
             reason = _("Could not find %(param)s in configuration "
                        "options.") % locals()
@@ -335,7 +335,7 @@ class Store(glance.store.base.Store):
                                host=loc.s3serviceurl,
                                is_secure=(loc.scheme == 's3+https'))
 
-        create_bucket_if_missing(self.bucket, s3_conn, self.conf)
+        create_bucket_if_missing(self.bucket, s3_conn)
 
         bucket_obj = get_bucket(s3_conn, self.bucket)
         obj_name = str(image_id)
@@ -462,22 +462,21 @@ def get_s3_location(s3_host):
     return locations.get(key, Location.DEFAULT)
 
 
-def create_bucket_if_missing(bucket, s3_conn, conf):
+def create_bucket_if_missing(bucket, s3_conn):
     """
     Creates a missing bucket in S3 if the
     ``s3_store_create_bucket_on_put`` option is set.
 
     :param bucket: Name of bucket to create
     :param s3_conn: Connection to S3
-    :param conf: Option mapping
     """
     from boto.exception import S3ResponseError
     try:
         s3_conn.get_bucket(bucket)
     except S3ResponseError, e:
         if e.status == httplib.NOT_FOUND:
-            if conf.s3_store_create_bucket_on_put:
-                location = get_s3_location(conf.s3_store_host)
+            if CONF.s3_store_create_bucket_on_put:
+                location = get_s3_location(CONF.s3_store_host)
                 try:
                     s3_conn.create_bucket(bucket, location=location)
                 except S3ResponseError, e:

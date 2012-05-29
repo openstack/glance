@@ -19,9 +19,6 @@
 class Strategy(object):
     """Base class for a notification strategy"""
 
-    def __init__(self, conf):
-        pass
-
     def warn(self, msg):
         raise NotImplementedError()
 

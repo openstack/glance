@@ -70,7 +70,7 @@ class TestClientExceptions(functional.FunctionalTest):
         self.port = utils.get_unused_port()
         server = wsgi.Server()
         self.config(bind_host='127.0.0.1')
-        server.start(ExceptionTestApp(), self.conf, self.port)
+        server.start(ExceptionTestApp(), self.port)
         self.client = client.BaseClient("127.0.0.1", self.port)
 
     def _do_test_exception(self, path, exc_type):

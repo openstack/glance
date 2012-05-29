@@ -20,10 +20,11 @@ import logging
 import jsonschema
 
 from glance.common import exception
-
+from glance.openstack.common import cfg
 
 logger = logging.getLogger(__name__)
 
+CONF = cfg.CONF
 
 _BASE_SCHEMA_PROPERTIES = {
     'image': {
@@ -78,13 +79,12 @@ _BASE_SCHEMA_PROPERTIES = {
 
 
 class API(object):
-    def __init__(self, conf, base_properties=_BASE_SCHEMA_PROPERTIES):
-        self.conf = conf
+    def __init__(self, base_properties=_BASE_SCHEMA_PROPERTIES):
         self.base_properties = base_properties
         self.schema_properties = copy.deepcopy(self.base_properties)
 
     def get_schema(self, name):
-        if name == 'image' and self.conf.allow_additional_image_properties:
+        if name == 'image' and CONF.allow_additional_image_properties:
             additional = {'type': 'string'}
         else:
             additional = False
@@ -121,10 +121,10 @@ class API(object):
             raise exception.InvalidObject(schema=schema_name, reason=str(e))
 
 
-def read_schema_properties_file(conf, schema_name):
+def read_schema_properties_file(schema_name):
     """Find the schema properties files and load them into a dict."""
     schema_filename = 'schema-%s.json' % schema_name
-    match = conf.find_file(schema_filename)
+    match = CONF.find_file(schema_filename)
     if match:
         schema_file = open(match)
         schema_data = schema_file.read()
@@ -136,8 +136,8 @@ def read_schema_properties_file(conf, schema_name):
         return {}
 
 
-def load_custom_schema_properties(conf, api):
+def load_custom_schema_properties(api):
     """Extend base image and access schemas with custom properties."""
     for schema_name in ('image', 'access'):
-        image_properties = read_schema_properties_file(conf, schema_name)
+        image_properties = read_schema_properties_file(schema_name)
         api.set_custom_schema_properties(schema_name, image_properties)

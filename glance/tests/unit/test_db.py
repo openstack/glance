@@ -52,7 +52,7 @@ class BaseDBTestCase(base.IsolatedUnitTest):
                     debug=False)
         self.adm_context = context.RequestContext(is_admin=True)
         self.context = context.RequestContext(is_admin=False)
-        db_api.configure_db(self.conf)
+        db_api.configure_db()
         self.destroy_fixtures()
         self.create_fixtures()
 
@@ -231,7 +231,7 @@ class TestPagingOrder(base.IsolatedUnitTest):
                     debug=False)
         self.adm_context = context.RequestContext(is_admin=True)
         self.context = context.RequestContext(is_admin=False)
-        db_api.configure_db(self.conf)
+        db_api.configure_db()
         self.destroy_fixtures()
         self.create_fixtures()
 

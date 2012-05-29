@@ -35,7 +35,7 @@ class TestStore(base.IsolatedUnitTest):
         super(TestStore, self).setUp()
         self.orig_chunksize = ChunkedFile.CHUNKSIZE
         ChunkedFile.CHUNKSIZE = 10
-        self.store = Store(self.conf)
+        self.store = Store()
 
     def tearDown(self):
         """Clear the test environment"""

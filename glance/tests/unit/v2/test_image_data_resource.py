@@ -31,7 +31,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.config(verbose=True, debug=True)
 
         controller_class = glance.api.v2.image_data.ImageDataController
-        self.controller = controller_class(self.conf,
+        self.controller = controller_class(
                 db_api=unit_test_utils.FakeDB(),
                 store_api=unit_test_utils.FakeStoreAPI())
 

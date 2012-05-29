@@ -52,16 +52,14 @@ class KombuMaxRetriesReached(Exception):
 class RabbitStrategy(strategy.Strategy):
     """A notifier that puts a message on a queue when called."""
 
-    def __init__(self, conf):
+    def __init__(self):
         """Initialize the rabbit notification strategy."""
-        self._conf = conf
-
-        self.topic = self._conf.rabbit_notification_topic
-        self.max_retries = self._conf.rabbit_max_retries
+        self.topic = CONF.rabbit_notification_topic
+        self.max_retries = CONF.rabbit_max_retries
         # NOTE(comstud): When reading the config file, these values end
         # up being strings, and we need them as ints.
-        self.retry_backoff = int(self._conf.rabbit_retry_backoff)
-        self.retry_max_backoff = int(self._conf.rabbit_retry_max_backoff)
+        self.retry_backoff = int(CONF.rabbit_retry_backoff)
+        self.retry_max_backoff = int(CONF.rabbit_retry_max_backoff)
 
         self.connection = None
         self.retry_attempts = 0
@@ -83,8 +81,8 @@ class RabbitStrategy(strategy.Strategy):
         caller.
         """
         log_info = {}
-        log_info['hostname'] = self._conf.rabbit_host
-        log_info['port'] = self._conf.rabbit_port
+        log_info['hostname'] = CONF.rabbit_host
+        log_info['port'] = CONF.rabbit_port
         if self.connection:
             logger.info(_("Reconnecting to AMQP server on "
                     "%(hostname)s:%(port)d") % log_info)
@@ -93,19 +91,19 @@ class RabbitStrategy(strategy.Strategy):
             logger.info(_("Connecting to AMQP server on "
                     "%(hostname)s:%(port)d") % log_info)
         self.connection = kombu.connection.BrokerConnection(
-                hostname=self._conf.rabbit_host,
-                port=self._conf.rabbit_port,
-                userid=self._conf.rabbit_userid,
-                password=self._conf.rabbit_password,
-                virtual_host=self._conf.rabbit_virtual_host,
-                ssl=self._conf.rabbit_use_ssl)
+                hostname=CONF.rabbit_host,
+                port=CONF.rabbit_port,
+                userid=CONF.rabbit_userid,
+                password=CONF.rabbit_password,
+                virtual_host=CONF.rabbit_virtual_host,
+                ssl=CONF.rabbit_use_ssl)
         self.connection_errors = self.connection.connection_errors
         self.connection.connect()
         self.channel = self.connection.channel()
         self.exchange = kombu.entity.Exchange(
                 channel=self.channel,
                 type="topic",
-                name=self._conf.rabbit_notification_exchange)
+                name=CONF.rabbit_notification_exchange)
 
         # NOTE(jerdfelt): Normally the consumer would create the queues,
         # but we do this to ensure that messages don't get dropped if the
@@ -144,8 +142,8 @@ class RabbitStrategy(strategy.Strategy):
             log_info = {}
             log_info['err_str'] = str(e)
             log_info['max_retries'] = self.max_retries
-            log_info['hostname'] = self._conf.rabbit_host
-            log_info['port'] = self._conf.rabbit_port
+            log_info['hostname'] = CONF.rabbit_host
+            log_info['port'] = CONF.rabbit_port
 
             if self.max_retries and self.retry_attempts >= self.max_retries:
                 logger.exception(_('Unable to connect to AMQP server on '

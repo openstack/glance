@@ -43,11 +43,11 @@ _STRATEGIES = {
 class Notifier(object):
     """Uses a notification strategy to send out messages about events."""
 
-    def __init__(self, conf, strategy=None):
-        strategy = conf.notifier_strategy
+    def __init__(self, strategy=None):
+        strategy = CONF.notifier_strategy
         try:
             strategy_cls = _STRATEGIES[strategy]
-            self.strategy = importutils.import_class(strategy_cls)(conf)
+            self.strategy = importutils.import_class(strategy_cls)()
         except (KeyError, ImportError):
             raise exception.InvalidNotifierStrategy(strategy=strategy)
 

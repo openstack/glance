@@ -122,13 +122,13 @@ class Store(glance.store.base.Store):
         itself, it should raise `exception.BadStoreConfiguration`
         """
         try:
-            self.chunk_size = self.conf.rbd_store_chunk_size * 1024 * 1024
+            self.chunk_size = CONF.rbd_store_chunk_size * 1024 * 1024
 
             # these must not be unicode since they will be passed to a
             # non-unicode-aware C library
-            self.pool = str(self.conf.rbd_store_pool)
-            self.user = str(self.conf.rbd_store_user)
-            self.conf_file = str(self.conf.rbd_store_ceph_conf)
+            self.pool = str(CONF.rbd_store_pool)
+            self.user = str(CONF.rbd_store_user)
+            self.conf_file = str(CONF.rbd_store_ceph_conf)
         except cfg.ConfigFileValueError, e:
             reason = _("Error in store configuration: %s") % e
             logger.error(reason)

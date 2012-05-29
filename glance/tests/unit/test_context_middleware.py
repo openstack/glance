@@ -17,10 +17,8 @@ class TestContextMiddleware(base.IsolatedUnitTest):
 
         return req
 
-    def _build_middleware(self, **extra_config):
-        for k, v in extra_config.items():
-            setattr(self.conf, k, v)
-        return context.ContextMiddleware(None, self.conf)
+    def _build_middleware(self):
+        return context.ContextMiddleware(None, None)
 
     def test_header_parsing(self):
         req = self._build_request()
@@ -43,12 +41,14 @@ class TestContextMiddleware(base.IsolatedUnitTest):
 
         # if we change the admin_role attribute, we should be able to use it
         req = self._build_request()
-        self._build_middleware(admin_role='role1').process_request(req)
+        self.config(admin_role='role1')
+        self._build_middleware().process_request(req)
         self.assertTrue(req.context.is_admin)
 
     def test_anonymous_access_enabled(self):
         req = self._build_request(identity_status='Nope')
-        middleware = self._build_middleware(allow_anonymous_access=True)
+        self.config(allow_anonymous_access=True)
+        middleware = self._build_middleware()
         middleware.process_request(req)
         self.assertEqual(req.context.auth_tok, None)
         self.assertEqual(req.context.user, None)
@@ -66,7 +66,7 @@ class TestContextMiddleware(base.IsolatedUnitTest):
 
 class TestUnauthenticatedContextMiddleware(base.IsolatedUnitTest):
     def test_request(self):
-        middleware = context.UnauthenticatedContextMiddleware(None, self.conf)
+        middleware = context.UnauthenticatedContextMiddleware(None, None)
         req = webob.Request.blank('/')
         middleware.process_request(req)
         self.assertEqual(req.context.auth_tok, None)

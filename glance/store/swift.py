@@ -202,7 +202,7 @@ class Store(glance.store.base.Store):
         return ('swift+https', 'swift', 'swift+http')
 
     def configure(self):
-        self.snet = self.conf.swift_enable_snet
+        self.snet = CONF.swift_enable_snet
         self.auth_version = self._option_get('swift_store_auth_version')
 
     def configure_add(self):
@@ -215,14 +215,14 @@ class Store(glance.store.base.Store):
         self.auth_address = self._option_get('swift_store_auth_address')
         self.user = self._option_get('swift_store_user')
         self.key = self._option_get('swift_store_key')
-        self.container = self.conf.swift_store_container
+        self.container = CONF.swift_store_container
         try:
             # The config file has swift_store_large_object_*size in MB, but
             # internally we store it in bytes, since the image_size parameter
             # passed to add() is also in bytes.
-            _obj_size = self.conf.swift_store_large_object_size
+            _obj_size = CONF.swift_store_large_object_size
             self.large_object_size = _obj_size * ONE_MB
-            _obj_chunk_size = self.conf.swift_store_large_object_chunk_size
+            _obj_chunk_size = CONF.swift_store_large_object_chunk_size
             self.large_object_chunk_size = _obj_chunk_size * ONE_MB
         except cfg.ConfigFileValueError, e:
             reason = _("Error in configuration conf: %s") % e
@@ -321,7 +321,7 @@ class Store(glance.store.base.Store):
             tenant_name=tenant_name, auth_version=auth_version)
 
     def _option_get(self, param):
-        result = getattr(self.conf, param)
+        result = getattr(CONF, param)
         if not result:
             reason = (_("Could not find %(param)s in configuration "
                         "options.") % locals())
@@ -368,7 +368,7 @@ class Store(glance.store.base.Store):
         swift_conn = self._make_swift_connection(
             auth_url=self.full_auth_address, user=self.user, key=self.key)
 
-        create_container_if_missing(self.container, swift_conn, self.conf)
+        create_container_if_missing(self.container, swift_conn)
 
         obj_name = str(image_id)
         location = StoreLocation({'scheme': self.scheme,
@@ -540,20 +540,19 @@ class ChunkReader(object):
         return result
 
 
-def create_container_if_missing(container, swift_conn, conf):
+def create_container_if_missing(container, swift_conn):
     """
     Creates a missing container in Swift if the
     ``swift_store_create_container_on_put`` option is set.
 
     :param container: Name of container to create
     :param swift_conn: Connection to Swift
-    :param conf: Option mapping
     """
     try:
         swift_conn.head_container(container)
     except swift_client.ClientException, e:
         if e.http_status == httplib.NOT_FOUND:
-            if conf.swift_store_create_container_on_put:
+            if CONF.swift_store_create_container_on_put:
                 try:
                     swift_conn.put_container(container)
                 except swift_client.ClientException, e:

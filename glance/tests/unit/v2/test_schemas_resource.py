@@ -23,8 +23,8 @@ class TestSchemasController(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestSchemasController, self).setUp()
-        self.schema_api = glance.schema.API(self.conf)
-        self.controller = schemas.Controller({}, self.schema_api)
+        self.schema_api = glance.schema.API()
+        self.controller = schemas.Controller(self.schema_api)
 
     def test_index(self):
         req = unit_test_utils.get_fake_request()

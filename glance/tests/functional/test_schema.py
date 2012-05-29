@@ -21,7 +21,7 @@ class TestSchemaAPI(utils.BaseTestCase):
 
     def setUp(self):
         super(TestSchemaAPI, self).setUp()
-        self.schema_api = glance.schema.API(self.conf)
+        self.schema_api = glance.schema.API()
 
     def test_load_image_schema(self):
         output = self.schema_api.get_schema('image')

@@ -32,7 +32,7 @@ class VersionsTest(base.IsolatedUnitTest):
         req = webob.Request.blank('/', base_url='http://0.0.0.0:9292/')
         req.accept = 'application/json'
         self.config(bind_host='0.0.0.0', bind_port=9292)
-        res = versions.Controller(self.conf).index(req)
+        res = versions.Controller().index(req)
         self.assertEqual(res.status_int, 300)
         self.assertEqual(res.content_type, 'application/json')
         results = json.loads(res.body)['versions']

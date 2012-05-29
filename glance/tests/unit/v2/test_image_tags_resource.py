@@ -27,8 +27,7 @@ class TestImageTagsController(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImageTagsController, self).setUp()
         self.db = unit_test_utils.FakeDB()
-        conf = {}
-        self.controller = glance.api.v2.image_tags.Controller(conf, self.db)
+        self.controller = glance.api.v2.image_tags.Controller(self.db)
 
     def test_list_tags(self):
         request = unit_test_utils.get_fake_request()

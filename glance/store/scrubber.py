@@ -71,13 +71,11 @@ class Scrubber(object):
     CLEANUP_FILE = ".cleanup"
 
     def __init__(self, conf, **local_conf):
-        self.conf = conf
+        self.datadir = CONF.scrubber_datadir
+        self.cleanup = CONF.cleanup_scrubber
+        self.cleanup_time = CONF.cleanup_scrubber_time
 
-        self.datadir = store.get_scrubber_datadir(conf)
-        self.cleanup = self.conf.cleanup_scrubber
-        self.cleanup_time = self.conf.cleanup_scrubber_time
-
-        host, port = registry.get_registry_addr(conf)
+        host, port = CONF.registry_host, CONF.registry_port
 
         logger.info(_("Initializing scrubber with conf: %s") %
                     {'datadir': self.datadir, 'cleanup': self.cleanup,
@@ -88,7 +86,7 @@ class Scrubber(object):
 
         utils.safe_mkdirs(self.datadir)
 
-        store.create_stores(conf)
+        store.create_stores()
 
     def run(self, pool, event=None):
         now = time.time()

@@ -76,24 +76,23 @@ class WritableLogger(object):
         self.logger.log(self.level, msg.strip("\n"))
 
 
-def get_bind_addr(conf, default_port=None):
+def get_bind_addr(default_port=None):
     """Return the host and port to bind to."""
-    return (conf.bind_host, conf.bind_port or default_port)
+    return (CONF.bind_host, CONF.bind_port or default_port)
 
 
-def get_socket(conf, default_port):
+def get_socket(default_port):
     """
     Bind socket to bind ip:port in conf
 
     note: Mostly comes from Swift with a few small changes...
 
-    :param conf: a cfg.ConfigOpts object
     :param default_port: port to bind to if none is specified in conf
 
     :returns : a socket object as returned from socket.listen or
                ssl.wrap_socket if conf specifies cert_file
     """
-    bind_addr = get_bind_addr(conf, default_port)
+    bind_addr = get_bind_addr(default_port)
 
     # TODO(jaypipes): eventlet's greened socket module does not actually
     # support IPv6 in getaddrinfo(). We need to get around this in the
@@ -102,8 +101,8 @@ def get_socket(conf, default_port):
             bind_addr[1], socket.AF_UNSPEC, socket.SOCK_STREAM)
             if addr[0] in (socket.AF_INET, socket.AF_INET6)][0]
 
-    cert_file = conf.cert_file
-    key_file = conf.key_file
+    cert_file = CONF.cert_file
+    key_file = CONF.key_file
     use_ssl = cert_file or key_file
     if use_ssl and (not cert_file or not key_file):
         raise RuntimeError(_("When running server in SSL mode, you must "
@@ -114,7 +113,7 @@ def get_socket(conf, default_port):
     retry_until = time.time() + 30
     while not sock and time.time() < retry_until:
         try:
-            sock = eventlet.listen(bind_addr, backlog=conf.backlog,
+            sock = eventlet.listen(bind_addr, backlog=CONF.backlog,
                                    family=address_family)
             if use_ssl:
                 sock = ssl.wrap_socket(sock, certfile=cert_file,
@@ -145,12 +144,11 @@ class Server(object):
         self.children = []
         self.running = True
 
-    def start(self, application, conf, default_port):
+    def start(self, application, default_port):
         """
         Run a WSGI server with the given application.
 
         :param application: The application to run in the WSGI server
-        :param conf: a cfg.ConfigOpts object
         :param default_port: Port to bind to if none is specified in conf
         """
         def kill_children(*args):
@@ -170,21 +168,21 @@ class Server(object):
             self.running = False
 
         self.application = application
-        self.sock = get_socket(conf, default_port)
+        self.sock = get_socket(default_port)
 
         self.logger = logging.getLogger('eventlet.wsgi.server')
 
-        if conf.workers == 0:
+        if CONF.workers == 0:
             # Useful for profiling, test, debug etc.
             self.pool = eventlet.GreenPool(size=self.threads)
             self.pool.spawn_n(self._single_run, application, self.sock)
             return
 
-        self.logger.info(_("Starting %d workers") % conf.workers)
+        self.logger.info(_("Starting %d workers") % CONF.workers)
         signal.signal(signal.SIGTERM, kill_children)
         signal.signal(signal.SIGINT, kill_children)
         signal.signal(signal.SIGHUP, hup)
-        while len(self.children) < conf.workers:
+        while len(self.children) < CONF.workers:
             self.run_child()
 
     def wait_on_children(self):

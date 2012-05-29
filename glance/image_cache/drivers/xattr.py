@@ -411,7 +411,7 @@ class Driver(base.Driver):
         self.reap_invalid()
 
         if stall_time is None:
-            stall_time = self.conf.image_cache_stall_time
+            stall_time = CONF.image_cache_stall_time
 
         self.reap_stalled(stall_time)
 

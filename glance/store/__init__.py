@@ -150,18 +150,18 @@ def _get_store_class(store_entry):
     return store_cls
 
 
-def create_stores(conf):
+def create_stores():
     """
     Registers all store modules and all schemes
     from the given config. Duplicates are not re-registered.
     """
     store_count = 0
-    for store_entry in conf.known_stores:
+    for store_entry in CONF.known_stores:
         store_entry = store_entry.strip()
         if not store_entry:
             continue
         store_cls = _get_store_class(store_entry)
-        store_instance = store_cls(conf)
+        store_instance = store_cls()
         schemes = store_instance.get_schemes()
         if not schemes:
             raise BackendException('Unable to register store %s. '
@@ -249,15 +249,11 @@ def get_store_from_location(uri):
     return loc.store_name
 
 
-def get_scrubber_datadir(conf):
-    return conf.scrubber_datadir
-
-
-def schedule_delete_from_backend(uri, conf, context, image_id, **kwargs):
+def schedule_delete_from_backend(uri, context, image_id, **kwargs):
     """
     Given a uri and a time, schedule the deletion of an image.
     """
-    if not conf.delayed_delete:
+    if not CONF.delayed_delete:
         registry.update_image_metadata(context, image_id,
                                        {'status': 'deleted'})
         try:
@@ -273,8 +269,8 @@ def schedule_delete_from_backend(uri, conf, context, image_id, **kwargs):
             # avoid falling through to the delayed deletion logic
             return
 
-    datadir = get_scrubber_datadir(conf)
-    delete_time = time.time() + conf.scrub_time
+    datadir = CONF.scrubber_datadir
+    delete_time = time.time() + CONF.scrub_time
     file_path = os.path.join(datadir, str(image_id))
     utils.safe_mkdirs(datadir)
 

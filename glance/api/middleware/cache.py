@@ -44,9 +44,8 @@ get_images_re = re.compile(r'^(/v\d+)*/images/([^\/]+)$')
 class CacheFilter(wsgi.Middleware):
 
     def __init__(self, app, conf, **local_conf):
-        self.conf = conf
-        self.cache = image_cache.ImageCache(conf)
-        self.serializer = images.ImageSerializer(conf)
+        self.cache = image_cache.ImageCache()
+        self.serializer = images.ImageSerializer()
         logger.info(_("Initialized image cache middleware"))
         super(CacheFilter, self).__init__(app)
 

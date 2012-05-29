@@ -31,10 +31,9 @@ class API(wsgi.Router):
     """WSGI router for Glance v1 API requests."""
 
     def __init__(self, conf, **local_conf):
-        self.conf = conf
         mapper = routes.Mapper()
 
-        images_resource = images.create_resource(conf)
+        images_resource = images.create_resource()
 
         mapper.resource("image", "images", controller=images_resource,
                         collection={'detail': 'GET'})
@@ -42,7 +41,7 @@ class API(wsgi.Router):
         mapper.connect("/images/{id}", controller=images_resource,
                        action="meta", conditions=dict(method=["HEAD"]))
 
-        members_resource = members.create_resource(conf)
+        members_resource = members.create_resource()
 
         mapper.resource("member", "members", controller=members_resource,
                         parent_resource=dict(member_name='image',

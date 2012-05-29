@@ -61,19 +61,13 @@ _CLIENT_KWARGS = {}
 _METADATA_ENCRYPTION_KEY = None
 
 
-def get_registry_addr(conf):
-    return (conf.registry_host, conf.registry_port)
-
-
-def configure_registry_client(conf):
+def configure_registry_client():
     """
     Sets up a registry client for use in registry lookups
-
-    :param conf: Configuration options coming from controller
     """
     global _CLIENT_KWARGS, _CLIENT_HOST, _CLIENT_PORT, _METADATA_ENCRYPTION_KEY
     try:
-        host, port = get_registry_addr(conf)
+        host, port = CONF.registry_host, CONF.registry_port
     except cfg.ConfigFileValueError:
         msg = _("Configuration option was not valid")
         logger.error(msg)
@@ -85,31 +79,31 @@ def configure_registry_client(conf):
 
     _CLIENT_HOST = host
     _CLIENT_PORT = port
-    _METADATA_ENCRYPTION_KEY = conf.metadata_encryption_key
+    _METADATA_ENCRYPTION_KEY = CONF.metadata_encryption_key
     _CLIENT_KWARGS = {
-        'use_ssl': conf.registry_client_protocol.lower() == 'https',
-        'key_file': conf.registry_client_key_file,
-        'cert_file': conf.registry_client_cert_file,
-        'ca_file': conf.registry_client_ca_file
+        'use_ssl': CONF.registry_client_protocol.lower() == 'https',
+        'key_file': CONF.registry_client_key_file,
+        'cert_file': CONF.registry_client_cert_file,
+        'ca_file': CONF.registry_client_ca_file
         }
 
 
-def configure_registry_admin_creds(conf):
+def configure_registry_admin_creds():
     global _CLIENT_CREDS
 
-    if conf.auth_url or os.getenv('OS_AUTH_URL'):
+    if CONF.auth_url or os.getenv('OS_AUTH_URL'):
         strategy = 'keystone'
     else:
-        strategy = conf.auth_strategy
+        strategy = CONF.auth_strategy
 
     _CLIENT_CREDS = {
-        'user': conf.admin_user,
-        'password': conf.admin_password,
-        'username': conf.admin_user,
-        'tenant': conf.admin_tenant_name,
-        'auth_url': conf.auth_url,
+        'user': CONF.admin_user,
+        'password': CONF.admin_password,
+        'username': CONF.admin_user,
+        'tenant': CONF.admin_tenant_name,
+        'auth_url': CONF.auth_url,
         'strategy': strategy,
-        'region': conf.auth_region,
+        'region': CONF.auth_region,
     }
 
 

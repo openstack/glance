@@ -52,7 +52,6 @@ class BaseTestCase(unittest.TestCase):
 
     def setUp(self):
         super(BaseTestCase, self).setUp()
-        self.conf = CONF
 
     def tearDown(self):
         super(BaseTestCase, self).tearDown()
