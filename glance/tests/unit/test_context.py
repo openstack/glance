@@ -15,9 +15,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
-
 from glance.common import context
+from glance.tests import utils
 
 
 def _fake_image(owner, is_public):
@@ -32,7 +31,7 @@ def _fake_membership(can_share=False):
     return {'can_share': can_share}
 
 
-class TestContext(unittest.TestCase):
+class TestContext(utils.BaseTestCase):
     def do_visible(self, exp_res, img_owner, img_public, **kwargs):
         """
         Perform a context visibility test.  Creates a (fake) image

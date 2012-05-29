@@ -20,7 +20,6 @@ import os
 import random
 import shutil
 import StringIO
-import unittest
 
 import stubout
 
@@ -224,7 +223,7 @@ class ImageCacheTestCase(object):
                          ['0', '1', '2'])
 
 
-class TestImageCacheXattr(unittest.TestCase,
+class TestImageCacheXattr(test_utils.BaseTestCase,
                           ImageCacheTestCase):
 
     """Tests image caching when xattr is used in cache"""
@@ -235,6 +234,8 @@ class TestImageCacheXattr(unittest.TestCase,
         are working (python-xattr installed and xattr support on the
         filesystem)
         """
+        super(TestImageCacheXattr, self).setUp()
+
         if getattr(self, 'disable', False):
             return
 
@@ -268,11 +269,12 @@ class TestImageCacheXattr(unittest.TestCase,
             return
 
     def tearDown(self):
+        super(TestImageCacheXattr, self).tearDown()
         if os.path.exists(self.cache_dir):
             shutil.rmtree(self.cache_dir)
 
 
-class TestImageCacheSqlite(unittest.TestCase,
+class TestImageCacheSqlite(test_utils.BaseTestCase,
                            ImageCacheTestCase):
 
     """Tests image caching when SQLite is used in cache"""
@@ -282,6 +284,8 @@ class TestImageCacheSqlite(unittest.TestCase,
         Test to see if the pre-requisites for the image cache
         are working (python-sqlite3 installed)
         """
+        super(TestImageCacheSqlite, self).setUp()
+
         if getattr(self, 'disable', False):
             return
 
@@ -307,13 +311,16 @@ class TestImageCacheSqlite(unittest.TestCase,
         self.cache = image_cache.ImageCache(self.conf)
 
     def tearDown(self):
+        super(TestImageCacheSqlite, self).tearDown()
         if os.path.exists(self.cache_dir):
             shutil.rmtree(self.cache_dir)
 
 
-class TestImageCacheNoDep(unittest.TestCase):
+class TestImageCacheNoDep(test_utils.BaseTestCase):
 
     def setUp(self):
+        super(TestImageCacheNoDep, self).setUp()
+
         self.driver = None
 
         def init_driver(self2):
@@ -323,6 +330,7 @@ class TestImageCacheNoDep(unittest.TestCase):
         self.stubs.Set(image_cache.ImageCache, 'init_driver', init_driver)
 
     def tearDown(self):
+        super(TestImageCacheNoDep, self).tearDown()
         self.stubs.UnsetAll()
 
     def test_get_caching_iter_when_write_fails(self):

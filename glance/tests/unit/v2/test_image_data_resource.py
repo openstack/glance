@@ -14,15 +14,14 @@
 #    under the License.
 
 import StringIO
-import unittest
 
 import webob
 
 import glance.api.v2.image_data
 from glance.common import utils
-import glance.tests.unit.utils as test_utils
+import glance.tests.unit.utils as unit_test_utils
 from glance.tests.unit import base
-import glance.tests.utils
+import glance.tests.utils as test_utils
 
 
 class TestImagesController(base.StoreClearingUnitTest):
@@ -34,56 +33,58 @@ class TestImagesController(base.StoreClearingUnitTest):
                 'debug': True,
                 })
         self.controller = glance.api.v2.image_data.ImageDataController(conf,
-                db_api=test_utils.FakeDB(),
-                store_api=test_utils.FakeStoreAPI())
+                db_api=unit_test_utils.FakeDB(),
+                store_api=unit_test_utils.FakeStoreAPI())
 
     def test_download(self):
-        request = test_utils.FakeRequest()
-        output = self.controller.download(request, test_utils.UUID1)
+        request = unit_test_utils.FakeRequest()
+        output = self.controller.download(request, unit_test_utils.UUID1)
         expected = {'data': 'XXX', 'size': 3}
         self.assertEqual(expected, output)
 
     def test_download_no_data(self):
-        request = test_utils.FakeRequest()
+        request = unit_test_utils.FakeRequest()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.download,
-                          request, test_utils.UUID2)
+                          request, unit_test_utils.UUID2)
 
     def test_download_non_existant_image(self):
-        request = test_utils.FakeRequest()
+        request = unit_test_utils.FakeRequest()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.download,
                           request, utils.generate_uuid())
 
     def test_upload_download(self):
-        request = test_utils.FakeRequest()
-        self.controller.upload(request, test_utils.UUID2, 'YYYY', 4)
-        output = self.controller.download(request, test_utils.UUID2)
+        request = unit_test_utils.FakeRequest()
+        self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)
+        output = self.controller.download(request, unit_test_utils.UUID2)
         expected = {'data': 'YYYY', 'size': 4}
         self.assertEqual(expected, output)
 
     def test_upload_non_existant_image(self):
-        request = test_utils.FakeRequest()
+        request = unit_test_utils.FakeRequest()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.upload,
                           request, utils.generate_uuid(), 'YYYY', 4)
 
     def test_upload_data_exists(self):
-        request = test_utils.FakeRequest()
+        request = unit_test_utils.FakeRequest()
         self.assertRaises(webob.exc.HTTPConflict, self.controller.upload,
-                          request, test_utils.UUID1, 'YYYY', 4)
+                          request, unit_test_utils.UUID1, 'YYYY', 4)
 
     def test_upload_download_no_size(self):
-        request = test_utils.FakeRequest()
-        self.controller.upload(request, test_utils.UUID2, 'YYYY', None)
-        output = self.controller.download(request, test_utils.UUID2)
+        request = unit_test_utils.FakeRequest()
+        self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', None)
+        output = self.controller.download(request, unit_test_utils.UUID2)
         expected = {'data': 'YYYY', 'size': 4}
         self.assertEqual(expected, output)
 
 
-class TestImageDataDeserializer(unittest.TestCase):
+class TestImageDataDeserializer(test_utils.BaseTestCase):
+
     def setUp(self):
+        super(TestImageDataDeserializer, self).setUp()
         self.deserializer = glance.api.v2.image_data.RequestDeserializer()
 
     def test_upload(self):
-        request = test_utils.FakeRequest()
+        request = unit_test_utils.FakeRequest()
         request.headers['Content-Type'] = 'application/octet-stream'
         request.body = 'YYY'
         request.headers['Content-Length'] = 3
@@ -94,7 +95,7 @@ class TestImageDataDeserializer(unittest.TestCase):
         self.assertEqual(expected, output)
 
     def test_upload_chunked(self):
-        request = test_utils.FakeRequest()
+        request = unit_test_utils.FakeRequest()
         request.headers['Content-Type'] = 'application/octet-stream'
         # If we use body_file, webob assumes we want to do a chunked upload,
         # ignoring the Content-Length header
@@ -106,7 +107,7 @@ class TestImageDataDeserializer(unittest.TestCase):
         self.assertEqual(expected, output)
 
     def test_upload_chunked_with_content_length(self):
-        request = test_utils.FakeRequest()
+        request = unit_test_utils.FakeRequest()
         request.headers['Content-Type'] = 'application/octet-stream'
         request.body_file = StringIO.StringIO('YYY')
         # The deserializer shouldn't care if the Content-Length is
@@ -119,7 +120,7 @@ class TestImageDataDeserializer(unittest.TestCase):
         self.assertEqual(expected, output)
 
     def test_upload_with_incorrect_content_length(self):
-        request = test_utils.FakeRequest()
+        request = unit_test_utils.FakeRequest()
         request.headers['Content-Type'] = 'application/octet-stream'
         # The deserializer shouldn't care if the Content-Length and
         # actual request body length differ. That job is left up
@@ -133,15 +134,17 @@ class TestImageDataDeserializer(unittest.TestCase):
         self.assertEqual(expected, output)
 
     def test_upload_wrong_content_type(self):
-        request = test_utils.FakeRequest()
+        request = unit_test_utils.FakeRequest()
         request.headers['Content-Type'] = 'application/json'
         request.body = 'YYYYY'
         self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
             self.deserializer.upload, request)
 
 
-class TestImageDataSerializer(unittest.TestCase):
+class TestImageDataSerializer(test_utils.BaseTestCase):
+
     def setUp(self):
+        super(TestImageDataSerializer, self).setUp()
         self.serializer = glance.api.v2.image_data.ResponseSerializer()
 
     def test_download(self):

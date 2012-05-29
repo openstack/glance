@@ -13,20 +13,19 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
-
 import glance.api.v2.root
-import glance.tests.unit.utils as test_utils
+import glance.tests.unit.utils as unit_test_utils
+import glance.tests.utils as test_utils
 
 
-class TestRootController(unittest.TestCase):
+class TestRootController(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestRootController, self).setUp()
         self.controller = glance.api.v2.root.RootController()
 
     def test_index(self):
-        req = test_utils.FakeRequest()
+        req = unit_test_utils.FakeRequest()
         output = self.controller.index(req)
         expected = {
             'links': [

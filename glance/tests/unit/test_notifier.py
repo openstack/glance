@@ -17,7 +17,6 @@
 
 import json
 import logging
-import unittest
 
 import kombu.entity
 import mox
@@ -35,7 +34,7 @@ import glance.notifier.notify_kombu
 from glance.tests import utils
 
 
-class TestInvalidNotifier(unittest.TestCase):
+class TestInvalidNotifier(utils.BaseTestCase):
     """Test that notifications are generated appropriately"""
 
     def test_cannot_create(self):
@@ -45,10 +44,11 @@ class TestInvalidNotifier(unittest.TestCase):
                           conf)
 
 
-class TestLoggingNotifier(unittest.TestCase):
+class TestLoggingNotifier(utils.BaseTestCase):
     """Test the logging notifier is selected and works properly."""
 
     def setUp(self):
+        super(TestLoggingNotifier, self).setUp()
         conf = utils.TestConfigOpts({"notifier_strategy": "logging"})
         self.called = False
         self.logger = logging.getLogger("glance.notifier.logging_notifier")
@@ -76,10 +76,11 @@ class TestLoggingNotifier(unittest.TestCase):
             self.fail("Did not call logging library correctly.")
 
 
-class TestNoopNotifier(unittest.TestCase):
+class TestNoopNotifier(utils.BaseTestCase):
     """Test that the noop notifier works...and does nothing?"""
 
     def setUp(self):
+        super(TestNoopNotifier, self).setUp()
         conf = utils.TestConfigOpts({"notifier_strategy": "noop"})
         self.notifier = notifier.Notifier(conf)
 
@@ -93,10 +94,12 @@ class TestNoopNotifier(unittest.TestCase):
         self.notifier.error("test_event", "test_message")
 
 
-class TestRabbitNotifier(unittest.TestCase):
+class TestRabbitNotifier(utils.BaseTestCase):
     """Test AMQP/Rabbit notifier works."""
 
     def setUp(self):
+        super(TestRabbitNotifier, self).setUp()
+
         def _fake_connect(rabbit_self):
             rabbit_self.connection_errors = ()
             rabbit_self.connection = 'fake_connection'
@@ -274,10 +277,12 @@ class TestRabbitNotifier(unittest.TestCase):
         self.assertEquals(info['conn_called'], 2)
 
 
-class TestQpidNotifier(unittest.TestCase):
+class TestQpidNotifier(utils.BaseTestCase):
     """Test Qpid notifier."""
 
     def setUp(self):
+        super(TestQpidNotifier, self).setUp()
+
         if not qpid:
             return
 
@@ -300,9 +305,9 @@ class TestQpidNotifier(unittest.TestCase):
         self.notify_qpid = common_utils.import_object(
                                         "glance.notifier.notify_qpid")
 
-        super(TestQpidNotifier, self).setUp()
-
     def tearDown(self):
+        super(TestQpidNotifier, self).tearDown()
+
         if not qpid:
             return
 
@@ -312,8 +317,6 @@ class TestQpidNotifier(unittest.TestCase):
         qpid.messaging.Receiver = self.orig_receiver
 
         self.mocker.ResetAll()
-
-        super(TestQpidNotifier, self).tearDown()
 
     def _test_notify(self, priority):
         test_msg = {'a': 'b'}
@@ -359,10 +362,11 @@ class TestQpidNotifier(unittest.TestCase):
         self._test_notify('error')
 
 
-class TestRabbitContentType(unittest.TestCase):
+class TestRabbitContentType(utils.BaseTestCase):
     """Test AMQP/Rabbit notifier works."""
 
     def setUp(self):
+        super(TestRabbitContentType, self).setUp()
         self.stubs = stubout.StubOutForTesting()
 
         def _fake_connect(rabbit_self):
@@ -383,7 +387,6 @@ class TestRabbitContentType(unittest.TestCase):
                                           "rabbit_notification_topic":
                                                 "fake_topic"})
         self.notifier = notifier.Notifier(self.conf)
-        super(TestRabbitContentType, self).setUp()
 
     def _fake_exchange(self):
         class Dummy(object):

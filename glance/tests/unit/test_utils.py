@@ -15,14 +15,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
-
 import iso8601
 
 from glance.common import utils
+from glance.tests import utils as test_utils
 
 
-class TestUtils(unittest.TestCase):
+class TestUtils(test_utils.BaseTestCase):
     """Test routines in glance.utils"""
 
     def test_generate_uuid_format(self):
@@ -49,7 +48,7 @@ class TestUtils(unittest.TestCase):
         self.assertFalse(utils.is_uuid_like(fixture))
 
 
-class TestIso8601Time(unittest.TestCase):
+class TestIso8601Time(test_utils.BaseTestCase):
 
     def _instaneous(self, timestamp, yr, mon, day, hr, min, sec, micro):
         self.assertEquals(timestamp.year, yr)

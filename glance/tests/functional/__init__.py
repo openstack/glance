@@ -32,7 +32,6 @@ import shutil
 import signal
 import socket
 import time
-import unittest
 import urlparse
 
 from sqlalchemy import create_engine
@@ -415,7 +414,7 @@ glance.app_factory = glance.store.scrubber:Scrubber
 """
 
 
-class FunctionalTest(unittest.TestCase):
+class FunctionalTest(test_utils.BaseTestCase):
 
     """
     Base test class for any test that wants to test the actual

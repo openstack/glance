@@ -18,7 +18,6 @@
 import json
 import os
 import shutil
-import unittest
 
 import stubout
 
@@ -28,14 +27,16 @@ from glance.tests import stubs
 from glance.tests import utils as test_utils
 
 
-class StoreClearingUnitTest(unittest.TestCase):
+class StoreClearingUnitTest(test_utils.BaseTestCase):
 
     def setUp(self):
+        super(StoreClearingUnitTest, self).setUp()
         # Ensure stores + locations cleared
         store.STORES = {}
         location.SCHEME_TO_CLS_MAP = {}
 
     def tearDown(self):
+        super(StoreClearingUnitTest, self).tearDown()
         # Ensure stores + locations cleared
         store.STORES = {}
         location.SCHEME_TO_CLS_MAP = {}

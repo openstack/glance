@@ -13,16 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
-
 import glance.schema
-import glance.tests.utils
+from glance.tests import utils
 
 
-class TestSchemaAPI(unittest.TestCase):
+class TestSchemaAPI(utils.BaseTestCase):
 
     def setUp(self):
-        conf = glance.tests.utils.TestConfigOpts()
+        super(TestSchemaAPI, self).setUp()
+        conf = utils.TestConfigOpts()
         self.schema_api = glance.schema.API(conf)
 
     def test_load_image_schema(self):

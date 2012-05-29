@@ -19,14 +19,14 @@ import os
 import commands
 import datetime
 import re
-import unittest
 
 from glance.common import crypt
 from glance.common import exception
 from glance.common import utils
+from glance.tests import utils as test_utils
 
 
-class UtilsTestCase(unittest.TestCase):
+class UtilsTestCase(test_utils.BaseTestCase):
 
     def test_bool_from_string(self):
         true_values = ['True', True, 'true', 'TRUE', '1', 1, 'on',

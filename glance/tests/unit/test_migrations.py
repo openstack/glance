@@ -27,7 +27,6 @@ if possible.
 import ConfigParser
 import datetime
 import os
-import unittest
 import urlparse
 
 from migrate.versioning.repository import Repository
@@ -41,7 +40,7 @@ from glance.registry.db import models
 from glance.tests import utils
 
 
-class TestMigrations(unittest.TestCase):
+class TestMigrations(utils.BaseTestCase):
 
     """Test sqlalchemy-migrate migrations"""
 
@@ -58,6 +57,7 @@ class TestMigrations(unittest.TestCase):
         super(TestMigrations, self).__init__(*args, **kwargs)
 
     def setUp(self):
+        super(TestMigrations, self).setUp()
         # Load test databases from the config file. Only do this
         # once. No need to re-run this on each test...
         if not TestMigrations.TEST_DATABASES:
@@ -83,6 +83,7 @@ class TestMigrations(unittest.TestCase):
         self._reset_databases()
 
     def tearDown(self):
+        super(TestMigrations, self).tearDown()
         # We destroy the test data store between each test case,
         # and recreate it, which ensures that we have no side-effects
         # from the tests

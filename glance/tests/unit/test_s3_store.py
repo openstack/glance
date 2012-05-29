@@ -19,7 +19,6 @@
 
 import StringIO
 import hashlib
-import unittest
 
 import stubout
 import boto.s3.connection

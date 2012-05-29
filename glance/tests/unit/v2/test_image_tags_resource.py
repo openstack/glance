@@ -14,43 +14,46 @@
 #    under the License.
 
 import json
-import unittest
 
 import webob
 
 import glance.api.v2.image_tags
-import glance.tests.unit.utils as test_utils
+import glance.tests.unit.utils as unit_test_utils
+import glance.tests.utils as test_utils
 
 
-class TestImageTagsController(unittest.TestCase):
+class TestImageTagsController(test_utils.BaseTestCase):
+
     def setUp(self):
         super(TestImageTagsController, self).setUp()
-        self.db = test_utils.FakeDB()
+        self.db = unit_test_utils.FakeDB()
         conf = {}
         self.controller = glance.api.v2.image_tags.Controller(conf, self.db)
 
     def test_list_tags(self):
-        request = test_utils.FakeRequest()
-        tags = self.controller.index(request, test_utils.UUID1)
+        request = unit_test_utils.FakeRequest()
+        tags = self.controller.index(request, unit_test_utils.UUID1)
         expected = ['ping', 'pong']
         self.assertEqual(expected, tags)
 
     def test_create_tag(self):
-        request = test_utils.FakeRequest()
-        self.controller.update(request, test_utils.UUID1, 'dink')
+        request = unit_test_utils.FakeRequest()
+        self.controller.update(request, unit_test_utils.UUID1, 'dink')
 
     def test_delete_tag(self):
-        request = test_utils.FakeRequest()
-        self.controller.delete(request, test_utils.UUID1, 'ping')
+        request = unit_test_utils.FakeRequest()
+        self.controller.delete(request, unit_test_utils.UUID1, 'ping')
 
     def test_delete_tag_not_found(self):
-        request = test_utils.FakeRequest()
+        request = unit_test_utils.FakeRequest()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.delete,
-                          request, test_utils.UUID1, 'what')
+                          request, unit_test_utils.UUID1, 'what')
 
 
-class TestImagesSerializer(unittest.TestCase):
+class TestImagesSerializer(test_utils.BaseTestCase):
+
     def setUp(self):
+        super(TestImagesSerializer, self).setUp()
         self.serializer = glance.api.v2.image_tags.ResponseSerializer()
 
     def test_list_tags(self):

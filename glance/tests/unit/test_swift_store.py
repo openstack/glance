@@ -21,7 +21,6 @@ import StringIO
 import hashlib
 import httplib
 import tempfile
-import unittest
 import urllib
 
 import stubout

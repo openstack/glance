@@ -17,11 +17,11 @@
 
 import json
 import stubout
-import unittest
 import webob
 
 from glance.common import auth
 from glance.common import exception
+from glance.tests import utils
 
 
 class FakeResponse(object):
@@ -104,13 +104,15 @@ class V2Token(object):
         }
 
 
-class TestKeystoneAuthPlugin(unittest.TestCase):
+class TestKeystoneAuthPlugin(utils.BaseTestCase):
     """Test that the Keystone auth plugin works properly"""
 
     def setUp(self):
+        super(TestKeystoneAuthPlugin, self).setUp()
         self.stubs = stubout.StubOutForTesting()
 
     def tearDown(self):
+        super(TestKeystoneAuthPlugin, self).tearDown()
         self.stubs.UnsetAll()
 
     def test_required_creds(self):
