@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import logging
 import uuid
 
@@ -88,6 +89,7 @@ class FakeDB(object):
         }
 
     def _image_format(self, image_id, **values):
+        dt = datetime.datetime.now()
         image = {
             'id': image_id,
             'name': 'image-name',
@@ -95,6 +97,8 @@ class FakeDB(object):
             'location': None,
             'status': 'queued',
             'is_public': False,
+            'created_at': dt,
+            'updated_at': dt,
             'properties': [],
         }
         image.update(values)

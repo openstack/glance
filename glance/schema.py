@@ -42,6 +42,18 @@ _BASE_SCHEMA_PROPERTIES = {
             'description': 'Scope of image accessibility',
             'enum': ['public', 'private'],
         },
+        'created_at': {
+          'type': 'string',
+          'description': 'Date and time of image registration',
+          #TODO(bcwaldon): our jsonschema library doesn't seem to like the
+          # format attribute, figure out why!
+          #'format': 'date-time',
+        },
+        'updated_at': {
+          'type': 'string',
+          'description': 'Date and time of the last image modification',
+          #'format': 'date-time',
+        },
     },
     'access': {
         'tenant_id': {

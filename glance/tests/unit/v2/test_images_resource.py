@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import json
 import unittest
 
@@ -24,6 +25,10 @@ from glance.common import utils
 import glance.schema
 import glance.tests.unit.utils as test_utils
 import glance.tests.utils
+
+
+DATETIME = datetime.datetime(2012, 5, 16, 15, 27, 36, 325355)
+ISOTIME = '2012-05-16T15:27:36Z'
 
 
 class TestImagesController(unittest.TestCase):
@@ -58,7 +63,8 @@ class TestImagesController(unittest.TestCase):
         request = test_utils.FakeRequest()
         image = {'name': 'image-1'}
         output = self.controller.create(request, image)
-        output.pop('id')
+        for key in ['id', 'created_at', 'updated_at']:
+            output.pop(key)
         expected = {
             'name': 'image-1',
             'owner': test_utils.TENANT1,
@@ -79,7 +85,8 @@ class TestImagesController(unittest.TestCase):
         request = test_utils.FakeRequest()
         image = {'name': 'image-1', 'is_public': True}
         output = self.controller.create(request, image)
-        output.pop('id')
+        for key in ['id', 'created_at', 'updated_at']:
+            output.pop(key)
         expected = {
             'name': 'image-1',
             'owner': test_utils.TENANT1,
@@ -94,7 +101,8 @@ class TestImagesController(unittest.TestCase):
         request = test_utils.FakeRequest()
         image = {'name': 'image-2'}
         output = self.controller.update(request, test_utils.UUID1, image)
-        output.pop('id')
+        for key in ['id', 'created_at', 'updated_at']:
+            output.pop(key)
         expected = {
             'name': 'image-2',
             'owner': test_utils.TENANT1,
@@ -148,6 +156,14 @@ class TestImagesDeserializer(unittest.TestCase):
         expected = {'image': {'is_public': False, 'properties': {}}}
         self.assertEqual(expected, output)
 
+    def test_create_readonly_attributes_ignored(self):
+        for key in ['created_at', 'updated_at']:
+            request = test_utils.FakeRequest()
+            request.body = json.dumps({key: ISOTIME})
+            output = self.deserializer.create(request)
+            expected = {'image': {'properties': {}}}
+            self.assertEqual(expected, output)
+
     def test_update(self):
         request = test_utils.FakeRequest()
         request.body = json.dumps({'name': 'image-1', 'visibility': 'public'})
@@ -160,6 +176,14 @@ class TestImagesDeserializer(unittest.TestCase):
             },
         }
         self.assertEqual(expected, output)
+
+    def test_update_readonly_attributes_ignored(self):
+        for key in ['created_at', 'updated_at']:
+            request = test_utils.FakeRequest()
+            request.body = json.dumps({key: ISOTIME})
+            output = self.deserializer.update(request)
+            expected = {'image': {'properties': {}}}
+            self.assertEqual(expected, output)
 
 
 class TestImagesDeserializerWithExtendedSchema(unittest.TestCase):
@@ -276,12 +300,16 @@ class TestImagesSerializer(unittest.TestCase):
                 'name': 'image-1',
                 'is_public': True,
                 'properties': {},
+                'created_at': DATETIME,
+                'updated_at': DATETIME,
             },
             {
                 'id': test_utils.UUID2,
                 'name': 'image-2',
                 'is_public': False,
                 'properties': {},
+                'created_at': DATETIME,
+                'updated_at': DATETIME,
             },
         ]
         expected = {
@@ -290,6 +318,8 @@ class TestImagesSerializer(unittest.TestCase):
                     'id': test_utils.UUID1,
                     'name': 'image-1',
                     'visibility': 'public',
+                    'created_at': ISOTIME,
+                    'updated_at': ISOTIME,
                     'links': [
                         {
                             'rel': 'self',
@@ -306,6 +336,8 @@ class TestImagesSerializer(unittest.TestCase):
                     'id': test_utils.UUID2,
                     'name': 'image-2',
                     'visibility': 'private',
+                    'created_at': ISOTIME,
+                    'updated_at': ISOTIME,
                     'links': [
                         {
                             'rel': 'self',
@@ -331,12 +363,16 @@ class TestImagesSerializer(unittest.TestCase):
             'name': 'image-2',
             'is_public': True,
             'properties': {},
+            'created_at': DATETIME,
+            'updated_at': DATETIME,
         }
         expected = {
             'image': {
                 'id': test_utils.UUID2,
                 'name': 'image-2',
                 'visibility': 'public',
+                'created_at': ISOTIME,
+                'updated_at': ISOTIME,
                 'links': [
                     {
                         'rel': 'self',
@@ -360,6 +396,8 @@ class TestImagesSerializer(unittest.TestCase):
             'name': 'image-2',
             'is_public': False,
             'properties': {},
+            'created_at': DATETIME,
+            'updated_at': DATETIME,
         }
         self_link = '/v2/images/%s' % test_utils.UUID2
         expected = {
@@ -367,6 +405,8 @@ class TestImagesSerializer(unittest.TestCase):
                 'id': test_utils.UUID2,
                 'name': 'image-2',
                 'visibility': 'private',
+                'created_at': ISOTIME,
+                'updated_at': ISOTIME,
                 'links': [
                     {'rel': 'self', 'href': self_link},
                     {'rel': 'file', 'href': '%s/file' % self_link},
@@ -385,6 +425,8 @@ class TestImagesSerializer(unittest.TestCase):
             'name': 'image-2',
             'is_public': True,
             'properties': {},
+            'created_at': DATETIME,
+            'updated_at': DATETIME,
         }
         self_link = '/v2/images/%s' % test_utils.UUID2
         expected = {
@@ -392,6 +434,8 @@ class TestImagesSerializer(unittest.TestCase):
                 'id': test_utils.UUID2,
                 'name': 'image-2',
                 'visibility': 'public',
+                'created_at': ISOTIME,
+                'updated_at': ISOTIME,
                 'links': [
                     {'rel': 'self', 'href': self_link},
                     {'rel': 'file', 'href': '%s/file' % self_link},
@@ -421,6 +465,8 @@ class TestImagesSerializerWithExtendedSchema(unittest.TestCase):
             'id': test_utils.UUID2,
             'name': 'image-2',
             'is_public': False,
+            'created_at': DATETIME,
+            'updated_at': DATETIME,
             'properties': {'color': 'green', 'mood': 'grouchy'},
         }
 
@@ -431,6 +477,8 @@ class TestImagesSerializerWithExtendedSchema(unittest.TestCase):
                 'id': test_utils.UUID2,
                 'name': 'image-2',
                 'visibility': 'private',
+                'created_at': ISOTIME,
+                'updated_at': ISOTIME,
                 'color': 'green',
                 'links': [
                     {
@@ -457,6 +505,8 @@ class TestImagesSerializerWithExtendedSchema(unittest.TestCase):
                 'id': test_utils.UUID2,
                 'name': 'image-2',
                 'visibility': 'private',
+                'created_at': ISOTIME,
+                'updated_at': ISOTIME,
                 'color': 'invalid',
                 'links': [
                     {
@@ -485,6 +535,8 @@ class TestImagesSerializerWithAdditionalProperties(unittest.TestCase):
             'id': test_utils.UUID2,
             'name': 'image-2',
             'is_public': False,
+            'created_at': DATETIME,
+            'updated_at': DATETIME,
             'properties': {
                 'marx': 'groucho',
             },
@@ -497,6 +549,8 @@ class TestImagesSerializerWithAdditionalProperties(unittest.TestCase):
                 'id': test_utils.UUID2,
                 'name': 'image-2',
                 'visibility': 'private',
+                'created_at': ISOTIME,
+                'updated_at': ISOTIME,
                 'marx': 'groucho',
                 'links': [
                     {
@@ -526,6 +580,8 @@ class TestImagesSerializerWithAdditionalProperties(unittest.TestCase):
                 'id': test_utils.UUID2,
                 'name': 'image-2',
                 'visibility': 'private',
+                'created_at': ISOTIME,
+                'updated_at': ISOTIME,
                 'marx': 123,
                 'links': [
                     {
@@ -552,6 +608,8 @@ class TestImagesSerializerWithAdditionalProperties(unittest.TestCase):
                 'id': test_utils.UUID2,
                 'name': 'image-2',
                 'visibility': 'private',
+                'created_at': ISOTIME,
+                'updated_at': ISOTIME,
                 'links': [
                     {
                         'rel': 'self',
