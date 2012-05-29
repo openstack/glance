@@ -27,6 +27,17 @@ from glance.openstack.common import cfg
 from glance.openstack.common import importutils
 
 logger = logging.getLogger(__name__)
+
+image_cache_opts = [
+    cfg.StrOpt('image_cache_driver', default='sqlite'),
+    cfg.IntOpt('image_cache_max_size', default=10 * (1024 ** 3)),  # 10 GB
+    cfg.IntOpt('image_cache_stall_time', default=86400),  # 24 hours
+    cfg.StrOpt('image_cache_dir'),
+    ]
+
+CONF = cfg.CONF
+CONF.register_opts(image_cache_opts)
+
 DEFAULT_MAX_CACHE_SIZE = 10 * 1024 * 1024 * 1024  # 10 GB
 
 
@@ -34,16 +45,8 @@ class ImageCache(object):
 
     """Provides an LRU cache for image data."""
 
-    opts = [
-        cfg.StrOpt('image_cache_driver', default='sqlite'),
-        cfg.IntOpt('image_cache_max_size', default=10 * (1024 ** 3)),  # 10 GB
-        cfg.IntOpt('image_cache_stall_time', default=86400),  # 24 hours
-        cfg.StrOpt('image_cache_dir'),
-        ]
-
     def __init__(self, conf):
         self.conf = conf
-        self.conf.register_opts(self.opts)
         self.init_driver()
 
     def init_driver(self):

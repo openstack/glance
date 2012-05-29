@@ -37,6 +37,7 @@ from sqlalchemy.sql import or_, and_
 from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
+from glance import db
 from glance.db import migration
 from glance.db import models
 
@@ -66,11 +67,13 @@ STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
 
 db_opts = [
     cfg.IntOpt('sql_idle_timeout', default=3600),
-    cfg.StrOpt('sql_connection', default='sqlite:///glance.sqlite'),
     cfg.IntOpt('sql_max_retries', default=10),
     cfg.IntOpt('sql_retry_interval', default=1),
     cfg.BoolOpt('db_auto_create', default=True),
     ]
+
+CONF = cfg.CONF
+CONF.register_opts(db_opts)
 
 
 class MySQLPingListener(object):
@@ -103,10 +106,6 @@ def configure_db(conf):
     """
     global _ENGINE, sa_logger, logger, _MAX_RETRIES, _RETRY_INTERVAL
     if not _ENGINE:
-        for opt in db_opts:
-            # avoid duplicate registration
-            if not opt.name in conf:
-                conf.register_opt(opt)
         sql_connection = conf.sql_connection
         _MAX_RETRIES = conf.sql_max_retries
         _RETRY_INTERVAL = conf.sql_retry_interval

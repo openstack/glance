@@ -29,6 +29,18 @@ from glance.store import location
 
 logger = logging.getLogger('glance.store')
 
+store_opts = [
+    cfg.ListOpt('known_stores',
+                default=['glance.store.filesystem.Store', ]),
+    cfg.StrOpt('scrubber_datadir',
+               default='/var/lib/glance/scrubber'),
+    cfg.BoolOpt('delayed_delete', default=False),
+    cfg.IntOpt('scrub_time', default=0),
+    ]
+
+CONF = cfg.CONF
+CONF.register_opts(store_opts)
+
 # Set of store objects, constructed in create_stores()
 STORES = {}
 
@@ -138,16 +150,11 @@ def _get_store_class(store_entry):
     return store_cls
 
 
-known_stores_opt = cfg.ListOpt('known_stores',
-                               default=('glance.store.filesystem.Store',))
-
-
 def create_stores(conf):
     """
     Registers all store modules and all schemes
     from the given config. Duplicates are not re-registered.
     """
-    conf.register_opt(known_stores_opt)
     store_count = 0
     for store_entry in conf.known_stores:
         store_entry = store_entry.strip()
@@ -242,26 +249,14 @@ def get_store_from_location(uri):
     return loc.store_name
 
 
-scrubber_datadir_opt = cfg.StrOpt('scrubber_datadir',
-                                  default='/var/lib/glance/scrubber')
-
-
 def get_scrubber_datadir(conf):
-    conf.register_opt(scrubber_datadir_opt)
     return conf.scrubber_datadir
-
-
-delete_opts = [
-    cfg.BoolOpt('delayed_delete', default=False),
-    cfg.IntOpt('scrub_time', default=0)
-    ]
 
 
 def schedule_delete_from_backend(uri, conf, context, image_id, **kwargs):
     """
     Given a uri and a time, schedule the deletion of an image.
     """
-    conf.register_opts(delete_opts)
     if not conf.delayed_delete:
         registry.update_image_metadata(context, image_id,
                                        {'status': 'deleted'})

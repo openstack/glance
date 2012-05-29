@@ -51,7 +51,6 @@ class TestSchemaAPI(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestSchemaAPI, self).setUp()
-        self.conf = test_utils.TestConfigOpts()
         self.schema_api = glance.schema.API(self.conf, FAKE_BASE_PROPERTIES)
 
     def test_get_schema(self):
@@ -180,7 +179,7 @@ class TestSchemaAPI(test_utils.BaseTestCase):
         self.assertEqual(output, expected)
 
     def test_get_image_schema_with_additional_properties_disabled(self):
-        self.conf.allow_additional_image_properties = False
+        self.config(allow_additional_image_properties=False)
         output = self.schema_api.get_schema('image')
         expected = {
             'name': 'image',
@@ -201,7 +200,7 @@ class TestSchemaAPI(test_utils.BaseTestCase):
         self.assertEqual(output, expected)
 
     def test_get_image_schema_with_additional_properties_enabled(self):
-        self.conf.allow_additional_image_properties = True
+        self.config(allow_additional_image_properties=True)
         output = self.schema_api.get_schema('image')
         expected = {
             'name': 'image',
@@ -222,7 +221,7 @@ class TestSchemaAPI(test_utils.BaseTestCase):
         self.assertEqual(output, expected)
 
     def test_get_other_schema_with_additional_image_properties_enabled(self):
-        self.conf.allow_additional_image_properties = True
+        self.config(allow_additional_image_properties=False)
         output = self.schema_api.get_schema('fake1')
         expected = {
             'name': 'fake1',

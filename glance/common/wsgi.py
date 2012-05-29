@@ -59,6 +59,11 @@ socket_opts = [
 
 workers_opt = cfg.IntOpt('workers', default=0)
 
+CONF = cfg.CONF
+CONF.register_opts(bind_opts)
+CONF.register_opts(socket_opts)
+CONF.register_opt(workers_opt)
+
 
 class WritableLogger(object):
     """A thin wrapper that responds to `write` and logs."""
@@ -73,7 +78,6 @@ class WritableLogger(object):
 
 def get_bind_addr(conf, default_port=None):
     """Return the host and port to bind to."""
-    conf.register_opts(bind_opts)
     return (conf.bind_host, conf.bind_port or default_port)
 
 
@@ -97,8 +101,6 @@ def get_socket(conf, default_port):
     address_family = [addr[0] for addr in socket.getaddrinfo(bind_addr[0],
             bind_addr[1], socket.AF_UNSPEC, socket.SOCK_STREAM)
             if addr[0] in (socket.AF_INET, socket.AF_INET6)][0]
-
-    conf.register_opts(socket_opts)
 
     cert_file = conf.cert_file
     key_file = conf.key_file
@@ -169,7 +171,6 @@ class Server(object):
 
         self.application = application
         self.sock = get_socket(conf, default_port)
-        conf.register_opt(workers_opt)
 
         self.logger = logging.getLogger('eventlet.wsgi.server')
 

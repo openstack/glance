@@ -38,11 +38,12 @@ from glance.common import config
 from glance.openstack.common import cfg
 from glance.store import scrubber
 
+CONF = cfg.CONF
+
 
 if __name__ == '__main__':
     try:
-        conf = config.GlanceConfigOpts()
-        conf.register_cli_opt(
+        CONF.register_cli_opt(
             cfg.BoolOpt('daemon',
                         short='D',
                         default=False,
@@ -51,13 +52,14 @@ if __name__ == '__main__':
                              'once and then exits. When specified do not exit '
                              'and run scrub on wakeup_time interval as '
                              'specified in the config.'))
-        conf.register_opt(cfg.IntOpt('wakeup_time', default=300))
-        conf()
+        CONF.register_opt(cfg.IntOpt('wakeup_time', default=300))
 
-        app = config.load_paste_app(conf, 'glance-scrubber')
+        config.parse_args()
 
-        if conf.daemon:
-            server = scrubber.Daemon(conf.wakeup_time)
+        app = config.load_paste_app(CONF, 'glance-scrubber')
+
+        if CONF.daemon:
+            server = scrubber.Daemon(CONF.wakeup_time)
             server.start(app)
             server.wait()
         else:

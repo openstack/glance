@@ -47,49 +47,51 @@ import glance.db
 import glance.db.api
 import glance.db.migration
 
+CONF = cfg.CONF
 
-def do_db_version(conf, args):
+
+def do_db_version(args):
     """Print database's current migration level"""
-    print glance.db.migration.db_version(conf)
+    print glance.db.migration.db_version(CONF)
 
 
-def do_upgrade(conf, args):
+def do_upgrade(args):
     """Upgrade the database's migration level"""
     version = args.pop(0) if args else None
-    glance.db.migration.upgrade(conf, version)
+    glance.db.migration.upgrade(CONF, version)
 
 
-def do_downgrade(conf, args):
+def do_downgrade(args):
     """Downgrade the database's migration level"""
     if not args:
         raise exception.MissingArgumentError(
             "downgrade requires a version argument")
 
     version = args.pop(0)
-    glance.db.migration.downgrade(conf, version)
+    glance.db.migration.downgrade(CONF, version)
 
 
-def do_version_control(conf, args):
+def do_version_control(args):
     """Place a database under migration control"""
     version = args.pop(0) if args else None
-    glance.db.migration.version_control(conf, version)
+    glance.db.migration.version_control(CONF, version)
 
 
-def do_db_sync(conf, args):
+def do_db_sync(args):
     """
     Place a database under migration control and upgrade,
     creating first if necessary.
     """
     # override auto-create flag, as complete DB should always
     # be created on sync if not already existing
-    conf.db_auto_create = True
-    glance.db.api.configure_db(conf)
+    CONF.db_auto_create = True
+    glance.db.api.configure_db(CONF)
     version = args.pop(0) if args else None
     current_version = args.pop(0) if args else None
-    glance.db.migration.db_sync(conf, version, current_version)
+    glance.db.migration.db_sync(CONF, version, current_version)
 
 
-def dispatch_cmd(conf, args):
+def dispatch_cmd(args):
     """Search for do_* cmd in this module and then run it"""
     cmd = args.pop(0)
     try:
@@ -98,7 +100,7 @@ def dispatch_cmd(conf, args):
         sys.exit("ERROR: unrecognized command '%s'" % cmd)
 
     try:
-        cmd_func(conf, args)
+        cmd_func(args)
     except exception.GlanceException, e:
         sys.exit("ERROR: %s" % e)
 
@@ -107,22 +109,22 @@ def main():
     try:
         # We load the glance-registry config section because
         # sql_connection is only part of the glance registry.
+        glance.db.add_cli_options()
+
         default_cfg_files = cfg.find_config_files(project='glance',
                                                   prog='glance-registry')
 
-        conf = config.GlanceConfigOpts(default_config_files=default_cfg_files,
-                                       usage="%prog [options] <cmd>")
-        glance.db.add_options(conf)
-        args = conf()
-        config.setup_logging(conf)
+        args = config.parse_args(default_config_files=default_cfg_files,
+                                 usage="%prog [options] <cmd>")
+        config.setup_logging(CONF)
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
 
     if not args:
-        conf.print_usage()
+        CONF.print_usage()
         sys.exit(1)
 
-    dispatch_cmd(conf, args)
+    dispatch_cmd(args)
 
 
 if __name__ == '__main__':

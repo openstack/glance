@@ -22,6 +22,15 @@ from glance.common import wsgi
 from glance.openstack.common import cfg
 from glance.db import api as db_api
 
+context_opts = [
+    cfg.BoolOpt('owner_is_tenant', default=True),
+    cfg.StrOpt('admin_role', default='admin'),
+    cfg.BoolOpt('allow_anonymous_access', default=False),
+    ]
+
+CONF = cfg.CONF
+CONF.register_opts(context_opts)
+
 
 class RequestContext(object):
     """
@@ -129,15 +138,8 @@ class RequestContext(object):
 
 class ContextMiddleware(wsgi.Middleware):
 
-    opts = [
-        cfg.BoolOpt('owner_is_tenant', default=True),
-        cfg.StrOpt('admin_role', default='admin'),
-        cfg.BoolOpt('allow_anonymous_access', default=False),
-    ]
-
     def __init__(self, app, conf, **local_conf):
         self.conf = conf
-        self.conf.register_opts(self.opts)
         super(ContextMiddleware, self).__init__(app)
 
     def process_request(self, req):

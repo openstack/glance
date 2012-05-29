@@ -44,7 +44,7 @@ MAX_SWIFT_OBJECT_SIZE = FIVE_GB
 SWIFT_PUT_OBJECT_CALLS = 0
 SWIFT_CONF = {'verbose': True,
               'debug': True,
-              'known_stores': "glance.store.swift.Store",
+              'known_stores': ['glance.store.swift.Store'],
               'default_store': 'swift',
               'swift_store_user': 'user',
               'swift_store_key': 'key',
@@ -55,7 +55,7 @@ SWIFT_CONF = {'verbose': True,
 # We stub out as little as possible to ensure that the code paths
 # between glance.store.swift and swift.common.client are tested
 # thoroughly
-def stub_out_swift_common_client(stubs, conf):
+def stub_out_swift_common_client(stubs, swift_store_auth_version):
 
     fixture_containers = ['glance']
     fixture_headers = {'glance/%s' % FAKE_UUID:
@@ -165,7 +165,7 @@ def stub_out_swift_common_client(stubs, conf):
         if 'http' in url and '://' not in url:
             raise ValueError('Invalid url %s' % url)
         # Check the auth version against the configured value
-        if conf['swift_store_auth_version'] != auth_version:
+        if swift_store_auth_version != auth_version:
             msg = 'AUTHENTICATION failed (version mismatch)'
             raise swift.common.client.ClientException(msg)
         return None, None
@@ -192,7 +192,7 @@ class SwiftTests(object):
 
     @property
     def swift_store_user(self):
-        return urllib.quote(self.conf['swift_store_user'])
+        return urllib.quote(self.conf.swift_store_user)
 
     def test_get_size(self):
         """
@@ -314,14 +314,14 @@ class SwiftTests(object):
             expected_swift_contents = "*" * expected_swift_size
             expected_checksum = \
                     hashlib.md5(expected_swift_contents).hexdigest()
-            self.conf['swift_store_auth_address'] = variation
 
             image_swift = StringIO.StringIO(expected_swift_contents)
 
             global SWIFT_PUT_OBJECT_CALLS
             SWIFT_PUT_OBJECT_CALLS = 0
 
-            self.store = Store(test_utils.TestConfigOpts(self.conf))
+            self.config(swift_store_auth_address=variation)
+            self.store = Store(self.conf)
             location, size, checksum = self.store.add(image_id, image_swift,
                                                       expected_swift_size)
 
@@ -343,10 +343,11 @@ class SwiftTests(object):
         Tests that adding an image with a non-existing container
         raises an appropriate exception
         """
-        self.conf['swift_store_create_container_on_put'] = 'False'
-        self.conf['swift_store_container'] = 'noexist'
+        self.config(swift_store_create_container_on_put=False,
+                    swift_store_container='noexist')
+        self.store = Store(self.conf)
+
         image_swift = StringIO.StringIO("nevergonnamakeit")
-        self.store = Store(test_utils.TestConfigOpts(self.conf))
 
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS = 0
@@ -369,8 +370,6 @@ class SwiftTests(object):
         Tests that adding an image with a non-existing container
         creates the container automatically if flag is set
         """
-        self.conf['swift_store_create_container_on_put'] = 'True'
-        self.conf['swift_store_container'] = 'noexist'
         expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
         expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
@@ -383,7 +382,9 @@ class SwiftTests(object):
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS = 0
 
-        self.store = Store(test_utils.TestConfigOpts(self.conf))
+        self.config(swift_store_create_container_on_put=True,
+                    swift_store_container='noexist')
+        self.store = Store(self.conf)
         location, size, checksum = self.store.add(expected_image_id,
                                                   image_swift,
                                                   expected_swift_size)
@@ -408,7 +409,6 @@ class SwiftTests(object):
         and then verify that there have been a number of calls to
         put_object()...
         """
-        self.conf['swift_store_container'] = 'glance'
         expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
         expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
@@ -421,7 +421,8 @@ class SwiftTests(object):
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS = 0
 
-        self.store = Store(test_utils.TestConfigOpts(self.conf))
+        self.config(swift_store_container='glance')
+        self.store = Store(self.conf)
         orig_max_size = self.store.large_object_size
         orig_temp_size = self.store.large_object_chunk_size
         try:
@@ -460,8 +461,6 @@ class SwiftTests(object):
 
         Bug lp:891738
         """
-        self.conf['swift_store_container'] = 'glance'
-
         # Set up a 'large' image of 5KB
         expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
@@ -477,7 +476,8 @@ class SwiftTests(object):
 
         # Temporarily set Swift MAX_SWIFT_OBJECT_SIZE to 1KB and add our image,
         # explicitly setting the image_length to 0
-        self.store = Store(test_utils.TestConfigOpts(self.conf))
+        self.config(swift_store_container='glance')
+        self.store = Store(self.conf)
         orig_max_size = self.store.large_object_size
         orig_temp_size = self.store.large_object_chunk_size
         global MAX_SWIFT_OBJECT_SIZE
@@ -521,10 +521,12 @@ class SwiftTests(object):
                           FAKE_UUID, image_swift, 0)
 
     def _option_required(self, key):
-        del self.conf[key]
+        conf = self.getConfig()
+        conf[key] = None
 
         try:
-            self.store = Store(test_utils.TestConfigOpts(self.conf))
+            self.config(**conf)
+            self.store = Store(self.conf)
             return self.store.add == self.store.add_disabled
         except:
             return False
@@ -579,11 +581,13 @@ class TestStoreAuthV1(base.StoreClearingUnitTest, SwiftTests):
 
     def setUp(self):
         """Establish a clean test environment"""
+        conf = self.getConfig()
+        self.config(**conf)
         super(TestStoreAuthV1, self).setUp()
-        self.conf = self.getConfig()
         self.stubs = stubout.StubOutForTesting()
-        stub_out_swift_common_client(self.stubs, self.conf)
-        self.store = Store(test_utils.TestConfigOpts(self.conf))
+        stub_out_swift_common_client(self.stubs,
+                                     conf['swift_store_auth_version'])
+        self.store = Store(self.conf)
 
     def tearDown(self):
         """Clear the test environment"""

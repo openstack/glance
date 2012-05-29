@@ -24,8 +24,25 @@ import kombu.entity
 from glance.notifier import strategy
 from glance.openstack.common import cfg
 
-
 logger = logging.getLogger('glance.notifier.notify_kombu')
+
+rabbit_opts = [
+    cfg.StrOpt('rabbit_host', default='localhost'),
+    cfg.IntOpt('rabbit_port', default=5672),
+    cfg.BoolOpt('rabbit_use_ssl', default=False),
+    cfg.StrOpt('rabbit_userid', default='guest'),
+    cfg.StrOpt('rabbit_password', default='guest'),
+    cfg.StrOpt('rabbit_virtual_host', default='/'),
+    cfg.StrOpt('rabbit_notification_exchange', default='glance'),
+    cfg.StrOpt('rabbit_notification_topic',
+               default='glance_notifications'),
+    cfg.StrOpt('rabbit_max_retries', default=0),
+    cfg.StrOpt('rabbit_retry_backoff', default=2),
+    cfg.StrOpt('rabbit_retry_max_backoff', default=30)
+    ]
+
+CONF = cfg.CONF
+CONF.register_opts(rabbit_opts)
 
 
 class KombuMaxRetriesReached(Exception):
@@ -35,25 +52,9 @@ class KombuMaxRetriesReached(Exception):
 class RabbitStrategy(strategy.Strategy):
     """A notifier that puts a message on a queue when called."""
 
-    opts = [
-        cfg.StrOpt('rabbit_host', default='localhost'),
-        cfg.IntOpt('rabbit_port', default=5672),
-        cfg.BoolOpt('rabbit_use_ssl', default=False),
-        cfg.StrOpt('rabbit_userid', default='guest'),
-        cfg.StrOpt('rabbit_password', default='guest'),
-        cfg.StrOpt('rabbit_virtual_host', default='/'),
-        cfg.StrOpt('rabbit_notification_exchange', default='glance'),
-        cfg.StrOpt('rabbit_notification_topic',
-                default='glance_notifications'),
-        cfg.StrOpt('rabbit_max_retries', default=0),
-        cfg.StrOpt('rabbit_retry_backoff', default=2),
-        cfg.StrOpt('rabbit_retry_max_backoff', default=30)
-        ]
-
     def __init__(self, conf):
         """Initialize the rabbit notification strategy."""
         self._conf = conf
-        self._conf.register_opts(self.opts)
 
         self.topic = self._conf.rabbit_notification_topic
         self.max_retries = self._conf.rabbit_max_retries

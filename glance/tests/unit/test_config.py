@@ -17,12 +17,14 @@
 
 import os.path
 import shutil
+import tempfile
 
 import stubout
 
 from glance.common import config
 from glance.common import context
 from glance.image_cache import pruner
+from glance.openstack.common import cfg
 from glance.tests import utils as test_utils
 
 
@@ -38,12 +40,14 @@ class TestPasteApp(test_utils.BaseTestCase):
 
     def _do_test_load_paste_app(self,
                                 expected_app_type,
-                                paste_group={},
-                                paste_copy=True,
+                                paste_flavor=None,
+                                paste_config_file=None,
                                 paste_append=None):
 
-        conf = test_utils.TestConfigOpts(groups=paste_group,
-                                         clean=False)
+        def _writeto(path, str):
+            with open(path, 'wb') as f:
+                f.write(str or '')
+                f.flush()
 
         def _appendto(orig, copy, str):
             shutil.copy(orig, copy)
@@ -51,42 +55,47 @@ class TestPasteApp(test_utils.BaseTestCase):
                 f.write(str or '')
                 f.flush()
 
-        paste_to = os.path.join(conf.temp_file.replace('.conf',
-                                                       '-paste.ini'))
-        if paste_copy:
-            paste_from = os.path.join(os.getcwd(),
-                                      'etc/glance-registry-paste.ini')
-            _appendto(paste_from, paste_to, paste_append)
+        self.config(flavor=paste_flavor,
+                    config_file=paste_config_file,
+                    group='paste_deploy')
 
-        app = config.load_paste_app(conf, 'glance-registry')
+        temp_file = os.path.join(tempfile.mkdtemp(), 'testcfg.conf')
 
-        self.assertEquals(expected_app_type, type(app))
+        try:
+            _writeto(temp_file, '[DEFAULT]\n')
 
-        if paste_copy:
-            os.remove(conf.temp_file)
-            os.remove(paste_to)
-            os.rmdir(os.path.dirname(conf.temp_file))
+            config.parse_args(['--config-file', temp_file])
+
+            paste_to = temp_file.replace('.conf', '-paste.ini')
+            if not paste_config_file:
+                paste_from = os.path.join(os.getcwd(),
+                                          'etc/glance-registry-paste.ini')
+                _appendto(paste_from, paste_to, paste_append)
+
+            app = config.load_paste_app(self.conf, 'glance-registry')
+
+            self.assertEquals(expected_app_type, type(app))
+        finally:
+            shutil.rmtree(os.path.dirname(temp_file))
 
     def test_load_paste_app(self):
         expected_middleware = context.UnauthenticatedContextMiddleware
         self._do_test_load_paste_app(expected_middleware)
 
     def test_load_paste_app_with_paste_flavor(self):
-        paste_group = {'paste_deploy': {'flavor': 'incomplete'}}
         pipeline = ('[pipeline:glance-registry-incomplete]\n'
                     'pipeline = context registryapp')
-
-        type = context.ContextMiddleware
-        self._do_test_load_paste_app(type, paste_group, paste_append=pipeline)
+        expected_middleware = context.ContextMiddleware
+        self._do_test_load_paste_app(expected_middleware,
+                                     paste_flavor='incomplete',
+                                     paste_append=pipeline)
 
     def test_load_paste_app_with_paste_config_file(self):
         paste_config_file = os.path.join(os.getcwd(),
                                          'etc/glance-registry-paste.ini')
-        paste_group = {'paste_deploy': {'config_file': paste_config_file}}
-
         expected_middleware = context.UnauthenticatedContextMiddleware
         self._do_test_load_paste_app(expected_middleware,
-                                     paste_group, paste_copy=False)
+                                     paste_config_file=paste_config_file)
 
     def test_load_paste_app_with_conf_name(self):
         def fake_join(*args):
@@ -100,12 +109,11 @@ class TestPasteApp(test_utils.BaseTestCase):
         orig_join = os.path.join
         self.stubs.Set(os.path, 'join', fake_join)
 
-        conf = config.GlanceCacheConfigOpts()
-        conf([])
+        config.parse_cache_args([])
 
         self.stubs.Set(config, 'setup_logging', lambda *a: None)
         self.stubs.Set(pruner, 'Pruner', lambda conf, **lc: 'pruner')
 
-        app = config.load_paste_app(conf, 'glance-pruner')
+        app = config.load_paste_app(self.conf, 'glance-pruner')
 
         self.assertEquals('pruner', app)

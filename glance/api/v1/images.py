@@ -66,6 +66,9 @@ IMAGE_SIZE_CAP = 1 << 50
 # identity check (not equality).
 default_store_opt = cfg.StrOpt('default_store', default='file')
 
+CONF = cfg.CONF
+CONF.register_opt(default_store_opt)
+
 
 class Controller(controller.BaseController):
     """
@@ -88,7 +91,6 @@ class Controller(controller.BaseController):
 
     def __init__(self, conf):
         self.conf = conf
-        self.conf.register_opt(default_store_opt)
         create_stores(self.conf)
         self.verify_scheme_or_exit(self.conf.default_store)
         self.notifier = notifier.Notifier(conf)

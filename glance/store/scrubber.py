@@ -31,8 +31,15 @@ from glance.common import utils
 from glance.openstack.common import cfg
 from glance.registry import client
 
-
 logger = logging.getLogger('glance.store.scrubber')
+
+scrubber_opts = [
+    cfg.BoolOpt('cleanup_scrubber', default=False),
+    cfg.IntOpt('cleanup_scrubber_time', default=86400)
+    ]
+
+CONF = cfg.CONF
+CONF.register_opts(scrubber_opts)
 
 
 class Daemon(object):
@@ -63,14 +70,8 @@ class Daemon(object):
 class Scrubber(object):
     CLEANUP_FILE = ".cleanup"
 
-    opts = [
-        cfg.BoolOpt('cleanup_scrubber', default=False),
-        cfg.IntOpt('cleanup_scrubber_time', default=86400)
-        ]
-
     def __init__(self, conf, **local_conf):
         self.conf = conf
-        self.conf.register_opts(self.opts)
 
         self.datadir = store.get_scrubber_datadir(conf)
         self.cleanup = self.conf.cleanup_scrubber

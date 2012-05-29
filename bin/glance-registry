@@ -38,17 +38,19 @@ gettext.install('glance', unicode=1)
 
 from glance.common import config
 from glance.common import wsgi
+from glance.openstack.common import cfg
+
+CONF = cfg.CONF
 
 
 if __name__ == '__main__':
     try:
-        conf = config.GlanceConfigOpts()
-        conf()
+        config.parse_args()
 
-        app = config.load_paste_app(conf)
+        app = config.load_paste_app(CONF)
 
         server = wsgi.Server()
-        server.start(app, conf, default_port=9191)
+        server.start(app, CONF, default_port=9191)
         server.wait()
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)

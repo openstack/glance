@@ -33,6 +33,18 @@ import glance.store.location
 
 logger = logging.getLogger('glance.store.s3')
 
+s3_opts = [
+    cfg.StrOpt('s3_store_host'),
+    cfg.StrOpt('s3_store_access_key', secret=True),
+    cfg.StrOpt('s3_store_secret_key', secret=True),
+    cfg.StrOpt('s3_store_bucket'),
+    cfg.StrOpt('s3_store_object_buffer_dir'),
+    cfg.BoolOpt('s3_store_create_bucket_on_put', default=False),
+    ]
+
+CONF = cfg.CONF
+CONF.register_opts(s3_opts)
+
 
 class StoreLocation(glance.store.location.StoreLocation):
 
@@ -189,15 +201,6 @@ class Store(glance.store.base.Store):
 
     EXAMPLE_URL = "s3://<ACCESS_KEY>:<SECRET_KEY>@<S3_URL>/<BUCKET>/<OBJ>"
 
-    opts = [
-        cfg.StrOpt('s3_store_host'),
-        cfg.StrOpt('s3_store_access_key', secret=True),
-        cfg.StrOpt('s3_store_secret_key', secret=True),
-        cfg.StrOpt('s3_store_bucket'),
-        cfg.StrOpt('s3_store_object_buffer_dir'),
-        cfg.BoolOpt('s3_store_create_bucket_on_put', default=False),
-        ]
-
     def get_schemes(self):
         return ('s3', 's3+http', 's3+https')
 
@@ -208,7 +211,6 @@ class Store(glance.store.base.Store):
         this method. If the store was not able to successfully configure
         itself, it should raise `exception.BadStoreConfiguration`
         """
-        self.conf.register_opts(self.opts)
         self.s3_host = self._option_get('s3_store_host')
         access_key = self._option_get('s3_store_access_key')
         secret_key = self._option_get('s3_store_secret_key')

@@ -6,7 +6,7 @@ import sys
 import keystoneclient.v2_0.client
 
 import glance.common.context
-import glance.openstack.common.cfg
+from glance.openstack.common import cfg
 import glance.registry.context
 import glance.db.api as db_api
 
@@ -57,23 +57,21 @@ def update_image_owners(image_owner_map, db, context):
 
 
 if __name__ == "__main__":
-    config = glance.openstack.common.cfg.CommonConfigOpts(project='glance',
-            prog='glance-registry')
+    config = cfg.CONF
     extra_cli_opts = [
-        glance.openstack.common.cfg.BoolOpt('dry-run',
-                help='Print output but do not make db changes.'),
-        glance.openstack.common.cfg.StrOpt('keystone-auth-uri',
-                help='Authentication endpoint'),
-        glance.openstack.common.cfg.StrOpt('keystone-admin-tenant-name',
-                help='Administrative user\'s tenant name'),
-        glance.openstack.common.cfg.StrOpt('keystone-admin-user',
-                help='Administrative user\'s id'),
-        glance.openstack.common.cfg.StrOpt('keystone-admin-password',
-                help='Administrative user\'s password'),
+        cfg.BoolOpt('dry-run',
+                    help='Print output but do not make db changes.'),
+        cfg.StrOpt('keystone-auth-uri',
+                   help='Authentication endpoint'),
+        cfg.StrOpt('keystone-admin-tenant-name',
+                   help='Administrative user\'s tenant name'),
+        cfg.StrOpt('keystone-admin-user',
+                   help='Administrative user\'s id'),
+        cfg.StrOpt('keystone-admin-password',
+                   help='Administrative user\'s password'),
     ]
     config.register_cli_opts(extra_cli_opts)
-    config()
-    config.register_opts(glance.common.context.ContextMiddleware.opts)
+    config(project='glance', prog='glance-registry')
 
     db_api.configure_db(config)
 

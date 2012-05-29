@@ -43,19 +43,16 @@ if UUID1 > UUID2:
     UUID1, UUID2 = UUID2, UUID1
 
 
-CONF = {'sql_connection': 'sqlite://',
-        'verbose': False,
-        'debug': False}
-
-
 class BaseDBTestCase(base.IsolatedUnitTest):
 
     def setUp(self):
         super(BaseDBTestCase, self).setUp()
-        conf = test_utils.TestConfigOpts(CONF)
+        self.config(sql_connection='sqlite://',
+                    verbose=False,
+                    debug=False)
         self.adm_context = context.RequestContext(is_admin=True)
         self.context = context.RequestContext(is_admin=False)
-        db_api.configure_db(conf)
+        db_api.configure_db(self.conf)
         self.destroy_fixtures()
         self.create_fixtures()
 
@@ -229,10 +226,12 @@ class TestPagingOrder(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestPagingOrder, self).setUp()
-        conf = test_utils.TestConfigOpts(CONF)
+        self.config(sql_connection='sqlite://',
+                    verbose=False,
+                    debug=False)
         self.adm_context = context.RequestContext(is_admin=True)
         self.context = context.RequestContext(is_admin=False)
-        db_api.configure_db(conf)
+        db_api.configure_db(self.conf)
         self.destroy_fixtures()
         self.create_fixtures()
 

@@ -30,8 +30,6 @@ from glance.common import wsgi
 from glance.openstack.common import cfg
 from glance import version
 
-
-paste_deploy_group = cfg.OptGroup('paste_deploy')
 paste_deploy_opts = [
     cfg.StrOpt('flavor'),
     cfg.StrOpt('config_file'),
@@ -42,26 +40,22 @@ common_opts = [
                 'beyond what the image schema provides'),
 ]
 
-
-class GlanceConfigOpts(cfg.CommonConfigOpts):
-
-    def __init__(self, default_config_files=None, **kwargs):
-        super(GlanceConfigOpts, self).__init__(
-            project='glance',
-            version='%%prog %s' % version.version_string(),
-            default_config_files=default_config_files,
-            **kwargs)
-        self.register_opts(common_opts)
-        self.default_paste_file = self.prog + '-paste.ini'
+CONF = cfg.CONF
+CONF.register_opts(paste_deploy_opts, group='paste_deploy')
+CONF.register_opts(common_opts)
 
 
-class GlanceCacheConfigOpts(GlanceConfigOpts):
+def parse_args(args=None, usage=None, default_config_files=None):
+    return CONF(args=args,
+                project='glance',
+                version='%%prog %s' % version.version_string(),
+                usage=usage,
+                default_config_files=default_config_files)
 
-    def __init__(self, **kwargs):
-        config_files = cfg.find_config_files(project='glance',
-                                             prog='glance-cache')
-        super(GlanceCacheConfigOpts, self).__init__(config_files, **kwargs)
-        self.default_paste_file = 'glance-cache-paste.ini'
+
+def parse_cache_args(args=None):
+    config_files = cfg.find_config_files(project='glance', prog='glance-cache')
+    return parse_args(args=args, default_config_files=config_files)
 
 
 def setup_logging(conf):
@@ -111,16 +105,6 @@ def setup_logging(conf):
     root_logger.addHandler(handler)
 
 
-def _register_paste_deploy_opts(conf):
-    """
-    Idempotent registration of paste_deploy option group
-
-    :param conf: a cfg.ConfigOpts object
-    """
-    conf.register_group(paste_deploy_group)
-    conf.register_opts(paste_deploy_opts, group=paste_deploy_group)
-
-
 def _get_deployment_flavor(conf):
     """
     Retrieve the paste_deploy.flavor config item, formatted appropriately
@@ -128,42 +112,41 @@ def _get_deployment_flavor(conf):
 
     :param conf: a cfg.ConfigOpts object
     """
-    _register_paste_deploy_opts(conf)
     flavor = conf.paste_deploy.flavor
     return '' if not flavor else ('-' + flavor)
 
 
-def _get_paste_config_path(conf):
+def _get_paste_config_path(conf, default_paste_file=None):
     paste_suffix = '-paste.ini'
     conf_suffix = '.conf'
     if conf.config_file:
         # Assume paste config is in a paste.ini file corresponding
         # to the last config file
         path = conf.config_file[-1].replace(conf_suffix, paste_suffix)
+    elif default_paste_file:
+        path = default_paste_file
     else:
-        path = conf.default_paste_file
+        path = conf.prog + '-paste.ini'
     return conf.find_file(os.path.basename(path))
 
 
-def _get_deployment_config_file(conf):
+def _get_deployment_config_file(conf, default_paste_file=None):
     """
     Retrieve the deployment_config_file config item, formatted as an
     absolute pathname.
 
    :param conf: a cfg.ConfigOpts object
     """
-    _register_paste_deploy_opts(conf)
-    config_file = conf.paste_deploy.config_file
-    path = _get_paste_config_path(conf) if not config_file else config_file
-
+    path = conf.paste_deploy.config_file
+    if not path:
+        path = _get_paste_config_path(conf, default_paste_file)
     if not path:
         msg = "Unable to locate paste config file for %s." % conf.prog
         raise RuntimeError(msg)
-
     return os.path.abspath(path)
 
 
-def load_paste_app(conf, app_name=None):
+def load_paste_app(conf, app_name=None, default_paste_file=None):
     """
     Builds and returns a WSGI app from a paste config file.
 
@@ -183,7 +166,7 @@ def load_paste_app(conf, app_name=None):
     # in order to identify the appropriate paste pipeline
     app_name += _get_deployment_flavor(conf)
 
-    conf_file = _get_deployment_config_file(conf)
+    conf_file = _get_deployment_config_file(conf, default_paste_file)
 
     try:
         # Setup logging early

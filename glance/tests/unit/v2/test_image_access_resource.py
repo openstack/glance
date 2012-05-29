@@ -111,8 +111,7 @@ class TestImageAccessDeserializer(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImageAccessDeserializer, self).setUp()
-        conf = test_utils.TestConfigOpts()
-        schema_api = glance.schema.API(conf)
+        schema_api = glance.schema.API(self.conf)
         self.deserializer = image_access.RequestDeserializer({}, schema_api)
 
     def test_create(self):
@@ -136,8 +135,7 @@ class TestImageAccessDeserializerWithExtendedSchema(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImageAccessDeserializerWithExtendedSchema, self).setUp()
-        conf = test_utils.TestConfigOpts()
-        schema_api = glance.schema.API(conf)
+        schema_api = glance.schema.API(self.conf)
         props = {
             'color': {
               'type': 'string',

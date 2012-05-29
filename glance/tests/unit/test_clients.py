@@ -30,8 +30,6 @@ from glance.registry import client as rclient
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
-CONF = {'sql_connection': 'sqlite://'}
-
 _gen_uuid = utils.generate_uuid
 
 UUID1 = _gen_uuid()

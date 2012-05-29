@@ -28,14 +28,6 @@ from glance.registry import client
 
 logger = logging.getLogger('glance.registry')
 
-_CLIENT_CREDS = None
-_CLIENT_HOST = None
-_CLIENT_PORT = None
-_CLIENT_KWARGS = {}
-# AES key used to encrypt 'location' metadata
-_METADATA_ENCRYPTION_KEY = None
-
-
 registry_addr_opts = [
     cfg.StrOpt('registry_host', default='0.0.0.0'),
     cfg.IntOpt('registry_port', default=9191),
@@ -56,9 +48,20 @@ registry_client_ctx_opts = [
     cfg.StrOpt('auth_region'),
     ]
 
+CONF = cfg.CONF
+CONF.register_opts(registry_addr_opts)
+CONF.register_opts(registry_client_opts)
+CONF.register_opts(registry_client_ctx_opts)
+
+_CLIENT_CREDS = None
+_CLIENT_HOST = None
+_CLIENT_PORT = None
+_CLIENT_KWARGS = {}
+# AES key used to encrypt 'location' metadata
+_METADATA_ENCRYPTION_KEY = None
+
 
 def get_registry_addr(conf):
-    conf.register_opts(registry_addr_opts)
     return (conf.registry_host, conf.registry_port)
 
 
@@ -80,8 +83,6 @@ def configure_registry_client(conf):
         logger.error(msg)
         raise exception.BadRegistryConnectionConfiguration(msg)
 
-    conf.register_opts(registry_client_opts)
-
     _CLIENT_HOST = host
     _CLIENT_PORT = port
     _METADATA_ENCRYPTION_KEY = conf.metadata_encryption_key
@@ -95,7 +96,6 @@ def configure_registry_client(conf):
 
 def configure_registry_admin_creds(conf):
     global _CLIENT_CREDS
-    conf.register_opts(registry_client_ctx_opts)
 
     if conf.auth_url or os.getenv('OS_AUTH_URL'):
         strategy = 'keystone'

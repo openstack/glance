@@ -23,6 +23,7 @@ import stubout
 
 from glance import store
 from glance.store import location
+from glance.store import filesystem
 from glance.tests import stubs
 from glance.tests import utils as test_utils
 
@@ -34,6 +35,7 @@ class StoreClearingUnitTest(test_utils.BaseTestCase):
         # Ensure stores + locations cleared
         store.STORES = {}
         location.SCHEME_TO_CLS_MAP = {}
+        store.create_stores(self.conf)
 
     def tearDown(self):
         super(StoreClearingUnitTest, self).tearDown()
@@ -50,18 +52,17 @@ class IsolatedUnitTest(StoreClearingUnitTest):
     """
 
     def setUp(self):
-        super(IsolatedUnitTest, self).setUp()
         self.test_id, self.test_dir = test_utils.get_isolated_test_env()
         self.stubs = stubout.StubOutForTesting()
         policy_file = self._copy_data_file('policy.json', self.test_dir)
-        options = {'sql_connection': 'sqlite://',
-                   'verbose': False,
-                   'debug': False,
-                   'default_store': 'filesystem',
-                   'known_stores': test_utils.get_default_stores(),
-                   'filesystem_store_datadir': os.path.join(self.test_dir),
-                   'policy_file': policy_file}
-        self.conf = test_utils.TestConfigOpts(options)
+        self.config(sql_connection='sqlite://',
+                    verbose=False,
+                    debug=False,
+                    default_store='filesystem',
+                    known_stores=test_utils.get_default_stores(),
+                    filesystem_store_datadir=os.path.join(self.test_dir),
+                    policy_file=policy_file)
+        super(IsolatedUnitTest, self).setUp()
         stubs.stub_out_registry_and_store_server(self.stubs,
                                                  self.conf,
                                                  self.test_dir)

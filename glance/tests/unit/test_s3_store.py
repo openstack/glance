@@ -25,6 +25,7 @@ import boto.s3.connection
 
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import cfg
 from glance.store import UnsupportedBackend
 from glance.store.location import get_location_from_uri
 from glance.store.s3 import Store, get_s3_location
@@ -161,10 +162,11 @@ class TestStore(base.StoreClearingUnitTest):
 
     def setUp(self):
         """Establish a clean test environment"""
+        self.config(**S3_CONF)
         super(TestStore, self).setUp()
         self.stubs = stubout.StubOutForTesting()
         stub_out_s3(self.stubs)
-        self.store = Store(test_utils.TestConfigOpts(S3_CONF))
+        self.store = Store(self.conf)
 
     def tearDown(self):
         """Clear the test environment"""
@@ -261,7 +263,8 @@ class TestStore(base.StoreClearingUnitTest):
                 expected_image_id)
             image_s3 = StringIO.StringIO(expected_s3_contents)
 
-            self.store = Store(test_utils.TestConfigOpts(new_conf))
+            self.config(**new_conf)
+            self.store = Store(self.conf)
             location, size, checksum = self.store.add(expected_image_id,
                                                       image_s3,
                                                       expected_s3_size)
@@ -290,10 +293,11 @@ class TestStore(base.StoreClearingUnitTest):
 
     def _option_required(self, key):
         conf = S3_CONF.copy()
-        del conf[key]
+        conf[key] = None
 
         try:
-            self.store = Store(test_utils.TestConfigOpts(conf))
+            self.config(**conf)
+            self.store = Store(self.conf)
             return self.store.add == self.store.add_disabled
         except:
             return False
