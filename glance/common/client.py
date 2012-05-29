@@ -599,9 +599,9 @@ class BaseClient(object):
             return (e.errno != errno.ESPIPE)
 
     def _sendable(self, body):
-        return (SENDFILE_SUPPORTED      and
+        return (SENDFILE_SUPPORTED and
                 hasattr(body, 'fileno') and
-                self._seekable(body)    and
+                self._seekable(body) and
                 not self.use_ssl)
 
     def _iterable(self, body):

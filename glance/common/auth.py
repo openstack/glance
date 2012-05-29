@@ -133,7 +133,7 @@ class KeystoneStrategy(BaseStrategy):
                 # 3. In some configurations nova makes redirection to
                 # v2.0 keystone endpoint. Also, new location does not
                 # contain real endpoint, only hostname and port.
-                if  'v2.0' not in auth_url:
+                if 'v2.0' not in auth_url:
                     auth_url = urlparse.urljoin(auth_url, 'v2.0/')
             else:
                 # If we sucessfully auth'd, then memorize the correct auth_url
