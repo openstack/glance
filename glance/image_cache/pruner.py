@@ -21,14 +21,12 @@ Prunes the Image Cache
 
 import logging
 
-from glance.image_cache import ImageCache
+from glance.image_cache import base
 
 logger = logging.getLogger(__name__)
 
 
-class Pruner(object):
-    def __init__(self, conf, **local_conf):
-        self.cache = ImageCache()
+class Pruner(base.CacheApp):
 
     def run(self):
         self.cache.prune()

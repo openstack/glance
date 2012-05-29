@@ -30,9 +30,7 @@ class API(wsgi.Router):
 
     """WSGI router for Glance v1 API requests."""
 
-    def __init__(self, conf, **local_conf):
-        mapper = routes.Mapper()
-
+    def __init__(self, mapper):
         images_resource = images.create_resource()
 
         mapper.resource("image", "images", controller=images_resource,

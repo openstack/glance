@@ -460,20 +460,16 @@ log_file = %(log_file)s
         with open(cache_config_filepath.replace(".conf", "-paste.ini"),
                   'w') as paste_file:
             paste_file.write("""[app:glance-pruner]
-paste.app_factory = glance.common.wsgi:app_factory
-glance.app_factory = glance.image_cache.pruner:Pruner
+paste.app_factory = glance.image_cache.pruner:Pruner.factory
 
 [app:glance-prefetcher]
-paste.app_factory = glance.common.wsgi:app_factory
-glance.app_factory = glance.image_cache.prefetcher:Prefetcher
+paste.app_factory = glance.image_cache.prefetcher:Prefetcher.factory
 
 [app:glance-cleaner]
-paste.app_factory = glance.common.wsgi:app_factory
-glance.app_factory = glance.image_cache.cleaner:Cleaner
+paste.app_factory = glance.image_cache.cleaner:Cleaner.factory
 
 [app:glance-queue-image]
-paste.app_factory = glance.common.wsgi:app_factory
-glance.app_factory = glance.image_cache.queue_image:Queuer
+paste.app_factory = glance.image_cache.queue_image:Queuer.factory
 """)
 
         self.verify_no_images()

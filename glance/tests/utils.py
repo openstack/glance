@@ -351,7 +351,7 @@ def minimal_add_command(port, name, suffix='', public=True):
 
 class FakeAuthMiddleware(wsgi.Middleware):
 
-    def __init__(self, app, conf, **local_conf):
+    def __init__(self, app):
         super(FakeAuthMiddleware, self).__init__(app)
 
     def process_request(self, req):

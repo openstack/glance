@@ -25,17 +25,17 @@ import eventlet
 
 from glance.common import context
 from glance.common import exception
-from glance.image_cache import ImageCache
+from glance.image_cache import base
 from glance import registry
 
 
 logger = logging.getLogger(__name__)
 
 
-class Queuer(object):
+class Queuer(base.CacheApp):
 
-    def __init__(self, conf, **local_conf):
-        self.cache = ImageCache()
+    def __init__(self):
+        super(Queuer, self).__init__()
         registry.configure_registry_client()
         registry.configure_registry_admin_creds()
 

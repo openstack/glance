@@ -112,8 +112,8 @@ class TestPasteApp(test_utils.BaseTestCase):
         config.parse_cache_args([])
 
         self.stubs.Set(config, 'setup_logging', lambda *a: None)
-        self.stubs.Set(pruner, 'Pruner', lambda conf, **lc: 'pruner')
+        self.stubs.Set(pruner.Pruner, '__init__', lambda p: None)
 
         app = config.load_paste_app('glance-pruner')
 
-        self.assertEquals('pruner', app)
+        self.assertTrue(isinstance(app, pruner.Pruner))

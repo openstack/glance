@@ -35,9 +35,7 @@ class API(wsgi.Router):
 
     """WSGI router for Glance v2 API requests."""
 
-    def __init__(self, conf, **local_conf):
-        mapper = routes.Mapper()
-
+    def __init__(self, mapper):
         schema_api = glance.schema.API()
         glance.schema.load_custom_schema_properties(schema_api)
 

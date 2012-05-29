@@ -70,7 +70,7 @@ class Daemon(object):
 class Scrubber(object):
     CLEANUP_FILE = ".cleanup"
 
-    def __init__(self, conf, **local_conf):
+    def __init__(self):
         self.datadir = CONF.scrubber_datadir
         self.cleanup = CONF.cleanup_scrubber
         self.cleanup_time = CONF.cleanup_scrubber_time
@@ -87,6 +87,10 @@ class Scrubber(object):
         utils.safe_mkdirs(self.datadir)
 
         store.create_stores()
+
+    @classmethod
+    def factory(cls, global_conf, **local_conf):
+        return cls()
 
     def run(self, pool, event=None):
         now = time.time()

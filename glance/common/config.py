@@ -26,7 +26,8 @@ import logging.handlers
 import os
 import sys
 
-from glance.common import wsgi
+from paste import deploy
+
 from glance.openstack.common import cfg
 from glance import version
 
@@ -169,7 +170,7 @@ def load_paste_app(app_name=None, default_paste_file=None):
         logger.debug(_("Loading %(app_name)s from %(conf_file)s"),
                      {'conf_file': conf_file, 'app_name': app_name})
 
-        app = wsgi.paste_deploy_app(conf_file, app_name, CONF)
+        app = deploy.loadapp("config:%s" % conf_file, name=app_name)
 
         # Log the options used when starting if we're in debug mode...
         if CONF.debug:

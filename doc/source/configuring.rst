@@ -554,8 +554,7 @@ The cache middleware should be in your ``glance-api-paste.ini`` in a section
 titled ``[filter:cache]``. It should look like this::
 
   [filter:cache]
-  paste.filter_factory = glance.common.wsgi:filter_factory
-  glance.filter_factory = glance.api.middleware.cache:CacheFilter
+  paste.filter_factory = glance.api.middleware.cache:CacheFilter.factory
 
 A ready-made application pipeline including this filter is defined in
 the ``glance-api-paste.ini`` file, looking like so::

@@ -20,6 +20,7 @@ import hashlib
 import httplib
 import json
 
+import routes
 import stubout
 import webob
 
@@ -72,7 +73,7 @@ class TestRegistryDb(test_utils.BaseTestCase):
 
         self.stubs.Set(db_api.logger, 'error', fake_log_error)
         try:
-            api_obj = rserver.API(None)
+            api_obj = rserver.API(routes.Mapper())
         except exc.ArgumentError:
             exc_raised = True
         except ImportError:
@@ -92,8 +93,9 @@ class TestRegistryAPI(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestRegistryAPI, self).setUp()
-        self.api = context.UnauthenticatedContextMiddleware(rserver.API(None),
-                                                            None)
+        mapper = routes.Mapper()
+        self.api = (
+            context.UnauthenticatedContextMiddleware(rserver.API(mapper)))
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',
@@ -1961,8 +1963,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestGlanceAPI, self).setUp()
-        self.api = context.UnauthenticatedContextMiddleware(router.API(None),
-                                                            None)
+        mapper = routes.Mapper()
+        self.api = context.UnauthenticatedContextMiddleware(router.API(mapper))
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',
