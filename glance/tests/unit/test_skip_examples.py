@@ -15,12 +15,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
-
 from glance.tests import utils
 
 
-class TestSkipExamples(unittest.TestCase):
+class TestSkipExamples(utils.BaseTestCase):
     test_counter = 0
 
     @utils.skip_test("Example usage of @utils.skip_test()")

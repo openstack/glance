@@ -15,15 +15,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
 import webob
 
 from glance.common import wsgi
 from glance.common import utils
 from glance.common import exception
+from glance.tests import utils as test_utils
 
 
-class RequestTest(unittest.TestCase):
+class RequestTest(test_utils.BaseTestCase):
+
     def test_content_type_missing(self):
         request = wsgi.Request.blank('/tests/123')
         self.assertRaises(exception.InvalidContentType,
@@ -73,7 +74,8 @@ class RequestTest(unittest.TestCase):
         self.assertEqual(result, "application/json")
 
 
-class ResourceTest(unittest.TestCase):
+class ResourceTest(test_utils.BaseTestCase):
+
     def test_get_action_args(self):
         env = {
             'wsgiorg.routing_args': [
@@ -122,7 +124,8 @@ class ResourceTest(unittest.TestCase):
                           'index', 'on', pants='off')
 
 
-class JSONResponseSerializerTest(unittest.TestCase):
+class JSONResponseSerializerTest(test_utils.BaseTestCase):
+
     def test_to_json(self):
         fixture = {"key": "value"}
         expected = '{"key": "value"}'
@@ -141,7 +144,8 @@ class JSONResponseSerializerTest(unittest.TestCase):
         self.assertEqual(response.body, '{"key": "value"}')
 
 
-class JSONRequestDeserializerTest(unittest.TestCase):
+class JSONRequestDeserializerTest(test_utils.BaseTestCase):
+
     def test_has_body_no_content_length(self):
         request = wsgi.Request.blank('/')
         request.method = 'POST'
@@ -188,7 +192,7 @@ class JSONRequestDeserializerTest(unittest.TestCase):
         self.assertEqual(actual, expected)
 
 
-class TestHelpers(unittest.TestCase):
+class TestHelpers(test_utils.BaseTestCase):
 
     def test_headers_are_unicode(self):
         """

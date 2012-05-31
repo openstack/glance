@@ -16,7 +16,6 @@
 #    under the License.
 
 import StringIO
-import unittest
 
 import stubout
 

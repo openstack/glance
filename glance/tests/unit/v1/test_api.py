@@ -19,7 +19,6 @@ import datetime
 import hashlib
 import httplib
 import json
-import unittest
 
 import stubout
 import webob
@@ -42,10 +41,11 @@ UUID1 = _gen_uuid()
 UUID2 = _gen_uuid()
 
 
-class TestRegistryDb(unittest.TestCase):
+class TestRegistryDb(test_utils.BaseTestCase):
 
     def setUp(self):
         """Establish a clean test environment"""
+        super(TestRegistryDb, self).setUp()
         self.stubs = stubout.StubOutForTesting()
         self.orig_engine = db_api._ENGINE
 
@@ -85,6 +85,7 @@ class TestRegistryDb(unittest.TestCase):
 
     def tearDown(self):
         """Clear the test environment"""
+        super(TestRegistryDb, self).setUp()
         db_api._ENGINE = self.orig_engine
         self.stubs.UnsetAll()
 

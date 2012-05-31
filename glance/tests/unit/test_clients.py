@@ -18,7 +18,6 @@
 import datetime
 import os
 import tempfile
-import unittest
 
 from glance import client
 from glance.common import client as base_client
@@ -39,7 +38,7 @@ UUID1 = _gen_uuid()
 UUID2 = _gen_uuid()
 
 
-class TestBadClients(unittest.TestCase):
+class TestBadClients(test_utils.BaseTestCase):
 
     """Test exceptions raised for bad clients"""
 
@@ -2061,8 +2060,10 @@ class TestClient(base.IsolatedUnitTest):
                           self.client.delete_member, UUID2, 'pattieblack')
 
 
-class TestConfigureClientFromURL(unittest.TestCase):
+class TestConfigureClientFromURL(test_utils.BaseTestCase):
+
     def setUp(self):
+        super(TestConfigureClientFromURL, self).setUp()
         self.client = client.Client("0.0.0.0")
 
     def assertConfiguration(self, url, host, port, use_ssl, doc_root):

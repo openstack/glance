@@ -24,6 +24,7 @@ import random
 import socket
 import subprocess
 import tempfile
+import unittest
 
 import nose.plugins.skip
 
@@ -43,6 +44,15 @@ def get_isolated_test_env():
     test_dir = os.path.join("/", "tmp", "test.%d" % test_id)
     utils.safe_mkdirs(test_dir)
     return test_id, test_dir
+
+
+class BaseTestCase(unittest.TestCase):
+
+    def setUp(self):
+        super(BaseTestCase, self).setUp()
+
+    def tearDown(self):
+        super(BaseTestCase, self).tearDown()
 
 
 class TestConfigOpts(config.GlanceConfigOpts):

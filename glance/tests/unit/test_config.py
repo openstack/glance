@@ -17,7 +17,6 @@
 
 import os.path
 import shutil
-import unittest
 
 import stubout
 
@@ -27,12 +26,14 @@ from glance.image_cache import pruner
 from glance.tests import utils as test_utils
 
 
-class TestPasteApp(unittest.TestCase):
+class TestPasteApp(test_utils.BaseTestCase):
 
     def setUp(self):
+        super(TestPasteApp, self).setUp()
         self.stubs = stubout.StubOutForTesting()
 
     def tearDown(self):
+        super(TestPasteApp, self).tearDown()
         self.stubs.UnsetAll()
 
     def _do_test_load_paste_app(self,

@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
-
 from glance.common import exception
 import glance.schema
 from glance.tests import utils as test_utils
@@ -49,8 +47,10 @@ FAKE_BASE_PROPERTIES = {
 }
 
 
-class TestSchemaAPI(unittest.TestCase):
+class TestSchemaAPI(test_utils.BaseTestCase):
+
     def setUp(self):
+        super(TestSchemaAPI, self).setUp()
         self.conf = test_utils.TestConfigOpts()
         self.schema_api = glance.schema.API(self.conf, FAKE_BASE_PROPERTIES)
 

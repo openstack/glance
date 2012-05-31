@@ -15,8 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
-
 from glance.common import exception
 import glance.store
 import glance.store.location as location
