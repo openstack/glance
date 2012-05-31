@@ -566,7 +566,7 @@ class BaseClient(object):
         #   cat /path/to/image | glance add ...
         # or where add command is launched via popen
         try:
-            os.lseek(body.fileno(), 0, os.SEEK_SET)
+            os.lseek(body.fileno(), 0, os.SEEK_CUR)
             return True
         except OSError as e:
             return (e.errno != errno.ESPIPE)
