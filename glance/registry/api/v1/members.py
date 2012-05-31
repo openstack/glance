@@ -22,7 +22,7 @@ import webob.exc
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
-from glance.db.sqlalchemy import api as db_api
+import glance.db
 
 
 logger = logging.getLogger('glance.registry.api.v1.members')
@@ -31,14 +31,15 @@ logger = logging.getLogger('glance.registry.api.v1.members')
 class Controller(object):
 
     def __init__(self):
-        db_api.configure_db()
+        self.db_api = glance.db.get_api()
+        self.db_api.configure_db()
 
     def index(self, req, image_id):
         """
         Get the members of an image.
         """
         try:
-            image = db_api.image_get(req.context, image_id)
+            image = self.db_api.image_get(req.context, image_id)
         except exception.NotFound:
             raise webob.exc.HTTPNotFound()
         except exception.Forbidden:
@@ -69,9 +70,10 @@ class Controller(object):
             raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
 
         # Make sure the image exists
-        session = db_api.get_session()
+        session = self.db_api.get_session()
         try:
-            image = db_api.image_get(req.context, image_id, session=session)
+            image = self.db_api.image_get(req.context, image_id,
+                                          session=session)
         except exception.NotFound:
             raise webob.exc.HTTPNotFound()
         except exception.Forbidden:
@@ -115,10 +117,10 @@ class Controller(object):
 
             # Try to find the corresponding membership
             try:
-                membership = db_api.image_member_find(req.context,
-                                                      datum['image_id'],
-                                                      datum['member'],
-                                                      session=session)
+                membership = self.db_api.image_member_find(req.context,
+                                                           datum['image_id'],
+                                                           datum['member'],
+                                                           session=session)
 
                 # Are we overriding can_share?
                 if datum['can_share'] is None:
@@ -140,15 +142,16 @@ class Controller(object):
             if memb['id'] in existing:
                 # Just update the membership in place
                 update = existing[memb['id']]['values']
-                db_api.image_member_update(req.context, memb, update,
-                                           session=session)
+                self.db_api.image_member_update(req.context, memb, update,
+                                                session=session)
             else:
                 # Outdated one; needs to be deleted
-                db_api.image_member_delete(req.context, memb, session=session)
+                self.db_api.image_member_delete(req.context, memb,
+                                                session=session)
 
         # Now add the non-existant ones
         for memb in add:
-            db_api.image_member_create(req.context, memb, session=session)
+            self.db_api.image_member_create(req.context, memb, session=session)
 
         # Make an appropriate result
         return webob.exc.HTTPNoContent()
@@ -172,7 +175,7 @@ class Controller(object):
 
         # Make sure the image exists
         try:
-            image = db_api.image_get(req.context, image_id)
+            image = self.db_api.image_get(req.context, image_id)
         except exception.NotFound:
             raise webob.exc.HTTPNotFound()
         except exception.Forbidden:
@@ -201,18 +204,19 @@ class Controller(object):
 
         # Look up an existing membership...
         try:
-            session = db_api.get_session()
-            membership = db_api.image_member_find(req.context,
-                                                  image_id, id,
-                                                  session=session)
+            session = self.db_api.get_session()
+            membership = self.db_api.image_member_find(req.context,
+                                                       image_id, id,
+                                                       session=session)
             if can_share is not None:
                 values = dict(can_share=can_share)
-                db_api.image_member_update(req.context, membership, values,
-                                           session=session)
+                self.db_api.image_member_update(req.context, membership,
+                                                values, session=session)
         except exception.NotFound:
             values = dict(image_id=image['id'], member=id,
                           can_share=bool(can_share))
-            db_api.image_member_create(req.context, values, session=session)
+            self.db_api.image_member_create(req.context, values,
+                                            session=session)
 
         return webob.exc.HTTPNoContent()
 
@@ -226,7 +230,7 @@ class Controller(object):
 
         # Make sure the image exists
         try:
-            image = db_api.image_get(req.context, image_id)
+            image = self.db_api.image_get(req.context, image_id)
         except exception.NotFound:
             raise webob.exc.HTTPNotFound()
         except exception.Forbidden:
@@ -245,14 +249,14 @@ class Controller(object):
 
         # Look up an existing membership
         try:
-            session = db_api.get_session()
-            member_ref = db_api.image_member_find(req.context,
-                                                  image_id,
-                                                  id,
-                                                  session=session)
-            db_api.image_member_delete(req.context,
-                                       member_ref,
-                                       session=session)
+            session = self.db_api.get_session()
+            member_ref = self.db_api.image_member_find(req.context,
+                                                       image_id,
+                                                       id,
+                                                       session=session)
+            self.db_api.image_member_delete(req.context,
+                                            member_ref,
+                                            session=session)
         except exception.NotFound:
             pass
 
@@ -265,9 +269,8 @@ class Controller(object):
         """
         params = {}
         try:
-            memberships = db_api.image_member_get_memberships(req.context,
-                                                              id,
-                                                              **params)
+            memberships = self.db_api.image_member_get_memberships(
+                    req.context, id, **params)
         except exception.NotFound, e:
             msg = _("Invalid marker. Membership could not be found.")
             raise webob.exc.HTTPBadRequest(explanation=msg)

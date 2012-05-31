@@ -50,15 +50,6 @@ BASE = models.BASE
 sa_logger = None
 logger = logging.getLogger(__name__)
 
-# attributes common to all models
-BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
-                        'deleted'])
-
-IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size',
-                                      'disk_format', 'container_format',
-                                      'min_disk', 'min_ram', 'is_public',
-                                      'location', 'checksum', 'owner',
-                                      'protected'])
 
 CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
 DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi',
