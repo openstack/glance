@@ -36,10 +36,11 @@ from sqlalchemy.sql import or_, and_
 
 from glance.common import exception
 from glance import db
-from glance.db import migration
-from glance.db import models
+from glance.db.sqlalchemy import migration
+from glance.db.sqlalchemy import models
 from glance.openstack.common import cfg
 from glance.openstack.common import timeutils
+
 
 _ENGINE = None
 _MAKER = None

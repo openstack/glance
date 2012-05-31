@@ -18,7 +18,7 @@
 from migrate.changeset import *
 from sqlalchemy import *
 
-from glance.db.migrate_repo.schema import (
+from glance.db.sqlalchemy.migrate_repo.schema import (
     Boolean, DateTime, BigInteger, Integer, String,
     Text, from_migration_import)
 

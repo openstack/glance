@@ -20,7 +20,7 @@ import webob.exc
 from glance.common import exception
 from glance.common import wsgi
 from glance.openstack.common import cfg
-from glance.db import api as db_api
+from glance.db.sqlalchemy import api as db_api
 
 context_opts = [
     cfg.BoolOpt('owner_is_tenant', default=True),

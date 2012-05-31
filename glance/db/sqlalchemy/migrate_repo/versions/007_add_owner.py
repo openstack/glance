@@ -17,67 +17,66 @@
 
 from migrate.changeset import *
 from sqlalchemy import *
+from sqlalchemy.sql import and_, not_
 
-from glance.db.migrate_repo.schema import (
-    Boolean, DateTime, BigInteger, Integer, String, Text,
-    create_tables, drop_tables, from_migration_import)
+from glance.db.sqlalchemy.migrate_repo.schema import (
+    Boolean, DateTime, BigInteger, Integer, String,
+    Text, from_migration_import)
 
 
 def get_images_table(meta):
     """
-    No changes to the images table from 007...
+    Returns the Table object for the images table that corresponds to
+    the images table definition of this version.
     """
-    (get_images_table,) = from_migration_import(
-        '007_add_owner', ['get_images_table'])
-
-    images = get_images_table(meta)
-    return images
-
-
-def get_image_properties_table(meta):
-    """
-    No changes to the image properties table from 007...
-    """
-    (get_image_properties_table,) = from_migration_import(
-        '007_add_owner', ['get_image_properties_table'])
-
-    image_properties = get_image_properties_table(meta)
-    return image_properties
-
-
-def get_image_members_table(meta):
-    images = get_images_table(meta)
-
-    image_members = Table('image_members', meta,
+    images = Table('images', meta,
         Column('id', Integer(), primary_key=True, nullable=False),
-        Column('image_id', Integer(), ForeignKey('images.id'), nullable=False,
+        Column('name', String(255)),
+        Column('disk_format', String(20)),
+        Column('container_format', String(20)),
+        Column('size', BigInteger()),
+        Column('status', String(30), nullable=False),
+        Column('is_public', Boolean(), nullable=False, default=False,
                index=True),
-        Column('member', String(255), nullable=False),
-        Column('can_share', Boolean(), nullable=False, default=False),
+        Column('location', Text()),
         Column('created_at', DateTime(), nullable=False),
         Column('updated_at', DateTime()),
         Column('deleted_at', DateTime()),
         Column('deleted', Boolean(), nullable=False, default=False,
                index=True),
-        UniqueConstraint('image_id', 'member'),
+        Column('checksum', String(32)),
+        Column('owner', String(255)),
         mysql_engine='InnoDB',
         extend_existing=True)
 
-    Index('ix_image_members_image_id_member', image_members.c.image_id,
-          image_members.c.member)
+    return images
 
-    return image_members
+
+def get_image_properties_table(meta):
+    """
+    No changes to the image properties table from 006...
+    """
+    (get_image_properties_table,) = from_migration_import(
+        '006_key_to_name', ['get_image_properties_table'])
+
+    image_properties = get_image_properties_table(meta)
+    return image_properties
 
 
 def upgrade(migrate_engine):
     meta = MetaData()
     meta.bind = migrate_engine
-    tables = [get_image_members_table(meta)]
-    create_tables(tables)
+
+    images = get_images_table(meta)
+
+    owner = Column('owner', String(255))
+    owner.create(images)
 
 
 def downgrade(migrate_engine):
     meta = MetaData()
     meta.bind = migrate_engine
-    tables = [get_image_members_table(meta)]
-    drop_tables(tables)
+
+    images = get_images_table(meta)
+
+    images.columns['owner'].drop()
