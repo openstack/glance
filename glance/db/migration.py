@@ -30,7 +30,7 @@ from migrate.versioning import repository as versioning_repository
 from glance.common import exception
 
 
-logger = logging.getLogger('glance.registry.db.migration')
+logger = logging.getLogger('glance.db.migration')
 
 
 def db_version(conf):

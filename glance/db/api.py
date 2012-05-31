@@ -37,8 +37,8 @@ from sqlalchemy.sql import or_, and_
 from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
-from glance.registry.db import migration
-from glance.registry.db import models
+from glance.db import migration
+from glance.db import models
 
 _ENGINE = None
 _MAKER = None

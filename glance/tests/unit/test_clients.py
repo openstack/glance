@@ -24,8 +24,8 @@ from glance.common import client as base_client
 from glance.common import context
 from glance.common import exception
 from glance.common import utils
-from glance.registry.db import api as db_api
-from glance.registry.db import models as db_models
+from glance.db import api as db_api
+from glance.db import models as db_models
 from glance.registry import client as rclient
 from glance.tests.unit import base
 from glance.tests import utils as test_utils

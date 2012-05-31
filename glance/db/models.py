@@ -29,7 +29,7 @@ from sqlalchemy import UniqueConstraint
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.declarative import declarative_base
 
-import glance.registry.db.api
+import glance.db.api
 from glance.common import utils
 
 BASE = declarative_base()
@@ -56,7 +56,7 @@ class ModelBase(object):
 
     def save(self, session=None):
         """Save this object"""
-        session = session or glance.registry.db.api.get_session()
+        session = session or glance.db.api.get_session()
         session.add(self)
         session.flush()
 

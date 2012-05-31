@@ -43,20 +43,20 @@ gettext.install('glance', unicode=1)
 from glance.common import config
 from glance.common import exception
 from glance.openstack.common import cfg
-import glance.registry.db
-import glance.registry.db.api
-import glance.registry.db.migration
+import glance.db
+import glance.db.api
+import glance.db.migration
 
 
 def do_db_version(conf, args):
     """Print database's current migration level"""
-    print glance.registry.db.migration.db_version(conf)
+    print glance.db.migration.db_version(conf)
 
 
 def do_upgrade(conf, args):
     """Upgrade the database's migration level"""
     version = args.pop(0) if args else None
-    glance.registry.db.migration.upgrade(conf, version)
+    glance.db.migration.upgrade(conf, version)
 
 
 def do_downgrade(conf, args):
@@ -66,13 +66,13 @@ def do_downgrade(conf, args):
             "downgrade requires a version argument")
 
     version = args.pop(0)
-    glance.registry.db.migration.downgrade(conf, version)
+    glance.db.migration.downgrade(conf, version)
 
 
 def do_version_control(conf, args):
     """Place a database under migration control"""
     version = args.pop(0) if args else None
-    glance.registry.db.migration.version_control(conf, version)
+    glance.db.migration.version_control(conf, version)
 
 
 def do_db_sync(conf, args):
@@ -83,10 +83,10 @@ def do_db_sync(conf, args):
     # override auto-create flag, as complete DB should always
     # be created on sync if not already existing
     conf.db_auto_create = True
-    glance.registry.db.api.configure_db(conf)
+    glance.db.api.configure_db(conf)
     version = args.pop(0) if args else None
     current_version = args.pop(0) if args else None
-    glance.registry.db.migration.db_sync(conf, version, current_version)
+    glance.db.migration.db_sync(conf, version, current_version)
 
 
 def dispatch_cmd(conf, args):
@@ -112,7 +112,7 @@ def main():
 
         conf = config.GlanceConfigOpts(default_config_files=default_cfg_files,
                                        usage="%prog [options] <cmd>")
-        glance.registry.db.add_options(conf)
+        glance.db.add_options(conf)
         args = conf()
         config.setup_logging(conf)
     except RuntimeError, e:

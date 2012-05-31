@@ -8,7 +8,7 @@ import keystoneclient.v2_0.client
 import glance.common.context
 import glance.openstack.common.cfg
 import glance.registry.context
-import glance.registry.db.api as db_api
+import glance.db.api as db_api
 
 
 logger = logging.getLogger(__name__)

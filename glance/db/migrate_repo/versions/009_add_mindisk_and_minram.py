@@ -19,7 +19,7 @@ from migrate.changeset import *
 from sqlalchemy import *
 from sqlalchemy.sql import and_, not_
 
-from glance.registry.db.migrate_repo.schema import (
+from glance.db.migrate_repo.schema import (
     Boolean, DateTime, Integer, String, Text, from_migration_import)
 
 

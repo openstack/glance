@@ -15,24 +15,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from migrate.changeset import *
-from sqlalchemy import *
-from sqlalchemy.sql import and_, not_
+from sqlalchemy.schema import (Column, MetaData, Table)
 
-from glance.registry.db.migrate_repo.schema import (
-    Boolean, DateTime, Integer, String, Text, from_migration_import)
+from glance.db.migrate_repo.schema import (
+    Boolean, DateTime, Integer, String, Text, create_tables, drop_tables)
 
 
-def get_images_table(meta):
-    """
-    Returns the Table object for the images table that
-    corresponds to the images table definition of this version.
-    """
+def define_images_table(meta):
     images = Table('images', meta,
         Column('id', Integer(), primary_key=True, nullable=False),
         Column('name', String(255)),
-        Column('disk_format', String(20)),
-        Column('container_format', String(20)),
+        Column('type', String(30)),
         Column('size', Integer()),
         Column('status', String(30), nullable=False),
         Column('is_public', Boolean(), nullable=False, default=False,
@@ -43,38 +36,21 @@ def get_images_table(meta):
         Column('deleted_at', DateTime()),
         Column('deleted', Boolean(), nullable=False, default=False,
                index=True),
-        Column('checksum', String(32)),
         mysql_engine='InnoDB',
         extend_existing=True)
 
     return images
 
 
-def get_image_properties_table(meta):
-    """
-    No changes to the image properties table from 002...
-    """
-    (define_image_properties_table,) = from_migration_import(
-        '002_add_image_properties_table', ['define_image_properties_table'])
-
-    image_properties = define_image_properties_table(meta)
-    return image_properties
-
-
 def upgrade(migrate_engine):
     meta = MetaData()
     meta.bind = migrate_engine
-
-    images = get_images_table(meta)
-
-    checksum = Column('checksum', String(32))
-    checksum.create(images)
+    tables = [define_images_table(meta)]
+    create_tables(tables)
 
 
 def downgrade(migrate_engine):
     meta = MetaData()
     meta.bind = migrate_engine
-
-    images = get_images_table(meta)
-
-    images.columns['checksum'].drop()
+    tables = [define_images_table(meta)]
+    drop_tables(tables)

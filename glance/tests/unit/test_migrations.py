@@ -35,8 +35,8 @@ from sqlalchemy.pool import NullPool
 
 from glance.common import exception
 from glance.openstack.common import cfg
-import glance.registry.db.migration as migration_api
-from glance.registry.db import models
+import glance.db.migration as migration_api
+from glance.db import models
 from glance.tests import utils
 
 
@@ -50,7 +50,7 @@ class TestMigrations(utils.BaseTestCase):
     CONFIG_FILE_PATH = os.environ.get('GLANCE_TEST_MIGRATIONS_CONF',
                                       os.path.join('glance', 'tests', 'unit',
                                                    'test_migrations.conf'))
-    REPOSITORY_PATH = os.path.join('glance', 'registry', 'db', 'migrate_repo')
+    REPOSITORY_PATH = os.path.join('glance', 'db', 'migrate_repo')
     REPOSITORY = Repository(REPOSITORY_PATH)
 
     def __init__(self, *args, **kwargs):

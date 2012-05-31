@@ -29,8 +29,8 @@ from glance.api.v1 import router
 from glance.common import context
 from glance.common import utils
 from glance.registry.api import v1 as rserver
-from glance.registry.db import api as db_api
-from glance.registry.db import models as db_models
+from glance.db import api as db_api
+from glance.db import models as db_models
 from glance.tests import utils as test_utils
 from glance.tests.unit import base
 

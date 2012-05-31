@@ -20,7 +20,7 @@ import webob.exc
 from glance.common import exception
 from glance.common import wsgi
 from glance.openstack.common import cfg
-from glance.registry.db import api as db_api
+from glance.db import api as db_api
 
 
 class RequestContext(object):
