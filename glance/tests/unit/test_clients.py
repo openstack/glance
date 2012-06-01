@@ -1138,7 +1138,12 @@ class TestRegistryClient(base.IsolatedUnitTest):
         orig_num_images = len(self.client.get_images())
 
         # Delete image #2
-        self.assertTrue(self.client.delete_image(UUID2))
+        image = self.FIXTURES[1]
+        deleted_image = self.client.delete_image(image['id'])
+        self.assertTrue(deleted_image)
+        self.assertEquals(image['id'], deleted_image['id'])
+        self.assertTrue(deleted_image['deleted'])
+        self.assertTrue(deleted_image['deleted_at'])
 
         # Verify one less image
         new_num_images = len(self.client.get_images())

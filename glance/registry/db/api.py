@@ -243,6 +243,8 @@ def image_destroy(context, image_id):
         for memb_ref in image_ref.members:
             image_member_delete(context, memb_ref, session=session)
 
+        return image_ref
+
 
 def image_get(context, image_id, session=None, force_show_deleted=False):
     """Get an image or raise if it does not exist."""

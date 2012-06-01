@@ -719,7 +719,7 @@ class Controller(controller.BaseController):
             if image['location']:
                 schedule_delete_from_backend(image['location'], self.conf,
                                              req.context, id)
-            registry.delete_image_metadata(req.context, id)
+            image = registry.delete_image_metadata(req.context, id)
         except exception.NotFound, e:
             msg = ("Failed to find image to delete: %(e)s" % locals())
             for line in msg.split('\n'):
@@ -733,7 +733,7 @@ class Controller(controller.BaseController):
             self.notifier.info('image.delete', msg)
             raise HTTPForbidden(msg, request=req, content_type="text/plain")
         else:
-            self.notifier.info('image.delete', id)
+            self.notifier.info('image.delete', image)
 
     def get_store_or_400(self, request, scheme):
         """

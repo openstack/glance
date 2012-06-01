@@ -1857,6 +1857,21 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         new_num_images = len(res_dict['images'])
         self.assertEquals(new_num_images, orig_num_images - 1)
 
+    def test_delete_image_response(self):
+        """Tests that the registry API delete returns the image metadata"""
+
+        image = self.FIXTURES[0]
+        req = webob.Request.blank('/images/%s' % image['id'])
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+
+        self.assertEquals(res.status_int, 200)
+        deleted_image = json.loads(res.body)['image']
+
+        self.assertEquals(image['id'], deleted_image['id'])
+        self.assertTrue(deleted_image['deleted'])
+        self.assertTrue(deleted_image['deleted_at'])
+
     def test_delete_image_not_existing(self):
         """
         Tests proper exception is raised if attempt to delete
