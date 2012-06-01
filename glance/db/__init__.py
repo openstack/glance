@@ -18,6 +18,7 @@
 #    under the License.
 
 from glance.openstack.common import cfg
+from glance.openstack.common import importutils
 
 sql_connection_opt = cfg.StrOpt('sql_connection',
                                 default='sqlite:///glance.sqlite',
@@ -41,8 +42,7 @@ def add_cli_options():
 
 
 def get_api():
-    import glance.db.sqlalchemy.api
-    return glance.db.sqlalchemy.api
+    return importutils.import_module(CONF.data_api)
 
 
 # attributes common to all models
