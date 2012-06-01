@@ -58,7 +58,7 @@ class Controller(object):
 
         # Image is visible, but authenticated user still may not be able to
         # share it
-        if not req.context.is_image_sharable(image):
+        if not self.db_api.is_image_sharable(req.context, image):
             msg = _("No permission to share that image")
             raise webob.exc.HTTPForbidden(msg)
 

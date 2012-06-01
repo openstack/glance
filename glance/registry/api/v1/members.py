@@ -86,7 +86,7 @@ class Controller(object):
             raise webob.exc.HTTPNotFound()
 
         # Can they manipulate the membership?
-        if not req.context.is_image_sharable(image):
+        if not self.db_api.is_image_sharable(req.context, image):
             msg = _("No permission to share that image")
             raise webob.exc.HTTPForbidden(msg)
 
@@ -188,7 +188,7 @@ class Controller(object):
             raise webob.exc.HTTPNotFound()
 
         # Can they manipulate the membership?
-        if not req.context.is_image_sharable(image):
+        if not self.db_api.is_image_sharable(req.context, image):
             msg = _("No permission to share that image")
             raise webob.exc.HTTPForbidden(msg)
 
@@ -243,7 +243,7 @@ class Controller(object):
             raise webob.exc.HTTPNotFound()
 
         # Can they manipulate the membership?
-        if not req.context.is_image_sharable(image):
+        if not self.db_api.is_image_sharable(req.context, image):
             msg = _("No permission to share that image")
             raise webob.exc.HTTPForbidden(msg)
 

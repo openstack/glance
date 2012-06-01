@@ -20,9 +20,6 @@ import webob.exc
 from glance.common import exception
 from glance.common import wsgi
 from glance.openstack.common import cfg
-import glance.db
-
-db_api = glance.db.get_api()
 
 context_opts = [
     cfg.BoolOpt('owner_is_tenant', default=True),
@@ -63,79 +60,6 @@ class RequestContext(object):
         if self._show_deleted or self.is_admin:
             return True
         return False
-
-    def is_image_visible(self, image):
-        """Return True if the image is visible in this context."""
-        # Is admin == image visible
-        if self.is_admin:
-            return True
-
-        # No owner == image visible
-        if image['owner'] is None:
-            return True
-
-        # Image is_public == image visible
-        if image['is_public']:
-            return True
-
-        # Perform tests based on whether we have an owner
-        if self.owner is not None:
-            if self.owner == image['owner']:
-                return True
-
-            # Figure out if this image is shared with that tenant
-            try:
-                tmp = db_api.image_member_find(self, image['id'], self.owner)
-                return not tmp['deleted']
-            except exception.NotFound:
-                pass
-
-        # Private image
-        return False
-
-    def is_image_mutable(self, image):
-        """Return True if the image is mutable in this context."""
-        # Is admin == image mutable
-        if self.is_admin:
-            return True
-
-        # No owner == image not mutable
-        if image['owner'] is None or self.owner is None:
-            return False
-
-        # Image only mutable by its owner
-        return image['owner'] == self.owner
-
-    def is_image_sharable(self, image, **kwargs):
-        """Return True if the image can be shared to others in this context."""
-        # Only allow sharing if we have an owner
-        if self.owner is None:
-            return False
-
-        # Is admin == image sharable
-        if self.is_admin:
-            return True
-
-        # If we own the image, we can share it
-        if self.owner == image['owner']:
-            return True
-
-        # Let's get the membership association
-        if 'membership' in kwargs:
-            membership = kwargs['membership']
-            if membership is None:
-                # Not shared with us anyway
-                return False
-        else:
-            try:
-                membership = db_api.image_member_find(self, image['id'],
-                                                      self.owner)
-            except exception.NotFound:
-                # Not shared with us anyway
-                return False
-
-        # It's the can_share attribute we're now interested in
-        return membership['can_share']
 
 
 class ContextMiddleware(wsgi.Middleware):
