@@ -4,7 +4,13 @@
 .glance-venv
 .venv
 .tox
+.coverage
+cover/*
+nosetests.xml
+coverage.xml
+glance.sqlite
 AUTHORS
+ChangeLog
 build
 dist
 *.egg
