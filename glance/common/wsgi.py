@@ -43,6 +43,7 @@ import webob.exc
 from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
+from glance.openstack.common import importutils
 
 
 bind_opts = [
@@ -564,7 +565,7 @@ class BasePasteFactory(object):
         we strip() the value before using it.
         """
         class_name = local_conf[self.KEY].replace(':', '.').strip()
-        return utils.import_class(class_name)
+        return importutils.import_class(class_name)
 
 
 class AppFactory(BasePasteFactory):

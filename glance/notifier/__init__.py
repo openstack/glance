@@ -21,8 +21,8 @@ import socket
 import uuid
 
 from glance.common import exception
-from glance.common import utils
 from glance.openstack.common import cfg
+from glance.openstack.common import importutils
 
 
 _STRATEGIES = {
@@ -45,7 +45,8 @@ class Notifier(object):
         conf.register_opts(self.opts)
         strategy = conf.notifier_strategy
         try:
-            self.strategy = utils.import_class(_STRATEGIES[strategy])(conf)
+            strategy_cls = _STRATEGIES[strategy]
+            self.strategy = importutils.import_class(strategy_cls)(conf)
         except (KeyError, ImportError):
             raise exception.InvalidNotifierStrategy(strategy=strategy)
 

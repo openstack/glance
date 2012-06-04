@@ -20,7 +20,7 @@
 import logging
 
 from glance.common import exception
-from glance.common import utils
+from glance.openstack.common import importutils
 
 logger = logging.getLogger('glance.store.base')
 
@@ -68,7 +68,7 @@ class Store(object):
         if not self.store_location_class:
             class_name = "%s.StoreLocation" % (self.__module__)
             logger.debug("Late loading location class %s", class_name)
-            self.store_location_class = utils.import_class(class_name)
+            self.store_location_class = importutils.import_class(class_name)
         return self.store_location_class
 
     def configure_add(self):

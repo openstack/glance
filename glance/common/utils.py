@@ -149,27 +149,6 @@ def bool_from_string(subject):
     return False
 
 
-def import_class(import_str):
-    """Returns a class from a string including module and class"""
-    mod_str, _sep, class_str = import_str.rpartition('.')
-    try:
-        __import__(mod_str)
-        return getattr(sys.modules[mod_str], class_str)
-    except (ImportError, ValueError, AttributeError), e:
-        raise exception.ImportFailure(import_str=import_str,
-                                      reason=e)
-
-
-def import_object(import_str):
-    """Returns an object including a module or module and class"""
-    try:
-        __import__(import_str)
-        return sys.modules[import_str]
-    except ImportError:
-        cls = import_class(import_str)
-        return cls()
-
-
 def generate_uuid():
     return str(uuid.uuid4())
 
