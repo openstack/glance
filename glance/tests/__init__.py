@@ -19,3 +19,12 @@
 # The code below enables nosetests to work with i18n _() blocks
 import __builtin__
 setattr(__builtin__, '_', lambda x: x)
+
+# Set up logging to output debugging
+import logging
+logger = logging.getLogger()
+hdlr = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr)
+logger.setLevel(logging.DEBUG)

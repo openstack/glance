@@ -61,7 +61,9 @@ class TestMultiprocessing(functional.FunctionalTest):
         execute(cmd, raise_error=True)
 
         for _ in range(0, 9):
-            time.sleep(0.05)
+            # Yeah. This totally isn't a race condition. Randomly fails
+            # set at 0.05. Works most of the time at 0.10
+            time.sleep(0.10)
             # ensure number of children hasn't grown
             self.assertTrue(len(children) >= len(self._get_children()))
             for child in self._get_children():

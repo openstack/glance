@@ -39,6 +39,13 @@ noseargs=
 wrapper=""
 just_pep8=0
 
+export NOSE_WITH_OPENSTACK=1
+export NOSE_OPENSTACK_COLOR=1
+export NOSE_OPENSTACK_RED=0.05
+export NOSE_OPENSTACK_YELLOW=0.025
+export NOSE_OPENSTACK_SHOW_ELAPSED=1
+export NOSE_OPENSTACK_STDOUT=1
+
 for arg in "$@"; do
   process_option $arg
 done
@@ -46,7 +53,7 @@ done
 function run_tests {
   # Just run the test suites in current environment
   ${wrapper} rm -f tests.sqlite
-  ${wrapper} $NOSETESTS 2> run_tests.err.log
+  ${wrapper} $NOSETESTS 2> run_tests.log
 }
 
 function run_pep8 {
@@ -57,7 +64,7 @@ function run_pep8 {
 }
 
 
-NOSETESTS="python run_tests.py $noseargs"
+NOSETESTS="nosetests $noseargs"
 
 if [ $never_venv -eq 0 ]
 then
