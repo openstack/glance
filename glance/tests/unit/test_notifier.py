@@ -28,9 +28,9 @@ except ImportError:
 import stubout
 
 from glance.common import exception
-from glance.common import utils as common_utils
 from glance import notifier
 import glance.notifier.notify_kombu
+from glance.openstack.common import importutils
 from glance.tests import utils
 
 
@@ -105,8 +105,8 @@ class TestRabbitNotifier(utils.BaseTestCase):
             rabbit_self.connection = 'fake_connection'
             return None
 
-        self.notify_kombu = common_utils.import_object(
-                                        "glance.notifier.notify_kombu")
+        self.notify_kombu = importutils.import_module("glance.notifier."
+                                                      "notify_kombu")
         self.notify_kombu.RabbitStrategy._send_message = self._send_message
         self.notify_kombu.RabbitStrategy._connect = _fake_connect
         self.called = False
@@ -302,8 +302,8 @@ class TestQpidNotifier(utils.BaseTestCase):
         qpid.messaging.Sender = lambda *_x, **_y: self.mock_sender
         qpid.messaging.Receiver = lambda *_x, **_y: self.mock_receiver
 
-        self.notify_qpid = common_utils.import_object(
-                                        "glance.notifier.notify_qpid")
+        self.notify_qpid = importutils.import_module("glance.notifier."
+                                                     "notify_qpid")
 
     def tearDown(self):
         super(TestQpidNotifier, self).tearDown()

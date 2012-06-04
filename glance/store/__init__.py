@@ -23,6 +23,7 @@ import time
 from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
+from glance.openstack.common import importutils
 from glance import registry
 from glance.store import location
 
@@ -129,7 +130,7 @@ def _get_store_class(store_entry):
     store_cls = None
     try:
         logger.debug("Attempting to import store %s", store_entry)
-        store_cls = utils.import_class(store_entry)
+        store_cls = importutils.import_class(store_entry)
     except exception.NotFound:
         raise BackendException('Unable to load store. '
                                'Could not find a class named %s.'

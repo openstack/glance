@@ -24,6 +24,7 @@ import logging
 from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
+from glance.openstack.common import importutils
 
 logger = logging.getLogger(__name__)
 DEFAULT_MAX_CACHE_SIZE = 10 * 1024 * 1024 * 1024  # 10 GB
@@ -52,17 +53,17 @@ class ImageCache(object):
         driver_name = self.conf.image_cache_driver
         driver_module = (__name__ + '.drivers.' + driver_name + '.Driver')
         try:
-            self.driver_class = utils.import_class(driver_module)
+            self.driver_class = importutils.import_class(driver_module)
             logger.info(_("Image cache loaded driver '%s'.") %
                         driver_name)
-        except exception.ImportFailure, import_err:
+        except ImportError, import_err:
             logger.warn(_("Image cache driver "
                           "'%(driver_name)s' failed to load. "
                           "Got error: '%(import_err)s.") % locals())
 
             driver_module = __name__ + '.drivers.sqlite.Driver'
             logger.info(_("Defaulting to SQLite driver."))
-            self.driver_class = utils.import_class(driver_module)
+            self.driver_class = importutils.import_class(driver_module)
         self.configure_driver()
 
     def configure_driver(self):
@@ -80,7 +81,7 @@ class ImageCache(object):
                           "Got error: '%(config_err)s") % locals())
             logger.info(_("Defaulting to SQLite driver."))
             default_module = __name__ + '.drivers.sqlite.Driver'
-            self.driver_class = utils.import_class(default_module)
+            self.driver_class = importutils.import_class(default_module)
             self.driver = self.driver_class(self.conf)
             self.driver.configure()
 

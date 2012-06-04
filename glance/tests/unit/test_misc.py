@@ -23,6 +23,7 @@ import re
 from glance.common import crypt
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import importutils
 from glance.tests import utils as test_utils
 
 
@@ -44,36 +45,6 @@ class UtilsTestCase(test_utils.BaseTestCase):
         for value in false_values:
             self.assertFalse(utils.bool_from_string(value),
                              "Got True for value: %r" % value)
-
-    def test_import_class_or_object(self):
-        # Test that import_class raises a descriptive error when the
-        # class to import could not be found.
-        self.assertRaises(exception.ImportFailure, utils.import_class,
-                          'nomodule')
-
-        self.assertRaises(exception.ImportFailure, utils.import_class,
-                          'mymodule.nonexistingclass')
-
-        self.assertRaises(exception.ImportFailure, utils.import_class,
-                          'sys.nonexistingclass')
-
-        self.assertRaises(exception.ImportFailure, utils.import_object,
-                          'os.path.NONEXISTINGOBJECT')
-
-        store_class = utils.import_class('glance.store.s3.Store')
-
-        self.assertTrue(store_class.__name__ == 'Store')
-
-        # Try importing an object by supplying a class and
-        # verify the object's class name is the same as that supplied
-        ex_obj = utils.import_object('glance.common.exception.GlanceException')
-
-        self.assertTrue(ex_obj.__class__.__name__ == 'GlanceException')
-
-        # Try importing a module itself
-        module_obj = utils.import_object('glance.registry')
-
-        self.assertEqual('glance.registry', module_obj.__package__)
 
     def test_isotime(self):
         dt1 = datetime.datetime(2001, 11, 10, 1, 2, 3)

@@ -92,11 +92,6 @@ class StorageWriteDenied(GlanceException):
     message = _("Permission to write image storage media denied.")
 
 
-class ImportFailure(GlanceException):
-    message = _("Failed to import requested object/class: '%(import_str)s'. "
-                "Reason: %(reason)s")
-
-
 class AuthBadRequest(GlanceException):
     message = _("Connect error/bad request to Auth service at URL %(url)s.")
 
