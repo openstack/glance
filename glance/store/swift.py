@@ -128,7 +128,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                     "like so: "
                     "swift+http://user:pass@authurl.com/v1/container/obj"
                     )
-            raise exception.BadStoreUri(uri, reason)
+            raise exception.BadStoreUri(uri=uri, reason=reason)
 
         pieces = urlparse.urlparse(uri)
         assert pieces.scheme in ('swift', 'swift+http', 'swift+https')
@@ -155,7 +155,7 @@ class StoreLocation(glance.store.location.StoreLocation):
             if len(cred_parts) != 2:
                 reason = (_("Badly formed credentials '%(creds)s' in Swift "
                             "URI") % locals())
-                raise exception.BadStoreUri(uri, reason)
+                raise exception.BadStoreUri(uri=uri, reason=reason)
             user, key = cred_parts
             self.user = urllib.unquote(user)
             self.key = urllib.unquote(key)
@@ -171,7 +171,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                 self.authurl = '/'.join(path_parts)
         except IndexError:
             reason = _("Badly formed Swift URI")
-            raise exception.BadStoreUri(uri, reason)
+            raise exception.BadStoreUri(uri=uri, reason=reason)
 
     @property
     def swift_auth_url(self):

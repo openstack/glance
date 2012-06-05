@@ -63,7 +63,7 @@ class StoreLocation(glance.store.location.StoreLocation):
         path = (pieces.netloc + pieces.path).strip()
         if path == '':
             reason = _("No path specified")
-            raise exception.BadStoreUri(uri, reason)
+            raise exception.BadStoreUri(uri=uri, reason=reason)
         self.path = path
 
 

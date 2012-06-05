@@ -109,7 +109,7 @@ def legacy_parse_uri(self, uri):
                 "like so: "
                 "swift+http://user:pass@authurl.com/v1/container/obj"
                 )
-        raise exception.BadStoreUri(uri, reason)
+        raise exception.BadStoreUri(uri=uri, reason=reason)
 
     pieces = urlparse.urlparse(uri)
     assert pieces.scheme in ('swift', 'swift+http', 'swift+https')
@@ -140,7 +140,7 @@ def legacy_parse_uri(self, uri):
         if len(cred_parts) == 1:
             reason = (_("Badly formed credentials '%(creds)s' in Swift "
                         "URI") % locals())
-            raise exception.BadStoreUri(uri, reason)
+            raise exception.BadStoreUri(uri=uri, reason=reason)
         elif len(cred_parts) == 3:
             user = ':'.join(cred_parts[0:2])
         else:
@@ -160,4 +160,4 @@ def legacy_parse_uri(self, uri):
             self.authurl = '/'.join(path_parts)
     except IndexError:
         reason = _("Badly formed Swift URI")
-        raise exception.BadStoreUri(uri, reason)
+        raise exception.BadStoreUri(uri=uri, reason=reason)

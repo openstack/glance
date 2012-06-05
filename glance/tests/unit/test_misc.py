@@ -21,7 +21,6 @@ import datetime
 import re
 
 from glance.common import crypt
-from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import importutils
 from glance.tests import utils as test_utils
