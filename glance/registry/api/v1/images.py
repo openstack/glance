@@ -27,6 +27,7 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 from glance.openstack.common import cfg
+from glance.openstack.common import timeutils
 from glance.db import api as db_api
 
 logger = logging.getLogger('glance.registry.api.v1.images')
@@ -167,7 +168,7 @@ class Controller(object):
         if 'changes-since' in filters:
             isotime = filters['changes-since']
             try:
-                filters['changes-since'] = utils.parse_isotime(isotime)
+                filters['changes-since'] = timeutils.parse_isotime(isotime)
             except ValueError:
                 raise exc.HTTPBadRequest(_("Unrecognized changes-since value"))
 

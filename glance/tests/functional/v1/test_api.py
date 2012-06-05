@@ -24,7 +24,7 @@ import tempfile
 
 import httplib2
 
-from glance.common import utils
+from glance.openstack.common import timeutils
 from glance.tests import functional
 from glance.tests.utils import skip_if_disabled, minimal_headers
 
@@ -740,8 +740,8 @@ class TestApi(functional.FunctionalTest):
             self.assertEqual(image['name'], "My Image!")
 
         # 16. GET /images with past changes-since filter
-        yesterday = utils.isotime(datetime.datetime.utcnow() -
-                                  datetime.timedelta(1))
+        yesterday = timeutils.isotime(timeutils.utcnow() -
+                                      datetime.timedelta(1))
         params = "changes-since=%s" % yesterday
         path = "http://%s:%d/v1/images?%s" % ("0.0.0.0", self.api_port, params)
         response, content = http.request(path, 'GET')
@@ -754,7 +754,7 @@ class TestApi(functional.FunctionalTest):
         # '+' is wrongly decoded as a space
         # TODO(eglynn): investigate '+' --> <SPACE> decoding, an artifact
         # of WSGI/webob dispatch?
-        now = datetime.datetime.utcnow()
+        now = timeutils.utcnow()
         hour_ago = now.strftime('%Y-%m-%dT%H:%M:%S%%2B01:00')
         params = "changes-since=%s" % hour_ago
         path = "http://%s:%d/v1/images?%s" % ("0.0.0.0", self.api_port, params)
@@ -764,8 +764,8 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(len(data['images']), 3)
 
         # 17. GET /images with future changes-since filter
-        tomorrow = utils.isotime(datetime.datetime.utcnow() +
-                                 datetime.timedelta(1))
+        tomorrow = timeutils.isotime(timeutils.utcnow() +
+                                     datetime.timedelta(1))
         params = "changes-since=%s" % tomorrow
         path = "http://%s:%d/v1/images?%s" % ("0.0.0.0", self.api_port, params)
         response, content = http.request(path, 'GET')
@@ -774,7 +774,7 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(len(data['images']), 0)
 
         # one timezone east of Greenwich equates to an hour from now
-        now = datetime.datetime.utcnow()
+        now = timeutils.utcnow()
         hour_hence = now.strftime('%Y-%m-%dT%H:%M:%S-01:00')
         params = "changes-since=%s" % hour_hence
         path = "http://%s:%d/v1/images?%s" % ("0.0.0.0", self.api_port, params)

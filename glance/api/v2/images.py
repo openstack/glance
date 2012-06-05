@@ -23,6 +23,7 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.db.api
+from glance.openstack.common import timeutils
 
 
 class ImagesController(base.Controller):
@@ -198,7 +199,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
     def _serialize_datetimes(image):
         for (key, value) in image.iteritems():
             if isinstance(value, datetime.datetime):
-                image[key] = utils.isotime(value)
+                image[key] = timeutils.isotime(value)
 
     def create(self, response, image):
         response.body = json.dumps({'image': self._format_image(image)})

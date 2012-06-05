@@ -40,6 +40,7 @@ import tempfile
 from glance import client as glance_client
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import timeutils
 from glance.tests import functional
 from glance.tests.utils import skip_if_disabled, minimal_headers
 
@@ -911,8 +912,8 @@ class TestSSL(functional.FunctionalTest):
             self.assertEqual(image['name'], "My Image!")
 
         # 14. GET /images with past changes-since filter
-        dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
-        iso1 = utils.isotime(dt1)
+        dt1 = timeutils.utcnow() - datetime.timedelta(1)
+        iso1 = timeutils.isotime(dt1)
         params = "changes-since=%s" % iso1
         path = "https://%s:%d/v1/images?%s" % ("0.0.0.0",
                                                self.api_port, params)
@@ -922,8 +923,8 @@ class TestSSL(functional.FunctionalTest):
         self.assertEqual(len(data['images']), 3)
 
         # 15. GET /images with future changes-since filter
-        dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
-        iso2 = utils.isotime(dt2)
+        dt2 = timeutils.utcnow() + datetime.timedelta(1)
+        iso2 = timeutils.isotime(dt2)
         params = "changes-since=%s" % iso2
         path = "https://%s:%d/v1/images?%s" % ("0.0.0.0",
                                                self.api_port, params)

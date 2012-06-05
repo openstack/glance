@@ -26,6 +26,7 @@ from glance.common import exception
 from glance.common import utils
 from glance.db import api as db_api
 from glance.db import models as db_models
+from glance.openstack.common import timeutils
 from glance.registry import client as rclient
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
@@ -154,8 +155,8 @@ class TestRegistryClient(base.IsolatedUnitTest):
              'disk_format': 'ami',
              'container_format': 'ami',
              'is_public': False,
-             'created_at': datetime.datetime.utcnow(),
-             'updated_at': datetime.datetime.utcnow(),
+             'created_at': timeutils.utcnow(),
+             'updated_at': timeutils.utcnow(),
              'deleted_at': None,
              'deleted': False,
              'checksum': None,
@@ -168,8 +169,8 @@ class TestRegistryClient(base.IsolatedUnitTest):
              'disk_format': 'vhd',
              'container_format': 'ovf',
              'is_public': True,
-             'created_at': datetime.datetime.utcnow(),
-             'updated_at': datetime.datetime.utcnow(),
+             'created_at': timeutils.utcnow(),
+             'updated_at': timeutils.utcnow(),
              'deleted_at': None,
              'deleted': False,
              'checksum': None,
@@ -416,7 +417,7 @@ class TestRegistryClient(base.IsolatedUnitTest):
         Tests that the /images registry API returns list of
         public images sorted by created_at in ascending order.
         """
-        now = datetime.datetime.utcnow()
+        now = timeutils.utcnow()
         time1 = now + datetime.timedelta(seconds=5)
         time2 = now
 
@@ -458,7 +459,7 @@ class TestRegistryClient(base.IsolatedUnitTest):
         Tests that the /images registry API returns list of
         public images sorted by updated_at in descending order.
         """
-        now = datetime.datetime.utcnow()
+        now = timeutils.utcnow()
         time1 = now + datetime.timedelta(seconds=5)
         time2 = now
 
@@ -814,17 +815,17 @@ class TestRegistryClient(base.IsolatedUnitTest):
 
     def test_get_image_details_with_changes_since(self):
         """Tests that a detailed call can be filtered by size_min"""
-        dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
-        iso1 = utils.isotime(dt1)
+        dt1 = timeutils.utcnow() - datetime.timedelta(1)
+        iso1 = timeutils.isotime(dt1)
 
-        dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
-        iso2 = utils.isotime(dt2)
+        dt2 = timeutils.utcnow() + datetime.timedelta(1)
+        iso2 = timeutils.isotime(dt2)
 
-        dt3 = datetime.datetime.utcnow() + datetime.timedelta(2)
-        iso3 = utils.isotime(dt3)
+        dt3 = timeutils.utcnow() + datetime.timedelta(2)
+        iso3 = timeutils.isotime(dt3)
 
-        dt4 = datetime.datetime.utcnow() + datetime.timedelta(3)
-        iso4 = utils.isotime(dt4)
+        dt4 = timeutils.utcnow() + datetime.timedelta(3)
+        iso4 = timeutils.isotime(dt4)
 
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
@@ -1208,8 +1209,8 @@ class TestClient(base.IsolatedUnitTest):
              'disk_format': 'ami',
              'container_format': 'ami',
              'is_public': False,
-             'created_at': datetime.datetime.utcnow(),
-             'updated_at': datetime.datetime.utcnow(),
+             'created_at': timeutils.utcnow(),
+             'updated_at': timeutils.utcnow(),
              'deleted_at': None,
              'deleted': False,
              'checksum': None,
@@ -1222,8 +1223,8 @@ class TestClient(base.IsolatedUnitTest):
              'disk_format': 'vhd',
              'container_format': 'ovf',
              'is_public': True,
-             'created_at': datetime.datetime.utcnow(),
-             'updated_at': datetime.datetime.utcnow(),
+             'created_at': timeutils.utcnow(),
+             'updated_at': timeutils.utcnow(),
              'deleted_at': None,
              'deleted': False,
              'checksum': None,
@@ -1537,17 +1538,17 @@ class TestClient(base.IsolatedUnitTest):
 
     def test_get_image_details_with_changes_since(self):
         """Tests that a detailed call can be filtered by size_min"""
-        dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
-        iso1 = utils.isotime(dt1)
+        dt1 = timeutils.utcnow() - datetime.timedelta(1)
+        iso1 = timeutils.isotime(dt1)
 
-        dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
-        iso2 = utils.isotime(dt2)
+        dt2 = timeutils.utcnow() + datetime.timedelta(1)
+        iso2 = timeutils.isotime(dt2)
 
-        dt3 = datetime.datetime.utcnow() + datetime.timedelta(2)
-        iso3 = utils.isotime(dt3)
+        dt3 = timeutils.utcnow() + datetime.timedelta(2)
+        iso3 = timeutils.isotime(dt3)
 
-        dt4 = datetime.datetime.utcnow() + datetime.timedelta(3)
-        iso4 = utils.isotime(dt4)
+        dt4 = timeutils.utcnow() + datetime.timedelta(3)
+        iso4 = timeutils.isotime(dt4)
 
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,

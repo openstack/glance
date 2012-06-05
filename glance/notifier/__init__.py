@@ -16,13 +16,13 @@
 #    under the License.
 
 
-import datetime
 import socket
 import uuid
 
 from glance.common import exception
 from glance.openstack.common import cfg
 from glance.openstack.common import importutils
+from glance.openstack.common import timeutils
 
 notifier_opts = [
     cfg.StrOpt('notifier_strategy', default='default')
@@ -59,7 +59,7 @@ class Notifier(object):
             "event_type": event_type,
             "priority": priority,
             "payload": payload,
-            "timestamp": str(datetime.datetime.utcnow()),
+            "timestamp": str(timeutils.utcnow()),
         }
 
     def warn(self, event_type, payload):

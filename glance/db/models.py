@@ -20,8 +20,6 @@
 SQLAlchemy models for glance data
 """
 
-import datetime
-
 from sqlalchemy.orm import relationship, backref, object_mapper
 from sqlalchemy import Column, Integer, String, BigInteger
 from sqlalchemy import ForeignKey, DateTime, Boolean, Text
@@ -31,6 +29,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 import glance.db.api
 from glance.common import utils
+from glance.openstack.common import timeutils
 
 BASE = declarative_base()
 
@@ -47,10 +46,10 @@ class ModelBase(object):
     __protected_attributes__ = set([
         "created_at", "updated_at", "deleted_at", "deleted"])
 
-    created_at = Column(DateTime, default=datetime.datetime.utcnow,
+    created_at = Column(DateTime, default=timeutils.utcnow,
                         nullable=False)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow,
-                        nullable=False, onupdate=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=timeutils.utcnow,
+                        nullable=False, onupdate=timeutils.utcnow)
     deleted_at = Column(DateTime)
     deleted = Column(Boolean, nullable=False, default=False)
 
@@ -63,7 +62,7 @@ class ModelBase(object):
     def delete(self, session=None):
         """Delete this object"""
         self.deleted = True
-        self.deleted_at = datetime.datetime.utcnow()
+        self.deleted_at = timeutils.utcnow()
         self.save(session=session)
 
     def update(self, values):

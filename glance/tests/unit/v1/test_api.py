@@ -28,6 +28,7 @@ from glance.api.v1 import images
 from glance.api.v1 import router
 from glance.common import context
 from glance.common import utils
+from glance.openstack.common import timeutils
 from glance.registry.api import v1 as rserver
 from glance.db import api as db_api
 from glance.db import models as db_models
@@ -100,8 +101,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
              'disk_format': 'ami',
              'container_format': 'ami',
              'is_public': False,
-             'created_at': datetime.datetime.utcnow(),
-             'updated_at': datetime.datetime.utcnow(),
+             'created_at': timeutils.utcnow(),
+             'updated_at': timeutils.utcnow(),
              'deleted_at': None,
              'deleted': False,
              'checksum': None,
@@ -116,8 +117,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
              'disk_format': 'vhd',
              'container_format': 'ovf',
              'is_public': True,
-             'created_at': datetime.datetime.utcnow(),
-             'updated_at': datetime.datetime.utcnow(),
+             'created_at': timeutils.utcnow(),
+             'updated_at': timeutils.utcnow(),
              'deleted_at': None,
              'deleted': False,
              'checksum': None,
@@ -231,9 +232,9 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images registry API returns list of
         public images that conforms to a marker query param
         """
-        time1 = datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
-        time2 = datetime.datetime.utcnow() + datetime.timedelta(seconds=4)
-        time3 = datetime.datetime.utcnow()
+        time1 = timeutils.utcnow() + datetime.timedelta(seconds=5)
+        time2 = timeutils.utcnow() + datetime.timedelta(seconds=4)
+        time3 = timeutils.utcnow()
 
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
@@ -451,9 +452,9 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images registry API returns list of
         public images that conforms to a default sort key/dir
         """
-        time1 = datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
-        time2 = datetime.datetime.utcnow() + datetime.timedelta(seconds=4)
-        time3 = datetime.datetime.utcnow()
+        time1 = timeutils.utcnow() + datetime.timedelta(seconds=5)
+        time2 = timeutils.utcnow() + datetime.timedelta(seconds=4)
+        time3 = timeutils.utcnow()
 
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
@@ -729,7 +730,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images registry API returns list of
         public images sorted by created_at in ascending order.
         """
-        now = datetime.datetime.utcnow()
+        now = timeutils.utcnow()
         time1 = now + datetime.timedelta(seconds=5)
         time2 = now
 
@@ -775,7 +776,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images registry API returns list of
         public images sorted by updated_at in descending order.
         """
-        now = datetime.datetime.utcnow()
+        now = timeutils.utcnow()
         time1 = now + datetime.timedelta(seconds=5)
         time2 = now
 
@@ -1257,18 +1258,18 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry API returns list of
         public images that have a size less than or equal to size_max
         """
-        dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
-        iso1 = utils.isotime(dt1)
+        dt1 = timeutils.utcnow() - datetime.timedelta(1)
+        iso1 = timeutils.isotime(dt1)
 
-        dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
-        iso2 = utils.isotime(dt2)
+        dt2 = timeutils.utcnow() + datetime.timedelta(1)
+        iso2 = timeutils.isotime(dt2)
 
-        image_ts = datetime.datetime.utcnow() + datetime.timedelta(2)
+        image_ts = timeutils.utcnow() + datetime.timedelta(2)
         hour_before = image_ts.strftime('%Y-%m-%dT%H:%M:%S%%2B01:00')
         hour_after = image_ts.strftime('%Y-%m-%dT%H:%M:%S-01:00')
 
-        dt4 = datetime.datetime.utcnow() + datetime.timedelta(3)
-        iso4 = utils.isotime(dt4)
+        dt4 = timeutils.utcnow() + datetime.timedelta(3)
+        iso4 = timeutils.isotime(dt4)
 
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
@@ -1969,8 +1970,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
              'disk_format': 'ami',
              'container_format': 'ami',
              'is_public': False,
-             'created_at': datetime.datetime.utcnow(),
-             'updated_at': datetime.datetime.utcnow(),
+             'created_at': timeutils.utcnow(),
+             'updated_at': timeutils.utcnow(),
              'deleted_at': None,
              'deleted': False,
              'checksum': None,
@@ -1983,8 +1984,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
              'disk_format': 'vhd',
              'container_format': 'ovf',
              'is_public': True,
-             'created_at': datetime.datetime.utcnow(),
-             'updated_at': datetime.datetime.utcnow(),
+             'created_at': timeutils.utcnow(),
+             'updated_at': timeutils.utcnow(),
              'deleted_at': None,
              'deleted': False,
              'checksum': None,
@@ -2519,18 +2520,18 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry API returns list of
         public images that have a size less than or equal to size_max
         """
-        dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
-        iso1 = utils.isotime(dt1)
+        dt1 = timeutils.utcnow() - datetime.timedelta(1)
+        iso1 = timeutils.isotime(dt1)
 
-        dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
-        iso2 = utils.isotime(dt2)
+        dt2 = timeutils.utcnow() + datetime.timedelta(1)
+        iso2 = timeutils.isotime(dt2)
 
-        image_ts = datetime.datetime.utcnow() + datetime.timedelta(2)
+        image_ts = timeutils.utcnow() + datetime.timedelta(2)
         hour_before = image_ts.strftime('%Y-%m-%dT%H:%M:%S%%2B01:00')
         hour_after = image_ts.strftime('%Y-%m-%dT%H:%M:%S-01:00')
 
-        dt4 = datetime.datetime.utcnow() + datetime.timedelta(3)
-        iso4 = utils.isotime(dt4)
+        dt4 = timeutils.utcnow() + datetime.timedelta(3)
+        iso4 = timeutils.isotime(dt4)
 
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
@@ -3011,8 +3012,8 @@ class TestImageSerializer(base.IsolatedUnitTest):
                  'disk_format': 'vhd',
                  'container_format': 'ovf',
                  'is_public': True,
-                 'created_at': datetime.datetime.utcnow(),
-                 'updated_at': datetime.datetime.utcnow(),
+                 'created_at': timeutils.utcnow(),
+                 'updated_at': timeutils.utcnow(),
                  'deleted_at': None,
                  'deleted': False,
                  'checksum': None,

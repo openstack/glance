@@ -24,6 +24,7 @@ from glance.common import exception
 from glance.common import utils
 from glance.db import api as db_api
 from glance.db import models as db_models
+from glance.openstack.common import timeutils
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
@@ -109,7 +110,7 @@ class TestRegistryDb(BaseDBTestCase):
             db_api.image_create(self.adm_context, fixture)
 
     def build_fixtures(self):
-        t1 = datetime.datetime.utcnow()
+        t1 = timeutils.utcnow()
         t2 = t1 + datetime.timedelta(microseconds=1)
         return build_fixtures(t1, t2)
 
@@ -204,7 +205,7 @@ class TestDBImageTags(BaseDBTestCase):
 class TestRegistryDbWithSameTime(TestRegistryDb):
 
     def build_fixtures(self):
-        t1 = datetime.datetime.utcnow()
+        t1 = timeutils.utcnow()
         t2 = t1  # Same timestamp!
         return build_fixtures(t1, t2)
 
@@ -267,7 +268,7 @@ class TestPagingOrder(base.IsolatedUnitTest):
 
     def build_fixtures(self):
         self.images = []
-        t0 = datetime.datetime.utcnow()
+        t0 = timeutils.utcnow()
         for _ in xrange(0, self.ITEM_COUNT):
             tdelta = random.uniform(0, self.TIME_VALUES)
             min_disk = random.uniform(0, self.MINDISK_VALUES)

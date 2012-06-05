@@ -35,11 +35,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import or_, and_
 
 from glance.common import exception
-from glance.common import utils
-from glance.openstack.common import cfg
 from glance import db
 from glance.db import migration
 from glance.db import models
+from glance.openstack.common import cfg
+from glance.openstack.common import timeutils
 
 _ENGINE = None
 _MAKER = None
@@ -410,7 +410,7 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     if 'changes-since' in filters:
         # normalize timestamp to UTC, as sqlalchemy doesn't appear to
         # respect timezone offsets
-        changes_since = utils.normalize_time(filters.pop('changes-since'))
+        changes_since = timeutils.normalize_time(filters.pop('changes-since'))
         query = query.filter(models.Image.updated_at > changes_since)
         showing_deleted = True
 

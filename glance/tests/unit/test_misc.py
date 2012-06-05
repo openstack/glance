@@ -46,14 +46,6 @@ class UtilsTestCase(test_utils.BaseTestCase):
             self.assertFalse(utils.bool_from_string(value),
                              "Got True for value: %r" % value)
 
-    def test_isotime(self):
-        dt1 = datetime.datetime(2001, 11, 10, 1, 2, 3)
-        self.assertEqual('2001-11-10T01:02:03Z', utils.isotime(dt1))
-
-        iso_re = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z')
-        now_iso = utils.isotime()
-        self.assertTrue(iso_re.match(now_iso) is not None)
-
     def test_encryption(self):
         # Check that original plaintext and unencrypted ciphertext match
         # Check keys of the three allowed lengths

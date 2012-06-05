@@ -26,7 +26,7 @@ import tempfile
 import thread
 import time
 
-from glance.common import utils
+from glance.openstack.common import timeutils
 from glance.tests import functional
 from glance.tests.utils import execute, requires, minimal_add_command
 from glance.tests.functional.store_utils import (setup_http,
@@ -785,8 +785,8 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(image_lines[0].split()[0], image_ids[1])
 
         # 9. Check past changes-since
-        dt1 = datetime.datetime.utcnow() - datetime.timedelta(1)
-        iso1 = utils.isotime(dt1)
+        dt1 = timeutils.utcnow() - datetime.timedelta(1)
+        iso1 = timeutils.isotime(dt1)
         cmd = "changes-since=%s" % iso1
         exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
 
@@ -798,8 +798,8 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(image_lines[2].split()[0], image_ids[0])
 
         # 10. Check future changes-since
-        dt2 = datetime.datetime.utcnow() + datetime.timedelta(1)
-        iso2 = utils.isotime(dt2)
+        dt2 = timeutils.utcnow() + datetime.timedelta(1)
+        iso2 = timeutils.isotime(dt2)
         cmd = "changes-since=%s" % iso2
         exitcode, out, err = execute("%s %s" % (_index_cmd, cmd))
 
