@@ -18,10 +18,12 @@
 """Common Policy Engine Implementation"""
 
 import json
+import logging
+import urllib
+import urllib2
 
 
-class NotAuthorized(Exception):
-    pass
+LOG = logging.getLogger(__name__)
 
 
 _BRAIN = None
@@ -43,60 +45,86 @@ def reset():
     _BRAIN = None
 
 
-def enforce(match_list, target_dict, credentials_dict):
+def enforce(match_list, target_dict, credentials_dict, exc=None,
+            *args, **kwargs):
     """Enforces authorization of some rules against credentials.
 
     :param match_list: nested tuples of data to match against
-    The basic brain supports three types of match lists:
-        1) rules
-            looks like: ('rule:compute:get_instance',)
-            Retrieves the named rule from the rules dict and recursively
-            checks against the contents of the rule.
-        2) roles
-            looks like: ('role:compute:admin',)
-            Matches if the specified role is in credentials_dict['roles'].
-        3) generic
-            ('tenant_id:%(tenant_id)s',)
-            Substitutes values from the target dict into the match using
-            the % operator and matches them against the creds dict.
 
-    Combining rules:
-        The brain returns True if any of the outer tuple of rules match
-        and also True if all of the inner tuples match. You can use this to
-        perform simple boolean logic.  For example, the following rule would
-        return True if the creds contain the role 'admin' OR the if the
-        tenant_id matches the target dict AND the the creds contains the
-        role 'compute_sysadmin':
+        The basic brain supports three types of match lists:
 
-        {
-            "rule:combined": (
-                'role:admin',
-                ('tenant_id:%(tenant_id)s', 'role:compute_sysadmin')
-            )
-        }
+            1) rules
 
+                looks like: ``('rule:compute:get_instance',)``
 
-    Note that rule and role are reserved words in the credentials match, so
-    you can't match against properties with those names. Custom brains may
-    also add new reserved words. For example, the HttpBrain adds http as a
-    reserved word.
+                Retrieves the named rule from the rules dict and recursively
+                checks against the contents of the rule.
+
+            2) roles
+
+                looks like: ``('role:compute:admin',)``
+
+                Matches if the specified role is in credentials_dict['roles'].
+
+            3) generic
+
+                looks like: ``('tenant_id:%(tenant_id)s',)``
+
+                Substitutes values from the target dict into the match using
+                the % operator and matches them against the creds dict.
+
+        Combining rules:
+
+            The brain returns True if any of the outer tuple of rules
+            match and also True if all of the inner tuples match. You
+            can use this to perform simple boolean logic.  For
+            example, the following rule would return True if the creds
+            contain the role 'admin' OR the if the tenant_id matches
+            the target dict AND the the creds contains the role
+            'compute_sysadmin':
+
+            ::
+
+                {
+                    "rule:combined": (
+                        'role:admin',
+                        ('tenant_id:%(tenant_id)s', 'role:compute_sysadmin')
+                    )
+                }
+
+        Note that rule and role are reserved words in the credentials match, so
+        you can't match against properties with those names. Custom brains may
+        also add new reserved words. For example, the HttpBrain adds http as a
+        reserved word.
 
     :param target_dict: dict of object properties
-    Target dicts contain as much information as we can about the object being
-    operated on.
+
+      Target dicts contain as much information as we can about the object being
+      operated on.
 
     :param credentials_dict: dict of actor properties
-    Credentials dicts contain as much information as we can about the user
-    performing the action.
 
-    :raises NotAuthorized if the check fails
+      Credentials dicts contain as much information as we can about the user
+      performing the action.
 
+    :param exc: exception to raise
+
+      Class of the exception to raise if the check fails.  Any remaining
+      arguments passed to enforce() (both positional and keyword arguments)
+      will be passed to the exception class.  If exc is not provided, returns
+      False.
+
+    :return: True if the policy allows the action
+    :return: False if the policy does not allow the action and exc is not set
     """
     global _BRAIN
     if not _BRAIN:
         _BRAIN = Brain()
     if not _BRAIN.check(match_list, target_dict, credentials_dict):
-        raise NotAuthorized()
+        if exc:
+            raise exc(*args, **kwargs)
+        return False
+    return True
 
 
 class Brain(object):
@@ -115,7 +143,12 @@ class Brain(object):
         self.rules[key] = match
 
     def _check(self, match, target_dict, cred_dict):
-        match_kind, match_value = match.split(':', 1)
+        try:
+            match_kind, match_value = match.split(':', 1)
+        except Exception:
+            LOG.exception(_("Failed to understand rule %(match)r") % locals())
+            # If the rule is invalid, fail closed
+            return False
         try:
             f = getattr(self, '_check_%s' % match_kind)
         except AttributeError:
@@ -162,7 +195,7 @@ class Brain(object):
 
     def _check_role(self, match, target_dict, cred_dict):
         """Check that there is a matching role in the cred dict."""
-        return match in cred_dict['roles']
+        return match.lower() in [x.lower() for x in cred_dict['roles']]
 
     def _check_generic(self, match, target_dict, cred_dict):
         """Check an individual match.
@@ -180,3 +213,26 @@ class Brain(object):
         if key in cred_dict:
             return value == cred_dict[key]
         return False
+
+
+class HttpBrain(Brain):
+    """A brain that can check external urls for policy.
+
+    Posts json blobs for target and credentials.
+
+    """
+
+    def _check_http(self, match, target_dict, cred_dict):
+        """Check http: rules by calling to a remote server.
+
+        This example implementation simply verifies that the response is
+        exactly 'True'. A custom brain using response codes could easily
+        be implemented.
+
+        """
+        url = match % target_dict
+        data = {'target': json.dumps(target_dict),
+                'credentials': json.dumps(cred_dict)}
+        post_data = urllib.urlencode(data)
+        f = urllib2.urlopen(url, post_data)
+        return f.read() == "True"
