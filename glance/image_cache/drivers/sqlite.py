@@ -34,6 +34,14 @@ from glance.image_cache.drivers import base
 from glance.openstack.common import cfg
 
 logger = logging.getLogger(__name__)
+
+sqlite_opts = [
+    cfg.StrOpt('image_cache_sqlite_db', default='cache.db'),
+    ]
+
+CONF = cfg.CONF
+CONF.register_opts(sqlite_opts)
+
 DEFAULT_SQL_CALL_TIMEOUT = 2
 
 
@@ -79,10 +87,6 @@ class Driver(base.Driver):
     that has atimes set.
     """
 
-    opts = [
-        cfg.StrOpt('image_cache_sqlite_db', default='cache.db'),
-        ]
-
     def configure(self):
         """
         Configure the driver to use the stored configuration options
@@ -91,8 +95,6 @@ class Driver(base.Driver):
         itself, it should raise `exception.BadDriverConfiguration`
         """
         super(Driver, self).configure()
-
-        self.conf.register_opts(self.opts)
 
         # Create the SQLite database that will hold our cache attributes
         self.initialize_db()

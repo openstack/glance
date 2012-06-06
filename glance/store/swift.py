@@ -37,12 +37,30 @@ try:
 except ImportError:
     pass
 
+logger = logging.getLogger('glance.store.swift')
+
 DEFAULT_CONTAINER = 'glance'
 DEFAULT_LARGE_OBJECT_SIZE = 5 * 1024  # 5GB
 DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 200  # 200M
 ONE_MB = 1000 * 1024
 
-logger = logging.getLogger('glance.store.swift')
+swift_opts = [
+    cfg.BoolOpt('swift_enable_snet', default=False),
+    cfg.StrOpt('swift_store_auth_address'),
+    cfg.StrOpt('swift_store_user', secret=True),
+    cfg.StrOpt('swift_store_key', secret=True),
+    cfg.StrOpt('swift_store_auth_version', default='2'),
+    cfg.StrOpt('swift_store_container',
+               default=DEFAULT_CONTAINER),
+    cfg.IntOpt('swift_store_large_object_size',
+               default=DEFAULT_LARGE_OBJECT_SIZE),
+    cfg.IntOpt('swift_store_large_object_chunk_size',
+               default=DEFAULT_LARGE_OBJECT_CHUNK_SIZE),
+    cfg.BoolOpt('swift_store_create_container_on_put', default=False),
+    ]
+
+CONF = cfg.CONF
+CONF.register_opts(swift_opts)
 
 
 class StoreLocation(glance.store.location.StoreLocation):
@@ -180,26 +198,10 @@ class Store(glance.store.base.Store):
 
     CHUNKSIZE = 65536
 
-    opts = [
-        cfg.BoolOpt('swift_enable_snet', default=False),
-        cfg.StrOpt('swift_store_auth_address'),
-        cfg.StrOpt('swift_store_user', secret=True),
-        cfg.StrOpt('swift_store_key', secret=True),
-        cfg.StrOpt('swift_store_auth_version', default='2'),
-        cfg.StrOpt('swift_store_container',
-                   default=DEFAULT_CONTAINER),
-        cfg.IntOpt('swift_store_large_object_size',
-                   default=DEFAULT_LARGE_OBJECT_SIZE),
-        cfg.IntOpt('swift_store_large_object_chunk_size',
-                   default=DEFAULT_LARGE_OBJECT_CHUNK_SIZE),
-        cfg.BoolOpt('swift_store_create_container_on_put', default=False),
-        ]
-
     def get_schemes(self):
         return ('swift+https', 'swift', 'swift+http')
 
     def configure(self):
-        self.conf.register_opts(self.opts)
         self.snet = self.conf.swift_enable_snet
         self.auth_version = self._option_get('swift_store_auth_version')
 

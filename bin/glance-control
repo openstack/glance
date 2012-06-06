@@ -46,6 +46,8 @@ gettext.install('glance', unicode=1)
 from glance.common import config
 from glance.openstack.common import cfg
 
+CONF = cfg.CONF
+
 ALL_COMMANDS = ['start', 'stop', 'shutdown', 'restart',
                 'reload', 'force-reload']
 ALL_SERVERS = ['glance-api', 'glance-registry', 'glance-scrubber']
@@ -77,11 +79,11 @@ def gated_by(predicate):
     return wrap
 
 
-def pid_files(server, conf):
+def pid_files(server, pid_file):
     pid_files = []
-    if conf.pid_file:
-        if os.path.exists(os.path.abspath(conf.pid_file)):
-            pid_files = [os.path.abspath(conf.pid_file)]
+    if pid_file:
+        if os.path.exists(os.path.abspath(pid_file)):
+            pid_files = [os.path.abspath(pid_file)]
     else:
         if os.path.exists('/var/run/glance/%s.pid' % server):
             pid_files = ['/var/run/glance/%s.pid' % server]
@@ -90,9 +92,9 @@ def pid_files(server, conf):
         yield pid_file, pid
 
 
-def do_start(verb, server, conf, args):
+def do_start(verb, server, args):
     if verb != 'Respawn':
-        for pid_file, pid in pid_files(server, conf):
+        for pid_file, pid in pid_files(server, CONF.pid_file):
             if os.path.exists('/proc/%s' % pid):
                 print ("%s appears to already be running: %s" %
                        (server, pid_file))
@@ -143,23 +145,23 @@ def do_start(verb, server, conf, args):
             except OSError:
                 pass
 
-    def redirect_stdio(conf, server):
+    def redirect_stdio(server, capture_output):
         input = [sys.stdin.fileno()]
         output = [sys.stdout.fileno(), sys.stderr.fileno()]
 
         redirect_to_null(input)
-        if conf.capture_output:
+        if capture_output:
             redirect_to_syslog(output, server)
         else:
             redirect_to_null(output)
 
-    @gated_by(conf.capture_output)
+    @gated_by(CONF.capture_output)
     def close_stdio_on_exec():
         fds = [sys.stdin.fileno(), sys.stdout.fileno(), sys.stderr.fileno()]
         for desc in fds:  # set close on exec flag
             fcntl.fcntl(desc, fcntl.F_SETFD, fcntl.FD_CLOEXEC)
 
-    def launch(pid_file, conf_file=None):
+    def launch(pid_file, conf_file=None, capture_output=False, await_time=0):
         args = [server]
         print '%sing %s' % (verb, server),
         if conf_file:
@@ -172,7 +174,7 @@ def do_start(verb, server, conf, args):
         pid = os.fork()
         if pid == 0:
             os.setsid()
-            redirect_stdio(conf, server)
+            redirect_stdio(server, capture_output)
             try:
                 os.execlp('%s' % server, *args)
             except OSError, e:
@@ -181,12 +183,12 @@ def do_start(verb, server, conf, args):
             sys.exit(0)
         else:
             write_pid_file(pid_file, pid)
-            await_child(pid)
+            await_child(pid, await_time)
             return pid
 
-    @gated_by(conf.await_child)
-    def await_child(pid):
-        bail_time = time.time() + conf.await_child
+    @gated_by(CONF.await_child)
+    def await_child(pid, await_time):
+        bail_time = time.time() + await_time
         while time.time() < bail_time:
             reported_pid, status = os.waitpid(pid, os.WNOHANG)
             if reported_pid == pid:
@@ -195,28 +197,28 @@ def do_start(verb, server, conf, args):
                 break
             time.sleep(0.05)
 
-    pid_file = get_pid_file(server, conf)
+    pid_file = get_pid_file(server, CONF.pid_file)
 
     conf_file = None
     if args and os.path.exists(args[0]):
         conf_file = os.path.abspath(os.path.expanduser(args[0]))
 
-    return launch(pid_file, conf_file)
+    return launch(pid_file, conf_file, CONF.capture_output, CONF.await_child)
 
 
-def get_pid_file(pid, conf):
-    return (os.path.abspath(conf.pid_file) if conf.pid_file else
+def get_pid_file(pid, pid_file):
+    return (os.path.abspath(pid_file) if pid_file else
             '/var/run/glance/%s.pid' % server)
 
 
-def do_stop(server, conf, args, graceful=False):
+def do_stop(server, args, graceful=False):
     if graceful and server in GRACEFUL_SHUTDOWN_SERVERS:
         sig = signal.SIGHUP
     else:
         sig = signal.SIGTERM
 
     did_anything = False
-    pfiles = pid_files(server, conf)
+    pfiles = pid_files(server, CONF.pid_file)
     for pid_file, pid in pfiles:
         did_anything = True
         try:
@@ -243,8 +245,6 @@ def do_stop(server, conf, args, graceful=False):
 if __name__ == '__main__':
     exitcode = 0
 
-    conf = config.GlanceConfigOpts(usage=USAGE)
-
     opts = [
             cfg.StrOpt('pid-file',
                        metavar='PATH',
@@ -264,12 +264,12 @@ if __name__ == '__main__':
                         default=False,
                         help='Restart service on unexpected death'),
         ]
-    conf.register_cli_opts(opts)
+    CONF.register_cli_opts(opts)
 
-    args = conf()
+    args = config.parse_args(usage=USAGE)
 
-    @gated_by(conf.await_child)
-    @gated_by(conf.respawn)
+    @gated_by(CONF.await_child)
+    @gated_by(CONF.respawn)
     def mutually_exclusive():
         sys.stderr.write('--await-child and --respawn are mutually exclusive')
         sys.exit(1)
@@ -277,7 +277,7 @@ if __name__ == '__main__':
     mutually_exclusive()
 
     if len(args) < 2:
-        conf.print_usage()
+        CONF.print_usage()
         sys.exit(1)
 
     server = args.pop(0).lower()
@@ -301,19 +301,19 @@ if __name__ == '__main__':
                "command in this list: %(command_list)s" % locals())
         sys.exit(msg)
 
-    @gated_by(conf.respawn)
+    @gated_by(CONF.respawn)
     def anticipate_respawn(children):
         while children:
             pid, status = os.wait()
             if pid in children:
-                (server, conf, args) = children.pop(pid)
-                pid_file = get_pid_file(server, conf)
+                (server, args) = children.pop(pid)
+                pid_file = get_pid_file(server, CONF.pid_file)
                 running = os.path.exists(pid_file)
                 one_second_ago = time.time() - 1
                 bouncing = (running and
                             os.path.getmtime(pid_file) >= one_second_ago)
                 if running and not bouncing:
-                    args = (server, conf, args)
+                    args = (server, args)
                     new_pid = do_start('Respawn', *args)
                     children[new_pid] = args
                 else:
@@ -323,7 +323,7 @@ if __name__ == '__main__':
     if command == 'start':
         children = {}
         for server in servers:
-            args = (server, conf, args)
+            args = (server, args)
             pid = do_start('Start', *args)
             children[pid] = args
 
@@ -331,21 +331,21 @@ if __name__ == '__main__':
 
     if command == 'stop':
         for server in servers:
-            do_stop(server, conf, args)
+            do_stop(server, args)
 
     if command == 'shutdown':
         for server in servers:
-            do_stop(server, conf, args, graceful=True)
+            do_stop(server, args, graceful=True)
 
     if command == 'restart':
         for server in servers:
-            do_stop(server, conf, args)
+            do_stop(server, args)
         for server in servers:
-            do_start('Restart', server, conf, args)
+            do_start('Restart', server, args)
 
     if command == 'reload' or command == 'force-reload':
         for server in servers:
-            do_stop(server, conf, args, graceful=True)
-            do_start(server, conf, args)
+            do_stop(server, args, graceful=True)
+            do_start(server, args)
 
     sys.exit(exitcode)

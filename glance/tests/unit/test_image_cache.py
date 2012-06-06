@@ -254,12 +254,11 @@ class TestImageCacheXattr(test_utils.BaseTestCase,
 
         self.inited = True
         self.disabled = False
-        self.conf = test_utils.TestConfigOpts({
-                'image_cache_dir': self.cache_dir,
-                'image_cache_driver': 'xattr',
-                'image_cache_max_size': 1024 * 5,
-                'registry_host': '0.0.0.0',
-                'registry_port': 9191})
+        self.config(image_cache_dir=self.cache_dir,
+                    image_cache_driver='xattr',
+                    image_cache_max_size=1024 * 5,
+                    registry_host='0.0.0.0',
+                    registry_port=9191)
         self.cache = image_cache.ImageCache(self.conf)
 
         if not xattr_writes_supported(self.cache_dir):
@@ -302,12 +301,11 @@ class TestImageCacheSqlite(test_utils.BaseTestCase,
         self.disabled = False
         self.cache_dir = os.path.join("/", "tmp", "test.cache.%d" %
                                       random.randint(0, 1000000))
-        self.conf = test_utils.TestConfigOpts({
-                'image_cache_dir': self.cache_dir,
-                'image_cache_driver': 'sqlite',
-                'image_cache_max_size': 1024 * 5,
-                'registry_host': '0.0.0.0',
-                'registry_port': 9191})
+        self.config(image_cache_dir=self.cache_dir,
+                    image_cache_driver='sqlite',
+                    image_cache_max_size=1024 * 5,
+                    registry_host='0.0.0.0',
+                    registry_port=9191)
         self.cache = image_cache.ImageCache(self.conf)
 
     def tearDown(self):

@@ -24,6 +24,12 @@ from glance.common import exception
 from glance.openstack.common import cfg
 from glance.openstack.common import importutils
 
+notifier_opts = [
+    cfg.StrOpt('notifier_strategy', default='default')
+    ]
+
+CONF = cfg.CONF
+CONF.register_opts(notifier_opts)
 
 _STRATEGIES = {
     "logging": "glance.notifier.notify_log.LoggingStrategy",
@@ -37,12 +43,7 @@ _STRATEGIES = {
 class Notifier(object):
     """Uses a notification strategy to send out messages about events."""
 
-    opts = [
-        cfg.StrOpt('notifier_strategy', default='default')
-    ]
-
     def __init__(self, conf, strategy=None):
-        conf.register_opts(self.opts)
         strategy = conf.notifier_strategy
         try:
             strategy_cls = _STRATEGIES[strategy]

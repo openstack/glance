@@ -55,16 +55,13 @@ class TestRegistryDb(test_utils.BaseTestCase):
         API controller results in a) an Exception being thrown and b)
         a message being logged to the registry log file...
         """
-        bad_conf = test_utils.TestConfigOpts({
-                'verbose': True,
-                'debug': True,
-                'sql_connection': 'baddriver:///'
-                })
+        self.config(verbose=True, debug=True, sql_connection='baddriver:///')
+
         # We set this to None to trigger a reconfigure, otherwise
         # other modules may have already correctly configured the DB
         db_api._ENGINE = None
         self.assertRaises((ImportError, exc.ArgumentError),
-            db_api.configure_db, bad_conf)
+            db_api.configure_db, self.conf)
         exc_raised = False
         self.log_written = False
 
@@ -74,7 +71,7 @@ class TestRegistryDb(test_utils.BaseTestCase):
 
         self.stubs.Set(db_api.logger, 'error', fake_log_error)
         try:
-            api_obj = rserver.API(bad_conf)
+            api_obj = rserver.API(self.conf)
         except exc.ArgumentError:
             exc_raised = True
         except ImportError:

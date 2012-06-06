@@ -34,6 +34,11 @@ import glance.store.location
 
 logger = logging.getLogger('glance.store.filesystem')
 
+datadir_opt = cfg.StrOpt('filesystem_store_datadir')
+
+CONF = cfg.CONF
+CONF.register_opt(datadir_opt)
+
 
 class StoreLocation(glance.store.location.StoreLocation):
 
@@ -96,8 +101,6 @@ class ChunkedFile(object):
 
 class Store(glance.store.base.Store):
 
-    datadir_opt = cfg.StrOpt('filesystem_store_datadir')
-
     def get_schemes(self):
         return ('file', 'filesystem')
 
@@ -108,8 +111,6 @@ class Store(glance.store.base.Store):
         this method. If the store was not able to successfully configure
         itself, it should raise `exception.BadStoreConfiguration`
         """
-        self.conf.register_opt(self.datadir_opt)
-
         self.datadir = self.conf.filesystem_store_datadir
         if self.datadir is None:
             reason = (_("Could not find %s in configuration options.") %

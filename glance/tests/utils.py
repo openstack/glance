@@ -23,7 +23,6 @@ import os
 import random
 import socket
 import subprocess
-import tempfile
 import unittest
 
 import nose.plugins.skip
@@ -31,7 +30,10 @@ import nose.plugins.skip
 from glance.common import config
 from glance.common import utils
 from glance.common import wsgi
+from glance.openstack.common import cfg
 from glance import store
+
+CONF = cfg.CONF
 
 
 def get_isolated_test_env():
@@ -50,79 +52,28 @@ class BaseTestCase(unittest.TestCase):
 
     def setUp(self):
         super(BaseTestCase, self).setUp()
+        self.conf = CONF
 
     def tearDown(self):
         super(BaseTestCase, self).tearDown()
+        CONF.reset()
 
+    def config(self, **kw):
+        """
+        Override some configuration values.
 
-class TestConfigOpts(config.GlanceConfigOpts):
-    """
-    Support easily controllable config for unit tests, avoiding the
-    need to manipulate config files directly.
+        The keyword arguments are the names of configuration options to
+        override and their values.
 
-    Configuration values are provided as a dictionary of key-value pairs,
-    in the simplest case feeding into the DEFAULT group only.
+        If a group argument is supplied, the overrides are applied to
+        the specified configuration option group.
 
-    Non-default groups may also populated via nested dictionaries, e.g.
-
-      {'snafu': {'foo': 'bar', 'bells': 'whistles'}}
-
-    equates to config of form:
-
-      [snafu]
-      foo = bar
-      bells = whistles
-
-    The config so provided is dumped to a temporary file, with its path
-    exposed via the temp_file property.
-
-    :param test_values: dictionary of key-value pairs for the
-                        DEFAULT group
-    :param groups:      nested dictionary of key-value pairs for
-                        non-default groups
-    :param clean:       flag to trigger clean up of temporary directory
-    """
-
-    def __init__(self, test_values={}, groups={}, clean=True):
-        super(TestConfigOpts, self).__init__()
-        self._test_values = test_values
-        self._test_groups = groups
-        self.clean = clean
-
-        self.temp_file = os.path.join(tempfile.mkdtemp(), 'testcfg.conf')
-
-        self()
-        store.create_stores(self)
-
-    def __call__(self):
-        self._write_tmp_config_file()
-        try:
-            super(TestConfigOpts, self).__call__(['--config-file',
-                                                  self.temp_file])
-        finally:
-            if self.clean:
-                os.remove(self.temp_file)
-                os.rmdir(os.path.dirname(self.temp_file))
-
-    def _write_tmp_config_file(self):
-        contents = '[DEFAULT]\n'
-        for key, value in self._test_values.items():
-            contents += '%s = %s\n' % (key, value)
-
-        for group, settings in self._test_groups.items():
-            contents += '[%s]\n' % group
-            for key, value in settings.items():
-                contents += '%s = %s\n' % (key, value)
-
-        try:
-            with open(self.temp_file, 'wb') as f:
-                f.write(contents)
-                f.flush()
-        except Exception, e:
-            if self.clean:
-                os.remove(self.temp_file)
-                os.rmdir(os.path.dirname(self.temp_file))
-            raise e
+        All overrides are automatically cleared at the end of the current
+        test by the tearDown() method.
+        """
+        group = kw.pop('group', None)
+        for k, v in kw.iteritems():
+            CONF.set_override(k, v, group)
 
 
 class skip_test(object):
@@ -328,15 +279,13 @@ def find_executable(cmdname):
 
 def get_default_stores():
     # Default test stores
-    known_stores = [
+    return [
         "glance.store.filesystem.Store",
         "glance.store.http.Store",
         "glance.store.rbd.Store",
         "glance.store.s3.Store",
         "glance.store.swift.Store",
     ]
-    # Made in a format that the config can read
-    return ", ".join(known_stores)
 
 
 def get_unused_port():

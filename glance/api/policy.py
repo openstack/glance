@@ -27,19 +27,19 @@ from glance.openstack.common import cfg
 
 logger = logging.getLogger(__name__)
 
+policy_opts = (
+    cfg.StrOpt('policy_file', default=None),
+    cfg.StrOpt('policy_default_rule', default='default'),
+    )
+
+CONF = cfg.CONF
+CONF.register_opts(policy_opts)
+
 
 class Enforcer(object):
     """Responsible for loading and enforcing rules"""
 
-    policy_opts = (
-        cfg.StrOpt('policy_file', default=None),
-        cfg.StrOpt('policy_default_rule', default='default'),
-    )
-
     def __init__(self, conf):
-        for opt in self.policy_opts:
-            conf.register_opt(opt)
-
         self.default_rule = conf.policy_default_rule
         self.policy_path = self._find_policy_file(conf)
         self.policy_file_mtime = None

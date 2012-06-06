@@ -146,10 +146,8 @@ class TestMigrations(utils.BaseTestCase):
         that there are no errors in the version scripts for each engine
         """
         for key, engine in self.engines.items():
-            conf = utils.TestConfigOpts({
-                    'sql_connection': TestMigrations.TEST_DATABASES[key]})
-            conf.register_opt(cfg.StrOpt('sql_connection'))
-            self._walk_versions(conf)
+            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
+            self._walk_versions(self.conf)
 
     def test_version_control_existing_db(self):
         """
@@ -158,11 +156,9 @@ class TestMigrations(utils.BaseTestCase):
         without errors.
         """
         for key, engine in self.engines.items():
-            conf = utils.TestConfigOpts({
-                    'sql_connection': TestMigrations.TEST_DATABASES[key]})
-            conf.register_opt(cfg.StrOpt('sql_connection'))
+            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
             self._create_unversioned_001_db(engine)
-            self._walk_versions(conf, initial_version=1)
+            self._walk_versions(self.conf, initial_version=1)
 
     def _create_unversioned_001_db(self, engine):
         # Create the initial version of the images table
@@ -221,10 +217,8 @@ class TestMigrations(utils.BaseTestCase):
         the image_properties table back into the base image table.
         """
         for key, engine in self.engines.items():
-            conf = utils.TestConfigOpts({
-                    'sql_connection': TestMigrations.TEST_DATABASES[key]})
-            conf.register_opt(cfg.StrOpt('sql_connection'))
-            self._no_data_loss_2_to_3_to_2(engine, conf)
+            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
+            self._no_data_loss_2_to_3_to_2(engine, self.conf)
 
     def _no_data_loss_2_to_3_to_2(self, engine, conf):
         migration_api.version_control(conf, version=0)
@@ -320,10 +314,8 @@ class TestMigrations(utils.BaseTestCase):
 
     def test_no_data_loss_14_to_15(self):
         for key, engine in self.engines.items():
-            conf = utils.TestConfigOpts({
-                    'sql_connection': TestMigrations.TEST_DATABASES[key]})
-            conf.register_opt(cfg.StrOpt('sql_connection'))
-            self._check_no_data_loss_14_to_15(engine, conf)
+            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
+            self._check_no_data_loss_14_to_15(engine, self.conf)
 
     def _check_no_data_loss_14_to_15(self, engine, conf):
         """

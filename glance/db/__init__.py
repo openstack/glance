@@ -19,21 +19,22 @@
 
 from glance.openstack.common import cfg
 
+sql_connection_opt = cfg.StrOpt('sql_connection',
+                                default='sqlite:///glance.sqlite',
+                                metavar='CONNECTION',
+                                help='A valid SQLAlchemy connection '
+                                     'string for the registry database. '
+                                     'Default: %default')
 
-def add_options(conf):
+CONF = cfg.CONF
+CONF.register_opt(sql_connection_opt)
+
+
+def add_cli_options():
     """
     Adds any configuration options that the db layer might have.
 
-    :param conf: A ConfigOpts object
     :retval None
     """
-    conf.register_group(cfg.OptGroup('registrydb',
-                                title='Registry Database Options',
-                                help='The following configuration options '
-                                     'are specific to the Glance image '
-                                     'registry database.'))
-    conf.register_cli_opt(cfg.StrOpt('sql_connection',
-                                     metavar='CONNECTION',
-                                     help='A valid SQLAlchemy connection '
-                                          'string for the registry database. '
-                                          'Default: %default'))
+    CONF.unregister_opt(sql_connection_opt)
+    CONF.register_cli_opt(sql_connection_opt)

@@ -22,9 +22,7 @@ import qpid.messaging
 from glance.notifier import strategy
 from glance.openstack.common import cfg
 
-
 logger = logging.getLogger('glance.notifier.notify_qpid')
-
 
 qpid_opts = [
     cfg.StrOpt('qpid_notification_exchange',
@@ -74,6 +72,9 @@ qpid_opts = [
                 help='Disable Nagle algorithm'),
     ]
 
+CONF = cfg.CONF
+CONF.register_opts(qpid_opts)
+
 
 class QpidStrategy(strategy.Strategy):
     """A notifier that puts a message on a queue when called."""
@@ -81,7 +82,6 @@ class QpidStrategy(strategy.Strategy):
     def __init__(self, conf):
         """Initialize the Qpid notification strategy."""
         self.conf = conf
-        self.conf.register_opts(qpid_opts)
 
         self.broker = self.conf.qpid_hostname + ":" + self.conf.qpid_port
         self.connection = qpid.messaging.Connection(self.broker)

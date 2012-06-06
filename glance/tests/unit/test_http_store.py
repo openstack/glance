@@ -91,15 +91,13 @@ def stub_out_registry_image_update(stubs, conf):
 class TestHttpStore(base.StoreClearingUnitTest):
 
     def setUp(self):
+        self.config(default_store='http',
+                    known_stores=['glance.store.http.Store'])
         super(TestHttpStore, self).setUp()
         self.stubs = stubout.StubOutForTesting()
         stub_out_http_backend(self.stubs)
         Store.CHUNKSIZE = 2
         self.store = Store({})
-        self.conf = utils.TestConfigOpts({
-            'default_store': 'http',
-            'known_stores': "glance.store.http.Store",
-        })
         configure_registry_client(self.conf)
 
     def test_http_get(self):
