@@ -21,13 +21,13 @@ from glance.api.v2 import base
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
-import glance.db.api
+import glance.db.sqlalchemy.api
 
 
 class Controller(base.Controller):
     def __init__(self, conf, db=None):
         super(Controller, self).__init__(conf)
-        self.db_api = db or glance.db.api
+        self.db_api = db or glance.db.sqlalchemy.api
         self.db_api.configure_db(conf)
 
     def index(self, req, image_id):

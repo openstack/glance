@@ -21,7 +21,7 @@ import stubout
 
 from glance.common import config
 from glance.common import exception, context
-from glance.db import api as db_api
+from glance.db.sqlalchemy import api as db_api
 from glance.registry import configure_registry_client
 from glance.store import (delete_from_backend,
                           schedule_delete_from_backend)

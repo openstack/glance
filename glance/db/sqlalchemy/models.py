@@ -27,7 +27,7 @@ from sqlalchemy import UniqueConstraint
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.declarative import declarative_base
 
-import glance.db.api
+import glance.db.sqlalchemy.api
 from glance.common import utils
 from glance.openstack.common import timeutils
 
@@ -55,7 +55,7 @@ class ModelBase(object):
 
     def save(self, session=None):
         """Save this object"""
-        session = session or glance.db.api.get_session()
+        session = session or glance.db.sqlalchemy.api.get_session()
         session.add(self)
         session.flush()
 

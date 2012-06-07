@@ -18,7 +18,7 @@
 from migrate.changeset import *
 from sqlalchemy import *
 
-from glance.db.migrate_repo.schema import from_migration_import
+from glance.db.sqlalchemy.migrate_repo.schema import from_migration_import
 
 
 def get_images_table(meta):

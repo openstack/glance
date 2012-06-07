@@ -22,11 +22,10 @@ import random
 from glance.common import context
 from glance.common import exception
 from glance.common import utils
-from glance.db import api as db_api
-from glance.db import models as db_models
+from glance.db.sqlalchemy import api as db_api
+from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
 from glance.tests.unit import base
-from glance.tests import utils as test_utils
 
 
 _gen_uuid = utils.generate_uuid

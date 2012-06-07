@@ -30,8 +30,8 @@ from glance.common import context
 from glance.common import utils
 from glance.openstack.common import timeutils
 from glance.registry.api import v1 as rserver
-from glance.db import api as db_api
-from glance.db import models as db_models
+from glance.db.sqlalchemy import api as db_api
+from glance.db.sqlalchemy import models as db_models
 from glance.tests import utils as test_utils
 from glance.tests.unit import base
 

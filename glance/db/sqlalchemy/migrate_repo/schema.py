@@ -24,7 +24,7 @@ import logging
 import sqlalchemy.types
 
 
-logger = logging.getLogger('glance.db.migrate_repo.schema')
+logger = logging.getLogger(__name__)
 
 
 String = lambda length: sqlalchemy.types.String(
@@ -85,7 +85,7 @@ def from_migration_import(module_name, fromlist):
 
         # Refer to images table
     """
-    module_path = 'glance.db.migrate_repo.versions.%s' % module_name
+    module_path = 'glance.db.sqlalchemy.migrate_repo.versions.%s' % module_name
     module = __import__(module_path, globals(), locals(), fromlist, -1)
     return [getattr(module, item) for item in fromlist]
 

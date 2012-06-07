@@ -13,13 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import datetime
 import logging
-import uuid
 
 import glance.common.context
 from glance.common import exception
 from glance.common import wsgi
+import glance.db.simple.api as simple_db
+
 
 LOG = logging.getLogger(__name__)
 
@@ -52,143 +52,35 @@ def get_fake_request(path='', method='POST'):
 class FakeDB(object):
 
     def __init__(self):
-        self.images = {
-            UUID1: self._image_format(UUID1, location=UUID1),
-            UUID2: self._image_format(UUID2),
-        }
-        self.members = {
-            UUID1: [
-                self._image_member_format(UUID1, TENANT1, True),
-                self._image_member_format(UUID1, TENANT2, False),
-            ],
-            UUID2: [],
-        }
-        self.tags = {
-            UUID1: ['ping', 'pong'],
-            UUID2: [],
-        }
+        self.reset()
+        self.init_db()
 
-    def reset(self):
-        self.images = {}
-        self.members = {}
-        self.tags = {}
+    @staticmethod
+    def init_db():
+        images = [
+            {'id': UUID1, 'owner': TENANT1, 'location': UUID1},
+            {'id': UUID2, 'owner': TENANT1},
+        ]
+        [simple_db.image_create(None, image) for image in images]
 
-    def configure_db(*args, **kwargs):
-        pass
+        members = [
+            {'image_id': UUID1, 'member': TENANT1, 'can_share': True},
+            {'image_id': UUID1, 'member': TENANT2, 'can_share': False},
+        ]
+        [simple_db.image_member_create(None, member) for member in members]
 
-    def get_session(self):
-        pass
+        simple_db.image_tag_set_all(None, UUID1, ['ping', 'pong'])
 
-    def _image_member_format(self, image_id, tenant_id, can_share):
-        return {
-            'image_id': image_id,
-            'member': tenant_id,
-            'can_share': can_share,
-            'deleted': False,
+    @staticmethod
+    def reset():
+        simple_db.DATA = {
+            'images': {},
+            'members': {},
+            'tags': {},
         }
 
-    def _image_format(self, image_id, **values):
-        dt = datetime.datetime.now()
-        image = {
-            'id': image_id,
-            'name': 'image-name',
-            'owner': TENANT1,
-            'location': None,
-            'status': 'queued',
-            'is_public': False,
-            'created_at': dt,
-            'updated_at': dt,
-            'tags': [],
-            'properties': [],
-        }
-        image.update(values)
-        return image
-
-    def image_get(self, context, image_id, session=None):
-        try:
-            image = self.images[image_id]
-            LOG.info('Found image %s: %s' % (image_id, str(image)))
-        except KeyError:
-            raise exception.NotFound(image_id=image_id)
-
-        #NOTE(bcwaldon: this is a hack until we can get image members with
-        # a direct db call
-        image['members'] = self.members.get(image_id, [])
-
-        return image
-
-    def image_get_all(self, context, filters=None):
-        return self.images.values()
-
-    def image_member_find(self, context, image_id, tenant_id):
-        try:
-            self.images[image_id]
-        except KeyError:
-            raise exception.NotFound()
-
-        for member in self.members.get(image_id, []):
-            if member['member'] == tenant_id:
-                return member
-
-        raise exception.NotFound()
-
-    def image_member_create(self, context, values):
-        member = self._image_member_format(values['image_id'],
-                                           values['member'],
-                                           values['can_share'])
-        self.members[values['image_id']] = member
-        return member
-
-    def image_create(self, context, image_values):
-        new_uuid = str(uuid.uuid4())
-        image = self._image_format(new_uuid, **image_values)
-        self.images[new_uuid] = image
-        self.tags[new_uuid] = image.pop('tags', [])
-        LOG.info('Created image %s with values %s' %
-                 (new_uuid, str(image_values)))
-        return image
-
-    def image_update(self, context, image_id, image_values):
-        LOG.info('Updating image %s with values %s' %
-                 (image_id, str(image_values)))
-        try:
-            image = self.images[image_id]
-            LOG.info('Found image %s: %s' % (image_id, str(image)))
-        except KeyError:
-            raise exception.NotFound(image_id=image_id)
-
-        image.update(image_values)
-        self.images[image_id] = image
-        LOG.info('Image %s updated to %s' % (image_id, str(image)))
-        return image
-
-    def image_tag_get_all(self, context, image_id):
-        try:
-            return self.tags[image_id]
-        except KeyError:
-            raise exception.NotFound()
-
-    def image_tag_get(self, context, image_id, value):
-        tags = self.image_tag_get_all(context, image_id)
-        if value in tags:
-            return value
-        else:
-            raise exception.NotFound()
-
-    def image_tag_set_all(self, context, image_id, values):
-        self.tags[image_id] = values
-
-    def image_tag_create(self, context, image_id, value):
-        tags = self.image_tag_get_all(context, image_id)
-        tags.append(value)
-        return value
-
-    def image_tag_delete(self, context, image_id, value):
-        tags = self.image_tag_get_all(context, image_id)
-        try:
-            tags.remove(value)
-        except ValueError:
-            raise exception.NotFound()
+    def __getattr__(self, key):
+        return getattr(simple_db, key)
 
 
 class FakeStoreAPI(object):

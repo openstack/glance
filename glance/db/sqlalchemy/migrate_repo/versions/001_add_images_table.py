@@ -15,50 +15,42 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from sqlalchemy.schema import (
-    Column, ForeignKey, Index, MetaData, Table, UniqueConstraint)
+from sqlalchemy.schema import (Column, MetaData, Table)
 
-from glance.db.migrate_repo.schema import (
-    Boolean, DateTime, Integer, String, Text, create_tables, drop_tables,
-    from_migration_import)
+from glance.db.sqlalchemy.migrate_repo.schema import (
+    Boolean, DateTime, Integer, String, Text, create_tables, drop_tables)
 
 
-def define_image_properties_table(meta):
-    (define_images_table,) = from_migration_import(
-        '001_add_images_table', ['define_images_table'])
-
-    images = define_images_table(meta)
-
-    image_properties = Table('image_properties', meta,
+def define_images_table(meta):
+    images = Table('images', meta,
         Column('id', Integer(), primary_key=True, nullable=False),
-        Column('image_id', Integer(), ForeignKey('images.id'), nullable=False,
+        Column('name', String(255)),
+        Column('type', String(30)),
+        Column('size', Integer()),
+        Column('status', String(30), nullable=False),
+        Column('is_public', Boolean(), nullable=False, default=False,
                index=True),
-        Column('key', String(255), nullable=False),
-        Column('value', Text()),
+        Column('location', Text()),
         Column('created_at', DateTime(), nullable=False),
         Column('updated_at', DateTime()),
         Column('deleted_at', DateTime()),
         Column('deleted', Boolean(), nullable=False, default=False,
                index=True),
-        UniqueConstraint('image_id', 'key'),
         mysql_engine='InnoDB',
         extend_existing=True)
 
-    Index('ix_image_properties_image_id_key', image_properties.c.image_id,
-          image_properties.c.key)
-
-    return image_properties
+    return images
 
 
 def upgrade(migrate_engine):
     meta = MetaData()
     meta.bind = migrate_engine
-    tables = [define_image_properties_table(meta)]
+    tables = [define_images_table(meta)]
     create_tables(tables)
 
 
 def downgrade(migrate_engine):
     meta = MetaData()
     meta.bind = migrate_engine
-    tables = [define_image_properties_table(meta)]
+    tables = [define_images_table(meta)]
     drop_tables(tables)

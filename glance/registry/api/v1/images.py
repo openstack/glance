@@ -27,8 +27,9 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 from glance.openstack.common import cfg
+from glance.db.sqlalchemy import api as db_api
 from glance.openstack.common import timeutils
-from glance.db import api as db_api
+
 
 logger = logging.getLogger('glance.registry.api.v1.images')
 
