@@ -36,40 +36,40 @@ class TestImagesController(base.StoreClearingUnitTest):
                 store_api=unit_test_utils.FakeStoreAPI())
 
     def test_download(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         output = self.controller.download(request, unit_test_utils.UUID1)
         expected = {'data': 'XXX', 'size': 3}
         self.assertEqual(expected, output)
 
     def test_download_no_data(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.download,
                           request, unit_test_utils.UUID2)
 
     def test_download_non_existant_image(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.download,
                           request, utils.generate_uuid())
 
     def test_upload_download(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)
         output = self.controller.download(request, unit_test_utils.UUID2)
         expected = {'data': 'YYYY', 'size': 4}
         self.assertEqual(expected, output)
 
     def test_upload_non_existant_image(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.upload,
                           request, utils.generate_uuid(), 'YYYY', 4)
 
     def test_upload_data_exists(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPConflict, self.controller.upload,
                           request, unit_test_utils.UUID1, 'YYYY', 4)
 
     def test_upload_download_no_size(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', None)
         output = self.controller.download(request, unit_test_utils.UUID2)
         expected = {'data': 'YYYY', 'size': 4}
@@ -83,7 +83,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         self.deserializer = glance.api.v2.image_data.RequestDeserializer()
 
     def test_upload(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.headers['Content-Type'] = 'application/octet-stream'
         request.body = 'YYY'
         request.headers['Content-Length'] = 3
@@ -94,7 +94,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_upload_chunked(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.headers['Content-Type'] = 'application/octet-stream'
         # If we use body_file, webob assumes we want to do a chunked upload,
         # ignoring the Content-Length header
@@ -106,7 +106,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_upload_chunked_with_content_length(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.headers['Content-Type'] = 'application/octet-stream'
         request.body_file = StringIO.StringIO('YYY')
         # The deserializer shouldn't care if the Content-Length is
@@ -119,7 +119,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_upload_with_incorrect_content_length(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.headers['Content-Type'] = 'application/octet-stream'
         # The deserializer shouldn't care if the Content-Length and
         # actual request body length differ. That job is left up
@@ -133,7 +133,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_upload_wrong_content_type(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.headers['Content-Type'] = 'application/json'
         request.body = 'YYYYY'
         self.assertRaises(webob.exc.HTTPUnsupportedMediaType,

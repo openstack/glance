@@ -38,7 +38,7 @@ class TestImagesController(test_utils.BaseTestCase):
         self.controller = glance.api.v2.images.ImagesController({}, self.db)
 
     def test_index(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         output = self.controller.index(request)
         self.assertEqual(2, len(output))
         self.assertEqual(output[0]['id'], unit_test_utils.UUID1)
@@ -46,12 +46,12 @@ class TestImagesController(test_utils.BaseTestCase):
 
     def test_index_zero_images(self):
         self.db.reset()
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         output = self.controller.index(request)
         self.assertEqual([], output)
 
     def test_show(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         output = self.controller.show(request, image_id=unit_test_utils.UUID2)
         for key in ['created_at', 'updated_at']:
             output.pop(key)
@@ -69,11 +69,13 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_show_non_existant(self):
-        self.assertRaises(webob.exc.HTTPNotFound, self.controller.show,
-                unit_test_utils.FakeRequest(), image_id=utils.generate_uuid())
+        request = unit_test_utils.get_fake_request()
+        image_id = utils.generate_uuid()
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.controller.show, request, image_id)
 
     def test_create(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         image = {'name': 'image-1'}
         output = self.controller.create(request, image)
         for key in ['id', 'created_at', 'updated_at']:
@@ -90,13 +92,13 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_create_with_owner_forbidden(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         image = {'name': 'image-1', 'owner': utils.generate_uuid()}
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.create,
                           request, image)
 
     def test_create_public_image_as_admin(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         image = {'name': 'image-1', 'is_public': True}
         output = self.controller.create(request, image)
         for key in ['id', 'created_at', 'updated_at']:
@@ -113,7 +115,7 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_update(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         image = {'name': 'image-2'}
         output = self.controller.update(request, unit_test_utils.UUID1, image)
         for key in ['id', 'created_at', 'updated_at']:
@@ -130,7 +132,7 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_update_non_existant(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         image = {'name': 'image-2'}
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.update,
                           request, utils.generate_uuid(), image)
@@ -145,7 +147,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
                 {}, schema_api)
 
     def test_create_with_id(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         image_id = utils.generate_uuid()
         request.body = json.dumps({'id': image_id})
         output = self.deserializer.create(request)
@@ -153,21 +155,21 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_create_with_name(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'name': 'image-1'})
         output = self.deserializer.create(request)
         expected = {'image': {'name': 'image-1', 'properties': {}}}
         self.assertEqual(expected, output)
 
     def test_create_public(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'visibility': 'public'})
         output = self.deserializer.create(request)
         expected = {'image': {'is_public': True, 'properties': {}}}
         self.assertEqual(expected, output)
 
     def test_create_private(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'visibility': 'private'})
         output = self.deserializer.create(request)
         expected = {'image': {'is_public': False, 'properties': {}}}
@@ -175,21 +177,21 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
 
     def test_create_readonly_attributes_ignored(self):
         for key in ['created_at', 'updated_at']:
-            request = unit_test_utils.FakeRequest()
+            request = unit_test_utils.get_fake_request()
             request.body = json.dumps({key: ISOTIME})
             output = self.deserializer.create(request)
             expected = {'image': {'properties': {}}}
             self.assertEqual(expected, output)
 
     def test_create_with_tags(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'tags': ['one', 'two']})
         output = self.deserializer.create(request)
         expected = {'image': {'tags': ['one', 'two'], 'properties': {}}}
         self.assertEqual(expected, output)
 
     def test_update(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'name': 'image-1', 'visibility': 'public'})
         output = self.deserializer.update(request)
         expected = {
@@ -203,7 +205,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
 
     def test_update_readonly_attributes_ignored(self):
         for key in ['created_at', 'updated_at']:
-            request = unit_test_utils.FakeRequest()
+            request = unit_test_utils.get_fake_request()
             request.body = json.dumps({key: ISOTIME})
             output = self.deserializer.update(request)
             expected = {'image': {'properties': {}}}
@@ -227,7 +229,7 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
                 {}, schema_api)
 
     def test_create(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'name': 'image-1', 'pants': 'on'})
         output = self.deserializer.create(request)
         expected = {
@@ -239,13 +241,13 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_create_bad_data(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'name': 'image-1', 'pants': 'borked'})
         self.assertRaises(exception.InvalidObject,
                 self.deserializer.create, request)
 
     def test_update(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'name': 'image-1', 'pants': 'off'})
         output = self.deserializer.update(request)
         expected = {
@@ -257,7 +259,7 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_update_bad_data(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'name': 'image-1', 'pants': 'borked'})
         self.assertRaises(exception.InvalidObject,
                 self.deserializer.update, request)
@@ -273,7 +275,7 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
                 {}, schema_api)
 
     def test_create(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'foo': 'bar'})
         output = self.deserializer.create(request)
         expected = {'image': {'properties': {'foo': 'bar'}}}
@@ -281,25 +283,25 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
 
     def test_create_with_additional_properties_disallowed(self):
         self.config(allow_additional_image_properties=False)
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'foo': 'bar'})
         self.assertRaises(exception.InvalidObject,
                           self.deserializer.create, request)
 
     def test_create_with_numeric_property(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'abc': 123})
         self.assertRaises(exception.InvalidObject,
                           self.deserializer.create, request)
 
     def test_create_with_list_property(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'foo': ['bar']})
         self.assertRaises(exception.InvalidObject,
                           self.deserializer.create, request)
 
     def test_update(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'foo': 'bar'})
         output = self.deserializer.update(request)
         expected = {'image': {'properties': {'foo': 'bar'}}}
@@ -307,7 +309,7 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
 
     def test_update_with_additional_properties_disallowed(self):
         self.config(allow_additional_image_properties=False)
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'foo': 'bar'})
         self.assertRaises(exception.InvalidObject,
                           self.deserializer.update, request)

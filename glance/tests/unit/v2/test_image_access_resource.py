@@ -33,7 +33,7 @@ class TestImageAccessController(test_utils.BaseTestCase):
         self.controller = image_access.Controller({}, self.db)
 
     def test_index(self):
-        req = unit_test_utils.FakeRequest()
+        req = unit_test_utils.get_fake_request()
         output = self.controller.index(req, unit_test_utils.UUID1)
         expected = [
             {
@@ -52,19 +52,19 @@ class TestImageAccessController(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_index_zero_records(self):
-        req = unit_test_utils.FakeRequest()
+        req = unit_test_utils.get_fake_request()
         output = self.controller.index(req, unit_test_utils.UUID2)
         expected = []
         self.assertEqual(expected, output)
 
     def test_index_nonexistant_image(self):
-        req = unit_test_utils.FakeRequest()
+        req = unit_test_utils.get_fake_request()
         image_id = utils.generate_uuid()
         self.assertRaises(exception.NotFound,
                           self.controller.index, req, image_id)
 
     def test_show(self):
-        req = unit_test_utils.FakeRequest()
+        req = unit_test_utils.get_fake_request()
         image_id = unit_test_utils.UUID1
         tenant_id = unit_test_utils.TENANT1
         output = self.controller.show(req, image_id, tenant_id)
@@ -77,14 +77,14 @@ class TestImageAccessController(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_show_nonexistant_image(self):
-        req = unit_test_utils.FakeRequest()
+        req = unit_test_utils.get_fake_request()
         image_id = utils.generate_uuid()
         tenant_id = unit_test_utils.TENANT1
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.show, req, image_id, tenant_id)
 
     def test_show_nonexistant_tenant(self):
-        req = unit_test_utils.FakeRequest()
+        req = unit_test_utils.get_fake_request()
         image_id = unit_test_utils.UUID1
         tenant_id = utils.generate_uuid()
         self.assertRaises(webob.exc.HTTPNotFound,
@@ -102,7 +102,7 @@ class TestImageAccessController(test_utils.BaseTestCase):
             'can_share': True,
             'deleted': False,
         }
-        req = unit_test_utils.FakeRequest()
+        req = unit_test_utils.get_fake_request()
         output = self.controller.create(req, unit_test_utils.UUID1, fixture)
         self.assertEqual(expected, output)
 
@@ -125,7 +125,7 @@ class TestImageAccessDeserializer(test_utils.BaseTestCase):
                 'can_share': False,
             },
         }
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps(fixture)
         output = self.deserializer.create(request)
         self.assertEqual(expected, output)
@@ -159,7 +159,7 @@ class TestImageAccessDeserializerWithExtendedSchema(test_utils.BaseTestCase):
                 'color': 'blue',
             },
         }
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps(fixture)
         output = self.deserializer.create(request)
         self.assertEqual(expected, output)
@@ -170,7 +170,7 @@ class TestImageAccessDeserializerWithExtendedSchema(test_utils.BaseTestCase):
             'can_share': False,
             'color': 'purple',
         }
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         request.body = json.dumps(fixture)
         self.assertRaises(exception.InvalidObject,
                 self.deserializer.create, request)

@@ -25,7 +25,7 @@ class TestRootController(test_utils.BaseTestCase):
         self.controller = glance.api.v2.root.RootController()
 
     def test_index(self):
-        req = unit_test_utils.FakeRequest()
+        req = unit_test_utils.get_fake_request()
         output = self.controller.index(req)
         expected = {
             'links': [

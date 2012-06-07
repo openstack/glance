@@ -31,21 +31,21 @@ class TestImageTagsController(test_utils.BaseTestCase):
         self.controller = glance.api.v2.image_tags.Controller(conf, self.db)
 
     def test_list_tags(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         tags = self.controller.index(request, unit_test_utils.UUID1)
         expected = ['ping', 'pong']
         self.assertEqual(expected, tags)
 
     def test_create_tag(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         self.controller.update(request, unit_test_utils.UUID1, 'dink')
 
     def test_delete_tag(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         self.controller.delete(request, unit_test_utils.UUID1, 'ping')
 
     def test_delete_tag_not_found(self):
-        request = unit_test_utils.FakeRequest()
+        request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.delete,
                           request, unit_test_utils.UUID1, 'what')
 

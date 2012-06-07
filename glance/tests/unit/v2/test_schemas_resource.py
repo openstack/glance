@@ -27,7 +27,7 @@ class TestSchemasController(test_utils.BaseTestCase):
         self.controller = schemas.Controller({}, self.schema_api)
 
     def test_index(self):
-        req = unit_test_utils.FakeRequest()
+        req = unit_test_utils.get_fake_request()
         output = self.controller.index(req)
         expected = {'links': [
             {'rel': 'image', 'href': '/v2/schemas/image'},
@@ -36,11 +36,11 @@ class TestSchemasController(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_image(self):
-        req = unit_test_utils.FakeRequest()
+        req = unit_test_utils.get_fake_request()
         output = self.controller.image(req)
         self.assertEqual(self.schema_api.get_schema('image'), output)
 
     def test_access(self):
-        req = unit_test_utils.FakeRequest()
+        req = unit_test_utils.get_fake_request()
         output = self.controller.access(req)
         self.assertEqual(self.schema_api.get_schema('access'), output)
