@@ -53,13 +53,14 @@ done
 function run_tests {
   # Just run the test suites in current environment
   ${wrapper} rm -f tests.sqlite
-  ${wrapper} $NOSETESTS 2> run_tests.log
+  ${wrapper} $NOSETESTS
 }
 
 function run_pep8 {
   echo "Running pep8 ..."
+  PEP8_EXCLUDE=".venv,.tox,dist,doc"
   PEP8_OPTIONS="--exclude=$PEP8_EXCLUDE --repeat"
-  PEP8_INCLUDE="bin/* glance tools setup.py run_tests.py"
+  PEP8_INCLUDE="."
   ${wrapper} pep8 $PEP8_OPTIONS $PEP8_INCLUDE
 }
 
