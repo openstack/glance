@@ -299,7 +299,7 @@ class TestStore(base.StoreClearingUnitTest):
             self.config(**conf)
             self.store = Store(self.conf)
             return self.store.add == self.store.add_disabled
-        except:
+        except Exception:
             return False
         return False
 
