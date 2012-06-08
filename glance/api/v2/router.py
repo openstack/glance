@@ -36,16 +36,15 @@ class API(wsgi.Router):
     """WSGI router for Glance v2 API requests."""
 
     def __init__(self, conf, **local_conf):
-        self.conf = conf
         mapper = routes.Mapper()
 
-        schema_api = glance.schema.API(self.conf)
-        glance.schema.load_custom_schema_properties(conf, schema_api)
+        schema_api = glance.schema.API()
+        glance.schema.load_custom_schema_properties(schema_api)
 
-        root_resource = root.create_resource(conf)
+        root_resource = root.create_resource()
         mapper.connect('/', controller=root_resource, action='index')
 
-        schemas_resource = schemas.create_resource(conf, schema_api)
+        schemas_resource = schemas.create_resource(schema_api)
         mapper.connect('/schemas',
                        controller=schemas_resource,
                        action='index',
@@ -59,7 +58,7 @@ class API(wsgi.Router):
                        action='access',
                        conditions={'method': ['GET']})
 
-        images_resource = images.create_resource(conf, schema_api)
+        images_resource = images.create_resource(schema_api)
         mapper.connect('/images',
                        controller=images_resource,
                        action='index',
@@ -81,7 +80,7 @@ class API(wsgi.Router):
                        action='delete',
                        conditions={'method': ['DELETE']})
 
-        image_data_resource = image_data.create_resource(conf)
+        image_data_resource = image_data.create_resource()
         mapper.connect('/images/{image_id}/file',
                        controller=image_data_resource,
                        action='download',
@@ -91,7 +90,7 @@ class API(wsgi.Router):
                        action='upload',
                        conditions={'method': ['PUT']})
 
-        image_tags_resource = image_tags.create_resource(conf)
+        image_tags_resource = image_tags.create_resource()
         mapper.connect('/images/{image_id}/tags',
                        controller=image_tags_resource,
                        action='index',
@@ -105,7 +104,7 @@ class API(wsgi.Router):
                        action='delete',
                        conditions={'method': ['DELETE']})
 
-        image_access_resource = image_access.create_resource(conf, schema_api)
+        image_access_resource = image_access.create_resource(schema_api)
         mapper.connect('/images/{image_id}/access',
                        controller=image_access_resource,
                        action='index',

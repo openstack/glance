@@ -89,7 +89,7 @@ class FakeStoreAPI(object):
             UUID1: ('XXX', 3),
         }
 
-    def create_stores(self, conf):
+    def create_stores(self):
         pass
 
     def get_from_backend(self, location):

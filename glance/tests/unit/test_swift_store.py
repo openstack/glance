@@ -28,12 +28,14 @@ import swift.common.client
 
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import cfg
 from glance.store import BackendException
 import glance.store.swift
 from glance.store.location import get_location_from_uri
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
+CONF = cfg.CONF
 
 FAKE_UUID = utils.generate_uuid
 
@@ -192,7 +194,7 @@ class SwiftTests(object):
 
     @property
     def swift_store_user(self):
-        return urllib.quote(self.conf.swift_store_user)
+        return urllib.quote(CONF.swift_store_user)
 
     def test_get_size(self):
         """
@@ -321,7 +323,7 @@ class SwiftTests(object):
             SWIFT_PUT_OBJECT_CALLS = 0
 
             self.config(swift_store_auth_address=variation)
-            self.store = Store(self.conf)
+            self.store = Store()
             location, size, checksum = self.store.add(image_id, image_swift,
                                                       expected_swift_size)
 
@@ -345,7 +347,7 @@ class SwiftTests(object):
         """
         self.config(swift_store_create_container_on_put=False,
                     swift_store_container='noexist')
-        self.store = Store(self.conf)
+        self.store = Store()
 
         image_swift = StringIO.StringIO("nevergonnamakeit")
 
@@ -384,7 +386,7 @@ class SwiftTests(object):
 
         self.config(swift_store_create_container_on_put=True,
                     swift_store_container='noexist')
-        self.store = Store(self.conf)
+        self.store = Store()
         location, size, checksum = self.store.add(expected_image_id,
                                                   image_swift,
                                                   expected_swift_size)
@@ -422,7 +424,7 @@ class SwiftTests(object):
         SWIFT_PUT_OBJECT_CALLS = 0
 
         self.config(swift_store_container='glance')
-        self.store = Store(self.conf)
+        self.store = Store()
         orig_max_size = self.store.large_object_size
         orig_temp_size = self.store.large_object_chunk_size
         try:
@@ -477,7 +479,7 @@ class SwiftTests(object):
         # Temporarily set Swift MAX_SWIFT_OBJECT_SIZE to 1KB and add our image,
         # explicitly setting the image_length to 0
         self.config(swift_store_container='glance')
-        self.store = Store(self.conf)
+        self.store = Store()
         orig_max_size = self.store.large_object_size
         orig_temp_size = self.store.large_object_chunk_size
         global MAX_SWIFT_OBJECT_SIZE
@@ -526,7 +528,7 @@ class SwiftTests(object):
 
         try:
             self.config(**conf)
-            self.store = Store(self.conf)
+            self.store = Store()
             return self.store.add == self.store.add_disabled
         except:
             return False
@@ -587,7 +589,7 @@ class TestStoreAuthV1(base.StoreClearingUnitTest, SwiftTests):
         self.stubs = stubout.StubOutForTesting()
         stub_out_swift_common_client(self.stubs,
                                      conf['swift_store_auth_version'])
-        self.store = Store(self.conf)
+        self.store = Store()
 
     def tearDown(self):
         """Clear the test environment"""

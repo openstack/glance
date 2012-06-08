@@ -25,7 +25,6 @@ import stubout
 
 from glance import image_cache
 from glance.common import utils
-from glance.openstack.common import cfg
 from glance.tests import utils as test_utils
 from glance.tests.utils import skip_if_disabled, xattr_writes_supported
 
@@ -259,7 +258,7 @@ class TestImageCacheXattr(test_utils.BaseTestCase,
                     image_cache_max_size=1024 * 5,
                     registry_host='0.0.0.0',
                     registry_port=9191)
-        self.cache = image_cache.ImageCache(self.conf)
+        self.cache = image_cache.ImageCache()
 
         if not xattr_writes_supported(self.cache_dir):
             self.inited = True
@@ -306,7 +305,7 @@ class TestImageCacheSqlite(test_utils.BaseTestCase,
                     image_cache_max_size=1024 * 5,
                     registry_host='0.0.0.0',
                     registry_port=9191)
-        self.cache = image_cache.ImageCache(self.conf)
+        self.cache = image_cache.ImageCache()
 
     def tearDown(self):
         super(TestImageCacheSqlite, self).tearDown()
@@ -349,8 +348,7 @@ class TestImageCacheNoDep(test_utils.BaseTestCase):
                 yield FailingFile()
 
         self.driver = FailingFileDriver()
-        conf = cfg.ConfigOpts()
-        cache = image_cache.ImageCache(conf)
+        cache = image_cache.ImageCache()
         data = ['a', 'b', 'c', 'Fail', 'd', 'e', 'f']
 
         caching_iter = cache.get_caching_iter('dummy_id', iter(data))
@@ -368,8 +366,7 @@ class TestImageCacheNoDep(test_utils.BaseTestCase):
                 raise IOError
 
         self.driver = OpenFailingDriver()
-        conf = cfg.ConfigOpts()
-        cache = image_cache.ImageCache(conf)
+        cache = image_cache.ImageCache()
         data = ['a', 'b', 'c', 'd', 'e', 'f']
 
         caching_iter = cache.get_caching_iter('dummy_id', iter(data))

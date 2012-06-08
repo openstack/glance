@@ -51,7 +51,7 @@ class TestSchemaAPI(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestSchemaAPI, self).setUp()
-        self.schema_api = glance.schema.API(self.conf, FAKE_BASE_PROPERTIES)
+        self.schema_api = glance.schema.API(FAKE_BASE_PROPERTIES)
 
     def test_get_schema(self):
         output = self.schema_api.get_schema('fake1')

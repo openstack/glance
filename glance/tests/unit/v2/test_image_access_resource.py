@@ -30,7 +30,7 @@ class TestImageAccessController(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImageAccessController, self).setUp()
         self.db = unit_test_utils.FakeDB()
-        self.controller = image_access.Controller({}, self.db)
+        self.controller = image_access.Controller(self.db)
 
     def test_index(self):
         req = unit_test_utils.get_fake_request()
@@ -111,8 +111,8 @@ class TestImageAccessDeserializer(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImageAccessDeserializer, self).setUp()
-        schema_api = glance.schema.API(self.conf)
-        self.deserializer = image_access.RequestDeserializer({}, schema_api)
+        schema_api = glance.schema.API()
+        self.deserializer = image_access.RequestDeserializer(schema_api)
 
     def test_create(self):
         fixture = {
@@ -135,7 +135,7 @@ class TestImageAccessDeserializerWithExtendedSchema(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImageAccessDeserializerWithExtendedSchema, self).setUp()
-        schema_api = glance.schema.API(self.conf)
+        schema_api = glance.schema.API()
         props = {
             'color': {
               'type': 'string',
@@ -144,7 +144,7 @@ class TestImageAccessDeserializerWithExtendedSchema(test_utils.BaseTestCase):
             },
         }
         schema_api.set_custom_schema_properties('access', props)
-        self.deserializer = image_access.RequestDeserializer({}, schema_api)
+        self.deserializer = image_access.RequestDeserializer(schema_api)
 
     def test_create(self):
         fixture = {

@@ -62,7 +62,7 @@ class TestRegistryDb(test_utils.BaseTestCase):
         # other modules may have already correctly configured the DB
         db_api._ENGINE = None
         self.assertRaises((ImportError, exc.ArgumentError),
-            db_api.configure_db, self.conf)
+                          db_api.configure_db)
         exc_raised = False
         self.log_written = False
 
@@ -72,7 +72,7 @@ class TestRegistryDb(test_utils.BaseTestCase):
 
         self.stubs.Set(db_api.logger, 'error', fake_log_error)
         try:
-            api_obj = rserver.API(self.conf)
+            api_obj = rserver.API(None)
         except exc.ArgumentError:
             exc_raised = True
         except ImportError:
@@ -92,8 +92,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestRegistryAPI, self).setUp()
-        self.api = context.UnauthenticatedContextMiddleware(
-                rserver.API(self.conf), self.conf)
+        self.api = context.UnauthenticatedContextMiddleware(rserver.API(None),
+                                                            None)
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',
@@ -128,7 +128,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
              'location': "file:///%s/%s" % (self.test_dir, UUID2),
              'properties': {}}]
         self.context = context.RequestContext(is_admin=True)
-        db_api.configure_db(self.conf)
+        db_api.configure_db()
         self.destroy_fixtures()
         self.create_fixtures()
 
@@ -1961,8 +1961,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestGlanceAPI, self).setUp()
-        self.api = context.UnauthenticatedContextMiddleware(
-                router.API(self.conf), self.conf)
+        self.api = context.UnauthenticatedContextMiddleware(router.API(None),
+                                                            None)
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',
@@ -1993,7 +1993,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
              'location': "file:///%s/%s" % (self.test_dir, UUID2),
              'properties': {}}]
         self.context = context.RequestContext(is_admin=True)
-        db_api.configure_db(self.conf)
+        db_api.configure_db()
         self.destroy_fixtures()
         self.create_fixtures()
 
@@ -2997,7 +2997,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
         self.context = context.RequestContext(is_admin=True,
                                               user=self.receiving_user,
                                               tenant=self.receiving_tenant)
-        self.serializer = images.ImageSerializer(self.conf)
+        self.serializer = images.ImageSerializer()
 
         def image_iter():
             for x in ['chunk', '678911234', '56789']:

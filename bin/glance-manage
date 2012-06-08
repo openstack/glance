@@ -51,13 +51,13 @@ CONF = cfg.CONF
 
 def do_db_version(args):
     """Print database's current migration level"""
-    print glance.db.sqlalchemy.migration.db_version(CONF)
+    print glance.db.sqlalchemy.migration.db_version()
 
 
 def do_upgrade(args):
     """Upgrade the database's migration level"""
     version = args.pop(0) if args else None
-    glance.db.sqlalchemy.migration.upgrade(CONF, version)
+    glance.db.sqlalchemy.migration.upgrade(version)
 
 
 def do_downgrade(args):
@@ -67,13 +67,13 @@ def do_downgrade(args):
             "downgrade requires a version argument")
 
     version = args.pop(0)
-    glance.db.sqlalchemy.migration.downgrade(CONF, version)
+    glance.db.sqlalchemy.migration.downgrade(version)
 
 
 def do_version_control(args):
     """Place a database under migration control"""
     version = args.pop(0) if args else None
-    glance.db.sqlalchemy.migration.version_control(CONF, version)
+    glance.db.sqlalchemy.migration.version_control(version)
 
 
 def do_db_sync(args):
@@ -83,11 +83,12 @@ def do_db_sync(args):
     """
     # override auto-create flag, as complete DB should always
     # be created on sync if not already existing
-    CONF.db_auto_create = True
-    glance.db.sqlalchemy.api.configure_db(CONF)
+    CONF.register_opts(glance.db.sqlalchemy.api.db_opts)
+    CONF.set_override('db_auto_create', True)
+    glance.db.sqlalchemy.api.configure_db()
     version = args.pop(0) if args else None
     current_version = args.pop(0) if args else None
-    glance.db.sqlalchemy.migration.db_sync(CONF, version, current_version)
+    glance.db.sqlalchemy.migration.db_sync(version, current_version)
 
 
 def dispatch_cmd(args):
@@ -115,7 +116,7 @@ def main():
 
         args = config.parse_args(default_config_files=default_cfg_files,
                                  usage="%prog [options] <cmd>")
-        config.setup_logging(CONF)
+        config.setup_logging()
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
 

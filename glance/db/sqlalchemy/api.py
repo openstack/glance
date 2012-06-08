@@ -98,20 +98,18 @@ class MySQLPingListener(object):
                 raise
 
 
-def configure_db(conf):
+def configure_db():
     """
     Establish the database, create an engine if needed, and
     register the models.
-
-    :param conf: Mapping of configuration options
     """
     global _ENGINE, sa_logger, logger, _MAX_RETRIES, _RETRY_INTERVAL
     if not _ENGINE:
-        sql_connection = conf.sql_connection
-        _MAX_RETRIES = conf.sql_max_retries
-        _RETRY_INTERVAL = conf.sql_retry_interval
+        sql_connection = CONF.sql_connection
+        _MAX_RETRIES = CONF.sql_max_retries
+        _RETRY_INTERVAL = CONF.sql_retry_interval
         connection_dict = sqlalchemy.engine.url.make_url(sql_connection)
-        engine_args = {'pool_recycle': conf.sql_idle_timeout,
+        engine_args = {'pool_recycle': CONF.sql_idle_timeout,
                        'echo': False,
                        'convert_unicode': True
                        }
@@ -130,16 +128,16 @@ def configure_db(conf):
             raise
 
         sa_logger = logging.getLogger('sqlalchemy.engine')
-        if conf.debug:
+        if CONF.debug:
             sa_logger.setLevel(logging.DEBUG)
-        elif conf.verbose:
+        elif CONF.verbose:
             sa_logger.setLevel(logging.INFO)
 
-        if conf.db_auto_create:
+        if CONF.db_auto_create:
             logger.info('auto-creating glance registry DB')
             models.register_models(_ENGINE)
             try:
-                migration.version_control(conf)
+                migration.version_control()
             except exception.DatabaseMigrationError:
                 # only arises when the DB exists and is under version control
                 pass

@@ -35,7 +35,7 @@ class TestImagesController(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImagesController, self).setUp()
         self.db = unit_test_utils.FakeDB()
-        self.controller = glance.api.v2.images.ImagesController({}, self.db)
+        self.controller = glance.api.v2.images.ImagesController(self.db)
 
     def test_index(self):
         request = unit_test_utils.get_fake_request()
@@ -142,9 +142,9 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImagesDeserializer, self).setUp()
-        schema_api = glance.schema.API(self.conf)
+        schema_api = glance.schema.API()
         self.deserializer = glance.api.v2.images.RequestDeserializer(
-                {}, schema_api)
+            schema_api)
 
     def test_create_with_id(self):
         request = unit_test_utils.get_fake_request()
@@ -216,7 +216,7 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImagesDeserializerWithExtendedSchema, self).setUp()
-        schema_api = glance.schema.API(self.conf)
+        schema_api = glance.schema.API()
         props = {
             'pants': {
               'type': 'string',
@@ -226,7 +226,7 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
         }
         schema_api.set_custom_schema_properties('image', props)
         self.deserializer = glance.api.v2.images.RequestDeserializer(
-                {}, schema_api)
+            schema_api)
 
     def test_create(self):
         request = unit_test_utils.get_fake_request()
@@ -270,9 +270,9 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImagesDeserializerWithAdditionalProperties, self).setUp()
         self.config(allow_additional_image_properties=True)
-        schema_api = glance.schema.API(self.conf)
+        schema_api = glance.schema.API()
         self.deserializer = glance.api.v2.images.RequestDeserializer(
-                {}, schema_api)
+            schema_api)
 
     def test_create(self):
         request = unit_test_utils.get_fake_request()
@@ -319,7 +319,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImagesSerializer, self).setUp()
-        schema_api = glance.schema.API(self.conf)
+        schema_api = glance.schema.API()
         self.serializer = glance.api.v2.images.ResponseSerializer(schema_api)
 
     def test_index(self):
@@ -496,7 +496,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImagesSerializerWithExtendedSchema, self).setUp()
         self.config(allow_additional_image_properties=False)
-        self.schema_api = glance.schema.API(self.conf)
+        self.schema_api = glance.schema.API()
         props = {
             'color': {
                 'type': 'string',
@@ -578,7 +578,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImagesSerializerWithAdditionalProperties, self).setUp()
         self.config(allow_additional_image_properties=True)
-        self.schema_api = glance.schema.API(self.conf)
+        self.schema_api = glance.schema.API()
         self.fixture = {
             'id': unit_test_utils.UUID2,
             'name': 'image-2',

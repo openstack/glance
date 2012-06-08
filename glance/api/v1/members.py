@@ -30,9 +30,6 @@ logger = logging.getLogger('glance.api.v1.members')
 
 class Controller(object):
 
-    def __init__(self, conf):
-        self.conf = conf
-
     def index(self, req, image_id):
         """
         Return a list of dictionaries indicating the members of the
@@ -179,8 +176,8 @@ class Controller(object):
         return dict(shared_images=members)
 
 
-def create_resource(conf):
+def create_resource():
     """Image members resource factory method"""
     deserializer = wsgi.JSONRequestDeserializer()
     serializer = wsgi.JSONResponseSerializer()
-    return wsgi.Resource(Controller(conf), deserializer, serializer)
+    return wsgi.Resource(Controller(), deserializer, serializer)

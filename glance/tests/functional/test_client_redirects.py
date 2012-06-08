@@ -87,8 +87,8 @@ class TestClientRedirects(functional.FunctionalTest):
         server_one = wsgi.Server()
         server_two = wsgi.Server()
         self.config(bind_host='127.0.0.1')
-        server_one.start(RedirectTestApp("one"), self.conf, self.port_one)
-        server_two.start(RedirectTestApp("two"), self.conf, self.port_two)
+        server_one.start(RedirectTestApp("one"), self.port_one)
+        server_two.start(RedirectTestApp("two"), self.port_two)
         self.client = client.BaseClient("127.0.0.1", self.port_one)
 
     def test_get_without_redirect(self):

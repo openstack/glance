@@ -39,9 +39,6 @@ gettext.install('glance', unicode=1)
 from glance.common import config
 from glance.common import wsgi
 from glance.common import exception
-from glance.openstack.common import cfg
-
-CONF = cfg.CONF
 
 
 def fail(returncode, e):
@@ -53,10 +50,10 @@ if __name__ == '__main__':
     try:
         config.parse_args()
 
-        app = config.load_paste_app(CONF)
+        app = config.load_paste_app()
 
         server = wsgi.Server()
-        server.start(app, CONF, default_port=9292)
+        server.start(app, default_port=9292)
         server.wait()
     except exception.WorkerCreationFailure, e:
         fail(2, e)

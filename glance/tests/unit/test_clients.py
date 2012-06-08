@@ -147,7 +147,7 @@ class TestRegistryClient(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestRegistryClient, self).setUp()
-        db_api.configure_db(self.conf)
+        db_api.configure_db()
         self.context = context.RequestContext(is_admin=True)
         self.FIXTURES = [
             {'id': UUID1,
@@ -1201,7 +1201,7 @@ class TestClient(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestClient, self).setUp()
-        db_api.configure_db(self.conf)
+        db_api.configure_db()
         self.client = client.Client("0.0.0.0")
         self.FIXTURES = [
             {'id': UUID1,

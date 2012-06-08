@@ -166,7 +166,7 @@ class TestStore(base.StoreClearingUnitTest):
         super(TestStore, self).setUp()
         self.stubs = stubout.StubOutForTesting()
         stub_out_s3(self.stubs)
-        self.store = Store(self.conf)
+        self.store = Store()
 
     def tearDown(self):
         """Clear the test environment"""
@@ -264,7 +264,7 @@ class TestStore(base.StoreClearingUnitTest):
             image_s3 = StringIO.StringIO(expected_s3_contents)
 
             self.config(**new_conf)
-            self.store = Store(self.conf)
+            self.store = Store()
             location, size, checksum = self.store.add(expected_image_id,
                                                       image_s3,
                                                       expected_s3_size)
@@ -297,7 +297,7 @@ class TestStore(base.StoreClearingUnitTest):
 
         try:
             self.config(**conf)
-            self.store = Store(self.conf)
+            self.store = Store()
             return self.store.add == self.store.add_disabled
         except Exception:
             return False

@@ -27,9 +27,6 @@ class Controller(object):
 
     """A wsgi controller that reports which API versions are supported."""
 
-    def __init__(self, conf):
-        self.conf = conf
-
     def index(self, req):
         """Respond to a request for all OpenStack API versions."""
         def build_version_object(version, path, status):
@@ -62,4 +59,4 @@ class Controller(object):
 
 
 def create_resource(conf):
-    return wsgi.Resource(Controller(conf))
+    return wsgi.Resource(Controller())

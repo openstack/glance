@@ -23,7 +23,7 @@ from glance.notifier import strategy
 class LoggingStrategy(strategy.Strategy):
     """A notifier that calls logging when called."""
 
-    def __init__(self, conf):
+    def __init__(self):
         self.logger = logging.getLogger('glance.notifier.logging_notifier')
 
     def warn(self, msg):

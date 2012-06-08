@@ -17,18 +17,16 @@ import json
 
 import webob.exc
 
-from glance.api.v2 import base
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.db.sqlalchemy.api
 
 
-class Controller(base.Controller):
-    def __init__(self, conf, db=None):
-        super(Controller, self).__init__(conf)
+class Controller(object):
+    def __init__(self, db=None):
         self.db_api = db or glance.db.sqlalchemy.api
-        self.db_api.configure_db(conf)
+        self.db_api.configure_db()
 
     def index(self, req, image_id):
         image = self.db_api.image_get(req.context, image_id)
@@ -78,9 +76,8 @@ class Controller(base.Controller):
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
-    def __init__(self, conf, schema_api):
+    def __init__(self, schema_api):
         super(RequestDeserializer, self).__init__()
-        self.conf = conf
         self.schema_api = schema_api
 
     def create(self, request):
@@ -138,9 +135,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.status_int = 204
 
 
-def create_resource(conf, schema_api):
+def create_resource(schema_api):
     """Image access resource factory method"""
-    deserializer = RequestDeserializer(conf, schema_api)
+    deserializer = RequestDeserializer(schema_api)
     serializer = ResponseSerializer()
-    controller = Controller(conf)
+    controller = Controller()
     return wsgi.Resource(controller, deserializer, serializer)

@@ -72,7 +72,7 @@ class TestPasteApp(test_utils.BaseTestCase):
                                           'etc/glance-registry-paste.ini')
                 _appendto(paste_from, paste_to, paste_append)
 
-            app = config.load_paste_app(self.conf, 'glance-registry')
+            app = config.load_paste_app('glance-registry')
 
             self.assertEquals(expected_app_type, type(app))
         finally:
@@ -114,6 +114,6 @@ class TestPasteApp(test_utils.BaseTestCase):
         self.stubs.Set(config, 'setup_logging', lambda *a: None)
         self.stubs.Set(pruner, 'Pruner', lambda conf, **lc: 'pruner')
 
-        app = config.load_paste_app(self.conf, 'glance-pruner')
+        app = config.load_paste_app('glance-pruner')
 
         self.assertEquals('pruner', app)

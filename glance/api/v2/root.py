@@ -28,7 +28,7 @@ class RootController(object):
         }
 
 
-def create_resource(conf):
+def create_resource():
     """Root resource factory method"""
     controller = RootController()
     return wsgi.Resource(controller)

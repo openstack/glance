@@ -21,9 +21,6 @@ from glance.notifier import strategy
 class NoopStrategy(strategy.Strategy):
     """A notifier that does nothing when called."""
 
-    def __init__(self, conf):
-        pass
-
     def warn(self, msg):
         pass
 

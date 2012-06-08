@@ -13,14 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import glance.api.v2.base
 from glance.common import wsgi
 import glance.schema
 
 
-class Controller(glance.api.v2.base.Controller):
-    def __init__(self, conf, schema_api):
-        super(Controller, self).__init__(conf)
+class Controller(object):
+    def __init__(self, schema_api):
         self.schema_api = schema_api
 
     def index(self, req):
@@ -37,6 +35,6 @@ class Controller(glance.api.v2.base.Controller):
         return self.schema_api.get_schema('access')
 
 
-def create_resource(conf, schema_api):
-    controller = Controller(conf, schema_api)
+def create_resource(schema_api):
+    controller = Controller(schema_api)
     return wsgi.Resource(controller)

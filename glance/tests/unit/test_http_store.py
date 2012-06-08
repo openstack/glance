@@ -74,13 +74,13 @@ def stub_out_http_backend(stubs):
     stubs.Set(Store, '_get_conn_class', fake_get_conn_class)
 
 
-def stub_out_registry_image_update(stubs, conf):
+def stub_out_registry_image_update(stubs):
     """
     Stubs an image update on the registry.
 
     :param stubs: Set of stubout stubs
     """
-    test_stubs.stub_out_registry_server(stubs, conf)
+    test_stubs.stub_out_registry_server(stubs)
 
     def fake_image_update(ctx, image_id, values, purge_props=False):
         return {'properties': {}}
@@ -97,8 +97,8 @@ class TestHttpStore(base.StoreClearingUnitTest):
         self.stubs = stubout.StubOutForTesting()
         stub_out_http_backend(self.stubs)
         Store.CHUNKSIZE = 2
-        self.store = Store({})
-        configure_registry_client(self.conf)
+        self.store = Store()
+        configure_registry_client()
 
     def test_http_get(self):
         uri = "http://netloc/path/to/file.tar.gz"
@@ -131,8 +131,8 @@ class TestHttpStore(base.StoreClearingUnitTest):
     def test_http_schedule_delete_swallows_error(self):
         uri = "https://netloc/path/to/file.tar.gz"
         ctx = context.RequestContext()
-        stub_out_registry_image_update(self.stubs, self.conf)
+        stub_out_registry_image_update(self.stubs)
         try:
-            schedule_delete_from_backend(uri, self.conf, ctx, 'image_id')
+            schedule_delete_from_backend(uri, ctx, 'image_id')
         except exception.StoreDeleteNotSupported:
             self.fail('StoreDeleteNotSupported should be swallowed')
