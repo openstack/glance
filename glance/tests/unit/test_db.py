@@ -161,6 +161,10 @@ class TestRegistryDb(BaseDBTestCase):
                                       filters=filters)
         self.assertEquals(len(images), 0)
 
+    def test_image_get_all_invalid_sort_key(self):
+        self.assertRaises(exception.InvalidSortKey, db_api.image_get_all,
+                          self.context, sort_key='blah')
+
 
 class TestDBImageTags(BaseDBTestCase):
 

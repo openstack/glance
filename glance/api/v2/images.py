@@ -22,7 +22,11 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.db
+from glance.openstack.common import cfg
 from glance.openstack.common import timeutils
+
+
+CONF = cfg.CONF
 
 
 class ImagesController(object):
@@ -75,11 +79,24 @@ class ImagesController(object):
 
         return self._normalize_properties(dict(image))
 
-    def index(self, req):
+    def index(self, req, marker=None, limit=None, sort_key='created_at',
+              sort_dir='desc'):
         #NOTE(bcwaldon): is_public=True gets public images and those
         # owned by the authenticated tenant
         filters = {'deleted': False, 'is_public': True}
-        images = self.db_api.image_get_all(req.context, filters=filters)
+        if limit is None:
+            limit = CONF.limit_param_default
+        limit = min(CONF.api_limit_max, limit)
+
+        try:
+            images = self.db_api.image_get_all(req.context, filters=filters,
+                                               marker=marker, limit=limit,
+                                               sort_key=sort_key,
+                                               sort_dir=sort_dir)
+        except exception.InvalidSortKey as e:
+            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+        except exception.NotFound as e:
+            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
         images = [self._normalize_properties(dict(image)) for image in images]
         return [self._append_tags(req.context, image) for image in images]
 
@@ -155,6 +172,43 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
     def update(self, request):
         return self._parse_image(request)
+
+    def _validate_limit(self, limit):
+        try:
+            limit = int(limit)
+        except ValueError:
+            msg = _("limit param must be an integer")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
+        if limit < 0:
+            msg = _("limit param must be positive")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
+        return limit
+
+    def _validate_sort_dir(self, sort_dir):
+        if sort_dir not in ['asc', 'desc']:
+            msg = _('Invalid sort direction: %s' % sort_dir)
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
+        return sort_dir
+
+    def index(self, request):
+        limit = request.params.get('limit', None)
+        marker = request.params.get('marker', None)
+        sort_dir = request.params.get('sort_dir', 'desc')
+        query_params = {
+            'sort_key': request.params.get('sort_key', 'created_at'),
+            'sort_dir': self._validate_sort_dir(sort_dir),
+        }
+
+        if marker is not None:
+            query_params['marker'] = marker
+
+        if limit is not None:
+            query_params['limit'] = self._validate_limit(limit)
+
+        return query_params
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):

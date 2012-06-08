@@ -478,3 +478,180 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(404, response.status_code)
 
         self.stop_servers()
+
+    def test_get_images_with_marker_and_limit(self):
+        image_ids = []
+
+        # Image list should be empty
+        path = self._url('/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # Create an image
+        path = self._url('/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-1', 'type': 'kernel'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+        image_id = json.loads(response.text)['image']['id']
+
+        # Create an image
+        path = self._url('/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-2', 'type': 'kernel'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+        image_id = json.loads(response.text)['image']['id']
+
+        # Create an image
+        path = self._url('/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-3', 'type': 'kernel'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+        image_id = json.loads(response.text)['image']['id']
+
+        # Image list should contain 3 images
+        path = self._url('/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(3, len(images))
+        image_ids = [image['id'] for image in images]
+
+        # Image list should only contain last 2 images
+        # and not the first image which is the marker image
+        path = self._url('/images?marker=%s' % image_ids[0])
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(2, len(images))
+        self.assertEqual(images[0]['id'], image_ids[1])
+        self.assertEqual(images[1]['id'], image_ids[2])
+
+        # Ensure bad request for using a invalid marker
+        path = self._url('/images?marker=foo')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(400, response.status_code)
+
+        #Set limit as 2
+        # Image list should only contain first 2 images
+        path = self._url('/images?limit=2')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(2, len(images))
+        self.assertEqual(images[0]['id'], image_ids[0])
+        self.assertEqual(images[1]['id'], image_ids[1])
+
+        # Ensure bad request for using a invalid limit
+        path = self._url('/images?limit=foo')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(400, response.status_code)
+
+        # Ensure bad request for using a zero limit
+        path = self._url('/images?limit=0')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # Ensure bad request for using a negative limit
+        path = self._url('/images?limit=-1')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(400, response.status_code)
+
+        # using limit and marker only second image should be returned
+        path = self._url('/images?limit=1&marker=%s' % image_ids[0])
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(images[0]['id'], image_ids[1])
+
+        path = self._url('/images?limit=25')
+        response = requests.get(path, headers=self._headers())
+        images = json.loads(response.text)['images']
+        self.assertEqual(3, len(images))
+
+        # Delete first image
+        path = self._url('/images/%s' % image_ids[0])
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(204, response.status_code)
+
+        # Ensure bad request for using a deleted image as marker
+        path = self._url('/images?marker=%s' % image_ids[0])
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(400, response.status_code)
+
+    def test_get_images_with_sorting(self):
+        image_ids = []
+
+        # Image list should be empty
+        path = self._url('/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # Create an image
+        path = self._url('/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-1', 'type': 'kernel'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+        image_id = json.loads(response.text)['image']['id']
+
+        # Create an image
+        path = self._url('/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-2', 'type': 'kernel'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+        image_id = json.loads(response.text)['image']['id']
+
+        # Create an image
+        path = self._url('/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-3', 'type': 'kernel'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+        image_id = json.loads(response.text)['image']['id']
+
+        # Image list should contain 3 images
+        path = self._url('/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(3, len(images))
+        image_ids = [image['id'] for image in images]
+
+        # Sort images using name as sort key and desc as sort dir
+        path = self._url('/images?sort_key=name&sort_dir=desc')
+        response = requests.get(path, headers=self._headers())
+        images = json.loads(response.text)['images']
+        self.assertEqual(3, len(images))
+        self.assertEqual(images[0]['name'], 'image-3')
+        self.assertEqual(images[1]['name'], 'image-2')
+        self.assertEqual(images[2]['name'], 'image-1')
+
+        # Sort images using name as sort key and desc as sort asc
+        path = self._url('/images?sort_key=name&sort_dir=asc')
+        response = requests.get(path, headers=self._headers())
+        images = json.loads(response.text)['images']
+        self.assertEqual(3, len(images))
+        self.assertEqual(images[0]['name'], 'image-1')
+        self.assertEqual(images[1]['name'], 'image-2')
+        self.assertEqual(images[2]['name'], 'image-3')
+
+        # Ensure bad request for using a invalid sort_key
+        path = self._url('/images?sort_key=foo')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(400, response.status_code)
+
+        # Ensure bad request for using a invalid sort_dir
+        path = self._url('/images?sort_dir=foo')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(400, response.status_code)

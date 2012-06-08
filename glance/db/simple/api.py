@@ -79,8 +79,33 @@ def image_get(context, image_id, session=None):
     return image
 
 
-def image_get_all(context, filters=None):
+def image_get_all(context, filters=None, marker=None, limit=None,
+                  sort_key='created_at', sort_dir='desc'):
+    reverse = False
+    start = 0
+    end = -1
     images = DATA['images'].values()
+    if images and not images[0].get(sort_key):
+        raise exception.InvalidSortKey()
+    keyfn = lambda x: x[sort_key]
+    reverse = sort_dir == 'desc'
+    images.sort(key=keyfn, reverse=reverse)
+    if marker is None:
+        start = 0
+    else:
+        for i, image in enumerate(images):
+            if image['id'] == marker:
+                start = i + 1
+                break
+        else:
+            raise exception.NotFound
+
+    if limit is None:
+        end = -1
+    else:
+        end = start + limit
+
+    images = images[start:end]
     LOG.info('Listing images: %s' % (images))
     return images
 

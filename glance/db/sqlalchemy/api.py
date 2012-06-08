@@ -392,7 +392,10 @@ def paginate_query(query, model, limit, sort_keys, marker=None,
             'desc': desc,
         }[current_sort_dir]
 
-        sort_key_attr = getattr(model, current_sort_key)
+        try:
+            sort_key_attr = getattr(model, current_sort_key)
+        except AttributeError:
+            raise exception.InvalidSortKey()
         query = query.order_by(sort_dir_func(sort_key_attr))
 
     # Add pagination

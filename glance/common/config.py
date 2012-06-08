@@ -37,10 +37,16 @@ paste_deploy_opts = [
     ]
 common_opts = [
     cfg.BoolOpt('allow_additional_image_properties', default=True,
-                help='Whether to allow users to specify image properties '
-                'beyond what the image schema provides'),
+                help=_('Whether to allow users to specify image properties '
+                'beyond what the image schema provides')),
     cfg.StrOpt('data_api', default='glance.db.sqlalchemy.api',
-                help='Python module path of data access API'),
+                help=_('Python module path of data access API')),
+    cfg.IntOpt('limit_param_default', default=25,
+               help=_('Default value for the number of items returned by a '
+               'request if not specified explicitly in the request')),
+    cfg.IntOpt('api_limit_max', default=1000,
+               help=_('Maximum permissible number of items that could be '
+               'returned by a request')),
 ]
 
 CONF = cfg.CONF

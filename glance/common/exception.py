@@ -117,6 +117,10 @@ class Invalid(GlanceException):
     message = _("Data supplied was not valid.")
 
 
+class InvalidSortKey(Invalid):
+    message = _("Sort key supplied was not valid.")
+
+
 class AuthorizationRedirect(GlanceException):
     message = _("Redirecting to %(uri)s for authorization.")
 
