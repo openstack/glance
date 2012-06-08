@@ -237,7 +237,9 @@ class Controller(controller.BaseController):
                     return source
             msg = _("External sourcing not supported for store %s") % source
             logger.error(msg)
-            raise HTTPBadRequest(msg, request=req, content_type="text/plain")
+            raise HTTPBadRequest(explanation=msg,
+                                 request=req,
+                                 content_type="text/plain")
 
     @staticmethod
     def _copy_from(req):
@@ -316,16 +318,22 @@ class Controller(controller.BaseController):
             msg = (_("An image with identifier %s already exists")
                   % image_meta['id'])
             logger.error(msg)
-            raise HTTPConflict(msg, request=req, content_type="text/plain")
+            raise HTTPConflict(explanation=msg,
+                               request=req,
+                               content_type="text/plain")
         except exception.Invalid, e:
             msg = (_("Failed to reserve image. Got error: %(e)s") % locals())
             for line in msg.split('\n'):
                 logger.error(line)
-            raise HTTPBadRequest(msg, request=req, content_type="text/plain")
+            raise HTTPBadRequest(explanation=msg,
+                                 request=req,
+                                 content_type="text/plain")
         except exception.Forbidden:
             msg = _("Forbidden to reserve image.")
             logger.error(msg)
-            raise HTTPForbidden(msg, request=req, content_type="text/plain")
+            raise HTTPForbidden(explanation=msg,
+                                request=req,
+                                content_type="text/plain")
 
     def _upload(self, req, image_meta):
         """
@@ -383,7 +391,7 @@ class Controller(controller.BaseController):
                         "%(max_image_size)d. Supplied image size was "
                         "%(image_size)d") % locals()
                 logger.warn(msg)
-                raise HTTPBadRequest(msg, request=req)
+                raise HTTPBadRequest(explanation=msg, request=req)
 
             location, size, checksum = store.add(image_meta['id'],
                                                  image_data,
@@ -399,7 +407,8 @@ class Controller(controller.BaseController):
                        "status to 'killed'.") % locals()
                 logger.error(msg)
                 self._safe_kill(req, image_id)
-                raise HTTPBadRequest(msg, content_type="text/plain",
+                raise HTTPBadRequest(explanation=msg,
+                                     content_type="text/plain",
                                      request=req)
 
             # Update the database with the checksum returned
@@ -419,21 +428,23 @@ class Controller(controller.BaseController):
             logger.error(msg)
             self._safe_kill(req, image_id)
             self.notifier.error('image.upload', msg)
-            raise HTTPConflict(msg, request=req)
+            raise HTTPConflict(explanation=msg, request=req)
 
         except exception.Forbidden, e:
             msg = _("Forbidden upload attempt: %s") % e
             logger.error(msg)
             self._safe_kill(req, image_id)
             self.notifier.error('image.upload', msg)
-            raise HTTPForbidden(msg, request=req, content_type="text/plain")
+            raise HTTPForbidden(explanation=msg,
+                                request=req,
+                                content_type="text/plain")
 
         except exception.StorageFull, e:
             msg = _("Image storage media is full: %s") % e
             logger.error(msg)
             self._safe_kill(req, image_id)
             self.notifier.error('image.upload', msg)
-            raise HTTPRequestEntityTooLarge(msg, request=req,
+            raise HTTPRequestEntityTooLarge(explanation=msg, request=req,
                                             content_type='text/plain')
 
         except exception.StorageWriteDenied, e:
@@ -441,7 +452,7 @@ class Controller(controller.BaseController):
             logger.error(msg)
             self._safe_kill(req, image_id)
             self.notifier.error('image.upload', msg)
-            raise HTTPServiceUnavailable(msg, request=req,
+            raise HTTPServiceUnavailable(explanation=msg, request=req,
                                          content_type='text/plain')
 
         except HTTPError, e:
@@ -460,7 +471,7 @@ class Controller(controller.BaseController):
                     'exc': str(e)})
 
             self.notifier.error('image.upload', msg)
-            raise HTTPBadRequest(msg, request=req)
+            raise HTTPBadRequest(explanation=msg, request=req)
 
     def _activate(self, req, image_id, location):
         """
@@ -485,7 +496,9 @@ class Controller(controller.BaseController):
             for line in msg.split('\n'):
                 logger.error(line)
             self.notifier.error('image.update', msg)
-            raise HTTPBadRequest(msg, request=req, content_type="text/plain")
+            raise HTTPBadRequest(explanation=msg,
+                                 request=req,
+                                 content_type="text/plain")
 
     def _kill(self, req, image_id):
         """
@@ -647,7 +660,9 @@ class Controller(controller.BaseController):
         if reactivating:
             msg = _("Attempted to update Location field for an image "
                     "not in queued status.")
-            raise HTTPBadRequest(msg, request=req, content_type="text/plain")
+            raise HTTPBadRequest(explanation=msg,
+                                 request=req,
+                                 content_type="text/plain")
 
         try:
             if location:
@@ -667,19 +682,25 @@ class Controller(controller.BaseController):
             for line in msg.split('\n'):
                 logger.error(line)
             self.notifier.error('image.update', msg)
-            raise HTTPBadRequest(msg, request=req, content_type="text/plain")
+            raise HTTPBadRequest(explanation=msg,
+                                 request=req,
+                                 content_type="text/plain")
         except exception.NotFound, e:
             msg = ("Failed to find image to update: %(e)s" % locals())
             for line in msg.split('\n'):
                 logger.info(line)
             self.notifier.info('image.update', msg)
-            raise HTTPNotFound(msg, request=req, content_type="text/plain")
+            raise HTTPNotFound(explanation=msg,
+                               request=req,
+                               content_type="text/plain")
         except exception.Forbidden, e:
             msg = ("Forbidden to update image: %(e)s" % locals())
             for line in msg.split('\n'):
                 logger.info(line)
             self.notifier.info('image.update', msg)
-            raise HTTPForbidden(msg, request=req, content_type="text/plain")
+            raise HTTPForbidden(explanation=msg,
+                                request=req,
+                                content_type="text/plain")
         else:
             self.notifier.info('image.update', image_meta)
 
@@ -708,7 +729,8 @@ class Controller(controller.BaseController):
         if image['protected']:
             msg = _("Image is protected")
             logger.debug(msg)
-            raise HTTPForbidden(msg, request=req,
+            raise HTTPForbidden(explanation=msg,
+                                request=req,
                                 content_type="text/plain")
 
         # The image's location field may be None in the case
@@ -725,13 +747,17 @@ class Controller(controller.BaseController):
             for line in msg.split('\n'):
                 logger.info(line)
             self.notifier.info('image.delete', msg)
-            raise HTTPNotFound(msg, request=req, content_type="text/plain")
+            raise HTTPNotFound(explanation=msg,
+                               request=req,
+                               content_type="text/plain")
         except exception.Forbidden, e:
             msg = ("Forbidden to delete image: %(e)s" % locals())
             for line in msg.split('\n'):
                 logger.info(line)
             self.notifier.info('image.delete', msg)
-            raise HTTPForbidden(msg, request=req, content_type="text/plain")
+            raise HTTPForbidden(explanation=msg,
+                                request=req,
+                                content_type="text/plain")
         else:
             self.notifier.info('image.delete', image)
 
@@ -750,7 +776,8 @@ class Controller(controller.BaseController):
         except exception.UnknownScheme:
             msg = _("Store for scheme %s not found")
             logger.error(msg % scheme)
-            raise HTTPBadRequest(msg, request=request,
+            raise HTTPBadRequest(explanation=msg,
+                                 request=request,
                                  content_type='text/plain')
 
     def verify_scheme_or_exit(self, scheme):
@@ -782,7 +809,7 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
             image_size_str = request.headers['x-image-meta-size']
             msg = _("Incoming image size of %s was not convertible to "
                     "an integer.") % image_size_str
-            raise HTTPBadRequest(msg, request=request)
+            raise HTTPBadRequest(explanation=msg, request=request)
 
         image_meta = result['image_meta']
         if 'size' in image_meta:
@@ -793,7 +820,7 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
                         "%(max_image_size)d. Supplied image size was "
                         "%(incoming_image_size)d") % locals()
                 logger.warn(msg)
-                raise HTTPBadRequest(msg, request=request)
+                raise HTTPBadRequest(explanation=msg, request=request)
 
         data = request.body_file if self.has_body(request) else None
         result['image_data'] = data
