@@ -9,9 +9,9 @@ include ChangeLog
 include babel.cfg tox.ini
 include openstack-common.conf
 include glance/openstack/common/README
-include glance/db/migrate_repo/README
-include glance/db/migrate_repo/migrate.cfg
-include glance/db/migrate_repo/versions/*.sql
+include glance/db/sqlalchemy/migrate_repo/README
+include glance/db/sqlalchemy/migrate_repo/migrate.cfg
+include glance/db/sqlalchemy/migrate_repo/versions/*.sql
 include glance/tests/unit/test_migrations.conf
 include glance/tests/functional/data/*
 include glance/tests/etc/*
