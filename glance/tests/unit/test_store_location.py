@@ -29,8 +29,7 @@ from glance.tests import utils
 class TestStoreLocation(base.StoreClearingUnitTest):
 
     def setUp(self):
-        self.config(known_stores=utils.get_default_stores(),
-                    default_store='file')
+        self.config(default_store='file')
         super(TestStoreLocation, self).setUp()
 
     def test_get_location_from_uri_back_to_uri(self):
