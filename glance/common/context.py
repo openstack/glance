@@ -100,7 +100,7 @@ class ContextMiddleware(wsgi.Middleware):
         #NOTE(bcwaldon): X-Roles is a csv string, but we need to parse
         # it into a list to be useful
         roles_header = req.headers.get('X-Roles', '')
-        roles = [r.strip() for r in roles_header.split(',')]
+        roles = [r.strip().lower() for r in roles_header.split(',')]
 
         #NOTE(bcwaldon): This header is deprecated in favor of X-Auth-Token
         deprecated_token = req.headers.get('X-Storage-Token')
@@ -109,7 +109,7 @@ class ContextMiddleware(wsgi.Middleware):
             'user': req.headers.get('X-User-Id'),
             'tenant': req.headers.get('X-Tenant-Id'),
             'roles': roles,
-            'is_admin': CONF.admin_role in roles,
+            'is_admin': CONF.admin_role.strip().lower() in roles,
             'auth_tok': req.headers.get('X-Auth-Token', deprecated_token),
             'owner_is_tenant': CONF.owner_is_tenant,
         }
