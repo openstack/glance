@@ -22,8 +22,8 @@ import logging
 import os.path
 
 from glance.common import exception
-from glance.common import policy
 from glance.openstack.common import cfg
+from glance.openstack.common import policy
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +99,5 @@ class Enforcer(object):
             'tenant': context.tenant,
         }
 
-        try:
-            policy.enforce(match_list, target, credentials)
-        except policy.NotAuthorized:
-            raise exception.Forbidden(action=action)
+        policy.enforce(match_list, target, credentials,
+                       exception.Forbidden, action=action)
