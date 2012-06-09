@@ -276,17 +276,6 @@ def find_executable(cmdname):
     return None
 
 
-def get_default_stores():
-    # Default test stores
-    return [
-        "glance.store.filesystem.Store",
-        "glance.store.http.Store",
-        "glance.store.rbd.Store",
-        "glance.store.s3.Store",
-        "glance.store.swift.Store",
-    ]
-
-
 def get_unused_port():
     """
     Returns an unused port on localhost.

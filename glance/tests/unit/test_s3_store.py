@@ -39,7 +39,6 @@ FIVE_KB = (5 * 1024)
 S3_CONF = {'verbose': True,
            'debug': True,
            'default_store': 's3',
-           'known_stores': test_utils.get_default_stores(),
            's3_store_access_key': 'user',
            's3_store_secret_key': 'key',
            's3_store_host': 'localhost:8080',

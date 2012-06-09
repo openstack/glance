@@ -62,7 +62,6 @@ class IsolatedUnitTest(StoreClearingUnitTest):
                     verbose=False,
                     debug=False,
                     default_store='filesystem',
-                    known_stores=test_utils.get_default_stores(),
                     filesystem_store_datadir=os.path.join(self.test_dir),
                     policy_file=policy_file)
         super(IsolatedUnitTest, self).setUp()
