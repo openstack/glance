@@ -138,7 +138,7 @@ class RequestContext(object):
 
 class ContextMiddleware(wsgi.Middleware):
 
-    def __init__(self, app, conf, **local_conf):
+    def __init__(self, app):
         super(ContextMiddleware, self).__init__(app)
 
     def process_request(self, req):
@@ -193,7 +193,7 @@ class ContextMiddleware(wsgi.Middleware):
 
 class UnauthenticatedContextMiddleware(wsgi.Middleware):
 
-    def __init__(self, app, conf, **local_conf):
+    def __init__(self, app):
         super(UnauthenticatedContextMiddleware, self).__init__(app)
 
     def process_request(self, req):

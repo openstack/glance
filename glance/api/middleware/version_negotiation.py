@@ -31,7 +31,7 @@ logger = logging.getLogger('glance.api.middleware.version_negotiation')
 
 class VersionNegotiationFilter(wsgi.Middleware):
 
-    def __init__(self, app, conf, **local_conf):
+    def __init__(self, app):
         self.versions_app = versions.Controller()
         super(VersionNegotiationFilter, self).__init__(app)
 

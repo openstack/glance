@@ -18,7 +18,7 @@ class TestContextMiddleware(base.IsolatedUnitTest):
         return req
 
     def _build_middleware(self):
-        return context.ContextMiddleware(None, None)
+        return context.ContextMiddleware(None)
 
     def test_header_parsing(self):
         req = self._build_request()
@@ -66,7 +66,7 @@ class TestContextMiddleware(base.IsolatedUnitTest):
 
 class TestUnauthenticatedContextMiddleware(base.IsolatedUnitTest):
     def test_request(self):
-        middleware = context.UnauthenticatedContextMiddleware(None, None)
+        middleware = context.UnauthenticatedContextMiddleware(None)
         req = webob.Request.blank('/')
         middleware.process_request(req)
         self.assertEqual(req.context.auth_tok, None)

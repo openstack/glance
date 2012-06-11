@@ -25,7 +25,7 @@ import eventlet
 
 from glance.common import context
 from glance.common import exception
-from glance.image_cache import ImageCache
+from glance.image_cache import base
 from glance import registry
 import glance.store
 import glance.store.filesystem
@@ -39,11 +39,11 @@ from glance.store import get_from_backend
 logger = logging.getLogger(__name__)
 
 
-class Prefetcher(object):
+class Prefetcher(base.CacheApp):
 
-    def __init__(self, conf, **local_conf):
+    def __init__(self):
         glance.store.create_stores()
-        self.cache = ImageCache()
+        super(Prefetcher, self).__init__()
         registry.configure_registry_client()
         registry.configure_registry_admin_creds()
 

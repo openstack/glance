@@ -1,7 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2011 OpenStack LLC.
-# All Rights Reserved.
+# Copyright 2012 Red Hat, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -15,15 +14,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-"""
-Cleans up any invalid cache entries
-"""
-
-from glance.image_cache import base
+from glance.image_cache import ImageCache
 
 
-class Cleaner(base.CacheApp):
+class CacheApp(object):
 
-    def run(self):
-        self.cache.clean()
+    def __init__(self):
+        self.cache = ImageCache()
+
+    @classmethod
+    def factory(cls, global_conf, **local_conf):
+        return cls()

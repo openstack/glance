@@ -25,6 +25,7 @@ try:
 except ImportError:
     SENDFILE_SUPPORTED = False
 
+import routes
 import webob
 
 from glance.api.v1 import router
@@ -65,8 +66,8 @@ def stub_out_registry_and_store_server(stubs, base_dir):
                 self.req.body = body
 
         def getresponse(self):
-            api = context.UnauthenticatedContextMiddleware(rserver.API(None),
-                                                           None)
+            mapper = routes.Mapper()
+            api = context.UnauthenticatedContextMiddleware(rserver.API(mapper))
             res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out
@@ -143,8 +144,8 @@ def stub_out_registry_and_store_server(stubs, base_dir):
                 self.req.body = body
 
         def getresponse(self):
-            api = context.UnauthenticatedContextMiddleware(router.API(None),
-                                                           None)
+            mapper = routes.Mapper()
+            api = context.UnauthenticatedContextMiddleware(router.API(mapper))
             res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out
@@ -218,8 +219,8 @@ def stub_out_registry_server(stubs, **kwargs):
                 self.req.body = body
 
         def getresponse(self):
-            api = context.UnauthenticatedContextMiddleware(rserver.API(None),
-                                                           None)
+            mapper = routes.Mapper()
+            api = context.UnauthenticatedContextMiddleware(rserver.API(mapper))
             res = self.req.get_response(api)
 
             # httplib.Response has a read() method...fake it out

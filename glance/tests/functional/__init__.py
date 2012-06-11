@@ -287,37 +287,31 @@ use = egg:Paste#urlmap
 paste.app_factory = glance.api.versions:create_resource
 
 [app:apiv1app]
-paste.app_factory = glance.common.wsgi:app_factory
-glance.app_factory = glance.api.v1.router:API
+paste.app_factory = glance.api.v1.router:API.factory
 
 [app:apiv2app]
-paste.app_factory = glance.common.wsgi:app_factory
-glance.app_factory = glance.api.v2.router:API
+paste.app_factory = glance.api.v2.router:API.factory
 
 [filter:versionnegotiation]
-paste.filter_factory = glance.common.wsgi:filter_factory
-glance.filter_factory =
- glance.api.middleware.version_negotiation:VersionNegotiationFilter
+paste.filter_factory =
+ glance.api.middleware.version_negotiation:VersionNegotiationFilter.factory
 
 [filter:cache]
-paste.filter_factory = glance.common.wsgi:filter_factory
-glance.filter_factory = glance.api.middleware.cache:CacheFilter
+paste.filter_factory = glance.api.middleware.cache:CacheFilter.factory
 
 [filter:cache_manage]
-paste.filter_factory = glance.common.wsgi:filter_factory
-glance.filter_factory = glance.api.middleware.cache_manage:CacheManageFilter
+paste.filter_factory =
+ glance.api.middleware.cache_manage:CacheManageFilter.factory
 
 [filter:context]
-paste.filter_factory = glance.common.wsgi:filter_factory
-glance.filter_factory = glance.common.context:ContextMiddleware
+paste.filter_factory = glance.common.context:ContextMiddleware.factory
 
 [filter:unauthenticated-context]
-paste.filter_factory = glance.common.wsgi:filter_factory
-glance.filter_factory = glance.common.context:UnauthenticatedContextMiddleware
+paste.filter_factory =
+ glance.common.context:UnauthenticatedContextMiddleware.factory
 
 [filter:fakeauth]
-paste.filter_factory = glance.common.wsgi:filter_factory
-glance.filter_factory = glance.tests.utils:FakeAuthMiddleware
+paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
 """
 
 
@@ -363,20 +357,17 @@ pipeline = unauthenticated-context registryapp
 pipeline = fakeauth context registryapp
 
 [app:registryapp]
-paste.app_factory = glance.common.wsgi:app_factory
-glance.app_factory = glance.registry.api.v1:API
+paste.app_factory = glance.registry.api.v1:API.factory
 
 [filter:context]
-paste.filter_factory = glance.common.wsgi:filter_factory
-glance.filter_factory = glance.common.context:ContextMiddleware
+paste.filter_factory = glance.common.context:ContextMiddleware.factory
 
 [filter:unauthenticated-context]
-paste.filter_factory = glance.common.wsgi:filter_factory
-glance.filter_factory = glance.common.context:UnauthenticatedContextMiddleware
+paste.filter_factory =
+ glance.common.context:UnauthenticatedContextMiddleware.factory
 
 [filter:fakeauth]
-paste.filter_factory = glance.common.wsgi:filter_factory
-glance.filter_factory = glance.tests.utils:FakeAuthMiddleware
+paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
 """
 
 
@@ -407,8 +398,7 @@ registry_host = 0.0.0.0
 registry_port = %(registry_port)s
 """
         self.paste_conf_base = """[app:glance-scrubber]
-paste.app_factory = glance.common.wsgi:app_factory
-glance.app_factory = glance.store.scrubber:Scrubber
+paste.app_factory = glance.store.scrubber:Scrubber.factory
 """
 
 
