@@ -74,6 +74,7 @@ class ChunkedRead(object):
         self.offset = 0
         self.image = image
         self.store = store
+        self.is_block_device = True
 
     def __iter__(self):
         store = self.store
