@@ -281,7 +281,7 @@ def create_options(parser):
     parser.add_option('-v', '--verbose', default=False, action="store_true",
                       help="Print more verbose output")
     parser.add_option('-d', '--debug', default=False, action="store_true",
-                      help="Print more verbose output")
+                      help="Print debugging output")
     parser.add_option('-H', '--host', metavar="ADDRESS", default="0.0.0.0",
                       help="Address of Glance API host. "
                            "Default: %default")
