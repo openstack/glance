@@ -39,6 +39,8 @@ common_opts = [
     cfg.BoolOpt('allow_additional_image_properties', default=True,
                 help='Whether to allow users to specify image properties '
                 'beyond what the image schema provides'),
+    cfg.StrOpt('data_api', default='glance.db.sqlalchemy.api',
+                help='Python module path of data access API'),
 ]
 
 CONF = cfg.CONF
