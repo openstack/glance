@@ -914,8 +914,8 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
                                              image_meta, response.request)
 
             # Add hook to process after response is fully sent
-            if 'eventlet.posthooks' in response.environ:
-                response.environ['eventlet.posthooks'].append(
+            if 'eventlet.posthooks' in response.request.environ:
+                response.request.environ['eventlet.posthooks'].append(
                     (notify_image_sent_hook, (), {}))
 
             try:
