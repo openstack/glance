@@ -18,13 +18,13 @@ import webob.exc
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
-import glance.db.sqlalchemy.api
+import glance.db
 import glance.store
 
 
 class ImageDataController(object):
     def __init__(self, db_api=None, store_api=None):
-        self.db_api = db_api or glance.db.sqlalchemy.api
+        self.db_api = db_api or glance.db.get_api()
         self.db_api.configure_db()
         self.store_api = store_api or glance.store
         self.store_api.create_stores()

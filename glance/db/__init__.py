@@ -2,7 +2,7 @@
 
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
-# Copyright 2010-2011 OpenStack LLC.
+# Copyright 2010-2012 OpenStack LLC.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -38,3 +38,20 @@ def add_cli_options():
     """
     CONF.unregister_opt(sql_connection_opt)
     CONF.register_cli_opt(sql_connection_opt)
+
+
+def get_api():
+    import glance.db.sqlalchemy.api
+    return glance.db.sqlalchemy.api
+
+
+# attributes common to all models
+BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
+                        'deleted'])
+
+
+IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size',
+                                      'disk_format', 'container_format',
+                                      'min_disk', 'min_ram', 'is_public',
+                                      'location', 'checksum', 'owner',
+                                      'protected'])

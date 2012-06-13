@@ -21,13 +21,13 @@ import webob.exc
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
-import glance.db.sqlalchemy.api
+import glance.db
 from glance.openstack.common import timeutils
 
 
 class ImagesController(object):
     def __init__(self, db_api=None):
-        self.db_api = db_api or glance.db.sqlalchemy.api
+        self.db_api = db_api or glance.db.get_api()
         self.db_api.configure_db()
 
     def _normalize_properties(self, image):

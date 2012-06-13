@@ -27,7 +27,7 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 from glance.openstack.common import cfg
-from glance.db.sqlalchemy import api as db_api
+import glance.db
 from glance.openstack.common import timeutils
 
 
@@ -60,14 +60,15 @@ SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
 class Controller(object):
 
     def __init__(self):
-        db_api.configure_db()
+        self.db_api = glance.db.get_api()
+        self.db_api.configure_db()
 
     def _get_images(self, context, **params):
         """
         Get images, wrapping in exception if necessary.
         """
         try:
-            return db_api.image_get_all(context, **params)
+            return self.db_api.image_get_all(context, **params)
         except exception.NotFound, e:
             msg = _("Invalid marker. Image could not be found.")
             raise exc.HTTPBadRequest(explanation=msg)
@@ -272,7 +273,7 @@ class Controller(object):
     def show(self, req, id):
         """Return data about the given image id."""
         try:
-            image = db_api.image_get(req.context, id)
+            image = self.db_api.image_get(req.context, id)
         except exception.NotFound:
             raise exc.HTTPNotFound()
         except exception.Forbidden:
@@ -298,7 +299,7 @@ class Controller(object):
         success, the body contains the deleted image information as a mapping.
         """
         try:
-            deleted_image = db_api.image_destroy(req.context, id)
+            deleted_image = self.db_api.image_destroy(req.context, id)
             return dict(image=make_image_dict(deleted_image))
 
         except exception.ForbiddenPublicImage:
@@ -345,7 +346,7 @@ class Controller(object):
             return exc.HTTPBadRequest(explanation=msg)
 
         try:
-            image_data = db_api.image_create(req.context, image_data)
+            image_data = self.db_api.image_create(req.context, image_data)
             return dict(image=make_image_dict(image_data))
         except exception.Duplicate:
             msg = (_("Image with identifier %s already exists!") % id)
@@ -379,11 +380,11 @@ class Controller(object):
             logger.debug(_("Updating image %(id)s with metadata: "
                            "%(image_data)r") % locals())
             if purge_props == "true":
-                updated_image = db_api.image_update(req.context, id,
-                                                    image_data, True)
+                updated_image = self.db_api.image_update(req.context, id,
+                                                         image_data, True)
             else:
-                updated_image = db_api.image_update(req.context, id,
-                                                    image_data)
+                updated_image = self.db_api.image_update(req.context, id,
+                                                         image_data)
             return dict(image=make_image_dict(updated_image))
         except exception.Invalid, e:
             msg = (_("Failed to update image metadata. "
@@ -425,7 +426,7 @@ def make_image_dict(image):
     properties = dict((p['name'], p['value'])
                       for p in image['properties'] if not p['deleted'])
 
-    image_dict = _fetch_attrs(image, db_api.IMAGE_ATTRS)
+    image_dict = _fetch_attrs(image, glance.db.IMAGE_ATTRS)
 
     image_dict['properties'] = properties
     return image_dict

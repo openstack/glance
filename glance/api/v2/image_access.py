@@ -20,12 +20,12 @@ import webob.exc
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
-import glance.db.sqlalchemy.api
+import glance.db
 
 
 class Controller(object):
     def __init__(self, db=None):
-        self.db_api = db or glance.db.sqlalchemy.api
+        self.db_api = db or glance.db.get_api()
         self.db_api.configure_db()
 
     def index(self, req, image_id):
