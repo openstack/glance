@@ -45,6 +45,10 @@ EXIT_MISSING = 5  # the specified object does not exist
 EXIT_USAGE   = 64  # invalid command, arguments or options
 
 
+class StorageBackendError(exception.GlanceException):
+    message = _('Storage backend error')
+
+
 class StoreLocation(glance.store.location.StoreLocation):
     """
     Class describing a Sheepdog URI. This is of the form:
@@ -83,11 +87,13 @@ class ChunkedRead(object):
             obj = store._exec_collie(['vdi', 'read', str(self.image),
                                str(self.offset), str(store.chunk_size)])
             output = obj.communicate()
-            if obj.returncode != 0:
-                if obj.returncode == EXIT_MISSING:
-                    raise exception.NotFound(
-                        _('Sheepdog image %s does not exist') % self.image)
-                return
+            if obj.returncode == EXIT_MISSING:
+                raise exception.NotFound(
+                    _('Sheepdog image %s does not exist') % self.image)
+            elif obj.returncode != EXIT_SUCCESS:
+                logger.warning('Collie exited during vdi read with '
+                               'error code: %s' % obj.returncode)
+                raise StorageBackendError()
             yield output[0]
             self.offset += store.chunk_size
 
@@ -175,10 +181,13 @@ class Store(glance.store.base.Store):
         obj = self._exec_collie(["vdi", "create", image_name, str(image_size)])
         obj.communicate()
 
-        # XXX(hch): what should we do about other errors?
         if obj.returncode == EXIT_EXISTS:
             raise exception.Duplicate(
                  _('Sheepdog image %s already exists') % image_id)
+        elif obj.returncode != EXIT_SUCCESS:
+            logger.warning('Collie exited during vdi write with error code: '
+                           '%s' % obj.returncode)
+            raise StorageBackendError()
 
         offset = 0
         bytes_left = image_size
@@ -191,7 +200,14 @@ class Store(glance.store.base.Store):
                                str(length)])
             output = obj.communicate(data)
             obj.stdin.close()
-            # XXX(hch): what should we do about errors?
+            if obj.returncode == EXIT_FULL:
+                logger.warning('Collie exited during vdi write because'
+                               'no more space is left in the cluster')
+                raise exception.StorageFull()
+            elif obj.returncode != EXIT_SUCCESS:
+                logger.warning('Collie exited during vdi write with '
+                               'error code: %s' % obj.returncode)
+                raise StorageBackendError()
 
             bytes_left -= length
             offset += length
@@ -216,5 +232,9 @@ class Store(glance.store.base.Store):
         if obj.returncode == EXIT_MISSING:
             raise exception.NotFound(
                  _('Sheepdog image %s does not exist') % loc.image)
+        elif obj.returncode != EXIT_SUCCESS:
+            logger.warning('collie vdi delete failed with exit code: '
+                           '%s' % obj.returncode)
+            raise StorageBackendError()
 
 glance.store.register_store(__name__, ['sheepdog'])
