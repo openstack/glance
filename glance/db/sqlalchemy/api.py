@@ -137,7 +137,7 @@ def configure_db():
 
 
 def check_mutate_authorization(context, image_ref):
-    if not context.is_image_mutable(image_ref):
+    if not is_image_mutable(context, image_ref):
         logger.info(_("Attempted to modify image user did not own."))
         msg = _("You do not own this image")
         if image_ref.is_public:
@@ -255,10 +255,85 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
         raise exception.NotFound("No image found with ID %s" % image_id)
 
     # Make sure they can look at it
-    if not context.is_image_visible(image):
+    if not is_image_visible(context, image):
         raise exception.Forbidden("Image not visible to you")
 
     return image
+
+
+def is_image_mutable(context, image):
+    """Return True if the image is mutable in this context."""
+    # Is admin == image mutable
+    if context.is_admin:
+        return True
+
+    # No owner == image not mutable
+    if image['owner'] is None or context.owner is None:
+        return False
+
+    # Image only mutable by its owner
+    return image['owner'] == context.owner
+
+
+def is_image_sharable(context, image, **kwargs):
+    """Return True if the image can be shared to others in this context."""
+    # Only allow sharing if we have an owner
+    if context.owner is None:
+        return False
+
+    # Is admin == image sharable
+    if context.is_admin:
+        return True
+
+    # If we own the image, we can share it
+    if context.owner == image['owner']:
+        return True
+
+    # Let's get the membership association
+    if 'membership' in kwargs:
+        membership = kwargs['membership']
+        if membership is None:
+            # Not shared with us anyway
+            return False
+    else:
+        try:
+            membership = image_member_find(context, image['id'], context.owner)
+        except exception.NotFound:
+            # Not shared with us anyway
+            return False
+
+    # It's the can_share attribute we're now interested in
+    return membership['can_share']
+
+
+def is_image_visible(context, image):
+    """Return True if the image is visible in this context."""
+    # Is admin == image visible
+    if context.is_admin:
+        return True
+
+    # No owner == image visible
+    if image['owner'] is None:
+        return True
+
+    # Image is_public == image visible
+    if image['is_public']:
+        return True
+
+    # Perform tests based on whether we have an owner
+    if context.owner is not None:
+        if context.owner == image['owner']:
+            return True
+
+        # Figure out if this image is shared with that tenant
+        try:
+            tmp = image_member_find(context, image['id'], context.owner)
+            return not tmp['deleted']
+        except exception.NotFound:
+            pass
+
+    # Private image
+    return False
 
 
 def paginate_query(query, model, limit, sort_keys, marker=None,
@@ -695,7 +770,7 @@ def image_member_get(context, member_id, session=None):
         raise exception.NotFound("No membership found with ID %s" % member_id)
 
     # Make sure they can look at it
-    if not context.is_image_visible(member.image):
+    if not is_image_visible(context, member.image):
         raise exception.Forbidden("Image not visible to you")
 
     return member
@@ -706,7 +781,7 @@ def image_member_find(context, image_id, member, session=None):
     session = session or get_session()
     try:
         # Note lack of permissions check; this function is called from
-        # RequestContext.is_image_visible(), so avoid recursive calls
+        # is_image_visible(), so avoid recursive calls
         query = session.query(models.ImageMember).\
                         options(joinedload(models.ImageMember.image)).\
                         filter_by(image_id=image_id).\

@@ -17,6 +17,7 @@
 
 from glance.common import context
 from glance.tests import utils
+from glance.tests.unit import utils as unit_utils
 
 
 def _fake_image(owner, is_public):
@@ -32,6 +33,10 @@ def _fake_membership(can_share=False):
 
 
 class TestContext(utils.BaseTestCase):
+    def setUp(self):
+        super(TestContext, self).setUp()
+        self.db_api = unit_utils.FakeDB()
+
     def do_visible(self, exp_res, img_owner, img_public, **kwargs):
         """
         Perform a context visibility test.  Creates a (fake) image
@@ -44,7 +49,7 @@ class TestContext(utils.BaseTestCase):
         img = _fake_image(img_owner, img_public)
         ctx = context.RequestContext(**kwargs)
 
-        self.assertEqual(ctx.is_image_visible(img), exp_res)
+        self.assertEqual(self.db_api.is_image_visible(ctx, img), exp_res)
 
     def do_sharable(self, exp_res, img_owner, membership=None, **kwargs):
         """
@@ -64,7 +69,8 @@ class TestContext(utils.BaseTestCase):
         if membership is not None:
             sharable_args['membership'] = membership
 
-        self.assertEqual(ctx.is_image_sharable(img, **sharable_args), exp_res)
+        output = self.db_api.is_image_sharable(ctx, img, **sharable_args)
+        self.assertEqual(exp_res, output)
 
     def test_empty_public(self):
         """
