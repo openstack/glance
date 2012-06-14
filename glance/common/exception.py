@@ -69,7 +69,7 @@ class UnknownScheme(GlanceException):
 
 
 class BadStoreUri(GlanceException):
-    message = _("The Store URI %(uri)s was malformed. Reason: %(reason)s")
+    message = _("The Store URI was malformed.")
 
 
 class Duplicate(GlanceException):

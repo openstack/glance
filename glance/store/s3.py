@@ -111,7 +111,8 @@ class StoreLocation(glance.store.location.StoreLocation):
                     "s3+https://accesskey:secretkey@s3.amazonaws.com/bucket/"
                     "key-id"
                       )
-            raise exception.BadStoreUri(uri=uri, reason=reason)
+            logger.error(_("Invalid store uri %(uri)s: %(reason)s") % locals())
+            raise exception.BadStoreUri(message=reason)
 
         pieces = urlparse.urlparse(uri)
         assert pieces.scheme in ('s3', 's3+http', 's3+https')
@@ -137,7 +138,8 @@ class StoreLocation(glance.store.location.StoreLocation):
                 self.secretkey = secret_key
             except IndexError:
                 reason = _("Badly formed S3 credentials %s") % creds
-                raise exception.BadStoreUri(uri=uri, reason=reason)
+                logger.error(reason)
+                raise exception.BadStoreUri()
         else:
             self.accesskey = None
             path = entire_path
@@ -149,10 +151,11 @@ class StoreLocation(glance.store.location.StoreLocation):
                 self.s3serviceurl = '/'.join(path_parts).strip('/')
             else:
                 reason = _("Badly formed S3 URI. Missing s3 service URL.")
-                raise exception.BadStoreUri(uri=uri, reason=reason)
+                raise exception.BadStoreUri()
         except IndexError:
-            reason = _("Badly formed S3 URI")
-            raise exception.BadStoreUri(uri=uri, reason=reason)
+            reason = _("Badly formed S3 URI: %s") % uri
+            logger.error(reason)
+            raise exception.BadStoreUri()
 
 
 class ChunkedFile(object):

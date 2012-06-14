@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import types
 import urlparse
 
@@ -22,6 +23,8 @@ import sqlalchemy
 
 from glance.common import exception
 import glance.store.swift
+
+logger = logging.getLogger(__name__)
 
 
 def upgrade(migrate_engine):
@@ -109,7 +112,9 @@ def legacy_parse_uri(self, uri):
                 "like so: "
                 "swift+http://user:pass@authurl.com/v1/container/obj"
                 )
-        raise exception.BadStoreUri(uri=uri, reason=reason)
+
+        logger.error(_("Invalid store uri %(uri)s: %(reason)s") % locals())
+        raise exception.BadStoreUri(message=reason)
 
     pieces = urlparse.urlparse(uri)
     assert pieces.scheme in ('swift', 'swift+http', 'swift+https')
@@ -140,7 +145,8 @@ def legacy_parse_uri(self, uri):
         if len(cred_parts) == 1:
             reason = (_("Badly formed credentials '%(creds)s' in Swift "
                         "URI") % locals())
-            raise exception.BadStoreUri(uri=uri, reason=reason)
+            logger.error(reason)
+            raise exception.BadStoreUri()
         elif len(cred_parts) == 3:
             user = ':'.join(cred_parts[0:2])
         else:
@@ -159,5 +165,6 @@ def legacy_parse_uri(self, uri):
             path_parts.insert(0, netloc)
             self.authurl = '/'.join(path_parts)
     except IndexError:
-        reason = _("Badly formed Swift URI")
-        raise exception.BadStoreUri(uri=uri, reason=reason)
+        reason = _("Badly formed S3 URI: %s") % uri
+        logger.error(message=reason)
+        raise exception.BadStoreUri()
