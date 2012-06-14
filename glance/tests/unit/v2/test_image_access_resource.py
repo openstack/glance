@@ -17,7 +17,7 @@ import json
 
 import webob
 
-from glance.api.v2 import image_access
+import glance.api.v2.image_access
 from glance.common import exception
 from glance.common import utils
 import glance.schema
@@ -30,7 +30,7 @@ class TestImageAccessController(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImageAccessController, self).setUp()
         self.db = unit_test_utils.FakeDB()
-        self.controller = image_access.Controller(self.db)
+        self.controller = glance.api.v2.image_access.Controller(self.db)
 
     def test_index(self):
         req = unit_test_utils.get_fake_request()
@@ -111,8 +111,7 @@ class TestImageAccessDeserializer(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImageAccessDeserializer, self).setUp()
-        schema_api = glance.schema.API()
-        self.deserializer = image_access.RequestDeserializer(schema_api)
+        self.deserializer = glance.api.v2.image_access.RequestDeserializer()
 
     def test_create(self):
         fixture = {
@@ -129,55 +128,10 @@ class TestImageAccessDeserializer(test_utils.BaseTestCase):
         request.body = json.dumps(fixture)
         output = self.deserializer.create(request)
         self.assertEqual(expected, output)
-
-
-class TestImageAccessDeserializerWithExtendedSchema(test_utils.BaseTestCase):
-
-    def setUp(self):
-        super(TestImageAccessDeserializerWithExtendedSchema, self).setUp()
-        schema_api = glance.schema.API()
-        props = {
-            'color': {
-              'type': 'string',
-              'required': True,
-              'enum': ['blue', 'red'],
-            },
-        }
-        schema_api.set_custom_schema_properties('access', props)
-        self.deserializer = image_access.RequestDeserializer(schema_api)
-
-    def test_create(self):
-        fixture = {
-            'tenant_id': unit_test_utils.TENANT1,
-            'can_share': False,
-            'color': 'blue',
-        }
-        expected = {
-            'access_record': {
-                'member': unit_test_utils.TENANT1,
-                'can_share': False,
-                'color': 'blue',
-            },
-        }
-        request = unit_test_utils.get_fake_request()
-        request.body = json.dumps(fixture)
-        output = self.deserializer.create(request)
-        self.assertEqual(expected, output)
-
-    def test_create_bad_data(self):
-        fixture = {
-            'tenant_id': unit_test_utils.TENANT1,
-            'can_share': False,
-            'color': 'purple',
-        }
-        request = unit_test_utils.get_fake_request()
-        request.body = json.dumps(fixture)
-        self.assertRaises(exception.InvalidObject,
-                self.deserializer.create, request)
 
 
 class TestImageAccessSerializer(test_utils.BaseTestCase):
-    serializer = image_access.ResponseSerializer()
+    serializer = glance.api.v2.image_access.ResponseSerializer()
 
     def test_show(self):
         fixture = {

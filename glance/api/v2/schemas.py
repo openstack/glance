@@ -13,13 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from glance.api.v2 import images
+from glance.api.v2 import image_access
 from glance.common import wsgi
-import glance.schema
 
 
 class Controller(object):
-    def __init__(self, schema_api):
-        self.schema_api = schema_api
+    def __init__(self, custom_image_properties=None):
+        self.access_schema = image_access.get_schema()
+        self.image_schema = images.get_schema(custom_image_properties)
 
     def index(self, req):
         links = [
@@ -29,12 +31,12 @@ class Controller(object):
         return {'links': links}
 
     def image(self, req):
-        return self.schema_api.get_schema('image')
+        return self.image_schema.raw()
 
     def access(self, req):
-        return self.schema_api.get_schema('access')
+        return self.access_schema.raw()
 
 
-def create_resource(schema_api):
-    controller = Controller(schema_api)
+def create_resource(custom_image_properties=None):
+    controller = Controller(custom_image_properties)
     return wsgi.Resource(controller)

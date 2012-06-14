@@ -15,6 +15,7 @@
 
 import datetime
 import json
+import logging
 
 import webob.exc
 
@@ -24,7 +25,10 @@ from glance.common import wsgi
 import glance.db
 from glance.openstack.common import cfg
 from glance.openstack.common import timeutils
+import glance.schema
 
+
+LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
 
@@ -136,14 +140,14 @@ class ImagesController(object):
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
-    def __init__(self, schema_api):
+    def __init__(self, schema=None):
         super(RequestDeserializer, self).__init__()
-        self.schema_api = schema_api
+        self.schema = schema or get_schema()
 
     def _parse_image(self, request):
         output = super(RequestDeserializer, self).default(request)
         body = output.pop('body')
-        self.schema_api.validate('image', body)
+        self.schema.validate(body)
 
         # Create a dict of base image properties, with user- and deployer-
         # defined properties contained in a 'properties' dictionary
@@ -212,9 +216,9 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
-    def __init__(self, schema_api):
+    def __init__(self, schema=None):
         super(ResponseSerializer, self).__init__()
-        self.schema_api = schema_api
+        self.schema = schema or get_schema()
 
     def _get_image_href(self, image, subcollection=''):
         base_href = '/v2/images/%s' % image['id']
@@ -229,19 +233,12 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             {'rel': 'describedby', 'href': '/v2/schemas/image'},
         ]
 
-    def _filter_allowed_image_attributes(self, image):
-        schema = self.schema_api.get_schema('image')
-        if schema.get('additionalProperties', True):
-            return dict(image.iteritems())
-        attrs = schema['properties'].keys()
-        return dict((k, v) for (k, v) in image.iteritems() if k in attrs)
-
     def _format_image(self, image):
         _image = image['properties']
-        _image = self._filter_allowed_image_attributes(_image)
         for key in ['id', 'name', 'created_at', 'updated_at', 'tags']:
             _image[key] = image[key]
         _image['visibility'] = 'public' if image['is_public'] else 'private'
+        _image = self.schema.filter(_image)
         _image['links'] = self._get_image_links(image)
         self._serialize_datetimes(_image)
         return _image
@@ -273,9 +270,73 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.status_int = 204
 
 
-def create_resource(schema_api):
+_BASE_PROPERTIES = {
+    'id': {
+        'type': 'string',
+        'description': 'An identifier for the image',
+        'maxLength': 36,
+    },
+    'name': {
+        'type': 'string',
+        'description': 'Descriptive name for the image',
+        'maxLength': 255,
+    },
+    'visibility': {
+        'type': 'string',
+        'description': 'Scope of image accessibility',
+        'enum': ['public', 'private'],
+    },
+    'created_at': {
+        'type': 'string',
+        'description': 'Date and time of image registration',
+        #TODO(bcwaldon): our jsonschema library doesn't seem to like the
+        # format attribute, figure out why!
+        #'format': 'date-time',
+    },
+    'updated_at': {
+        'type': 'string',
+        'description': 'Date and time of the last image modification',
+        #'format': 'date-time',
+    },
+    'tags': {
+        'type': 'array',
+        'description': 'List of strings related to the image',
+        'items': {
+            'type': 'string',
+            'maxLength': 255,
+        },
+    },
+}
+
+
+def get_schema(custom_properties=None):
+    properties = dict(_BASE_PROPERTIES)
+    if CONF.allow_additional_image_properties:
+        schema = glance.schema.PermissiveSchema('image', properties)
+    else:
+        schema = glance.schema.Schema('image', properties)
+    schema.merge_properties(custom_properties or {})
+    return schema
+
+
+def load_custom_properties():
+    """Find the schema properties files and load them into a dict."""
+    match = CONF.find_file('schema-image.json')
+    if match:
+        schema_file = open(match)
+        schema_data = schema_file.read()
+        return json.loads(schema_data)
+    else:
+        msg = _('Could not find schema properties file %s. Continuing '
+                'without custom properties')
+        LOG.warn(msg % filename)
+        return {}
+
+
+def create_resource(custom_properties=None):
     """Images resource factory method"""
-    deserializer = RequestDeserializer(schema_api)
-    serializer = ResponseSerializer(schema_api)
+    schema = get_schema(custom_properties)
+    deserializer = RequestDeserializer(schema)
+    serializer = ResponseSerializer(schema)
     controller = ImagesController()
     return wsgi.Resource(controller, deserializer, serializer)
