@@ -20,11 +20,12 @@ from glance.common import exception
 
 class Schema(object):
 
-    def __init__(self, name, properties=None):
+    def __init__(self, name, properties=None, links=None):
         self.name = name
         if properties is None:
             properties = {}
         self.properties = properties
+        self.links = links
 
     def validate(self, obj):
         try:
@@ -55,11 +56,14 @@ class Schema(object):
         self.properties.update(properties)
 
     def raw(self):
-        return {
+        raw = {
             'name': self.name,
             'properties': self.properties,
             'additionalProperties': False,
         }
+        if self.links:
+            raw['links'] = self.links
+        return raw
 
 
 class PermissiveSchema(Schema):
@@ -70,3 +74,29 @@ class PermissiveSchema(Schema):
         raw = super(PermissiveSchema, self).raw()
         raw['additionalProperties'] = {'type': 'string'}
         return raw
+
+
+class CollectionSchema(object):
+
+    def __init__(self, name, item_schema):
+        self.name = name
+        self.item_schema = item_schema
+
+    def raw(self):
+        return {
+            'name': self.name,
+            'properties': {
+                self.name: {
+                    'type': 'array',
+                    'items': self.item_schema.raw(),
+                },
+                'first': {'type': 'string'},
+                'next': {'type': 'string'},
+                'schema': {'type': 'string'},
+            },
+            'links': [
+                {'rel': 'first', 'href': '{first}'},
+                {'rel': 'next', 'href': '{next}'},
+                {'rel': 'describedby', 'href': '{schema}'},
+            ],
+        }

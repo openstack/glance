@@ -76,6 +76,34 @@ class TestBasicSchema(test_utils.BaseTestCase):
         self.assertEqual(self.schema.raw(), expected)
 
 
+class TestBasicSchemaLinks(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(TestBasicSchemaLinks, self).setUp()
+        properties = {
+            'ham': {'type': 'string'},
+            'eggs': {'type': 'string'},
+        }
+        links = [
+            {'rel': 'up', 'href': '/menu'},
+        ]
+        self.schema = glance.schema.Schema('basic', properties, links)
+
+    def test_raw_json_schema(self):
+        expected = {
+            'name': 'basic',
+            'properties': {
+                'ham': {'type': 'string'},
+                'eggs': {'type': 'string'},
+            },
+            'links': [
+                {'rel': 'up', 'href': '/menu'},
+            ],
+            'additionalProperties': False,
+        }
+        self.assertEqual(self.schema.raw(), expected)
+
+
 class TestPermissiveSchema(test_utils.BaseTestCase):
 
     def setUp(self):
@@ -109,3 +137,29 @@ class TestPermissiveSchema(test_utils.BaseTestCase):
             'additionalProperties': {'type': 'string'},
         }
         self.assertEqual(self.schema.raw(), expected)
+
+
+class TestCollectionSchema(test_utils.BaseTestCase):
+
+    def test_raw_json_schema(self):
+        item_properties = {'cheese': {'type': 'string'}}
+        item_schema = glance.schema.Schema('mouse', item_properties)
+        collection_schema = glance.schema.CollectionSchema('mice', item_schema)
+        expected = {
+            'name': 'mice',
+            'properties': {
+                'mice': {
+                    'type': 'array',
+                    'items': item_schema.raw(),
+                },
+                'first': {'type': 'string'},
+                'next': {'type': 'string'},
+                'schema': {'type': 'string'},
+            },
+            'links': [
+                {'rel': 'first', 'href': '{first}'},
+                {'rel': 'next', 'href': '{next}'},
+                {'rel': 'describedby', 'href': '{schema}'},
+            ],
+        }
+        self.assertEqual(collection_schema.raw(), expected)
