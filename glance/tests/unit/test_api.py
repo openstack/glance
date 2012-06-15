@@ -3021,7 +3021,6 @@ class TestImageSerializer(base.IsolatedUnitTest):
         req.method = 'GET'
         req.context = self.context
         response = webob.Response(request=req)
-
         self.serializer.show(response, self.FIXTURE)
         for key, value in exp_headers.iteritems():
             self.assertEquals(value, response.headers[key])
@@ -3034,7 +3033,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
         req.method = 'GET'
         req.context = self.context
         response = webob.Response(request=req)
-        response.environ['eventlet.posthooks'] = []
+        response.request.environ['eventlet.posthooks'] = []
 
         self.serializer.show(response, self.FIXTURE)
 
@@ -3042,7 +3041,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
         for chunk in response.app_iter:
             pass
 
-        self.assertNotEqual(response.environ['eventlet.posthooks'], [])
+        self.assertNotEqual(response.request.environ['eventlet.posthooks'], [])
 
     def test_image_send_notification(self):
         req = webob.Request.blank("/images/%s" % UUID2)
