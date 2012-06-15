@@ -121,8 +121,6 @@ def configure_db():
         sa_logger = logging.getLogger('sqlalchemy.engine')
         if CONF.debug:
             sa_logger.setLevel(logging.DEBUG)
-        elif CONF.verbose:
-            sa_logger.setLevel(logging.INFO)
 
         if CONF.db_auto_create:
             logger.info('auto-creating glance registry DB')
