@@ -21,7 +21,3 @@ class CacheApp(object):
 
     def __init__(self):
         self.cache = ImageCache()
-
-    @classmethod
-    def factory(cls, global_conf, **local_conf):
-        return cls()

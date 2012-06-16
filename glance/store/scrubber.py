@@ -88,10 +88,6 @@ class Scrubber(object):
 
         store.create_stores()
 
-    @classmethod
-    def factory(cls, global_conf, **local_conf):
-        return cls()
-
     def run(self, pool, event=None):
         now = time.time()
 

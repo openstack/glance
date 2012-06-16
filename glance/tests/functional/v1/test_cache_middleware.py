@@ -457,18 +457,6 @@ metadata_encryption_key = %(metadata_encryption_key)s
 log_file = %(log_file)s
 """ % cache_file_options)
 
-        with open(cache_config_filepath.replace(".conf", "-paste.ini"),
-                  'w') as paste_file:
-            paste_file.write("""[app:glance-pruner]
-paste.app_factory = glance.image_cache.pruner:Pruner.factory
-
-[app:glance-prefetcher]
-paste.app_factory = glance.image_cache.prefetcher:Prefetcher.factory
-
-[app:glance-cleaner]
-paste.app_factory = glance.image_cache.cleaner:Cleaner.factory
-""")
-
         self.verify_no_images()
 
         ids = {}

@@ -47,13 +47,18 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 gettext.install('glance', unicode=1)
 
 from glance.common import config
+from glance.image_cache import cleaner
+from glance.openstack.common import cfg
+
+CONF = cfg.CONF
 
 
 if __name__ == '__main__':
     try:
         config.parse_cache_args()
+        config.setup_logging()
 
-        app = config.load_paste_app('glance-cleaner', 'glance-cache-paste.ini')
+        app = cleaner.Cleaner()
         app.run()
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
