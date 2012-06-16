@@ -516,7 +516,11 @@ def _images_index(client, filters, limit, print_header=False, **kwargs):
                                     image['container_format'],
                                     image['size'])
 
-    if not options.force and len(images) == limit and \
+    # suppress pagination when output is redirected
+    suppress_pagination = (options.force or
+        (getattr(os, 'isatty') and not os.isatty(sys.stdout.fileno())))
+
+    if not suppress_pagination and len(images) == limit and \
        not user_confirm("Fetch next page?", True):
         return SUCCESS
 
