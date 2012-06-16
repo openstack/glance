@@ -467,9 +467,6 @@ paste.app_factory = glance.image_cache.prefetcher:Prefetcher.factory
 
 [app:glance-cleaner]
 paste.app_factory = glance.image_cache.cleaner:Cleaner.factory
-
-[app:glance-queue-image]
-paste.app_factory = glance.image_cache.queue_image:Queuer.factory
 """)
 
         self.verify_no_images()
