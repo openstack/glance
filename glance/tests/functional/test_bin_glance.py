@@ -269,10 +269,12 @@ class TestBinGlance(functional.FunctionalTest):
             [c.strip() for c in line.split()]
         self.assertEqual('None', name)
 
-    @requires(setup_http, teardown_http)
+    @requires(teardown=teardown_http)
     def test_add_copying_from(self):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
+
+        setup_http(self)
 
         api_port = self.api_port
         registry_port = self.registry_port
@@ -314,6 +316,8 @@ class TestBinGlance(functional.FunctionalTest):
     def _do_test_update_external_source(self, source):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
+
+        setup_http(self)
 
         api_port = self.api_port
         registry_port = self.registry_port
@@ -361,7 +365,7 @@ class TestBinGlance(functional.FunctionalTest):
         lines = out.split("\n")
         self.assertTrue(set(lines) >= set(expected_lines))
 
-    @requires(setup_http, teardown_http)
+    @requires(teardown=teardown_http)
     def test_update_copying_from(self):
         """
         Tests creating an queued image then subsequently updating
@@ -369,7 +373,7 @@ class TestBinGlance(functional.FunctionalTest):
         """
         self._do_test_update_external_source('copy_from')
 
-    @requires(setup_http, teardown_http)
+    @requires(teardown=teardown_http)
     def test_update_location(self):
         """
         Tests creating an queued image then subsequently updating
