@@ -125,13 +125,14 @@ class skip_unless(object):
 
 class requires(object):
     """Decorator that initiates additional test setup/teardown."""
-    def __init__(self, setup, teardown=None):
+    def __init__(self, setup=None, teardown=None):
         self.setup = setup
         self.teardown = teardown
 
     def __call__(self, func):
         def _runner(*args, **kw):
-            self.setup(args[0])
+            if self.setup:
+                self.setup(args[0])
             func(*args, **kw)
             if self.teardown:
                 self.teardown(args[0])

@@ -121,7 +121,7 @@ class BaseCacheMiddlewareTest(object):
 
         self.stop_servers()
 
-    @requires(setup_http, teardown_http)
+    @requires(teardown=teardown_http)
     @skip_if_disabled
     def test_cache_remote_image(self):
         """
@@ -129,6 +129,8 @@ class BaseCacheMiddlewareTest(object):
         """
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
+
+        setup_http(self)
 
         api_port = self.api_port
         registry_port = self.registry_port

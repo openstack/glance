@@ -541,7 +541,7 @@ class TestSwift(test_api.TestApi):
         """
         self._do_test_copy_from('s3', get_s3_uri)
 
-    @requires(setup_http, teardown_http)
+    @requires(teardown=teardown_http)
     @skip_if_disabled
     def test_copy_from_http(self):
         """
@@ -550,6 +550,8 @@ class TestSwift(test_api.TestApi):
         self.cleanup()
 
         self.start_servers(**self.__dict__.copy())
+
+        setup_http(self)
 
         api_port = self.api_port
         registry_port = self.registry_port

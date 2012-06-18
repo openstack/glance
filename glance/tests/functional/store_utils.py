@@ -87,7 +87,8 @@ def setup_http(test):
 
 
 def teardown_http(test):
-    test.http_server.shutdown()
+    if test.http_server:
+        test.http_server.shutdown()
 
 
 def get_http_uri(test, image_id):
