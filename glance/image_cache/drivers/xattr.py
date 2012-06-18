@@ -66,8 +66,12 @@ import xattr
 
 from glance.common import exception
 from glance.image_cache.drivers import base
+from glance.openstack.common import cfg
 
 logger = logging.getLogger(__name__)
+
+
+CONF = cfg.CONF
 
 
 class Driver(base.Driver):
@@ -363,8 +367,6 @@ class Driver(base.Driver):
         return [image_id for (mtime, image_id) in items]
 
     def _reap_old_files(self, dirpath, entry_type, grace=None):
-        """
-        """
         now = time.time()
         reaped = 0
         for path in get_all_regular_files(dirpath):
