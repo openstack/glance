@@ -411,7 +411,7 @@ class FunctionalTest(test_utils.BaseTestCase):
 
     inited = False
     disabled = False
-    log_files = []
+    launched_servers = []
 
     def setUp(self):
         super(FunctionalTest, self).setUp()
@@ -442,7 +442,7 @@ class FunctionalTest(test_utils.BaseTestCase):
                           self.registry_server.pid_file,
                           self.scrubber_daemon.pid_file]
         self.files_to_destroy = []
-        self.log_files = []
+        self.launched_servers = []
 
     def tearDown(self):
         if not self.disabled:
@@ -538,9 +538,9 @@ class FunctionalTest(test_utils.BaseTestCase):
 
             self.assertTrue(re.search("Starting glance-[a-z]+ with", out))
 
-        self.log_files.append(server.log_file)
+        self.launched_servers.append(server)
 
-        self.wait_for_servers([server.bind_port], expect_launch)
+        self.wait_for_servers([server], expect_launch)
 
     def start_servers(self, **kwargs):
         """
@@ -555,7 +555,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         # Start up the API and default registry server
         exitcode, out, err = self.api_server.start(**kwargs)
 
-        self.log_files.append(self.api_server.log_file)
+        self.launched_servers.append(self.api_server)
 
         self.assertEqual(0, exitcode,
                          "Failed to spin up the API server. "
@@ -564,7 +564,7 @@ class FunctionalTest(test_utils.BaseTestCase):
 
         exitcode, out, err = self.registry_server.start(**kwargs)
 
-        self.log_files.append(self.registry_server.log_file)
+        self.launched_servers.append(self.registry_server)
 
         self.assertEqual(0, exitcode,
                          "Failed to spin up the Registry server. "
@@ -578,7 +578,7 @@ class FunctionalTest(test_utils.BaseTestCase):
                          "Got: %s" % err)
         self.assertTrue("Starting glance-scrubber with" in out)
 
-        self.wait_for_servers([self.api_port, self.registry_port])
+        self.wait_for_servers([self.api_server, self.registry_server])
 
     def ping_server(self, port):
         """
@@ -596,31 +596,41 @@ class FunctionalTest(test_utils.BaseTestCase):
         except socket.error, e:
             return False
 
-    def wait_for_servers(self, ports, expect_launch=True, timeout=10):
+    def wait_for_servers(self, servers, expect_launch=True, timeout=10):
         """
         Tight loop, waiting for the given server port(s) to be available.
         Returns when all are pingable. There is a timeout on waiting
         for the servers to come up.
 
-        :param ports: Glance server ports to ping
+        :param servers: Glance server ports to ping
         :param expect_launch: Optional, true iff the server(s) are
                               expected to successfully start
         :param timeout: Optional, defaults to 3 seconds
         """
         now = datetime.datetime.now()
         timeout_time = now + datetime.timedelta(seconds=timeout)
+        replied = []
         while (timeout_time > now):
             pinged = 0
-            for port in ports:
-                if self.ping_server(port):
+            for server in servers:
+                if self.ping_server(server.bind_port):
                     pinged += 1
-            if pinged == len(ports):
+                    if server not in replied:
+                        replied.append(server)
+            if pinged == len(servers):
                 self.assertTrue(expect_launch,
                                 "Unexpected server launch status")
                 return
             now = datetime.datetime.now()
             time.sleep(0.05)
-        self.assertFalse(expect_launch, "Unexpected server launch status")
+
+        failed = list(set(servers) - set(replied))
+        msg = 'Unexpected server launch status for: '
+        for f in failed:
+            msg += ('%s, ' % f.server_name)
+        if 'NOSE_GLANCELOGCAPTURE' in os.environ:
+            msg += self.dump_logs(failed)
+        self.assertFalse(expect_launch, msg)
 
     def stop_server(self, server, name):
         """
@@ -674,9 +684,10 @@ class FunctionalTest(test_utils.BaseTestCase):
         dst_file_name = os.path.join(dst_dir, file_name)
         return dst_file_name
 
-    def dump_logs(self):
+    def dump_logs(self, servers=None):
         dump = ''
-        for log in self.log_files:
+        logs = [s.log_file for s in (servers or self.launched_servers)]
+        for log in logs:
             dump += '\nContent of %s:\n\n' % log
             if os.path.exists(log):
                 f = open(log, 'r')
