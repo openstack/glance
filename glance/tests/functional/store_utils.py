@@ -152,7 +152,7 @@ def setup_swift(test):
         for container in containers:
             if container == container_name:
                 swift_conn.delete_container(container)
-    except swift_client.ClientException, e:
+    except swiftclient.ClientException, e:
         test.disabled_message = ("Failed to delete container from Swift "
                                  "Got error: %s" % e)
         test.disabled = True
@@ -162,7 +162,7 @@ def setup_swift(test):
 
     try:
         swift_conn.put_container(container_name)
-    except swift_client.ClientException, e:
+    except swiftclient.ClientException, e:
         test.disabled_message = ("Failed to create container. "
                                  "Got error: %s" % e)
         test.disabled = True
