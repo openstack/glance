@@ -51,6 +51,8 @@ for arg in "$@"; do
 done
 
 function run_tests {
+  # Cleanup *pyc
+  ${wrapper} find . -type f -name "*.pyc" -delete
   # Just run the test suites in current environment
   ${wrapper} rm -f tests.sqlite
   ${wrapper} $NOSETESTS
