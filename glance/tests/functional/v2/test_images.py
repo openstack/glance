@@ -434,24 +434,10 @@ class TestImages(functional.FunctionalTest):
         tags = json.loads(response.text)['image']['tags']
         self.assertEqual(['sniff'], tags)
 
-        # Subcollection should also have one tag
-        path = self._url('/images/%s/tags' % image_id)
-        response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
-        tags = json.loads(response.text)
-        self.assertEqual(['sniff'], tags)
-
         # Create another more complex tag
         path = self._url('/images/%s/tags/someone%%40example.com' % image_id)
         response = requests.put(path, headers=self._headers())
         self.assertEqual(204, response.status_code)
-
-        # List should reflect our new tag
-        path = self._url('/images/%s/tags' % image_id)
-        response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
-        tags = json.loads(response.text)
-        self.assertEqual(['sniff', 'someone@example.com'], tags)
 
         # Double-check that the tags container on the image is populated
         path = self._url('/images/%s' % image_id)
@@ -465,11 +451,11 @@ class TestImages(functional.FunctionalTest):
         response = requests.delete(path, headers=self._headers())
         self.assertEqual(204, response.status_code)
 
-        # List should reflect the deletion
-        path = self._url('/images/%s/tags' % image_id)
+        # List of tags should reflect the deletion
+        path = self._url('/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
-        tags = json.loads(response.text)
+        tags = json.loads(response.text)['image']['tags']
         self.assertEqual(['sniff'], tags)
 
         # Deleting the same tag should return a 404

@@ -29,12 +29,6 @@ class TestImageTagsController(test_utils.BaseTestCase):
         self.db = unit_test_utils.FakeDB()
         self.controller = glance.api.v2.image_tags.Controller(self.db)
 
-    def test_list_tags(self):
-        request = unit_test_utils.get_fake_request()
-        tags = self.controller.index(request, unit_test_utils.UUID1)
-        expected = ['ping', 'pong']
-        self.assertEqual(expected, tags)
-
     def test_create_tag(self):
         request = unit_test_utils.get_fake_request()
         self.controller.update(request, unit_test_utils.UUID1, 'dink')
@@ -54,15 +48,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImagesSerializer, self).setUp()
         self.serializer = glance.api.v2.image_tags.ResponseSerializer()
-
-    def test_list_tags(self):
-        fixtures = ['ping', 'pong']
-        expected = ['ping', 'pong']
-        response = webob.Response()
-        self.serializer.index(response, fixtures)
-        self.assertEqual(200, response.status_int)
-        self.assertEqual('application/json', response.content_type)
-        self.assertEqual(expected, json.loads(response.body))
 
     def test_create_tag(self):
         response = webob.Response()

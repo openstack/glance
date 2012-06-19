@@ -17,8 +17,6 @@
 
 import logging
 
-import routes
-
 from glance.api.v2 import image_access
 from glance.api.v2 import image_data
 from glance.api.v2 import image_tags
@@ -89,10 +87,6 @@ class API(wsgi.Router):
                        conditions={'method': ['PUT']})
 
         image_tags_resource = image_tags.create_resource()
-        mapper.connect('/images/{image_id}/tags',
-                       controller=image_tags_resource,
-                       action='index',
-                       conditions={'method': ['GET']})
         mapper.connect('/images/{image_id}/tags/{tag_value}',
                        controller=image_tags_resource,
                        action='update',

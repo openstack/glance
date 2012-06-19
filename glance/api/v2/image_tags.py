@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
-
 import webob.exc
 
 from glance.common import exception
@@ -27,9 +25,6 @@ class Controller(object):
     def __init__(self, db=None):
         self.db_api = db or glance.db.get_api()
         self.db_api.configure_db()
-
-    def index(self, req, image_id):
-        return self.db_api.image_tag_get_all(req.context, image_id)
 
     @utils.mutating
     def update(self, req, image_id, tag_value):
@@ -44,10 +39,6 @@ class Controller(object):
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
-    def index(self, response, tags):
-        response.content_type = 'application/json'
-        response.body = json.dumps(tags)
-
     def update(self, response, result):
         response.status_int = 204
 
