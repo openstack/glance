@@ -27,10 +27,11 @@ class TestSchemasController(test_utils.BaseTestCase):
     def test_index(self):
         req = unit_test_utils.get_fake_request()
         output = self.controller.index(req)
-        expected = {'links': [
-            {'rel': 'image', 'href': '/v2/schemas/image'},
-            {'rel': 'access', 'href': '/v2/schemas/image/access'},
-        ]}
+        expected = {
+            'image': '/v2/schemas/image',
+            'images': '/v2/schemas/images',
+            'access': '/v2/schemas/image/access',
+        }
         self.assertEqual(expected, output)
 
     def test_image(self):

@@ -36,13 +36,13 @@ class TestSchemas(functional.FunctionalTest):
 
         # Parse the links container into a usable dict
         output = json.loads(response.text)
-        links = dict([(l['rel'], l['href']) for l in output['links']])
 
         # We should only have links for image and access schemas
-        self.assertEqual(set(['image', 'access']), set(links.keys()))
+        self.assertEqual(set(['image', 'images', 'access']),
+                         set(output.keys()))
 
         # Ensure the link works and custom properties are loaded
-        path = 'http://%s:%d%s' % ('0.0.0.0', self.api_port, links['image'])
+        path = 'http://%s:%d%s' % ('0.0.0.0', self.api_port, output['image'])
         response = requests.get(path)
         self.assertEqual(response.status_code, 200)
         schema = json.loads(response.text)
@@ -55,10 +55,14 @@ class TestSchemas(functional.FunctionalTest):
             'tags',
             'type',
             'format',
+            'self',
+            'file',
+            'access',
+            'schema',
         ])
         self.assertEqual(expected, set(schema['properties'].keys()))
 
-        path = 'http://%s:%d%s' % ('0.0.0.0', self.api_port, links['access'])
+        path = 'http://%s:%d%s' % ('0.0.0.0', self.api_port, output['access'])
         response = requests.get(path)
         self.assertEqual(response.status_code, 200)
         json.loads(response.text)

@@ -70,17 +70,48 @@ class TestImagesController(test_utils.BaseTestCase):
         self.config(limit_param_default=1, api_limit_max=3)
         request = unit_test_utils.get_fake_request()
         output = self.controller.index(request)
-        self.assertEqual(1, len(output))
-        actual = set([image['id'] for image in output])
+        self.assertEqual(1, len(output['images']))
+        actual = set([image['id'] for image in output['images']])
         expected = set([UUID4])
         self.assertEqual(actual, expected)
+
+    def test_index_return_parameters(self):
+        self.config(limit_param_default=1, api_limit_max=3)
+        request = unit_test_utils.get_fake_request()
+        output = self.controller.index(request, marker=UUID3, limit=1,
+                                       sort_key='created_at', sort_dir='desc')
+        self.assertEqual(1, len(output['images']))
+        actual = set([image['id'] for image in output['images']])
+        expected = set([UUID2])
+        self.assertEqual(actual, expected)
+        self.assertEqual(UUID2, output['next_marker'])
+
+    def test_index_next_marker(self):
+        self.config(limit_param_default=1, api_limit_max=3)
+        request = unit_test_utils.get_fake_request()
+        output = self.controller.index(request, marker=UUID4, limit=2)
+        self.assertEqual(2, len(output['images']))
+        actual = set([image['id'] for image in output['images']])
+        expected = set([UUID3, UUID2])
+        self.assertEqual(actual, expected)
+        self.assertEqual(UUID2, output['next_marker'])
+
+    def test_index_no_next_marker(self):
+        self.config(limit_param_default=1, api_limit_max=3)
+        request = unit_test_utils.get_fake_request()
+        output = self.controller.index(request, marker=UUID1, limit=2)
+        self.assertEqual(0, len(output['images']))
+        actual = set([image['id'] for image in output['images']])
+        expected = set([])
+        self.assertEqual(actual, expected)
+        self.assertTrue('next_marker' not in output)
 
     def test_index_with_marker(self):
         self.config(limit_param_default=1, api_limit_max=3)
         path = '/images'
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request, marker=UUID3)
-        actual = set([image['id'] for image in output])
+        actual = set([image['id'] for image in output['images']])
         self.assertEquals(1, len(actual))
         self.assertTrue(UUID2 in actual)
 
@@ -89,7 +120,7 @@ class TestImagesController(test_utils.BaseTestCase):
         limit = 2
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request, limit=limit)
-        actual = set([image['id'] for image in output])
+        actual = set([image['id'] for image in output['images']])
         self.assertEquals(limit, len(actual))
         self.assertTrue(UUID4 in actual)
         self.assertTrue(UUID3 in actual)
@@ -99,22 +130,23 @@ class TestImagesController(test_utils.BaseTestCase):
         path = '/images'
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request, limit=4)
-        actual = set([image['id'] for image in output])
+        actual = set([image['id'] for image in output['images']])
         self.assertEquals(3, len(actual))
+        self.assertTrue(output['next_marker'] not in output)
 
     def test_index_default_limit(self):
         self.config(limit_param_default=1, api_limit_max=3)
         path = '/images'
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request)
-        actual = set([image['id'] for image in output])
+        actual = set([image['id'] for image in output['images']])
         self.assertEquals(1, len(actual))
 
     def test_index_with_sort_dir(self):
         path = '/images'
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request, sort_dir='asc', limit=3)
-        actual = [image['id'] for image in output]
+        actual = [image['id'] for image in output['images']]
         self.assertEquals(3, len(actual))
         self.assertEquals(UUID1, actual[0])
         self.assertEquals(UUID2, actual[1])
@@ -124,7 +156,7 @@ class TestImagesController(test_utils.BaseTestCase):
         path = '/images'
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request, sort_key='id', limit=3)
-        actual = [image['id'] for image in output]
+        actual = [image['id'] for image in output['images']]
         self.assertEquals(3, len(actual))
         self.assertEquals(UUID1, actual[0])
         self.assertEquals(UUID2, actual[1])
@@ -147,7 +179,7 @@ class TestImagesController(test_utils.BaseTestCase):
         self.db.reset()
         request = unit_test_utils.get_fake_request()
         output = self.controller.index(request)
-        self.assertEqual([], output)
+        self.assertEqual([], output['images'])
 
     def test_show(self):
         request = unit_test_utils.get_fake_request()
@@ -530,19 +562,10 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                     'tags': ['one', 'two'],
-                    'links': [
-                        {
-                            'rel': 'self',
-                            'href':
-                                '/v2/images/%s' % unit_test_utils.UUID1,
-                        },
-                        {
-                            'rel': 'file',
-                            'href':
-                                '/v2/images/%s/file' % unit_test_utils.UUID1,
-                        },
-                        {'rel': 'describedby', 'href': '/v2/schemas/image'}
-                    ],
+                    'self': '/v2/images/%s' % unit_test_utils.UUID1,
+                    'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
+                    'access': '/v2/images/%s/access' % unit_test_utils.UUID1,
+                    'schema': '/v2/schemas/image',
                 },
                 {
                     'id': unit_test_utils.UUID2,
@@ -551,25 +574,197 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                     'tags': [],
-                    'links': [
-                        {
-                            'rel': 'self',
-                            'href':
-                                '/v2/images/%s' % unit_test_utils.UUID2,
-                        },
-                        {
-                            'rel': 'file',
-                            'href':
-                                '/v2/images/%s/file' % unit_test_utils.UUID2,
-                        },
-                        {'rel': 'describedby', 'href': '/v2/schemas/image'}
-                    ],
+                    'self': '/v2/images/%s' % unit_test_utils.UUID2,
+                    'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+                    'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+                    'schema': '/v2/schemas/image',
                 },
             ],
-            'links': [],
+            'first': '/v2/images',
         }
-        response = webob.Response()
-        self.serializer.index(response, fixtures)
+        request = webob.Request.blank('/v2/images')
+        response = webob.Response(request=request)
+        result = {'images': fixtures}
+        self.serializer.index(response, result)
+        self.assertEqual(expected, json.loads(response.body))
+
+    def test_index_next_marker(self):
+
+        fixtures = [
+            {
+                'id': unit_test_utils.UUID1,
+                'name': 'image-1',
+                'is_public': True,
+                'properties': {},
+                'created_at': DATETIME,
+                'updated_at': DATETIME,
+                'tags': ['one', 'two'],
+            },
+            {
+                'id': unit_test_utils.UUID2,
+                'name': 'image-2',
+                'is_public': False,
+                'properties': {},
+                'created_at': DATETIME,
+                'updated_at': DATETIME,
+                'tags': [],
+            },
+        ]
+        expected = {
+            'images': [
+                {
+                    'id': unit_test_utils.UUID1,
+                    'name': 'image-1',
+                    'visibility': 'public',
+                    'created_at': ISOTIME,
+                    'updated_at': ISOTIME,
+                    'tags': ['one', 'two'],
+                    'self': '/v2/images/%s' % unit_test_utils.UUID1,
+                    'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
+                    'access': '/v2/images/%s/access' % unit_test_utils.UUID1,
+                    'schema': '/v2/schemas/image',
+                },
+                {
+                    'id': unit_test_utils.UUID2,
+                    'name': 'image-2',
+                    'visibility': 'private',
+                    'created_at': ISOTIME,
+                    'updated_at': ISOTIME,
+                    'tags': [],
+                    'self': '/v2/images/%s' % unit_test_utils.UUID2,
+                    'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+                    'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+                    'schema': '/v2/schemas/image',
+                },
+            ],
+            'first': '/v2/images',
+            'next': '/v2/images?marker=%s' % unit_test_utils.UUID2
+        }
+        request = webob.Request.blank('/v2/images')
+        response = webob.Response(request=request)
+        result = {'images': fixtures,
+                  'next_marker': unit_test_utils.UUID2,
+        }
+        self.serializer.index(response, result)
+        self.assertEqual(expected, json.loads(response.body))
+
+    def test_index_next_forwarding_query_parameters_no_next(self):
+        fixtures = [
+            {
+                'id': unit_test_utils.UUID1,
+                'name': 'image-1',
+                'is_public': True,
+                'properties': {},
+                'created_at': DATETIME,
+                'updated_at': DATETIME,
+                'tags': ['one', 'two'],
+            },
+            {
+                'id': unit_test_utils.UUID2,
+                'name': 'image-2',
+                'is_public': False,
+                'properties': {},
+                'created_at': DATETIME,
+                'updated_at': DATETIME,
+                'tags': [],
+            },
+        ]
+        expected = {
+            'images': [
+                {
+                    'id': unit_test_utils.UUID1,
+                    'name': 'image-1',
+                    'visibility': 'public',
+                    'created_at': ISOTIME,
+                    'updated_at': ISOTIME,
+                    'tags': ['one', 'two'],
+                    'self': '/v2/images/%s' % unit_test_utils.UUID1,
+                    'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
+                    'access': '/v2/images/%s/access' % unit_test_utils.UUID1,
+                    'schema': '/v2/schemas/image',
+                },
+                {
+                    'id': unit_test_utils.UUID2,
+                    'name': 'image-2',
+                    'visibility': 'private',
+                    'created_at': ISOTIME,
+                    'updated_at': ISOTIME,
+                    'tags': [],
+                    'self': '/v2/images/%s' % unit_test_utils.UUID2,
+                    'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+                    'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+                    'schema': '/v2/schemas/image',
+                },
+            ],
+            'first': '/v2/images?sort_key=id&sort_dir=asc&limit=10',
+        }
+        url = '/v2/images?limit=10&sort_key=id&sort_dir=asc'
+        request = webob.Request.blank(url)
+        response = webob.Response(request=request)
+        result = {'images': fixtures}
+        self.serializer.index(response, result)
+        self.assertEqual(expected, json.loads(response.body))
+
+    def test_index_next_forwarding_query_parameters(self):
+
+        fixtures = [
+            {
+                'id': unit_test_utils.UUID1,
+                'name': 'image-1',
+                'is_public': True,
+                'properties': {},
+                'created_at': DATETIME,
+                'updated_at': DATETIME,
+                'tags': ['one', 'two'],
+            },
+            {
+                'id': unit_test_utils.UUID2,
+                'name': 'image-2',
+                'is_public': False,
+                'properties': {},
+                'created_at': DATETIME,
+                'updated_at': DATETIME,
+                'tags': [],
+            },
+        ]
+        expected = {
+            'images': [
+                {
+                    'id': unit_test_utils.UUID1,
+                    'name': 'image-1',
+                    'visibility': 'public',
+                    'created_at': ISOTIME,
+                    'updated_at': ISOTIME,
+                    'tags': ['one', 'two'],
+                    'self': '/v2/images/%s' % unit_test_utils.UUID1,
+                    'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
+                    'access': '/v2/images/%s/access' % unit_test_utils.UUID1,
+                    'schema': '/v2/schemas/image',
+                },
+                {
+                    'id': unit_test_utils.UUID2,
+                    'name': 'image-2',
+                    'visibility': 'private',
+                    'created_at': ISOTIME,
+                    'updated_at': ISOTIME,
+                    'tags': [],
+                    'self': '/v2/images/%s' % unit_test_utils.UUID2,
+                    'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+                    'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+                    'schema': '/v2/schemas/image',
+                },
+            ],
+            'first': '/v2/images?sort_key=id&sort_dir=asc&limit=2',
+            'next': '/v2/images?sort_key=id&sort_dir=asc&limit=2&marker=%s'
+                                                    % unit_test_utils.UUID2
+        }
+        url = '/v2/images?limit=2&sort_key=id&sort_dir=asc'
+        request = webob.Request.blank(url)
+        response = webob.Response(request=request)
+        result = {'images': fixtures,
+                  'next_marker': unit_test_utils.UUID2,
+        }
+        self.serializer.index(response, result)
         self.assertEqual(expected, json.loads(response.body))
 
     def test_show(self):
@@ -590,17 +785,10 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
                 'tags': ['three', 'four'],
-                'links': [
-                    {
-                        'rel': 'self',
-                        'href': '/v2/images/%s' % unit_test_utils.UUID2,
-                    },
-                    {
-                        'rel': 'file',
-                        'href': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                    },
-                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
-                ],
+                'self': '/v2/images/%s' % unit_test_utils.UUID2,
+                'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+                'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+                'schema': '/v2/schemas/image',
             },
         }
         response = webob.Response()
@@ -626,11 +814,10 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
                 'tags': [],
-                'links': [
-                    {'rel': 'self', 'href': self_link},
-                    {'rel': 'file', 'href': '%s/file' % self_link},
-                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
-                ],
+                'self': self_link,
+                'file': '%s/file' % self_link,
+                'access': '%s/access' % self_link,
+                'schema': '/v2/schemas/image',
             },
         }
         response = webob.Response()
@@ -657,11 +844,10 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
                 'tags': ['five'],
-                'links': [
-                    {'rel': 'self', 'href': self_link},
-                    {'rel': 'file', 'href': '%s/file' % self_link},
-                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
-                ],
+                'self': self_link,
+                'file': '%s/file' % self_link,
+                'access': '%s/access' % self_link,
+                'schema': '/v2/schemas/image',
             },
         }
         response = webob.Response()
@@ -704,17 +890,10 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
                 'updated_at': ISOTIME,
                 'tags': [],
                 'color': 'green',
-                'links': [
-                    {
-                        'rel': 'self',
-                        'href': '/v2/images/%s' % unit_test_utils.UUID2,
-                    },
-                    {
-                        'rel': 'file',
-                        'href': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                    },
-                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
-                ],
+                'self': '/v2/images/%s' % unit_test_utils.UUID2,
+                'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+                'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+                'schema': '/v2/schemas/image',
             },
         }
         response = webob.Response()
@@ -732,17 +911,10 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
                 'updated_at': ISOTIME,
                 'tags': [],
                 'color': 'invalid',
-                'links': [
-                    {
-                        'rel': 'self',
-                        'href': '/v2/images/%s' % unit_test_utils.UUID2,
-                    },
-                    {
-                        'rel': 'file',
-                        'href': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                    },
-                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
-                ],
+                'self': '/v2/images/%s' % unit_test_utils.UUID2,
+                'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+                'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+                'schema': '/v2/schemas/image',
             },
         }
         response = webob.Response()
@@ -778,17 +950,10 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
                 'updated_at': ISOTIME,
                 'marx': 'groucho',
                 'tags': [],
-                'links': [
-                    {
-                        'rel': 'self',
-                        'href': '/v2/images/%s' % unit_test_utils.UUID2,
-                    },
-                    {
-                        'rel': 'file',
-                        'href': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                    },
-                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
-                ],
+                'self': '/v2/images/%s' % unit_test_utils.UUID2,
+                'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+                'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+                'schema': '/v2/schemas/image',
             },
         }
         response = webob.Response()
@@ -810,17 +975,10 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
                 'updated_at': ISOTIME,
                 'marx': 123,
                 'tags': [],
-                'links': [
-                    {
-                        'rel': 'self',
-                        'href': '/v2/images/%s' % unit_test_utils.UUID2,
-                    },
-                    {
-                        'rel': 'file',
-                        'href': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                    },
-                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
-                ],
+                'self': '/v2/images/%s' % unit_test_utils.UUID2,
+                'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+                'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+                'schema': '/v2/schemas/image',
             },
         }
         response = webob.Response()
@@ -838,17 +996,10 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
                 'tags': [],
-                'links': [
-                    {
-                        'rel': 'self',
-                        'href': '/v2/images/%s' % unit_test_utils.UUID2,
-                    },
-                    {
-                        'rel': 'file',
-                        'href': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                    },
-                    {'rel': 'describedby', 'href': '/v2/schemas/image'}
-                ],
+                'self': '/v2/images/%s' % unit_test_utils.UUID2,
+                'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+                'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+                'schema': '/v2/schemas/image',
             },
         }
         response = webob.Response()
