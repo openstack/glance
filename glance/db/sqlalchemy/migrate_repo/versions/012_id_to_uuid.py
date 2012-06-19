@@ -21,7 +21,6 @@ there are known issues with these libraries so SQLite and non-SQLite
 migrations must be done separately.
 """
 
-import copy
 import migrate
 import sqlalchemy
 
