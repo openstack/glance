@@ -34,7 +34,7 @@ class TestContextMiddleware(base.IsolatedUnitTest):
         self._build_middleware().process_request(req)
         self.assertTrue(req.context.is_admin)
 
-        # without the 'admin' role, is_admin shoud be False
+        # without the 'admin' role, is_admin should be False
         req = self._build_request()
         self._build_middleware().process_request(req)
         self.assertFalse(req.context.is_admin)
@@ -42,6 +42,31 @@ class TestContextMiddleware(base.IsolatedUnitTest):
         # if we change the admin_role attribute, we should be able to use it
         req = self._build_request()
         self.config(admin_role='role1')
+        self._build_middleware().process_request(req)
+        self.assertTrue(req.context.is_admin)
+
+    def test_roles_case_insensitive(self):
+        # accept role from request
+        req = self._build_request(roles=['Admin', 'role2'])
+        self._build_middleware().process_request(req)
+        self.assertTrue(req.context.is_admin)
+
+        # accept role from config
+        req = self._build_request(roles=['role1'])
+        self.config(admin_role='rOLe1')
+        self._build_middleware().process_request(req)
+        self.assertTrue(req.context.is_admin)
+
+    def test_roles_stripping(self):
+        # stripping extra spaces in request
+        req = self._build_request(roles=['\trole1'])
+        self.config(admin_role='role1')
+        self._build_middleware().process_request(req)
+        self.assertTrue(req.context.is_admin)
+
+        # stripping extra spaces in config
+        req = self._build_request(roles=['\trole1\n'])
+        self.config(admin_role=' role1\t')
         self._build_middleware().process_request(req)
         self.assertTrue(req.context.is_admin)
 
