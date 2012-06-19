@@ -20,10 +20,12 @@
 import __builtin__
 setattr(__builtin__, '_', lambda x: x)
 
-# Set up logging to output debugging
 import logging
+import sys
+
+# Set up logging to output debugging
 logger = logging.getLogger()
-hdlr = logging.FileHandler('run_tests.log', 'w')
+hdlr = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
 logger.addHandler(hdlr)
