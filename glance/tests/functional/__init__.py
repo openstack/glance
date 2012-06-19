@@ -596,7 +596,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         except socket.error, e:
             return False
 
-    def wait_for_servers(self, ports, expect_launch=True, timeout=3):
+    def wait_for_servers(self, ports, expect_launch=True, timeout=10):
         """
         Tight loop, waiting for the given server port(s) to be available.
         Returns when all are pingable. There is a timeout on waiting
