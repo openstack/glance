@@ -35,26 +35,32 @@ class TestImageAccessController(test_utils.BaseTestCase):
     def test_index(self):
         req = unit_test_utils.get_fake_request()
         output = self.controller.index(req, unit_test_utils.UUID1)
-        expected = [
-            {
-                'image_id': unit_test_utils.UUID1,
-                'member': unit_test_utils.TENANT1,
-                'can_share': True,
-                'deleted': False,
-            },
-            {
-                'image_id': unit_test_utils.UUID1,
-                'member': unit_test_utils.TENANT2,
-                'can_share': False,
-                'deleted': False,
-            },
-        ]
+        expected = {
+            'access_records': [
+                {
+                    'image_id': unit_test_utils.UUID1,
+                    'member': unit_test_utils.TENANT1,
+                    'can_share': True,
+                    'deleted': False,
+                },
+                {
+                    'image_id': unit_test_utils.UUID1,
+                    'member': unit_test_utils.TENANT2,
+                    'can_share': False,
+                    'deleted': False,
+                },
+            ],
+            'image_id': unit_test_utils.UUID1,
+        }
         self.assertEqual(expected, output)
 
     def test_index_zero_records(self):
         req = unit_test_utils.get_fake_request()
         output = self.controller.index(req, unit_test_utils.UUID2)
-        expected = []
+        expected = {
+            'access_records': [],
+            'image_id': unit_test_utils.UUID2,
+        }
         self.assertEqual(expected, output)
 
     def test_index_nonexistant_image(self):
@@ -145,10 +151,9 @@ class TestImageAccessSerializer(test_utils.BaseTestCase):
             'access_record': {
                 'tenant_id': unit_test_utils.TENANT1,
                 'can_share': False,
-                'links': [
-                    {'rel': 'self', 'href': self_href},
-                    {'rel': 'describedby', 'href': '/v2/schemas/image/access'},
-                ],
+                'self': self_href,
+                'schema': '/v2/schemas/image/access',
+                'image': '/v2/images/%s' % unit_test_utils.UUID1,
             },
         }
         response = webob.Response()
@@ -168,45 +173,52 @@ class TestImageAccessSerializer(test_utils.BaseTestCase):
                 'can_share': True,
             },
         ]
+        result = {
+            'access_records': fixtures,
+            'image_id': unit_test_utils.UUID1,
+        }
         expected = {
             'access_records': [
                 {
                     'tenant_id': unit_test_utils.TENANT1,
                     'can_share': False,
-                    'links': [
-                        {
-                            'rel': 'self',
-                            'href': ('/v2/images/%s/access/%s' %
+                    'self': ('/v2/images/%s/access/%s' %
                                     (unit_test_utils.UUID1,
-                                     unit_test_utils.TENANT1))
-                        },
-                        {
-                            'rel': 'describedby',
-                            'href': '/v2/schemas/image/access',
-                        },
-                    ],
+                                     unit_test_utils.TENANT1)),
+                    'schema': '/v2/schemas/image/access',
+                    'image': '/v2/images/%s' % unit_test_utils.UUID1,
                 },
                 {
                     'tenant_id': unit_test_utils.TENANT2,
                     'can_share': True,
-                    'links': [
-                        {
-                            'rel': 'self',
-                            'href': ('/v2/images/%s/access/%s' %
+                    'self': ('/v2/images/%s/access/%s' %
                                     (unit_test_utils.UUID1,
-                                     unit_test_utils.TENANT2))
-                        },
-                        {
-                            'rel': 'describedby',
-                            'href': '/v2/schemas/image/access',
-                        },
-                    ],
+                                     unit_test_utils.TENANT2)),
+                    'schema': '/v2/schemas/image/access',
+                    'image': '/v2/images/%s' % unit_test_utils.UUID1,
                 },
             ],
-            'links': [],
+           'first': '/v2/images/%s/access' % unit_test_utils.UUID1,
+           'schema': '/v2/schemas/image/accesses',
+
         }
         response = webob.Response()
-        self.serializer.index(response, fixtures)
+        self.serializer.index(response, result)
+        self.assertEqual(expected, json.loads(response.body))
+
+    def test_index_zero_access_records(self):
+        result = {
+            'access_records': [],
+            'image_id': unit_test_utils.UUID1,
+        }
+        response = webob.Response()
+        self.serializer.index(response, result)
+        first_link = '/v2/images/%s/access' % unit_test_utils.UUID1
+        expected = {
+            'access_records': [],
+            'first': first_link,
+            'schema': '/v2/schemas/image/accesses',
+        }
         self.assertEqual(expected, json.loads(response.body))
 
     def test_create(self):
@@ -221,10 +233,9 @@ class TestImageAccessSerializer(test_utils.BaseTestCase):
             'access': {
                 'tenant_id': unit_test_utils.TENANT1,
                 'can_share': False,
-                'links': [
-                    {'rel': 'self', 'href': self_href},
-                    {'rel': 'describedby', 'href': '/v2/schemas/image/access'},
-                ],
+                'self': self_href,
+                'schema': '/v2/schemas/image/access',
+                'image': '/v2/images/%s' % unit_test_utils.UUID1,
             },
         }
         response = webob.Response()

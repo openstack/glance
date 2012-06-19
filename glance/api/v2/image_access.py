@@ -37,7 +37,10 @@ class Controller(object):
 
         #TODO(bcwaldon): We have to filter on non-deleted members
         # manually. This should be done for us in the db api
-        return filter(lambda m: not m['deleted'], members)
+        return {
+            'access_records': filter(lambda m: not m['deleted'], members),
+            'image_id': image_id,
+        }
 
     def show(self, req, image_id, tenant_id):
         members = self.db_api.image_member_find(req.context,
@@ -110,31 +113,28 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             link = '%s/%s' % (link, tenant_id)
         return link
 
-    def _get_access_links(self, access):
-        self_link = self._get_access_href(access['image_id'], access['member'])
-        return [
-            {'rel': 'self', 'href': self_link},
-            {'rel': 'describedby', 'href': '/v2/schemas/image/access'},
-        ]
-
     def _format_access(self, access):
+        self_link = self._get_access_href(access['image_id'], access['member'])
         return {
-            'tenant_id': access['member'],
-            'can_share': access['can_share'],
-            'links': self._get_access_links(access),
-        }
-
-    def _get_container_links(self, image_id):
-        return [{'rel': 'self', 'href': self._get_access_href(image_id)}]
+                'tenant_id': access['member'],
+                'can_share': access['can_share'],
+                'self':  self_link,
+                'schema': '/v2/schemas/image/access',
+                'image': '/v2/images/%s' % access['image_id'],
+            }
 
     def show(self, response, access):
         record = {'access_record': self._format_access(access)}
         response.body = json.dumps(record)
 
-    def index(self, response, access_records):
+    def index(self, response, result):
+        access_records = result['access_records']
+        first_link = '/v2/images/%s/access' % result['image_id']
         body = {
-            'access_records': [self._format_access(a) for a in access_records],
-            'links': [],
+            'access_records': [self._format_access(a)
+                               for a in access_records],
+            'first': first_link,
+            'schema': '/v2/schemas/image/accesses',
         }
         response.body = json.dumps(body)
 
