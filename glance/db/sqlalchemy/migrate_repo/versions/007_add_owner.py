@@ -17,7 +17,6 @@
 
 from migrate.changeset import *
 from sqlalchemy import *
-from sqlalchemy.sql import and_, not_
 
 from glance.db.sqlalchemy.migrate_repo.schema import (
     Boolean, DateTime, BigInteger, Integer, String,
