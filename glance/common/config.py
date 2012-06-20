@@ -121,35 +121,33 @@ def _get_deployment_flavor():
     return '' if not flavor else ('-' + flavor)
 
 
-def _get_paste_config_path(default_paste_file=None):
+def _get_paste_config_path():
     paste_suffix = '-paste.ini'
     conf_suffix = '.conf'
     if CONF.config_file:
         # Assume paste config is in a paste.ini file corresponding
         # to the last config file
         path = CONF.config_file[-1].replace(conf_suffix, paste_suffix)
-    elif default_paste_file:
-        path = default_paste_file
     else:
         path = CONF.prog + '-paste.ini'
     return CONF.find_file(os.path.basename(path))
 
 
-def _get_deployment_config_file(default_paste_file=None):
+def _get_deployment_config_file():
     """
     Retrieve the deployment_config_file config item, formatted as an
     absolute pathname.
     """
     path = CONF.paste_deploy.config_file
     if not path:
-        path = _get_paste_config_path(default_paste_file)
+        path = _get_paste_config_path()
     if not path:
         msg = "Unable to locate paste config file for %s." % CONF.prog
         raise RuntimeError(msg)
     return os.path.abspath(path)
 
 
-def load_paste_app(app_name=None, default_paste_file=None):
+def load_paste_app(app_name=None):
     """
     Builds and returns a WSGI app from a paste config file.
 
@@ -168,7 +166,7 @@ def load_paste_app(app_name=None, default_paste_file=None):
     # in order to identify the appropriate paste pipeline
     app_name += _get_deployment_flavor()
 
-    conf_file = _get_deployment_config_file(default_paste_file)
+    conf_file = _get_deployment_config_file()
 
     try:
         # Setup logging early
