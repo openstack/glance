@@ -163,6 +163,7 @@ class TestImagesController(test_utils.BaseTestCase):
             'tags': [],
             'members': [],
             'properties': {},
+            'deleted': False,
         }
         self.assertEqual(expected, output)
 
@@ -186,6 +187,7 @@ class TestImagesController(test_utils.BaseTestCase):
             'is_public': False,
             'properties': {},
             'tags': [],
+            'deleted': False,
         }
         self.assertEqual(expected, output)
 
@@ -209,6 +211,7 @@ class TestImagesController(test_utils.BaseTestCase):
             'is_public': True,
             'tags': [],
             'properties': {},
+            'deleted': False,
         }
         self.assertEqual(expected, output)
 
@@ -226,6 +229,7 @@ class TestImagesController(test_utils.BaseTestCase):
             'is_public': False,
             'tags': ['ping', 'pong'],
             'properties': {},
+            'deleted': False,
         }
         self.assertEqual(expected, output)
 

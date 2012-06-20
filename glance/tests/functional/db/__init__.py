@@ -196,7 +196,7 @@ class BaseTestCasePaging(object):
     through, and check that we get back the images in the order we expect.
     """
 
-    ITEM_COUNT = 100
+    ITEM_COUNT = 20
     PAGE_SIZE = 5
     TIME_VALUES = 10
     MINDISK_VALUES = 10
@@ -259,15 +259,19 @@ class BaseTestCasePaging(object):
             results.reverse()
         return results
 
-    def _do_test(self, sort_dir, sort_key):
-        limit = self.PAGE_SIZE
+    def _do_test(self, sort_dir, sort_key, **kwargs):
+        try:
+            limit = kwargs['limit']
+        except KeyError:
+            limit = self.PAGE_SIZE
+
         marker = None
 
-        got_ids = []
-        expected_ids = []
+        output = []
+        expected = []
 
-        for i in self._sort_results(sort_dir, sort_key):
-            expected_ids.append(i['id'])
+        for image in self._sort_results(sort_dir, sort_key):
+            expected.append(image)
 
         while True:
             results = self.db_api.image_get_all(self.context,
@@ -277,17 +281,17 @@ class BaseTestCasePaging(object):
                                                 sort_dir=sort_dir)
             if not results:
                 break
-
-            for result in results:
-                got_ids.append(result['id'])
+            else:
+                output.extend(results)
 
             # Prevent this running infinitely in error cases
-            self.assertTrue(len(got_ids) < (500 + len(expected_ids)))
+            self.assertTrue(len(output) < (500 + len(expected)))
 
-            marker = results[-1].id
+            marker = results[-1]['id']
 
-        self.assertEquals(len(got_ids), len(expected_ids))
-        self.assertEquals(got_ids, expected_ids)
+        self.assertEquals(len(output), len(expected))
+        self.assertEquals([image['id'] for image in expected],
+                          [image['id'] for image in output])
 
     def test_sort_by_disk_asc(self):
         self._do_test('asc', 'min_disk')
@@ -306,3 +310,7 @@ class BaseTestCasePaging(object):
 
     def test_sort_by_id_desc(self):
         self._do_test('desc', 'id')
+
+    #NOTE(bcwaldon): make sure this works!
+    def test_limit_None(self):
+        self._do_test('desc', 'id', limit=None)

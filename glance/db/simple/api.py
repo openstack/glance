@@ -14,6 +14,7 @@
 #    under the License.
 
 import datetime
+import functools
 import logging
 import uuid
 
@@ -27,6 +28,26 @@ DATA = {
     'members': {},
     'tags': {},
 }
+
+
+def log_call(func):
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs):
+        LOG.info('Calling %s: args=%s, kwargs=%s' %
+                 (func.__name__, args, kwargs))
+        output = func(*args, **kwargs)
+        LOG.info('Returning %s: %s' % (func.__name__, output))
+        return output
+    return wrapped
+
+
+def reset():
+    global DATA
+    DATA = {
+        'images': {},
+        'members': {},
+        'tags': {},
+    }
 
 
 def configure_db(*args, **kwargs):
@@ -55,6 +76,7 @@ def _image_format(image_id, **values):
         'location': None,
         'status': 'queued',
         'is_public': False,
+        'deleted': False,
         'created_at': dt,
         'updated_at': dt,
         'tags': [],
@@ -64,13 +86,17 @@ def _image_format(image_id, **values):
     return image
 
 
-def image_get(context, image_id, session=None):
+@log_call
+def image_get(context, image_id, session=None, force_show_deleted=False):
     try:
         image = DATA['images'][image_id]
-        LOG.info('Found image %s: %s' % (image_id, str(image)))
     except KeyError:
         LOG.info('Could not find image %s' % image_id)
-        raise exception.NotFound(image_id=image_id)
+        raise exception.NotFound()
+
+    if image['deleted'] and not (force_show_deleted or context.show_deleted):
+        LOG.info('Unable to get deleted image')
+        raise exception.NotFound()
 
     #NOTE(bcwaldon: this is a hack until we can get image members with
     # a direct db call
@@ -79,41 +105,40 @@ def image_get(context, image_id, session=None):
     return image
 
 
+@log_call
 def image_get_all(context, filters=None, marker=None, limit=None,
                   sort_key='created_at', sort_dir='desc'):
+    filters = filters or {}
     reverse = False
     start = 0
     end = -1
     images = DATA['images'].values()
     if images and not images[0].get(sort_key):
         raise exception.InvalidSortKey()
-    keyfn = lambda x: x[sort_key]
+    keyfn = lambda x: (x[sort_key], x['created_at'], x['id'])
     reverse = sort_dir == 'desc'
     images.sort(key=keyfn, reverse=reverse)
     if marker is None:
         start = 0
     else:
+        # Check that the image is accessible
+        image_get(context, marker, force_show_deleted=filters.get('deleted'))
+
         for i, image in enumerate(images):
             if image['id'] == marker:
                 start = i + 1
                 break
         else:
-            raise exception.NotFound
+            raise exception.NotFound()
 
-    if limit is None:
-        end = -1
-    else:
-        end = start + limit
-
-    images = images[start:end]
-    LOG.info('Listing images: %s' % (images))
-    return images
+    end = start + limit if limit else None
+    return images[start:end]
 
 
+@log_call
 def image_member_find(context, image_id, tenant_id):
     image_get(context, image_id)
 
-    print DATA['members']
     for member in DATA['members'].get(image_id, []):
         if member['member'] == tenant_id:
             return member
@@ -121,6 +146,7 @@ def image_member_find(context, image_id, tenant_id):
     raise exception.NotFound()
 
 
+@log_call
 def image_member_create(context, values):
     member = _image_member_format(values['image_id'],
                                   values['member'],
@@ -131,37 +157,45 @@ def image_member_create(context, values):
     return member
 
 
+@log_call
 def image_create(context, image_values):
     image_id = image_values.get('id', str(uuid.uuid4()))
     image = _image_format(image_id, **image_values)
+    global DATA
     DATA['images'][image_id] = image
     DATA['tags'][image_id] = image.pop('tags', [])
-    LOG.info('Created image %s with values %s' %
-             (image_id, str(image_values)))
     return image
 
 
+@log_call
 def image_update(context, image_id, image_values):
-    LOG.info('Updating image %s with values %s' %
-             (image_id, str(image_values)))
     global DATA
     try:
         image = DATA['images'][image_id]
-        LOG.info('Found image %s: %s' % (image_id, str(image)))
     except KeyError:
         raise exception.NotFound(image_id=image_id)
 
     image.update(image_values)
     DATA['images'][image_id] = image
-    LOG.info('Image %s updated to %s' % (image_id, str(image)))
     return image
 
 
+@log_call
+def image_destroy(context, image_id):
+    global DATA
+    try:
+        DATA['images'][image_id]['deleted'] = True
+    except KeyError:
+        raise exception.NotFound()
+
+
+@log_call
 def image_tag_get_all(context, image_id):
     image_get(context, image_id)
     return DATA['tags'].get(image_id, [])
 
 
+@log_call
 def image_tag_get(context, image_id, value):
     tags = image_tag_get_all(context, image_id)
     if value in tags:
@@ -170,17 +204,20 @@ def image_tag_get(context, image_id, value):
         raise exception.NotFound()
 
 
+@log_call
 def image_tag_set_all(context, image_id, values):
     global DATA
     DATA['tags'][image_id] = values
 
 
+@log_call
 def image_tag_create(context, image_id, value):
     global DATA
     DATA['tags'][image_id].append(value)
     return value
 
 
+@log_call
 def image_tag_delete(context, image_id, value):
     global DATA
     try:
