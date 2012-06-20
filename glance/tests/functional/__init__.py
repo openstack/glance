@@ -397,9 +397,6 @@ scrubber_datadir = %(scrubber_datadir)s
 registry_host = 0.0.0.0
 registry_port = %(registry_port)s
 """
-        self.paste_conf_base = """[app:glance-scrubber]
-paste.app_factory = glance.store.scrubber:Scrubber.factory
-"""
 
 
 class FunctionalTest(test_utils.BaseTestCase):

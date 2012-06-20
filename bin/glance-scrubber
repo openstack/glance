@@ -55,8 +55,9 @@ if __name__ == '__main__':
         CONF.register_opt(cfg.IntOpt('wakeup_time', default=300))
 
         config.parse_args()
+        config.setup_logging()
 
-        app = config.load_paste_app('glance-scrubber')
+        app = scrubber.Scrubber()
 
         if CONF.daemon:
             server = scrubber.Daemon(CONF.wakeup_time)

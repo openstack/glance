@@ -101,24 +101,3 @@ class TestPasteApp(test_utils.BaseTestCase):
         expected_middleware = context.UnauthenticatedContextMiddleware
         self._do_test_load_paste_app(expected_middleware,
                                      paste_config_file=paste_config_file)
-
-    def test_load_paste_app_with_conf_name(self):
-        def fake_join(*args):
-            if (len(args) == 2 and
-                args[0].endswith('.glance') and
-                args[1] == 'glance-cache.conf'):
-                return os.path.join(os.getcwd(), 'etc', args[1])
-            else:
-                return orig_join(*args)
-
-        orig_join = os.path.join
-        self.stubs.Set(os.path, 'join', fake_join)
-
-        config.parse_cache_args([])
-
-        self.stubs.Set(config, 'setup_logging', lambda *a: None)
-        self.stubs.Set(pruner.Pruner, '__init__', lambda p: None)
-
-        app = config.load_paste_app('glance-pruner')
-
-        self.assertTrue(isinstance(app, pruner.Pruner))
