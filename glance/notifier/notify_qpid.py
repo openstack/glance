@@ -22,7 +22,7 @@ import qpid.messaging
 from glance.notifier import strategy
 from glance.openstack.common import cfg
 
-logger = logging.getLogger('glance.notifier.notify_qpid')
+LOG = logging.getLogger(__name__)
 
 qpid_opts = [
     cfg.StrOpt('qpid_notification_exchange',
@@ -106,7 +106,7 @@ class QpidStrategy(strategy.Strategy):
         self.connection.tcp_nodelay = CONF.qpid_tcp_nodelay
         self.connection.open()
         self.session = self.connection.session()
-        logger.info(_('Connected to AMQP server on %s') % self.broker)
+        LOG.info(_('Connected to AMQP server on %s') % self.broker)
 
         self.sender_info = self._sender("info")
         self.sender_warn = self._sender("warn")

@@ -25,7 +25,7 @@ from glance.common import wsgi
 from glance import registry
 
 
-logger = logging.getLogger('glance.api.v1.members')
+LOG = logging.getLogger(__name__)
 
 
 class Controller(object):
@@ -48,11 +48,11 @@ class Controller(object):
             members = registry.get_image_members(req.context, image_id)
         except exception.NotFound:
             msg = _("Image with identifier %s not found") % image_id
-            logger.debug(msg)
+            LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden:
             msg = _("Unauthorized image access")
-            logger.debug(msg)
+            LOG.debug(msg)
             raise webob.exc.HTTPForbidden(msg)
         return dict(members=members)
 
@@ -68,11 +68,11 @@ class Controller(object):
             registry.delete_member(req.context, image_id, id)
         except exception.NotFound, e:
             msg = "%s" % e
-            logger.debug(msg)
+            LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden, e:
             msg = "%s" % e
-            logger.debug(msg)
+            LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
 
         return webob.exc.HTTPNoContent()
@@ -106,15 +106,15 @@ class Controller(object):
             registry.add_member(req.context, image_id, id, can_share)
         except exception.Invalid, e:
             msg = "%s" % e
-            logger.debug(msg)
+            LOG.debug(msg)
             raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.NotFound, e:
             msg = "%s" % e
-            logger.debug(msg)
+            LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden, e:
             msg = "%s" % e
-            logger.debug(msg)
+            LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
 
         return webob.exc.HTTPNoContent()
@@ -137,15 +137,15 @@ class Controller(object):
             registry.replace_members(req.context, image_id, body)
         except exception.Invalid, e:
             msg = "%s" % e
-            logger.debug(msg)
+            LOG.debug(msg)
             raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.NotFound, e:
             msg = "%s" % e
-            logger.debug(msg)
+            LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden, e:
             msg = "%s" % e
-            logger.debug(msg)
+            LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
 
         return webob.exc.HTTPNoContent()
@@ -167,11 +167,11 @@ class Controller(object):
             members = registry.get_member_images(req.context, id)
         except exception.NotFound, e:
             msg = "%s" % e
-            logger.debug(msg)
+            LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden, e:
             msg = "%s" % e
-            logger.debug(msg)
+            LOG.debug(msg)
             raise webob.exc.HTTPForbidden(msg)
         return dict(shared_images=members)
 

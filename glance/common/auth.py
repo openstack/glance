@@ -39,7 +39,7 @@ import httplib2
 from glance.common import exception
 
 
-logger = logging.getLogger('glance.common.auth')
+LOG = logging.getLogger(__name__)
 
 
 class BaseStrategy(object):
@@ -204,7 +204,7 @@ class KeystoneStrategy(BaseStrategy):
                     service_type = service['type']
                 except KeyError:
                     msg = _('Encountered service with no "type": %s' % service)
-                    logger.warn(msg)
+                    LOG.warn(msg)
                     continue
 
                 if service_type == 'image':

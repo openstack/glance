@@ -50,7 +50,7 @@ class TestLoggingNotifier(utils.BaseTestCase):
         super(TestLoggingNotifier, self).setUp()
         self.config(notifier_strategy="logging")
         self.called = False
-        self.logger = logging.getLogger("glance.notifier.logging_notifier")
+        self.logger = logging.getLogger("glance.notifier.notify_log")
         self.notifier = notifier.Notifier()
 
     def _called(self, msg):

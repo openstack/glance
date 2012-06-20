@@ -45,7 +45,7 @@ import urlparse
 from glance.common import exception
 from glance.common import utils
 
-logger = logging.getLogger('glance.store.location')
+LOG = logging.getLogger(__name__)
 
 SCHEME_TO_CLS_MAP = {}
 
@@ -81,9 +81,9 @@ def register_scheme_map(scheme_map):
     known list of schemes.
     """
     for (k, v) in scheme_map.items():
-        logger.debug("Registering scheme %s with %s", k, v)
+        LOG.debug("Registering scheme %s with %s", k, v)
         if k in SCHEME_TO_CLS_MAP:
-            logger.warn("Overwriting scheme %s with %s", k, v)
+            LOG.warn("Overwriting scheme %s with %s", k, v)
         SCHEME_TO_CLS_MAP[k] = v
 
 

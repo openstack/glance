@@ -22,7 +22,6 @@ Client classes for callers of a Glance system
 import errno
 import httplib
 import json
-import logging
 import os
 import socket
 import sys
@@ -33,7 +32,6 @@ from glance.common import client as base_client
 from glance.common import exception
 from glance.common import utils
 
-logger = logging.getLogger(__name__)
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
 SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
 

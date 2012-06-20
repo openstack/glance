@@ -15,8 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 from glance.api.v2 import image_access
 from glance.api.v2 import image_data
 from glance.api.v2 import image_tags
@@ -24,8 +22,6 @@ from glance.api.v2 import images
 from glance.api.v2 import root
 from glance.api.v2 import schemas
 from glance.common import wsgi
-
-logger = logging.getLogger(__name__)
 
 
 class API(wsgi.Router):

@@ -25,7 +25,7 @@ from glance.common import wsgi
 import glance.db
 
 
-logger = logging.getLogger('glance.registry.api.v1.members')
+LOG = logging.getLogger(__name__)
 
 
 class Controller(object):
@@ -48,7 +48,7 @@ class Controller(object):
             msg = _("Access by %(user)s to image %(id)s "
                     "denied") % ({'user': req.context.user,
                     'id': image_id})
-            logger.info(msg)
+            LOG.info(msg)
             raise webob.exc.HTTPNotFound()
 
         return dict(members=make_member_list(image['members'],
@@ -82,7 +82,7 @@ class Controller(object):
             msg = _("Access by %(user)s to image %(id)s "
                     "denied") % ({'user': req.context.user,
                     'id': image_id})
-            logger.info(msg)
+            LOG.info(msg)
             raise webob.exc.HTTPNotFound()
 
         # Can they manipulate the membership?
@@ -184,7 +184,7 @@ class Controller(object):
             msg = _("Access by %(user)s to image %(id)s "
                     "denied") % ({'user': req.context.user,
                     'id': image_id})
-            logger.info(msg)
+            LOG.info(msg)
             raise webob.exc.HTTPNotFound()
 
         # Can they manipulate the membership?
@@ -239,7 +239,7 @@ class Controller(object):
             msg = _("Access by %(user)s to image %(id)s "
                     "denied") % ({'user': req.context.user,
                     'id': image_id})
-            logger.info(msg)
+            LOG.info(msg)
             raise webob.exc.HTTPNotFound()
 
         # Can they manipulate the membership?

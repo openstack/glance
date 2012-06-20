@@ -26,7 +26,7 @@ from glance.common import utils
 from glance.openstack.common import cfg
 from glance.openstack.common import importutils
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 image_cache_opts = [
     cfg.StrOpt('image_cache_driver', default='sqlite'),
@@ -56,15 +56,15 @@ class ImageCache(object):
         driver_module = (__name__ + '.drivers.' + driver_name + '.Driver')
         try:
             self.driver_class = importutils.import_class(driver_module)
-            logger.info(_("Image cache loaded driver '%s'.") %
-                        driver_name)
+            LOG.info(_("Image cache loaded driver '%s'.") %
+                     driver_name)
         except ImportError, import_err:
-            logger.warn(_("Image cache driver "
-                          "'%(driver_name)s' failed to load. "
-                          "Got error: '%(import_err)s.") % locals())
+            LOG.warn(_("Image cache driver "
+                       "'%(driver_name)s' failed to load. "
+                       "Got error: '%(import_err)s.") % locals())
 
             driver_module = __name__ + '.drivers.sqlite.Driver'
-            logger.info(_("Defaulting to SQLite driver."))
+            LOG.info(_("Defaulting to SQLite driver."))
             self.driver_class = importutils.import_class(driver_module)
         self.configure_driver()
 
@@ -78,10 +78,10 @@ class ImageCache(object):
             self.driver.configure()
         except exception.BadDriverConfiguration, config_err:
             driver_module = self.driver_class.__module__
-            logger.warn(_("Image cache driver "
-                          "'%(driver_module)s' failed to configure. "
-                          "Got error: '%(config_err)s") % locals())
-            logger.info(_("Defaulting to SQLite driver."))
+            LOG.warn(_("Image cache driver "
+                       "'%(driver_module)s' failed to configure. "
+                       "Got error: '%(config_err)s") % locals())
+            LOG.info(_("Defaulting to SQLite driver."))
             default_module = __name__ + '.drivers.sqlite.Driver'
             self.driver_class = importutils.import_class(default_module)
             self.driver = self.driver_class()
@@ -163,12 +163,12 @@ class ImageCache(object):
         max_size = CONF.image_cache_max_size
         current_size = self.driver.get_cache_size()
         if max_size > current_size:
-            logger.debug(_("Image cache has free space, skipping prune..."))
+            LOG.debug(_("Image cache has free space, skipping prune..."))
             return (0, 0)
 
         overage = current_size - max_size
-        logger.debug(_("Image cache currently %(overage)d bytes over max "
-                       "size. Starting prune to max size of %(max_size)d ") %
+        LOG.debug(_("Image cache currently %(overage)d bytes over max "
+                    "size. Starting prune to max size of %(max_size)d ") %
                      locals())
 
         total_bytes_pruned = 0
@@ -176,17 +176,17 @@ class ImageCache(object):
         entry = self.driver.get_least_recently_accessed()
         while entry and current_size > max_size:
             image_id, size = entry
-            logger.debug(_("Pruning '%(image_id)s' to free %(size)d bytes"),
-                         {'image_id': image_id, 'size': size})
+            LOG.debug(_("Pruning '%(image_id)s' to free %(size)d bytes"),
+                      {'image_id': image_id, 'size': size})
             self.driver.delete_cached_image(image_id)
             total_bytes_pruned = total_bytes_pruned + size
             total_files_pruned = total_files_pruned + 1
             current_size = current_size - size
             entry = self.driver.get_least_recently_accessed()
 
-        logger.debug(_("Pruning finished pruning. "
-                       "Pruned %(total_files_pruned)d and "
-                       "%(total_bytes_pruned)d.") % locals())
+        LOG.debug(_("Pruning finished pruning. "
+                    "Pruned %(total_files_pruned)d and "
+                    "%(total_bytes_pruned)d.") % locals())
         return total_files_pruned, total_bytes_pruned
 
     def clean(self, stall_time=None):
@@ -219,7 +219,7 @@ class ImageCache(object):
         if not self.driver.is_cacheable(image_id):
             return image_iter
 
-        logger.debug(_("Tee'ing image '%s' into cache"), image_id)
+        LOG.debug(_("Tee'ing image '%s' into cache"), image_id)
 
         def tee_iter(image_id):
             try:
@@ -231,9 +231,9 @@ class ImageCache(object):
                             yield chunk
                     cache_file.flush()
             except Exception:
-                logger.exception(_("Exception encountered while tee'ing "
-                                   "image '%s' into cache. Continuing "
-                                   "with response.") % image_id)
+                LOG.exception(_("Exception encountered while tee'ing "
+                                "image '%s' into cache. Continuing "
+                                "with response.") % image_id)
 
             # NOTE(markwash): continue responding even if caching failed
             for chunk in image_iter:

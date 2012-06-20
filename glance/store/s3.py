@@ -31,7 +31,7 @@ import glance.store
 import glance.store.base
 import glance.store.location
 
-logger = logging.getLogger('glance.store.s3')
+LOG = logging.getLogger(__name__)
 
 s3_opts = [
     cfg.StrOpt('s3_store_host'),
@@ -111,7 +111,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                     "s3+https://accesskey:secretkey@s3.amazonaws.com/bucket/"
                     "key-id"
                       )
-            logger.error(_("Invalid store uri %(uri)s: %(reason)s") % locals())
+            LOG.error(_("Invalid store uri %(uri)s: %(reason)s") % locals())
             raise exception.BadStoreUri(message=reason)
 
         pieces = urlparse.urlparse(uri)
@@ -138,7 +138,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                 self.secretkey = secret_key
             except IndexError:
                 reason = _("Badly formed S3 credentials %s") % creds
-                logger.error(reason)
+                LOG.error(reason)
                 raise exception.BadStoreUri()
         else:
             self.accesskey = None
@@ -154,7 +154,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                 raise exception.BadStoreUri()
         except IndexError:
             reason = _("Badly formed S3 URI: %s") % uri
-            logger.error(reason)
+            LOG.error(reason)
             raise exception.BadStoreUri()
 
 
@@ -241,7 +241,7 @@ class Store(glance.store.base.Store):
         if not result:
             reason = _("Could not find %(param)s in configuration "
                        "options.") % locals()
-            logger.error(reason)
+            LOG.error(reason)
             raise exception.BadStoreConfiguration(store_name="s3",
                                                   reason=reason)
         return result
@@ -298,7 +298,7 @@ class Store(glance.store.base.Store):
                 "key=%(obj_name)s)") % ({'s3_host': loc.s3serviceurl,
                 'accesskey': loc.accesskey, 'bucket': loc.bucket,
                 'obj_name': loc.key})
-        logger.debug(msg)
+        LOG.debug(msg)
 
         return key
 
@@ -359,7 +359,7 @@ class Store(glance.store.base.Store):
                 "key=%(obj_name)s)") % ({'s3_host': self.s3_host,
                 'access_key': self.access_key, 'bucket': self.bucket,
                 'obj_name': obj_name})
-        logger.debug(msg)
+        LOG.debug(msg)
 
         key = bucket_obj.new_key(obj_name)
 
@@ -377,7 +377,7 @@ class Store(glance.store.base.Store):
 
         msg = _("Writing request body file to temporary file "
                 "for %s") % _sanitize(loc.get_uri())
-        logger.debug(msg)
+        LOG.debug(msg)
 
         tmpdir = self.s3_store_object_buffer_dir
         temp_file = tempfile.NamedTemporaryFile(dir=tmpdir)
@@ -389,15 +389,15 @@ class Store(glance.store.base.Store):
 
         msg = (_("Uploading temporary file to S3 for %s") %
                _sanitize(loc.get_uri()))
-        logger.debug(msg)
+        LOG.debug(msg)
 
         # OK, now upload the data into the key
         key.set_contents_from_file(open(temp_file.name, 'r+b'), replace=False)
         size = key.size
         checksum_hex = checksum.hexdigest()
 
-        logger.debug(_("Wrote %(size)d bytes to S3 key named %(obj_name)s "
-                       "with checksum %(checksum_hex)s") % locals())
+        LOG.debug(_("Wrote %(size)d bytes to S3 key named %(obj_name)s "
+                    "with checksum %(checksum_hex)s") % locals())
 
         return (loc.get_uri(), size, checksum_hex)
 
@@ -426,7 +426,7 @@ class Store(glance.store.base.Store):
                 "key=%(obj_name)s)") % ({'s3_host': loc.s3serviceurl,
                 'accesskey': loc.accesskey, 'bucket': loc.bucket,
                 'obj_name': loc.key})
-        logger.debug(msg)
+        LOG.debug(msg)
 
         return key.delete()
 
@@ -443,7 +443,7 @@ def get_bucket(conn, bucket_id):
     bucket = conn.get_bucket(bucket_id)
     if not bucket:
         msg = _("Could not find bucket with ID %(bucket_id)s") % locals()
-        logger.error(msg)
+        LOG.error(msg)
         raise exception.NotFound(msg)
 
     return bucket
@@ -507,6 +507,6 @@ def get_key(bucket, obj):
     key = bucket.get_key(obj)
     if not key or not key.exists():
         msg = _("Could not find key %(obj)s in bucket %(bucket)s") % locals()
-        logger.error(msg)
+        LOG.error(msg)
         raise exception.NotFound(msg)
     return key

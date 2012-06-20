@@ -41,7 +41,7 @@ DEFAULT_CONFFILE = ''  # librados will locate the default conf file
 DEFAULT_USER = None    # let librados decide based on the Ceph conf file
 DEFAULT_CHUNKSIZE = 4  # in MiB
 
-logger = logging.getLogger('glance.store.rbd')
+LOG = logging.getLogger(__name__)
 
 rbd_opts = [
     cfg.IntOpt('rbd_store_chunk_size', default=DEFAULT_CHUNKSIZE),
@@ -71,7 +71,7 @@ class StoreLocation(glance.store.location.StoreLocation):
     def parse_uri(self, uri):
         if not uri.startswith('rbd://'):
             reason = _('URI must start with rbd://')
-            logger.error(_("Invalid URI: %(uri), %(reason)") % locals())
+            LOG.error(_("Invalid URI: %(uri), %(reason)") % locals())
             raise exception.BadStoreUri(message=reason)
         self.image = uri[6:]
 
@@ -133,7 +133,7 @@ class Store(glance.store.base.Store):
             self.conf_file = str(CONF.rbd_store_ceph_conf)
         except cfg.ConfigFileValueError, e:
             reason = _("Error in store configuration: %s") % e
-            logger.error(reason)
+            LOG.error(reason)
             raise exception.BadStoreConfiguration(store_name='rbd',
                                                   reason=reason)
 
@@ -170,8 +170,8 @@ class Store(glance.store.base.Store):
         with rados.Rados(conffile=self.conf_file, rados_id=self.user) as conn:
             with conn.open_ioctx(self.pool) as ioctx:
                 order = int(math.log(self.chunk_size, 2))
-                logger.debug('creating image %s with order %d',
-                             image_name, order)
+                LOG.debug('creating image %s with order %d',
+                          image_name, order)
                 try:
                     rbd.RBD().create(ioctx, image_name, image_size, order)
                 except rbd.ImageExists:

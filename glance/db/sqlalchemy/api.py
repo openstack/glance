@@ -48,7 +48,7 @@ _MAX_RETRIES = None
 _RETRY_INTERVAL = None
 BASE = models.BASE
 sa_logger = None
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
@@ -83,7 +83,7 @@ class MySQLPingListener(object):
             dbapi_con.cursor().execute('select 1')
         except dbapi_con.OperationalError, ex:
             if ex.args[0] in (2006, 2013, 2014, 2045, 2055):
-                logger.warn('Got mysql server has gone away: %s', ex)
+                LOG.warn('Got mysql server has gone away: %s', ex)
                 raise DisconnectionError("Database server went away")
             else:
                 raise
@@ -94,7 +94,7 @@ def configure_db():
     Establish the database, create an engine if needed, and
     register the models.
     """
-    global _ENGINE, sa_logger, logger, _MAX_RETRIES, _RETRY_INTERVAL
+    global _ENGINE, sa_logger, LOG, _MAX_RETRIES, _RETRY_INTERVAL
     if not _ENGINE:
         sql_connection = CONF.sql_connection
         _MAX_RETRIES = CONF.sql_max_retries
@@ -115,7 +115,7 @@ def configure_db():
             msg = _("Error configuring registry database with supplied "
                     "sql_connection '%(sql_connection)s'. "
                     "Got error:\n%(err)s") % locals()
-            logger.error(msg)
+            LOG.error(msg)
             raise
 
         sa_logger = logging.getLogger('sqlalchemy.engine')
@@ -123,7 +123,7 @@ def configure_db():
             sa_logger.setLevel(logging.DEBUG)
 
         if CONF.db_auto_create:
-            logger.info('auto-creating glance registry DB')
+            LOG.info('auto-creating glance registry DB')
             models.register_models(_ENGINE)
             try:
                 migration.version_control()
@@ -131,12 +131,12 @@ def configure_db():
                 # only arises when the DB exists and is under version control
                 pass
         else:
-            logger.info('not auto-creating glance registry DB')
+            LOG.info('not auto-creating glance registry DB')
 
 
 def check_mutate_authorization(context, image_ref):
     if not is_image_mutable(context, image_ref):
-        logger.info(_("Attempted to modify image user did not own."))
+        LOG.info(_("Attempted to modify image user did not own."))
         msg = _("You do not own this image")
         if image_ref.is_public:
             exc_class = exception.ForbiddenPublicImage
@@ -181,7 +181,7 @@ def wrap_db_error(f):
             global _RETRY_INTERVAL
             remaining_attempts = _MAX_RETRIES
             while True:
-                logger.warning(_('SQL connection failed. %d attempts left.'),
+                LOG.warning(_('SQL connection failed. %d attempts left.'),
                                 remaining_attempts)
                 remaining_attempts -= 1
                 time.sleep(_RETRY_INTERVAL)
@@ -369,7 +369,7 @@ def paginate_query(query, model, limit, sort_keys, marker=None,
     if 'id' not in sort_keys:
         # TODO(justinsb): If this ever gives a false-positive, check
         # the actual primary key, rather than assuming its id
-        logger.warn(_('Id not in sort_keys; is sort_keys unique?'))
+        LOG.warn(_('Id not in sort_keys; is sort_keys unique?'))
 
     assert(not (sort_dir and sort_dirs))
 

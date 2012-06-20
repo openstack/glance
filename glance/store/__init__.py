@@ -27,7 +27,7 @@ from glance.openstack.common import importutils
 from glance import registry
 from glance.store import location
 
-logger = logging.getLogger('glance.store')
+LOG = logging.getLogger(__name__)
 
 store_opts = [
     cfg.ListOpt('known_stores',
@@ -146,7 +146,7 @@ class Indexable(object):
 def _get_store_class(store_entry):
     store_cls = None
     try:
-        logger.debug("Attempting to import store %s", store_entry)
+        LOG.debug("Attempting to import store %s", store_entry)
         store_cls = importutils.import_class(store_entry)
     except exception.NotFound:
         raise BackendException('Unable to load store. '
@@ -174,8 +174,8 @@ def create_stores():
                                    % store_cls)
         else:
             if store_cls not in STORES:
-                logger.debug("Registering store %s with schemes %s",
-                         store_cls, schemes)
+                LOG.debug("Registering store %s with schemes %s",
+                          store_cls, schemes)
                 STORES[store_cls] = store_instance
                 scheme_map = {}
                 for scheme in schemes:
@@ -187,7 +187,7 @@ def create_stores():
                 location.register_scheme_map(scheme_map)
                 store_count += 1
             else:
-                logger.debug("Store %s already registered", store_cls)
+                LOG.debug("Store %s already registered", store_cls)
     return store_count
 
 
@@ -269,7 +269,7 @@ def schedule_delete_from_backend(uri, context, image_id, **kwargs):
             exc_type = sys.exc_info()[0].__name__
             msg = (_("Failed to delete image at %s from store (%s)") %
                    (uri, exc_type))
-            logger.error(msg)
+            LOG.error(msg)
         finally:
             # avoid falling through to the delayed deletion logic
             return

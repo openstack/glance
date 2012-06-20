@@ -31,7 +31,7 @@ import glance.db
 from glance.openstack.common import timeutils
 
 
-logger = logging.getLogger('glance.registry.api.v1.images')
+LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
 
@@ -276,7 +276,7 @@ class Controller(object):
             msg = _("Access by %(user)s to image %(id)s "
                     "denied") % ({'user': req.context.user,
                     'id': id})
-            logger.info(msg)
+            LOG.info(msg)
             raise exc.HTTPNotFound()
 
         return dict(image=make_image_dict(image))
@@ -301,13 +301,13 @@ class Controller(object):
             # that it exists
             msg = _("Access by %(user)s to delete public image %(id)s denied")
             args = {'user': req.context.user, 'id': id}
-            logger.info(msg % args)
+            LOG.info(msg % args)
             raise exc.HTTPForbidden()
 
         except exception.Forbidden:
             msg = _("Access by %(user)s to delete private image %(id)s denied")
             args = {'user': req.context.user, 'id': id}
-            logger.info(msg % args)
+            LOG.info(msg % args)
             return exc.HTTPNotFound()
 
         except exception.NotFound:
@@ -344,12 +344,12 @@ class Controller(object):
             return dict(image=make_image_dict(image_data))
         except exception.Duplicate:
             msg = (_("Image with identifier %s already exists!") % id)
-            logger.error(msg)
+            LOG.error(msg)
             return exc.HTTPConflict(msg)
         except exception.Invalid, e:
             msg = (_("Failed to add image metadata. "
                      "Got error: %(e)s") % locals())
-            logger.error(msg)
+            LOG.error(msg)
             return exc.HTTPBadRequest(msg)
 
     @utils.mutating
@@ -371,8 +371,8 @@ class Controller(object):
 
         purge_props = req.headers.get("X-Glance-Registry-Purge-Props", "false")
         try:
-            logger.debug(_("Updating image %(id)s with metadata: "
-                           "%(image_data)r") % locals())
+            LOG.debug(_("Updating image %(id)s with metadata: "
+                        "%(image_data)r") % locals())
             if purge_props == "true":
                 updated_image = self.db_api.image_update(req.context, id,
                                                          image_data, True)
@@ -383,7 +383,7 @@ class Controller(object):
         except exception.Invalid, e:
             msg = (_("Failed to update image metadata. "
                      "Got error: %(e)s") % locals())
-            logger.error(msg)
+            LOG.error(msg)
             return exc.HTTPBadRequest(msg)
         except exception.NotFound:
             raise exc.HTTPNotFound(body='Image not found',
@@ -391,14 +391,14 @@ class Controller(object):
                                content_type='text/plain')
         except exception.ForbiddenPublicImage:
             msg = _("Access by %(user)s to update public image %(id)s denied")
-            logger.info(msg % {'user': req.context.user, 'id': id})
+            LOG.info(msg % {'user': req.context.user, 'id': id})
             raise exc.HTTPForbidden()
 
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
             msg = _("Access by %(user)s to update private image %(id)s denied")
-            logger.info(msg % {'user': req.context.user, 'id': id})
+            LOG.info(msg % {'user': req.context.user, 'id': id})
             raise exc.HTTPNotFound(body='Image not found',
                                request=req,
                                content_type='text/plain')

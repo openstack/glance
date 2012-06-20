@@ -26,7 +26,7 @@ from glance.common import exception
 from glance.openstack.common import cfg
 from glance.registry import client
 
-logger = logging.getLogger('glance.registry')
+LOG = logging.getLogger(__name__)
 
 registry_addr_opts = [
     cfg.StrOpt('registry_host', default='0.0.0.0'),
@@ -70,11 +70,11 @@ def configure_registry_client():
         host, port = CONF.registry_host, CONF.registry_port
     except cfg.ConfigFileValueError:
         msg = _("Configuration option was not valid")
-        logger.error(msg)
+        LOG.error(msg)
         raise exception.BadRegistryConnectionConfiguration(msg)
     except IndexError:
         msg = _("Could not find required configuration option")
-        logger.error(msg)
+        LOG.error(msg)
         raise exception.BadRegistryConnectionConfiguration(msg)
 
     _CLIENT_HOST = host
@@ -134,20 +134,20 @@ def get_image_metadata(context, image_id):
 
 
 def add_image_metadata(context, image_meta):
-    logger.debug(_("Adding image metadata..."))
+    LOG.debug(_("Adding image metadata..."))
     c = get_registry_client(context)
     return c.add_image(image_meta)
 
 
 def update_image_metadata(context, image_id, image_meta,
                           purge_props=False):
-    logger.debug(_("Updating image metadata for image %s..."), image_id)
+    LOG.debug(_("Updating image metadata for image %s..."), image_id)
     c = get_registry_client(context)
     return c.update_image(image_id, image_meta, purge_props)
 
 
 def delete_image_metadata(context, image_id):
-    logger.debug(_("Deleting image metadata for image %s..."), image_id)
+    LOG.debug(_("Deleting image metadata for image %s..."), image_id)
     c = get_registry_client(context)
     return c.delete_image(image_id)
 

@@ -30,7 +30,7 @@ from migrate.versioning import repository as versioning_repository
 from glance.common import exception
 from glance.openstack.common import cfg
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
 
@@ -62,8 +62,8 @@ def upgrade(version=None):
     repo_path = get_migrate_repo_path()
     sql_connection = CONF.sql_connection
     version_str = version or 'latest'
-    logger.info(_("Upgrading %(sql_connection)s to version %(version_str)s") %
-                locals())
+    LOG.info(_("Upgrading %(sql_connection)s to version %(version_str)s") %
+             locals())
     return versioning_api.upgrade(sql_connection, repo_path, version)
 
 
@@ -77,8 +77,8 @@ def downgrade(version):
     db_version()  # Ensure db is under migration control
     repo_path = get_migrate_repo_path()
     sql_connection = CONF.sql_connection
-    logger.info(_("Downgrading %(sql_connection)s to version %(version)s") %
-                locals())
+    LOG.info(_("Downgrading %(sql_connection)s to version %(version)s") %
+             locals())
     return versioning_api.downgrade(sql_connection, repo_path, version)
 
 

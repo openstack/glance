@@ -26,7 +26,7 @@ import routes
 from glance.api import cached_images
 from glance.common import wsgi
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class CacheManageFilter(wsgi.Middleware):
@@ -72,7 +72,7 @@ class CacheManageFilter(wsgi.Middleware):
         self._mapper = mapper
         self._resource = resource
 
-        logger.info(_("Initialized image cache management middleware"))
+        LOG.info(_("Initialized image cache management middleware"))
         super(CacheManageFilter, self).__init__(app)
 
     def process_request(self, request):

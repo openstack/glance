@@ -19,11 +19,7 @@
 Prunes the Image Cache
 """
 
-import logging
-
 from glance.image_cache import base
-
-logger = logging.getLogger(__name__)
 
 
 class Pruner(base.CacheApp):

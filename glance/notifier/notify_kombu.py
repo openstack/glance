@@ -24,7 +24,7 @@ import kombu.entity
 from glance.notifier import strategy
 from glance.openstack.common import cfg
 
-logger = logging.getLogger('glance.notifier.notify_kombu')
+LOG = logging.getLogger(__name__)
 
 rabbit_opts = [
     cfg.StrOpt('rabbit_host', default='localhost'),
@@ -84,12 +84,12 @@ class RabbitStrategy(strategy.Strategy):
         log_info['hostname'] = CONF.rabbit_host
         log_info['port'] = CONF.rabbit_port
         if self.connection:
-            logger.info(_("Reconnecting to AMQP server on "
-                    "%(hostname)s:%(port)d") % log_info)
+            LOG.info(_("Reconnecting to AMQP server on "
+                       "%(hostname)s:%(port)d") % log_info)
             self._close()
         else:
-            logger.info(_("Connecting to AMQP server on "
-                    "%(hostname)s:%(port)d") % log_info)
+            LOG.info(_("Connecting to AMQP server on "
+                       "%(hostname)s:%(port)d") % log_info)
         self.connection = kombu.connection.BrokerConnection(
                 hostname=CONF.rabbit_host,
                 port=CONF.rabbit_port,
@@ -117,8 +117,8 @@ class RabbitStrategy(strategy.Strategy):
                     name=routing_key,
                     routing_key=routing_key)
             queue.declare()
-        logger.info(_("Connected to AMQP server on "
-                "%(hostname)s:%(port)d") % log_info)
+        LOG.info(_("Connected to AMQP server on "
+                   "%(hostname)s:%(port)d") % log_info)
 
     def reconnect(self):
         """Handles reconnecting and re-establishing queues."""
@@ -146,9 +146,9 @@ class RabbitStrategy(strategy.Strategy):
             log_info['port'] = CONF.rabbit_port
 
             if self.max_retries and self.retry_attempts >= self.max_retries:
-                logger.exception(_('Unable to connect to AMQP server on '
-                        '%(hostname)s:%(port)d after %(max_retries)d '
-                        'tries: %(err_str)s') % log_info)
+                LOG.exception(_('Unable to connect to AMQP server on '
+                                '%(hostname)s:%(port)d after %(max_retries)d '
+                                'tries: %(err_str)s') % log_info)
                 if self.connection:
                     self._close()
                 raise KombuMaxRetriesReached
@@ -158,16 +158,16 @@ class RabbitStrategy(strategy.Strategy):
                 sleep_time = min(sleep_time, self.retry_max_backoff)
 
             log_info['sleep_time'] = sleep_time
-            logger.exception(_('AMQP server on %(hostname)s:%(port)d is'
-                    ' unreachable: %(err_str)s. Trying again in '
-                    '%(sleep_time)d seconds.') % log_info)
+            LOG.exception(_('AMQP server on %(hostname)s:%(port)d is'
+                            ' unreachable: %(err_str)s. Trying again in '
+                            '%(sleep_time)d seconds.') % log_info)
             time.sleep(sleep_time)
 
     def log_failure(self, msg, priority):
         """Fallback to logging when we can't send to rabbit."""
         message = _('Notification with priority %(priority)s failed: '
                     'msg=%(msg)s')
-        logger.error(message % {'msg': msg, 'priority': priority})
+        LOG.error(message % {'msg': msg, 'priority': priority})
 
     def _send_message(self, msg, routing_key):
         """Send a message.  Caller needs to catch exceptions for retry."""
@@ -204,7 +204,7 @@ class RabbitStrategy(strategy.Strategy):
                 if 'timeout' not in str(e):
                     raise
 
-            logger.exception(_("Unable to send notification: %s") % str(e))
+            LOG.exception(_("Unable to send notification: %s") % str(e))
 
             try:
                 self.reconnect()

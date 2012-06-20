@@ -24,7 +24,7 @@ class LoggingStrategy(strategy.Strategy):
     """A notifier that calls logging when called."""
 
     def __init__(self):
-        self.logger = logging.getLogger('glance.notifier.logging_notifier')
+        self.logger = logging.getLogger(__name__)
 
     def warn(self, msg):
         self.logger.warn(msg)

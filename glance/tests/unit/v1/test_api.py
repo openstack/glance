@@ -71,7 +71,7 @@ class TestRegistryDb(test_utils.BaseTestCase):
             if 'Error configuring registry database' in msg:
                 self.log_written = True
 
-        self.stubs.Set(db_api.logger, 'error', fake_log_error)
+        self.stubs.Set(db_api.LOG, 'error', fake_log_error)
         try:
             api_obj = rserver.API(routes.Mapper())
         except exc.ArgumentError:

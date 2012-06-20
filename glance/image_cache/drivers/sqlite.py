@@ -33,7 +33,7 @@ from glance.common import exception
 from glance.image_cache.drivers import base
 from glance.openstack.common import cfg
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 sqlite_opts = [
     cfg.StrOpt('image_cache_sqlite_db', default='cache.db'),
@@ -119,7 +119,7 @@ class Driver(base.Driver):
         except sqlite3.DatabaseError, e:
             msg = _("Failed to initialize the image cache database. "
                     "Got error: %s") % e
-            logger.error(msg)
+            LOG.error(msg)
             raise exception.BadDriverConfiguration(driver_name='sqlite',
                                                    reason=msg)
 
@@ -156,7 +156,7 @@ class Driver(base.Driver):
         """
         Returns a list of records about cached images.
         """
-        logger.debug(_("Gathering cached image entries."))
+        LOG.debug(_("Gathering cached image entries."))
         with self.get_db() as db:
             cur = db.execute("""SELECT
                              image_id, hits, last_accessed, last_modified, size
@@ -291,10 +291,10 @@ class Driver(base.Driver):
         def commit():
             with self.get_db() as db:
                 final_path = self.get_image_filepath(image_id)
-                logger.debug(_("Fetch finished, moving "
-                             "'%(incomplete_path)s' to '%(final_path)s'"),
-                             dict(incomplete_path=incomplete_path,
-                                  final_path=final_path))
+                LOG.debug(_("Fetch finished, moving "
+                          "'%(incomplete_path)s' to '%(final_path)s'"),
+                          dict(incomplete_path=incomplete_path,
+                               final_path=final_path))
                 os.rename(incomplete_path, final_path)
 
                 # Make sure that we "pop" the image from the queue...
@@ -315,9 +315,9 @@ class Driver(base.Driver):
                 if os.path.exists(incomplete_path):
                     invalid_path = self.get_image_filepath(image_id, 'invalid')
 
-                    logger.debug(_("Fetch of cache file failed, rolling back "
-                                   "by moving '%(incomplete_path)s' to "
-                                   "'%(invalid_path)s'") % locals())
+                    LOG.debug(_("Fetch of cache file failed, rolling back "
+                                "by moving '%(incomplete_path)s' to "
+                                "'%(invalid_path)s'") % locals())
                     os.rename(incomplete_path, invalid_path)
 
                 db.execute("""DELETE FROM cached_images
@@ -370,7 +370,7 @@ class Driver(base.Driver):
             yield conn
         except sqlite3.DatabaseError, e:
             msg = _("Error executing SQLite call. Got error: %s") % e
-            logger.error(msg)
+            LOG.error(msg)
             conn.rollback()
         finally:
             conn.close()
@@ -386,18 +386,18 @@ class Driver(base.Driver):
         """
         if self.is_cached(image_id):
             msg = _("Not queueing image '%s'. Already cached.") % image_id
-            logger.warn(msg)
+            LOG.warn(msg)
             return False
 
         if self.is_being_cached(image_id):
             msg = _("Not queueing image '%s'. Already being "
                     "written to cache") % image_id
-            logger.warn(msg)
+            LOG.warn(msg)
             return False
 
         if self.is_queued(image_id):
             msg = _("Not queueing image '%s'. Already queued.") % image_id
-            logger.warn(msg)
+            LOG.warn(msg)
             return False
 
         path = self.get_image_filepath(image_id, 'queue')
@@ -414,7 +414,7 @@ class Driver(base.Driver):
         """
         for path in self.get_cache_files(self.invalid_dir):
             os.unlink(path)
-            logger.info("Removed invalid cache file %s", path)
+            LOG.info("Removed invalid cache file %s", path)
 
     def delete_stalled_files(self, older_than):
         """
@@ -426,7 +426,7 @@ class Driver(base.Driver):
         """
         for path in self.get_cache_files(self.incomplete_dir):
             os.unlink(path)
-            logger.info("Removed stalled cache file %s", path)
+            LOG.info("Removed stalled cache file %s", path)
 
     def get_queued_images(self):
         """
@@ -457,8 +457,8 @@ class Driver(base.Driver):
 
 def delete_cached_file(path):
     if os.path.exists(path):
-        logger.debug(_("Deleting image cache file '%s'"), path)
+        LOG.debug(_("Deleting image cache file '%s'"), path)
         os.unlink(path)
     else:
-        logger.warn(_("Cached image file '%s' doesn't exist, unable to"
-                      " delete"), path)
+        LOG.warn(_("Cached image file '%s' doesn't exist, unable to"
+                   " delete"), path)

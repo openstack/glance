@@ -31,7 +31,7 @@ from glance.common import utils
 from glance.openstack.common import cfg
 from glance.registry import client
 
-logger = logging.getLogger('glance.store.scrubber')
+LOG = logging.getLogger(__name__)
 
 scrubber_opts = [
     cfg.BoolOpt('cleanup_scrubber', default=False),
@@ -44,8 +44,8 @@ CONF.register_opts(scrubber_opts)
 
 class Daemon(object):
     def __init__(self, wakeup_time=300, threads=1000):
-        logger.info(_("Starting Daemon: wakeup_time=%(wakeup_time)s "
-                      "threads=%(threads)s") % locals())
+        LOG.info(_("Starting Daemon: wakeup_time=%(wakeup_time)s "
+                   "threads=%(threads)s") % locals())
         self.wakeup_time = wakeup_time
         self.event = eventlet.event.Event()
         self.pool = eventlet.greenpool.GreenPool(threads)
@@ -58,13 +58,13 @@ class Daemon(object):
             self.event.wait()
         except KeyboardInterrupt:
             msg = _("Daemon Shutdown on KeyboardInterrupt")
-            logger.info(msg)
+            LOG.info(msg)
 
     def _run(self, application):
-        logger.debug(_("Runing application"))
+        LOG.debug(_("Running application"))
         self.pool.spawn_n(application.run, self.pool, self.event)
         eventlet.spawn_after(self.wakeup_time, self._run, application)
-        logger.debug(_("Next run scheduled in %s seconds") % self.wakeup_time)
+        LOG.debug(_("Next run scheduled in %s seconds") % self.wakeup_time)
 
 
 class Scrubber(object):
@@ -77,10 +77,10 @@ class Scrubber(object):
 
         host, port = CONF.registry_host, CONF.registry_port
 
-        logger.info(_("Initializing scrubber with conf: %s") %
-                    {'datadir': self.datadir, 'cleanup': self.cleanup,
-                     'cleanup_time': self.cleanup_time,
-                     'registry_host': host, 'registry_port': port})
+        LOG.info(_("Initializing scrubber with conf: %s") %
+                 {'datadir': self.datadir, 'cleanup': self.cleanup,
+                  'cleanup_time': self.cleanup_time,
+                  'registry_host': host, 'registry_port': port})
 
         self.registry = client.RegistryClient(host, port)
 
@@ -92,7 +92,7 @@ class Scrubber(object):
         now = time.time()
 
         if not os.path.exists(self.datadir):
-            logger.info(_("%s does not exist") % self.datadir)
+            LOG.info(_("%s does not exist") % self.datadir)
             return
 
         delete_work = []
@@ -114,7 +114,7 @@ class Scrubber(object):
 
                 delete_work.append((id, uri, now))
 
-        logger.info(_("Deleting %s images") % len(delete_work))
+        LOG.info(_("Deleting %s images") % len(delete_work))
         pool.starmap(self._delete, delete_work)
 
         if self.cleanup:
@@ -123,11 +123,11 @@ class Scrubber(object):
     def _delete(self, id, uri, now):
         file_path = os.path.join(self.datadir, str(id))
         try:
-            logger.debug(_("Deleting %(uri)s") % {'uri': uri})
+            LOG.debug(_("Deleting %(uri)s") % {'uri': uri})
             store.delete_from_backend(uri)
         except store.UnsupportedBackend:
             msg = _("Failed to delete image from store (%(uri)s).")
-            logger.error(msg % {'uri': uri})
+            LOG.error(msg % {'uri': uri})
             write_queue_file(file_path, uri, now)
 
         self.registry.update_image(id, {'status': 'deleted'})
@@ -145,7 +145,7 @@ class Scrubber(object):
         if cleanup_time > now:
             return
 
-        logger.info(_("Getting images deleted before %s") % self.cleanup_time)
+        LOG.info(_("Getting images deleted before %s") % self.cleanup_time)
         write_queue_file(cleanup_file, 'cleanup', now)
 
         filters = {'deleted': True, 'is_public': 'none',
@@ -169,7 +169,7 @@ class Scrubber(object):
                                 pending_delete['location'],
                                 now))
 
-        logger.info(_("Deleting %s images") % len(delete_work))
+        LOG.info(_("Deleting %s images") % len(delete_work))
         pool.starmap(self._delete, delete_work)
 
 

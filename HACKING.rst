@@ -199,3 +199,11 @@ with the help of openstack-common's update.py script. See:
 The copy of the code should never be directly modified here. Please
 always update openstack-common first and then run the script to copy
 the changes across.
+
+
+Logging
+-------
+Use __name__ as the name of your logger and name your module-level logger
+objects 'LOG'::
+
+    LOG = logging.getLogger(__name__)

@@ -24,7 +24,7 @@ import logging
 import sqlalchemy.types
 
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 String = lambda length: sqlalchemy.types.String(
@@ -92,11 +92,11 @@ def from_migration_import(module_name, fromlist):
 
 def create_tables(tables):
     for table in tables:
-        logger.info(_("creating table %(table)s") % locals())
+        LOG.info(_("creating table %(table)s") % locals())
         table.create()
 
 
 def drop_tables(tables):
     for table in tables:
-        logger.info(_("dropping table %(table)s") % locals())
+        LOG.info(_("dropping table %(table)s") % locals())
         table.drop()

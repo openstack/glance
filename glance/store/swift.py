@@ -37,7 +37,7 @@ try:
 except ImportError:
     pass
 
-logger = logging.getLogger('glance.store.swift')
+LOG = logging.getLogger(__name__)
 
 DEFAULT_CONTAINER = 'glance'
 DEFAULT_LARGE_OBJECT_SIZE = 5 * 1024  # 5GB
@@ -128,7 +128,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                     "like so: "
                     "swift+http://user:pass@authurl.com/v1/container/obj"
                     )
-            logger.error(_("Invalid store uri %(uri)s: %(reason)s") % locals())
+            LOG.error(_("Invalid store uri %(uri)s: %(reason)s") % locals())
             raise exception.BadStoreUri(message=reason)
 
         pieces = urlparse.urlparse(uri)
@@ -156,7 +156,7 @@ class StoreLocation(glance.store.location.StoreLocation):
             if len(cred_parts) != 2:
                 reason = (_("Badly formed credentials '%(creds)s' in Swift "
                             "URI") % locals())
-                logger.error(reason)
+                LOG.error(reason)
                 raise exception.BadStoreUri()
             user, key = cred_parts
             self.user = urllib.unquote(user)
@@ -173,7 +173,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                 self.authurl = '/'.join(path_parts)
         except IndexError:
             reason = _("Badly formed Swift URI: %s") % uri
-            logger.error(reason)
+            LOG.error(reason)
             raise exception.BadStoreUri()
 
     @property
@@ -229,7 +229,7 @@ class Store(glance.store.base.Store):
             self.large_object_chunk_size = _obj_chunk_size * ONE_MB
         except cfg.ConfigFileValueError, e:
             reason = _("Error in configuration conf: %s") % e
-            logger.error(reason)
+            LOG.error(reason)
             raise exception.BadStoreConfiguration(store_name="swift",
                                                   reason=reason)
 
@@ -306,17 +306,17 @@ class Store(glance.store.base.Store):
         auth_version = self.auth_version
         full_auth_url = (auth_url if not auth_url or auth_url.endswith('/')
                          else auth_url + '/')
-        logger.debug(_("Creating Swift connection with "
-                     "(auth_address=%(full_auth_url)s, user=%(user)s, "
-                     "snet=%(snet)s, auth_version=%(auth_version)s)") %
-                     locals())
+        LOG.debug(_("Creating Swift connection with "
+                    "(auth_address=%(full_auth_url)s, user=%(user)s, "
+                    "snet=%(snet)s, auth_version=%(auth_version)s)") %
+                  locals())
         tenant_name = None
         if self.auth_version == '2':
             tenant_user = user.split(':')
             if len(tenant_user) != 2:
                 reason = (_("Badly formed tenant:user '%(tenant_user)s' in "
                             "Swift URI") % locals())
-                logger.error(reason)
+                LOG.error(reason)
                 raise exception.BadStoreUri()
             (tenant_name, user) = tenant_user
 
@@ -329,7 +329,7 @@ class Store(glance.store.base.Store):
         if not result:
             reason = (_("Could not find %(param)s in configuration "
                         "options.") % locals())
-            logger.error(reason)
+            LOG.error(reason)
             raise exception.BadStoreConfiguration(store_name="swift",
                                                   reason=reason)
         return result
@@ -382,8 +382,8 @@ class Store(glance.store.base.Store):
                                   'user': self.user,
                                   'key': self.key})
 
-        logger.debug(_("Adding image object '%(obj_name)s' "
-                       "to Swift") % locals())
+        LOG.debug(_("Adding image object '%(obj_name)s' "
+                    "to Swift") % locals())
         try:
             if image_size > 0 and image_size < self.large_object_size:
                 # Image size is known, and is less than large_object_size.
@@ -402,8 +402,8 @@ class Store(glance.store.base.Store):
                     # image_size == 0 is when we don't know the size
                     # of the image. This can occur with older clients
                     # that don't inspect the payload size.
-                    logger.debug(_("Cannot determine image size. Adding as a "
-                                   "segmented object to Swift."))
+                    LOG.debug(_("Cannot determine image size. Adding as a "
+                                "segmented object to Swift."))
                     total_chunks = '?'
 
                 checksum = hashlib.md5()
@@ -426,16 +426,15 @@ class Store(glance.store.base.Store):
                         self.container, chunk_name, reader,
                         content_length=content_length)
                     bytes_read = reader.bytes_read
-                    logger.debug(_("Wrote chunk %(chunk_id)d/"
-                                   "%(total_chunks)s of length %(bytes_read)d "
-                                   "to Swift returning MD5 of content: "
-                                   "%(chunk_etag)s")
-                                 % locals())
+                    msg = _("Wrote chunk %(chunk_id)d/%(total_chunks)s "
+                            "of length %(bytes_read)d to Swift returning "
+                            "MD5 of content: %(chunk_etag)s")
+                    LOG.debug(msg % locals())
 
                     if bytes_read == 0:
                         # Delete the last chunk, because it's of zero size.
                         # This will happen if image_size == 0.
-                        logger.debug(_("Deleting final zero-length chunk"))
+                        LOG.debug(_("Deleting final zero-length chunk"))
                         swift_conn.delete_object(self.container, chunk_name)
                         break
 
@@ -474,8 +473,8 @@ class Store(glance.store.base.Store):
                 raise exception.Duplicate(_("Swift already has an image at "
                                           "location %s") % location.get_uri())
             msg = (_("Failed to add object to Swift.\n"
-                   "Got error from Swift: %(e)s") % locals())
-            logger.error(msg)
+                     "Got error from Swift: %(e)s") % locals())
+            LOG.error(msg)
             raise glance.store.BackendException(msg)
 
     def delete(self, location):

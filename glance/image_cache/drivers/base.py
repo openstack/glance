@@ -26,7 +26,7 @@ from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
 
@@ -53,7 +53,7 @@ class Driver(object):
         self.base_dir = CONF.image_cache_dir
         if self.base_dir is None:
             msg = _('Failed to read %s from config') % 'image_cache_dir'
-            logger.error(msg)
+            LOG.error(msg)
             driver = self.__class__.__module__
             raise exception.BadDriverConfiguration(driver_name=driver,
                                                    reason=msg)

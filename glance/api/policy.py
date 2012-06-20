@@ -25,7 +25,7 @@ from glance.common import exception
 from glance.openstack.common import cfg
 from glance.openstack.common import policy
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 policy_opts = (
     cfg.StrOpt('policy_file', default=None),
@@ -74,7 +74,7 @@ class Enforcer(object):
         """
         mtime = os.path.getmtime(self.policy_path)
         if not self.policy_file_contents or mtime != self.policy_file_mtime:
-            logger.debug(_("Loading policy from %s") % self.policy_path)
+            LOG.debug(_("Loading policy from %s") % self.policy_path)
             with open(self.policy_path) as fap:
                 raw_contents = fap.read()
                 self.policy_file_contents = json.loads(raw_contents)

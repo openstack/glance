@@ -11,9 +11,9 @@ import glance.registry.context
 import glance.db.sqlalchemy.api as db_api
 
 
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.StreamHandler())
-logger.setLevel(logging.DEBUG)
+LOG = logging.getLogger(__name__)
+LOG.addHandler(logging.StreamHandler())
+LOG.setLevel(logging.DEBUG)
 
 
 def get_owner_map(ksclient, owner_is_tenant=True):
@@ -32,20 +32,20 @@ def build_image_owner_map(owner_map, db, context):
         owner_name = image['owner']
 
         if not owner_name:
-            logger.info('Image %s has no owner. Skipping.' % image_id)
+            LOG.info('Image %s has no owner. Skipping.' % image_id)
             continue
 
         try:
             owner_id = owner_map[owner_name]
         except KeyError:
             msg = 'Image %s owner %s was not found. Skipping.'
-            logger.error(msg % (image_id, owner_name))
+            LOG.error(msg % (image_id, owner_name))
             continue
 
         image_owner_map[image_id] = owner_id
 
         msg = 'Image %s owner %s -> %s' % (image_id, owner_name, owner_id)
-        logger.info(msg)
+        LOG.info(msg)
 
     return image_owner_map
 
@@ -53,7 +53,7 @@ def build_image_owner_map(owner_map, db, context):
 def update_image_owners(image_owner_map, db, context):
     for (image_id, image_owner) in image_owner_map.items():
         db.image_update(context, image_id, {'owner': image_owner})
-        logger.info('Image %s successfully updated.' % image_id)
+        LOG.info('Image %s successfully updated.' % image_id)
 
 
 if __name__ == "__main__":
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     admin_password = config.keystone_admin_password
 
     if not (auth_uri and admin_tenant_name and admin_user and admin_password):
-        logger.critical('Missing authentication arguments')
+        LOG.critical('Missing authentication arguments')
         sys.exit(1)
 
     ks = keystoneclient.v2_0.client.Client(username=admin_user,

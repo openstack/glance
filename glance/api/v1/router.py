@@ -15,15 +15,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 import routes
 
 from glance.api.v1 import images
 from glance.api.v1 import members
 from glance.common import wsgi
-
-logger = logging.getLogger(__name__)
 
 
 class API(wsgi.Router):

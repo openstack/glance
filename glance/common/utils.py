@@ -35,7 +35,7 @@ from webob import exc
 from glance.common import exception
 
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 def chunkreadable(iter, chunk_size=65536):
@@ -309,7 +309,7 @@ def mutating(func):
     def wrapped(self, req, *args, **kwargs):
         if req.context.read_only:
             msg = _("Read-only access")
-            logger.debug(msg)
+            LOG.debug(msg)
             raise exc.HTTPForbidden(msg, request=req,
                                     content_type="text/plain")
         return func(self, req, *args, **kwargs)

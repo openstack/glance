@@ -37,7 +37,7 @@ from glance.common import wsgi
 from glance import image_cache
 from glance import registry
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 get_images_re = re.compile(r'^(/v\d+)*/images/([^\/]+)$')
 
 
@@ -46,7 +46,7 @@ class CacheFilter(wsgi.Middleware):
     def __init__(self, app):
         self.cache = image_cache.ImageCache()
         self.serializer = images.ImageSerializer()
-        logger.info(_("Initialized image cache middleware"))
+        LOG.info(_("Initialized image cache middleware"))
         super(CacheFilter, self).__init__(app)
 
     def process_request(self, request):
@@ -73,7 +73,7 @@ class CacheFilter(wsgi.Middleware):
             return None
 
         if self.cache.is_cached(image_id):
-            logger.debug(_("Cache hit for image '%s'"), image_id)
+            LOG.debug(_("Cache hit for image '%s'"), image_id)
             image_iterator = self.get_from_cache(image_id)
             context = request.context
             try:
@@ -92,7 +92,7 @@ class CacheFilter(wsgi.Middleware):
                 msg = _("Image cache contained image file for image '%s', "
                         "however the registry did not contain metadata for "
                         "that image!" % image_id)
-                logger.error(msg)
+                LOG.error(msg)
         return None
 
     def process_response(self, resp):
@@ -117,7 +117,7 @@ class CacheFilter(wsgi.Middleware):
 
         if self.cache.is_cached(image_id):
             if request.method == 'DELETE':
-                logger.info(_("Removing image %s from cache"), image_id)
+                LOG.info(_("Removing image %s from cache"), image_id)
                 self.cache.delete_cached_image(image_id)
             return resp
 
