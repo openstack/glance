@@ -628,6 +628,15 @@ class FunctionalTest(test_utils.BaseTestCase):
         msg = 'Unexpected server launch status for: '
         for f in failed:
             msg += ('%s, ' % f.server_name)
+            if os.path.exists(f.pid_file):
+                pid = int(open(f.pid_file).read().strip())
+                trace = f.pid_file.replace('.pid', '.trace')
+                cmd = 'strace -p %d -o %s' % (pid, trace)
+                execute(cmd, raise_error=False, expect_exit=False)
+                time.sleep(0.5)
+                if os.path.exists(trace):
+                    msg += ('\nstrace:\n%s\n' % open(trace).read())
+
         if 'NOSE_GLANCELOGCAPTURE' in os.environ:
             msg += self.dump_logs(failed)
         self.assertFalse(expect_launch, msg)
