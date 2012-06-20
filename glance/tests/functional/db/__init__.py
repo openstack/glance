@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2010-2011 OpenStack, LLC
+# Copyright 2010-2012 OpenStack, LLC
 # Copyright 2012 Justin Santa Barbara
 # All Rights Reserved.
 #
@@ -22,10 +22,7 @@ import random
 from glance.common import context
 from glance.common import exception
 from glance.common import utils
-from glance.db.sqlalchemy import api as db_api
-from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
-from glance.tests.unit import base
 
 
 _gen_uuid = utils.generate_uuid
@@ -41,28 +38,6 @@ UUID2 = _gen_uuid()
 # these tests rely on UUID1 < UUID2. Swap so that's the case.
 if UUID1 > UUID2:
     UUID1, UUID2 = UUID2, UUID1
-
-
-class BaseDBTestCase(base.IsolatedUnitTest):
-
-    def setUp(self):
-        super(BaseDBTestCase, self).setUp()
-        self.config(sql_connection='sqlite://',
-                    verbose=False,
-                    debug=False)
-        self.adm_context = context.RequestContext(is_admin=True)
-        self.context = context.RequestContext(is_admin=False)
-        db_api.configure_db()
-        self.destroy_fixtures()
-        self.create_fixtures()
-
-    def create_fixtures(self):
-        pass
-
-    def destroy_fixtures(self):
-        # Easiest to just drop the models and re-create them...
-        db_models.unregister_models(db_api._ENGINE)
-        db_models.register_models(db_api._ENGINE)
 
 
 def build_fixtures(t1, t2):
@@ -101,119 +76,118 @@ def build_fixtures(t1, t2):
      'properties': {}}]
 
 
-class TestRegistryDb(BaseDBTestCase):
-
-    def create_fixtures(self):
+class BaseTestCase(object):
+    def setUp(self):
+        self.adm_context = context.RequestContext(is_admin=True)
+        self.context = context.RequestContext(is_admin=False)
+        self.configure()
+        self.reset()
         self.fixtures = self.build_fixtures()
-        for fixture in self.fixtures:
-            db_api.image_create(self.adm_context, fixture)
+        self.create_fixtures(self.fixtures)
 
     def build_fixtures(self):
         t1 = timeutils.utcnow()
         t2 = t1 + datetime.timedelta(microseconds=1)
         return build_fixtures(t1, t2)
 
+    def create_fixtures(self, fixtures):
+        for fixture in fixtures:
+            self.db_api.image_create(self.adm_context, fixture)
+
+    def reset(self):
+        pass
+
     def test_image_get(self):
-        image = db_api.image_get(self.context, UUID1)
+        image = self.db_api.image_get(self.context, UUID1)
         self.assertEquals(image['id'], self.fixtures[0]['id'])
 
     def test_image_get_disallow_deleted(self):
-        db_api.image_destroy(self.adm_context, UUID1)
-        self.assertRaises(exception.NotFound, db_api.image_get,
+        self.db_api.image_destroy(self.adm_context, UUID1)
+        self.assertRaises(exception.NotFound, self.db_api.image_get,
                           self.context, UUID1)
 
     def test_image_get_allow_deleted(self):
-        db_api.image_destroy(self.adm_context, UUID1)
-        image = db_api.image_get(self.adm_context, UUID1)
+        self.db_api.image_destroy(self.adm_context, UUID1)
+        image = self.db_api.image_get(self.adm_context, UUID1)
         self.assertEquals(image['id'], self.fixtures[0]['id'])
 
     def test_image_get_force_allow_deleted(self):
-        db_api.image_destroy(self.adm_context, UUID1)
-        image = db_api.image_get(self.context, UUID1, force_show_deleted=True)
+        self.db_api.image_destroy(self.adm_context, UUID1)
+        image = self.db_api.image_get(self.context, UUID1,
+                                      force_show_deleted=True)
         self.assertEquals(image['id'], self.fixtures[0]['id'])
 
     def test_image_get_all(self):
-        images = db_api.image_get_all(self.context)
+        images = self.db_api.image_get_all(self.context)
         self.assertEquals(len(images), 2)
 
     def test_image_get_all_marker(self):
-        images = db_api.image_get_all(self.context, marker=UUID2)
+        images = self.db_api.image_get_all(self.context, marker=UUID2)
         self.assertEquals(len(images), 1)
 
     def test_image_get_all_marker_deleted(self):
         """Cannot specify a deleted image as a marker."""
-        db_api.image_destroy(self.adm_context, UUID1)
+        self.db_api.image_destroy(self.adm_context, UUID1)
         filters = {'deleted': False}
-        self.assertRaises(exception.NotFound, db_api.image_get_all,
+        self.assertRaises(exception.NotFound, self.db_api.image_get_all,
                           self.context, marker=UUID1, filters=filters)
 
     def test_image_get_all_marker_deleted_showing_deleted_as_admin(self):
         """Specify a deleted image as a marker if showing deleted images."""
-        db_api.image_destroy(self.adm_context, UUID1)
-        images = db_api.image_get_all(self.adm_context, marker=UUID1)
+        self.db_api.image_destroy(self.adm_context, UUID1)
+        images = self.db_api.image_get_all(self.adm_context, marker=UUID1)
         self.assertEquals(len(images), 0)
 
     def test_image_get_all_marker_deleted_showing_deleted(self):
         """Specify a deleted image as a marker if showing deleted images."""
-        db_api.image_destroy(self.adm_context, UUID1)
+        self.db_api.image_destroy(self.adm_context, UUID1)
         filters = {'deleted': True}
-        images = db_api.image_get_all(self.context, marker=UUID1,
+        images = self.db_api.image_get_all(self.context, marker=UUID1,
                                       filters=filters)
         self.assertEquals(len(images), 0)
 
     def test_image_get_all_invalid_sort_key(self):
-        self.assertRaises(exception.InvalidSortKey, db_api.image_get_all,
+        self.assertRaises(exception.InvalidSortKey, self.db_api.image_get_all,
                           self.context, sort_key='blah')
 
-
-class TestDBImageTags(BaseDBTestCase):
-
-    def create_fixtures(self):
-        fixtures = [
-            {'id': UUID1, 'status': 'queued'},
-            {'id': UUID2, 'status': 'queued'},
-        ]
-        for fixture in fixtures:
-            db_api.image_create(self.adm_context, fixture)
-
     def test_image_tag_create(self):
-        tag = db_api.image_tag_create(self.context, UUID1, 'snap')
+        tag = self.db_api.image_tag_create(self.context, UUID1, 'snap')
         self.assertEqual('snap', tag)
 
     def test_image_tag_get_all(self):
-        db_api.image_tag_create(self.context, UUID1, 'snap')
-        db_api.image_tag_create(self.context, UUID1, 'snarf')
-        db_api.image_tag_create(self.context, UUID2, 'snarf')
+        self.db_api.image_tag_create(self.context, UUID1, 'snap')
+        self.db_api.image_tag_create(self.context, UUID1, 'snarf')
+        self.db_api.image_tag_create(self.context, UUID2, 'snarf')
 
         # Check the tags for the first image
-        tags = db_api.image_tag_get_all(self.context, UUID1)
+        tags = self.db_api.image_tag_get_all(self.context, UUID1)
         expected = ['snap', 'snarf']
         self.assertEqual(expected, tags)
 
         # Check the tags for the second image
-        tags = db_api.image_tag_get_all(self.context, UUID2)
+        tags = self.db_api.image_tag_get_all(self.context, UUID2)
         expected = ['snarf']
         self.assertEqual(expected, tags)
 
     def test_image_tag_get_all_no_tags(self):
-        self.assertEqual([], db_api.image_tag_get_all(self.context, UUID1))
+        actual = self.db_api.image_tag_get_all(self.context, UUID1)
+        self.assertEqual([], actual)
 
     def test_image_tag_delete(self):
-        db_api.image_tag_create(self.context, UUID1, 'snap')
-        db_api.image_tag_delete(self.context, UUID1, 'snap')
-        self.assertRaises(exception.NotFound, db_api.image_tag_delete,
+        self.db_api.image_tag_create(self.context, UUID1, 'snap')
+        self.db_api.image_tag_delete(self.context, UUID1, 'snap')
+        self.assertRaises(exception.NotFound, self.db_api.image_tag_delete,
                           self.context, UUID1, 'snap')
 
 
-class TestRegistryDbWithSameTime(TestRegistryDb):
-
+class BaseTestCaseSameTime(BaseTestCase):
     def build_fixtures(self):
         t1 = timeutils.utcnow()
         t2 = t1  # Same timestamp!
         return build_fixtures(t1, t2)
 
 
-class TestPagingOrder(base.IsolatedUnitTest):
+class BaseTestCasePaging(object):
     """ Checks the paging order, by paging through random images.
 
     It generates images with random min_disk, created_at and image id.
@@ -228,26 +202,22 @@ class TestPagingOrder(base.IsolatedUnitTest):
     MINDISK_VALUES = 10
 
     def setUp(self):
-        """Establish a clean test environment"""
-        super(TestPagingOrder, self).setUp()
-        self.config(sql_connection='sqlite://',
-                    verbose=False,
-                    debug=False)
         self.adm_context = context.RequestContext(is_admin=True)
         self.context = context.RequestContext(is_admin=False)
-        db_api.configure_db()
-        self.destroy_fixtures()
-        self.create_fixtures()
-
-    def create_fixtures(self):
+        self.configure()
+        self.reset()
         self.fixtures = self.build_fixtures()
-        for fixture in self.fixtures:
-            db_api.image_create(self.adm_context, fixture)
+        self.create_fixtures(self.fixtures)
 
-    def destroy_fixtures(self):
-        # Easiest to just drop the models and re-create them...
-        db_models.unregister_models(db_api._ENGINE)
-        db_models.register_models(db_api._ENGINE)
+    def configure(self):
+        pass
+
+    def create_fixtures(self, fixtures):
+        for fixture in fixtures:
+            self.db_api.image_create(self.adm_context, fixture)
+
+    def reset(self):
+        pass
 
     def _build_random_image(self, t, min_disk):
         image_id = _gen_uuid()
@@ -300,11 +270,11 @@ class TestPagingOrder(base.IsolatedUnitTest):
             expected_ids.append(i['id'])
 
         while True:
-            results = db_api.image_get_all(self.context,
-                                           marker=marker,
-                                           limit=limit,
-                                           sort_key=sort_key,
-                                           sort_dir=sort_dir)
+            results = self.db_api.image_get_all(self.context,
+                                                marker=marker,
+                                                limit=limit,
+                                                sort_key=sort_key,
+                                                sort_dir=sort_dir)
             if not results:
                 break
 
