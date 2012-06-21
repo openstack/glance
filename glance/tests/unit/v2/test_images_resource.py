@@ -57,10 +57,14 @@ class TestImagesController(test_utils.BaseTestCase):
     def _create_images(self):
         self.db.reset()
         self.images = [
-            {'id': UUID1, 'owner': TENANT1, 'location': UUID1, 'name': '1'},
-            {'id': UUID2, 'owner': TENANT1, 'name': '2'},
-            {'id': UUID3, 'owner': TENANT3, 'name': '3'},
-            {'id': UUID4, 'owner': TENANT4, 'name': '4'},
+            {'id': UUID1, 'owner': TENANT1, 'name': '1', 'is_public': True,
+                'size': 256, 'location': UUID1},
+            {'id': UUID2, 'owner': TENANT1, 'name': '2', 'is_public': True,
+                'size': 512},
+            {'id': UUID3, 'owner': TENANT3, 'name': '3', 'is_public': True,
+                'size': 512},
+            {'id': UUID4, 'owner': TENANT4, 'name': '4', 'is_public': True,
+                'size': 1024},
         ]
         [self.db.image_create(None, image) for image in self.images]
 
@@ -105,6 +109,86 @@ class TestImagesController(test_utils.BaseTestCase):
         expected = set([])
         self.assertEqual(actual, expected)
         self.assertTrue('next_marker' not in output)
+
+    def test_index_with_id_filter(self):
+        request = unit_test_utils.get_fake_request('/images?id=%s' % UUID1)
+        output = self.controller.index(request, filters={'id': UUID1})
+        self.assertEqual(1, len(output['images']))
+        actual = set([image['id'] for image in output['images']])
+        expected = set([UUID1])
+        self.assertEqual(actual, expected)
+
+    def test_index_size_max_filter(self):
+        request = unit_test_utils.get_fake_request('/images?size_max=512')
+        output = self.controller.index(request, filters={'size_max': 512})
+        self.assertEqual(3, len(output['images']))
+        actual = set([image['id'] for image in output['images']])
+        expected = set([UUID1, UUID2, UUID3])
+        self.assertEqual(actual, expected)
+
+    def test_index_size_min_filter(self):
+        request = unit_test_utils.get_fake_request('/images?size_min=512')
+        output = self.controller.index(request, filters={'size_min': 512})
+        self.assertEqual(3, len(output['images']))
+        actual = set([image['id'] for image in output['images']])
+        expected = set([UUID2, UUID3, UUID4])
+        self.assertEqual(actual, expected)
+
+    def test_index_size_range_filter(self):
+        path = '/images?size_min=512&size_max=512'
+        request = unit_test_utils.get_fake_request(path)
+        output = self.controller.index(request,
+                                       filters={'size_min': 512,
+                                                'size_max': 512})
+        self.assertEqual(2, len(output['images']))
+        actual = set([image['id'] for image in output['images']])
+        expected = set([UUID2, UUID3])
+        self.assertEqual(actual, expected)
+
+    def test_index_with_invalid_max_range_filter_value(self):
+        request = unit_test_utils.get_fake_request('/images?size_max=blah')
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.controller.index,
+                          request,
+                          filters={'size_max': 'blah'})
+
+    def test_index_with_filters_return_many(self):
+        path = '/images?owner=%s' % TENANT1
+        request = unit_test_utils.get_fake_request(path)
+        output = self.controller.index(request, filters={'owner': TENANT1})
+        self.assertEqual(2, len(output['images']))
+        actual = set([image['id'] for image in output['images']])
+        expected = set([UUID1, UUID2])
+        self.assertEqual(actual, expected)
+
+    def test_index_with_nonexistant_name_filter(self):
+        request = unit_test_utils.get_fake_request('/images?name=%s' % 'blah')
+        images = self.controller.index(request,
+                                       filters={'name': 'blah'})['images']
+        self.assertEqual(0, len(images))
+
+    def test_index_with_non_default_is_public_filter(self):
+        image = {
+            'id': utils.generate_uuid(),
+            'owner': TENANT3,
+            'name': '3',
+            'is_public': False
+        }
+        self.db.image_create(None, image)
+        path = '/images?visibility=private'
+        request = unit_test_utils.get_fake_request(path)
+        output = self.controller.index(request, filters={'is_public': False})
+        self.assertEqual(1, len(output['images']))
+
+    def test_index_with_many_filters(self):
+        request = unit_test_utils.get_fake_request('/images?owner=%s&name=%s' %
+        (TENANT1, '1'))
+        output = self.controller.index(request,
+                                       filters={'owner': TENANT1, 'name': '2'})
+        self.assertEqual(1, len(output['images']))
+        actual = set([image['id'] for image in output['images']])
+        expected = set([UUID2])
+        self.assertEqual(actual, expected)
 
     def test_index_with_marker(self):
         self.config(limit_param_default=1, api_limit_max=3)
@@ -155,12 +239,12 @@ class TestImagesController(test_utils.BaseTestCase):
     def test_index_with_sort_key(self):
         path = '/images'
         request = unit_test_utils.get_fake_request(path)
-        output = self.controller.index(request, sort_key='id', limit=3)
+        output = self.controller.index(request, sort_key='created_at', limit=3)
         actual = [image['id'] for image in output['images']]
         self.assertEquals(3, len(actual))
-        self.assertEquals(UUID1, actual[0])
-        self.assertEquals(UUID2, actual[1])
-        self.assertEquals(UUID3, actual[2])
+        self.assertEquals(UUID4, actual[0])
+        self.assertEquals(UUID3, actual[1])
+        self.assertEquals(UUID2, actual[2])
 
     def test_index_with_marker_not_found(self):
         fake_uuid = utils.generate_uuid()
@@ -190,9 +274,10 @@ class TestImagesController(test_utils.BaseTestCase):
             'id': UUID2,
             'name': '2',
             'owner': TENANT1,
+            'size': 512,
             'location': None,
             'status': 'queued',
-            'is_public': False,
+            'is_public': True,
             'tags': [],
             'properties': {},
             'deleted': False,
@@ -256,9 +341,10 @@ class TestImagesController(test_utils.BaseTestCase):
         expected = {
             'name': 'image-2',
             'owner': TENANT1,
+            'size': 256,
             'location': UUID1,
             'status': 'queued',
-            'is_public': False,
+            'is_public': True,
             'tags': ['ping', 'pong'],
             'properties': {},
             'deleted': False,
@@ -356,9 +442,42 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         expected = {'limit': 1,
                     'marker': marker,
                     'sort_key': 'created_at',
-                    'sort_dir': 'desc'}
+                    'sort_dir': 'desc',
+                    'filters': {}}
         output = self.deserializer.index(request)
         self.assertEqual(output, expected)
+
+    def test_index_with_filter(self):
+        name = 'My Little Image'
+        path = '/images?name=%s' % name
+        request = unit_test_utils.get_fake_request(path)
+        output = self.deserializer.index(request)
+        self.assertEqual(output['filters']['name'], name)
+
+    def test_index_strip_params_from_filters(self):
+        name = 'My Little Image'
+        path = '/images?name=%s' % name
+        request = unit_test_utils.get_fake_request(path)
+        output = self.deserializer.index(request)
+        self.assertEqual(output['filters']['name'], name)
+        self.assertEqual(len(output['filters']), 1)
+
+    def test_index_with_many_filter(self):
+        name = 'My Little Image'
+        instance_id = utils.generate_uuid()
+        path = '/images?name=%(name)s&id=%(instance_id)s' % locals()
+        request = unit_test_utils.get_fake_request(path)
+        output = self.deserializer.index(request)
+        self.assertEqual(output['filters']['name'], name)
+        self.assertEqual(output['filters']['id'], instance_id)
+
+    def test_index_with_filter_and_limit(self):
+        name = 'My Little Image'
+        path = '/images?name=%s&limit=1' % name
+        request = unit_test_utils.get_fake_request(path)
+        output = self.deserializer.index(request)
+        self.assertEqual(output['filters']['name'], name)
+        self.assertEqual(output['limit'], 1)
 
     def test_index_non_integer_limit(self):
         request = unit_test_utils.get_fake_request('/images?limit=blah')
@@ -369,7 +488,8 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request('/images?limit=0')
         expected = {'limit': 0,
                     'sort_key': 'created_at',
-                    'sort_dir': 'desc'}
+                    'sort_dir': 'desc',
+                    'filters': {}}
         output = self.deserializer.index(request)
         self.assertEqual(expected, output)
 
@@ -403,13 +523,20 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
     def test_index_sort_key_id(self):
         request = unit_test_utils.get_fake_request('/images?sort_key=id')
         output = self.deserializer.index(request)
-        expected = {'sort_key': 'id', 'sort_dir': 'desc'}
+        expected = {
+            'sort_key': 'id',
+            'sort_dir': 'desc',
+            'filters': {}
+        }
         self.assertEqual(output, expected)
 
     def test_index_sort_dir_asc(self):
         request = unit_test_utils.get_fake_request('/images?sort_dir=asc')
         output = self.deserializer.index(request)
-        expected = {'sort_key': 'created_at', 'sort_dir': 'asc'}
+        expected = {
+            'sort_key': 'created_at',
+            'sort_dir': 'asc',
+            'filters': {}}
         self.assertEqual(output, expected)
 
     def test_index_sort_dir_bad_value(self):

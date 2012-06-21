@@ -58,7 +58,7 @@ def build_fixtures(t1, t2):
      'min_ram': 0,
      'size': 13,
      'location': "swift://user:passwd@acct/container/obj.tar.0",
-     'properties': {'type': 'kernel'}},
+     'properties': {'type': 'kernel', 'foo': 'bar'}},
     {'id': UUID2,
      'name': 'fake image #2',
      'status': 'active',
@@ -121,6 +121,59 @@ class BaseTestCase(object):
     def test_image_get_all(self):
         images = self.db_api.image_get_all(self.context)
         self.assertEquals(len(images), 2)
+
+    def test_image_get_all_with_filter(self):
+        images = self.db_api.image_get_all(self.context,
+                                      filters={'id': self.fixtures[0]['id']})
+        self.assertEquals(len(images), 1)
+        self.assertEquals(images[0]['id'], self.fixtures[0]['id'])
+
+    def test_image_get_all_with_filter_user_defined_property(self):
+        images = self.db_api.image_get_all(self.context,
+                                      filters={'foo': 'bar'})
+        self.assertEquals(len(images), 1)
+        self.assertEquals(images[0]['id'], self.fixtures[0]['id'])
+
+    def test_image_get_all_with_filter_undefined_property(self):
+        images = self.db_api.image_get_all(self.context,
+                                      filters={'poo': 'bear'})
+        self.assertEquals(len(images), 0)
+
+    def test_image_get_all_size_min_max(self):
+        images = self.db_api.image_get_all(self.context,
+                                      filters={'size_min': 10,
+                                               'size_max': 15,
+                                              })
+        self.assertEquals(len(images), 1)
+        self.assertEquals(images[0]['id'], self.fixtures[0]['id'])
+
+    def test_image_get_all_size_min(self):
+        images = self.db_api.image_get_all(self.context,
+                                      filters={'size_min': 15})
+        self.assertEquals(len(images), 1)
+        self.assertEquals(images[0]['id'], self.fixtures[1]['id'])
+
+    def test_image_get_all_size_range(self):
+        images = self.db_api.image_get_all(self.context,
+                                      filters={'size_max': 15,
+                                               'size_min': 20})
+        self.assertEquals(len(images), 0)
+
+    def test_image_get_all_size_max(self):
+        images = self.db_api.image_get_all(self.context,
+                                      filters={'size_max': 15})
+        self.assertEquals(len(images), 1)
+        self.assertEquals(images[0]['id'], self.fixtures[0]['id'])
+
+    def test_image_get_all_with_filter_min_range_bad_value(self):
+        self.assertRaises(exception.InvalidFilterRangeValue,
+                          self.db_api.image_get_all,
+                          self.context, filters={'size_min': 'blah'})
+
+    def test_image_get_all_with_filter_max_range_bad_value(self):
+        self.assertRaises(exception.InvalidFilterRangeValue,
+                          self.db_api.image_get_all,
+                          self.context, filters={'size_max': 'blah'})
 
     def test_image_get_all_marker(self):
         images = self.db_api.image_get_all(self.context, marker=UUID2)
