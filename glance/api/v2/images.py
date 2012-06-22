@@ -321,7 +321,8 @@ def get_schema(custom_properties=None):
 
 def load_custom_properties():
     """Find the schema properties files and load them into a dict."""
-    match = CONF.find_file('schema-image.json')
+    filename = 'schema-image.json'
+    match = CONF.find_file(filename)
     if match:
         schema_file = open(match)
         schema_data = schema_file.read()
