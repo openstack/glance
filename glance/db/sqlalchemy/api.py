@@ -26,16 +26,10 @@ import logging
 import time
 
 import sqlalchemy
-from sqlalchemy import asc, create_engine, desc
-from sqlalchemy.exc import (IntegrityError, OperationalError, DBAPIError,
-                            DisconnectionError)
-from sqlalchemy.orm import exc
-from sqlalchemy.orm import joinedload
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.sql import or_, and_
+import sqlalchemy.orm
+import sqlalchemy.sql
 
 from glance.common import exception
-from glance import db
 from glance.db.sqlalchemy import migration
 from glance.db.sqlalchemy import models
 from glance.openstack.common import cfg
@@ -83,8 +77,9 @@ class MySQLPingListener(object):
             dbapi_con.cursor().execute('select 1')
         except dbapi_con.OperationalError, ex:
             if ex.args[0] in (2006, 2013, 2014, 2045, 2055):
-                LOG.warn('Got mysql server has gone away: %s', ex)
-                raise DisconnectionError("Database server went away")
+                msg = 'Got mysql server has gone away: %s' % ex
+                LOG.warn(msg)
+                raise sqlalchemy.exc.DisconnectionError(msg)
             else:
                 raise
 
@@ -108,7 +103,7 @@ def configure_db():
             engine_args['listeners'] = [MySQLPingListener()]
 
         try:
-            _ENGINE = create_engine(sql_connection, **engine_args)
+            _ENGINE = sqlalchemy.create_engine(sql_connection, **engine_args)
             _ENGINE.connect = wrap_db_error(_ENGINE.connect)
             _ENGINE.connect()
         except Exception, err:
@@ -151,9 +146,9 @@ def get_session(autocommit=True, expire_on_commit=False):
     global _MAKER
     if not _MAKER:
         assert _ENGINE
-        _MAKER = sessionmaker(bind=_ENGINE,
-                              autocommit=autocommit,
-                              expire_on_commit=expire_on_commit)
+        _MAKER = sqlalchemy.orm.sessionmaker(bind=_ENGINE,
+                                             autocommit=autocommit,
+                                             expire_on_commit=expire_on_commit)
     return _MAKER()
 
 
@@ -173,7 +168,7 @@ def wrap_db_error(f):
     def _wrap(*args, **kwargs):
         try:
             return f(*args, **kwargs)
-        except OperationalError, e:
+        except sqlalchemy.exc.OperationalError, e:
             if not is_db_connection_error(e.args[0]):
                 raise
 
@@ -185,13 +180,13 @@ def wrap_db_error(f):
                 time.sleep(_RETRY_INTERVAL)
                 try:
                     return f(*args, **kwargs)
-                except OperationalError, e:
+                except sqlalchemy.exc.OperationalError, e:
                     if (remaining_attempts == 0 or
                         not is_db_connection_error(e.args[0])):
                         raise
-                except DBAPIError:
+                except sqlalchemy.exc.DBAPIError:
                     raise
-        except DBAPIError:
+        except sqlalchemy.exc.DBAPIError:
             raise
     _wrap.func_name = f.func_name
     return _wrap
@@ -237,9 +232,9 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
 
     try:
         query = session.query(models.Image).\
-                        options(joinedload(models.Image.properties)).\
-                        options(joinedload(models.Image.members)).\
-                        filter_by(id=image_id)
+                options(sqlalchemy.orm.joinedload(models.Image.properties)).\
+                options(sqlalchemy.orm.joinedload(models.Image.members)).\
+                filter_by(id=image_id)
 
         # filter out deleted images if context disallows it
         if not force_show_deleted and not can_show_deleted(context):
@@ -247,7 +242,7 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
 
         image = query.one()
 
-    except exc.NoResultFound:
+    except sqlalchemy.orm.exc.NoResultFound:
         raise exception.NotFound("No image found with ID %s" % image_id)
 
     # Make sure they can look at it
@@ -384,8 +379,8 @@ def paginate_query(query, model, limit, sort_keys, marker=None,
     # Add sorting
     for current_sort_key, current_sort_dir in zip(sort_keys, sort_dirs):
         sort_dir_func = {
-            'asc': asc,
-            'desc': desc,
+            'asc': sqlalchemy.asc,
+            'desc': sqlalchemy.desc,
         }[current_sort_dir]
 
         try:
@@ -418,10 +413,10 @@ def paginate_query(query, model, limit, sort_keys, marker=None,
                 raise ValueError(_("Unknown sort direction, "
                                    "must be 'desc' or 'asc'"))
 
-            criteria = and_(*crit_attrs)
+            criteria = sqlalchemy.sql.and_(*crit_attrs)
             criteria_list.append(criteria)
 
-        f = or_(*criteria_list)
+        f = sqlalchemy.sql.or_(*criteria_list)
         query = query.filter(f)
 
     if limit is not None:
@@ -447,8 +442,8 @@ def image_get_all(context, filters=None, marker=None, limit=None,
 
     session = get_session()
     query = session.query(models.Image).\
-                    options(joinedload(models.Image.properties)).\
-                    options(joinedload(models.Image.members))
+            options(sqlalchemy.orm.joinedload(models.Image.properties)).\
+            options(sqlalchemy.orm.joinedload(models.Image.members))
 
     if 'size_min' in filters:
         query = query.filter(models.Image.size >= filters['size_min'])
@@ -465,7 +460,7 @@ def image_get_all(context, filters=None, marker=None, limit=None,
                                models.Image.members.any(member=context.owner,
                                                         deleted=False)])
         if len(the_filter) > 1:
-            query = query.filter(or_(*the_filter))
+            query = query.filter(sqlalchemy.sql.or_(*the_filter))
         else:
             query = query.filter(the_filter[0])
         del filters['is_public']
@@ -648,7 +643,7 @@ def _image_update(context, values, image_id, purge_props=False):
 
         try:
             image_ref.save(session=session)
-        except IntegrityError, e:
+        except sqlalchemy.exc.IntegrityError:
             raise exception.Duplicate("Image ID %s already exists!"
                                       % values['id'])
 
@@ -757,15 +752,15 @@ def image_member_get(context, member_id, session=None):
     session = session or get_session()
     try:
         query = session.query(models.ImageMember).\
-                        options(joinedload(models.ImageMember.image)).\
-                        filter_by(id=member_id)
+                options(sqlalchemy.orm.joinedload(models.ImageMember.image)).\
+                filter_by(id=member_id)
 
         if not can_show_deleted(context):
             query = query.filter_by(deleted=False)
 
         member = query.one()
 
-    except exc.NoResultFound:
+    except sqlalchemy.orm.exc.NoResultFound:
         raise exception.NotFound("No membership found with ID %s" % member_id)
 
     # Make sure they can look at it
@@ -782,16 +777,16 @@ def image_member_find(context, image_id, member, session=None):
         # Note lack of permissions check; this function is called from
         # is_image_visible(), so avoid recursive calls
         query = session.query(models.ImageMember).\
-                        options(joinedload(models.ImageMember.image)).\
-                        filter_by(image_id=image_id).\
-                        filter_by(member=member)
+                options(sqlalchemy.orm.joinedload(models.ImageMember.image)).\
+                filter_by(image_id=image_id).\
+                filter_by(member=member)
 
         if not can_show_deleted(context):
             query = query.filter_by(deleted=False)
 
         return query.one()
 
-    except exc.NoResultFound:
+    except sqlalchemy.orm.exc.NoResultFound:
         raise exception.NotFound("No membership found for image %s member %s" %
                                  (image_id, member))
 
@@ -810,8 +805,8 @@ def image_member_get_memberships(context, member, marker=None, limit=None,
 
     session = get_session()
     query = session.query(models.ImageMember).\
-                    options(joinedload(models.ImageMember.image)).\
-                    filter_by(member=member)
+            options(sqlalchemy.orm.joinedload(models.ImageMember.image)).\
+            filter_by(member=member)
 
     if not can_show_deleted(context):
         query = query.filter_by(deleted=False)
@@ -874,7 +869,7 @@ def image_tag_delete(context, image_id, value, session=None):
                     filter_by(deleted=False)
     try:
         tag_ref = query.one()
-    except exc.NoResultFound:
+    except sqlalchemy.orm.exc.NoResultFound:
         raise exception.NotFound()
 
     tag_ref.delete(session=session)
