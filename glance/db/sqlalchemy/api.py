@@ -94,7 +94,7 @@ def configure_db():
     Establish the database, create an engine if needed, and
     register the models.
     """
-    global _ENGINE, sa_logger, LOG, _MAX_RETRIES, _RETRY_INTERVAL
+    global _ENGINE, sa_logger, _MAX_RETRIES, _RETRY_INTERVAL
     if not _ENGINE:
         sql_connection = CONF.sql_connection
         _MAX_RETRIES = CONF.sql_max_retries
@@ -148,7 +148,7 @@ def check_mutate_authorization(context, image_ref):
 
 def get_session(autocommit=True, expire_on_commit=False):
     """Helper method to grab session"""
-    global _MAKER, _ENGINE
+    global _MAKER
     if not _MAKER:
         assert _ENGINE
         _MAKER = sessionmaker(bind=_ENGINE,
@@ -177,8 +177,6 @@ def wrap_db_error(f):
             if not is_db_connection_error(e.args[0]):
                 raise
 
-            global _MAX_RETRIES
-            global _RETRY_INTERVAL
             remaining_attempts = _MAX_RETRIES
             while True:
                 LOG.warning(_('SQL connection failed. %d attempts left.'),
