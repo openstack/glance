@@ -16,7 +16,6 @@
 import datetime
 import json
 
-import stubout
 import webob
 
 import glance.api.v2.images
@@ -57,14 +56,35 @@ class TestImagesController(test_utils.BaseTestCase):
     def _create_images(self):
         self.db.reset()
         self.images = [
-            {'id': UUID1, 'owner': TENANT1, 'name': '1', 'is_public': True,
-                'size': 256, 'location': UUID1},
-            {'id': UUID2, 'owner': TENANT1, 'name': '2', 'is_public': True,
-                'size': 512},
-            {'id': UUID3, 'owner': TENANT3, 'name': '3', 'is_public': True,
-                'size': 512},
-            {'id': UUID4, 'owner': TENANT4, 'name': '4', 'is_public': True,
-                'size': 1024},
+            {
+                'id': UUID1,
+                'owner': TENANT1,
+                'location': UUID1,
+                'name': '1',
+                'is_public': True,
+                'size': 256,
+            },
+            {
+                'id': UUID2,
+                'owner': TENANT1,
+                'name': '2',
+                'is_public': True,
+                'size': 512,
+            },
+            {
+                'id': UUID3,
+                'owner': TENANT3,
+                'name': '3',
+                'is_public': True,
+                'size': 512,
+            },
+            {
+                'id': UUID4,
+                'owner': TENANT4,
+                'name': '4',
+                'is_public': False,
+                'size': 1024,
+            },
         ]
         [self.db.image_create(None, image) for image in self.images]
 
@@ -76,7 +96,7 @@ class TestImagesController(test_utils.BaseTestCase):
         output = self.controller.index(request)
         self.assertEqual(1, len(output['images']))
         actual = set([image['id'] for image in output['images']])
-        expected = set([UUID4])
+        expected = set([UUID3])
         self.assertEqual(actual, expected)
 
     def test_index_return_parameters(self):
@@ -93,12 +113,12 @@ class TestImagesController(test_utils.BaseTestCase):
     def test_index_next_marker(self):
         self.config(limit_param_default=1, api_limit_max=3)
         request = unit_test_utils.get_fake_request()
-        output = self.controller.index(request, marker=UUID4, limit=2)
+        output = self.controller.index(request, marker=UUID3, limit=2)
         self.assertEqual(2, len(output['images']))
         actual = set([image['id'] for image in output['images']])
-        expected = set([UUID3, UUID2])
+        expected = set([UUID2, UUID1])
         self.assertEqual(actual, expected)
-        self.assertEqual(UUID2, output['next_marker'])
+        self.assertEqual(UUID1, output['next_marker'])
 
     def test_index_no_next_marker(self):
         self.config(limit_param_default=1, api_limit_max=3)
@@ -129,9 +149,9 @@ class TestImagesController(test_utils.BaseTestCase):
     def test_index_size_min_filter(self):
         request = unit_test_utils.get_fake_request('/images?size_min=512')
         output = self.controller.index(request, filters={'size_min': 512})
-        self.assertEqual(3, len(output['images']))
+        self.assertEqual(2, len(output['images']))
         actual = set([image['id'] for image in output['images']])
-        expected = set([UUID2, UUID3, UUID4])
+        expected = set([UUID2, UUID3])
         self.assertEqual(actual, expected)
 
     def test_index_size_range_filter(self):
@@ -178,7 +198,7 @@ class TestImagesController(test_utils.BaseTestCase):
         path = '/images?visibility=private'
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request, filters={'is_public': False})
-        self.assertEqual(1, len(output['images']))
+        self.assertEqual(2, len(output['images']))
 
     def test_index_with_many_filters(self):
         request = unit_test_utils.get_fake_request('/images?owner=%s&name=%s' %
@@ -206,8 +226,8 @@ class TestImagesController(test_utils.BaseTestCase):
         output = self.controller.index(request, limit=limit)
         actual = set([image['id'] for image in output['images']])
         self.assertEquals(limit, len(actual))
-        self.assertTrue(UUID4 in actual)
         self.assertTrue(UUID3 in actual)
+        self.assertTrue(UUID2 in actual)
 
     def test_index_greater_than_limit_max(self):
         self.config(limit_param_default=1, api_limit_max=3)
@@ -242,9 +262,9 @@ class TestImagesController(test_utils.BaseTestCase):
         output = self.controller.index(request, sort_key='created_at', limit=3)
         actual = [image['id'] for image in output['images']]
         self.assertEquals(3, len(actual))
-        self.assertEquals(UUID4, actual[0])
-        self.assertEquals(UUID3, actual[1])
-        self.assertEquals(UUID2, actual[2])
+        self.assertEquals(UUID3, actual[0])
+        self.assertEquals(UUID2, actual[1])
+        self.assertEquals(UUID1, actual[2])
 
     def test_index_with_marker_not_found(self):
         fake_uuid = utils.generate_uuid()

@@ -26,55 +26,72 @@ from glance.common import utils
 from glance.openstack.common import timeutils
 
 
-_gen_uuid = utils.generate_uuid
-
-UUID1 = _gen_uuid()
-UUID2 = _gen_uuid()
-
-
 # The default sort order of results is whatever sort key is specified,
 # plus created_at and id for ties.  When we're not specifying a sort_key,
-# we get the default (created_at); some tests below expect the fixtures to be
-# returned in array-order; so if if the created_at timestamps are the same,
-# these tests rely on UUID1 < UUID2. Swap so that's the case.
-if UUID1 > UUID2:
-    UUID1, UUID2 = UUID2, UUID1
+# we get the default (created_at). Some tests below expect the fixtures to be
+# returned in array-order, so if if the created_at timestamps are the same,
+# these tests rely on the UUID* values being in order
+UUID1, UUID2, UUID3 = sorted([utils.generate_uuid() for x in range(3)])
 
 
-def build_fixtures(t1, t2):
+def build_fixtures():
+    dt = datetime.datetime.now()
     return [
-    {'id': UUID1,
-     'name': 'fake image #1',
-     'status': 'active',
-     'disk_format': 'ami',
-     'container_format': 'ami',
-     'is_public': False,
-     'created_at': t1,
-     'updated_at': t1,
-     'deleted_at': None,
-     'deleted': False,
-     'checksum': None,
-     'min_disk': 0,
-     'min_ram': 0,
-     'size': 13,
-     'location': "swift://user:passwd@acct/container/obj.tar.0",
-     'properties': {'type': 'kernel', 'foo': 'bar'}},
-    {'id': UUID2,
-     'name': 'fake image #2',
-     'status': 'active',
-     'disk_format': 'vhd',
-     'container_format': 'ovf',
-     'is_public': True,
-     'created_at': t2,
-     'updated_at': t2,
-     'deleted_at': None,
-     'deleted': False,
-     'checksum': None,
-     'min_disk': 5,
-     'min_ram': 256,
-     'size': 19,
-     'location': "file:///tmp/glance-tests/2",
-     'properties': {}}]
+        {
+            'id': UUID1,
+            'name': 'fake image #1',
+            'status': 'active',
+            'disk_format': 'ami',
+            'container_format': 'ami',
+            'is_public': False,
+            'created_at': dt,
+            'updated_at': dt,
+            'deleted_at': None,
+            'deleted': False,
+            'checksum': None,
+            'min_disk': 0,
+            'min_ram': 0,
+            'size': 13,
+            'location': "swift://user:passwd@acct/container/obj.tar.0",
+            'properties': {'type': 'kernel', 'foo': 'bar'},
+        },
+        {
+            'id': UUID2,
+            'name': 'fake image #2',
+            'status': 'active',
+            'disk_format': 'vhd',
+            'container_format': 'ovf',
+            'is_public': True,
+            'created_at': dt,
+            'updated_at': dt + datetime.timedelta(microseconds=5),
+            'deleted_at': None,
+            'deleted': False,
+            'checksum': None,
+            'min_disk': 5,
+            'min_ram': 256,
+            'size': 19,
+            'location': "file:///tmp/glance-tests/2",
+            'properties': {}
+        },
+        {
+            'id': UUID3,
+            'name': 'fake image #2',
+            'status': 'active',
+            'disk_format': 'vhd',
+            'container_format': 'ovf',
+            'is_public': True,
+            'created_at': dt + datetime.timedelta(microseconds=5),
+            'updated_at': dt + datetime.timedelta(microseconds=5),
+            'deleted_at': None,
+            'deleted': False,
+            'checksum': None,
+            'min_disk': 5,
+            'min_ram': 256,
+            'size': 19,
+            'location': "file:///tmp/glance-tests/2",
+            'properties': {},
+        },
+    ]
 
 
 class BaseTestCase(object):
@@ -83,13 +100,8 @@ class BaseTestCase(object):
         self.context = context.RequestContext(is_admin=False)
         self.configure()
         self.reset()
-        self.fixtures = self.build_fixtures()
+        self.fixtures = build_fixtures()
         self.create_fixtures(self.fixtures)
-
-    def build_fixtures(self):
-        t1 = timeutils.utcnow()
-        t2 = t1 + datetime.timedelta(microseconds=1)
-        return build_fixtures(t1, t2)
 
     def create_fixtures(self, fixtures):
         for fixture in fixtures:
@@ -120,7 +132,7 @@ class BaseTestCase(object):
 
     def test_image_get_all(self):
         images = self.db_api.image_get_all(self.context)
-        self.assertEquals(len(images), 2)
+        self.assertEquals(3, len(images))
 
     def test_image_get_all_with_filter(self):
         images = self.db_api.image_get_all(self.context,
@@ -150,8 +162,9 @@ class BaseTestCase(object):
     def test_image_get_all_size_min(self):
         images = self.db_api.image_get_all(self.context,
                                       filters={'size_min': 15})
-        self.assertEquals(len(images), 1)
-        self.assertEquals(images[0]['id'], self.fixtures[1]['id'])
+        self.assertEquals(len(images), 2)
+        self.assertEquals(images[0]['id'], self.fixtures[2]['id'])
+        self.assertEquals(images[1]['id'], self.fixtures[1]['id'])
 
     def test_image_get_all_size_range(self):
         images = self.db_api.image_get_all(self.context,
@@ -176,8 +189,8 @@ class BaseTestCase(object):
                           self.context, filters={'size_max': 'blah'})
 
     def test_image_get_all_marker(self):
-        images = self.db_api.image_get_all(self.context, marker=UUID2)
-        self.assertEquals(len(images), 1)
+        images = self.db_api.image_get_all(self.context, marker=UUID3)
+        self.assertEquals(2, len(images))
 
     def test_image_get_all_marker_deleted(self):
         """Cannot specify a deleted image as a marker."""
@@ -188,17 +201,18 @@ class BaseTestCase(object):
 
     def test_image_get_all_marker_deleted_showing_deleted_as_admin(self):
         """Specify a deleted image as a marker if showing deleted images."""
-        self.db_api.image_destroy(self.adm_context, UUID1)
-        images = self.db_api.image_get_all(self.adm_context, marker=UUID1)
-        self.assertEquals(len(images), 0)
+        self.db_api.image_destroy(self.adm_context, UUID3)
+        images = self.db_api.image_get_all(self.adm_context, marker=UUID3)
+        self.assertEquals(2, len(images))
 
     def test_image_get_all_marker_deleted_showing_deleted(self):
         """Specify a deleted image as a marker if showing deleted images."""
+        self.db_api.image_destroy(self.adm_context, UUID3)
         self.db_api.image_destroy(self.adm_context, UUID1)
         filters = {'deleted': True}
-        images = self.db_api.image_get_all(self.context, marker=UUID1,
+        images = self.db_api.image_get_all(self.context, marker=UUID3,
                                       filters=filters)
-        self.assertEquals(len(images), 0)
+        self.assertEquals(1, len(images))
 
     def test_image_get_all_invalid_sort_key(self):
         self.assertRaises(exception.InvalidSortKey, self.db_api.image_get_all,
@@ -234,8 +248,8 @@ class BaseTestCase(object):
                           self.context, UUID1, 'snap')
 
     def test_image_member_find(self):
-        TENANT1 = _gen_uuid()
-        TENANT2 = _gen_uuid()
+        TENANT1 = utils.generate_uuid()
+        TENANT2 = utils.generate_uuid()
         fixtures = [
             {'member': TENANT1, 'image_id': UUID1},
             {'member': TENANT1, 'image_id': UUID2},
@@ -264,15 +278,8 @@ class BaseTestCase(object):
 
         output = self.db_api.image_member_find(self.context,
                                                member=TENANT2,
-                                               image_id=_gen_uuid())
+                                               image_id=utils.generate_uuid())
         _assertMemberListMatch([], output)
-
-
-class BaseTestCaseSameTime(BaseTestCase):
-    def build_fixtures(self):
-        t1 = timeutils.utcnow()
-        t2 = t1  # Same timestamp!
-        return build_fixtures(t1, t2)
 
 
 class BaseTestCasePaging(object):
@@ -308,7 +315,7 @@ class BaseTestCasePaging(object):
         pass
 
     def _build_random_image(self, t, min_disk):
-        image_id = _gen_uuid()
+        image_id = utils.generate_uuid()
 
         return {'id': image_id,
          'name': 'fake image #' + image_id,
