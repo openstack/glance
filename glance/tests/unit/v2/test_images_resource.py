@@ -162,7 +162,6 @@ class TestImagesController(test_utils.BaseTestCase):
             'status': 'queued',
             'is_public': False,
             'tags': [],
-            'members': [],
             'properties': {},
             'deleted': False,
         }

@@ -98,10 +98,6 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
         LOG.info('Unable to get deleted image')
         raise exception.NotFound()
 
-    #NOTE(bcwaldon: this is a hack until we can get image members with
-    # a direct db call
-    image['members'] = image_member_find(context, image_id=image_id)
-
     return image
 
 
