@@ -76,9 +76,6 @@ class Server(object):
         the over-ridden config content (may be useful for populating
         error messages).
         """
-
-        if self.conf_file_name:
-            return self.conf_file_name
         if not self.conf_base:
             raise RuntimeError("Subclass did not populate config_base!")
 
@@ -91,7 +88,11 @@ class Server(object):
 
         conf_dir = os.path.join(self.test_dir, 'etc')
         conf_filepath = os.path.join(conf_dir, "%s.conf" % self.server_name)
+        if os.path.exists(conf_filepath):
+            os.unlink(conf_filepath)
         paste_conf_filepath = conf_filepath.replace(".conf", "-paste.ini")
+        if os.path.exists(paste_conf_filepath):
+            os.unlink(paste_conf_filepath)
         utils.safe_mkdirs(conf_dir)
 
         def override_conf(filepath, overridden):
@@ -171,8 +172,7 @@ class ApiServer(Server):
     Server object that starts/stops/manages the API server
     """
 
-    def __init__(self, test_dir, port, registry_port, policy_file,
-            delayed_delete=False):
+    def __init__(self, test_dir, port, policy_file, delayed_delete=False):
         super(ApiServer, self).__init__(test_dir, port)
         self.server_name = 'api'
         self.default_store = 'file'
@@ -186,7 +186,6 @@ class ApiServer(Server):
         self.scrubber_datadir = os.path.join(self.test_dir,
                                              "scrubber")
         self.log_file = os.path.join(self.test_dir, "api.log")
-        self.registry_port = registry_port
         self.s3_store_host = "s3.amazonaws.com"
         self.s3_store_access_key = ""
         self.s3_store_secret_key = ""
@@ -376,13 +375,12 @@ class ScrubberDaemon(Server):
     Server object that starts/stops/manages the Scrubber server
     """
 
-    def __init__(self, test_dir, registry_port, daemon=False):
+    def __init__(self, test_dir, daemon=False):
         # NOTE(jkoelker): Set the port to 0 since we actually don't listen
         super(ScrubberDaemon, self).__init__(test_dir, 0)
         self.server_name = 'scrubber'
         self.daemon = daemon
 
-        self.registry_port = registry_port
         self.scrubber_datadir = os.path.join(self.test_dir,
                                              "scrubber")
         self.pid_file = os.path.join(self.test_dir, "scrubber.pid")
@@ -427,13 +425,12 @@ class FunctionalTest(test_utils.BaseTestCase):
 
         self.api_server = ApiServer(self.test_dir,
                                     self.api_port,
-                                    self.registry_port,
                                     self.policy_file)
+
         self.registry_server = RegistryServer(self.test_dir,
                                               self.registry_port)
 
-        self.scrubber_daemon = ScrubberDaemon(self.test_dir,
-                                              self.registry_port)
+        self.scrubber_daemon = ScrubberDaemon(self.test_dir)
 
         self.pid_files = [self.api_server.pid_file,
                           self.registry_server.pid_file,
@@ -537,7 +534,35 @@ class FunctionalTest(test_utils.BaseTestCase):
 
         self.launched_servers.append(server)
 
-        self.wait_for_servers([server], expect_launch)
+        launch_msg = self.wait_for_servers([server], expect_launch)
+        self.assertTrue(launch_msg is None, launch_msg)
+
+    def start_with_retry(self, server, port_name, max_retries, **kwargs):
+        """
+        Starts a server, with retries if the server launches but
+        fails to start listening on the expected port.
+
+        :param server: the server to launch
+        :param port_name: the name of the port attribute
+        :param max_retries: the maximum number of attempts
+        """
+        launch_msg = None
+        for i in range(0, max_retries):
+            exitcode, out, err = server.start(**kwargs)
+            name = server.server_name
+            self.assertEqual(0, exitcode,
+                             "Failed to spin up the %s server. "
+                             "Got: %s" % (name, err))
+            self.assertTrue(("Starting glance-%s with" % name) in out)
+            launch_msg = self.wait_for_servers([server])
+            if launch_msg:
+                server.stop()
+                server.bind_port = get_unused_port()
+                setattr(self, port_name, server.bind_port)
+            else:
+                self.launched_servers.append(server)
+                break
+        self.assertTrue(launch_msg is None, launch_msg)
 
     def start_servers(self, **kwargs):
         """
@@ -550,23 +575,15 @@ class FunctionalTest(test_utils.BaseTestCase):
         self.cleanup()
 
         # Start up the API and default registry server
-        exitcode, out, err = self.api_server.start(**kwargs)
 
-        self.launched_servers.append(self.api_server)
+        # We start the registry server first, as the API server config
+        # depends on the registry port - this ordering allows for
+        # retrying the launch on a port clash
+        self.start_with_retry(self.registry_server, 'registry_port', 3,
+                              **kwargs)
+        kwargs['registry_port'] = self.registry_server.bind_port
 
-        self.assertEqual(0, exitcode,
-                         "Failed to spin up the API server. "
-                         "Got: %s" % err)
-        self.assertTrue("Starting glance-api with" in out)
-
-        exitcode, out, err = self.registry_server.start(**kwargs)
-
-        self.launched_servers.append(self.registry_server)
-
-        self.assertEqual(0, exitcode,
-                         "Failed to spin up the Registry server. "
-                         "Got: %s" % err)
-        self.assertTrue("Starting glance-registry with" in out)
+        self.start_with_retry(self.api_server, 'api_port', 3, **kwargs)
 
         exitcode, out, err = self.scrubber_daemon.start(**kwargs)
 
@@ -574,8 +591,6 @@ class FunctionalTest(test_utils.BaseTestCase):
                          "Failed to spin up the Scrubber daemon. "
                          "Got: %s" % err)
         self.assertTrue("Starting glance-scrubber with" in out)
-
-        self.wait_for_servers([self.api_server, self.registry_server])
 
     def ping_server(self, port):
         """
@@ -603,6 +618,8 @@ class FunctionalTest(test_utils.BaseTestCase):
         :param expect_launch: Optional, true iff the server(s) are
                               expected to successfully start
         :param timeout: Optional, defaults to 3 seconds
+        :return: None if launch expectation is met, otherwise an
+                 assertion message
         """
         now = datetime.datetime.now()
         timeout_time = now + datetime.timedelta(seconds=timeout)
@@ -615,9 +632,8 @@ class FunctionalTest(test_utils.BaseTestCase):
                     if server not in replied:
                         replied.append(server)
             if pinged == len(servers):
-                self.assertTrue(expect_launch,
-                                "Unexpected server launch status")
-                return
+                msg = 'Unexpected server launch status'
+                return None if expect_launch else msg
             now = datetime.datetime.now()
             time.sleep(0.05)
 
@@ -636,7 +652,8 @@ class FunctionalTest(test_utils.BaseTestCase):
 
         if 'NOSE_GLANCELOGCAPTURE' in os.environ:
             msg += self.dump_logs(failed)
-        self.assertFalse(expect_launch, msg)
+
+        return msg if expect_launch else None
 
     def stop_server(self, server, name):
         """

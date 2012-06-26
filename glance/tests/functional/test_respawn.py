@@ -100,7 +100,8 @@ class TestRespawn(functional.FunctionalTest):
         self.wait_for(pid_changed)
 
         # ensure API service port is re-activated
-        self.wait_for_servers([self.api_server])
+        launch_msg = self.wait_for_servers([self.api_server])
+        self.assertTrue(launch_msg is None, launch_msg)
 
         # verify server health with version negotiation
         self.get_versions()
@@ -114,7 +115,8 @@ class TestRespawn(functional.FunctionalTest):
         self.wait_for(process_died)
 
         # deliberately stopped server should not be respawned
-        self.wait_for_servers([self.api_server], False)
+        launch_msg = self.wait_for_servers([self.api_server], False)
+        self.assertTrue(launch_msg is None, launch_msg)
 
         # ensure the server has not been respawned
         self.connection_unavailable('deliberately stopped')
@@ -143,7 +145,8 @@ class TestRespawn(functional.FunctionalTest):
         time.sleep(1)
 
         # bouncing server should not be respawned
-        self.wait_for_servers([self.api_server], False)
+        launch_msg = self.wait_for_servers([self.api_server], False)
+        self.assertTrue(launch_msg is None, launch_msg)
 
         # ensure server process has gone away
         process_died = lambda: not os.path.exists('/proc/%d' % self.get_pid())
