@@ -36,21 +36,3 @@ class TestSqlalchemyDriver(base.IsolatedUnitTest, tests.BaseTestCase):
     def reset(self):
         db_models.unregister_models(self.db_api._ENGINE)
         db_models.register_models(self.db_api._ENGINE)
-
-
-class TestSqlalchemyDriverPaging(base.IsolatedUnitTest,
-                                 tests.BaseTestCasePaging):
-    def setUp(self):
-        base.IsolatedUnitTest.setUp(self)
-        tests.BaseTestCasePaging.setUp(self)
-
-    def configure(self):
-        self.config(sql_connection='sqlite://',
-                    verbose=False,
-                    debug=False)
-        self.db_api = glance.db.sqlalchemy.api
-        self.db_api.configure_db()
-
-    def reset(self):
-        db_models.unregister_models(self.db_api._ENGINE)
-        db_models.register_models(self.db_api._ENGINE)

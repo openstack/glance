@@ -132,7 +132,7 @@ def _do_pagination(context, images, marker, limit, show_deleted):
         else:
             raise exception.NotFound()
 
-    end = start + limit if limit else None
+    end = start + limit if limit is not None else None
     return images[start:end]
 
 

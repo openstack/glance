@@ -30,16 +30,3 @@ class TestSimpleDriver(base.IsolatedUnitTest, tests.BaseTestCase):
 
     def reset(self):
         self.db_api.reset()
-
-
-class TestSimpleDriverPaging(base.IsolatedUnitTest,
-                             tests.BaseTestCasePaging):
-    def setUp(self):
-        base.IsolatedUnitTest.setUp(self)
-        tests.BaseTestCasePaging.setUp(self)
-
-    def configure(self):
-        self.db_api = glance.db.simple.api
-
-    def reset(self):
-        self.db_api.reset()
