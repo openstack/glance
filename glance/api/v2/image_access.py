@@ -30,16 +30,22 @@ class Controller(object):
         self.db_api.configure_db()
 
     def index(self, req, image_id):
-        image = self.db_api.image_get(req.context, image_id)
+        #NOTE(bcwaldon): call image_get to ensure user has permission
+        self.db_api.image_get(req.context, image_id)
+
+        members = self.db_api.image_member_find(req.context, image_id=image_id)
+
         #TODO(bcwaldon): We have to filter on non-deleted members
         # manually. This should be done for us in the db api
-        return filter(lambda m: not m['deleted'], image['members'])
+        return filter(lambda m: not m['deleted'], members)
 
     def show(self, req, image_id, tenant_id):
+        members = self.db_api.image_member_find(req.context,
+                                                image_id=image_id,
+                                                member=tenant_id)
         try:
-            return self.db_api.image_member_find(req.context,
-                    image_id, tenant_id)
-        except exception.NotFound:
+            return members[0]
+        except IndexError:
             raise webob.exc.HTTPNotFound()
 
     @utils.mutating
@@ -71,8 +77,15 @@ class Controller(object):
         #TODO(bcwaldon): Refactor these methods so we don't need to explicitly
         # retrieve a session object here
         session = self.db_api.get_session()
-        member = self.db_api.image_member_find(req.context, image_id,
-                tenant_id, session=session)
+        members = self.db_api.image_member_find(req.context,
+                                                image_id=image_id,
+                                                member=tenant_id,
+                                                session=session)
+        try:
+            member = members[0]
+        except IndexError:
+            raise webob.exc.HTTPNotFound()
+
         self.db_api.image_member_delete(req.context, member, session=session)
 
 

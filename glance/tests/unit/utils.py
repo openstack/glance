@@ -75,7 +75,7 @@ class FakeDB(object):
     def reset():
         simple_db.DATA = {
             'images': {},
-            'members': {},
+            'members': [],
             'tags': {},
         }
 
