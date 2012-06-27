@@ -39,7 +39,7 @@ class Controller(object):
         Get the members of an image.
         """
         try:
-            image = self.db_api.image_get(req.context, image_id)
+            self.db_api.image_get(req.context, image_id)
         except exception.NotFound:
             raise webob.exc.HTTPNotFound()
         except exception.Forbidden:
@@ -51,7 +51,9 @@ class Controller(object):
             LOG.info(msg)
             raise webob.exc.HTTPNotFound()
 
-        return dict(members=make_member_list(image['members'],
+        members = self.db_api.image_member_find(req.context, image_id=image_id)
+
+        return dict(members=make_member_list(members,
                                              member_id='member',
                                              can_share='can_share'))
 
@@ -116,29 +118,32 @@ class Controller(object):
                 datum['can_share'] = bool(memb['can_share'])
 
             # Try to find the corresponding membership
+            members = self.db_api.image_member_find(req.context,
+                                                    image_id=datum['image_id'],
+                                                    member=datum['member'],
+                                                    session=session)
             try:
-                membership = self.db_api.image_member_find(req.context,
-                                                           datum['image_id'],
-                                                           datum['member'],
-                                                           session=session)
-
-                # Are we overriding can_share?
-                if datum['can_share'] is None:
-                    datum['can_share'] = membership['can_share']
-
-                existing[membership['id']] = {
-                    'values': datum,
-                    'membership': membership,
-                    }
-            except exception.NotFound:
+                member = members[0]
+            except KeyError:
                 # Default can_share
                 datum['can_share'] = bool(datum['can_share'])
                 add.append(datum)
+            else:
+                # Are we overriding can_share?
+                if datum['can_share'] is None:
+                    datum['can_share'] = members[0]['can_share']
+
+                existing[member['id']] = {
+                    'values': datum,
+                    'membership': member,
+                }
 
         # We now have a filtered list of memberships to add and
         # memberships to modify.  Let's start by walking through all
         # the existing image memberships...
-        for memb in image['members']:
+        existing_members = self.db_api.image_member_find(req.context,
+                                                         image_id=image['id'])
+        for memb in existing_members:
             if memb['id'] in existing:
                 # Just update the membership in place
                 update = existing[memb['id']]['values']
@@ -205,12 +210,13 @@ class Controller(object):
         # Look up an existing membership...
         try:
             session = self.db_api.get_session()
-            membership = self.db_api.image_member_find(req.context,
-                                                       image_id, id,
-                                                       session=session)
+            members = self.db_api.image_member_find(req.context,
+                                                    image_id=image_id,
+                                                    member=id,
+                                                    session=session)
             if can_share is not None:
                 values = dict(can_share=can_share)
-                self.db_api.image_member_update(req.context, membership,
+                self.db_api.image_member_update(req.context, members[0],
                                                 values, session=session)
         except exception.NotFound:
             values = dict(image_id=image['id'], member=id,
@@ -250,12 +256,12 @@ class Controller(object):
         # Look up an existing membership
         try:
             session = self.db_api.get_session()
-            member_ref = self.db_api.image_member_find(req.context,
-                                                       image_id,
-                                                       id,
-                                                       session=session)
+            members = self.db_api.image_member_find(req.context,
+                                                    image_id=image_id,
+                                                    member=id,
+                                                    session=session)
             self.db_api.image_member_delete(req.context,
-                                            member_ref,
+                                            members[0],
                                             session=session)
         except exception.NotFound:
             pass
@@ -267,15 +273,13 @@ class Controller(object):
         """
         Retrieves images shared with the given member.
         """
-        params = {}
         try:
-            memberships = self.db_api.image_member_get_memberships(
-                    req.context, id, **params)
+            members = self.db_api.image_member_find(req.context, member=id)
         except exception.NotFound, e:
-            msg = _("Invalid marker. Membership could not be found.")
+            msg = _("Membership could not be found.")
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
-        return dict(shared_images=make_member_list(memberships,
+        return dict(shared_images=make_member_list(members,
                                                    image_id='image_id',
                                                    can_share='can_share'))
 

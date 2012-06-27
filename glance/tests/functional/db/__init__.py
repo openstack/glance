@@ -16,6 +16,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import datetime
 import random
 
@@ -178,6 +179,40 @@ class BaseTestCase(object):
         self.db_api.image_tag_delete(self.context, UUID1, 'snap')
         self.assertRaises(exception.NotFound, self.db_api.image_tag_delete,
                           self.context, UUID1, 'snap')
+
+    def test_image_member_find(self):
+        TENANT1 = _gen_uuid()
+        TENANT2 = _gen_uuid()
+        fixtures = [
+            {'member': TENANT1, 'image_id': UUID1},
+            {'member': TENANT1, 'image_id': UUID2},
+            {'member': TENANT2, 'image_id': UUID1},
+        ]
+        for f in fixtures:
+            self.db_api.image_member_create(self.context, copy.deepcopy(f))
+
+        def _simplify(output):
+            return
+
+        def _assertMemberListMatch(list1, list2):
+            _simple = lambda x: set([(o['member'], o['image_id']) for o in x])
+            self.assertEqual(_simple(list1), _simple(list2))
+
+        output = self.db_api.image_member_find(self.context, member=TENANT1)
+        _assertMemberListMatch([fixtures[0], fixtures[1]], output)
+
+        output = self.db_api.image_member_find(self.context, image_id=UUID1)
+        _assertMemberListMatch([fixtures[0], fixtures[2]], output)
+
+        output = self.db_api.image_member_find(self.context,
+                                               member=TENANT2,
+                                               image_id=UUID1)
+        _assertMemberListMatch([fixtures[2]], output)
+
+        output = self.db_api.image_member_find(self.context,
+                                               member=TENANT2,
+                                               image_id=_gen_uuid())
+        _assertMemberListMatch([], output)
 
 
 class BaseTestCaseSameTime(BaseTestCase):

@@ -45,7 +45,7 @@ def reset():
     global DATA
     DATA = {
         'images': {},
-        'members': {},
+        'members': [],
         'tags': {},
     }
 
@@ -100,7 +100,7 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
 
     #NOTE(bcwaldon: this is a hack until we can get image members with
     # a direct db call
-    image['members'] = DATA['members'].get(image_id, [])
+    image['members'] = image_member_find(context, image_id=image_id)
 
     return image
 
@@ -136,24 +136,26 @@ def image_get_all(context, filters=None, marker=None, limit=None,
 
 
 @log_call
-def image_member_find(context, image_id, tenant_id):
-    image_get(context, image_id)
+def image_member_find(context, image_id=None, member=None):
+    filters = []
+    if image_id is not None:
+        filters.append(lambda m: m['image_id'] == image_id)
+    if member is not None:
+        filters.append(lambda m: m['member'] == member)
 
-    for member in DATA['members'].get(image_id, []):
-        if member['member'] == tenant_id:
-            return member
-
-    raise exception.NotFound()
+    members = DATA['members']
+    for f in filters:
+        members = filter(f, members)
+    return members
 
 
 @log_call
 def image_member_create(context, values):
     member = _image_member_format(values['image_id'],
                                   values['member'],
-                                  values['can_share'])
+                                  values.get('can_share', False))
     global DATA
-    DATA['members'].setdefault(values['image_id'], [])
-    DATA['members'][values['image_id']].append(member)
+    DATA['members'].append(member)
     return member
 
 
@@ -256,19 +258,22 @@ def is_image_sharable(context, image, **kwargs):
 
     # Let's get the membership association
     if 'membership' in kwargs:
-        membership = kwargs['membership']
-        if membership is None:
+        member = kwargs['membership']
+        if member is None:
             # Not shared with us anyway
             return False
     else:
-        try:
-            membership = image_member_find(context, image['id'], context.owner)
-        except exception.NotFound:
+        members = image_member_find(context,
+                                    image_id=image['id'],
+                                    member=context.owner)
+        if members:
+            member = members[0]
+        else:
             # Not shared with us anyway
             return False
 
     # It's the can_share attribute we're now interested in
-    return membership['can_share']
+    return member['can_share']
 
 
 def is_image_visible(context, image):
@@ -291,11 +296,11 @@ def is_image_visible(context, image):
             return True
 
         # Figure out if this image is shared with that tenant
-        try:
-            tmp = image_member_find(context, image['id'], context.owner)
-            return not tmp['deleted']
-        except exception.NotFound:
-            pass
+        members = image_member_find(context,
+                                    image_id=image['id'],
+                                    member=context.owner)
+        if members:
+            return not members[0]['deleted']
 
     # Private image
     return False

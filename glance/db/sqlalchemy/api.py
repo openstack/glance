@@ -287,14 +287,17 @@ def is_image_sharable(context, image, **kwargs):
             # Not shared with us anyway
             return False
     else:
-        try:
-            membership = image_member_find(context, image['id'], context.owner)
-        except exception.NotFound:
+        members = image_member_find(context,
+                                    image_id=image['id'],
+                                    member=context.owner)
+        if members:
+            member = members[0]
+        else:
             # Not shared with us anyway
             return False
 
     # It's the can_share attribute we're now interested in
-    return membership['can_share']
+    return member['can_share']
 
 
 def is_image_visible(context, image):
@@ -317,11 +320,11 @@ def is_image_visible(context, image):
             return True
 
         # Figure out if this image is shared with that tenant
-        try:
-            tmp = image_member_find(context, image['id'], context.owner)
-            return not tmp['deleted']
-        except exception.NotFound:
-            pass
+        members = image_member_find(context,
+                                    image_id=image['id'],
+                                    member=context.owner)
+        if members:
+            return not members[0]['deleted']
 
     # Private image
     return False
@@ -728,9 +731,7 @@ def image_member_update(context, memb_ref, values, session=None):
 
 
 def _image_member_update(context, memb_ref, values, session=None):
-    """
-    Used internally by image_member_create and image_member_update
-    """
+    """Apply supplied dictionary of values to a Member object."""
     _drop_protected_attrs(models.ImageMember, values)
     values["deleted"] = False
     values.setdefault('can_share', False)
@@ -747,80 +748,24 @@ def image_member_delete(context, memb_ref, session=None):
     return memb_ref
 
 
-def image_member_get(context, member_id, session=None):
-    """Get an image member or raise if it does not exist."""
-    session = session or get_session()
-    try:
-        query = session.query(models.ImageMember).\
-                options(sqlalchemy.orm.joinedload(models.ImageMember.image)).\
-                filter_by(id=member_id)
+def image_member_find(context, image_id=None, member=None, session=None):
+    """Find all members that meet the given criteria
 
-        if not can_show_deleted(context):
-            query = query.filter_by(deleted=False)
-
-        member = query.one()
-
-    except sqlalchemy.orm.exc.NoResultFound:
-        raise exception.NotFound("No membership found with ID %s" % member_id)
-
-    # Make sure they can look at it
-    if not is_image_visible(context, member.image):
-        raise exception.Forbidden("Image not visible to you")
-
-    return member
-
-
-def image_member_find(context, image_id, member, session=None):
-    """Find a membership association between image and member."""
-    session = session or get_session()
-    try:
-        # Note lack of permissions check; this function is called from
-        # is_image_visible(), so avoid recursive calls
-        query = session.query(models.ImageMember).\
-                options(sqlalchemy.orm.joinedload(models.ImageMember.image)).\
-                filter_by(image_id=image_id).\
-                filter_by(member=member)
-
-        if not can_show_deleted(context):
-            query = query.filter_by(deleted=False)
-
-        return query.one()
-
-    except sqlalchemy.orm.exc.NoResultFound:
-        raise exception.NotFound("No membership found for image %s member %s" %
-                                 (image_id, member))
-
-
-def image_member_get_memberships(context, member, marker=None, limit=None,
-                                 sort_key='created_at', sort_dir='desc'):
+    :param image_id: identifier of image entity
+    :param member: tenant to which membership has been granted
     """
-    Get all image memberships for the given member.
+    session = session or get_session()
 
-    :param member: the member to look up memberships for
-    :param marker: membership id after which to start page
-    :param limit: maximum number of memberships to return
-    :param sort_key: membership attribute by which results should be sorted
-    :param sort_dir: direction in which results should be sorted (asc, desc)
-    """
+    # Note lack of permissions check; this function is called from
+    # is_image_visible(), so avoid recursive calls
+    query = session.query(models.ImageMember)
 
-    session = get_session()
-    query = session.query(models.ImageMember).\
-            options(sqlalchemy.orm.joinedload(models.ImageMember.image)).\
-            filter_by(member=member)
-
+    if image_id is not None:
+        query = query.filter_by(image_id=image_id)
+    if member is not None:
+        query = query.filter_by(member=member)
     if not can_show_deleted(context):
         query = query.filter_by(deleted=False)
-
-    marker_membership = None
-    if marker is not None:
-        # memberships returned should be created before the membership
-        # defined by marker
-        marker_membership = image_member_get(context, marker)
-
-    query = paginate_query(query, models.ImageMember, limit,
-                           [sort_key, 'id'],
-                           marker=marker_membership,
-                           sort_dir=sort_dir)
 
     return query.all()
 
