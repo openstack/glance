@@ -190,7 +190,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         cache_file_options = {
             'image_cache_dir': self.api_server.image_cache_dir,
             'image_cache_driver': self.image_cache_driver,
-            'registry_port': self.api_server.registry_port,
+            'registry_port': self.registry_server.bind_port,
             'log_file': os.path.join(self.test_dir, 'cache.log'),
             'metadata_encryption_key': "012345678901234567890123456789ab"
         }
