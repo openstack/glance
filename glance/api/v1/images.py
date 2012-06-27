@@ -416,9 +416,11 @@ class Controller(controller.BaseController):
             LOG.debug(_("Updating image %(image_id)s data. "
                       "Checksum set to %(checksum)s, size set "
                       "to %(size)d"), locals())
-            registry.update_image_metadata(req.context, image_id,
-                                           {'checksum': checksum,
-                                            'size': size})
+            update_data = {'checksum': checksum,
+                           'size': size}
+            image_meta = registry.update_image_metadata(req.context,
+                                                        image_id,
+                                                        update_data)
             self.notifier.info('image.upload', image_meta)
 
             return location
