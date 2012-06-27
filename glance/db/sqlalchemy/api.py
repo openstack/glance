@@ -220,7 +220,7 @@ def image_destroy(context, image_id):
         for prop_ref in image_ref.properties:
             image_property_delete(context, prop_ref, session=session)
 
-        for memb_ref in image_ref.members:
+        for memb_ref in image_member_find(context, image_id=image_id):
             image_member_delete(context, memb_ref, session=session)
 
         return image_ref
@@ -233,7 +233,6 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
     try:
         query = session.query(models.Image).\
                 options(sqlalchemy.orm.joinedload(models.Image.properties)).\
-                options(sqlalchemy.orm.joinedload(models.Image.members)).\
                 filter_by(id=image_id)
 
         # filter out deleted images if context disallows it
@@ -445,8 +444,7 @@ def image_get_all(context, filters=None, marker=None, limit=None,
 
     session = get_session()
     query = session.query(models.Image).\
-            options(sqlalchemy.orm.joinedload(models.Image.properties)).\
-            options(sqlalchemy.orm.joinedload(models.Image.members))
+            options(sqlalchemy.orm.joinedload(models.Image.properties))
 
     if 'size_min' in filters:
         query = query.filter(models.Image.size >= filters['size_min'])
@@ -459,9 +457,10 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     if 'is_public' in filters and filters['is_public'] is not None:
         the_filter = [models.Image.is_public == filters['is_public']]
         if filters['is_public'] and context.owner is not None:
-            the_filter.extend([(models.Image.owner == context.owner),
-                               models.Image.members.any(member=context.owner,
-                                                        deleted=False)])
+            the_filter.extend([
+                (models.Image.owner == context.owner),
+                models.Image.members.any(member=context.owner, deleted=False)
+            ])
         if len(the_filter) > 1:
             query = query.filter(sqlalchemy.sql.or_(*the_filter))
         else:
