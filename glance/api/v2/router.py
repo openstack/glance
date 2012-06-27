@@ -43,6 +43,10 @@ class API(wsgi.Router):
                        controller=schemas_resource,
                        action='image',
                        conditions={'method': ['GET']})
+        mapper.connect('/schemas/images',
+                       controller=schemas_resource,
+                       action='images',
+                       conditions={'method': ['GET']})
         mapper.connect('/schemas/image/access',
                        controller=schemas_resource,
                        action='access',
