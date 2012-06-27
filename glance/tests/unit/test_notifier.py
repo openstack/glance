@@ -15,7 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import logging
 
 import kombu.entity
@@ -34,13 +33,18 @@ from glance.openstack.common import importutils
 from glance.tests import utils
 
 
-class TestInvalidNotifier(utils.BaseTestCase):
-    """Test that notifications are generated appropriately"""
+class TestNotifier(utils.BaseTestCase):
 
-    def test_cannot_create(self):
+    def test_invalid_strategy(self):
         self.config(notifier_strategy="invalid_notifier")
         self.assertRaises(exception.InvalidNotifierStrategy,
                           notifier.Notifier)
+
+    def test_custom_strategy(self):
+        st = "glance.notifier.notify_noop.NoopStrategy"
+        self.config(notifier_strategy=st)
+        #NOTE(bcwaldon): the fact that Notifier is instantiated means we're ok
+        notifier.Notifier()
 
 
 class TestLoggingNotifier(utils.BaseTestCase):
