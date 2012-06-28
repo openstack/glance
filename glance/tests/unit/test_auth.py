@@ -492,3 +492,51 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
                       "type encountered")
         except exception.NoServiceEndpoint:
             pass
+
+
+class TestEndpoints(utils.BaseTestCase):
+
+    def setUp(self):
+        self.service_catalog = [
+            {'endpoint_links': [],
+             'endpoints': [
+                 {'adminURL': 'http://localhost:8080/',
+                 'region': 'RegionOne',
+                 'internalURL': 'http://internalURL/',
+                 'publicURL': 'http://publicURL/'},
+             ],
+             'type': 'object-store',
+             'name': 'Object Storage Service',
+            }]
+
+    def test_get_endpoint_with_custom_server_type(self):
+        endpoint = auth.get_endpoint(self.service_catalog,
+                                     service_type='object-store')
+        self.assertEquals('http://publicURL/', endpoint)
+
+    def test_get_endpoint_with_custom_endpoint_type(self):
+        endpoint = auth.get_endpoint(self.service_catalog,
+                                     service_type='object-store',
+                                     endpoint_type='internalURL')
+        self.assertEquals('http://internalURL/', endpoint)
+
+    def test_get_endpoint_raises_with_invalid_service_type(self):
+        self.assertRaises(exception.NoServiceEndpoint,
+                          auth.get_endpoint,
+                          self.service_catalog,
+                          service_type='foo')
+
+    def test_get_endpoint_raises_with_invalid_endpoint_type(self):
+        self.assertRaises(exception.NoServiceEndpoint,
+                          auth.get_endpoint,
+                          self.service_catalog,
+                          service_type='object-store',
+                          endpoint_type='foo')
+
+    def test_get_endpoint_raises_with_invalid_endpoint_region(self):
+        self.assertRaises(exception.NoServiceEndpoint,
+                          auth.get_endpoint,
+                          self.service_catalog,
+                          service_type='object-store',
+                          endpoint_region='foo',
+                          endpoint_type='internalURL')
