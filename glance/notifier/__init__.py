@@ -16,6 +16,7 @@
 #    under the License.
 
 
+import logging
 import socket
 import uuid
 
@@ -31,7 +32,9 @@ notifier_opts = [
 CONF = cfg.CONF
 CONF.register_opts(notifier_opts)
 
-_STRATEGIES = {
+LOG = logging.getLogger(__name__)
+
+_STRATEGY_ALIASES = {
     "logging": "glance.notifier.notify_log.LoggingStrategy",
     "rabbit": "glance.notifier.notify_kombu.RabbitStrategy",
     "qpid": "glance.notifier.notify_qpid.QpidStrategy",
@@ -44,12 +47,21 @@ class Notifier(object):
     """Uses a notification strategy to send out messages about events."""
 
     def __init__(self, strategy=None):
-        strategy = CONF.notifier_strategy
+        _strategy = CONF.notifier_strategy
         try:
-            strategy_cls = _STRATEGIES[strategy]
-            self.strategy = importutils.import_class(strategy_cls)()
-        except (KeyError, ImportError):
+            strategy = _STRATEGY_ALIASES[_strategy]
+            msg = _('Converted strategy alias %s to %s')
+            LOG.debug(msg % (_strategy, strategy))
+        except KeyError:
+            strategy = _strategy
+            LOG.debug(_('No strategy alias found for %s') % strategy)
+
+        try:
+            strategy_class = importutils.import_class(strategy)
+        except ImportError:
             raise exception.InvalidNotifierStrategy(strategy=strategy)
+        else:
+            self.strategy = strategy_class()
 
     @staticmethod
     def generate_message(event_type, priority, payload):
