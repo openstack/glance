@@ -26,7 +26,7 @@ class RequestContext(object):
 
     def __init__(self, auth_tok=None, user=None, tenant=None, roles=None,
                  is_admin=False, read_only=False, show_deleted=False,
-                 owner_is_tenant=True):
+                 owner_is_tenant=True, service_catalog=None):
         self.auth_tok = auth_tok
         self.user = user
         self.tenant = tenant
@@ -36,6 +36,7 @@ class RequestContext(object):
         self._show_deleted = show_deleted
         self.owner_is_tenant = owner_is_tenant
         self.request_id = glance.common.utils.generate_uuid()
+        self.service_catalog = service_catalog
 
     @property
     def owner(self):

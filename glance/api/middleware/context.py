@@ -16,6 +16,7 @@
 #    under the License.
 
 import logging
+import json
 import webob.exc
 
 from glance.common import wsgi
@@ -85,6 +86,15 @@ class ContextMiddleware(BaseContextMiddleware):
         #NOTE(bcwaldon): This header is deprecated in favor of X-Auth-Token
         deprecated_token = req.headers.get('X-Storage-Token')
 
+        service_catalog = None
+        if req.headers.get('X-Service-Catalog') is not None:
+            try:
+                catalog_header = req.headers.get('X-Service-Catalog')
+                service_catalog = json.loads(catalog_header)
+            except ValueError:
+                raise webob.exc.HTTPInternalServerError(
+                    _('Invalid service catalog json.'))
+
         kwargs = {
             'user': req.headers.get('X-User-Id'),
             'tenant': req.headers.get('X-Tenant-Id'),
@@ -92,6 +102,7 @@ class ContextMiddleware(BaseContextMiddleware):
             'is_admin': CONF.admin_role.strip().lower() in roles,
             'auth_tok': req.headers.get('X-Auth-Token', deprecated_token),
             'owner_is_tenant': CONF.owner_is_tenant,
+            'service_catalog': service_catalog,
         }
 
         return glance.context.RequestContext(**kwargs)

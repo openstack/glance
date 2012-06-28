@@ -238,3 +238,7 @@ class TestContext(utils.BaseTestCase):
         contexts = [context.RequestContext().request_id for _ in range(5)]
         # Check for uniqueness -- set() will normalize its argument
         self.assertEqual(5, len(set(contexts)))
+
+    def test_service_catalog(self):
+        ctx = context.RequestContext(service_catalog=['foo'])
+        self.assertEqual(['foo'], ctx.service_catalog)

@@ -7,7 +7,8 @@ from glance.tests.unit import base
 
 
 class TestContextMiddleware(base.IsolatedUnitTest):
-    def _build_request(self, roles=None, identity_status='Confirmed'):
+    def _build_request(self, roles=None, identity_status='Confirmed',
+            service_catalog=None):
         req = webob.Request.blank('/')
         req.headers['x-auth-token'] = 'token1'
         req.headers['x-identity-status'] = identity_status
@@ -15,6 +16,8 @@ class TestContextMiddleware(base.IsolatedUnitTest):
         req.headers['x-tenant-id'] = 'tenant1'
         _roles = roles or ['role1', 'role2']
         req.headers['x-roles'] = ','.join(_roles)
+        if service_catalog:
+            req.headers['x-service-catalog'] = service_catalog
 
         return req
 
@@ -87,6 +90,19 @@ class TestContextMiddleware(base.IsolatedUnitTest):
         req = self._build_request(identity_status='Nope')
         middleware = self._build_middleware()
         self.assertRaises(webob.exc.HTTPUnauthorized,
+                          middleware.process_request, req)
+
+    def test_service_catalog(self):
+        catalog_json = "[{}]"
+        req = self._build_request(service_catalog=catalog_json)
+        self._build_middleware().process_request(req)
+        self.assertEqual([{}], req.context.service_catalog)
+
+    def test_invalid_service_catalog(self):
+        catalog_json = "bad json"
+        req = self._build_request(service_catalog=catalog_json)
+        middleware = self._build_middleware()
+        self.assertRaises(webob.exc.HTTPInternalServerError,
                           middleware.process_request, req)
 
 
