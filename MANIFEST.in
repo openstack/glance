@@ -12,11 +12,9 @@ include glance/openstack/common/README
 include glance/db/sqlalchemy/migrate_repo/README
 include glance/db/sqlalchemy/migrate_repo/migrate.cfg
 include glance/db/sqlalchemy/migrate_repo/versions/*.sql
-include glance/tests/unit/test_migrations.conf
-include glance/tests/functional/data/*
-include glance/tests/etc/*
-include glance/tests/var/*
 graft doc
 graft etc
 graft glance/locale
+graft glance/tests
 graft tools
+global-exclude *.pyc
