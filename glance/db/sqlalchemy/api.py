@@ -446,14 +446,6 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     query = session.query(models.Image).\
             options(sqlalchemy.orm.joinedload(models.Image.properties))
 
-    if 'size_min' in filters:
-        query = query.filter(models.Image.size >= filters['size_min'])
-        del filters['size_min']
-
-    if 'size_max' in filters:
-        query = query.filter(models.Image.size <= filters['size_max'])
-        del filters['size_max']
-
     if 'is_public' in filters and filters['is_public'] is not None:
         the_filter = [models.Image.is_public == filters['is_public']]
         if filters['is_public'] and context.owner is not None:
@@ -488,7 +480,25 @@ def image_get_all(context, filters=None, marker=None, limit=None,
 
     for (k, v) in filters.items():
         if v is not None:
-            query = query.filter(getattr(models.Image, k) == v)
+            key = k
+            if k.endswith('_min') or k.endswith('_max'):
+                key = key[0:-4]
+                try:
+                    v = int(v)
+                except ValueError:
+                    msg = _("Unable to filter on a range "
+                            "with a non-numeric value.")
+                    raise exception.InvalidFilterRangeValue(msg)
+
+            if k.endswith('_min'):
+                query = query.filter(getattr(models.Image, key) >= v)
+            elif k.endswith('_max'):
+                query = query.filter(getattr(models.Image, key) <= v)
+            elif hasattr(models.Image, key):
+                query = query.filter(getattr(models.Image, key) == v)
+            else:
+                query = query.filter(models.Image.properties.any(name=key,
+                                                                 value=v))
 
     marker_image = None
     if marker is not None:

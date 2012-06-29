@@ -121,6 +121,10 @@ class InvalidSortKey(Invalid):
     message = _("Sort key supplied was not valid.")
 
 
+class InvalidFilterRangeValue(Invalid):
+    message = _("Unable to filter using the specified range.")
+
+
 class AuthorizationRedirect(GlanceException):
     message = _("Redirecting to %(uri)s for authorization.")
 

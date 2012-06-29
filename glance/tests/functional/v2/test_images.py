@@ -679,3 +679,94 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/images?sort_dir=foo')
         response = requests.get(path, headers=self._headers())
         self.assertEqual(400, response.status_code)
+
+    def test_get_images_with_filtering(self):
+        image_ids = []
+
+        # Image list should be empty
+        path = self._url('/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # Create an image
+        path = self._url('/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-1', 'type': 'kernel', 'visibility':
+        'public'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+        image_id = json.loads(response.text)['image']['id']
+
+        # Create an image
+        path = self._url('/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-2', 'type': 'kernel', 'visibility':
+        'private', 'foo': 'bar'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+        image_id = json.loads(response.text)['image']['id']
+
+        # Create an image
+        path = self._url('/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-3', 'type': 'kernel', 'visibility':
+        'public'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+        image_id = json.loads(response.text)['image']['id']
+
+        # Image list should contain 3 images
+        path = self._url('/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(3, len(images))
+        image_ids = [image['id'] for image in images]
+
+        # Filter images using name as key
+        path = self._url('/images?name=image-2')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(images[0]['name'], 'image-2')
+
+        # Filter images with user defined property
+        path = self._url('/images?foo=bar')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(images[0]['name'], 'image-2')
+
+        # Filter images with undefined property
+        path = self._url('/images?poo=bear')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # Filter images with visibility key
+        path = self._url('/images?visibility=private')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(images[0]['name'], 'image-2')
+
+        # Filter images using name and different visibility
+        path = self._url('/images?name=image-2&visibility=private')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(images[0]['name'], 'image-2')
+
+        # Filter images using name and visibility
+        path = self._url('/images?visibility=private&name=image-3')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(0, len(images))

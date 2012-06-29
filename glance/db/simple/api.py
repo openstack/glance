@@ -86,6 +86,67 @@ def _image_format(image_id, **values):
     return image
 
 
+def _filter_images(images, filters):
+    filtered_images = []
+    for i, image in enumerate(images):
+        add = True
+        for k, value in filters.iteritems():
+            key = k
+            if k.endswith('_min') or k.endswith('_max'):
+                key = key[0:-4]
+                try:
+                    value = int(value)
+                except ValueError:
+                    msg = _("Unable to filter on a range "
+                            "with a non-numeric value.")
+                    raise exception.InvalidFilterRangeValue(msg)
+            if k.endswith('_min'):
+                add = image.get(key) >= value
+            elif k.endswith('_max'):
+                add = image.get(key) <= value
+            elif image.get(k) is not None:
+                add = image.get(key) == value
+            else:
+                add = image['properties'].get(key) == value
+            if not add:
+                break
+
+        if add:
+            filtered_images.append(image)
+    return filtered_images
+
+
+def _do_pagination(context, images, marker, limit, show_deleted):
+    start = 0
+    end = -1
+    if marker is None:
+        start = 0
+    else:
+        # Check that the image is accessible
+        image_get(context, marker, force_show_deleted=show_deleted)
+
+        for i, image in enumerate(images):
+            if image['id'] == marker:
+                start = i + 1
+                break
+        else:
+            raise exception.NotFound()
+
+    end = start + limit if limit else None
+    return images[start:end]
+
+
+def _sort_images(images, sort_key, sort_dir):
+    reverse = False
+    if images and not images[0].get(sort_key):
+        raise exception.InvalidSortKey()
+    keyfn = lambda x: (x[sort_key], x['created_at'], x['id'])
+    reverse = sort_dir == 'desc'
+    images.sort(key=keyfn, reverse=reverse)
+
+    return images
+
+
 @log_call
 def image_get(context, image_id, session=None, force_show_deleted=False):
     try:
@@ -105,30 +166,12 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
 def image_get_all(context, filters=None, marker=None, limit=None,
                   sort_key='created_at', sort_dir='desc'):
     filters = filters or {}
-    reverse = False
-    start = 0
-    end = -1
     images = DATA['images'].values()
-    if images and not images[0].get(sort_key):
-        raise exception.InvalidSortKey()
-    keyfn = lambda x: (x[sort_key], x['created_at'], x['id'])
-    reverse = sort_dir == 'desc'
-    images.sort(key=keyfn, reverse=reverse)
-    if marker is None:
-        start = 0
-    else:
-        # Check that the image is accessible
-        image_get(context, marker, force_show_deleted=filters.get('deleted'))
-
-        for i, image in enumerate(images):
-            if image['id'] == marker:
-                start = i + 1
-                break
-        else:
-            raise exception.NotFound()
-
-    end = start + limit if limit else None
-    return images[start:end]
+    images = _filter_images(images, filters)
+    images = _sort_images(images, sort_key, sort_dir)
+    images = _do_pagination(context, images, marker, limit,
+                            filters.get('deleted'))
+    return images
 
 
 @log_call

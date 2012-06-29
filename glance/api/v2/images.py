@@ -86,11 +86,12 @@ class ImagesController(object):
         return self._normalize_properties(dict(image))
 
     def index(self, req, marker=None, limit=None, sort_key='created_at',
-              sort_dir='desc'):
+              sort_dir='desc', filters={}):
+        filters['deleted'] = False
         #NOTE(bcwaldon): is_public=True gets public images and those
         # owned by the authenticated tenant
-        filters = {'deleted': False, 'is_public': True}
         result = {}
+        filters.setdefault('is_public', True)
         if limit is None:
             limit = CONF.limit_param_default
         limit = min(CONF.api_limit_max, limit)
@@ -102,6 +103,8 @@ class ImagesController(object):
                                                sort_dir=sort_dir)
             if len(images) != 0 and len(images) == limit:
                 result['next_marker'] = images[-1]['id']
+        except exception.InvalidFilterRangeValue as e:
+            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
         except exception.InvalidSortKey as e:
             raise webob.exc.HTTPBadRequest(explanation=unicode(e))
         except exception.NotFound as e:
@@ -204,13 +207,26 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
         return sort_dir
 
+    def _get_filters(self, filters):
+        visibility = filters.pop('visibility', None)
+        if visibility:
+            if visibility in ['public', 'private']:
+                filters['is_public'] = visibility == 'public'
+            else:
+                msg = _('Invalid visibility value: %s') % visibility
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+
+        return filters
+
     def index(self, request):
-        limit = request.params.get('limit', None)
-        marker = request.params.get('marker', None)
-        sort_dir = request.params.get('sort_dir', 'desc')
+        params = request.params.copy()
+        limit = params.pop('limit', None)
+        marker = params.pop('marker', None)
+        sort_dir = params.pop('sort_dir', 'desc')
         query_params = {
-            'sort_key': request.params.get('sort_key', 'created_at'),
+            'sort_key': params.pop('sort_key', 'created_at'),
             'sort_dir': self._validate_sort_dir(sort_dir),
+            'filters': self._get_filters(params),
         }
 
         if marker is not None:
