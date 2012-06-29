@@ -41,11 +41,11 @@ class TestSchemas(functional.FunctionalTest):
         self.assertEqual(set(['image', 'images', 'access']),
                          set(output.keys()))
 
-        # Ensure the link works and custom properties are loaded
+        # Ensure the image link works and custom properties are loaded
         path = 'http://%s:%d%s' % ('0.0.0.0', self.api_port, output['image'])
         response = requests.get(path)
         self.assertEqual(response.status_code, 200)
-        schema = json.loads(response.text)
+        image_schema = json.loads(response.text)
         expected = set([
             'id',
             'name',
@@ -60,9 +60,18 @@ class TestSchemas(functional.FunctionalTest):
             'access',
             'schema',
         ])
-        self.assertEqual(expected, set(schema['properties'].keys()))
+        self.assertEqual(expected, set(image_schema['properties'].keys()))
 
+        # Ensure the access link works
         path = 'http://%s:%d%s' % ('0.0.0.0', self.api_port, output['access'])
         response = requests.get(path)
         self.assertEqual(response.status_code, 200)
         json.loads(response.text)
+
+        # Ensure the images link works and agrees with the image schema
+        path = 'http://%s:%d%s' % ('0.0.0.0', self.api_port, output['images'])
+        response = requests.get(path)
+        self.assertEqual(response.status_code, 200)
+        images_schema = json.loads(response.text)
+        item_schema = images_schema['properties']['images']['items']
+        self.assertEqual(item_schema, image_schema)

@@ -22,6 +22,8 @@ class Controller(object):
     def __init__(self, custom_image_properties=None):
         self.access_schema = image_access.get_schema()
         self.image_schema = images.get_schema(custom_image_properties)
+        self.image_collection_schema = images.get_collection_schema(
+                custom_image_properties)
 
     def index(self, req):
         return {

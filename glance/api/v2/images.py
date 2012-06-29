@@ -366,8 +366,8 @@ def get_schema(custom_properties=None):
     return schema
 
 
-def get_collection_schema():
-    image_schema = get_schema()
+def get_collection_schema(custom_properties=None):
+    image_schema = get_schema(custom_properties)
     return glance.schema.CollectionSchema('images', image_schema)
 
 
