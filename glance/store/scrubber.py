@@ -20,11 +20,11 @@ import eventlet
 import os
 import time
 
+from glance import context
 from glance.common import utils
 from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 from glance import registry
-from glance.registry import client
 from glance import store
 import glance.store.filesystem
 import glance.store.http
@@ -74,6 +74,9 @@ class Scrubber(object):
         self.datadir = CONF.scrubber_datadir
         self.cleanup = CONF.cleanup_scrubber
         self.cleanup_time = CONF.cleanup_scrubber_time
+        # configs for registry API store auth
+        self.admin_user = CONF.admin_user
+        self.admin_tenant = CONF.admin_tenant_name
 
         host, port = CONF.registry_host, CONF.registry_port
 
@@ -82,7 +85,10 @@ class Scrubber(object):
                   'cleanup_time': self.cleanup_time,
                   'registry_host': host, 'registry_port': port})
 
-        self.registry = client.RegistryClient(host, port)
+        registry.configure_registry_client()
+        registry.configure_registry_admin_creds()
+        ctx = context.RequestContext()
+        self.registry = registry.get_registry_client(ctx)
 
         utils.safe_mkdirs(self.datadir)
 
@@ -124,7 +130,12 @@ class Scrubber(object):
         file_path = os.path.join(self.datadir, str(id))
         try:
             LOG.debug(_("Deleting %(uri)s") % {'uri': uri})
-            store.delete_from_backend(uri)
+            # Here we create a request context with credentials to support
+            # delayed delete when using multi-tenant backend storage
+            ctx = context.RequestContext(auth_tok=self.registry.auth_tok,
+                                         user=self.admin_user,
+                                         tenant=self.admin_tenant)
+            store.delete_from_backend(ctx, uri)
         except store.UnsupportedBackend:
             msg = _("Failed to delete image from store (%(uri)s).")
             LOG.error(msg % {'uri': uri})

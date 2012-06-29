@@ -46,9 +46,6 @@ store_opts = [
 CONF = cfg.CONF
 CONF.register_opts(store_opts)
 
-# Set of store objects, constructed in create_stores()
-STORES = {}
-
 
 class ImageAddResult(object):
 
@@ -161,6 +158,7 @@ def create_stores():
     from the given config. Duplicates are not re-registered.
     """
     store_count = 0
+    store_classes = set()
     for store_entry in CONF.known_stores:
         store_entry = store_entry.strip()
         if not store_entry:
@@ -173,10 +171,10 @@ def create_stores():
                                    'No schemes associated with it.'
                                    % store_cls)
         else:
-            if store_cls not in STORES:
+            if store_cls not in store_classes:
                 LOG.debug("Registering store %s with schemes %s",
                           store_cls, schemes)
-                STORES[store_cls] = store_instance
+                store_classes.add(store_cls)
                 scheme_map = {}
                 for scheme in schemes:
                     loc_cls = store_instance.get_store_location_class()
@@ -191,7 +189,7 @@ def create_stores():
     return store_count
 
 
-def get_store_from_scheme(scheme):
+def get_store_from_scheme(context, scheme):
     """
     Given a scheme, return the appropriate store object
     for handling that scheme.
@@ -199,10 +197,11 @@ def get_store_from_scheme(scheme):
     if scheme not in location.SCHEME_TO_CLS_MAP:
         raise exception.UnknownScheme(scheme=scheme)
     scheme_info = location.SCHEME_TO_CLS_MAP[scheme]
-    return STORES[scheme_info['store_class']]
+    store = scheme_info['store_class'](context)
+    return store
 
 
-def get_store_from_uri(uri):
+def get_store_from_uri(context, uri):
     """
     Given a URI, return the store object that would handle
     operations on the URI.
@@ -210,30 +209,31 @@ def get_store_from_uri(uri):
     :param uri: URI to analyze
     """
     scheme = uri[0:uri.find('/') - 1]
-    return get_store_from_scheme(scheme)
+    store = get_store_from_scheme(context, scheme)
+    return store
 
 
-def get_from_backend(uri, **kwargs):
+def get_from_backend(context, uri, **kwargs):
     """Yields chunks of data from backend specified by uri"""
 
-    store = get_store_from_uri(uri)
+    store = get_store_from_uri(context, uri)
     loc = location.get_location_from_uri(uri)
 
     return store.get(loc)
 
 
-def get_size_from_backend(uri):
+def get_size_from_backend(context, uri):
     """Retrieves image size from backend specified by uri"""
 
-    store = get_store_from_uri(uri)
+    store = get_store_from_uri(context, uri)
     loc = location.get_location_from_uri(uri)
 
     return store.get_size(loc)
 
 
-def delete_from_backend(uri, **kwargs):
+def delete_from_backend(context, uri, **kwargs):
     """Removes chunks of data from backend specified by uri"""
-    store = get_store_from_uri(uri)
+    store = get_store_from_uri(context, uri)
     loc = location.get_location_from_uri(uri)
 
     try:
@@ -262,7 +262,7 @@ def schedule_delete_from_backend(uri, context, image_id, **kwargs):
         registry.update_image_metadata(context, image_id,
                                        {'status': 'deleted'})
         try:
-            return delete_from_backend(uri, **kwargs)
+            return delete_from_backend(context, uri, **kwargs)
         except (UnsupportedBackend,
                 exception.StoreDeleteNotSupported,
                 exception.NotFound):
@@ -293,6 +293,6 @@ def schedule_delete_from_backend(uri, context, image_id, **kwargs):
                                    {'status': 'pending_delete'})
 
 
-def add_to_backend(scheme, image_id, data, size):
-    store = get_store_from_scheme(scheme)
+def add_to_backend(context, scheme, image_id, data, size):
+    store = get_store_from_scheme(context, scheme)
     return store.add(image_id, data, size)

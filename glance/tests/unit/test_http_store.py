@@ -125,9 +125,10 @@ class TestHttpStore(base.StoreClearingUnitTest):
     def test_http_delete_raise_error(self):
         uri = "https://netloc/path/to/file.tar.gz"
         loc = get_location_from_uri(uri)
+        ctx = context.RequestContext()
         self.assertRaises(NotImplementedError, self.store.delete, loc)
         self.assertRaises(exception.StoreDeleteNotSupported,
-                          delete_from_backend, uri)
+                          delete_from_backend, ctx, uri)
 
     def test_http_schedule_delete_swallows_error(self):
         uri = "https://netloc/path/to/file.tar.gz"

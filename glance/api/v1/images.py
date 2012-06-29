@@ -34,6 +34,7 @@ from webob.exc import (HTTPError,
 from glance.api import common
 from glance.api import policy
 import glance.api.v1
+from glance import context
 from glance.api.v1 import controller
 from glance.api.v1 import filters
 from glance.common import exception
@@ -251,9 +252,9 @@ class Controller(controller.BaseController):
         return Controller._validate_source(source, req)
 
     @staticmethod
-    def _get_from_store(where):
+    def _get_from_store(context, where):
         try:
-            image_data, image_size = get_from_backend(where)
+            image_data, image_size = get_from_backend(context, where)
         except exception.NotFound, e:
             raise HTTPNotFound(explanation="%s" % e)
         image_size = int(image_size) if image_size else None
@@ -275,7 +276,8 @@ class Controller(controller.BaseController):
         if image_meta.get('size') == 0:
             image_iterator = iter([])
         else:
-            image_iterator, size = self._get_from_store(image_meta['location'])
+            image_iterator, size = self._get_from_store(req.context,
+                                                        image_meta['location'])
             image_iterator = utils.cooperative_iter(image_iterator)
             image_meta['size'] = size or image_meta['size']
 
@@ -310,7 +312,8 @@ class Controller(controller.BaseController):
             self.get_store_or_400(req, store)
 
             # retrieve the image size from remote store (if not provided)
-            image_meta['size'] = self._get_size(image_meta, location)
+            image_meta['size'] = self._get_size(req.context, image_meta,
+                                                location)
         else:
             # Ensure that the size attribute is set to zero for directly
             # uploadable images (if not provided). The size will be set
@@ -357,7 +360,8 @@ class Controller(controller.BaseController):
 
         copy_from = self._copy_from(req)
         if copy_from:
-            image_data, image_size = self._get_from_store(copy_from)
+            image_data, image_size = self._get_from_store(req.context,
+                                                          copy_from)
             image_meta['size'] = image_size or image_meta['size']
         else:
             try:
@@ -555,9 +559,10 @@ class Controller(controller.BaseController):
         location = self._upload(req, image_meta)
         return self._activate(req, image_id, location)
 
-    def _get_size(self, image_meta, location):
+    def _get_size(self, context, image_meta, location):
         # retrieve the image size from remote store (if not provided)
-        return image_meta.get('size', 0) or get_size_from_backend(location)
+        return image_meta.get('size', 0) or get_size_from_backend(context,
+                                                                  location)
 
     def _handle_source(self, req, image_id, image_meta, image_data):
         if image_data or self._copy_from(req):
@@ -675,7 +680,8 @@ class Controller(controller.BaseController):
 
         try:
             if location:
-                image_meta['size'] = self._get_size(image_meta, location)
+                image_meta['size'] = self._get_size(req.context, image_meta,
+                                                    location)
 
             image_meta = registry.update_image_metadata(req.context,
                                                         id,
@@ -781,7 +787,7 @@ class Controller(controller.BaseController):
         :raises HTTPNotFound if store does not exist
         """
         try:
-            return get_store_from_scheme(scheme)
+            return get_store_from_scheme(request.context, scheme)
         except exception.UnknownScheme:
             msg = _("Store for scheme %s not found")
             LOG.error(msg % scheme)
@@ -797,7 +803,7 @@ class Controller(controller.BaseController):
         :param scheme: The backend store scheme
         """
         try:
-            get_store_from_scheme(scheme)
+            get_store_from_scheme(context.RequestContext(), scheme)
         except exception.UnknownScheme:
             msg = _("Store for scheme %s not found")
             LOG.error(msg % scheme)

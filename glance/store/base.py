@@ -28,11 +28,12 @@ class Store(object):
 
     CHUNKSIZE = (16 * 1024 * 1024)  # 16M
 
-    def __init__(self):
+    def __init__(self, context=None):
         """
         Initialize the Store
         """
         self.store_location_class = None
+        self.context = context
         self.configure()
 
         try:

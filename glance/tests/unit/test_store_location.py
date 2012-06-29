@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from glance import context
 from glance.common import exception
 import glance.store
 import glance.store.filesystem
@@ -275,8 +276,9 @@ class TestStoreLocation(base.StoreClearingUnitTest):
             'http': glance.store.http.Store,
             'https': glance.store.http.Store}
 
+        ctx = context.RequestContext()
         for scheme, store in good_results.items():
-            store_obj = glance.store.get_store_from_scheme(scheme)
+            store_obj = glance.store.get_store_from_scheme(ctx, scheme)
             self.assertEqual(store_obj.__class__, store)
 
         bad_results = ['fil', 'swift+h', 'unknown']
@@ -284,4 +286,5 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         for store in bad_results:
             self.assertRaises(exception.UnknownScheme,
                               glance.store.get_store_from_scheme,
+                              ctx,
                               store)

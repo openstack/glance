@@ -91,7 +91,7 @@ class FakeStoreAPI(object):
     def create_stores(self):
         pass
 
-    def get_from_backend(self, location):
+    def get_from_backend(self, context, location):
         try:
             #NOTE(bcwaldon): This fake API is store-agnostic, so we only
             # care about location being some unique string
@@ -99,10 +99,10 @@ class FakeStoreAPI(object):
         except KeyError:
             raise exception.NotFound()
 
-    def get_size_from_backend(self, location):
-        return self.get_from_backend(location)[1]
+    def get_size_from_backend(self, context, location):
+        return self.get_from_backend(context, location)[1]
 
-    def add_to_backend(self, scheme, image_id, data, size):
+    def add_to_backend(self, context, scheme, image_id, data, size):
         if image_id in self.data:
             raise exception.Duplicate()
         self.data[image_id] = (data, size or len(data))

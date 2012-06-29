@@ -60,7 +60,7 @@ class Prefetcher(base.CacheApp):
             LOG.warn(_("No metadata found for image '%s'"), image_id)
             return False
 
-        image_data, image_size = get_from_backend(image_meta['location'])
+        image_data, image_size = get_from_backend(ctx, image_meta['location'])
         LOG.debug(_("Caching image '%s'"), image_id)
         self.cache.cache_image_iter(image_id, image_data)
         return True

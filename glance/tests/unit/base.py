@@ -36,14 +36,12 @@ class StoreClearingUnitTest(test_utils.BaseTestCase):
     def setUp(self):
         super(StoreClearingUnitTest, self).setUp()
         # Ensure stores + locations cleared
-        store.STORES = {}
         location.SCHEME_TO_CLS_MAP = {}
         store.create_stores()
 
     def tearDown(self):
         super(StoreClearingUnitTest, self).tearDown()
         # Ensure stores + locations cleared
-        store.STORES = {}
         location.SCHEME_TO_CLS_MAP = {}
 
 

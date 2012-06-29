@@ -40,7 +40,7 @@ class ImageDataController(object):
         self._get_image(req.context, image_id)
         try:
             location, size, checksum = self.store_api.add_to_backend(
-                    'file', image_id, data, size)
+                    req.context, 'file', image_id, data, size)
         except exception.Duplicate:
             raise webob.exc.HTTPConflict()
 
@@ -48,10 +48,12 @@ class ImageDataController(object):
         self.db_api.image_update(req.context, image_id, values)
 
     def download(self, req, image_id):
-        image = self._get_image(req.context, image_id)
+        ctx = req.context
+        image = self._get_image(ctx, image_id)
         location = image['location']
         if location:
-            image_data, image_size = self.store_api.get_from_backend(location)
+            image_data, image_size = self.store_api.get_from_backend(ctx,
+                                                                     location)
             return {'data': image_data, 'size': image_size}
         else:
             raise webob.exc.HTTPNotFound(_("No image data could be found"))
