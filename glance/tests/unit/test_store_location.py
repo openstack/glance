@@ -43,6 +43,7 @@ class TestStoreLocation(base.StoreClearingUnitTest):
             'https://user:pass@example.com:80/images/some-id',
             'http://images.oracle.com/123456',
             'swift://account%3Auser:pass@authurl.com/container/obj-id',
+            'swift://storeurl.com/container/obj-id',
             'swift+https://account%3Auser:pass@authurl.com/container/obj-id',
             's3://accesskey:secretkey@s3.amazonaws.com/bucket/key-id',
             's3://accesskey:secretwith/aslash@s3.amazonaws.com/bucket/key-id',
@@ -143,8 +144,8 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         loc.parse_uri(uri)
 
         self.assertEqual("swift", loc.scheme)
-        self.assertEqual("example.com", loc.authurl)
-        self.assertEqual("https://example.com", loc.swift_auth_url)
+        self.assertEqual("example.com", loc.auth_or_store_url)
+        self.assertEqual("https://example.com", loc.swift_url)
         self.assertEqual("images", loc.container)
         self.assertEqual("1", loc.obj)
         self.assertEqual(None, loc.user)
@@ -154,8 +155,8 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         loc.parse_uri(uri)
 
         self.assertEqual("swift+https", loc.scheme)
-        self.assertEqual("authurl.com", loc.authurl)
-        self.assertEqual("https://authurl.com", loc.swift_auth_url)
+        self.assertEqual("authurl.com", loc.auth_or_store_url)
+        self.assertEqual("https://authurl.com", loc.swift_url)
         self.assertEqual("images", loc.container)
         self.assertEqual("1", loc.obj)
         self.assertEqual("user", loc.user)
@@ -166,8 +167,8 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         loc.parse_uri(uri)
 
         self.assertEqual("swift+https", loc.scheme)
-        self.assertEqual("authurl.com/v1", loc.authurl)
-        self.assertEqual("https://authurl.com/v1", loc.swift_auth_url)
+        self.assertEqual("authurl.com/v1", loc.auth_or_store_url)
+        self.assertEqual("https://authurl.com/v1", loc.swift_url)
         self.assertEqual("container", loc.container)
         self.assertEqual("12345", loc.obj)
         self.assertEqual("user", loc.user)
@@ -179,12 +180,25 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         loc.parse_uri(uri)
 
         self.assertEqual("swift+http", loc.scheme)
-        self.assertEqual("authurl.com/v1", loc.authurl)
-        self.assertEqual("http://authurl.com/v1", loc.swift_auth_url)
+        self.assertEqual("authurl.com/v1", loc.auth_or_store_url)
+        self.assertEqual("http://authurl.com/v1", loc.swift_url)
         self.assertEqual("container", loc.container)
         self.assertEqual("12345", loc.obj)
         self.assertEqual("a:user@example.com", loc.user)
         self.assertEqual("p@ss", loc.key)
+        self.assertEqual(uri, loc.get_uri())
+
+        # multitenant puts store URL in the location (not auth)
+        uri = ('swift+http://storeurl.com/v1/container/12345')
+        loc.parse_uri(uri)
+
+        self.assertEqual("swift+http", loc.scheme)
+        self.assertEqual("storeurl.com/v1", loc.auth_or_store_url)
+        self.assertEqual("http://storeurl.com/v1", loc.swift_url)
+        self.assertEqual("container", loc.container)
+        self.assertEqual("12345", loc.obj)
+        self.assertEqual(None, loc.user)
+        self.assertEqual(None, loc.key)
         self.assertEqual(uri, loc.get_uri())
 
         bad_uri = 'swif://'

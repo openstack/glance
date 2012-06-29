@@ -25,6 +25,7 @@ import math
 import urllib
 import urlparse
 
+from glance.common import auth
 from glance.common import exception
 from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
@@ -57,6 +58,7 @@ swift_opts = [
     cfg.IntOpt('swift_store_large_object_chunk_size',
                default=DEFAULT_LARGE_OBJECT_CHUNK_SIZE),
     cfg.BoolOpt('swift_store_create_container_on_put', default=False),
+    cfg.BoolOpt('swift_store_multi_tenant', default=False),
     ]
 
 CONF = cfg.CONF
@@ -74,6 +76,10 @@ class StoreLocation(glance.store.location.StoreLocation):
         swift+http://user:pass@authurl.com/container/obj-id
         swift+https://user:pass@authurl.com/container/obj-id
 
+    When using multi-tenant a URI might look like this (a storage URL):
+
+        swift+https://example.com/container/obj-id
+
     The swift+http:// URIs indicate there is an HTTP authentication URL.
     The default for Swift is an HTTPS authentication URL, so swift:// and
     swift+https:// are the same...
@@ -83,28 +89,28 @@ class StoreLocation(glance.store.location.StoreLocation):
         self.scheme = self.specs.get('scheme', 'swift+https')
         self.user = self.specs.get('user')
         self.key = self.specs.get('key')
-        self.authurl = self.specs.get('authurl')
+        self.auth_or_store_url = self.specs.get('auth_or_store_url')
         self.container = self.specs.get('container')
         self.obj = self.specs.get('obj')
 
     def _get_credstring(self):
-        if self.user:
+        if self.user and self.key:
             return '%s:%s@' % (urllib.quote(self.user), urllib.quote(self.key))
         return ''
 
     def get_uri(self):
-        authurl = self.authurl
-        if authurl.startswith('http://'):
-            authurl = authurl[7:]
-        elif authurl.startswith('https://'):
-            authurl = authurl[8:]
+        auth_or_store_url = self.auth_or_store_url
+        if auth_or_store_url.startswith('http://'):
+            auth_or_store_url = auth_or_store_url[len('http://'):]
+        elif auth_or_store_url.startswith('https://'):
+            auth_or_store_url = auth_or_store_url[len('https://'):]
 
         credstring = self._get_credstring()
-        authurl = authurl.strip('/')
+        auth_or_store_url = auth_or_store_url.strip('/')
         container = self.container.strip('/')
         obj = self.obj.strip('/')
 
-        return '%s://%s%s/%s/%s' % (self.scheme, credstring, authurl,
+        return '%s://%s%s/%s/%s' % (self.scheme, credstring, auth_or_store_url,
                                     container, obj)
 
     def parse_uri(self, uri):
@@ -163,6 +169,7 @@ class StoreLocation(glance.store.location.StoreLocation):
             self.key = urllib.unquote(key)
         else:
             self.user = None
+            self.key = None
         path_parts = path.split('/')
         try:
             self.obj = path_parts.pop()
@@ -170,14 +177,14 @@ class StoreLocation(glance.store.location.StoreLocation):
             if not netloc.startswith('http'):
                 # push hostname back into the remaining to build full authurl
                 path_parts.insert(0, netloc)
-                self.authurl = '/'.join(path_parts)
+                self.auth_or_store_url = '/'.join(path_parts)
         except IndexError:
             reason = _("Badly formed Swift URI: %s") % uri
             LOG.error(reason)
             raise exception.BadStoreUri()
 
     @property
-    def swift_auth_url(self):
+    def swift_url(self):
         """
         Creates a fully-qualified auth url that the Swift client library can
         use. The scheme for the auth_url is determined using the scheme
@@ -190,7 +197,7 @@ class StoreLocation(glance.store.location.StoreLocation):
         else:
             auth_scheme = 'http://'
 
-        full_url = ''.join([auth_scheme, self.authurl])
+        full_url = ''.join([auth_scheme, self.auth_or_store_url])
         return full_url
 
 
@@ -206,7 +213,10 @@ class Store(glance.store.base.Store):
 
     def configure(self):
         self.snet = CONF.swift_enable_snet
+        self.multi_tenant = CONF.swift_store_multi_tenant
         self.auth_version = self._option_get('swift_store_auth_version')
+        self.storage_url = None
+        self.token = None
 
     def configure_add(self):
         """
@@ -219,6 +229,20 @@ class Store(glance.store.base.Store):
         self.user = self._option_get('swift_store_user')
         self.key = self._option_get('swift_store_key')
         self.container = CONF.swift_store_container
+
+        if self.multi_tenant:
+            if context is None:
+                reason = _("Multi-tenant Swift storage requires a context.")
+                raise exception.BadStoreConfiguration(store_name="swift",
+                                                      reason=reason)
+            self.token = context.auth_tok
+            self.key = None  # multi-tenant uses tokens, not (passwords)
+            if context.tenant and context.user:
+                self.user = context.tenant + ':' + context.user
+            if context.service_catalog:
+                service_catalog = context.service_catalog
+                self.storage_url = self._get_swift_endpoint(service_catalog)
+
         try:
             # The config file has swift_store_large_object_*size in MB, but
             # internally we store it in bytes, since the image_size parameter
@@ -242,6 +266,9 @@ class Store(glance.store.base.Store):
         else:  # Defaults https
             self.full_auth_address = 'https://' + self.auth_address
 
+    def _get_swift_endpoint(self, service_catalog):
+        return auth.get_endpoint(service_catalog, service_type='object-store')
+
     def get(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates
@@ -253,8 +280,7 @@ class Store(glance.store.base.Store):
         :raises `glance.exception.NotFound` if image does not exist
         """
         loc = location.store_location
-        swift_conn = self._make_swift_connection(
-            auth_url=loc.swift_auth_url, user=loc.user, key=loc.key)
+        swift_conn = self._swift_connection_for_location(loc)
 
         try:
             (resp_headers, resp_body) = swift_conn.get_object(
@@ -288,8 +314,7 @@ class Store(glance.store.base.Store):
                         from glance.store.location.get_location_from_uri()
         """
         loc = location.store_location
-        swift_conn = self._make_swift_connection(
-            auth_url=loc.swift_auth_url, user=loc.user, key=loc.key)
+        swift_conn = self._swift_connection_for_location(loc)
 
         try:
             resp_headers = swift_conn.head_object(container=loc.container,
@@ -298,9 +323,31 @@ class Store(glance.store.base.Store):
         except Exception:
             return 0
 
-    def _make_swift_connection(self, auth_url, user, key):
+    def _swift_connection_for_location(self, loc):
+        if loc.user:
+            return self._make_swift_connection(
+                loc.swift_url, loc.user, loc.key)
+        else:
+            if self.multi_tenant:
+                return self._make_swift_connection(
+                    None, self.user, None,
+                    storage_url=loc.swift_url, token=self.token)
+            else:
+                reason = (_("Location is missing user:password information."))
+                LOG.error(reason)
+                raise exception.BadStoreUri(message=reason)
+
+    def _make_swift_connection(self, auth_url, user, key, storage_url=None,
+                               token=None):
         """
         Creates a connection using the Swift client library.
+
+        :param auth_url The authentication for v1 style Swift auth or
+                        v2 style Keystone auth.
+        :param user A string containing the tenant:user information.
+        :param key  A string containing the key/password for the connection.
+        :param storage_url A string containing the storage URL.
+        :param token A string containing the token
         """
         snet = self.snet
         auth_version = self.auth_version
@@ -320,9 +367,15 @@ class Store(glance.store.base.Store):
                 raise exception.BadStoreUri()
             (tenant_name, user) = tenant_user
 
-        return swiftclient.Connection(
-            authurl=full_auth_url, user=user, key=key, snet=snet,
-            tenant_name=tenant_name, auth_version=auth_version)
+        if self.multi_tenant:
+            #NOTE: multi-tenant supports v2 auth only
+            return swiftclient.Connection(
+                None, user, None, preauthurl=storage_url, preauthtoken=token,
+                snet=snet, tenant_name=tenant_name, auth_version='2')
+        else:
+            return swiftclient.Connection(
+                full_auth_url, user, key, snet=snet,
+                tenant_name=tenant_name, auth_version=auth_version)
 
     def _option_get(self, param):
         result = getattr(CONF, param)
@@ -370,7 +423,8 @@ class Store(glance.store.base.Store):
               fail if the image turns out to be greater than 5GB.
         """
         swift_conn = self._make_swift_connection(
-            auth_url=self.full_auth_address, user=self.user, key=self.key)
+            self.full_auth_address, self.user, self.key,
+            storage_url=self.storage_url, token=self.token)
 
         create_container_if_missing(self.container, swift_conn)
 
@@ -378,7 +432,7 @@ class Store(glance.store.base.Store):
         location = StoreLocation({'scheme': self.scheme,
                                   'container': self.container,
                                   'obj': obj_name,
-                                  'authurl': self.auth_address,
+                                  'auth_or_store_url': self.auth_address,
                                   'user': self.user,
                                   'key': self.key})
 
@@ -488,8 +542,7 @@ class Store(glance.store.base.Store):
         :raises NotFound if image does not exist
         """
         loc = location.store_location
-        swift_conn = self._make_swift_connection(
-            auth_url=loc.swift_auth_url, user=loc.user, key=loc.key)
+        swift_conn = self._swift_connection_for_location(loc)
 
         try:
             # We request the manifest for the object. If one exists,

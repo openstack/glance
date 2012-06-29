@@ -380,6 +380,19 @@ Can only be specified in configuration files.
 When doing a large object manifest, what size, in MB, should
 Glance write chunks to Swift?  The default is 200MB.
 
+* ``swift_store_multi_tenant=False``
+
+Optional. Default: ``False``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Swift storage backend.`
+
+If set to True enables multi-tenant storage mode which causes Glance images
+to be stored in tenant specific Swift accounts. When set to False Glance
+stores all images in a single Swift account.
+
+
 Configuring the S3 Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
