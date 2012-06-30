@@ -19,8 +19,8 @@ import json
 
 import requests
 
-from glance.tests import functional
 from glance.common import utils
+from glance.tests import functional
 
 
 TENANT1 = utils.generate_uuid()

@@ -17,9 +17,9 @@
 
 """Tests the Swift backend store"""
 
-import StringIO
 import hashlib
 import httplib
+import StringIO
 import tempfile
 import urllib
 
@@ -30,8 +30,8 @@ from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
 from glance.store import BackendException
-import glance.store.swift
 from glance.store.location import get_location_from_uri
+import glance.store.swift
 from glance.tests.unit import base
 
 CONF = cfg.CONF

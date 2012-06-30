@@ -21,20 +21,20 @@ import httplib
 import json
 
 import routes
+from sqlalchemy import exc
 import stubout
 import webob
 
-from sqlalchemy import exc
 from glance.api.v1 import images
 from glance.api.v1 import router
 from glance.common import context
 from glance.common import utils
-from glance.openstack.common import timeutils
-from glance.registry.api import v1 as rserver
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
-from glance.tests import utils as test_utils
+from glance.openstack.common import timeutils
+from glance.registry.api import v1 as rserver
 from glance.tests.unit import base
+from glance.tests import utils as test_utils
 
 
 _gen_uuid = utils.generate_uuid

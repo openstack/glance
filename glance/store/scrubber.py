@@ -18,18 +18,18 @@
 import calendar
 import eventlet
 import logging
-import time
 import os
+import time
 
+from glance.common import utils
+from glance.openstack.common import cfg
+from glance import registry
+from glance.registry import client
+from glance import store
 import glance.store.filesystem
 import glance.store.http
 import glance.store.s3
 import glance.store.swift
-from glance import registry
-from glance import store
-from glance.common import utils
-from glance.openstack.common import cfg
-from glance.registry import client
 
 LOG = logging.getLogger(__name__)
 

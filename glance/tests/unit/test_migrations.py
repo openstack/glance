@@ -34,9 +34,9 @@ from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 
 from glance.common import exception
-from glance.openstack.common import cfg
 import glance.db.sqlalchemy.migration as migration_api
 from glance.db.sqlalchemy import models
+from glance.openstack.common import cfg
 from glance.tests import utils
 
 

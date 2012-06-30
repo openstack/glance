@@ -38,17 +38,17 @@ import glance.api.v1
 from glance.api.v1 import controller
 from glance.api.v1 import filters
 from glance.common import exception
-from glance.common import wsgi
 from glance.common import utils
+from glance.common import wsgi
+from glance import notifier
 from glance.openstack.common import cfg
+from glance import registry
 from glance.store import (create_stores,
                           get_from_backend,
                           get_size_from_backend,
                           schedule_delete_from_backend,
                           get_store_from_location,
                           get_store_from_scheme)
-from glance import registry
-from glance import notifier
 
 
 LOG = logging.getLogger(__name__)

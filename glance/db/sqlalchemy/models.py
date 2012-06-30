@@ -20,15 +20,15 @@
 SQLAlchemy models for glance data
 """
 
-from sqlalchemy.orm import relationship, backref, object_mapper
 from sqlalchemy import Column, Integer, String, BigInteger
-from sqlalchemy import ForeignKey, DateTime, Boolean, Text
-from sqlalchemy import UniqueConstraint
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import ForeignKey, DateTime, Boolean, Text
+from sqlalchemy.orm import relationship, backref, object_mapper
+from sqlalchemy import UniqueConstraint
 
-import glance.db.sqlalchemy.api
 from glance.common import utils
+import glance.db.sqlalchemy.api
 from glance.openstack.common import timeutils
 
 BASE = declarative_base()

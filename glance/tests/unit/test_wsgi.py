@@ -17,9 +17,9 @@
 
 import webob
 
-from glance.common import wsgi
-from glance.common import utils
 from glance.common import exception
+from glance.common import utils
+from glance.common import wsgi
 from glance.tests import utils as test_utils
 
 

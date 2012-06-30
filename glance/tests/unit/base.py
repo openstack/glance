@@ -21,10 +21,10 @@ import shutil
 
 import stubout
 
-from glance import store
 from glance.openstack.common import cfg
-from glance.store import location
+from glance import store
 from glance.store import filesystem
+from glance.store import location
 from glance.tests import stubs
 from glance.tests import utils as test_utils
 
