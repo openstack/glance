@@ -97,6 +97,10 @@ def get_http_uri(test, image_id):
     return uri
 
 
+def _uniq(value):
+    return '%s.%d' % (value, random.randint(0, 99999))
+
+
 def setup_swift(test):
     # Test machines can set the GLANCE_TEST_SWIFT_CONF variable
     # to override the location of the config file for migration testing
@@ -114,7 +118,11 @@ def setup_swift(test):
             cp.read(CONFIG_FILE_PATH)
             defaults = cp.defaults()
             for key, value in defaults.items():
-                test.__dict__[key] = value
+                if key == 'swift_store_container':
+                    test.__dict__[key] = (_uniq(value))
+                else:
+                    test.__dict__[key] = value
+
         except ConfigParser.ParsingError, e:
             test.disabled_message = ("Failed to read test_swift.conf "
                                      "file. Got error: %s" % e)
@@ -173,7 +181,11 @@ def teardown_swift(test):
     if not test.disabled:
         import swiftclient
         try:
-            test.swift_conn.delete_container(test.swift_store_container)
+            _resp_headers, containers = swift_conn.get_account()
+            # Delete all containers matching the container name prefix
+            for container in containers:
+                if container.find(container_name) == 0:
+                    swift_conn.delete_container(container)
         except swiftclient.ClientException, e:
             if e.http_status == httplib.CONFLICT:
                 pass
@@ -202,9 +214,6 @@ def setup_s3(test):
         test.disabled_message = "GLANCE_TEST_S3_CONF environ not set."
         test.disabled = True
         return
-
-    def _uniq(value):
-        return '%s.%d' % (value, random.randint(0, 99999))
 
     if os.path.exists(CONFIG_FILE_PATH):
         cp = ConfigParser.RawConfigParser()
