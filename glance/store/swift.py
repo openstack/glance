@@ -593,6 +593,46 @@ class Store(glance.store.base.Store):
             else:
                 raise
 
+    def set_acls(self, location, public=False, read_tenants=[],
+                     write_tenants=[]):
+        """
+        Sets the read and write access control list for an image in the
+        backend store.
+
+        :location `glance.store.location.Location` object, supplied
+                  from glance.store.location.get_location_from_uri()
+        :public A boolean indicating whether the image should be public.
+        :read_tenants A list of tenant strings which should be granted
+                      read access for an image.
+        :write_tenants A list of tenant strings which should be granted
+                      write access for an image.
+        """
+        if self.multi_tenant:
+            loc = location.store_location
+            swift_conn = self._swift_connection_for_location(loc)
+            headers = {}
+            if public:
+                headers['X-Container-Read'] = ".r:*"
+            elif read_tenants:
+                headers['X-Container-Read'] = ','.join(read_tenants)
+            else:
+                headers['X-Container-Read'] = ''
+
+            if write_tenants:
+                headers['X-Container-Write'] = ','.join(write_tenants)
+            else:
+                headers['X-Container-Write'] = ''
+
+            try:
+                swift_conn.post_container(loc.container, headers=headers)
+            except swiftclient.ClientException, e:
+                if e.http_status == httplib.NOT_FOUND:
+                    uri = location.get_store_uri()
+                    raise exception.NotFound(_("Swift could not find image at "
+                                             "uri %(uri)s") % locals())
+                else:
+                    raise
+
 
 class ChunkReader(object):
     def __init__(self, fd, checksum, total):

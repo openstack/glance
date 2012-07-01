@@ -58,6 +58,7 @@ SWIFT_CONF = {'verbose': True,
 # thoroughly
 def stub_out_swiftclient(stubs, swift_store_auth_version):
     fixture_containers = ['glance']
+    fixture_container_headers = {}
     fixture_headers = {'glance/%s' % FAKE_UUID:
                 {'content-length': FIVE_KB,
                  'etag': 'c2e5db72bd7fd153f53ede5da5a06de3'}}
@@ -69,9 +70,14 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
             msg = "No container %s found" % container
             raise swiftclient.ClientException(msg,
                         http_status=httplib.NOT_FOUND)
+        return fixture_container_headers
 
     def fake_put_container(url, token, container, **kwargs):
         fixture_containers.append(container)
+
+    def fake_post_container(url, token, container, headers, http_conn=None):
+        for key, value in headers.iteritems():
+            fixture_container_headers[key] = value
 
     def fake_put_object(url, token, container, name, contents, **kwargs):
         # PUT returns the ETag header for the newly-added object
@@ -162,6 +168,8 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
         return None
 
     def fake_get_auth(url, user, key, snet, auth_version, **kwargs):
+        if url is None:
+            return None, None
         if 'http' in url and '://' not in url:
             raise ValueError('Invalid url %s' % url)
         # Check the auth version against the configured value
@@ -174,6 +182,8 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
               'head_container', fake_head_container)
     stubs.Set(swiftclient.client,
               'put_container', fake_put_container)
+    stubs.Set(swiftclient.client,
+              'post_container', fake_post_container)
     stubs.Set(swiftclient.client,
               'put_object', fake_put_object)
     stubs.Set(swiftclient.client,
@@ -569,6 +579,49 @@ class SwiftTests(object):
         loc = get_location_from_uri("swift://%s:key@authurl/glance/noexist" % (
                 self.swift_store_user))
         self.assertRaises(exception.NotFound, self.store.delete, loc)
+
+    def test_read_acl_public(self):
+        """
+        Test that we can set a public read acl.
+        """
+        self.config(swift_store_multi_tenant=True)
+        uri = "swift+http://storeurl/glance/%s" % FAKE_UUID
+        loc = get_location_from_uri(uri)
+        self.store.multi_tenant = True
+        self.store.set_acls(loc, public=True)
+        container_headers = swiftclient.client.head_container('x', 'y',
+                                                              'glance')
+        self.assertEqual(container_headers['X-Container-Read'], ".r:*")
+
+    def test_read_acl_tenants(self):
+        """
+        Test that we can set read acl for tenants.
+        """
+        self.config(swift_store_multi_tenant=True)
+        uri = "swift+http://storeurl/glance/%s" % FAKE_UUID
+        loc = get_location_from_uri(uri)
+        self.store.multi_tenant = True
+        read_tenants = ['matt', 'mark']
+        self.store.set_acls(loc, read_tenants=read_tenants)
+        container_headers = swiftclient.client.head_container('x', 'y',
+                                                              'glance')
+        self.assertEqual(container_headers['X-Container-Read'],
+                         ','.join(read_tenants))
+
+    def test_read_write_public(self):
+        """
+        Test that we can set write acl for tenants.
+        """
+        self.config(swift_store_multi_tenant=True)
+        uri = "swift+http://storeurl/glance/%s" % FAKE_UUID
+        loc = get_location_from_uri(uri)
+        self.store.multi_tenant = True
+        read_tenants = ['frank', 'jim']
+        self.store.set_acls(loc, write_tenants=read_tenants)
+        container_headers = swiftclient.client.head_container('x', 'y',
+                                                              'glance')
+        self.assertEqual(container_headers['X-Container-Write'],
+                         ','.join(read_tenants))
 
 
 class TestStoreAuthV1(base.StoreClearingUnitTest, SwiftTests):
