@@ -33,7 +33,7 @@ USER1 = '54492ba0-f4df-4e4e-be62-27f4d76b29cf'
 USER2 = '0b3b3006-cb76-4517-ae32-51397e22c754'
 
 
-def get_fake_request(path='', method='POST'):
+def get_fake_request(path='', method='POST', is_admin=False):
     req = wsgi.Request.blank(path)
     req.method = method
 
@@ -41,7 +41,7 @@ def get_fake_request(path='', method='POST'):
             'user': USER1,
             'tenant': TENANT1,
             'roles': [],
-            'is_admin': False,
+            'is_admin': is_admin,
         }
 
     req.context = glance.common.context.RequestContext(**kwargs)

@@ -49,6 +49,7 @@ class TestSchemas(functional.FunctionalTest):
         expected = set([
             'id',
             'name',
+            'owner',
             'visibility',
             'checksum',
             'created_at',

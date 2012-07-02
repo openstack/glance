@@ -163,7 +163,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         # defined properties contained in a 'properties' dictionary
         image = {'properties': body}
         for key in ['id', 'name', 'visibility', 'created_at', 'updated_at',
-                    'tags']:
+                    'tags', 'owner']:
             try:
                 image[key] = image['properties'].pop(key)
             except KeyError:
@@ -258,7 +258,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def _format_image(self, image):
         _image = image['properties']
-        for key in ['id', 'name', 'created_at', 'updated_at', 'tags',
+        for key in ['id', 'name', 'created_at', 'updated_at', 'tags', 'owner',
                     'checksum']:
             _image[key] = image[key]
         _image['visibility'] = 'public' if image['is_public'] else 'private'
@@ -316,6 +316,11 @@ _BASE_PROPERTIES = {
         'type': 'string',
         'description': 'Descriptive name for the image',
         'maxLength': 255,
+    },
+    'owner': {
+        'type': 'string',
+        'description': 'Tenant who can modify the image',
+        'maxLength': 36,
     },
     'visibility': {
         'type': 'string',

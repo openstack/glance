@@ -89,6 +89,7 @@ class TestImages(functional.FunctionalTest):
         self.assertTrue(image['created_at'])
         self.assertTrue(image['updated_at'])
         self.assertEqual(image['updated_at'], image['created_at'])
+        self.assertEqual(image['owner'], TENANT1)
 
         # The image should be mutable, including adding new properties
         path = self._url('/images/%s' % image_id)
