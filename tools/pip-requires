@@ -29,7 +29,7 @@ iso8601>=0.1.4
 https://github.com/openstack/keystone/zipball/ab6be05068068b0902db44b1d60f56eea4fe1215#egg=keystone
 
 # For Swift storage backend.
-https://github.com/openstack/python-swiftclient/zipball/dec11f6ec9#egg=python-swiftclient
+python-swiftclient>=1,<2
 
 # Note you will need gcc buildtools installed and must
 # have installed libxml headers for lxml to be successfully
