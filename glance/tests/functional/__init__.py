@@ -515,7 +515,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         :param server: the server to launch
         :param expect_launch: true iff the server is expected to
                               successfully start
-        :param expect_exit: true iff the launched server is expected
+        :param expect_exit: true iff the launched process is expected
                             to exit in a timely fashion
         :param expected_exitcode: expected exitcode from the launcher
         """
@@ -537,7 +537,9 @@ class FunctionalTest(test_utils.BaseTestCase):
         launch_msg = self.wait_for_servers([server], expect_launch)
         self.assertTrue(launch_msg is None, launch_msg)
 
-    def start_with_retry(self, server, port_name, max_retries, **kwargs):
+    def start_with_retry(self, server, port_name, max_retries,
+                         expect_launch=True, expect_exit=True,
+                         expect_confirmation=True, **kwargs):
         """
         Starts a server, with retries if the server launches but
         fails to start listening on the expected port.
@@ -545,16 +547,24 @@ class FunctionalTest(test_utils.BaseTestCase):
         :param server: the server to launch
         :param port_name: the name of the port attribute
         :param max_retries: the maximum number of attempts
+        :param expect_launch: true iff the server is expected to
+                              successfully start
+        :param expect_exit: true iff the launched process is expected
+                            to exit in a timely fashion
+        :param expect_confirmation: true iff launch confirmation msg
+                                    expected on stdout
         """
         launch_msg = None
         for i in range(0, max_retries):
-            exitcode, out, err = server.start(**kwargs)
+            exitcode, out, err = server.start(expect_exit=expect_exit,
+                                              **kwargs)
             name = server.server_name
             self.assertEqual(0, exitcode,
                              "Failed to spin up the %s server. "
                              "Got: %s" % (name, err))
-            self.assertTrue(("Starting glance-%s with" % name) in out)
-            launch_msg = self.wait_for_servers([server])
+            if expect_confirmation:
+                self.assertTrue(("Starting glance-%s with" % name) in out)
+            launch_msg = self.wait_for_servers([server], expect_launch)
             if launch_msg:
                 server.stop()
                 server.bind_port = get_unused_port()
