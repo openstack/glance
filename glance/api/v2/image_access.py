@@ -17,6 +17,7 @@ import json
 
 import webob.exc
 
+import glance.api.v2 as v2
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
@@ -73,13 +74,27 @@ class Controller(object):
             raise webob.exc.HTTPForbidden(msg)
 
         access_record['image_id'] = image_id
-        return self.db_api.image_member_create(req.context, access_record)
+        member = self.db_api.image_member_create(req.context, access_record)
+
+        v2.update_image_read_acl(req, self.db_api, image)
+
+        return member
 
     @utils.mutating
     def delete(self, req, image_id, tenant_id):
         #TODO(bcwaldon): Refactor these methods so we don't need to explicitly
         # retrieve a session object here
         session = self.db_api.get_session()
+        try:
+            image = self.db_api.image_get(req.context, image_id,
+                    session=session)
+        except exception.NotFound:
+            raise webob.exc.HTTPNotFound()
+        except exception.Forbidden:
+            # If it's private and doesn't belong to them, don't let on
+            # that it exists
+            raise webob.exc.HTTPNotFound()
+
         members = self.db_api.image_member_find(req.context,
                                                 image_id=image_id,
                                                 member=tenant_id,
@@ -90,6 +105,7 @@ class Controller(object):
             raise webob.exc.HTTPNotFound()
 
         self.db_api.image_member_delete(req.context, member, session=session)
+        v2.update_image_read_acl(req, self.db_api, image)
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):

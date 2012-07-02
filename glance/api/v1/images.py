@@ -617,13 +617,18 @@ class Controller(controller.BaseController):
                 image data.
         """
         self._enforce(req, 'add_image')
-        if image_meta.get('is_public'):
+        is_public = image_meta.get('is_public')
+        if is_public:
             self._enforce(req, 'publicize_image')
 
         image_meta = self._reserve(req, image_meta)
         id = image_meta['id']
 
         image_meta = self._handle_source(req, id, image_meta, image_data)
+
+        location_uri = image_meta.get('location')
+        if location_uri:
+            self.update_store_acls(req, id, location_uri, public=is_public)
 
         # Prevent client from learning the location, as it
         # could contain security credentials
@@ -642,7 +647,8 @@ class Controller(controller.BaseController):
         :retval Returns the updated image information as a mapping
         """
         self._enforce(req, 'modify_image')
-        if image_meta.get('is_public'):
+        is_public = image_meta.get('is_public')
+        if is_public:
             self._enforce(req, 'publicize_image')
 
         orig_image_meta = self.get_image_meta_or_404(req, id)
@@ -671,6 +677,12 @@ class Controller(controller.BaseController):
         reactivating = orig_status != 'queued' and location
         activating = orig_status == 'queued' and (location or image_data)
 
+        # Make image public in the backend store (if implemented)
+        orig_or_updated_loc = location or orig_image_meta.get('location', None)
+        if orig_or_updated_loc:
+            self.update_store_acls(req, id, orig_or_updated_loc,
+                                   public=is_public)
+
         if reactivating:
             msg = _("Attempted to update Location field for an image "
                     "not in queued status.")
@@ -691,6 +703,7 @@ class Controller(controller.BaseController):
             if activating:
                 image_meta = self._handle_source(req, id, image_meta,
                                                  image_data)
+
         except exception.Invalid, e:
             msg = (_("Failed to update image metadata. Got error: %(e)s")
                    % locals())

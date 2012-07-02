@@ -25,6 +25,7 @@ from glance.openstack.common import cfg
 import glance.schema
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
+import glance.store
 
 
 DATETIME = datetime.datetime(2012, 5, 16, 15, 27, 36, 325355)
@@ -52,6 +53,7 @@ class TestImagesController(test_utils.BaseTestCase):
         self.db = unit_test_utils.FakeDB()
         self._create_images()
         self.controller = glance.api.v2.images.ImagesController(self.db)
+        glance.store.create_stores()
 
     def _create_images(self):
         self.db.reset()
@@ -59,7 +61,7 @@ class TestImagesController(test_utils.BaseTestCase):
             {
                 'id': UUID1,
                 'owner': TENANT1,
-                'location': UUID1,
+                'location': 'swift+http://storeurl.com/container/%s' % UUID1,
                 'name': '1',
                 'is_public': True,
                 'size': 256,
@@ -368,7 +370,7 @@ class TestImagesController(test_utils.BaseTestCase):
             'name': 'image-2',
             'owner': TENANT1,
             'size': 256,
-            'location': UUID1,
+            'location': 'swift+http://storeurl.com/container/%s' % UUID1,
             'status': 'queued',
             'is_public': True,
             'tags': ['ping', 'pong'],
