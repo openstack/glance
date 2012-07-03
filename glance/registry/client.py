@@ -182,7 +182,7 @@ class RegistryClient(BaseClient):
 
         res = self.do_request("PUT", "/images/%s/members" % image_id,
                               body, headers)
-        return res.status == 204
+        return self.get_status_code(res) == 204
 
     def add_member(self, image_id, member_id, can_share=None):
         """Adds to Registry's information about image membership"""
@@ -195,10 +195,10 @@ class RegistryClient(BaseClient):
 
         res = self.do_request("PUT", "/images/%s/members/%s" %
                               (image_id, member_id), body, headers)
-        return res.status == 204
+        return self.get_status_code(res) == 204
 
     def delete_member(self, image_id, member_id):
         """Deletes Registry's information about image membership"""
         res = self.do_request("DELETE", "/images/%s/members/%s" %
                               (image_id, member_id))
-        return res.status == 204
+        return self.get_status_code(res) == 204

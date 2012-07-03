@@ -30,6 +30,10 @@ LOG = logging.getLogger(__name__)
 
 class Controller(object):
 
+    def _check_can_access_image_members(self, context):
+        if context.owner is None and not context.is_admin:
+            raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
+
     def __init__(self):
         self.db_api = glance.db.get_api()
         self.db_api.configure_db()
@@ -68,8 +72,7 @@ class Controller(object):
                  ["can_share": [True|False]]}, ...
             ]}
         """
-        if req.context.owner is None:
-            raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
+        self._check_can_access_image_members(req.context)
 
         # Make sure the image exists
         session = self.db_api.get_session()
@@ -175,8 +178,7 @@ class Controller(object):
         set accordingly.  If it is not provided, existing memberships
         remain unchanged and new memberships default to False.
         """
-        if req.context.owner is None:
-            raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
+        self._check_can_access_image_members(req.context)
 
         # Make sure the image exists
         try:
@@ -231,8 +233,7 @@ class Controller(object):
         """
         Removes a membership from the image.
         """
-        if req.context.owner is None:
-            raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
+        self._check_can_access_image_members(req.context)
 
         # Make sure the image exists
         try:
