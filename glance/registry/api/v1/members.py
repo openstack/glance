@@ -124,7 +124,7 @@ class Controller(object):
                                                     session=session)
             try:
                 member = members[0]
-            except KeyError:
+            except IndexError:
                 # Default can_share
                 datum['can_share'] = bool(datum['can_share'])
                 add.append(datum)
@@ -208,17 +208,17 @@ class Controller(object):
                 raise webob.exc.HTTPBadRequest(explanation=msg)
 
         # Look up an existing membership...
-        try:
-            session = self.db_api.get_session()
-            members = self.db_api.image_member_find(req.context,
-                                                    image_id=image_id,
-                                                    member=id,
-                                                    session=session)
+        session = self.db_api.get_session()
+        members = self.db_api.image_member_find(req.context,
+                                                image_id=image_id,
+                                                member=id,
+                                                session=session)
+        if members:
             if can_share is not None:
                 values = dict(can_share=can_share)
                 self.db_api.image_member_update(req.context, members[0],
                                                 values, session=session)
-        except exception.NotFound:
+        else:
             values = dict(image_id=image['id'], member=id,
                           can_share=bool(can_share))
             self.db_api.image_member_create(req.context, values,
