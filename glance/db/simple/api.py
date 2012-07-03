@@ -290,13 +290,13 @@ def is_image_mutable(context, image):
 
 def is_image_sharable(context, image, **kwargs):
     """Return True if the image can be shared to others in this context."""
-    # Only allow sharing if we have an owner
-    if context.owner is None:
-        return False
-
     # Is admin == image sharable
     if context.is_admin:
         return True
+
+    # Only allow sharing if we have an owner
+    if context.owner is None:
+        return False
 
     # If we own the image, we can share it
     if context.owner == image['owner']:
