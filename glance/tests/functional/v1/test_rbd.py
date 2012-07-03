@@ -38,8 +38,8 @@ found, or creating the pool fails, all the test cases are skipped.
 import ConfigParser
 import os
 
-from glance.tests.functional.v1 import test_api
 from glance.store.rbd import DEFAULT_POOL, DEFAULT_CONFFILE, DEFAULT_USER
+from glance.tests.functional.v1 import test_api
 
 
 class TestRBD(test_api.TestApi):

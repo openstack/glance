@@ -28,10 +28,10 @@ import time
 
 from glance.openstack.common import timeutils
 from glance.tests import functional
-from glance.tests.utils import execute, requires, minimal_add_command
 from glance.tests.functional.store_utils import (setup_http,
                                                  teardown_http,
                                                  get_http_uri)
+from glance.tests.utils import execute, requires, minimal_add_command
 
 
 class TestBinGlance(functional.FunctionalTest):

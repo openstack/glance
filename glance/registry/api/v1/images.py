@@ -26,8 +26,8 @@ from webob import exc
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
-from glance.openstack.common import cfg
 import glance.db
+from glance.openstack.common import cfg
 from glance.openstack.common import timeutils
 
 

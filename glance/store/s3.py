@@ -17,9 +17,9 @@
 
 """Storage backend for S3 or Storage Servers that follow the S3 Protocol"""
 
-import logging
 import hashlib
 import httplib
+import logging
 import re
 import tempfile
 import urlparse

@@ -46,7 +46,6 @@ import json
 import tempfile
 
 from glance.tests import functional
-from glance.tests.utils import skip_if_disabled, requires
 from glance.tests.functional.store_utils import (setup_swift,
                                                  teardown_swift,
                                                  get_swift_uri,
@@ -56,6 +55,7 @@ from glance.tests.functional.store_utils import (setup_swift,
                                                  setup_http,
                                                  teardown_http,
                                                  get_http_uri)
+from glance.tests.utils import skip_if_disabled, requires
 
 FIVE_KB = 5 * 1024
 

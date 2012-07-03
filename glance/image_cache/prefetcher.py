@@ -29,11 +29,11 @@ from glance.image_cache import base
 from glance import registry
 import glance.store
 import glance.store.filesystem
+from glance.store import get_from_backend
 import glance.store.http
 import glance.store.rbd
 import glance.store.s3
 import glance.store.swift
-from glance.store import get_from_backend
 
 
 LOG = logging.getLogger(__name__)

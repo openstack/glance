@@ -31,8 +31,8 @@ import sys
 import time
 
 import eventlet
-import eventlet.greenio
 from eventlet.green import socket, ssl
+import eventlet.greenio
 import eventlet.wsgi
 import routes
 import routes.middleware

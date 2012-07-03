@@ -18,9 +18,8 @@
 
 import httplib2
 import os
-import time
-import socket
 import signal
+import socket
 import sys
 import time
 

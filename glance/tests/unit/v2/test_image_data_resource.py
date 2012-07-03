@@ -19,8 +19,8 @@ import webob
 
 import glance.api.v2.image_data
 from glance.common import utils
-import glance.tests.unit.utils as unit_test_utils
 from glance.tests.unit import base
+import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 
 

@@ -18,13 +18,13 @@
 """Tests the filesystem backend store"""
 
 import errno
-import StringIO
 import hashlib
+import StringIO
 
 from glance.common import exception
 from glance.common import utils
-from glance.store.location import get_location_from_uri
 from glance.store.filesystem import Store, ChunkedFile
+from glance.store.location import get_location_from_uri
 from glance.tests.unit import base
 
 

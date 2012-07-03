@@ -19,8 +19,8 @@ import logging
 
 import webob.exc
 
-from glance import registry
 from glance.common import exception
+from glance import registry
 
 LOG = logging.getLogger(__name__)
 

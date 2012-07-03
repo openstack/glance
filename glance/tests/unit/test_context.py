@@ -16,8 +16,8 @@
 #    under the License.
 
 from glance.common import context
-from glance.tests import utils
 from glance.tests.unit import utils as unit_utils
+from glance.tests import utils
 
 
 def _fake_image(owner, is_public):

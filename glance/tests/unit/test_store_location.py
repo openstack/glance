@@ -17,11 +17,11 @@
 
 from glance.common import exception
 import glance.store
-import glance.store.location as location
-import glance.store.http
 import glance.store.filesystem
-import glance.store.swift
+import glance.store.http
+import glance.store.location as location
 import glance.store.s3
+import glance.store.swift
 from glance.tests.unit import base
 from glance.tests import utils
 
