@@ -97,6 +97,19 @@ class BaseTestCase(object):
     def reset(self):
         pass
 
+    def test_image_create_defaults(self):
+        image = self.db_api.image_create(self.context, {'status': 'queued'})
+        self.assertTrue(image['id'])
+        self.assertEqual([], image['properties'])
+
+    def test_image_create_properties(self):
+        fixture = {'status': 'queued', 'properties': {'ping': 'pong'}}
+        image = self.db_api.image_create(self.context, fixture)
+        expected = [{'name': 'ping', 'value': 'pong'}]
+        actual = [{'name': p['name'], 'value': p['value']}
+                  for p in image['properties']]
+        self.assertEqual(expected, actual)
+
     def test_image_get(self):
         image = self.db_api.image_get(self.context, UUID1)
         self.assertEquals(image['id'], self.fixtures[0]['id'])

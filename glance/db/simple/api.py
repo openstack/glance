@@ -80,8 +80,13 @@ def _image_format(image_id, **values):
         'created_at': dt,
         'updated_at': dt,
         'tags': [],
-        'properties': [],
     }
+
+    #NOTE(bcwaldon): store properties as a list to match sqlalchemy driver
+    properties = values.pop('properties', {})
+    properties = [{'name': k, 'value': v} for k, v in properties.items()]
+    image['properties'] = properties
+
     image.update(values)
     return image
 
@@ -107,7 +112,9 @@ def _filter_images(images, filters):
             elif image.get(k) is not None:
                 add = image.get(key) == value
             else:
-                add = image['properties'].get(key) == value
+                properties = dict([(p['name'], p['value'])
+                                   for p in image['properties']])
+                add = properties.get(key) == value
             if not add:
                 break
 
