@@ -85,6 +85,7 @@ class TestImages(functional.FunctionalTest):
         image = json.loads(response.text)['image']
         self.assertEqual(image_id, image['id'])
         self.assertEqual(None, image['checksum'])
+        self.assertEqual(None, image['size'])
         self.assertEqual('bar', image['foo'])
         self.assertTrue(image['created_at'])
         self.assertTrue(image['updated_at'])
@@ -146,6 +147,13 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='XXX')
         self.assertEqual(409, response.status_code)
+
+        # Ensure the size is updated to reflect the data uploaded
+        path = self._url('/v2/images/%s' % image_id)
+        headers = self._headers()
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(5, json.loads(response.text)['image']['size'])
 
         # Deletion should work
         path = self._url('/v2/images/%s' % image_id)

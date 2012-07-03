@@ -703,6 +703,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'created_at': DATETIME,
                 'updated_at': DATETIME,
                 'tags': ['one', 'two'],
+                'size': 1024,
             },
             {
                 'id': unit_test_utils.UUID2,
@@ -714,6 +715,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'created_at': DATETIME,
                 'updated_at': DATETIME,
                 'tags': [],
+                'size': None,
             },
         ]
         expected = {
@@ -727,6 +729,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                     'tags': ['one', 'two'],
+                    'size': 1024,
                     'self': '/v2/images/%s' % unit_test_utils.UUID1,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
                     'access': '/v2/images/%s/access' % unit_test_utils.UUID1,
@@ -741,6 +744,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                     'tags': [],
+                    'size': None,
                     'self': '/v2/images/%s' % unit_test_utils.UUID2,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
                     'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
@@ -768,6 +772,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'created_at': DATETIME,
                 'updated_at': DATETIME,
                 'tags': ['one', 'two'],
+                'size': 1024,
             },
             {
                 'id': unit_test_utils.UUID2,
@@ -779,6 +784,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'created_at': DATETIME,
                 'updated_at': DATETIME,
                 'tags': [],
+                'size': None,
             },
         ]
         expected = {
@@ -792,6 +798,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                     'tags': ['one', 'two'],
+                    'size': 1024,
                     'self': '/v2/images/%s' % unit_test_utils.UUID1,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
                     'access': '/v2/images/%s/access' % unit_test_utils.UUID1,
@@ -806,6 +813,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                     'tags': [],
+                    'size': None,
                     'self': '/v2/images/%s' % unit_test_utils.UUID2,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
                     'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
@@ -835,6 +843,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'created_at': DATETIME,
                 'updated_at': DATETIME,
                 'tags': ['one', 'two'],
+                'size': 1024,
             },
             {
                 'id': unit_test_utils.UUID2,
@@ -846,6 +855,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'created_at': DATETIME,
                 'updated_at': DATETIME,
                 'tags': [],
+                'size': None,
             },
         ]
         expected = {
@@ -859,6 +869,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                     'tags': ['one', 'two'],
+                    'size': 1024,
                     'self': '/v2/images/%s' % unit_test_utils.UUID1,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
                     'access': '/v2/images/%s/access' % unit_test_utils.UUID1,
@@ -873,6 +884,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                     'tags': [],
+                    'size': None,
                     'self': '/v2/images/%s' % unit_test_utils.UUID2,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
                     'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
@@ -901,6 +913,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'created_at': DATETIME,
                 'updated_at': DATETIME,
                 'tags': ['one', 'two'],
+                'size': 1024,
             },
             {
                 'id': unit_test_utils.UUID2,
@@ -912,6 +925,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'created_at': DATETIME,
                 'updated_at': DATETIME,
                 'tags': [],
+                'size': None,
             },
         ]
         expected = {
@@ -925,6 +939,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                     'tags': ['one', 'two'],
+                    'size': 1024,
                     'self': '/v2/images/%s' % unit_test_utils.UUID1,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
                     'access': '/v2/images/%s/access' % unit_test_utils.UUID1,
@@ -939,6 +954,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                     'tags': [],
+                    'size': None,
                     'self': '/v2/images/%s' % unit_test_utils.UUID2,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
                     'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
@@ -969,6 +985,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'created_at': DATETIME,
             'updated_at': DATETIME,
             'tags': ['three', 'four'],
+            'size': 1024,
         }
         expected = {
             'image': {
@@ -980,6 +997,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
                 'tags': ['three', 'four'],
+                'size': 1024,
                 'self': '/v2/images/%s' % unit_test_utils.UUID2,
                 'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
                 'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
@@ -1001,6 +1019,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'created_at': DATETIME,
             'updated_at': DATETIME,
             'tags': [],
+            'size': 1024,
         }
         self_link = '/v2/images/%s' % unit_test_utils.UUID2
         expected = {
@@ -1013,6 +1032,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
                 'tags': [],
+                'size': 1024,
                 'self': self_link,
                 'file': '%s/file' % self_link,
                 'access': '%s/access' % self_link,
@@ -1035,6 +1055,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'created_at': DATETIME,
             'updated_at': DATETIME,
             'tags': ['five'],
+            'size': 1024,
         }
         self_link = '/v2/images/%s' % unit_test_utils.UUID2
         expected = {
@@ -1047,6 +1068,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
                 'tags': ['five'],
+                'size': 1024,
                 'self': self_link,
                 'file': '%s/file' % self_link,
                 'access': '%s/access' % self_link,
@@ -1082,6 +1104,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'created_at': DATETIME,
             'updated_at': DATETIME,
             'tags': [],
+            'size': 1024,
             'properties': {'color': 'green', 'mood': 'grouchy'},
         }
 
@@ -1096,6 +1119,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
                 'tags': [],
+                'size': 1024,
                 'color': 'green',
                 'self': '/v2/images/%s' % unit_test_utils.UUID2,
                 'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
@@ -1119,6 +1143,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
                 'tags': [],
+                'size': 1024,
                 'color': 'invalid',
                 'self': '/v2/images/%s' % unit_test_utils.UUID2,
                 'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
@@ -1148,6 +1173,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
                 'marx': 'groucho',
             },
             'tags': [],
+            'size': 1024,
         }
 
     def test_show(self):
@@ -1163,6 +1189,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
                 'updated_at': ISOTIME,
                 'marx': 'groucho',
                 'tags': [],
+                'size': 1024,
                 'self': '/v2/images/%s' % unit_test_utils.UUID2,
                 'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
                 'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
@@ -1190,6 +1217,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
                 'updated_at': ISOTIME,
                 'marx': 123,
                 'tags': [],
+                'size': 1024,
                 'self': '/v2/images/%s' % unit_test_utils.UUID2,
                 'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
                 'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
@@ -1213,6 +1241,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
                 'created_at': ISOTIME,
                 'updated_at': ISOTIME,
                 'tags': [],
+                'size': 1024,
                 'self': '/v2/images/%s' % unit_test_utils.UUID2,
                 'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
                 'access': '/v2/images/%s/access' % unit_test_utils.UUID2,

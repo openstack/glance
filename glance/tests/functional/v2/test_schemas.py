@@ -55,6 +55,7 @@ class TestSchemas(functional.FunctionalTest):
             'created_at',
             'updated_at',
             'tags',
+            'size',
             'type',
             'format',
             'self',
