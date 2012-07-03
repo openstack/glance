@@ -84,6 +84,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         image = json.loads(response.text)['image']
         self.assertEqual(image_id, image['id'])
+        self.assertEqual(None, image['checksum'])
         self.assertEqual('bar', image['foo'])
         self.assertTrue(image['created_at'])
         self.assertTrue(image['updated_at'])
@@ -124,6 +125,13 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
         self.assertEqual(200, response.status_code)
+
+        # Checksum should be populated automatically
+        path = self._url('/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)['image']
+        self.assertEqual('8f113e38d28a79a5a451b16048cc2b72', image['checksum'])
 
         # Try to download the data that was just uploaded
         path = self._url('/images/%s/file' % image_id)

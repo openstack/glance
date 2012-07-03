@@ -44,7 +44,7 @@ class ImageDataController(object):
         except exception.Duplicate:
             raise webob.exc.HTTPConflict()
 
-        values = {'location': location, 'size': size}
+        values = {'location': location, 'size': size, 'checksum': checksum}
         self.db_api.image_update(req.context, image_id, values)
 
     def download(self, req, image_id):

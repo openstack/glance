@@ -258,7 +258,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def _format_image(self, image):
         _image = image['properties']
-        for key in ['id', 'name', 'created_at', 'updated_at', 'tags']:
+        for key in ['id', 'name', 'created_at', 'updated_at', 'tags',
+                    'checksum']:
             _image[key] = image[key]
         _image['visibility'] = 'public' if image['is_public'] else 'private'
         _image = self.schema.filter(_image)
@@ -320,6 +321,12 @@ _BASE_PROPERTIES = {
         'type': 'string',
         'description': 'Scope of image accessibility',
         'enum': ['public', 'private'],
+    },
+    'checksum': {
+        'type': 'string',
+        'description': 'md5 hash of image contents.',
+        'type': 'string',
+        'maxLength': 32,
     },
     'created_at': {
         'type': 'string',
