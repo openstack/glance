@@ -277,7 +277,7 @@ class Controller(controller.BaseController):
 
         del image_meta['location']
         return {
-            'image_iterator': image_iterator,
+            'image_iterator': utils.cooperative_iter(image_iterator),
             'image_meta': image_meta,
         }
 
@@ -393,9 +393,10 @@ class Controller(controller.BaseController):
                 LOG.warn(msg)
                 raise HTTPBadRequest(explanation=msg, request=req)
 
-            location, size, checksum = store.add(image_meta['id'],
-                                                 image_data,
-                                                 image_size)
+            location, size, checksum = store.add(
+                image_meta['id'],
+                utils.CooperativeReader(image_data),
+                image_size)
 
             # Verify any supplied checksum value matches checksum
             # returned from store when adding image

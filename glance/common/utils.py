@@ -21,6 +21,12 @@ System-level utilities and helper functions.
 """
 
 import errno
+
+try:
+    from eventlet import sleep
+except ImportError:
+    from time import sleep
+
 import functools
 import logging
 import os
@@ -62,6 +68,59 @@ def chunkiter(fp, chunk_size=65536):
             yield chunk
         else:
             break
+
+
+def cooperative_iter(iter):
+    """
+    Return an iterator which schedules after each
+    iteration. This can prevent eventlet thread starvation.
+
+    :param iter: an iterator to wrap
+    """
+    try:
+        for chunk in iter:
+            sleep(0)
+            yield chunk
+    except Exception, err:
+        msg = _("Error: cooperative_iter exception %s") % err
+        LOG.error(msg)
+        raise
+
+
+def cooperative_read(fd):
+    """
+    Wrap a file descriptor's read with a partial function which schedules
+    after each read. This can prevent eventlet thread starvation.
+
+    :param fd: a file descriptor to wrap
+    """
+    def readfn(*args):
+        result = fd.read(*args)
+        sleep(0)
+        return result
+    return readfn
+
+
+class CooperativeReader(object):
+    """
+    An eventlet thread friendly class for reading in image data.
+
+    When accessing data either through the iterator or the read method
+    we perform a sleep to allow a co-operative yield. When there is more than
+    one image being uploaded/downloaded this prevents eventlet thread
+    starvation, ie allows all threads to be scheduled periodically rather than
+    having the same thread be continuously active.
+    """
+    def __init__(self, fd):
+        """
+        :param fd: Underlying image file object
+        """
+        self.fd = fd
+        if hasattr(fd, 'read'):
+            self.read = cooperative_read(fd)
+
+    def __iter__(self):
+        return cooperative_iter(self.fd.__iter__())
 
 
 def image_meta_to_http_headers(image_meta):
