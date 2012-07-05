@@ -21,13 +21,6 @@ pysendfile==2.0.0
 iso8601>=0.1.4
 
 
-# The following allow Keystone to be installed in the venv
-# along with all of Keystone's dependencies. We target a specific
-# commit hash so we can code to a constant version of keystone.
-# Trying to hit a moving target causes our local unittests to fail 
-# when they should remain unaffected.
-https://github.com/openstack/keystone/zipball/ab6be05068068b0902db44b1d60f56eea4fe1215#egg=keystone
-
 # For Swift storage backend.
 python-swiftclient>=1,<2
 
