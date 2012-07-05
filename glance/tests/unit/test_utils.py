@@ -15,6 +15,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import tempfile
+
 from glance.common import utils
 from glance.tests import utils as test_utils
 
@@ -44,3 +46,27 @@ class TestUtils(test_utils.BaseTestCase):
     def test_is_uuid_like_fails(self):
         fixture = 'pants'
         self.assertFalse(utils.is_uuid_like(fixture))
+
+    def test_cooperative_reader(self):
+        """Ensure cooperative reader class accesses all bytes of file"""
+        BYTES = 1024
+        bytes_read = 0
+        with tempfile.TemporaryFile('w+') as tmp_fd:
+            tmp_fd.write('*' * BYTES)
+            tmp_fd.seek(0)
+            for chunk in utils.CooperativeReader(tmp_fd):
+                bytes_read += len(chunk)
+
+        self.assertEquals(bytes_read, BYTES)
+
+        bytes_read = 0
+        with tempfile.TemporaryFile('w+') as tmp_fd:
+            tmp_fd.write('*' * BYTES)
+            tmp_fd.seek(0)
+            reader = utils.CooperativeReader(tmp_fd)
+            byte = reader.read(1)
+            while len(byte) != 0:
+                bytes_read += 1
+                byte = reader.read(1)
+
+        self.assertEquals(bytes_read, BYTES)
