@@ -44,7 +44,7 @@ gettext.install('glance', unicode=1)
 from glance import client as glance_client
 from glance.common import exception
 from glance.common import utils
-from glance import version
+from glance.version import version_info as version
 
 
 SUCCESS = 0

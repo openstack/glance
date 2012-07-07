@@ -40,7 +40,7 @@ gettext.install('glance', unicode=1)
 from glance import client as glance_client
 from glance.common import exception
 from glance.common import utils
-from glance import version
+from glance.version import version_info as version
 
 
 SUCCESS = 0
@@ -444,8 +444,8 @@ Commands:
                                 from the cache
 """
 
-    oparser = optparse.OptionParser(version='%%prog %s'
-                                    % version.version_string(),
+    deferred_string = version.deferred_version_string(prefix="%prog ")
+    oparser = optparse.OptionParser(version=deferred_string,
                                     usage=usage.strip())
     create_options(oparser)
     (options, command, args) = parse_options(oparser, sys.argv[1:])

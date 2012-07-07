@@ -15,5 +15,5 @@ build
 dist
 *.egg
 glance.egg-info
-glance/vcsversion.py
 tests.sqlite
+glance/versioninfo

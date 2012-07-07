@@ -29,7 +29,7 @@ import sys
 from paste import deploy
 
 from glance.openstack.common import cfg
-from glance import version
+from glance.version import version_info as version
 
 paste_deploy_opts = [
     cfg.StrOpt('flavor'),
@@ -61,7 +61,7 @@ CONF.register_opts(common_opts)
 def parse_args(args=None, usage=None, default_config_files=None):
     return CONF(args=args,
                 project='glance',
-                version='%%prog %s' % version.version_string(),
+                version=version.deferred_version_string(prefix="%prog "),
                 usage=usage,
                 default_config_files=default_config_files)
 
