@@ -159,7 +159,10 @@ class Scrubber(object):
                 continue
 
             time_fmt = "%Y-%m-%dT%H:%M:%S"
-            delete_time = calendar.timegm(time.strptime(deleted_at,
+            # NOTE: Strip off microseconds which may occur after the last '.,'
+            # Example: 2012-07-07T19:14:34.974216
+            date_str = deleted_at.rsplit('.', 1)[0].rsplit(',', 1)[0]
+            delete_time = calendar.timegm(time.strptime(date_str,
                                                         time_fmt))
 
             if delete_time + self.cleanup_time > now:
