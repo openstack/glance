@@ -23,8 +23,8 @@ import logging
 
 import eventlet
 
-from glance.common import context
 from glance.common import exception
+from glance import context
 from glance.image_cache import base
 from glance import registry
 import glance.store

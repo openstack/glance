@@ -25,10 +25,11 @@ from sqlalchemy import exc
 import stubout
 import webob
 
+import glance.api.middleware.context as context_middleware
 from glance.api.v1 import images
 from glance.api.v1 import router
-from glance.common import context
 from glance.common import utils
+import glance.context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
@@ -128,7 +129,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
              'size': 19,
              'location': "file:///%s/%s" % (self.test_dir, UUID2),
              'properties': {}}]
-        self.context = context.RequestContext(is_admin=True)
+        self.context = glance.context.RequestContext(is_admin=True)
         db_api.configure_db()
         self.destroy_fixtures()
         self.create_fixtures()
@@ -1999,7 +2000,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
              'size': 19,
              'location': "file:///%s/%s" % (self.test_dir, UUID2),
              'properties': {}}]
-        self.context = context.RequestContext(is_admin=True)
+        self.context = glance.context.RequestContext(is_admin=True)
         db_api.configure_db()
         self.destroy_fixtures()
         self.create_fixtures()
@@ -3007,9 +3008,10 @@ class TestImageSerializer(base.IsolatedUnitTest):
         super(TestImageSerializer, self).setUp()
         self.receiving_user = 'fake_user'
         self.receiving_tenant = 2
-        self.context = context.RequestContext(is_admin=True,
-                                              user=self.receiving_user,
-                                              tenant=self.receiving_tenant)
+        self.context = glance.context.RequestContext(
+                is_admin=True,
+                user=self.receiving_user,
+                tenant=self.receiving_tenant)
         self.serializer = images.ImageSerializer()
 
         def image_iter():

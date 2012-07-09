@@ -28,9 +28,9 @@ import unittest
 import nose.plugins.skip
 
 from glance.common import config
-from glance.common import context
 from glance.common import utils
 from glance.common import wsgi
+from glance import context
 from glance.openstack.common import cfg
 from glance import store
 

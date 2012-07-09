@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2011 OpenStack LLC.
+# Copyright 2011-2012 OpenStack LLC.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -17,9 +17,10 @@
 
 import webob.exc
 
-from glance.common import exception
 from glance.common import wsgi
+import glance.context
 from glance.openstack.common import cfg
+
 
 context_opts = [
     cfg.BoolOpt('owner_is_tenant', default=True),
@@ -31,37 +32,6 @@ CONF = cfg.CONF
 CONF.register_opts(context_opts)
 
 
-class RequestContext(object):
-    """
-    Stores information about the security context under which the user
-    accesses the system, as well as additional request information.
-    """
-
-    def __init__(self, auth_tok=None, user=None, tenant=None, roles=None,
-                 is_admin=False, read_only=False, show_deleted=False,
-                 owner_is_tenant=True):
-        self.auth_tok = auth_tok
-        self.user = user
-        self.tenant = tenant
-        self.roles = roles or []
-        self.is_admin = is_admin
-        self.read_only = read_only
-        self._show_deleted = show_deleted
-        self.owner_is_tenant = owner_is_tenant
-
-    @property
-    def owner(self):
-        """Return the owner to correlate with an image."""
-        return self.tenant if self.owner_is_tenant else self.user
-
-    @property
-    def show_deleted(self):
-        """Admins can see deleted by default"""
-        if self._show_deleted or self.is_admin:
-            return True
-        return False
-
-
 class ContextMiddleware(wsgi.Middleware):
 
     def __init__(self, app):
@@ -70,7 +40,7 @@ class ContextMiddleware(wsgi.Middleware):
     def process_request(self, req):
         """Convert authentication information into a request context
 
-        Generate a RequestContext object from the available
+        Generate a glance.context.RequestContext object from the available
         authentication headers and store on the 'context' attribute
         of the req object.
 
@@ -94,7 +64,7 @@ class ContextMiddleware(wsgi.Middleware):
             'is_admin': False,
             'read_only': True,
         }
-        return RequestContext(**kwargs)
+        return glance.context.RequestContext(**kwargs)
 
     def _get_authenticated_context(self, req):
         #NOTE(bcwaldon): X-Roles is a csv string, but we need to parse
@@ -114,7 +84,7 @@ class ContextMiddleware(wsgi.Middleware):
             'owner_is_tenant': CONF.owner_is_tenant,
         }
 
-        return RequestContext(**kwargs)
+        return glance.context.RequestContext(**kwargs)
 
 
 class UnauthenticatedContextMiddleware(wsgi.Middleware):
@@ -131,4 +101,4 @@ class UnauthenticatedContextMiddleware(wsgi.Middleware):
             'is_admin': True,
         }
 
-        req.context = RequestContext(**kwargs)
+        req.context = glance.context.RequestContext(**kwargs)

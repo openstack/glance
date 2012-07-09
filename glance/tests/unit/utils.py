@@ -15,9 +15,9 @@
 
 import logging
 
-import glance.common.context
 from glance.common import exception
 from glance.common import wsgi
+import glance.context
 import glance.db.simple.api as simple_db
 
 
@@ -44,7 +44,7 @@ def get_fake_request(path='', method='POST', is_admin=False):
             'is_admin': is_admin,
         }
 
-    req.context = glance.common.context.RequestContext(**kwargs)
+    req.context = glance.context.RequestContext(**kwargs)
 
     return req
 

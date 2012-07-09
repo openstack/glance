@@ -21,9 +21,9 @@ import tempfile
 
 from glance import client
 from glance.common import client as base_client
-from glance.common import context
 from glance.common import exception
 from glance.common import utils
+from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils

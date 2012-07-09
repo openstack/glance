@@ -20,7 +20,8 @@ import StringIO
 import stubout
 
 from glance.common import config
-from glance.common import exception, context
+from glance.common import exception
+from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.registry import configure_registry_client
 from glance.store import (delete_from_backend,

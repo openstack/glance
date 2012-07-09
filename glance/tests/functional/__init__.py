@@ -303,11 +303,11 @@ paste.filter_factory =
  glance.api.middleware.cache_manage:CacheManageFilter.factory
 
 [filter:context]
-paste.filter_factory = glance.common.context:ContextMiddleware.factory
+paste.filter_factory = glance.api.middleware.context:ContextMiddleware.factory
 
 [filter:unauthenticated-context]
 paste.filter_factory =
- glance.common.context:UnauthenticatedContextMiddleware.factory
+ glance.api.middleware.context:UnauthenticatedContextMiddleware.factory
 
 [filter:fakeauth]
 paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
@@ -359,11 +359,11 @@ pipeline = fakeauth context registryapp
 paste.app_factory = glance.registry.api.v1:API.factory
 
 [filter:context]
-paste.filter_factory = glance.common.context:ContextMiddleware.factory
+paste.filter_factory = glance.api.middleware.context:ContextMiddleware.factory
 
 [filter:unauthenticated-context]
 paste.filter_factory =
- glance.common.context:UnauthenticatedContextMiddleware.factory
+ glance.api.middleware.context:UnauthenticatedContextMiddleware.factory
 
 [filter:fakeauth]
 paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory

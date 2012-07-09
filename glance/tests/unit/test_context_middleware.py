@@ -1,7 +1,7 @@
 
 import webob
 
-from glance.common import context
+from glance.api.middleware import context
 from glance.tests.unit import base
 
 

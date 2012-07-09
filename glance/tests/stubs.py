@@ -28,9 +28,9 @@ except ImportError:
 import routes
 import webob
 
+from glance.api.middleware import context
 from glance.api.v1 import router
 import glance.common.client
-from glance.common import context
 from glance.registry.api import v1 as rserver
 from glance.tests import utils
 

@@ -19,9 +19,9 @@
 import copy
 import datetime
 
-from glance.common import context
 from glance.common import exception
 from glance.common import utils
+from glance import context
 
 
 # The default sort order of results is whatever sort key is specified,
