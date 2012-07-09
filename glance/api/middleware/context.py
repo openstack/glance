@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import webob.exc
 
 from glance.common import wsgi
@@ -31,12 +32,21 @@ context_opts = [
 CONF = cfg.CONF
 CONF.register_opts(context_opts)
 
+LOG = logging.getLogger(__name__)
 
-class ContextMiddleware(wsgi.Middleware):
 
-    def __init__(self, app):
-        super(ContextMiddleware, self).__init__(app)
+class BaseContextMiddleware(wsgi.Middleware):
+    def process_response(self, resp):
+        try:
+            request_id = resp.request.context.request_id
+        except AttributeError:
+            LOG.error(_('Unable to retrieve request id from context'))
+        else:
+            resp.headers['x-openstack-request-id'] = 'req-%s' % request_id
+        return resp
 
+
+class ContextMiddleware(BaseContextMiddleware):
     def process_request(self, req):
         """Convert authentication information into a request context
 
@@ -87,11 +97,7 @@ class ContextMiddleware(wsgi.Middleware):
         return glance.context.RequestContext(**kwargs)
 
 
-class UnauthenticatedContextMiddleware(wsgi.Middleware):
-
-    def __init__(self, app):
-        super(UnauthenticatedContextMiddleware, self).__init__(app)
-
+class UnauthenticatedContextMiddleware(BaseContextMiddleware):
     def process_request(self, req):
         """Create a context without an authorized user."""
         kwargs = {

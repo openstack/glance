@@ -233,3 +233,8 @@ class TestContext(utils.BaseTestCase):
         """
         self.do_sharable(True, 'pattieblack', _fake_membership(True),
                          tenant='froggy')
+
+    def test_request_id(self):
+        contexts = [context.RequestContext().request_id for _ in range(5)]
+        # Check for uniqueness -- set() will normalize its argument
+        self.assertEqual(5, len(set(contexts)))

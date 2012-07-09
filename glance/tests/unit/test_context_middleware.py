@@ -2,6 +2,7 @@
 import webob
 
 from glance.api.middleware import context
+import glance.context
 from glance.tests.unit import base
 
 
@@ -99,3 +100,13 @@ class TestUnauthenticatedContextMiddleware(base.IsolatedUnitTest):
         self.assertEqual(req.context.tenant, None)
         self.assertEqual(req.context.roles, [])
         self.assertTrue(req.context.is_admin)
+
+    def test_response(self):
+        middleware = context.UnauthenticatedContextMiddleware(None)
+        req = webob.Request.blank('/')
+        req.context = glance.context.RequestContext()
+        resp = webob.Response()
+        resp.request = req
+        middleware.process_response(resp)
+        self.assertEqual(resp.headers['x-openstack-request-id'],
+                         'req-%s' % req.context.request_id)
