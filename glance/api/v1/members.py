@@ -30,6 +30,10 @@ LOG = logging.getLogger(__name__)
 
 class Controller(object):
 
+    def _check_can_access_image_members(self, context):
+        if context.owner is None and not context.is_admin:
+            raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
+
     def index(self, req, image_id):
         """
         Return a list of dictionaries indicating the members of the
@@ -61,8 +65,7 @@ class Controller(object):
         """
         Removes a membership from the image.
         """
-        if req.context.owner is None:
-            raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
+        self._check_can_access_image_members(req.context)
 
         try:
             registry.delete_member(req.context, image_id, id)
@@ -95,8 +98,7 @@ class Controller(object):
         set accordingly.  If it is not provided, existing memberships
         remain unchanged and new memberships default to False.
         """
-        if req.context.owner is None:
-            raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
+        self._check_can_access_image_members(req.context)
 
         # Figure out can_share
         can_share = None
@@ -130,8 +132,7 @@ class Controller(object):
                  ["can_share": [True|False]]}, ...
             ]}
         """
-        if req.context.owner is None:
-            raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
+        self._check_can_access_image_members(req.context)
 
         try:
             registry.replace_members(req.context, image_id, body)

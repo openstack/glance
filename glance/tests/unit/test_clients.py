@@ -1174,21 +1174,16 @@ class TestRegistryClient(base.IsolatedUnitTest):
         num_members = len(memb_list)
         self.assertEquals(num_members, 0)
 
-    def test_replace_members(self):
+    def test_add_replace_members(self):
         """Tests replacing image members"""
-        self.assertRaises(exception.NotAuthenticated,
-                          self.client.replace_members, UUID2,
-                          dict(member_id='pattieblack'))
+        self.assertTrue(self.client.add_member(UUID2, 'pattieblack'))
+        self.assertTrue(self.client.replace_members(UUID2,
+                          dict(member_id='pattieblack2')))
 
-    def test_add_member(self):
-        """Tests adding image members"""
-        self.assertRaises(exception.NotAuthenticated,
-                          self.client.add_member, UUID2, 'pattieblack')
-
-    def test_delete_member(self):
+    def test_add_delete_member(self):
         """Tests deleting image members"""
-        self.assertRaises(exception.NotAuthenticated,
-                          self.client.delete_member, UUID2, 'pattieblack')
+        self.client.add_member(UUID2, 'pattieblack')
+        self.assertTrue(self.client.delete_member(UUID2, 'pattieblack'))
 
 
 class TestClient(base.IsolatedUnitTest):
@@ -2073,21 +2068,16 @@ class TestClient(base.IsolatedUnitTest):
         num_members = len(memb_list)
         self.assertEquals(num_members, 0)
 
-    def test_replace_members(self):
+    def test_add_replace_members(self):
         """Tests replacing image members"""
-        self.assertRaises(exception.NotAuthenticated,
-                          self.client.replace_members, UUID2,
-                          dict(member_id='pattieblack'))
+        self.assertTrue(self.client.add_member(UUID2, 'pattieblack'))
+        self.assertTrue(self.client.replace_members(UUID2,
+                          dict(member_id='pattieblack2')))
 
-    def test_add_member(self):
-        """Tests adding image members"""
-        self.assertRaises(exception.NotAuthenticated,
-                          self.client.add_member, UUID2, 'pattieblack')
-
-    def test_delete_member(self):
+    def test_add_delete_member(self):
         """Tests deleting image members"""
-        self.assertRaises(exception.NotAuthenticated,
-                          self.client.delete_member, UUID2, 'pattieblack')
+        self.assertTrue(self.client.add_member(UUID2, 'pattieblack'))
+        self.assertTrue(self.client.delete_member(UUID2, 'pattieblack'))
 
 
 class TestConfigureClientFromURL(test_utils.BaseTestCase):

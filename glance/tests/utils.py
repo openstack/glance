@@ -28,6 +28,7 @@ import unittest
 import nose.plugins.skip
 
 from glance.common import config
+from glance.common import context
 from glance.common import utils
 from glance.common import wsgi
 from glance.openstack.common import cfg
@@ -341,14 +342,27 @@ def minimal_add_command(port, name, suffix='', public=True):
 
 class FakeAuthMiddleware(wsgi.Middleware):
 
-    def __init__(self, app):
+    def __init__(self, app, is_admin=True):
         super(FakeAuthMiddleware, self).__init__(app)
+        self.is_admin = is_admin
 
     def process_request(self, req):
         auth_tok = req.headers.get('X-Auth-Token')
+        user = None
+        tenant = None
+        roles = []
         if auth_tok:
             user, tenant, role = auth_tok.split(':')
+            roles = [role]
             req.headers['X-User-Id'] = user
             req.headers['X-Tenant-Id'] = tenant
             req.headers['X-Roles'] = role
             req.headers['X-Identity-Status'] = 'Confirmed'
+        kwargs = {
+            'user': user,
+            'tenant': tenant,
+            'roles': roles,
+            'is_admin': self.is_admin,
+        }
+
+        req.context = context.RequestContext(**kwargs)
