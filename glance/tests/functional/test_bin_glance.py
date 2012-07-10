@@ -1174,3 +1174,81 @@ class TestBinGlance(functional.FunctionalTest):
         local_server.shutdown()
         self.assertNotEqual(0, exitcode)
         self.assertTrue("timed out" in out)
+
+    def test_add_member(self):
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        image_id = "11111111-1111-1111-1111-111111111111"
+        member_id = "21111111-2111-2111-2111-211111111111"
+        member2_id = "31111111-3111-3111-3111-311111111111"
+
+        # 0. Add an image
+        cmd = minimal_add_command(api_port,
+                                  'MyImage',
+                                  'id=%s' % image_id,
+                                  'location=http://example.com')
+        exitcode, out, err = execute(cmd)
+
+        # 1. Add an image member
+        cmd = "bin/glance --port=%d member-add %s %s" % (api_port, image_id,
+                                                         member_id)
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('', out.strip())
+
+        # 2. Verify image-members
+        cmd = "bin/glance --port=%d image-members %s " % (api_port, image_id)
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(member_id in out)
+
+        # 3. Verify member-images
+        cmd = "bin/glance --port=%d member-images %s " % (api_port, member_id)
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(image_id in out)
+
+        # 4. Replace image members
+        cmd = "bin/glance --port=%d members-replace %s %s" % (api_port,
+                                                              image_id,
+                                                              member2_id)
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('', out.strip())
+
+        # 5. Verify member-images again for member2
+        cmd = "bin/glance --port=%d member-images %s " % (api_port, member2_id)
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(image_id in out)
+
+        # 6. Verify member-images again for member1 (should not be present)
+        cmd = "bin/glance --port=%d member-images %s " % (api_port, member_id)
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertTrue(image_id not in out)
+
+        # 7. Delete the member
+        cmd = "bin/glance --port=%d member-delete %s %s" % (api_port, image_id,
+                                                            member2_id)
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('', out.strip())
+
+        # 8. Verify image-members is empty
+        cmd = "bin/glance --port=%d image-members %s " % (api_port, image_id)
+        exitcode, out, err = execute(cmd)
+
+        self.assertEqual(0, exitcode)
+        self.assertEqual('', out.strip())
