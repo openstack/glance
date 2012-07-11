@@ -16,10 +16,10 @@
 #    under the License.
 
 import httplib
-import logging
 import urlparse
 
 from glance.common import exception
+import glance.openstack.common.log as logging
 import glance.store.base
 import glance.store.location
 

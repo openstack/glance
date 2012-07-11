@@ -15,7 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
 import os
 import sys
 import time
@@ -24,6 +23,7 @@ from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
 from glance.openstack.common import importutils
+import glance.openstack.common.log as logging
 from glance import registry
 from glance.store import location
 

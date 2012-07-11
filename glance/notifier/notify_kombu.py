@@ -15,7 +15,6 @@
 
 
 import json
-import logging
 import time
 
 import kombu.connection
@@ -23,6 +22,7 @@ import kombu.entity
 
 from glance.notifier import strategy
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 

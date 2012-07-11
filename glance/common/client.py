@@ -23,7 +23,6 @@ import collections
 import errno
 import functools
 import httplib
-import logging
 import os
 import re
 import select
@@ -44,6 +43,7 @@ except ImportError:
 
 from glance.common import auth
 from glance.common import exception, utils
+import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 

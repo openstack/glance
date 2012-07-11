@@ -17,10 +17,9 @@
 
 """Base class for all storage backends"""
 
-import logging
-
 from glance.common import exception
 from glance.openstack.common import importutils
+import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 

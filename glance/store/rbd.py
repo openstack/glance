@@ -21,11 +21,11 @@ from __future__ import absolute_import
 from __future__ import with_statement
 
 import hashlib
-import logging
 import math
 
 from glance.common import exception
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
 import glance.store.location

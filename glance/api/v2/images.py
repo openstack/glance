@@ -16,7 +16,6 @@
 import copy
 import datetime
 import json
-import logging
 import urllib
 
 import webob.exc
@@ -26,6 +25,7 @@ from glance.common import utils
 from glance.common import wsgi
 import glance.db
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 import glance.schema
 

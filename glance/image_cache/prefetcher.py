@@ -19,13 +19,12 @@
 Prefetches images into the Image Cache
 """
 
-import logging
-
 import eventlet
 
 from glance.common import exception
 from glance import context
 from glance.image_cache import base
+import glance.openstack.common.log as logging
 from glance import registry
 import glance.store
 import glance.store.filesystem

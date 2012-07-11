@@ -14,10 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-import logging
-
 from glance.notifier import strategy
+import glance.openstack.common.log as logging
 
 
 class LoggingStrategy(strategy.Strategy):

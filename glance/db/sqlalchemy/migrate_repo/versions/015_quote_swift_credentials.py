@@ -15,13 +15,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
 import types
 import urlparse
 
 import sqlalchemy
 
 from glance.common import exception
+import glance.openstack.common.log as logging
 import glance.store.swift
 
 LOG = logging.getLogger(__name__)

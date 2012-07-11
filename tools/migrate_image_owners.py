@@ -1,12 +1,12 @@
 #!/usr/bin/python
 
-import logging
 import sys
 
 import keystoneclient.v2_0.client
 
 import glance.context
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 import glance.registry.context
 import glance.db.sqlalchemy.api as db_api
 

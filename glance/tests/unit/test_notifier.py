@@ -15,8 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 import kombu.entity
 import mox
 try:
@@ -30,6 +28,7 @@ from glance.common import exception
 from glance import notifier
 import glance.notifier.notify_kombu
 from glance.openstack.common import importutils
+import glance.openstack.common.log as logging
 from glance.tests import utils
 
 

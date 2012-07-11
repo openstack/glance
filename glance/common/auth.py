@@ -31,12 +31,12 @@ Keystone (an identity management system).
     http://service_endpoint/
 """
 import json
-import logging
 import urlparse
 
 import httplib2
 
 from glance.common import exception
+import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)

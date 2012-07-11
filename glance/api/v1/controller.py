@@ -15,11 +15,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 import webob.exc
 
 from glance.common import exception
+import glance.openstack.common.log as logging
 from glance import registry
 
 LOG = logging.getLogger(__name__)

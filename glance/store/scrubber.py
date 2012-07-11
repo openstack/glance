@@ -17,12 +17,12 @@
 
 import calendar
 import eventlet
-import logging
 import os
 import time
 
 from glance.common import utils
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 from glance import registry
 from glance.registry import client
 from glance import store

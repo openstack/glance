@@ -21,10 +21,9 @@ and/or Accept headers and attempts to negotiate an API controller to
 return
 """
 
-import logging
-
 from glance.api import versions
 from glance.common import wsgi
+import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 
