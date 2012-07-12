@@ -446,6 +446,48 @@ class TestApi(functional.FunctionalTest):
         self.stop_servers()
 
     @skip_if_disabled
+    def test_zero_initial_size(self):
+        """
+        A test to ensure that an image with size explicitly set to zero
+        has status that immediately transitions to active.
+        """
+
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        # 1. POST /images with public image named Image1
+        # attribute and a size of zero.
+        # Verify a 201 OK is returned
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Size': '0',
+                   'X-Image-Meta-Name': 'Image1',
+                   'X-Image-Meta-disk_format': 'raw',
+                   'X-image-Meta-container_format': 'ovf',
+                   'X-Image-Meta-Is-Public': 'True'}
+        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 201)
+
+        # 2. HEAD image-location
+        # Verify image size is zero and the status is active
+        path = response.get('location')
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['x-image-meta-size'], '0')
+        self.assertEqual(response['x-image-meta-status'], 'active')
+
+        # 3. GET  image-location
+        # Verify image content is empty
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(len(content), 0)
+
+        self.stop_servers()
+
+    @skip_if_disabled
     def test_traceback_not_consumed(self):
         """
         A test that errors coming from the POST API do not

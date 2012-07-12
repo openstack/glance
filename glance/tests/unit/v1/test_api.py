@@ -2158,6 +2158,30 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
 
+    def test_add_image_zero_size(self):
+        """Tests creating an active image with explicitly zero size"""
+        fixture_headers = {'x-image-meta-disk-format': 'ami',
+                           'x-image-meta-container-format': 'ami',
+                           'x-image-meta-size': '0',
+                           'x-image-meta-name': 'empty image'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.CREATED)
+
+        res_body = json.loads(res.body)['image']
+        self.assertEquals('active', res_body['status'])
+        image_id = res_body['id']
+
+        # GET empty image
+        req = webob.Request.blank("/images/%s" % image_id)
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        self.assertEqual(len(res.body), 0)
+
     def test_add_image_bad_store(self):
         """Tests raises BadRequest for invalid store header"""
         fixture_headers = {'x-image-meta-store': 'bad',

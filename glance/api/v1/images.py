@@ -272,12 +272,16 @@ class Controller(controller.BaseController):
         self._enforce(req, 'get_image')
         image_meta = self.get_active_image_meta_or_404(req, id)
 
-        image_iterator, size = self._get_from_store(image_meta['location'])
-        image_meta['size'] = size or image_meta['size']
+        if image_meta.get('size') == 0:
+            image_iterator = iter([])
+        else:
+            image_iterator, size = self._get_from_store(image_meta['location'])
+            image_iterator = utils.cooperative_iter(image_iterator)
+            image_meta['size'] = size or image_meta['size']
 
         del image_meta['location']
         return {
-            'image_iterator': utils.cooperative_iter(image_iterator),
+            'image_iterator': image_iterator,
             'image_meta': image_meta,
         }
 
@@ -295,6 +299,10 @@ class Controller(controller.BaseController):
         :raises HTTPBadRequest if image metadata is not valid
         """
         location = self._external_source(image_meta, req)
+
+        image_meta['status'] = ('active' if image_meta.get('size') == 0
+                                else 'queued')
+
         if location:
             store = get_store_from_location(location)
             # check the store exists before we hit the registry, but we
@@ -308,8 +316,6 @@ class Controller(controller.BaseController):
             # uploadable images (if not provided). The size will be set
             # to a non-zero value during upload
             image_meta['size'] = image_meta.get('size', 0)
-
-        image_meta['status'] = 'queued'
 
         try:
             image_meta = registry.add_image_metadata(req.context, image_meta)

@@ -22,7 +22,8 @@ Images in Glance can be in one the following statuses:
 * ``queued``
 
   The image identifier has been reserved for an image in the Glance
-  registry. No image data has been uploaded to Glance.
+  registry. No image data has been uploaded to Glance and the image
+  size was not explicitly set to zero on creation.
 
 * ``saving``
 
@@ -34,7 +35,9 @@ Images in Glance can be in one the following statuses:
 
 * ``active``
 
-  Denotes an image that is fully available in Glance.
+  Denotes an image that is fully available in Glance. This occurs when
+  the image data is uploaded, or the image size is explicitly set to
+  zero on creation.
 
 * ``killed``
 
