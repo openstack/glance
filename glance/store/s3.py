@@ -19,7 +19,6 @@
 
 import hashlib
 import httplib
-import logging
 import re
 import tempfile
 import urlparse
@@ -27,6 +26,7 @@ import urlparse
 from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
 import glance.store.location

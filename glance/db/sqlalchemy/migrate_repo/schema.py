@@ -19,9 +19,9 @@
 Various conveniences used for migration scripts
 """
 
-import logging
-
 import sqlalchemy.types
+
+import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)

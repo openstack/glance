@@ -15,13 +15,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
 import json
+
 import webob.exc
 
 from glance.common import wsgi
 import glance.context
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 
 
 context_opts = [

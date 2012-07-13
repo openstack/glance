@@ -15,10 +15,10 @@
 
 import datetime
 import functools
-import logging
 import uuid
 
 from glance.common import exception
+import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)

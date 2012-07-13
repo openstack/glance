@@ -20,7 +20,6 @@
 """
 
 import errno
-import logging
 import sys
 import traceback
 
@@ -42,6 +41,7 @@ from glance.common import utils
 from glance.common import wsgi
 from glance import notifier
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 from glance import registry
 from glance.store import (create_stores,
                           get_from_backend,

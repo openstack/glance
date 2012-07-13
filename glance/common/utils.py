@@ -28,7 +28,6 @@ except ImportError:
     from time import sleep
 
 import functools
-import logging
 import os
 import platform
 import subprocess
@@ -39,6 +38,7 @@ import iso8601
 from webob import exc
 
 from glance.common import exception
+import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)

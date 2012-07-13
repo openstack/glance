@@ -21,7 +21,6 @@ Cache driver that uses SQLite to store information about cached images
 
 from __future__ import absolute_import
 from contextlib import contextmanager
-import logging
 import os
 import stat
 import time
@@ -32,6 +31,7 @@ import sqlite3
 from glance.common import exception
 from glance.image_cache.drivers import base
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 

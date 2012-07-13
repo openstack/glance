@@ -18,11 +18,11 @@
 """Policy Engine For Glance"""
 
 import json
-import logging
 import os.path
 
 from glance.common import exception
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 from glance.openstack.common import policy
 
 LOG = logging.getLogger(__name__)

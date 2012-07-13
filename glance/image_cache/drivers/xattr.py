@@ -57,7 +57,6 @@ from __future__ import absolute_import
 from contextlib import contextmanager
 import datetime
 import errno
-import logging
 import os
 import stat
 import time
@@ -67,6 +66,7 @@ import xattr
 from glance.common import exception
 from glance.image_cache.drivers import base
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 

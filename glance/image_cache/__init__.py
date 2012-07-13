@@ -19,11 +19,10 @@
 LRU Cache for Image Data
 """
 
-import logging
-
 from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 from glance.openstack.common import importutils
 
 LOG = logging.getLogger(__name__)

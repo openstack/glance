@@ -13,12 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 from glance.common import exception
 from glance.common import wsgi
 import glance.context
 import glance.db.simple.api as simple_db
+import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)

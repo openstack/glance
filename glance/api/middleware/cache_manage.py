@@ -19,12 +19,11 @@
 Image Cache Management API
 """
 
-import logging
-
 import routes
 
 from glance.api import cached_images
 from glance.common import wsgi
+import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 

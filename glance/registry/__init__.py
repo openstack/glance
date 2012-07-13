@@ -19,11 +19,11 @@
 Registry API
 """
 
-import logging
 import os
 
 from glance.common import exception
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 from glance.registry import client
 
 LOG = logging.getLogger(__name__)

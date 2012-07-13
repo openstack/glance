@@ -15,7 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
 import os
 
 from migrate.versioning import api as versioning_api
@@ -29,6 +28,7 @@ from migrate.versioning import repository as versioning_repository
 
 from glance.common import exception
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 

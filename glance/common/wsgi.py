@@ -42,6 +42,7 @@ import webob.exc
 from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
+import glance.openstack.common.log as os_logging
 
 
 bind_opts = [
@@ -168,7 +169,7 @@ class Server(object):
         self.application = application
         self.sock = get_socket(default_port)
 
-        self.logger = logging.getLogger('eventlet.wsgi.server')
+        self.logger = os_logging.getLogger('eventlet.wsgi.server')
 
         if CONF.workers == 0:
             # Useful for profiling, test, debug etc.

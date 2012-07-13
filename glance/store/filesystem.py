@@ -21,13 +21,13 @@ A simple filesystem-backed store
 
 import errno
 import hashlib
-import logging
 import os
 import urlparse
 
 from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
 import glance.store.location

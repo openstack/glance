@@ -16,13 +16,13 @@
 #    under the License.
 
 
-import logging
 import socket
 import uuid
 
 from glance.common import exception
 from glance.openstack.common import cfg
 from glance.openstack.common import importutils
+import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 
 notifier_opts = [

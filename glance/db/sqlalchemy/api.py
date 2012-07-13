@@ -33,6 +33,7 @@ from glance.common import exception
 from glance.db.sqlalchemy import migration
 from glance.db.sqlalchemy import models
 from glance.openstack.common import cfg
+import glance.openstack.common.log as os_logging
 from glance.openstack.common import timeutils
 
 
@@ -42,7 +43,7 @@ _MAX_RETRIES = None
 _RETRY_INTERVAL = None
 BASE = models.BASE
 sa_logger = None
-LOG = logging.getLogger(__name__)
+LOG = os_logging.getLogger(__name__)
 
 
 CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']

@@ -19,12 +19,12 @@
 Base attribute driver class
 """
 
-import logging
 import os.path
 
 from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 

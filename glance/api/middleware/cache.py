@@ -25,7 +25,6 @@ the local cached copy of the image file is returned.
 """
 
 import httplib
-import logging
 import re
 
 import webob
@@ -35,6 +34,7 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 from glance import image_cache
+import glance.openstack.common.log as logging
 from glance import registry
 
 LOG = logging.getLogger(__name__)
