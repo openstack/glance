@@ -185,38 +185,6 @@ class KeystoneStrategy(BaseStrategy):
             raise Exception(_('Unexpected response: %s' % resp.status))
 
     def _v2_auth(self, token_url):
-        def get_endpoint(service_catalog):
-            """
-            Select an endpoint from the service catalog
-
-            We search the full service catalog for services
-            matching both type and region. If the client
-            supplied no region then any 'image' endpoint
-            is considered a match. There must be one -- and
-            only one -- successful match in the catalog,
-            otherwise we will raise an exception.
-            """
-            # FIXME(sirp): for now just use the public url.
-            endpoint = None
-            region = self.creds.get('region')
-            for service in service_catalog:
-                try:
-                    service_type = service['type']
-                except KeyError:
-                    msg = _('Encountered service with no "type": %s' % service)
-                    LOG.warn(msg)
-                    continue
-
-                if service_type == 'image':
-                    for ep in service['endpoints']:
-                        if region is None or region == ep['region']:
-                            if endpoint is not None:
-                                # This is a second match, abort
-                                raise exception.RegionAmbiguity(region=region)
-                            endpoint = ep
-            if endpoint is None:
-                raise exception.NoServiceEndpoint()
-            return endpoint['publicURL']
 
         creds = self.creds
 
@@ -239,7 +207,9 @@ class KeystoneStrategy(BaseStrategy):
 
         if resp.status == 200:
             resp_auth = json.loads(resp_body)['access']
-            self.management_url = get_endpoint(resp_auth['serviceCatalog'])
+            creds_region = self.creds.get('region')
+            self.management_url = get_endpoint(resp_auth['serviceCatalog'],
+                                               endpoint_region=creds_region)
             self.auth_token = resp_auth['token']['id']
         elif resp.status == 305:
             raise exception.RedirectException(resp['location'])
@@ -277,3 +247,38 @@ def get_plugin_from_strategy(strategy, creds=None):
         return KeystoneStrategy(creds)
     else:
         raise Exception(_("Unknown auth strategy '%s'") % strategy)
+
+
+def get_endpoint(service_catalog, service_type='image', endpoint_region=None,
+                 endpoint_type='publicURL'):
+    """
+    Select an endpoint from the service catalog
+
+    We search the full service catalog for services
+    matching both type and region. If the client
+    supplied no region then any 'image' endpoint
+    is considered a match. There must be one -- and
+    only one -- successful match in the catalog,
+    otherwise we will raise an exception.
+    """
+    endpoint = None
+    for service in service_catalog:
+        s_type = None
+        try:
+            s_type = service['type']
+        except KeyError:
+            msg = _('Encountered service with no "type": %s' % s_type)
+            LOG.warn(msg)
+            continue
+
+        if s_type == service_type:
+            for ep in service['endpoints']:
+                if endpoint_region is None or endpoint_region == ep['region']:
+                    if endpoint is not None:
+                        # This is a second match, abort
+                        raise exception.RegionAmbiguity(region=endpoint_region)
+                    endpoint = ep
+    if endpoint and endpoint.get(endpoint_type):
+        return endpoint[endpoint_type]
+    else:
+        raise exception.NoServiceEndpoint()
