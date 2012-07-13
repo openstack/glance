@@ -169,10 +169,7 @@ def load_paste_app(app_name=None):
     conf_file = _get_deployment_config_file()
 
     try:
-        # Setup logging early
-        setup_logging()
-        logger = logging.getLogger(app_name)
-
+        logger = logging.getLogger(__name__)
         logger.debug(_("Loading %(app_name)s from %(conf_file)s"),
                      {'conf_file': conf_file, 'app_name': app_name})
 

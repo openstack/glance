@@ -38,11 +38,13 @@ gettext.install('glance', unicode=1)
 
 from glance.common import config
 from glance.common import wsgi
+from glance.openstack.common import log
 
 
 if __name__ == '__main__':
     try:
         config.parse_args()
+        log.setup('glance')
 
         app = config.load_paste_app()
 
