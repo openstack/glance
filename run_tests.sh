@@ -60,7 +60,7 @@ function run_tests {
 
 function run_pep8 {
   echo "Running pep8 ..."
-  PEP8_EXCLUDE=".venv,.tox,dist,doc"
+  PEP8_EXCLUDE=".venv,.tox,dist,doc,openstack"
   PEP8_OPTIONS="--exclude=$PEP8_EXCLUDE --repeat"
   PEP8_INCLUDE="."
   ${wrapper} pep8 $PEP8_OPTIONS $PEP8_INCLUDE
