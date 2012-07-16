@@ -240,3 +240,7 @@ class SchemaLoadError(GlanceException):
 class InvalidObject(GlanceException):
     message = _("Provided object does not match schema "
                 "'%(schema)s': %(reason)s")
+
+
+class UnsupportedHeaderFeature(GlanceException):
+    message = _("Provided header feature is unsupported: %(feature)s")
