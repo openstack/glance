@@ -19,7 +19,6 @@
 /images endpoint for Glance v1 API
 """
 
-import errno
 import sys
 import traceback
 
@@ -32,6 +31,7 @@ from webob.exc import (HTTPError,
                        HTTPServiceUnavailable,
                       )
 
+from glance.api import common
 from glance.api import policy
 import glance.api.v1
 from glance.api.v1 import controller
@@ -883,72 +883,15 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
         self._inject_checksum_header(response, image_meta)
         return response
 
-    def image_send_notification(self, bytes_written, expected_size,
-                                image_meta, request):
-        """Send an image.send message to the notifier."""
-        try:
-            context = request.context
-            payload = {
-                'bytes_sent': bytes_written,
-                'image_id': image_meta['id'],
-                'owner_id': image_meta['owner'],
-                'receiver_tenant_id': context.tenant,
-                'receiver_user_id': context.user,
-                'destination_ip': request.remote_addr,
-            }
-            if bytes_written != expected_size:
-                self.notifier.error('image.send', payload)
-            else:
-                self.notifier.info('image.send', payload)
-        except Exception, err:
-            msg = _("An error occurred during image.send"
-                    " notification: %(err)s") % locals()
-            LOG.error(msg)
-
     def show(self, response, result):
         image_meta = result['image_meta']
         image_id = image_meta['id']
 
-        # We use a secondary iterator here to wrap the
-        # iterator coming back from the store driver in
-        # order to check for disconnections from the backend
-        # storage connections and log an error if the size of
-        # the transferred image is not the same as the expected
-        # size of the image file. See LP Bug #882585.
-        def checked_iter(image_id, expected_size, image_iter):
-            bytes_written = 0
-
-            def notify_image_sent_hook(env):
-                self.image_send_notification(bytes_written, expected_size,
-                                             image_meta, response.request)
-
-            # Add hook to process after response is fully sent
-            if 'eventlet.posthooks' in response.request.environ:
-                response.request.environ['eventlet.posthooks'].append(
-                    (notify_image_sent_hook, (), {}))
-
-            try:
-                for chunk in image_iter:
-                    yield chunk
-                    bytes_written += len(chunk)
-            except Exception, err:
-                msg = _("An error occurred reading from backend storage "
-                        "for image %(image_id)s: %(err)s") % locals()
-                LOG.error(msg)
-                raise
-
-            if expected_size != bytes_written:
-                msg = _("Backend storage for image %(image_id)s "
-                        "disconnected after writing only %(bytes_written)d "
-                        "bytes") % locals()
-                LOG.error(msg)
-                raise IOError(errno.EPIPE, _("Corrupt image download for "
-                                             "image %(image_id)s") % locals())
-
         image_iter = result['image_iterator']
         # image_meta['size'] is a str
         expected_size = int(image_meta['size'])
-        response.app_iter = checked_iter(image_id, expected_size, image_iter)
+        response.app_iter = common.size_checked_iter(
+                response, image_meta, expected_size, image_iter, self.notifier)
         # Using app_iter blanks content-length, so we set it here...
         response.headers['Content-Length'] = image_meta['size']
         response.headers['Content-Type'] = 'application/octet-stream'
