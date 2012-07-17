@@ -37,8 +37,9 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_download(self):
         request = unit_test_utils.get_fake_request()
         output = self.controller.download(request, unit_test_utils.UUID1)
-        expected = {'data': 'XXX', 'size': 3}
-        self.assertEqual(expected, output)
+        self.assertEqual(set(['data', 'meta']), set(output.keys()))
+        self.assertEqual(3, output['meta']['size'])
+        self.assertEqual('XXX', output['data'])
 
     def test_download_no_data(self):
         request = unit_test_utils.get_fake_request()
@@ -54,8 +55,9 @@ class TestImagesController(base.StoreClearingUnitTest):
         request = unit_test_utils.get_fake_request()
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)
         output = self.controller.download(request, unit_test_utils.UUID2)
-        expected = {'data': 'YYYY', 'size': 4}
-        self.assertEqual(expected, output)
+        self.assertEqual(set(['data', 'meta']), set(output.keys()))
+        self.assertEqual(4, output['meta']['size'])
+        self.assertEqual('YYYY', output['data'])
 
     def test_upload_non_existant_image(self):
         request = unit_test_utils.get_fake_request()
@@ -71,8 +73,9 @@ class TestImagesController(base.StoreClearingUnitTest):
         request = unit_test_utils.get_fake_request()
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', None)
         output = self.controller.download(request, unit_test_utils.UUID2)
-        expected = {'data': 'YYYY', 'size': 4}
-        self.assertEqual(expected, output)
+        self.assertEqual(set(['data', 'meta']), set(output.keys()))
+        self.assertEqual(4, output['meta']['size'])
+        self.assertEqual('YYYY', output['data'])
 
 
 class TestImageDataDeserializer(test_utils.BaseTestCase):
@@ -146,8 +149,12 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         self.serializer = glance.api.v2.image_data.ResponseSerializer()
 
     def test_download(self):
+        request = webob.Request.blank('/')
+        request.environ = {}
         response = webob.Response()
-        self.serializer.download(response, {'data': 'ZZZ', 'size': 3})
+        response.request = request
+        fixture = {'data': 'ZZZ', 'meta': {'size': 3, 'id': 'asdf'}}
+        self.serializer.download(response, fixture)
         self.assertEqual('ZZZ', response.body)
         self.assertEqual('3', response.headers['Content-Length'])
         self.assertEqual('application/octet-stream',

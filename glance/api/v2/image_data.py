@@ -15,10 +15,12 @@
 
 import webob.exc
 
+from glance.api import common
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.db
+import glance.notifier
 import glance.store
 
 
@@ -54,7 +56,13 @@ class ImageDataController(object):
         if location:
             image_data, image_size = self.store_api.get_from_backend(ctx,
                                                                      location)
-            return {'data': image_data, 'size': image_size}
+            #NOTE(bcwaldon): This is done to match the behavior of the v1 API.
+            # The store should always return a size that matches what we have
+            # in the database. If the store says otherwise, that's a security
+            # risk.
+            if image_size is not None:
+                image['size'] = int(image_size)
+            return {'data': image_data, 'meta': image}
         else:
             raise webob.exc.HTTPNotFound(_("No image data could be found"))
 
@@ -72,9 +80,12 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
     def download(self, response, result):
-        response.headers['Content-Length'] = result['size']
+        size = result['meta']['size']
+        response.headers['Content-Length'] = size
         response.headers['Content-Type'] = 'application/octet-stream'
-        response.app_iter = result['data']
+        notifier = glance.notifier.Notifier()
+        response.app_iter = common.size_checked_iter(
+                response, result['meta'], size, result['data'], notifier)
 
 
 def create_resource():
