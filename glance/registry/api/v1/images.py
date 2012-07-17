@@ -342,7 +342,7 @@ class Controller(object):
             image_data = self.db_api.image_create(req.context, image_data)
             return dict(image=make_image_dict(image_data))
         except exception.Duplicate:
-            msg = (_("Image with identifier %s already exists!") % id)
+            msg = (_("Image with identifier %s already exists!") % image_id)
             LOG.error(msg)
             return exc.HTTPConflict(msg)
         except exception.Invalid, e:
