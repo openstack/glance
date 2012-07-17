@@ -24,7 +24,6 @@ When subsequent requests for the same image file are received,
 the local cached copy of the image file is returned.
 """
 
-import httplib
 import re
 
 import webob
@@ -33,12 +32,19 @@ from glance.api.v1 import images
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
+import glance.db
 from glance import image_cache
 import glance.openstack.common.log as logging
 from glance import registry
 
 LOG = logging.getLogger(__name__)
-get_images_re = re.compile(r'^(/v\d+)*/images/([^\/]+)$')
+
+PATTERNS = {
+    ('v1', 'GET'): re.compile(r'^/v1/images/([^\/]+)$'),
+    ('v1', 'DELETE'): re.compile(r'^/v1/images/([^\/]+)$'),
+    ('v2', 'GET'): re.compile(r'^/v2/images/([^\/]+)/file$'),
+    ('v2', 'DELETE'): re.compile(r'^/v2/images/([^\/]+)$')
+}
 
 
 class CacheFilter(wsgi.Middleware):
@@ -49,6 +55,26 @@ class CacheFilter(wsgi.Middleware):
         LOG.info(_("Initialized image cache middleware"))
         super(CacheFilter, self).__init__(app)
 
+    @staticmethod
+    def _match_request(request):
+        """Determine the version of the url and extract the image id
+
+        :returns tuple of version and image id if the url is a cacheable,
+                 otherwise None
+        """
+        for ((version, method), pattern) in PATTERNS.items():
+            match = pattern.match(request.path_info)
+            try:
+                assert request.method == method
+                image_id = match.group(1)
+                # Ensure the image id we got looks like an image id to filter
+                # out a URI like /images/detail. See LP Bug #879136
+                assert image_id != 'detail'
+            except (AttributeError, AssertionError):
+                continue
+            else:
+                return (version, method, image_id)
+
     def process_request(self, request):
         """
         For requests for an image file, we check the local image
@@ -56,71 +82,88 @@ class CacheFilter(wsgi.Middleware):
         the image metadata in headers. If not present, we pass
         the request on to the next application in the pipeline.
         """
-        if request.method != 'GET':
+        match = self._match_request(request)
+        try:
+            (version, method, image_id) = match
+        except TypeError:
+            # Trying to unpack None raises this exception
             return None
 
-        match = get_images_re.match(request.path_info)
-        if not match:
+        # Preserve the cached image id for consumption by the
+        # process_response method of this middleware
+        request.environ['api.cache.image_id'] = image_id
+        request.environ['api.cache.method'] = method
+
+        if request.method != 'GET' or not self.cache.is_cached(image_id):
             return None
 
-        image_id = match.group(2)
+        LOG.debug(_("Cache hit for image '%s'"), image_id)
+        image_iterator = self.get_from_cache(image_id)
+        method = getattr(self, '_process_%s_request' % version)
 
-        # /images/detail is unfortunately supported, so here we
-        # cut out those requests and anything with a query
-        # parameter...
-        # See LP Bug #879136
-        if '?' in image_id or image_id == 'detail':
-            return None
+        try:
+            return method(request, image_id, image_iterator)
+        except exception.NotFound:
+            msg = _("Image cache contained image file for image '%s', "
+                    "however the registry did not contain metadata for "
+                    "that image!" % image_id)
+            LOG.error(msg)
 
-        if self.cache.is_cached(image_id):
-            LOG.debug(_("Cache hit for image '%s'"), image_id)
-            image_iterator = self.get_from_cache(image_id)
-            context = request.context
-            try:
-                image_meta = registry.get_image_metadata(context, image_id)
+    def _process_v1_request(self, request, image_id, image_iterator):
+        image_meta = registry.get_image_metadata(request.context, image_id)
 
-                if not image_meta['size']:
-                    # override image size metadata with the actual cached
-                    # file size, see LP Bug #900959
-                    image_meta['size'] = self.cache.get_image_size(image_id)
+        if not image_meta['size']:
+            # override image size metadata with the actual cached
+            # file size, see LP Bug #900959
+            image_meta['size'] = self.cache.get_image_size(image_id)
 
-                response = webob.Response(request=request)
-                return self.serializer.show(response, {
-                    'image_iterator': image_iterator,
-                    'image_meta': image_meta})
-            except exception.NotFound:
-                msg = _("Image cache contained image file for image '%s', "
-                        "however the registry did not contain metadata for "
-                        "that image!" % image_id)
-                LOG.error(msg)
-        return None
+        response = webob.Response(request=request)
+        raw_response = {
+            'image_iterator': image_iterator,
+            'image_meta': image_meta,
+        }
+        return self.serializer.show(response, raw_response)
+
+    def _process_v2_request(self, request, image_id, image_iterator):
+        self.db_api = glance.db.get_api()
+        self.db_api.configure_db()
+        response = webob.Response(request=request)
+        response.app_iter = image_iterator
+        return response
 
     def process_response(self, resp):
         """
         We intercept the response coming back from the main
-        images Resource, caching image files to the cache
+        images Resource, removing image file from the cache
+        if necessary
         """
-        if not self.get_status_code(resp) == httplib.OK:
+        if not 200 <= self.get_status_code(resp) < 300:
             return resp
 
         request = resp.request
-        if request.method not in ('GET', 'DELETE'):
+        try:
+            image_id = request.environ['api.cache.image_id']
+            method = request.environ['api.cache.method']
+        except KeyError:
             return resp
 
-        match = get_images_re.match(request.path_info)
-        if match is None:
+        method_str = '_process_%s_response' % method
+        try:
+            process_response_method = getattr(self, method_str)
+        except AttributeError:
+            LOG.error('could not find %s' % method_str)
+            # Nothing to do here, move along
             return resp
+        else:
+            return process_response_method(resp, image_id)
 
-        image_id = match.group(2)
-        if '?' in image_id or image_id == 'detail':
-            return resp
-
+    def _process_DELETE_response(self, resp, image_id):
         if self.cache.is_cached(image_id):
-            if request.method == 'DELETE':
-                LOG.info(_("Removing image %s from cache"), image_id)
-                self.cache.delete_cached_image(image_id)
-            return resp
+            LOG.debug(_("Removing image %s from cache"), image_id)
+            self.cache.delete_cached_image(image_id)
+        return resp
 
+    def _process_GET_response(self, resp, image_id):
         resp.app_iter = self.cache.get_caching_iter(image_id, resp.app_iter)
         return resp
 
