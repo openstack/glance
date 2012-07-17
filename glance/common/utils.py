@@ -43,6 +43,8 @@ import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 
+FEATURE_BLACKLIST = ['content-length', 'content-type', 'x-image-meta-size']
+
 
 def chunkreadable(iter, chunk_size=65536):
     """
@@ -153,6 +155,8 @@ def add_features_to_http_headers(features, headers):
     """
     if features:
         for k, v in features.items():
+            if k.lower() in FEATURE_BLACKLIST:
+                raise exception.UnsupportedHeaderFeature(feature=k)
             if v is not None:
                 headers[k.lower()] = unicode(v)
 

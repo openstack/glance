@@ -2004,6 +2004,29 @@ class TestClient(base.IsolatedUnitTest):
                           fixture,
                           image_data_fixture)
 
+    def test_add_image_with_unsupported_feature(self):
+        """Tests that UnsupportedHeaderFeature is raised when image is added"""
+        fixture = {
+            'name': 'fake public image',
+            'is_public': True,
+            'disk_format': 'vhd',
+            'container_format': 'ovf',
+            'size': 19,
+            'location': "http://localhost/glance-tests/2"
+        }
+
+        feature_fixture = {
+            'content-type': 'bad content type',
+            'content-length': '0',
+            'x-image-meta-size': '0'
+        }
+
+        for k, v in feature_fixture.items():
+            self.assertRaises(exception.UnsupportedHeaderFeature,
+                              self.client.add_image,
+                              None,
+                              features={k: v})
+
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',
@@ -2030,6 +2053,25 @@ class TestClient(base.IsolatedUnitTest):
                           self.client.update_image,
                           _gen_uuid(),
                           fixture)
+
+    def test_update_image_with_unsupported_feature(self):
+        """Tests that UnsupportedHeaderFeature is raised during update"""
+        fixture = {
+            'name': 'fake public image #2'
+        }
+
+        feature_fixture = {
+            'content-type': 'bad content-type',
+            'content-length': '0',
+            'x-image-meta-size': '0'
+        }
+
+        for k, v in feature_fixture.items():
+            self.assertRaises(exception.UnsupportedHeaderFeature,
+                              self.client.update_image,
+                              UUID2,
+                              image_meta=fixture,
+                              features={k: v})
 
     def test_delete_image(self):
         """Tests that image metadata is deleted properly"""
