@@ -139,7 +139,7 @@ class TestBinGlance(functional.FunctionalTest):
         # 1. Add public image
         cmd = minimal_add_command(api_port,
                                   'MyImage',
-                                  'location=http://example.com')
+                                  'location=http://localhost:0')
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
@@ -183,7 +183,7 @@ class TestBinGlance(functional.FunctionalTest):
         # name...
         cmd = ("bin/glance --port=%d add is_public=True"
                " disk_format=raw container_format=ovf"
-               " %s" % (api_port, 'location=http://example.com'))
+               " %s" % (api_port, 'location=http://localhost:0'))
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
@@ -338,7 +338,7 @@ class TestBinGlance(functional.FunctionalTest):
             file_name = image_file.name
             cmd = minimal_add_command(api_port,
                                      'MyImage',
-                                     'location=http://example.com < %s' %
+                                     'location=http://localhost:0 < %s' %
                                      file_name)
             exitcode, out, err = execute(cmd)
 
@@ -470,7 +470,7 @@ class TestBinGlance(functional.FunctionalTest):
         # 1. Add public image
         cmd = minimal_add_command(api_port,
                                   'MyImage',
-                                  'location=http://example.com',
+                                  'location=http://localhost:0',
                                   public=False)
 
         exitcode, out, err = execute(cmd)
@@ -602,7 +602,7 @@ class TestBinGlance(functional.FunctionalTest):
         # 1. Add public image
         cmd = minimal_add_command(api_port,
                                  'MyImage',
-                                 'location=http://example.com checksum=1')
+                                 'location=http://localhost:0 checksum=1')
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
@@ -633,7 +633,7 @@ class TestBinGlance(functional.FunctionalTest):
         # 1. Add public image
         cmd = minimal_add_command(api_port,
                                  'MyImage',
-                                 'location=http://example.com')
+                                 'location=http://localhost:0')
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
