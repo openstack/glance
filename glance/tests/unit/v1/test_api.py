@@ -2025,7 +2025,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def _do_test_defaulted_format(self, format_key, format_value):
         fixture_headers = {'x-image-meta-name': 'defaulted',
-                           'x-image-meta-location': 'http://foo.com/image',
+                           'x-image-meta-location': 'http://localhost:0/image',
                            format_key: format_value}
 
         req = webob.Request.blank("/images")
@@ -2048,7 +2048,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_bad_disk_format(self):
         fixture_headers = {'x-image-meta-store': 'bad',
                    'x-image-meta-name': 'bogus',
-                   'x-image-meta-location': 'http://example.com/image.tar.gz',
+                   'x-image-meta-location': 'http://localhost:0/image.tar.gz',
                    'x-image-meta-disk-format': 'invalid',
                    'x-image-meta-container-format': 'ami'}
 
@@ -2064,7 +2064,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_bad_container_format(self):
         fixture_headers = {'x-image-meta-store': 'bad',
                    'x-image-meta-name': 'bogus',
-                   'x-image-meta-location': 'http://example.com/image.tar.gz',
+                   'x-image-meta-location': 'http://localhost:0/image.tar.gz',
                    'x-image-meta-disk-format': 'vhd',
                    'x-image-meta-container-format': 'invalid'}
 
@@ -2117,7 +2117,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images/%s" % image_id)
         req.method = 'PUT'
-        req.headers['x-image-meta-location'] = 'http://example.com/images/123'
+        req.headers['x-image-meta-location'] = 'http://localhost:0/images/123'
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, httplib.OK)
 
