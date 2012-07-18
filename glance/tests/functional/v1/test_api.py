@@ -1188,7 +1188,9 @@ class TestApi(functional.FunctionalTest):
         self.default_store = 'shouldnotexist'
 
         # ensure failure exit code is available to assert on
-        self.api_server.server_control_options += ' --await-child=1'
+        # -- on slower machines this needs a few seconds or
+        # the unit test will fail
+        self.api_server.server_control_options += ' --await-child=3'
 
         # ensure that the API server fails to launch
         self.start_server(self.api_server,
