@@ -19,9 +19,9 @@ import json
 
 import webob
 
+from glance.api.middleware import version_negotiation
 from glance.api import versions
 from glance.tests.unit import base
-from glance.tests import utils
 
 
 class VersionsTest(base.IsolatedUnitTest):
@@ -54,3 +54,36 @@ class VersionsTest(base.IsolatedUnitTest):
             },
         ]
         self.assertEqual(results, expected)
+
+
+class VersionNegotiationTest(base.IsolatedUnitTest):
+
+    def setUp(self):
+        super(VersionNegotiationTest, self).setUp()
+        self.middleware = version_negotiation.VersionNegotiationFilter(None)
+
+    def test_request_url_v1(self):
+        request = webob.Request.blank('/v1/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v1/images', request.path_info)
+
+    def test_request_url_v1_0(self):
+        request = webob.Request.blank('/v1.0/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v1/images', request.path_info)
+
+    def test_request_url_v1_1(self):
+        request = webob.Request.blank('/v1.1/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v1/images', request.path_info)
+
+    def test_request_accept_v1(self):
+        request = webob.Request.blank('/images')
+        request.headers = {'accept': 'application/vnd.openstack.images-v1'}
+        self.middleware.process_request(request)
+        self.assertEqual('/v1/images', request.path_info)
+
+    def test_request_url_v2(self):
+        request = webob.Request.blank('/v2/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)

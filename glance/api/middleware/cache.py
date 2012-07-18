@@ -59,7 +59,7 @@ class CacheFilter(wsgi.Middleware):
         if request.method != 'GET':
             return None
 
-        match = get_images_re.match(request.path)
+        match = get_images_re.match(request.path_info)
         if not match:
             return None
 
@@ -107,7 +107,7 @@ class CacheFilter(wsgi.Middleware):
         if request.method not in ('GET', 'DELETE'):
             return resp
 
-        match = get_images_re.match(request.path)
+        match = get_images_re.match(request.path_info)
         if match is None:
             return resp
 
