@@ -76,8 +76,9 @@ class NoAuthStrategy(BaseStrategy):
 class KeystoneStrategy(BaseStrategy):
     MAX_REDIRECTS = 10
 
-    def __init__(self, creds):
+    def __init__(self, creds, insecure=False):
         self.creds = creds
+        self.insecure = insecure
         super(KeystoneStrategy, self).__init__()
 
     def check_auth_params(self):
@@ -230,21 +231,21 @@ class KeystoneStrategy(BaseStrategy):
     def strategy(self):
         return 'keystone'
 
-    @staticmethod
-    def _do_request(url, method, headers=None, body=None):
+    def _do_request(self, url, method, headers=None, body=None):
         headers = headers or {}
         conn = httplib2.Http()
         conn.force_exception_to_status_code = True
+        conn.disable_ssl_certificate_validation = self.insecure
         headers['User-Agent'] = 'glance-client'
         resp, resp_body = conn.request(url, method, headers=headers, body=body)
         return resp, resp_body
 
 
-def get_plugin_from_strategy(strategy, creds=None):
+def get_plugin_from_strategy(strategy, creds=None, insecure=False):
     if strategy == 'noauth':
         return NoAuthStrategy()
     elif strategy == 'keystone':
-        return KeystoneStrategy(creds)
+        return KeystoneStrategy(creds, insecure)
     else:
         raise Exception(_("Unknown auth strategy '%s'") % strategy)
 
