@@ -39,6 +39,7 @@ gettext.install('glance', unicode=1)
 from glance.common import config
 from glance.common import wsgi
 from glance.common import exception
+from glance.openstack.common import log
 
 
 def fail(returncode, e):
@@ -49,6 +50,7 @@ def fail(returncode, e):
 if __name__ == '__main__':
     try:
         config.parse_args()
+        log.setup('glance')
 
         app = config.load_paste_app()
 
