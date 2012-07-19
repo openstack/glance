@@ -26,6 +26,7 @@ import stubout
 import webob
 
 import glance.api.middleware.context as context_middleware
+import glance.api.common
 from glance.api.v1 import images
 from glance.api.v1 import router
 from glance.common import utils
@@ -3130,7 +3131,8 @@ class TestImageSerializer(base.IsolatedUnitTest):
 
         self.stubs.Set(self.serializer.notifier, 'info', fake_info)
 
-        self.serializer.image_send_notification(19, 19, image_meta, req)
+        glance.api.common.image_send_notification(19, 19, image_meta, req,
+                                                  self.serializer.notifier)
 
         self.assertTrue(called['notified'])
 
@@ -3159,6 +3161,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
         self.stubs.Set(self.serializer.notifier, 'error', fake_error)
 
         #expected and actually sent bytes differ
-        self.serializer.image_send_notification(17, 19, image_meta, req)
+        glance.api.common.image_send_notification(17, 19, image_meta, req,
+                                                  self.serializer.notifier)
 
         self.assertTrue(called['notified'])
