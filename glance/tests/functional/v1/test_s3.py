@@ -87,7 +87,7 @@ class TestS3(test_api.TestApi):
         # 1. POST /images with public image named Image1
         image_data = "*" * FIVE_KB
         headers = minimal_headers('Image1')
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
@@ -102,7 +102,7 @@ class TestS3(test_api.TestApi):
         # 2. GET first image
         # Verify all information on image we just added is correct
         path = "http://%s:%d/v1/images/%s"
-        args = ("0.0.0.0", self.api_port, image_id1)
+        args = ("127.0.0.1", self.api_port, image_id1)
 
         http = httplib2.Http()
         response, content = http.request(path % args, 'GET')
@@ -112,7 +112,7 @@ class TestS3(test_api.TestApi):
 
         # 3. GET first image from registry in order to find S3 location
         path = "http://%s:%d/images/%s"
-        args = ("0.0.0.0", self.registry_port, image_id1)
+        args = ("127.0.0.1", self.registry_port, image_id1)
 
         http = httplib2.Http()
         response, content = http.request(path % args, 'GET')
@@ -129,7 +129,7 @@ class TestS3(test_api.TestApi):
         headers = minimal_headers('Image2')
         headers['X-Image-Meta-Id'] = image_id2
         headers['X-Image-Meta-Location'] = s3_store_location
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
@@ -143,7 +143,7 @@ class TestS3(test_api.TestApi):
 
         # 5. GET second image and make sure it can stream the image
         path = "http://%s:%d/v1/images/%s"
-        args = ("0.0.0.0", self.api_port, image_id2)
+        args = ("127.0.0.1", self.api_port, image_id2)
 
         http = httplib2.Http()
         response, content = http.request(path % args, 'GET')
@@ -153,13 +153,13 @@ class TestS3(test_api.TestApi):
 
         # 6. DELETE first and second images
         path = "http://%s:%d/v1/images/%s"
-        args = ("0.0.0.0", self.api_port, image_id1)
+        args = ("127.0.0.1", self.api_port, image_id1)
 
         http = httplib2.Http()
         http.request(path % args, 'DELETE')
 
         path = "http://%s:%d/v1/images/%s"
-        args = ("0.0.0.0", self.api_port, image_id2)
+        args = ("127.0.0.1", self.api_port, image_id2)
 
         http = httplib2.Http()
         http.request(path % args, 'DELETE')
@@ -182,7 +182,7 @@ class TestS3(test_api.TestApi):
         image_data = "*" * FIVE_KB
         headers = minimal_headers('external')
         headers['X-Image-Meta-Store'] = from_store
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
@@ -199,7 +199,7 @@ class TestS3(test_api.TestApi):
                    'X-Image-Meta-disk_format': 'raw',
                    'X-Image-Meta-container_format': 'ovf',
                    'X-Glance-API-Copy-From': copy_from}
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201, content)
@@ -209,7 +209,7 @@ class TestS3(test_api.TestApi):
         self.assertNotEqual(copy_image_id, original_image_id)
 
         # GET image and make sure image content is as expected
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               copy_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
@@ -223,7 +223,7 @@ class TestS3(test_api.TestApi):
         self.assertEqual(data['image']['name'], "copied")
 
         # DELETE original image
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               original_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
@@ -231,7 +231,7 @@ class TestS3(test_api.TestApi):
 
         # GET image again to make sure the existence of the original
         # image in from_store is not depended on
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               copy_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
@@ -245,7 +245,7 @@ class TestS3(test_api.TestApi):
         self.assertEqual(data['image']['name'], "copied")
 
         # DELETE copied image
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               copy_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
@@ -291,7 +291,7 @@ class TestS3(test_api.TestApi):
                    'X-Image-Meta-container_format': 'ovf',
                    'X-Image-Meta-Is-Public': 'True',
                    'X-Glance-API-Copy-From': copy_from}
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201, content)
@@ -300,7 +300,7 @@ class TestS3(test_api.TestApi):
         copy_image_id = data['image']['id']
 
         # GET image and make sure image content is as expected
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               copy_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
@@ -314,7 +314,7 @@ class TestS3(test_api.TestApi):
         self.assertEqual(data['image']['name'], "copied")
 
         # DELETE copied image
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               copy_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')

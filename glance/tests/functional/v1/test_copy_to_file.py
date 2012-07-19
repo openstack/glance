@@ -87,7 +87,7 @@ class TestCopyToFile(functional.FunctionalTest):
                    'X-Image-Meta-disk_format': 'raw',
                    'X-Image-Meta-container_format': 'ovf',
                    'X-Image-Meta-Is-Public': 'True'}
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
@@ -104,7 +104,7 @@ class TestCopyToFile(functional.FunctionalTest):
                    'X-Image-Meta-container_format': 'ovf',
                    'X-Image-Meta-Is-Public': 'True',
                    'X-Glance-API-Copy-From': copy_from}
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201, content)
@@ -114,7 +114,7 @@ class TestCopyToFile(functional.FunctionalTest):
         self.assertNotEqual(copy_image_id, original_image_id)
 
         # GET image and make sure image content is as expected
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               copy_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
@@ -128,7 +128,7 @@ class TestCopyToFile(functional.FunctionalTest):
         self.assertEqual(data['image']['name'], "copied")
 
         # DELETE original image
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               original_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
@@ -136,7 +136,7 @@ class TestCopyToFile(functional.FunctionalTest):
 
         # GET image again to make sure the existence of the original
         # image in from_store is not depended on
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               copy_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
@@ -150,7 +150,7 @@ class TestCopyToFile(functional.FunctionalTest):
         self.assertEqual(data['image']['name'], "copied")
 
         # DELETE copied image
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               copy_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
@@ -197,7 +197,7 @@ class TestCopyToFile(functional.FunctionalTest):
                    'X-Image-Meta-container_format': 'ovf',
                    'X-Image-Meta-Is-Public': 'True',
                    'X-Glance-API-Copy-From': copy_from}
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201, content)
@@ -206,7 +206,7 @@ class TestCopyToFile(functional.FunctionalTest):
         copy_image_id = data['image']['id']
 
         # GET image and make sure image content is as expected
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               copy_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
@@ -220,7 +220,7 @@ class TestCopyToFile(functional.FunctionalTest):
         self.assertEqual(data['image']['name'], "copied")
 
         # DELETE copied image
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               copy_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
@@ -251,7 +251,7 @@ class TestCopyToFile(functional.FunctionalTest):
                    'X-Image-Meta-container_format': 'ovf',
                    'X-Image-Meta-Is-Public': 'True',
                    'X-Glance-API-Copy-From': copy_from}
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 400, content)

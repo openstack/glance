@@ -55,7 +55,7 @@ class TestMiscellaneous(functional.FunctionalTest):
         # attribute and no custom properties. Verify a 200 OK is returned
         image_data = "*" * FIVE_KB
         headers = minimal_headers('Image1')
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
@@ -73,7 +73,7 @@ class TestMiscellaneous(functional.FunctionalTest):
 
         # 3. HEAD /images/1
         # Verify image found now
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               data['image']['id'])
         http = httplib2.Http()
         response, content = http.request(path, 'HEAD')
@@ -82,7 +82,7 @@ class TestMiscellaneous(functional.FunctionalTest):
 
         # 4. GET /images/1
         # Verify the api throws the apropriate 404 error
-        path = "http://%s:%d/v1/images/1" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images/1" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 404)
@@ -106,7 +106,7 @@ class TestMiscellaneous(functional.FunctionalTest):
         api_port = self.api_port
         registry_port = self.registry_port
 
-        cmd = "curl -g http://0.0.0.0:%d/v1/images" % api_port
+        cmd = "curl -g http://127.0.0.1:%d/v1/images" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -116,7 +116,7 @@ class TestMiscellaneous(functional.FunctionalTest):
         cmd = ("curl -X POST -H 'Content-Type: application/octet-stream' "
                "-H 'X-Image-Meta-Name: ImageName' "
                "-H 'X-Image-Meta-Disk-Format: Invalid' "
-               "http://0.0.0.0:%d/v1/images" % api_port)
+               "http://127.0.0.1:%d/v1/images" % api_port)
         ignored, out, err = execute(cmd)
 
         self.assertTrue('Invalid disk format' in out,

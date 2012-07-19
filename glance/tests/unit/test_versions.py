@@ -29,9 +29,9 @@ class VersionsTest(base.IsolatedUnitTest):
     """Test the version information returned from the API service."""
 
     def test_get_version_list(self):
-        req = webob.Request.blank('/', base_url='http://0.0.0.0:9292/')
+        req = webob.Request.blank('/', base_url='http://127.0.0.1:9292/')
         req.accept = 'application/json'
-        self.config(bind_host='0.0.0.0', bind_port=9292)
+        self.config(bind_host='127.0.0.1', bind_port=9292)
         res = versions.Controller().index(req)
         self.assertEqual(res.status_int, 300)
         self.assertEqual(res.content_type, 'application/json')
@@ -40,17 +40,20 @@ class VersionsTest(base.IsolatedUnitTest):
             {
                 'id': 'v2',
                 'status': 'EXPERIMENTAL',
-                'links': [{'rel': 'self', 'href': 'http://0.0.0.0:9292/v2/'}],
+                'links': [{'rel': 'self',
+                           'href': 'http://127.0.0.1:9292/v2/'}],
             },
             {
                 'id': 'v1.1',
                 'status': 'CURRENT',
-                'links': [{'rel': 'self', 'href': 'http://0.0.0.0:9292/v1/'}],
+                'links': [{'rel': 'self',
+                           'href': 'http://127.0.0.1:9292/v1/'}],
             },
             {
                 'id': 'v1.0',
                 'status': 'SUPPORTED',
-                'links': [{'rel': 'self', 'href': 'http://0.0.0.0:9292/v1/'}],
+                'links': [{'rel': 'self',
+                           'href': 'http://127.0.0.1:9292/v1/'}],
             },
         ]
         self.assertEqual(results, expected)

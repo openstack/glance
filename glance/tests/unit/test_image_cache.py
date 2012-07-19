@@ -256,7 +256,7 @@ class TestImageCacheXattr(test_utils.BaseTestCase,
         self.config(image_cache_dir=self.cache_dir,
                     image_cache_driver='xattr',
                     image_cache_max_size=1024 * 5,
-                    registry_host='0.0.0.0',
+                    registry_host='127.0.0.1',
                     registry_port=9191)
         self.cache = image_cache.ImageCache()
 
@@ -303,7 +303,7 @@ class TestImageCacheSqlite(test_utils.BaseTestCase,
         self.config(image_cache_dir=self.cache_dir,
                     image_cache_driver='sqlite',
                     image_cache_max_size=1024 * 5,
-                    registry_host='0.0.0.0',
+                    registry_host='127.0.0.1',
                     registry_port=9191)
         self.cache = image_cache.ImageCache()
 

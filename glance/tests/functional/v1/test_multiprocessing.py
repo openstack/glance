@@ -35,7 +35,7 @@ class TestMultiprocessing(functional.FunctionalTest):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
 
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)

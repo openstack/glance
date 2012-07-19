@@ -61,7 +61,7 @@ class BaseCacheMiddlewareTest(object):
         # Add an image and verify a 200 OK is returned
         image_data = "*" * FIVE_KB
         headers = minimal_headers('Image1')
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
@@ -81,7 +81,7 @@ class BaseCacheMiddlewareTest(object):
         self.assertFalse(os.path.exists(image_cached_path))
 
         # Grab the image
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
@@ -111,7 +111,7 @@ class BaseCacheMiddlewareTest(object):
 
         # Now, we delete the image from the server and verify that
         # the image cache no longer contains the deleted image
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
@@ -142,7 +142,7 @@ class BaseCacheMiddlewareTest(object):
                    'X-Image-Meta-container_format': 'ovf',
                    'X-Image-Meta-Is-Public': 'True',
                    'X-Image-Meta-Location': remote_uri}
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
@@ -150,7 +150,7 @@ class BaseCacheMiddlewareTest(object):
         self.assertEqual(data['image']['size'], FIVE_KB)
 
         image_id = data['image']['id']
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
 
         # Grab the image
@@ -173,7 +173,7 @@ class BaseCacheManageMiddlewareTest(object):
     """Base test class for testing cache management middleware"""
 
     def verify_no_images(self):
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
@@ -189,7 +189,7 @@ class BaseCacheManageMiddlewareTest(object):
         image_data = "*" * FIVE_KB
         headers = minimal_headers('%s' % name)
 
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
@@ -206,7 +206,7 @@ class BaseCacheManageMiddlewareTest(object):
         """
         Verify no images in the image cache
         """
-        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
@@ -229,14 +229,14 @@ class BaseCacheManageMiddlewareTest(object):
         self.verify_no_cached_images()
 
         # Grab the image
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id1)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
 
         # Verify image now in cache
-        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
@@ -253,27 +253,27 @@ class BaseCacheManageMiddlewareTest(object):
         self.set_policy_rules(rules)
 
         # Verify an unprivileged user cannot see cached images
-        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 403)
 
         # Verify an unprivileged user cannot delete images from the cache
-        path = "http://%s:%d/v1/cached_images/%s" % ("0.0.0.0", self.api_port,
-                                                     image_id1)
+        path = "http://%s:%d/v1/cached_images/%s" % ("127.0.0.1",
+                                                     self.api_port, image_id1)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 403)
 
         # Verify an unprivileged user cannot delete all cached images
-        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 403)
 
         # Verify an unprivileged user cannot queue an image
-        path = "http://%s:%d/v1/queued_images/%s" % ("0.0.0.0", self.api_port,
-                                                     image_id2)
+        path = "http://%s:%d/v1/queued_images/%s" % ("127.0.0.1",
+                                                     self.api_port, image_id2)
         http = httplib2.Http()
         response, content = http.request(path, 'PUT')
         self.assertEqual(response.status, 403)
@@ -298,14 +298,14 @@ class BaseCacheManageMiddlewareTest(object):
         self.verify_no_cached_images()
 
         # Grab the image
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
 
         # Verify image now in cache
-        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
@@ -319,14 +319,14 @@ class BaseCacheManageMiddlewareTest(object):
         self.assertEqual(0, cached_images[0]['hits'])
 
         # Hit the image
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
 
         # Verify image hits increased in output of manage GET
-        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
@@ -366,7 +366,7 @@ class BaseCacheManageMiddlewareTest(object):
 
         # Grab the images, essentially caching them...
         for x in xrange(0, 4):
-            path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", self.api_port,
+            path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                                   ids[x])
             http = httplib2.Http()
             response, content = http.request(path, 'GET')
@@ -374,7 +374,7 @@ class BaseCacheManageMiddlewareTest(object):
                              "Failed to find image %s" % ids[x])
 
         # Verify images now in cache
-        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
@@ -390,13 +390,13 @@ class BaseCacheManageMiddlewareTest(object):
             self.assertEqual(0, cached_images[x]['hits'])
 
         # Delete third image of the cached images and verify no longer in cache
-        path = "http://%s:%d/v1/cached_images/%s" % ("0.0.0.0", self.api_port,
-                                                     ids[2])
+        path = "http://%s:%d/v1/cached_images/%s" % ("127.0.0.1",
+                                                     self.api_port, ids[2])
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 200)
 
-        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
@@ -409,12 +409,12 @@ class BaseCacheManageMiddlewareTest(object):
         self.assertTrue(ids[2] not in [x['image_id'] for x in cached_images])
 
         # Delete all cached images and verify nothing in cache
-        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 200)
 
-        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
@@ -453,7 +453,7 @@ debug = True
 verbose = True
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
-registry_host = 0.0.0.0
+registry_host = 127.0.0.1
 registry_port = %(registry_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
 log_file = %(log_file)s
@@ -470,8 +470,8 @@ log_file = %(log_file)s
         # Queue the first image, verify no images still in cache after queueing
         # then run the prefetcher and verify that the image is then in the
         # cache
-        path = "http://%s:%d/v1/queued_images/%s" % ("0.0.0.0", self.api_port,
-                                                     ids[0])
+        path = "http://%s:%d/v1/queued_images/%s" % ("127.0.0.1",
+                                                     self.api_port, ids[0])
         http = httplib2.Http()
         response, content = http.request(path, 'PUT')
         self.assertEqual(response.status, 200)
@@ -487,7 +487,7 @@ log_file = %(log_file)s
         self.assertEqual('', out.strip(), out)
 
         # Verify first image now in cache
-        path = "http://%s:%d/v1/cached_images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
