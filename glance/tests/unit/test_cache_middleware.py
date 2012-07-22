@@ -19,6 +19,16 @@ import glance.api.middleware.cache
 from glance.tests.unit import base
 
 
+class ChecksumTestCacheFilter(glance.api.middleware.cache.CacheFilter):
+    def __init__(self):
+        class DummyCache(object):
+            def get_caching_iter(self, image_id, image_checksum,
+                    app_iter):
+                self.image_checksum = image_checksum
+
+        self.cache = DummyCache()
+
+
 class TestCacheMiddleware(base.IsolatedUnitTest):
     def test_no_match_detail(self):
         req = webob.Request.blank('/v1/images/detail')
@@ -34,3 +44,29 @@ class TestCacheMiddleware(base.IsolatedUnitTest):
         req = webob.Request.blank('/v1/images/asdf?ping=pong')
         out = glance.api.middleware.cache.CacheFilter._match_request(req)
         self.assertEqual(out, ('v1', 'GET', 'asdf'))
+
+    def test_checksum_v1_header(self):
+        cache_filter = ChecksumTestCacheFilter()
+        headers = {"x-image-meta-checksum": "1234567890"}
+        resp = webob.Response(headers=headers)
+        cache_filter._process_GET_response(resp, None)
+
+        self.assertEqual("1234567890", cache_filter.cache.image_checksum)
+
+    def test_checksum_v2_header(self):
+        cache_filter = ChecksumTestCacheFilter()
+        headers = {
+            "x-image-meta-checksum": "1234567890",
+            "Content-MD5": "abcdefghi"
+        }
+        resp = webob.Response(headers=headers)
+        cache_filter._process_GET_response(resp, None)
+
+        self.assertEqual("abcdefghi", cache_filter.cache.image_checksum)
+
+    def test_checksum_missing_header(self):
+        cache_filter = ChecksumTestCacheFilter()
+        resp = webob.Response()
+        cache_filter._process_GET_response(resp, None)
+
+        self.assertEqual(None, cache_filter.cache.image_checksum)

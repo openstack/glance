@@ -19,6 +19,8 @@
 LRU Cache for Image Data
 """
 
+import hashlib
+
 from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
@@ -206,13 +208,15 @@ class ImageCache(object):
         """
         return self.driver.queue_image(image_id)
 
-    def get_caching_iter(self, image_id, image_iter):
+    def get_caching_iter(self, image_id, image_checksum, image_iter):
         """
         Returns an iterator that caches the contents of an image
         while the image contents are read through the supplied
         iterator.
 
         :param image_id: Image ID
+        :param image_checksum: checksum expected to be generated while
+                               iterating over image data
         :param image_iter: Iterator that will read image contents
         """
         if not self.driver.is_cacheable(image_id):
@@ -222,13 +226,23 @@ class ImageCache(object):
 
         def tee_iter(image_id):
             try:
+                current_checksum = hashlib.md5()
+
                 with self.driver.open_for_write(image_id) as cache_file:
                     for chunk in image_iter:
                         try:
                             cache_file.write(chunk)
                         finally:
+                            current_checksum.update(chunk)
                             yield chunk
                     cache_file.flush()
+
+                if image_checksum and \
+                        image_checksum != current_checksum.hexdigest():
+                    msg = _("Checksum verification failed.  Aborted caching "
+                            "of image %s." % image_id)
+                    raise exception.GlanceException(msg)
+
             except Exception:
                 LOG.exception(_("Exception encountered while tee'ing "
                                 "image '%s' into cache. Continuing "
