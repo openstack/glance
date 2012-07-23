@@ -724,8 +724,7 @@ def image_property_delete(context, prop_ref, session=None):
     """
     Used internally by image_property_create and image_property_update
     """
-    prop_ref.update(dict(deleted=True))
-    prop_ref.save(session=session)
+    prop_ref.delete(session=session)
     return prop_ref
 
 
@@ -753,8 +752,7 @@ def _image_member_update(context, memb_ref, values, session=None):
 def image_member_delete(context, memb_ref, session=None):
     """Delete an ImageMember object"""
     session = session or get_session()
-    memb_ref.update(dict(deleted=True))
-    memb_ref.save(session=session)
+    memb_ref.delete(session=session)
     return memb_ref
 
 
