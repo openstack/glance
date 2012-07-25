@@ -35,7 +35,7 @@ be the host:port of that Glance API server along with /images/<IMAGE_ID>.
 
 The Glance storage URI is an internal URI structure that Glance
 uses to maintain critical information about how to access the images
-that it stores in its storage backends. It **does contain** security
+that it stores in its storage backends. It **may contain** security
 credentials and is **not** user-facing.
 """
 
@@ -61,6 +61,7 @@ def get_location_from_uri(uri):
     Example URIs:
         https://user:pass@example.com:80/images/some-id
         http://images.oracle.com/123456
+        swift://example.com/container/obj-id
         swift://user:account:pass@authurl.com/container/obj-id
         swift+http://user:account:pass@authurl.com/container/obj-id
         s3://accesskey:secretkey@s3.amazonaws.com/bucket/key-id

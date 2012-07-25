@@ -613,6 +613,13 @@ class TestStoreAuthV2(TestStoreAuthV1):
                           self.store.get,
                           loc)
 
+    def test_v2_multi_tenant_location(self):
+        conf = self.getConfig()
+        conf['swift_store_multi_tenant'] = True
+        uri = "swift://auth_address/glance/%s" % (FAKE_UUID)
+        loc = get_location_from_uri(uri)
+        self.assertEqual('swift', loc.store_name)
+
 
 class TestChunkReader(base.StoreClearingUnitTest):
 

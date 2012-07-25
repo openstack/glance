@@ -163,7 +163,7 @@ def legacy_parse_uri(self, uri):
         if not netloc.startswith('http'):
             # push hostname back into the remaining to build full authurl
             path_parts.insert(0, netloc)
-            self.authurl = '/'.join(path_parts)
+            self.auth_or_store_url = '/'.join(path_parts)
     except IndexError:
         reason = _("Badly formed S3 URI: %s") % uri
         LOG.error(message=reason)
