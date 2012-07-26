@@ -140,6 +140,8 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers()
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
+        self.assertEqual('8f113e38d28a79a5a451b16048cc2b72',
+                         response.headers['Content-MD5'])
         self.assertEqual(response.text, 'ZZZZZ')
 
         # Uploading duplicate data should be rejected with a 409

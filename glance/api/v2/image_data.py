@@ -81,8 +81,11 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 class ResponseSerializer(wsgi.JSONResponseSerializer):
     def download(self, response, result):
         size = result['meta']['size']
+        checksum = result['meta']['checksum']
         response.headers['Content-Length'] = size
         response.headers['Content-Type'] = 'application/octet-stream'
+        if checksum:
+            response.headers['Content-MD5'] = checksum
         notifier = glance.notifier.Notifier()
         response.app_iter = common.size_checked_iter(
                 response, result['meta'], size, result['data'], notifier)

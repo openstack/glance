@@ -153,9 +153,30 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         request.environ = {}
         response = webob.Response()
         response.request = request
-        fixture = {'data': 'ZZZ', 'meta': {'size': 3, 'id': 'asdf'}}
+        fixture = {
+            'data': 'ZZZ',
+            'meta': {'size': 3, 'id': 'asdf', 'checksum': None}
+        }
         self.serializer.download(response, fixture)
         self.assertEqual('ZZZ', response.body)
         self.assertEqual('3', response.headers['Content-Length'])
+        self.assertFalse('Content-MD5' in response.headers)
+        self.assertEqual('application/octet-stream',
+                         response.headers['Content-Type'])
+
+    def test_download_with_checksum(self):
+        request = webob.Request.blank('/')
+        request.environ = {}
+        response = webob.Response()
+        response.request = request
+        checksum = '0745064918b49693cca64d6b6a13d28a'
+        fixture = {
+            'data': 'ZZZ',
+            'meta': {'size': 3, 'id': 'asdf', 'checksum': checksum}
+        }
+        self.serializer.download(response, fixture)
+        self.assertEqual('ZZZ', response.body)
+        self.assertEqual('3', response.headers['Content-Length'])
+        self.assertEqual(checksum, response.headers['Content-MD5'])
         self.assertEqual('application/octet-stream',
                          response.headers['Content-Type'])
