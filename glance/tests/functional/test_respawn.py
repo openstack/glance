@@ -32,7 +32,7 @@ class TestRespawn(functional.FunctionalTest):
     """Functional test for glance-control --respawn """
 
     def get_versions(self):
-        path = "http://%s:%d" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 300)

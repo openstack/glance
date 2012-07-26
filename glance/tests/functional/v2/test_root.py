@@ -28,7 +28,7 @@ class TestRoot(functional.FunctionalTest):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
 
-        path = "http://%s:%d/v2/" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v2/" % ("127.0.0.1", self.api_port)
         response = requests.get(path)
         self.assertEqual(response.status_code, 200)
         expected = {

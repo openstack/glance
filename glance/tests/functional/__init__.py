@@ -220,12 +220,12 @@ verbose = %(verbose)s
 debug = %(debug)s
 filesystem_store_datadir=%(image_dir)s
 default_store = %(default_store)s
-bind_host = 0.0.0.0
+bind_host = 127.0.0.1
 bind_port = %(bind_port)s
 key_file = %(key_file)s
 cert_file = %(cert_file)s
 metadata_encryption_key = %(metadata_encryption_key)s
-registry_host = 0.0.0.0
+registry_host = 127.0.0.1
 registry_port = %(registry_port)s
 log_file = %(log_file)s
 s3_store_host = %(s3_store_host)s
@@ -337,7 +337,7 @@ class RegistryServer(Server):
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
-bind_host = 0.0.0.0
+bind_host = 127.0.0.1
 bind_port = %(bind_port)s
 log_file = %(log_file)s
 db_auto_create = False
@@ -392,7 +392,7 @@ log_file = %(log_file)s
 daemon = %(daemon)s
 wakeup_time = 2
 scrubber_datadir = %(scrubber_datadir)s
-registry_host = 0.0.0.0
+registry_host = 127.0.0.1
 registry_port = %(registry_port)s
 """
 

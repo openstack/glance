@@ -52,7 +52,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         """
         image_data = "*" * FIVE_KB
         headers = minimal_headers(name)
-        path = "http://%s:%d/v1/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
@@ -123,7 +123,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         for x in xrange(0, 4):
             ids[x] = self.add_image("Image%s" % x)
 
-        path = "http://%s:%d/v1/images/%s" % ("0.0.0.0", api_port,
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", api_port,
                                               ids[1])
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
@@ -200,7 +200,7 @@ debug = True
 verbose = True
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
-registry_host = 0.0.0.0
+registry_host = 127.0.0.1
 registry_port = %(registry_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
 log_file = %(log_file)s
