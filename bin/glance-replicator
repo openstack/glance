@@ -60,6 +60,10 @@ class AuthenticationException(Exception):
     pass
 
 
+class ServerErrorException(Exception):
+    pass
+
+
 class ImageService(object):
     def __init__(self, conn, auth_token):
         """ Initialize the ImageService.
@@ -102,6 +106,9 @@ class ImageService(object):
                       % {'code': code,
                          'status': code_description,
                          'headers': repr(headers)})
+
+        if code in [400, 500]:
+            raise ServerErrorException(response.read())
 
         if code in [401, 403]:
             raise AuthenticationException()
@@ -250,7 +257,7 @@ def replication_size(options, args):
     count = 0
 
     client = ImageService(httplib.HTTPConnection(server, port),
-                              options.token)
+                          options.slavetoken)
     for image in client.get_images():
         logging.debug(_('Considering image: %(image)s') % {'image': image})
         if image['status'] == 'active':
@@ -274,7 +281,7 @@ def replication_dump(options, args):
     server, port = server_port.split(':')
 
     client = ImageService(httplib.HTTPConnection(server, port),
-                              options.token)
+                          options.mastertoken)
     for image in client.get_images():
         logging.info(_('Considering: %s' % image['id']))
 
@@ -352,7 +359,7 @@ def replication_load(options, args):
     server_port = args.pop()
     server, port = server_port.split(':')
     client = ImageService(httplib.HTTPConnection(server, port),
-                              options.token)
+                          options.slavetoken)
 
     for ent in os.listdir(path):
         if is_uuid_like(ent):
@@ -408,12 +415,12 @@ def replication_livecopy(options, args):
     slave_server_port = args.pop()
     slave_server, slave_port = slave_server_port.split(':')
     slave_conn = httplib.HTTPConnection(slave_server, slave_port)
-    slave_client = ImageService(slave_conn, options.token)
+    slave_client = ImageService(slave_conn, options.slavetoken)
 
     master_server_port = args.pop()
     master_server, master_port = master_server_port.split(':')
     master_conn = httplib.HTTPConnection(master_server, master_port)
-    master_client = ImageService(master_conn, options.token)
+    master_client = ImageService(master_conn, options.mastertoken)
 
     for image in master_client.get_images():
         logging.info(_('Considering %(id)s') % {'id': image['id']})
@@ -455,12 +462,12 @@ def replication_compare(options, args):
     slave_server_port = args.pop()
     slave_server, slave_port = slave_server_port.split(':')
     slave_conn = httplib.HTTPConnection(slave_server, slave_port)
-    slave_client = ImageService(slave_conn, options.token)
+    slave_client = ImageService(slave_conn, options.slavetoken)
 
     master_server_port = args.pop()
     master_server, master_port = master_server_port.split(':')
     master_conn = httplib.HTTPConnection(master_server, master_port)
-    master_client = ImageService(master_conn, options.token)
+    master_client = ImageService(master_conn, options.mastertoken)
 
     for image in master_client.get_images():
         if _image_present(slave_client, image['id']):
@@ -481,8 +488,6 @@ def replication_compare(options, args):
                                       'master_value': image[key],
                                       'slave_value': headers.get(key,
                                                                  'undefined')})
-
-
                 else:
                     logging.debug(_('%(image_id)s is identical')
                                     % {'image_id': image['id']})
@@ -626,7 +631,14 @@ if __name__ == '__main__':
                        help="Log to syslog instead of a file")
     oparser.add_option('-t', '--token', action="store", default='',
                        help=("Pass in your authentication token if you have "
-                             "one"))
+                             "one. If you use this option the same token is "
+                             "used for both the master and the slave."))
+    oparser.add_option('-M', '--mastertoken', action="store", default='',
+                       help=("Pass in your authentication token if you have "
+                             "one. This is the token used for the master."))
+    oparser.add_option('-S', '--slavetoken', action="store", default='',
+                       help=("Pass in your authentication token if you have "
+                             "one. This is the token used for the slave."))
     oparser.add_option('-v', '--verbose', action="store_true", default=False,
                        help="Print more verbose output")
 
@@ -649,6 +661,10 @@ if __name__ == '__main__':
         handler = logging.handlers.WatchedFileHandler(options.logfile)
     else:
         handler = logging.StreamHandler(sys.stdout)
+
+    if options.token:
+        options.slavetoken = options.token
+        options.mastertoken = options.token
 
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)
