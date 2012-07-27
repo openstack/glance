@@ -756,7 +756,7 @@ class Controller(controller.BaseController):
             if image['location']:
                 schedule_delete_from_backend(image['location'],
                                              req.context, id)
-            image = registry.delete_image_metadata(req.context, id)
+            registry.delete_image_metadata(req.context, id)
         except exception.NotFound, e:
             msg = ("Failed to find image to delete: %(e)s" % locals())
             for line in msg.split('\n'):
