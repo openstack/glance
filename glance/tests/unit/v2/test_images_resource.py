@@ -622,7 +622,7 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
     def test_create_bad_data(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'name': 'image-1', 'pants': 'borked'})
-        self.assertRaises(exception.InvalidObject,
+        self.assertRaises(webob.exc.HTTPBadRequest,
                 self.deserializer.create, request)
 
     def test_update(self):
@@ -640,7 +640,7 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
     def test_update_bad_data(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'name': 'image-1', 'pants': 'borked'})
-        self.assertRaises(exception.InvalidObject,
+        self.assertRaises(webob.exc.HTTPBadRequest,
                 self.deserializer.update, request)
 
 
@@ -661,13 +661,13 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
     def test_create_with_numeric_property(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'abc': 123})
-        self.assertRaises(exception.InvalidObject,
+        self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.create, request)
 
     def test_create_with_list_property(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'foo': ['bar']})
-        self.assertRaises(exception.InvalidObject,
+        self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.create, request)
 
     def test_update(self):
@@ -689,13 +689,13 @@ class TestImagesDeserializerNoAdditionalProperties(test_utils.BaseTestCase):
         self.config(allow_additional_image_properties=False)
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'foo': 'bar'})
-        self.assertRaises(exception.InvalidObject,
+        self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.create, request)
 
     def test_update(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'foo': 'bar'})
-        self.assertRaises(exception.InvalidObject,
+        self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.update, request)
 
 

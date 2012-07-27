@@ -157,7 +157,10 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
     def _parse_image(self, request):
         output = super(RequestDeserializer, self).default(request)
         body = output.pop('body')
-        self.schema.validate(body)
+        try:
+            self.schema.validate(body)
+        except exception.InvalidObject as e:
+            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
 
         # Create a dict of base image properties, with user- and deployer-
         # defined properties contained in a 'properties' dictionary
