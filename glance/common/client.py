@@ -277,12 +277,12 @@ class BaseClient(object):
         # cannot simply do doc_root or self.DEFAULT_DOC_ROOT below.
         self.doc_root = (doc_root if doc_root is not None
                          else self.DEFAULT_DOC_ROOT)
-        self.auth_plugin = self.make_auth_plugin(self.creds)
 
         self.key_file = key_file
         self.cert_file = cert_file
         self.ca_file = ca_file
         self.insecure = insecure
+        self.auth_plugin = self.make_auth_plugin(self.creds, self.insecure)
         self.connect_kwargs = self.get_connect_kwargs()
 
     def get_connect_kwargs(self):
@@ -389,12 +389,12 @@ class BaseClient(object):
         # publicURL is parsed for potential SSL usage
         self.connect_kwargs = self.get_connect_kwargs()
 
-    def make_auth_plugin(self, creds):
+    def make_auth_plugin(self, creds, insecure):
         """
         Returns an instantiated authentication plugin.
         """
         strategy = creds.get('strategy', 'noauth')
-        plugin = auth.get_plugin_from_strategy(strategy, creds)
+        plugin = auth.get_plugin_from_strategy(strategy, creds, insecure)
         return plugin
 
     def get_connection_type(self):
