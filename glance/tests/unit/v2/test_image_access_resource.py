@@ -42,12 +42,14 @@ class TestImageAccessController(test_utils.BaseTestCase):
                     'member': unit_test_utils.TENANT1,
                     'can_share': True,
                     'deleted': False,
+                    'deleted_at': None,
                 },
                 {
                     'image_id': unit_test_utils.UUID1,
                     'member': unit_test_utils.TENANT2,
                     'can_share': False,
                     'deleted': False,
+                    'deleted_at': None,
                 },
             ],
             'image_id': unit_test_utils.UUID1,
@@ -79,6 +81,7 @@ class TestImageAccessController(test_utils.BaseTestCase):
             'member': tenant_id,
             'can_share': True,
             'deleted': False,
+            'deleted_at': None,
         }
         self.assertEqual(expected, output)
 
@@ -107,6 +110,7 @@ class TestImageAccessController(test_utils.BaseTestCase):
             'member': member,
             'can_share': True,
             'deleted': False,
+            'deleted_at': None,
         }
         req = unit_test_utils.get_fake_request()
         output = self.controller.create(req, unit_test_utils.UUID1, fixture)

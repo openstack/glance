@@ -58,12 +58,23 @@ def get_session():
     return DATA
 
 
+def _image_property_format(image_id, name, value):
+    return {
+        'image_id': image_id,
+        'name': name,
+        'value': value,
+        'deleted': False,
+        'deleted_at': None,
+    }
+
+
 def _image_member_format(image_id, tenant_id, can_share):
     return {
         'image_id': image_id,
         'member': tenant_id,
         'can_share': can_share,
         'deleted': False,
+        'deleted_at': None,
     }
 
 
@@ -182,6 +193,29 @@ def image_get_all(context, filters=None, marker=None, limit=None,
 
 
 @log_call
+def image_property_create(context, values):
+    image = image_get(context, values['image_id'])
+    prop = _image_property_format(values['image_id'], values['name'],
+                values['value'])
+    image['properties'].append(prop)
+    return prop
+
+
+@log_call
+def image_property_delete(context, prop_ref, session=None):
+    image_id = prop_ref['image_id']
+    prop = None
+    for p in DATA['images'][image_id]['properties']:
+        if p['name'] == prop_ref['name']:
+            prop = p
+    if not prop:
+        raise exception.NotFound()
+    prop['deleted_at'] = datetime.datetime.utcnow()
+    prop['deleted'] = True
+    return prop
+
+
+@log_call
 def image_member_find(context, image_id=None, member=None):
     filters = []
     if image_id is not None:
@@ -203,6 +237,21 @@ def image_member_create(context, values):
     global DATA
     DATA['members'].append(member)
     return member
+
+
+@log_call
+def image_member_delete(context, member):
+    global DATA
+    mem = None
+    for p in DATA['members']:
+        if (p['member'] == member['member'] and
+            p['image_id'] == member['image_id']):
+            mem = p
+    if not mem:
+        raise exception.NotFound()
+    mem['deleted_at'] = datetime.datetime.utcnow()
+    mem['deleted'] = True
+    return mem
 
 
 @log_call
@@ -233,6 +282,7 @@ def image_destroy(context, image_id):
     global DATA
     try:
         DATA['images'][image_id]['deleted'] = True
+        DATA['images'][image_id]['deleted_at'] = datetime.datetime.utcnow()
     except KeyError:
         raise exception.NotFound()
 

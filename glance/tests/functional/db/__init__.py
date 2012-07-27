@@ -110,6 +110,14 @@ class BaseTestCase(object):
                   for p in image['properties']]
         self.assertEqual(expected, actual)
 
+    def test_image_property_delete(self):
+        fixture = {'name': 'ping', 'value': 'pong', 'image_id': UUID1}
+        prop = self.db_api.image_property_create(self.context, fixture)
+        prop = self.db_api.image_property_delete(self.context, prop)
+        self.assertNotEqual(None, prop['deleted_at'])
+        self.assertTrue(isinstance(prop['deleted_at'], datetime.datetime))
+        self.assertTrue(prop['deleted'])
+
     def test_image_get(self):
         image = self.db_api.image_get(self.context, UUID1)
         self.assertEquals(image['id'], self.fixtures[0]['id'])
@@ -320,3 +328,12 @@ class BaseTestCase(object):
                                                member=TENANT2,
                                                image_id=utils.generate_uuid())
         _assertMemberListMatch([], output)
+
+    def test_image_member_delete(self):
+        TENANT1 = utils.generate_uuid()
+        fixture = {'member': TENANT1, 'image_id': UUID1}
+        member = self.db_api.image_member_create(self.context, fixture)
+        member = self.db_api.image_member_delete(self.context, member)
+        self.assertNotEqual(None, member['deleted_at'])
+        self.assertTrue(isinstance(member['deleted_at'], datetime.datetime))
+        self.assertTrue(member['deleted'])
