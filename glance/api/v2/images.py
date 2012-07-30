@@ -278,13 +278,16 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def create(self, response, image):
         response.body = json.dumps({'image': self._format_image(image)})
+        response.content_type = 'application/json'
         response.location = self._get_image_href(image)
 
     def show(self, response, image):
         response.body = json.dumps({'image': self._format_image(image)})
+        response.content_type = 'application/json'
 
     def update(self, response, image):
         response.body = json.dumps({'image': self._format_image(image)})
+        response.content_type = 'application/json'
 
     def index(self, response, result):
         params = dict(response.request.params)
@@ -301,6 +304,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             next_query = urllib.urlencode(params)
             body['next'] = '/v2/images?%s' % next_query
         response.body = json.dumps(body)
+        response.content_type = 'application/json'
 
     def delete(self, response, result):
         response.status_int = 204
