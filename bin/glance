@@ -146,6 +146,11 @@ def print_image_formatted(client, image):
     if len(image['properties']) > 0:
         for k, v in image['properties'].items():
             print "Property '%s': %s" % (k, v)
+    print "Created at: %s" % image['created_at']
+    if image.get('deleted_at'):
+        print "Deleted at: %s" % image['deleted_at']
+    if image.get('updated_at'):
+        print "Updated at: %s" % image['updated_at']
 
 
 def image_add(options, args):
