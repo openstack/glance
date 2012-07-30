@@ -170,8 +170,7 @@ class ServiceUnavailable(GlanceException):
 
 
 class ServerError(GlanceException):
-    message = _("The request returned 500 Internal Server Error"
-                "\n\nThe response body:\n%(body)s")
+    message = _("The request returned 500 Internal Server Error.")
 
 
 class UnexpectedStatus(GlanceException):

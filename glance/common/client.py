@@ -578,7 +578,7 @@ class BaseClient(object):
                 raise exception.LimitExceeded(retry=_retry(res),
                                               body=res.read())
             elif status_code == httplib.INTERNAL_SERVER_ERROR:
-                raise exception.ServerError(body=res.read())
+                raise exception.ServerError()
             elif status_code == httplib.SERVICE_UNAVAILABLE:
                 raise exception.ServiceUnavailable(retry=_retry(res))
             else:
