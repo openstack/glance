@@ -758,6 +758,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         result = {'images': fixtures}
         self.serializer.index(response, result)
         self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
 
     def test_index_next_marker(self):
 
@@ -1007,6 +1008,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         response = webob.Response()
         self.serializer.show(response, fixture)
         self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
 
     def test_create(self):
         fixture = {
@@ -1042,6 +1044,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         response = webob.Response()
         self.serializer.create(response, fixture)
         self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
         self.assertEqual(response.location, self_link)
 
     def test_update(self):
@@ -1078,6 +1081,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         response = webob.Response()
         self.serializer.update(response, fixture)
         self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
 
 
 class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):

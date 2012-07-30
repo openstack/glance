@@ -163,6 +163,7 @@ class TestImageAccessSerializer(test_utils.BaseTestCase):
         response = webob.Response()
         self.serializer.show(response, fixture)
         self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
 
     def test_index(self):
         fixtures = [
@@ -209,6 +210,7 @@ class TestImageAccessSerializer(test_utils.BaseTestCase):
         response = webob.Response()
         self.serializer.index(response, result)
         self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
 
     def test_index_zero_access_records(self):
         result = {
@@ -224,6 +226,7 @@ class TestImageAccessSerializer(test_utils.BaseTestCase):
             'schema': '/v2/schemas/image/accesses',
         }
         self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
 
     def test_create(self):
         fixture = {
@@ -245,4 +248,5 @@ class TestImageAccessSerializer(test_utils.BaseTestCase):
         response = webob.Response()
         self.serializer.create(response, fixture)
         self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
         self.assertEqual(self_href, response.location)
