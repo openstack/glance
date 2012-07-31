@@ -152,13 +152,11 @@ class TestImageAccessSerializer(test_utils.BaseTestCase):
         self_href = ('/v2/images/%s/access/%s' %
                 (unit_test_utils.UUID1, unit_test_utils.TENANT1))
         expected = {
-            'access_record': {
-                'tenant_id': unit_test_utils.TENANT1,
-                'can_share': False,
-                'self': self_href,
-                'schema': '/v2/schemas/image/access',
-                'image': '/v2/images/%s' % unit_test_utils.UUID1,
-            },
+            'tenant_id': unit_test_utils.TENANT1,
+            'can_share': False,
+            'self': self_href,
+            'schema': '/v2/schemas/image/access',
+            'image': '/v2/images/%s' % unit_test_utils.UUID1,
         }
         response = webob.Response()
         self.serializer.show(response, fixture)
@@ -237,13 +235,11 @@ class TestImageAccessSerializer(test_utils.BaseTestCase):
         self_href = ('/v2/images/%s/access/%s' %
                 (unit_test_utils.UUID1, unit_test_utils.TENANT1))
         expected = {
-            'access': {
-                'tenant_id': unit_test_utils.TENANT1,
-                'can_share': False,
-                'self': self_href,
-                'schema': '/v2/schemas/image/access',
-                'image': '/v2/images/%s' % unit_test_utils.UUID1,
-            },
+            'tenant_id': unit_test_utils.TENANT1,
+            'can_share': False,
+            'self': self_href,
+            'schema': '/v2/schemas/image/access',
+            'image': '/v2/images/%s' % unit_test_utils.UUID1,
         }
         response = webob.Response()
         self.serializer.create(response, fixture)

@@ -993,21 +993,19 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'size': 1024,
         }
         expected = {
-            'image': {
-                'id': unit_test_utils.UUID2,
-                'name': 'image-2',
-                'owner': TENANT2,
-                'visibility': 'public',
-                'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                'created_at': ISOTIME,
-                'updated_at': ISOTIME,
-                'tags': ['three', 'four'],
-                'size': 1024,
-                'self': '/v2/images/%s' % unit_test_utils.UUID2,
-                'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
-                'schema': '/v2/schemas/image',
-            },
+            'id': unit_test_utils.UUID2,
+            'name': 'image-2',
+            'owner': TENANT2,
+            'visibility': 'public',
+            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
+            'tags': ['three', 'four'],
+            'size': 1024,
+            'self': '/v2/images/%s' % unit_test_utils.UUID2,
+            'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+            'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+            'schema': '/v2/schemas/image',
         }
         response = webob.Response()
         self.serializer.show(response, fixture)
@@ -1029,21 +1027,19 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         }
         self_link = '/v2/images/%s' % unit_test_utils.UUID2
         expected = {
-            'image': {
-                'id': unit_test_utils.UUID2,
-                'name': 'image-2',
-                'owner': TENANT2,
-                'visibility': 'private',
-                'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                'created_at': ISOTIME,
-                'updated_at': ISOTIME,
-                'tags': [],
-                'size': 1024,
-                'self': self_link,
-                'file': '%s/file' % self_link,
-                'access': '%s/access' % self_link,
-                'schema': '/v2/schemas/image',
-            },
+            'id': unit_test_utils.UUID2,
+            'name': 'image-2',
+            'owner': TENANT2,
+            'visibility': 'private',
+            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
+            'tags': [],
+            'size': 1024,
+            'self': self_link,
+            'file': '%s/file' % self_link,
+            'access': '%s/access' % self_link,
+            'schema': '/v2/schemas/image',
         }
         response = webob.Response()
         self.serializer.create(response, fixture)
@@ -1066,21 +1062,19 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         }
         self_link = '/v2/images/%s' % unit_test_utils.UUID2
         expected = {
-            'image': {
-                'id': unit_test_utils.UUID2,
-                'name': 'image-2',
-                'owner': TENANT2,
-                'visibility': 'public',
-                'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                'created_at': ISOTIME,
-                'updated_at': ISOTIME,
-                'tags': ['five'],
-                'size': 1024,
-                'self': self_link,
-                'file': '%s/file' % self_link,
-                'access': '%s/access' % self_link,
-                'schema': '/v2/schemas/image',
-            },
+            'id': unit_test_utils.UUID2,
+            'name': 'image-2',
+            'owner': TENANT2,
+            'visibility': 'public',
+            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
+            'tags': ['five'],
+            'size': 1024,
+            'self': self_link,
+            'file': '%s/file' % self_link,
+            'access': '%s/access' % self_link,
+            'schema': '/v2/schemas/image',
         }
         response = webob.Response()
         self.serializer.update(response, fixture)
@@ -1118,22 +1112,20 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
 
     def test_show(self):
         expected = {
-            'image': {
-                'id': unit_test_utils.UUID2,
-                'name': 'image-2',
-                'owner': TENANT2,
-                'visibility': 'private',
-                'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                'created_at': ISOTIME,
-                'updated_at': ISOTIME,
-                'tags': [],
-                'size': 1024,
-                'color': 'green',
-                'self': '/v2/images/%s' % unit_test_utils.UUID2,
-                'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
-                'schema': '/v2/schemas/image',
-            },
+            'id': unit_test_utils.UUID2,
+            'name': 'image-2',
+            'owner': TENANT2,
+            'visibility': 'private',
+            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
+            'tags': [],
+            'size': 1024,
+            'color': 'green',
+            'self': '/v2/images/%s' % unit_test_utils.UUID2,
+            'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+            'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+            'schema': '/v2/schemas/image',
         }
         response = webob.Response()
         self.serializer.show(response, self.fixture)
@@ -1142,22 +1134,20 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
     def test_show_reports_invalid_data(self):
         self.fixture['properties']['color'] = 'invalid'
         expected = {
-            'image': {
-                'id': unit_test_utils.UUID2,
-                'name': 'image-2',
-                'owner': TENANT2,
-                'visibility': 'private',
-                'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                'created_at': ISOTIME,
-                'updated_at': ISOTIME,
-                'tags': [],
-                'size': 1024,
-                'color': 'invalid',
-                'self': '/v2/images/%s' % unit_test_utils.UUID2,
-                'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
-                'schema': '/v2/schemas/image',
-            },
+            'id': unit_test_utils.UUID2,
+            'name': 'image-2',
+            'owner': TENANT2,
+            'visibility': 'private',
+            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
+            'tags': [],
+            'size': 1024,
+            'color': 'invalid',
+            'self': '/v2/images/%s' % unit_test_utils.UUID2,
+            'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+            'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+            'schema': '/v2/schemas/image',
         }
         response = webob.Response()
         self.serializer.show(response, self.fixture)
@@ -1187,22 +1177,20 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
     def test_show(self):
         serializer = glance.api.v2.images.ResponseSerializer()
         expected = {
-            'image': {
-                'id': unit_test_utils.UUID2,
-                'name': 'image-2',
-                'owner': TENANT2,
-                'visibility': 'private',
-                'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                'created_at': ISOTIME,
-                'updated_at': ISOTIME,
-                'marx': 'groucho',
-                'tags': [],
-                'size': 1024,
-                'self': '/v2/images/%s' % unit_test_utils.UUID2,
-                'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
-                'schema': '/v2/schemas/image',
-            },
+            'id': unit_test_utils.UUID2,
+            'name': 'image-2',
+            'owner': TENANT2,
+            'visibility': 'private',
+            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
+            'marx': 'groucho',
+            'tags': [],
+            'size': 1024,
+            'self': '/v2/images/%s' % unit_test_utils.UUID2,
+            'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+            'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+            'schema': '/v2/schemas/image',
         }
         response = webob.Response()
         serializer.show(response, self.fixture)
@@ -1215,22 +1203,20 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
         serializer = glance.api.v2.images.ResponseSerializer()
         self.fixture['properties']['marx'] = 123
         expected = {
-            'image': {
-                'id': unit_test_utils.UUID2,
-                'name': 'image-2',
-                'owner': TENANT2,
-                'visibility': 'private',
-                'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                'created_at': ISOTIME,
-                'updated_at': ISOTIME,
-                'marx': 123,
-                'tags': [],
-                'size': 1024,
-                'self': '/v2/images/%s' % unit_test_utils.UUID2,
-                'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
-                'schema': '/v2/schemas/image',
-            },
+            'id': unit_test_utils.UUID2,
+            'name': 'image-2',
+            'owner': TENANT2,
+            'visibility': 'private',
+            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
+            'marx': 123,
+            'tags': [],
+            'size': 1024,
+            'self': '/v2/images/%s' % unit_test_utils.UUID2,
+            'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+            'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+            'schema': '/v2/schemas/image',
         }
         response = webob.Response()
         serializer.show(response, self.fixture)
@@ -1240,21 +1226,19 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
         self.config(allow_additional_image_properties=False)
         serializer = glance.api.v2.images.ResponseSerializer()
         expected = {
-            'image': {
-                'id': unit_test_utils.UUID2,
-                'name': 'image-2',
-                'owner': TENANT2,
-                'visibility': 'private',
-                'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                'created_at': ISOTIME,
-                'updated_at': ISOTIME,
-                'tags': [],
-                'size': 1024,
-                'self': '/v2/images/%s' % unit_test_utils.UUID2,
-                'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
-                'schema': '/v2/schemas/image',
-            },
+            'id': unit_test_utils.UUID2,
+            'name': 'image-2',
+            'owner': TENANT2,
+            'visibility': 'private',
+            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
+            'tags': [],
+            'size': 1024,
+            'self': '/v2/images/%s' % unit_test_utils.UUID2,
+            'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+            'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
+            'schema': '/v2/schemas/image',
         }
         response = webob.Response()
         serializer.show(response, self.fixture)

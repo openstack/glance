@@ -68,7 +68,7 @@ class TestImages(functional.FunctionalTest):
         image_location_header = response.headers['Location']
 
         # Returned image entity should have a generated id
-        image = json.loads(response.text)['image']
+        image = json.loads(response.text)
         image_id = image['id']
 
         # Image list should now have one entry
@@ -82,7 +82,7 @@ class TestImages(functional.FunctionalTest):
         # Get the image using the returned Location header
         response = requests.get(image_location_header, headers=self._headers())
         self.assertEqual(200, response.status_code)
-        image = json.loads(response.text)['image']
+        image = json.loads(response.text)
         self.assertEqual(image_id, image['id'])
         self.assertEqual(None, image['checksum'])
         self.assertEqual(None, image['size'])
@@ -100,7 +100,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
 
         # Returned image entity should reflect the changes
-        image = json.loads(response.text)['image']
+        image = json.loads(response.text)
         self.assertEqual('image-2', image['name'])
         self.assertEqual('vhd', image['format'])
         self.assertEqual('baz', image['foo'])
@@ -110,7 +110,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
-        image = json.loads(response.text)['image']
+        image = json.loads(response.text)
         self.assertEqual(image_id, image['id'])
         self.assertEqual('image-2', image['name'])
         self.assertEqual('baz', image['foo'])
@@ -132,7 +132,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
-        image = json.loads(response.text)['image']
+        image = json.loads(response.text)
         self.assertEqual('8f113e38d28a79a5a451b16048cc2b72', image['checksum'])
 
         # Try to download the data that was just uploaded
@@ -155,7 +155,7 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers()
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
-        self.assertEqual(5, json.loads(response.text)['image']['size'])
+        self.assertEqual(5, json.loads(response.text)['size'])
 
         # Deletion should work
         path = self._url('/v2/images/%s' % image_id)
@@ -189,7 +189,7 @@ class TestImages(functional.FunctionalTest):
         data = json.dumps({'name': 'image-1'})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(200, response.status_code)
-        image_id = json.loads(response.text)['image']['id']
+        image_id = json.loads(response.text)['id']
 
         # TENANT1 should see the image in their list
         path = self._url('/v2/images')
@@ -326,7 +326,7 @@ class TestImages(functional.FunctionalTest):
         data = json.dumps({'name': 'image-1'})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(200, response.status_code)
-        image_id = json.loads(response.text)['image']['id']
+        image_id = json.loads(response.text)['id']
 
         # Image acccess list should be empty
         path = self._url('/v2/images/%s/access' % image_id)
@@ -417,13 +417,13 @@ class TestImages(functional.FunctionalTest):
         data = json.dumps({'name': 'image-1', 'tags': ['sniff']})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(200, response.status_code)
-        image_id = json.loads(response.text)['image']['id']
+        image_id = json.loads(response.text)['id']
 
         # Image should show a list with a single tag
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
-        tags = json.loads(response.text)['image']['tags']
+        tags = json.loads(response.text)['tags']
         self.assertEqual(['sniff'], tags)
 
         # Create another more complex tag
@@ -435,7 +435,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
-        tags = json.loads(response.text)['image']['tags']
+        tags = json.loads(response.text)['tags']
         self.assertEqual(['sniff', 'gabe@example.com'], tags)
 
         # The tag should be deletable
@@ -447,7 +447,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
-        tags = json.loads(response.text)['image']['tags']
+        tags = json.loads(response.text)['tags']
         self.assertEqual(['sniff'], tags)
 
         # Deleting the same tag should return a 404
@@ -485,7 +485,7 @@ class TestImages(functional.FunctionalTest):
             data = json.dumps(fixture)
             response = requests.post(path, headers=headers, data=data)
             self.assertEqual(200, response.status_code)
-            images.append(json.loads(response.text)['image'])
+            images.append(json.loads(response.text))
 
         # Image list should contain 7 images
         path = self._url('/v2/images')

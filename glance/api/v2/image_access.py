@@ -124,8 +124,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             }
 
     def show(self, response, access):
-        record = {'access_record': self._format_access(access)}
-        response.body = json.dumps(record)
+        response.body = json.dumps(self._format_access(access))
         response.content_type = 'application/json'
 
     def index(self, response, result):
@@ -144,7 +143,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.status_int = 201
         response.location = self._get_access_href(access['image_id'],
                                                   access['member'])
-        response.body = json.dumps({'access': self._format_access(access)})
+        response.body = json.dumps(self._format_access(access))
         response.content_type = 'application/json'
 
     def delete(self, response, result):

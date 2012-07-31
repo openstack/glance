@@ -140,7 +140,7 @@ class BaseCacheMiddlewareTest(object):
                                          body=json.dumps(image_entity))
         self.assertEqual(response.status, 200)
         data = json.loads(content)
-        image_id = data['image']['id']
+        image_id = data['id']
 
         path = "http://%s:%d/v2/images/%s/file" % ("0.0.0.0", self.api_port,
                                                    image_id)
