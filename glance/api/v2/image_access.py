@@ -166,6 +166,11 @@ def get_schema():
     return glance.schema.Schema('access', properties)
 
 
+def get_collection_schema():
+    access_schema = get_schema()
+    return glance.schema.CollectionSchema('accesses', access_schema)
+
+
 def create_resource():
     """Image access resource factory method"""
     deserializer = RequestDeserializer()

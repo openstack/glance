@@ -21,6 +21,7 @@ from glance.common import wsgi
 class Controller(object):
     def __init__(self, custom_image_properties=None):
         self.access_schema = image_access.get_schema()
+        self.access_collection_schema = image_access.get_collection_schema()
         self.image_schema = images.get_schema(custom_image_properties)
         self.image_collection_schema = images.get_collection_schema(
                 custom_image_properties)
@@ -33,6 +34,9 @@ class Controller(object):
 
     def access(self, req):
         return self.access_schema.raw()
+
+    def accesses(self, req):
+        return self.access_collection_schema.raw()
 
 
 def create_resource(custom_image_properties=None):

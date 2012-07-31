@@ -59,7 +59,7 @@ class TestSchemas(functional.FunctionalTest):
                 ('127.0.0.1', self.api_port)
         response = requests.get(path)
         self.assertEqual(response.status_code, 200)
-        json.loads(response.text)
+        access_schema = json.loads(response.text)
 
         # Ensure the images link works and agrees with the image schema
         path = 'http://%s:%d/v2/schemas/images' % ('127.0.0.1', self.api_port)
@@ -68,3 +68,12 @@ class TestSchemas(functional.FunctionalTest):
         images_schema = json.loads(response.text)
         item_schema = images_schema['properties']['images']['items']
         self.assertEqual(item_schema, image_schema)
+
+        # Ensure the accesses schema works and agrees with access schema
+        path = 'http://%s:%d/v2/schemas/image/accesses' % \
+                ('127.0.0.1', self.api_port)
+        response = requests.get(path)
+        self.assertEqual(response.status_code, 200)
+        accesses_schema = json.loads(response.text)
+        item_schema = accesses_schema['properties']['accesses']['items']
+        self.assertEqual(item_schema, access_schema)

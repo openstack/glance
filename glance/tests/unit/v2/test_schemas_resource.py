@@ -43,3 +43,13 @@ class TestSchemasController(test_utils.BaseTestCase):
         req = unit_test_utils.get_fake_request()
         output = self.controller.access(req)
         self.assertEqual(output['name'], 'access')
+
+    def test_accesses(self):
+        req = unit_test_utils.get_fake_request()
+        output = self.controller.accesses(req)
+        self.assertEqual(output['name'], 'accesses')
+        expected = set(['accesses', 'schema', 'first', 'next'])
+        self.assertEqual(set(output['properties'].keys()), expected)
+        expected = set(['{schema}', '{first}', '{next}'])
+        actual = set([link['href'] for link in output['links']])
+        self.assertEqual(actual, expected)
