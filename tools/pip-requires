@@ -14,10 +14,8 @@ argparse
 boto==2.1.1
 sqlalchemy-migrate>=0.7
 httplib2
-xattr>=0.6.0
 kombu
 pycrypto>=2.1.0alpha1
-pysendfile==2.0.0
 iso8601>=0.1.4
 
 

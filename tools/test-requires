@@ -13,3 +13,7 @@ openstack.nose_plugin>=0.7
 pep8==1.1
 sphinx>=1.1.2
 requests
+
+# Optional packages that should be installed when testing
+xattr>=0.6.0
+pysendfile==2.0.0
