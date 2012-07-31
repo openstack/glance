@@ -19,7 +19,6 @@ from glance.api.v2 import image_access
 from glance.api.v2 import image_data
 from glance.api.v2 import image_tags
 from glance.api.v2 import images
-from glance.api.v2 import root
 from glance.api.v2 import schemas
 from glance.common import wsgi
 
@@ -31,14 +30,7 @@ class API(wsgi.Router):
     def __init__(self, mapper):
         custom_image_properties = images.load_custom_properties()
 
-        root_resource = root.create_resource()
-        mapper.connect('/', controller=root_resource, action='index')
-
         schemas_resource = schemas.create_resource(custom_image_properties)
-        mapper.connect('/schemas',
-                       controller=schemas_resource,
-                       action='index',
-                       conditions={'method': ['GET']})
         mapper.connect('/schemas/image',
                        controller=schemas_resource,
                        action='image',

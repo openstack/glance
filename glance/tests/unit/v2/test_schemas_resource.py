@@ -24,16 +24,6 @@ class TestSchemasController(test_utils.BaseTestCase):
         super(TestSchemasController, self).setUp()
         self.controller = glance.api.v2.schemas.Controller()
 
-    def test_index(self):
-        req = unit_test_utils.get_fake_request()
-        output = self.controller.index(req)
-        expected = {
-            'image': '/v2/schemas/image',
-            'images': '/v2/schemas/images',
-            'access': '/v2/schemas/image/access',
-        }
-        self.assertEqual(expected, output)
-
     def test_image(self):
         req = unit_test_utils.get_fake_request()
         output = self.controller.image(req)

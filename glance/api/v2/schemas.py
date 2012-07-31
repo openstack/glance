@@ -25,13 +25,6 @@ class Controller(object):
         self.image_collection_schema = images.get_collection_schema(
                 custom_image_properties)
 
-    def index(self, req):
-        return {
-            'image': '/v2/schemas/image',
-            'images': '/v2/schemas/images',
-            'access': '/v2/schemas/image/access',
-        }
-
     def image(self, req):
         return self.image_schema.raw()
 

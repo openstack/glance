@@ -30,19 +30,8 @@ class TestSchemas(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
 
     def test_resource(self):
-        path = 'http://%s:%d/v2/schemas' % ('127.0.0.1', self.api_port)
-        response = requests.get(path)
-        self.assertEqual(response.status_code, 200)
-
-        # Parse the links container into a usable dict
-        output = json.loads(response.text)
-
-        # We should only have links for image and access schemas
-        self.assertEqual(set(['image', 'images', 'access']),
-                         set(output.keys()))
-
         # Ensure the image link works and custom properties are loaded
-        path = 'http://%s:%d%s' % ('127.0.0.1', self.api_port, output['image'])
+        path = 'http://%s:%d/v2/schemas/image' % ('127.0.0.1', self.api_port)
         response = requests.get(path)
         self.assertEqual(response.status_code, 200)
         image_schema = json.loads(response.text)
@@ -66,15 +55,14 @@ class TestSchemas(functional.FunctionalTest):
         self.assertEqual(expected, set(image_schema['properties'].keys()))
 
         # Ensure the access link works
-        path = 'http://%s:%d%s' % ('127.0.0.1', self.api_port,
-                output['access'])
+        path = 'http://%s:%d/v2/schemas/image/access' % \
+                ('127.0.0.1', self.api_port)
         response = requests.get(path)
         self.assertEqual(response.status_code, 200)
         json.loads(response.text)
 
         # Ensure the images link works and agrees with the image schema
-        path = 'http://%s:%d%s' % ('127.0.0.1', self.api_port,
-                output['images'])
+        path = 'http://%s:%d/v2/schemas/images' % ('127.0.0.1', self.api_port)
         response = requests.get(path)
         self.assertEqual(response.status_code, 200)
         images_schema = json.loads(response.text)
