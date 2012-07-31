@@ -818,9 +818,9 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
-        self.assertEqual(26, len(image_lines))
+        self.assertEqual(30, len(image_lines))
         self.assertEqual(image_lines[1].split()[1], image_ids[1])
-        self.assertEqual(image_lines[14].split()[1], image_ids[0])
+        self.assertEqual(image_lines[16].split()[1], image_ids[0])
 
         # 12. Check min_ram filter
         cmd = "min_ram=256"
@@ -828,7 +828,7 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
-        self.assertEqual(12, len(image_lines))
+        self.assertEqual(14, len(image_lines))
         self.assertEqual(image_lines[0].split()[1], image_ids[2])
 
         # 13. Check min_disk filter
@@ -837,7 +837,7 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[2:-1]
-        self.assertEqual(12, len(image_lines))
+        self.assertEqual(14, len(image_lines))
         self.assertEqual(image_lines[0].split()[1], image_ids[2])
 
         self.stop_servers()
@@ -920,9 +920,9 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
-        self.assertEqual(24, len(image_lines))
+        self.assertEqual(28, len(image_lines))
         self.assertTrue(image_lines[1].split()[1], image_ids[2])
-        self.assertTrue(image_lines[13].split()[1], image_ids[1])
+        self.assertTrue(image_lines[15].split()[1], image_ids[1])
 
         self.stop_servers()
 
@@ -996,10 +996,10 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         image_lines = out.split("\n")[1:-1]
-        self.assertEqual(36, len(image_lines))
+        self.assertEqual(42, len(image_lines))
         self.assertTrue(image_lines[1].split()[1], image_ids[2])
-        self.assertTrue(image_lines[13].split()[1], image_ids[1])
-        self.assertTrue(image_lines[25].split()[1], image_ids[4])
+        self.assertTrue(image_lines[15].split()[1], image_ids[1])
+        self.assertTrue(image_lines[29].split()[1], image_ids[4])
 
         self.stop_servers()
 
