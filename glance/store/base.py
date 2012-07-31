@@ -1,6 +1,7 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
 # Copyright 2011 OpenStack, LLC
+# Copyright 2012 RedHat Inc.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -133,5 +134,21 @@ class Store(object):
         :location `glance.store.location.Location` object, supplied
                   from glance.store.location.get_location_from_uri()
         :raises `glance.exception.NotFound` if image does not exist
+        """
+        raise NotImplementedError
+
+    def set_acls(self, location, public=False, read_tenants=[],
+                 write_tenants=[]):
+        """
+        Sets the read and write access control list for an image in the
+        backend store.
+
+        :location `glance.store.location.Location` object, supplied
+                  from glance.store.location.get_location_from_uri()
+        :public A boolean indicating whether the image should be public.
+        :read_tenants A list of tenant strings which should be granted
+                      read access for an image.
+        :write_tenants A list of tenant strings which should be granted
+                      write access for an image.
         """
         raise NotImplementedError
