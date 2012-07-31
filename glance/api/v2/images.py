@@ -296,6 +296,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         body = {
                'images': [self._format_image(i) for i in result['images']],
                'first': '/v2/images',
+               'schema': '/v2/schemas/images',
         }
         if query:
             body['first'] = '%s?%s' % (body['first'], query)
