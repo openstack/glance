@@ -47,7 +47,7 @@ FIVE_KB = 5 * 1024
 class BaseCacheMiddlewareTest(object):
 
     @skip_if_disabled
-    def test_cache_middleware_transparent(self):
+    def test_cache_middleware_transparent_v1(self):
         """
         We test that putting the cache middleware into the
         application pipeline gives us transparent image caching
@@ -116,6 +116,62 @@ class BaseCacheMiddlewareTest(object):
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 200)
+
+        self.assertFalse(os.path.exists(image_cached_path))
+
+        self.stop_servers()
+
+    @skip_if_disabled
+    def test_cache_middleware_transparent_v2(self):
+        """Ensure the v2 API image transfer calls trigger caching"""
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        # Add an image and verify success
+        path = "http://%s:%d/v2/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        headers = {'content-type': 'application/json'}
+        image_entity = {
+            'name': 'Image1',
+            'visibility': 'public',
+        }
+        response, content = http.request(path, 'POST',
+                                         headers=headers,
+                                         body=json.dumps(image_entity))
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        image_id = data['image']['id']
+
+        path = "http://%s:%d/v2/images/%s/file" % ("0.0.0.0", self.api_port,
+                                                   image_id)
+        headers = {'content-type': 'application/octet-stream'}
+        image_data = "*" * FIVE_KB
+        response, content = http.request(path, 'PUT',
+                                         headers=headers,
+                                         body=image_data)
+        self.assertEqual(response.status, 200)
+
+        # Verify image not in cache
+        image_cached_path = os.path.join(self.api_server.image_cache_dir,
+                                         image_id)
+        self.assertFalse(os.path.exists(image_cached_path))
+
+        # Grab the image
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        # Verify image now in cache
+        image_cached_path = os.path.join(self.api_server.image_cache_dir,
+                                         image_id)
+
+        # Now, we delete the image from the server and verify that
+        # the image cache no longer contains the deleted image
+        path = "http://%s:%d/v2/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 204)
 
         self.assertFalse(os.path.exists(image_cached_path))
 
