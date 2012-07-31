@@ -752,6 +752,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 },
             ],
             'first': '/v2/images',
+            'schema': '/v2/schemas/images',
         }
         request = webob.Request.blank('/v2/images')
         response = webob.Response(request=request)
@@ -822,7 +823,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 },
             ],
             'first': '/v2/images',
-            'next': '/v2/images?marker=%s' % unit_test_utils.UUID2
+            'next': '/v2/images?marker=%s' % unit_test_utils.UUID2,
+            'schema': '/v2/schemas/images',
         }
         request = webob.Request.blank('/v2/images')
         response = webob.Response(request=request)
@@ -893,6 +895,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 },
             ],
             'first': '/v2/images?sort_key=id&sort_dir=asc&limit=10',
+            'schema': '/v2/schemas/images',
         }
         url = '/v2/images?limit=10&sort_key=id&sort_dir=asc'
         request = webob.Request.blank(url)
@@ -964,7 +967,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             ],
             'first': '/v2/images?sort_key=id&sort_dir=asc&limit=2',
             'next': '/v2/images?sort_key=id&sort_dir=asc&limit=2&marker=%s'
-                                                    % unit_test_utils.UUID2
+                                                    % unit_test_utils.UUID2,
+            'schema': '/v2/schemas/images',
         }
         url = '/v2/images?limit=2&sort_key=id&sort_dir=asc'
         request = webob.Request.blank(url)
