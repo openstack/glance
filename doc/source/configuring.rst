@@ -392,6 +392,17 @@ If set to True enables multi-tenant storage mode which causes Glance images
 to be stored in tenant specific Swift accounts. When set to False Glance
 stores all images in a single Swift account.
 
+* ``swift_store_admin_tenants``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Swift storage backend.`
+
+Optional. Default: ``[]``
+
+A list of tenants that will be granted read/write access on all Swift containers
+created by Glance in multi tenant mode.
+
 
 Configuring the S3 Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
