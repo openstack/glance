@@ -169,6 +169,7 @@ class Server(object):
         self.application = application
         self.sock = get_socket(default_port)
 
+        os.umask(027)  # ensure files are created with the correct privileges
         self.logger = os_logging.getLogger('eventlet.wsgi.server')
 
         if CONF.workers == 0:
