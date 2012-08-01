@@ -163,7 +163,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         # defined properties contained in a 'properties' dictionary
         image = {'properties': body}
         for key in ['id', 'name', 'visibility', 'created_at', 'updated_at',
-                    'tags', 'owner']:
+                    'tags', 'owner', 'status']:
             try:
                 image[key] = image['properties'].pop(key)
             except KeyError:
@@ -177,7 +177,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
     @staticmethod
     def _remove_readonly(image):
-        for key in ['created_at', 'updated_at']:
+        for key in ['created_at', 'updated_at', 'status']:
             if key in image:
                 del image[key]
 
@@ -259,7 +259,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
     def _format_image(self, image):
         _image = image['properties']
         for key in ['id', 'name', 'created_at', 'updated_at', 'tags', 'size',
-                    'owner', 'checksum']:
+                    'owner', 'checksum', 'status']:
             _image[key] = image[key]
         _image['visibility'] = 'public' if image['is_public'] else 'private'
         _image = self.schema.filter(_image)
@@ -321,6 +321,12 @@ _BASE_PROPERTIES = {
         'type': 'string',
         'description': 'Descriptive name for the image',
         'maxLength': 255,
+    },
+    'status': {
+      'type': 'string',
+      'description': 'Status of the image',
+      'enum': ['queued', 'saving', 'active', 'killed',
+               'deleted', 'pending_delete'],
     },
     'owner': {
         'type': 'string',

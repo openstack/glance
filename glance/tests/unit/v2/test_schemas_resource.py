@@ -28,6 +28,8 @@ class TestSchemasController(test_utils.BaseTestCase):
         req = unit_test_utils.get_fake_request()
         output = self.controller.image(req)
         self.assertEqual(output['name'], 'image')
+        self.assertTrue('status' in output['properties'],
+                        "'status' key missing from image schema")
 
     def test_images(self):
         req = unit_test_utils.get_fake_request()
