@@ -283,9 +283,8 @@ def replication_dump(options, args):
             logging.info(_('... storing'))
 
             # Dump glance information
-            f = open(data_path, 'w')
-            f.write(json.dumps(image))
-            f.close()
+            with open(data_path, 'w') as f:
+                f.write(json.dumps(image))
 
             if image['status'] == 'active' and not options.metaonly:
                 # Now fetch the image. The metadata returned in headers here
@@ -294,13 +293,12 @@ def replication_dump(options, args):
                 # only dump active images.
                 logging.info(_('... image is active'))
                 image_response = client.get_image(image['id'])
-                f = open(data_path + '.img', 'wb')
-                while True:
-                    chunk = image_response.read(options.chunksize)
-                    if not chunk:
-                        break
-                    f.write(chunk)
-                f.close()
+                with open(data_path + '.img', 'wb') as f:
+                    while True:
+                        chunk = image_response.read(options.chunksize)
+                        if not chunk:
+                            break
+                        f.write(chunk)
 
 
 def _dict_diff(a, b):
@@ -360,9 +358,8 @@ def replication_load(options, args):
             logging.info(_('Considering: %s') % uuid)
 
             meta_file_name = os.path.join(path, uuid)
-            meta_file = open(meta_file_name)
-            meta = json.loads(meta_file.read())
-            meta_file.close()
+            with open(meta_file_name) as meta_file:
+                meta = json.loads(meta_file.read())
 
             # Remove keys which don't make sense for replication
             for key in options.dontreplicate.split(' '):
@@ -389,9 +386,8 @@ def replication_load(options, args):
                     continue
 
                 # Upload the image itself
-                img_file = open(os.path.join(path, uuid + '.img'))
-                headers, body = client.add_image(meta, img_file)
-                img_file.close()
+                with open(os.path.join(path, uuid + '.img')) as img_file:
+                    headers, body = client.add_image(meta, img_file)
 
                 _check_upload_response_headers(headers, body)
 
