@@ -315,8 +315,8 @@ class Driver(base.Driver):
                 if os.path.exists(incomplete_path):
                     invalid_path = self.get_image_filepath(image_id, 'invalid')
 
-                    LOG.debug(_("Fetch of cache file failed, rolling back "
-                                "by moving '%(incomplete_path)s' to "
+                    LOG.debug(_("Fetch of cache file failed (%(e)s), rolling "
+                                "back by moving '%(incomplete_path)s' to "
                                 "'%(invalid_path)s'") % locals())
                     os.rename(incomplete_path, invalid_path)
 
@@ -332,6 +332,14 @@ class Driver(base.Driver):
             raise
         else:
             commit()
+        finally:
+            # if the generator filling the cache file neither raises an
+            # exception, nor completes fetching all data, neither rollback
+            # nor commit will have been called, so the incomplete file
+            # will persist - in that case remove it as it is unusable
+            # example: ^c from client fetch
+            if os.path.exists(incomplete_path):
+                rollback('incomplete fetch')
 
     @contextmanager
     def open_for_read(self, image_id):
