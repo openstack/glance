@@ -16,6 +16,7 @@
 #    under the License.
 
 import glance.common.utils
+from glance.openstack.common import local
 
 
 class RequestContext(object):
@@ -37,6 +38,30 @@ class RequestContext(object):
         self.owner_is_tenant = owner_is_tenant
         self.request_id = glance.common.utils.generate_uuid()
         self.service_catalog = service_catalog
+
+        if not hasattr(local.store, 'context'):
+            self.update_store()
+
+    def to_dict(self):
+        # NOTE(ameade): These keys are named to correspond with the default
+        # format string for logging the context in openstack common
+        return {'request_id': self.request_id,
+                'user_id': self.user,
+                'tenant_id': self.tenant,
+                'is_admin': self.is_admin,
+                'project_id': self.tenant,
+                'read_deleted': self.show_deleted,
+                'roles': self.roles,
+                'auth_token': self.auth_tok,
+                'service_catalog': self.service_catalog,
+        }
+
+    @classmethod
+    def from_dict(cls, values):
+        return cls(**values)
+
+    def update_store(self):
+        local.store.context = self
 
     @property
     def owner(self):
