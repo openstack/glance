@@ -354,8 +354,8 @@ def replication_load(options, args):
 
     for ent in os.listdir(path):
         if is_uuid_like(ent):
-            uuid = ent
-            logging.info(_('Considering: %s') % uuid)
+            image_uuid = ent
+            logging.info(_('Considering: %s') % image_uuid)
 
             meta_file_name = os.path.join(path, uuid)
             with open(meta_file_name) as meta_file:
@@ -366,11 +366,11 @@ def replication_load(options, args):
                 if key in meta:
                     del meta[key]
 
-            if _image_present(client, uuid):
+            if _image_present(client, image_uuid):
                 # NOTE(mikal): Perhaps we just need to update the metadata?
                 # Note that we don't attempt to change an image file once it
                 # has been uploaded.
-                headers = client.get_image_meta(uuid)
+                headers = client.get_image_meta(image_uuid)
                 for key in options.dontreplicate.split(' '):
                     if key in headers:
                         del headers[key]
@@ -381,7 +381,7 @@ def replication_load(options, args):
                     _check_upload_response_headers(headers, body)
 
             else:
-                if not os.path.exists(os.path.join(path, uuid + '.img')):
+                if not os.path.exists(os.path.join(path, image_uuid + '.img')):
                     logging.info(_('... dump is missing image data, skipping'))
                     continue
 
@@ -505,15 +505,15 @@ def _check_upload_response_headers(headers, body):
             raise UploadException('Image upload problem: %s' % body)
 
 
-def _image_present(client, uuid):
+def _image_present(client, image_uuid):
     """Check if an image is present in glance.
 
     client: the ImageService
-    uuid: the image uuid to check
+    image_uuid: the image uuid to check
 
     Returns: True if the image is present
     """
-    headers = client.get_image_meta(uuid)
+    headers = client.get_image_meta(image_uuid)
     return 'status' in headers
 
 
