@@ -65,12 +65,7 @@ class ImagesController(object):
 
     @utils.mutating
     def create(self, req, image):
-        if 'owner' not in image:
-            image['owner'] = req.context.owner
-        elif not req.context.is_admin:
-            raise webob.exc.HTTPForbidden()
-
-        #TODO(bcwaldon): this should eventually be settable through the API
+        image.setdefault('owner', req.context.owner)
         image['status'] = 'queued'
 
         tags = self._extract_tags(image)
@@ -175,14 +170,23 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         if 'visibility' in image:
             image['is_public'] = image.pop('visibility') == 'public'
 
-        self._remove_readonly(image)
+        self._check_readonly(image)
+        self._check_adminonly(image, request.context)
         return {'image': image}
 
     @staticmethod
-    def _remove_readonly(image):
+    def _check_readonly(image):
         for key in ['created_at', 'updated_at', 'status']:
             if key in image:
-                del image[key]
+                msg = "Attribute \'%s\' is read-only." % key
+                raise webob.exc.HTTPForbidden(explanation=unicode(msg))
+
+    @staticmethod
+    def _check_adminonly(image, context):
+        for key in ['owner']:
+            if key in image and not context.is_admin:
+                msg = "Must be admin to set attribute \'%s\'." % key
+                raise webob.exc.HTTPForbidden(explanation=unicode(msg))
 
     def create(self, request):
         return self._parse_image(request)

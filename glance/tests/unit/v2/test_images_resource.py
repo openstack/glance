@@ -328,12 +328,6 @@ class TestImagesController(test_utils.BaseTestCase):
         }
         self.assertEqual(expected, output)
 
-    def test_create_with_owner_forbidden(self):
-        request = unit_test_utils.get_fake_request()
-        image = {'name': 'image-1', 'owner': utils.generate_uuid()}
-        self.assertRaises(webob.exc.HTTPForbidden, self.controller.create,
-                          request, image)
-
     def test_create_with_owner_as_admin(self):
         request = unit_test_utils.get_fake_request(is_admin=True)
         image = {'name': 'image-1', 'owner': utils.generate_uuid()}
@@ -411,8 +405,14 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         expected = {'image': {'name': 'image-1', 'properties': {}}}
         self.assertEqual(expected, output)
 
-    def test_create_with_owner(self):
+    def test_create_with_owner_forbidden(self):
         request = unit_test_utils.get_fake_request()
+        request.body = json.dumps({'owner': TENANT2})
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.deserializer.create, request)
+
+    def test_create_with_owner_admin(self):
+        request = unit_test_utils.get_fake_request(is_admin=True)
         request.body = json.dumps({'owner': TENANT2})
         output = self.deserializer.create(request)
         expected = {'image': {'owner': TENANT2, 'properties': {}}}
@@ -432,20 +432,18 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         expected = {'image': {'is_public': False, 'properties': {}}}
         self.assertEqual(expected, output)
 
-    def test_create_readonly_attributes_ignored(self):
+    def test_create_readonly_attributes_forbidden(self):
         for key in ['created_at', 'updated_at']:
             request = unit_test_utils.get_fake_request()
             request.body = json.dumps({key: ISOTIME})
-            output = self.deserializer.create(request)
-            expected = {'image': {'properties': {}}}
-            self.assertEqual(expected, output)
+            self.assertRaises(webob.exc.HTTPForbidden,
+                              self.deserializer.update, request)
 
-    def test_create_status_attribute_ignored(self):
+    def test_create_status_attribute_forbidden(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'status': 'saving'})
-        output = self.deserializer.create(request)
-        expected = {'image': {'properties': {}}}
-        self.assertEqual(expected, output)
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.deserializer.update, request)
 
     def test_create_with_tags(self):
         request = unit_test_utils.get_fake_request()
@@ -467,20 +465,18 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         }
         self.assertEqual(expected, output)
 
-    def test_update_readonly_attributes_ignored(self):
+    def test_update_readonly_attributes_forbidden(self):
         for key in ['created_at', 'updated_at']:
             request = unit_test_utils.get_fake_request()
             request.body = json.dumps({key: ISOTIME})
-            output = self.deserializer.update(request)
-            expected = {'image': {'properties': {}}}
-            self.assertEqual(expected, output)
+            self.assertRaises(webob.exc.HTTPForbidden,
+                              self.deserializer.update, request)
 
-    def test_update_status_attribute_ignored(self):
+    def test_update_status_attribute_forbidden(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'status': 'saving'})
-        output = self.deserializer.update(request)
-        expected = {'image': {'properties': {}}}
-        self.assertEqual(expected, output)
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.deserializer.update, request)
 
     def test_index(self):
         marker = utils.generate_uuid()
