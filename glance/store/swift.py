@@ -59,6 +59,7 @@ swift_opts = [
                default=DEFAULT_LARGE_OBJECT_CHUNK_SIZE),
     cfg.BoolOpt('swift_store_create_container_on_put', default=False),
     cfg.BoolOpt('swift_store_multi_tenant', default=False),
+    cfg.BoolOpt('swift_store_admin_tenants', default=[]),
     ]
 
 CONF = cfg.CONF
@@ -214,6 +215,7 @@ class Store(glance.store.base.Store):
     def configure(self):
         self.snet = CONF.swift_enable_snet
         self.multi_tenant = CONF.swift_store_multi_tenant
+        self.admin_tenants = CONF.swift_store_admin_tenants
         self.auth_version = self._option_get('swift_store_auth_version')
         self.storage_url = None
         self.token = None
@@ -618,6 +620,7 @@ class Store(glance.store.base.Store):
             else:
                 headers['X-Container-Read'] = ''
 
+            write_tenants.extend(self.admin_tenants)
             if write_tenants:
                 headers['X-Container-Write'] = ','.join(write_tenants)
             else:
