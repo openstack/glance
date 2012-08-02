@@ -26,6 +26,9 @@ import glance.store.location
 LOG = logging.getLogger(__name__)
 
 
+MAX_REDIRECTS = 5
+
+
 class StoreLocation(glance.store.location.StoreLocation):
 
     """Class describing an HTTP(S) URI"""
@@ -147,12 +150,33 @@ class Store(glance.store.base.Store):
         except Exception:
             return 0
 
-    def _query(self, location, verb):
+    def _query(self, location, verb, depth=0):
+        if depth > MAX_REDIRECTS:
+            raise exception.MaxRedirectsExceeded(redirects=MAX_REDIRECTS)
         loc = location.store_location
         conn_class = self._get_conn_class(loc)
         conn = conn_class(loc.netloc)
         conn.request(verb, loc.path, "", {})
         resp = conn.getresponse()
+
+        # Check for bad status codes
+        if resp.status >= 400:
+            reason = _("HTTP URL returned a %s status code.") % resp.status
+            raise exception.BadStoreUri(loc.path, reason)
+
+        location_header = resp.getheader("location")
+        if location_header:
+            if resp.status not in (301, 302):
+                reason = _("The HTTP URL attempted to redirect with an "
+                           "invalid status code.")
+                raise exception.BadStoreUri(loc.path, reason)
+            location_class = glance.store.location.Location
+            new_loc = location_class(location.store_name,
+                                     location.store_location.__class__,
+                                     uri=location_header,
+                                     image_id=location.image_id,
+                                     store_specs=location.store_specs)
+            return self._query(new_loc, verb, depth + 1)
         content_length = resp.getheader('content-length', 0)
         return (conn, resp, content_length)
 
