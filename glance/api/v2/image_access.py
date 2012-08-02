@@ -153,16 +153,33 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 def get_schema():
     properties = {
         'tenant_id': {
-          'type': 'string',
-          'description': 'The tenant identifier',
+            'type': 'string',
+            'description': 'The tenant identifier',
         },
         'can_share': {
-          'type': 'boolean',
-          'description': 'Ability of tenant to share with others',
-          'default': False,
+            'type': 'boolean',
+            'description': 'Ability of tenant to share with others',
+            'default': False,
+        },
+        'self': {
+            'type': 'string',
+            'description': 'A link to this resource',
+        },
+        'schema': {
+            'type': 'string',
+            'description': 'A link to the schema describing this resource',
+        },
+        'image': {
+            'type': 'string',
+            'description': 'A link to the image related to this resource',
         },
     }
-    return glance.schema.Schema('access', properties)
+    links = [
+        {'rel': 'self', 'href': '{self}'},
+        {'rel': 'up', 'href': '{image}'},
+        {'rel': 'describedby', 'href': '{schema}'},
+    ]
+    return glance.schema.Schema('access', properties, links)
 
 
 def get_collection_schema():
