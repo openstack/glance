@@ -101,7 +101,7 @@ class QpidStrategy(strategy.Strategy):
                                         CONF.qpid_reconnect_interval_min)
         if CONF.qpid_reconnect_interval:
             self.connection.reconnect_interval = CONF.qpid_reconnect_interval
-        self.connection.hearbeat = CONF.qpid_heartbeat
+        self.connection.heartbeat = CONF.qpid_heartbeat
         self.connection.protocol = CONF.qpid_protocol
         self.connection.tcp_nodelay = CONF.qpid_tcp_nodelay
         self.connection.open()
