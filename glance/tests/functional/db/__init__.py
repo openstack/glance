@@ -154,6 +154,18 @@ class BaseTestCase(object):
         self.assertEquals(len(images), 1)
         self.assertEquals(images[0]['id'], self.fixtures[0]['id'])
 
+    def test_image_get_all_with_filter_user_deleted_property(self):
+        fixture = {'name': 'poo', 'value': 'bear', 'image_id': UUID1}
+        prop = self.db_api.image_property_create(self.context,
+                                                 fixture)
+        images = self.db_api.image_get_all(self.context,
+                             filters={'properties': {'poo': 'bear'}})
+        self.assertEquals(len(images), 1)
+        self.db_api.image_property_delete(self.context, prop)
+        images = self.db_api.image_get_all(self.context,
+                             filters={'properties': {'poo': 'bear'}})
+        self.assertEquals(len(images), 0)
+
     def test_image_get_all_with_filter_undefined_property(self):
         images = self.db_api.image_get_all(self.context,
                                       filters={'poo': 'bear'})

@@ -95,7 +95,9 @@ def _image_format(image_id, **values):
 
     #NOTE(bcwaldon): store properties as a list to match sqlalchemy driver
     properties = values.pop('properties', {})
-    properties = [{'name': k, 'value': v} for k, v in properties.items()]
+    properties = [{'name': k,
+                   'value': v,
+                   'deleted': False} for k, v in properties.items()]
     image['properties'] = properties
 
     image.update(values)
@@ -104,6 +106,10 @@ def _image_format(image_id, **values):
 
 def _filter_images(images, filters):
     filtered_images = []
+    if 'properties' in filters:
+        prop_filter = filters.pop('properties')
+        filters.update(prop_filter)
+
     for i, image in enumerate(images):
         add = True
         for k, value in filters.iteritems():
@@ -123,9 +129,12 @@ def _filter_images(images, filters):
             elif image.get(k) is not None:
                 add = image.get(key) == value
             else:
-                properties = dict([(p['name'], p['value'])
-                                   for p in image['properties']])
-                add = properties.get(key) == value
+                properties = {}
+                for p in image['properties']:
+                    properties = {p['name']: p['value'],
+                                  'deleted': p['deleted']}
+                add = properties.get(key) == value and \
+                                             properties.get('deleted') is False
             if not add:
                 break
 

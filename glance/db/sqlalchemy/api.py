@@ -478,7 +478,9 @@ def image_get_all(context, filters=None, marker=None, limit=None,
             query = query.filter(models.Image.status != 'killed')
 
     for (k, v) in filters.pop('properties', {}).items():
-        query = query.filter(models.Image.properties.any(name=k, value=v))
+        query = query.filter(models.Image.properties.any(name=k,
+                                                         value=v,
+                                                         deleted=False))
 
     for (k, v) in filters.items():
         if v is not None:
