@@ -63,7 +63,7 @@ CONF = cfg.CONF
 CONF.register_opts(db_opts)
 
 
-class MySQLPingListener(object):
+def ping_listener(dbapi_conn, connection_rec, connection_proxy):
 
     """
     Ensures that MySQL connections checked out of the
@@ -73,16 +73,15 @@ class MySQLPingListener(object):
     http://groups.google.com/group/sqlalchemy/msg/a4ce563d802c929f
     """
 
-    def checkout(self, dbapi_con, con_record, con_proxy):
-        try:
-            dbapi_con.cursor().execute('select 1')
-        except dbapi_con.OperationalError, ex:
-            if ex.args[0] in (2006, 2013, 2014, 2045, 2055):
-                msg = 'Got mysql server has gone away: %s' % ex
-                LOG.warn(msg)
-                raise sqlalchemy.exc.DisconnectionError(msg)
-            else:
-                raise
+    try:
+        dbapi_conn.cursor().execute('select 1')
+    except dbapi_conn.OperationalError, ex:
+        if ex.args[0] in (2006, 2013, 2014, 2045, 2055):
+            msg = 'Got mysql server has gone away: %s' % ex
+            LOG.warn(msg)
+            raise sqlalchemy.exc.DisconnectionError(msg)
+        else:
+            raise
 
 
 def configure_db():
@@ -100,11 +99,13 @@ def configure_db():
                        'echo': False,
                        'convert_unicode': True
                        }
-        if 'mysql' in connection_dict.drivername:
-            engine_args['listeners'] = [MySQLPingListener()]
 
         try:
             _ENGINE = sqlalchemy.create_engine(sql_connection, **engine_args)
+
+            if 'mysql' in connection_dict.drivername:
+                sqlalchemy.event.listen(_ENGINE, 'checkout', ping_listener)
+
             _ENGINE.connect = wrap_db_error(_ENGINE.connect)
             _ENGINE.connect()
         except Exception, err:
