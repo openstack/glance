@@ -440,6 +440,13 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             expected = {'image': {'properties': {}}}
             self.assertEqual(expected, output)
 
+    def test_create_status_attribute_ignored(self):
+        request = unit_test_utils.get_fake_request()
+        request.body = json.dumps({'status': 'saving'})
+        output = self.deserializer.create(request)
+        expected = {'image': {'properties': {}}}
+        self.assertEqual(expected, output)
+
     def test_create_with_tags(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'tags': ['one', 'two']})
@@ -467,6 +474,13 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             output = self.deserializer.update(request)
             expected = {'image': {'properties': {}}}
             self.assertEqual(expected, output)
+
+    def test_update_status_attribute_ignored(self):
+        request = unit_test_utils.get_fake_request()
+        request.body = json.dumps({'status': 'saving'})
+        output = self.deserializer.update(request)
+        expected = {'image': {'properties': {}}}
+        self.assertEqual(expected, output)
 
     def test_index(self):
         marker = utils.generate_uuid()
@@ -608,7 +622,7 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
     def test_create_bad_data(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'name': 'image-1', 'pants': 'borked'})
-        self.assertRaises(exception.InvalidObject,
+        self.assertRaises(webob.exc.HTTPBadRequest,
                 self.deserializer.create, request)
 
     def test_update(self):
@@ -626,7 +640,7 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
     def test_update_bad_data(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'name': 'image-1', 'pants': 'borked'})
-        self.assertRaises(exception.InvalidObject,
+        self.assertRaises(webob.exc.HTTPBadRequest,
                 self.deserializer.update, request)
 
 
@@ -647,13 +661,13 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
     def test_create_with_numeric_property(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'abc': 123})
-        self.assertRaises(exception.InvalidObject,
+        self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.create, request)
 
     def test_create_with_list_property(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'foo': ['bar']})
-        self.assertRaises(exception.InvalidObject,
+        self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.create, request)
 
     def test_update(self):
@@ -675,13 +689,13 @@ class TestImagesDeserializerNoAdditionalProperties(test_utils.BaseTestCase):
         self.config(allow_additional_image_properties=False)
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'foo': 'bar'})
-        self.assertRaises(exception.InvalidObject,
+        self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.create, request)
 
     def test_update(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'foo': 'bar'})
-        self.assertRaises(exception.InvalidObject,
+        self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.update, request)
 
 
@@ -700,6 +714,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'properties': {},
                 'checksum': None,
                 'owner': TENANT1,
+                'status': 'queued',
                 'created_at': DATETIME,
                 'updated_at': DATETIME,
                 'tags': ['one', 'two'],
@@ -710,6 +725,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'name': 'image-2',
                 'is_public': False,
                 'owner': None,
+                'status': 'queued',
                 'properties': {},
                 'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
                 'created_at': DATETIME,
@@ -724,6 +740,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'id': unit_test_utils.UUID1,
                     'name': 'image-1',
                     'owner': TENANT1,
+                    'status': 'queued',
                     'visibility': 'public',
                     'checksum': None,
                     'created_at': ISOTIME,
@@ -739,6 +756,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'id': unit_test_utils.UUID2,
                     'name': 'image-2',
                     'owner': None,
+                    'status': 'queued',
                     'visibility': 'private',
                     'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
                     'created_at': ISOTIME,
@@ -768,6 +786,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'id': unit_test_utils.UUID1,
                 'name': 'image-1',
                 'owner': TENANT1,
+                'status': 'queued',
                 'is_public': True,
                 'checksum': None,
                 'properties': {},
@@ -780,6 +799,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'id': unit_test_utils.UUID2,
                 'name': 'image-2',
                 'owner': TENANT2,
+                'status': 'queued',
                 'is_public': False,
                 'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
                 'properties': {},
@@ -795,6 +815,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'id': unit_test_utils.UUID1,
                     'name': 'image-1',
                     'owner': TENANT1,
+                    'status': 'queued',
                     'visibility': 'public',
                     'checksum': None,
                     'created_at': ISOTIME,
@@ -810,6 +831,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'id': unit_test_utils.UUID2,
                     'name': 'image-2',
                     'owner': TENANT2,
+                    'status': 'queued',
                     'visibility': 'private',
                     'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
                     'created_at': ISOTIME,
@@ -840,6 +862,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'id': unit_test_utils.UUID1,
                 'name': 'image-1',
                 'owner': TENANT1,
+                'status': 'queued',
                 'is_public': True,
                 'checksum': None,
                 'properties': {},
@@ -852,6 +875,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'id': unit_test_utils.UUID2,
                 'name': 'image-2',
                 'owner': TENANT2,
+                'status': 'queued',
                 'is_public': False,
                 'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
                 'properties': {},
@@ -867,6 +891,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'id': unit_test_utils.UUID1,
                     'name': 'image-1',
                     'owner': TENANT1,
+                    'status': 'queued',
                     'visibility': 'public',
                     'checksum': None,
                     'created_at': ISOTIME,
@@ -882,6 +907,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'id': unit_test_utils.UUID2,
                     'name': 'image-2',
                     'owner': TENANT2,
+                    'status': 'queued',
                     'visibility': 'private',
                     'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
                     'created_at': ISOTIME,
@@ -911,6 +937,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'id': unit_test_utils.UUID1,
                 'name': 'image-1',
                 'owner': TENANT1,
+                'status': 'queued',
                 'is_public': True,
                 'checksum': None,
                 'properties': {},
@@ -923,6 +950,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'id': unit_test_utils.UUID2,
                 'name': 'image-2',
                 'owner': TENANT2,
+                'status': 'queued',
                 'is_public': False,
                 'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
                 'properties': {},
@@ -938,6 +966,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'id': unit_test_utils.UUID1,
                     'name': 'image-1',
                     'owner': TENANT1,
+                    'status': 'queued',
                     'visibility': 'public',
                     'checksum': None,
                     'created_at': ISOTIME,
@@ -953,6 +982,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'id': unit_test_utils.UUID2,
                     'name': 'image-2',
                     'owner': TENANT2,
+                    'status': 'queued',
                     'visibility': 'private',
                     'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
                     'created_at': ISOTIME,
@@ -984,6 +1014,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
             'owner': TENANT2,
+            'status': 'queued',
             'is_public': True,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'properties': {},
@@ -996,6 +1027,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
             'owner': TENANT2,
+            'status': 'queued',
             'visibility': 'public',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'created_at': ISOTIME,
@@ -1017,6 +1049,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
             'owner': TENANT2,
+            'status': 'queued',
             'is_public': False,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'properties': {},
@@ -1030,6 +1063,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
             'owner': TENANT2,
+            'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'created_at': ISOTIME,
@@ -1052,6 +1086,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
             'owner': TENANT2,
+            'status': 'queued',
             'is_public': True,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'properties': {},
@@ -1065,6 +1100,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
             'owner': TENANT2,
+            'status': 'queued',
             'visibility': 'public',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'created_at': ISOTIME,
@@ -1101,6 +1137,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
             'owner': TENANT2,
+            'status': 'queued',
             'is_public': False,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'created_at': DATETIME,
@@ -1115,6 +1152,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
             'owner': TENANT2,
+            'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'created_at': ISOTIME,
@@ -1137,6 +1175,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
             'owner': TENANT2,
+            'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'created_at': ISOTIME,
@@ -1163,6 +1202,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
             'owner': TENANT2,
+            'status': 'queued',
             'is_public': False,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'created_at': DATETIME,
@@ -1180,6 +1220,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
             'owner': TENANT2,
+            'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'created_at': ISOTIME,
@@ -1206,6 +1247,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
             'owner': TENANT2,
+            'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'created_at': ISOTIME,
@@ -1229,6 +1271,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
             'owner': TENANT2,
+            'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'created_at': ISOTIME,

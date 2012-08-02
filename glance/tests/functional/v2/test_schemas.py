@@ -49,6 +49,7 @@ class TestSchemas(functional.FunctionalTest):
             'format',
             'self',
             'file',
+            'status',
             'access',
             'schema',
         ])

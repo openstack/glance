@@ -67,9 +67,10 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         image_location_header = response.headers['Location']
 
-        # Returned image entity should have a generated id
+        # Returned image entity should have a generated id and status
         image = json.loads(response.text)
         image_id = image['id']
+        self.assertEqual(image['status'], 'queued')
 
         # Image list should now have one entry
         path = self._url('/v2/images')
