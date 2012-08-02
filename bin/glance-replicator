@@ -367,6 +367,8 @@ def replication_load(options, args):
             # Remove keys which don't make sense for replication
             for key in options.dontreplicate.split(' '):
                 if key in meta:
+                    logging.debug(_('Stripping %(header)s from saved '
+                                    'metadata'), {'header': key})
                     del meta[key]
 
             if _image_present(client, uuid):
@@ -376,6 +378,8 @@ def replication_load(options, args):
                 headers = client.get_image_meta(uuid)
                 for key in options.dontreplicate.split(' '):
                     if key in headers:
+                        logging.debug(_('Stripping %(header)s from slave '
+                                        'metadata'), {'header': key})
                         del headers[key]
 
                 if _dict_diff(meta, headers):
@@ -417,6 +421,11 @@ def replication_livecopy(options, args):
 
     for image in master_client.get_images():
         logging.info(_('Considering %(id)s') % {'id': image['id']})
+        for key in options.dontreplicate.split(' '):
+            if key in image:
+                logging.debug(_('Stripping %(header)s from master metadata'),
+                              {'header': key})
+                del image[key]
 
         if _image_present(slave_client, image['id']):
             # NOTE(mikal): Perhaps we just need to update the metadata?
@@ -426,8 +435,12 @@ def replication_livecopy(options, args):
             if headers['status'] == 'active':
                 for key in options.dontreplicate.split(' '):
                     if key in image:
+                        logging.debug(_('Stripping %(header)s from master '
+                                        'metadata'), {'header': key})
                         del image[key]
                     if key in headers:
+                        logging.debug(_('Stripping %(header)s from slave '
+                                        'metadata'), {'header': key})
                         del headers[key]
 
                 if _dict_diff(image, headers):
@@ -467,8 +480,12 @@ def replication_compare(options, args):
             headers = slave_client.get_image_meta(image['id'])
             for key in options.dontreplicate.split(' '):
                 if key in image:
+                    logging.debug(_('Stripping %(header)s from master '
+                                    'metadata'), {'header': key})
                     del image[key]
                 if key in headers:
+                    logging.debug(_('Stripping %(header)s from slave '
+                                    'metadata'), {'header': key})
                     del headers[key]
 
             for key in image:
