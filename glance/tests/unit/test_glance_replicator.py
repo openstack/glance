@@ -85,6 +85,9 @@ class FakeHTTPConnection(object):
 
     def prime_request(self, method, url, in_body, in_headers,
                       out_body, out_headers):
+        if not url.startswith('/'):
+            url = '/' + url
+
         hkeys = in_headers.keys()
         hkeys.sort()
         hashable = (method, url, in_body, ' '.join(hkeys))
