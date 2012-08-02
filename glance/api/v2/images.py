@@ -20,6 +20,7 @@ import urllib
 
 import webob.exc
 
+import glance.api.v2 as v2
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
@@ -78,6 +79,8 @@ class ImagesController(object):
         else:
             image['tags'] = []
 
+        v2.update_image_read_acl(req, self.db_api, image)
+
         return self._normalize_properties(dict(image))
 
     def index(self, req, marker=None, limit=None, sort_key='created_at',
@@ -127,6 +130,8 @@ class ImagesController(object):
             raise webob.exc.HTTPNotFound()
 
         image = self._normalize_properties(dict(image))
+
+        v2.update_image_read_acl(req, self.db_api, image)
 
         if tags is not None:
             self.db_api.image_tag_set_all(req.context, image_id, tags)

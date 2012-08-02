@@ -21,6 +21,7 @@ import glance.api.v2.image_access
 from glance.common import exception
 from glance.common import utils
 import glance.schema
+import glance.store
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 
@@ -31,6 +32,7 @@ class TestImageAccessController(test_utils.BaseTestCase):
         super(TestImageAccessController, self).setUp()
         self.db = unit_test_utils.FakeDB()
         self.controller = glance.api.v2.image_access.Controller(self.db)
+        glance.store.create_stores()
 
     def test_index(self):
         req = unit_test_utils.get_fake_request()

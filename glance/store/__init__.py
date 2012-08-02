@@ -296,3 +296,16 @@ def schedule_delete_from_backend(uri, context, image_id, **kwargs):
 def add_to_backend(context, scheme, image_id, data, size):
     store = get_store_from_scheme(context, scheme)
     return store.add(image_id, data, size)
+
+
+def set_acls(context, location_uri, public=False, read_tenants=[],
+             write_tenants=[]):
+    scheme = get_store_from_location(location_uri)
+    store = get_store_from_scheme(context, scheme)
+    try:
+        store.set_acls(location.get_location_from_uri(location_uri),
+                       public=public,
+                       read_tenants=read_tenants,
+                       write_tenants=write_tenants)
+    except NotImplementedError:
+        LOG.debug(_("Skipping store.set_acls... not implemented."))

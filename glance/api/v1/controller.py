@@ -20,6 +20,7 @@ import webob.exc
 from glance.common import exception
 import glance.openstack.common.log as logging
 from glance import registry
+import glance.store as store
 
 LOG = logging.getLogger(__name__)
 
@@ -61,3 +62,24 @@ class BaseController(object):
             raise webob.exc.HTTPNotFound(
                     msg, request=request, content_type='text/plain')
         return image
+
+    def update_store_acls(self, req, image_id, location_uri, public=False):
+        if location_uri:
+            try:
+                read_tenants = []
+                write_tenants = []
+                members = registry.get_image_members(req.context, image_id)
+                if members:
+                    for member in members:
+                        if member['can_share']:
+                            write_tenants.append(member['member_id'])
+                        else:
+                            read_tenants.append(member['member_id'])
+                    store.set_acls(req.context, location_uri, public=public,
+                                   read_tenants=read_tenants,
+                                   write_tenants=write_tenants)
+            except exception.UnknownScheme:
+                msg = _("Store for image_id not found: %s") % image_id
+                raise HTTPBadRequest(explanation=msg,
+                                     request=req,
+                                     content_type='text/plain')

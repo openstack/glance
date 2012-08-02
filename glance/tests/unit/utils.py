@@ -57,7 +57,8 @@ class FakeDB(object):
     @staticmethod
     def init_db():
         images = [
-            {'id': UUID1, 'owner': TENANT1, 'location': UUID1},
+            {'id': UUID1, 'owner': TENANT1,
+             'location': 'swift+http://storeurl.com/container/%s' % UUID1},
             {'id': UUID2, 'owner': TENANT1},
         ]
         [simple_db.image_create(None, image) for image in images]
@@ -85,7 +86,7 @@ class FakeDB(object):
 class FakeStoreAPI(object):
     def __init__(self):
         self.data = {
-            UUID1: ('XXX', 3),
+            'swift+http://storeurl.com/container/%s' % UUID1: ('XXX', 3),
         }
 
     def create_stores(self):
@@ -93,8 +94,6 @@ class FakeStoreAPI(object):
 
     def get_from_backend(self, context, location):
         try:
-            #NOTE(bcwaldon): This fake API is store-agnostic, so we only
-            # care about location being some unique string
             return self.data[location]
         except KeyError:
             raise exception.NotFound()
@@ -103,8 +102,9 @@ class FakeStoreAPI(object):
         return self.get_from_backend(context, location)[1]
 
     def add_to_backend(self, context, scheme, image_id, data, size):
-        if image_id in self.data:
-            raise exception.Duplicate()
+        for location in self.data.keys():
+            if image_id in location:
+                raise exception.Duplicate()
         self.data[image_id] = (data, size or len(data))
         checksum = 'Z'
         return (image_id, size, checksum)
