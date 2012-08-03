@@ -26,10 +26,28 @@ from glance.db.sqlalchemy import api as db_api
 from glance.registry import configure_registry_client
 from glance.store import (delete_from_backend,
                           schedule_delete_from_backend)
-from glance.store.http import Store
+from glance.store.http import Store, MAX_REDIRECTS
 from glance.store.location import get_location_from_uri
 from glance.tests.unit import base
 from glance.tests import utils, stubs as test_stubs
+
+
+# The response stack is used to return designated responses in order;
+# however when it's empty a default 200 OK response is returned from
+# FakeHTTPConnection below.
+FAKE_RESPONSE_STACK = []
+
+
+class FakeHTTPResponse(object):
+    def __init__(self, status=200, headers=None, data=None, *args, **kwargs):
+        data = data or 'I am a teapot, short and stout\n'
+        self.data = StringIO.StringIO(data)
+        self.read = self.data.read
+        self.status = status
+        self.headers = headers or {'content-length': len(data)}
+
+    def getheader(self, name, default=None):
+        return self.headers.get(name.lower(), default)
 
 
 def stub_out_http_backend(stubs):
@@ -43,24 +61,14 @@ def stub_out_http_backend(stubs):
     :param stubs: Set of stubout stubs
     """
 
-    class FakeHTTPResponse(object):
-
-        DATA = 'I am a teapot, short and stout\n'
-        HEADERS = {'content-length': 31}
-
-        def __init__(self, *args, **kwargs):
-            self.data = StringIO.StringIO(self.DATA)
-            self.read = self.data.read
-
-        def getheader(self, name, default=None):
-            return self.HEADERS.get(name.lower(), default)
-
     class FakeHTTPConnection(object):
 
         def __init__(self, *args, **kwargs):
             pass
 
         def getresponse(self):
+            if len(FAKE_RESPONSE_STACK):
+                return FAKE_RESPONSE_STACK.pop()
             return FakeHTTPResponse()
 
         def request(self, *_args, **_kwargs):
@@ -92,6 +100,8 @@ def stub_out_registry_image_update(stubs):
 class TestHttpStore(base.StoreClearingUnitTest):
 
     def setUp(self):
+        global FAKE_RESPONSE_STACK
+        FAKE_RESPONSE_STACK = []
         self.config(default_store='http',
                     known_stores=['glance.store.http.Store'])
         super(TestHttpStore, self).setUp()
@@ -110,6 +120,60 @@ class TestHttpStore(base.StoreClearingUnitTest):
         self.assertEqual(image_size, 31)
         chunks = [c for c in image_file]
         self.assertEqual(chunks, expected_returns)
+
+    def test_http_get_redirect(self):
+        # Add two layers of redirects to the response stack, which will
+        # return the default 200 OK with the expected data after resolving
+        # both redirects.
+        redirect_headers_1 = {"location": "http://example.com/teapot.img"}
+        redirect_resp_1 = FakeHTTPResponse(status=302,
+                                           headers=redirect_headers_1)
+        redirect_headers_2 = {"location": "http://example.com/teapot_real.img"}
+        redirect_resp_2 = FakeHTTPResponse(status=301,
+                                           headers=redirect_headers_2)
+        FAKE_RESPONSE_STACK.append(redirect_resp_1)
+        FAKE_RESPONSE_STACK.append(redirect_resp_2)
+
+        uri = "http://netloc/path/to/file.tar.gz"
+        expected_returns = ['I ', 'am', ' a', ' t', 'ea', 'po', 't,', ' s',
+                            'ho', 'rt', ' a', 'nd', ' s', 'to', 'ut', '\n']
+        loc = get_location_from_uri(uri)
+        (image_file, image_size) = self.store.get(loc)
+        self.assertEqual(image_size, 31)
+
+        chunks = [c for c in image_file]
+        self.assertEqual(chunks, expected_returns)
+
+    def test_http_get_max_redirects(self):
+        # Add more than MAX_REDIRECTS redirects to the response stack
+        redirect_headers = {"location": "http://example.com/teapot.img"}
+        redirect_resp = FakeHTTPResponse(status=302,
+                                         headers=redirect_headers)
+        for i in xrange(MAX_REDIRECTS + 2):
+            FAKE_RESPONSE_STACK.append(redirect_resp)
+
+        uri = "http://netloc/path/to/file.tar.gz"
+        loc = get_location_from_uri(uri)
+        self.assertRaises(exception.MaxRedirectsExceeded, self.store.get, loc)
+
+    def test_http_get_redirect_invalid(self):
+        redirect_headers = {"location": "http://example.com/teapot.img"}
+        redirect_resp = FakeHTTPResponse(status=307,
+                                         headers=redirect_headers)
+        FAKE_RESPONSE_STACK.append(redirect_resp)
+
+        uri = "http://netloc/path/to/file.tar.gz"
+        loc = get_location_from_uri(uri)
+        self.assertRaises(exception.BadStoreUri, self.store.get, loc)
+
+    def test_http_get_not_found(self):
+        not_found_resp = FakeHTTPResponse(status=404,
+                                          data="404 Not Found")
+        FAKE_RESPONSE_STACK.append(not_found_resp)
+
+        uri = "http://netloc/path/to/file.tar.gz"
+        loc = get_location_from_uri(uri)
+        self.assertRaises(exception.BadStoreUri, self.store.get, loc)
 
     def test_https_get(self):
         uri = "https://netloc/path/to/file.tar.gz"
