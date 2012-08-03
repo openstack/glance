@@ -60,7 +60,9 @@ class StoreLocation(glance.store.location.StoreLocation):
 
     def parse_uri(self, uri):
         if not uri.startswith('rbd://'):
-            raise exception.BadStoreUri(uri, _('URI must start with rbd://'))
+            reason = _('URI must start with rbd://')
+            logger.error(_("Invalid URI: %(uri), %(reason)") % locals())
+            raise exception.BadStoreUri(reason)
         self.image = uri[6:]
 
 
