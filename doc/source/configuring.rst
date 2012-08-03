@@ -152,6 +152,13 @@ Number of backlog requests to configure the socket with.
 
 Optional. Default: ``4096``
 
+* ``tcp_keepidle=SECONDS``
+
+Sets the value of TCP_KEEPIDLE in seconds for each server socket.
+Not supported on OS X.
+
+Optional. Default: ``600``
+
 * ``workers=PROCESSES``
 
 Number of Glance API worker processes to start. Each worker

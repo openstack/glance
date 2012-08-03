@@ -52,6 +52,7 @@ bind_opts = [
 
 socket_opts = [
     cfg.IntOpt('backlog', default=4096),
+    cfg.IntOpt('tcp_keepidle', default=600),
     cfg.StrOpt('cert_file'),
     cfg.StrOpt('key_file'),
 ]
@@ -130,7 +131,8 @@ def get_socket(default_port):
 
     # This option isn't available in the OS X version of eventlet
     if hasattr(socket, 'TCP_KEEPIDLE'):
-        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 600)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE,
+                        CONF.tcp_keepidle)
 
     return sock
 
