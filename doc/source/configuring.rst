@@ -187,6 +187,14 @@ SSL-wrapped socket.
 
 Optional. Default: not enabled.
 
+* ``ca_file=PATH``
+
+Path to the CA certificate file the server should use to validate client
+certificates provided during an SSL handshake. This is ignored if
+``cert_file`` and ''key_file`` are not set.
+
+Optional. Default: not enabled.
+
 * ``registry_client_protocol=PROTOCOL``
 
 If you run a secure Registry server, you need to set this value to ``https``

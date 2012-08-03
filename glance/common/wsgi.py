@@ -53,6 +53,7 @@ bind_opts = [
 socket_opts = [
     cfg.IntOpt('backlog', default=4096),
     cfg.IntOpt('tcp_keepidle', default=600),
+    cfg.StrOpt('ca_file'),
     cfg.StrOpt('cert_file'),
     cfg.StrOpt('key_file'),
 ]
@@ -109,15 +110,30 @@ def get_socket(default_port):
                              "specify both a cert_file and key_file "
                              "option value in your configuration file"))
 
+    def wrap_ssl(sock):
+        ssl_kwargs = {
+            'server_side': True,
+            'certfile': cert_file,
+            'keyfile': key_file,
+            'cert_reqs': ssl.CERT_NONE,
+        }
+
+        if CONF.ca_file:
+            ssl_kwargs['ca_certs'] = CONF.ca_file
+            ssl_kwargs['cert_reqs'] = ssl.CERT_REQUIRED
+
+        return ssl.wrap_socket(sock, **ssl_kwargs)
+
     sock = None
     retry_until = time.time() + 30
     while not sock and time.time() < retry_until:
         try:
-            sock = eventlet.listen(bind_addr, backlog=CONF.backlog,
+            sock = eventlet.listen(bind_addr,
+                                   backlog=CONF.backlog,
                                    family=address_family)
             if use_ssl:
-                sock = ssl.wrap_socket(sock, certfile=cert_file,
-                                       keyfile=key_file)
+                sock = wrap_ssl(sock)
+
         except socket.error, err:
             if err.args[0] != errno.EADDRINUSE:
                 raise
