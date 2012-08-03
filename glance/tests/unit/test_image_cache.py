@@ -221,6 +221,100 @@ class ImageCacheTestCase(object):
         self.assertEqual(self.cache.get_queued_images(),
                          ['0', '1', '2'])
 
+    def test_open_for_write_good(self):
+        """
+        Test to see if open_for_write works in normal case
+        """
+
+        # test a good case
+        image_id = '1'
+        self.assertFalse(self.cache.is_cached(image_id))
+        with self.cache.driver.open_for_write(image_id) as cache_file:
+            cache_file.write('a')
+        self.assertTrue(self.cache.is_cached(image_id),
+                        "Image %s was NOT cached!" % image_id)
+        # make sure it has tidied up
+        incomplete_file_path = os.path.join(self.cache_dir,
+                                            'incomplete', image_id)
+        invalid_file_path = os.path.join(self.cache_dir, 'invalid', image_id)
+        self.assertFalse(os.path.exists(incomplete_file_path))
+        self.assertFalse(os.path.exists(invalid_file_path))
+
+    def test_open_for_write_with_exception(self):
+        """
+        Test to see if open_for_write works in a failure case for each driver
+        This case is where an exception is raised while the file is being
+        written. The image is partially filled in cache and filling wont resume
+        so verify the image is moved to invalid/ directory
+        """
+        # test a case where an exception is raised while the file is open
+        image_id = '1'
+        self.assertFalse(self.cache.is_cached(image_id))
+        try:
+            with self.cache.driver.open_for_write(image_id) as cache_file:
+                raise IOError
+        except Exception as e:
+            self.assertEqual(type(e), IOError)
+        self.assertFalse(self.cache.is_cached(image_id),
+                         "Image %s was cached!" % image_id)
+        # make sure it has tidied up
+        incomplete_file_path = os.path.join(self.cache_dir,
+                                            'incomplete', image_id)
+        invalid_file_path = os.path.join(self.cache_dir, 'invalid', image_id)
+        self.assertFalse(os.path.exists(incomplete_file_path))
+        self.assertTrue(os.path.exists(invalid_file_path))
+
+    def test_caching_iterator(self):
+        """
+        Test to see if the caching iterator interacts properly with the driver
+        When the iterator completes going through the data the driver should
+        have closed the image and placed it correctly
+        """
+        # test a case where an exception NOT raised while the file is open,
+        # and a consuming iterator completes
+        def consume(image_id):
+            data = ['a', 'b', 'c', 'd', 'e', 'f']
+            caching_iter = self.cache.get_caching_iter(image_id, iter(data))
+            self.assertEqual(list(caching_iter), data)
+
+        image_id = '1'
+        self.assertFalse(self.cache.is_cached(image_id))
+        consume(image_id)
+        self.assertTrue(self.cache.is_cached(image_id),
+                        "Image %s was NOT cached!" % image_id)
+        # make sure it has tidied up
+        incomplete_file_path = os.path.join(self.cache_dir,
+                                            'incomplete', image_id)
+        invalid_file_path = os.path.join(self.cache_dir, 'invalid', image_id)
+        self.assertFalse(os.path.exists(incomplete_file_path))
+        self.assertFalse(os.path.exists(invalid_file_path))
+
+    def test_caching_iterator_falloffend(self):
+        """
+        Test to see if the caching iterator interacts properly with the driver
+        in a case where the iterator is only partially consumed. In this case
+        the image is only partially filled in cache and filling wont resume.
+        When the iterator goes out of scope the driver should have closed the
+        image and moved it from incomplete/ to invalid/
+        """
+        # test a case where a consuming iterator just stops.
+        def falloffend(image_id):
+            data = ['a', 'b', 'c', 'd', 'e', 'f']
+            caching_iter = self.cache.get_caching_iter(image_id, iter(data))
+            self.assertEqual(caching_iter.next(), 'a')
+
+        image_id = '1'
+        self.assertFalse(self.cache.is_cached(image_id))
+        falloffend(image_id)
+        self.assertFalse(self.cache.is_cached(image_id),
+                         "Image %s was cached!" % image_id)
+        # make sure it has tidied up
+        incomplete_file_path = os.path.join(self.cache_dir,
+                                            'incomplete', image_id)
+        invalid_file_path = os.path.join(self.cache_dir, 'invalid', image_id)
+        self.assertFalse(os.path.exists(incomplete_file_path))
+        self.assertTrue(os.path.exists(invalid_file_path))
+
 
 class TestImageCacheXattr(test_utils.BaseTestCase,
                           ImageCacheTestCase):
