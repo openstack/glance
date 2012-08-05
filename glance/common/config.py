@@ -47,6 +47,10 @@ common_opts = [
     cfg.IntOpt('api_limit_max', default=1000,
                help=_('Maximum permissible number of items that could be '
                'returned by a request')),
+    cfg.BoolOpt('show_image_direct_url', default=False,
+                help=_('Whether to include the backend image storage location '
+                'in image properties. Revealing storage location can be a '
+                'security risk, so use this setting with caution!')),
 ]
 
 CONF = cfg.CONF

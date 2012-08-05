@@ -273,6 +273,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         for key in ['id', 'name', 'created_at', 'updated_at', 'tags', 'size',
                     'owner', 'checksum', 'status']:
             _image[key] = image[key]
+        if CONF.show_image_direct_url and image['location']:
+            _image['direct_url'] = image['location']
         _image['visibility'] = 'public' if image['is_public'] else 'private'
         _image = self.schema.filter(_image)
         _image['self'] = self._get_image_href(image)
@@ -379,6 +381,10 @@ _BASE_PROPERTIES = {
             'type': 'string',
             'maxLength': 255,
         },
+    },
+    'direct_url': {
+        'type': 'string',
+        'description': 'URL to access the image file kept in external store',
     },
     'self': {'type': 'string'},
     'access': {'type': 'string'},

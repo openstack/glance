@@ -535,3 +535,123 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(400, response.status_code)
 
         self.stop_servers()
+
+
+class TestImageDirectURLVisibility(functional.FunctionalTest):
+
+    def setUp(self):
+        super(TestImageDirectURLVisibility, self).setUp()
+        self.cleanup()
+        self.api_server.deployment_flavor = 'noauth'
+
+    def _url(self, path):
+        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
+
+    def _headers(self, custom_headers=None):
+        base_headers = {
+            'X-Identity-Status': 'Confirmed',
+            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
+            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
+            'X-Tenant-Id': TENANT1,
+            'X-Roles': 'member',
+        }
+        base_headers.update(custom_headers or {})
+        return base_headers
+
+    def test_image_direct_url_visible(self):
+
+        self.api_server.show_image_direct_url = True
+        self.start_servers(**self.__dict__.copy())
+
+        # Image list should be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+
+        # Get the image id
+        image = json.loads(response.text)
+        image_id = image['id']
+
+        # Image direct_url should not be visible before location is set
+        path = self._url('/v2/images/%s' % image_id)
+        headers = self._headers({'Content-Type': 'application/json'})
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)
+        self.assertFalse('direct_url' in image)
+
+        # Upload some image data, setting the image location
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(path, headers=headers, data='ZZZZZ')
+        self.assertEqual(200, response.status_code)
+
+        # Image direct_url should be visible
+        path = self._url('/v2/images/%s' % image_id)
+        headers = self._headers({'Content-Type': 'application/json'})
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)
+        self.assertTrue('direct_url' in image)
+
+        # Image direct_url should be visible in a list
+        path = self._url('/v2/images')
+        headers = self._headers({'Content-Type': 'application/json'})
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)['images'][0]
+        self.assertTrue('direct_url' in image)
+
+    def test_image_direct_url_not_visible(self):
+
+        self.api_server.show_image_direct_url = False
+        self.start_servers(**self.__dict__.copy())
+
+        # Image list should be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+
+        # Get the image id
+        image = json.loads(response.text)
+        image_id = image['id']
+
+        # Upload some image data, setting the image location
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(path, headers=headers, data='ZZZZZ')
+        self.assertEqual(200, response.status_code)
+
+        # Image direct_url should not be visible
+        path = self._url('/v2/images/%s' % image_id)
+        headers = self._headers({'Content-Type': 'application/json'})
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)
+        self.assertFalse('direct_url' in image)
+
+        # Image direct_url should not be visible in a list
+        path = self._url('/v2/images')
+        headers = self._headers({'Content-Type': 'application/json'})
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)['images'][0]
+        self.assertFalse('direct_url' in image)

@@ -1284,3 +1284,83 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
         response = webob.Response()
         serializer.show(response, self.fixture)
         self.assertEqual(expected, json.loads(response.body))
+
+
+class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(TestImagesSerializerDirectUrl, self).setUp()
+        self.serializer = glance.api.v2.images.ResponseSerializer()
+        self.active_image = {
+            'id': unit_test_utils.UUID1,
+            'name': 'image-1',
+            'is_public': True,
+            'properties': {},
+            'checksum': None,
+            'owner': TENANT1,
+            'status': 'active',
+            'created_at': DATETIME,
+            'updated_at': DATETIME,
+            'tags': ['one', 'two'],
+            'size': 1024,
+            'location': 'http://some/fake/location',
+        }
+        self.queued_image = {
+            'id': unit_test_utils.UUID2,
+            'name': 'image-2',
+            'is_public': False,
+            'owner': None,
+            'status': 'queued',
+            'properties': {},
+            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+            'created_at': DATETIME,
+            'updated_at': DATETIME,
+            'tags': [],
+            'size': None,
+            'location': None,
+        }
+        self.fixtures = [self.active_image, self.queued_image]
+
+    def _do_index(self):
+        request = webob.Request.blank('/v2/images')
+        response = webob.Response(request=request)
+        self.serializer.index(response, {'images': self.fixtures})
+        return json.loads(response.body)['images']
+
+    def _do_show(self, image):
+        request = webob.Request.blank('/v2/images')
+        response = webob.Response(request=request)
+        self.serializer.show(response, image)
+        return json.loads(response.body)
+
+    def test_index_store_location_enabled(self):
+        self.config(show_image_direct_url=True)
+        images = self._do_index()
+
+        # NOTE(markwash): ordering sanity check
+        self.assertEqual(images[0]['id'], unit_test_utils.UUID1)
+        self.assertEqual(images[1]['id'], unit_test_utils.UUID2)
+
+        self.assertEqual(images[0]['direct_url'], 'http://some/fake/location')
+        self.assertFalse('direct_url' in images[1])
+
+    def test_index_store_location_explicitly_disabled(self):
+        self.config(show_image_direct_url=False)
+        images = self._do_index()
+        self.assertFalse('direct_url' in images[0])
+        self.assertFalse('direct_url' in images[1])
+
+    def test_show_location_enabled(self):
+        self.config(show_image_direct_url=True)
+        image = self._do_show(self.active_image)
+        self.assertEqual(image['direct_url'], 'http://some/fake/location')
+
+    def test_show_location_enabled_but_not_set(self):
+        self.config(show_image_direct_url=True)
+        image = self._do_show(self.queued_image)
+        self.assertFalse('direct_url' in image)
+
+    def test_show_location_explicitly_disabled(self):
+        self.config(show_image_direct_url=False)
+        image = self._do_show(self.active_image)
+        self.assertFalse('direct_url' in image)

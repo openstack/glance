@@ -66,6 +66,7 @@ class Server(object):
         self.server_control = './bin/glance-control'
         self.exec_env = None
         self.deployment_flavor = ''
+        self.show_image_direct_url = False
         self.server_control_options = ''
         self.needs_database = False
 
@@ -253,6 +254,7 @@ policy_file = %(policy_file)s
 policy_default_rule = %(policy_default_rule)s
 db_auto_create = False
 sql_connection = %(sql_connection)s
+show_image_direct_url = %(show_image_direct_url)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
 """
