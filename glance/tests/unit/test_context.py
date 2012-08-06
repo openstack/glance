@@ -109,12 +109,12 @@ class TestContext(unittest.TestCase):
 
     def test_empty_shared(self):
         """
-        Tests that an empty context (with is_admin set to True) can
+        Tests that an empty context (with is_admin set to False) can
         not share an image, with or without membership.
         """
-        self.do_sharable(False, 'pattieblack', None, is_admin=True)
+        self.do_sharable(False, 'pattieblack', None, is_admin=False)
         self.do_sharable(False, 'pattieblack', FakeMembership(True),
-                         is_admin=True)
+                         is_admin=False)
 
     def test_anon_public(self):
         """
