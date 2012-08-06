@@ -12,7 +12,6 @@ webob==1.0.8
 wsgiref
 argparse
 boto==2.1.1
-swift
 sqlalchemy-migrate>=0.7
 httplib2
 xattr>=0.6.0
@@ -21,6 +20,8 @@ pycrypto>=2.1.0alpha1
 pysendfile==2.0.0
 iso8601>=0.1.4
 
+# Swift 1.4.8
+https://launchpad.net/swift/essex/1.4.8/+download/swift-1.4.8.tar.gz
 
 # The following allow Keystone to be installed in the venv
 # along with all of Keystone's dependencies. We target a specific
