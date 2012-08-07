@@ -418,11 +418,11 @@ class Store(glance.store.base.Store):
                         self.container, chunk_name, reader,
                         content_length=content_length)
                     bytes_read = reader.bytes_read
-                    logger.debug(_("Wrote chunk %(chunk_id)d/"
-                                   "%(total_chunks)s of length %(bytes_read)d "
-                                   "to Swift returning MD5 of content: "
-                                   "%(chunk_etag)s")
-                                 % locals())
+                    msg = _("Wrote chunk %(chunk_name)s (%(chunk_id)d/"
+                            "%(total_chunks)s) of length %(bytes_read)d "
+                            "to Swift returning MD5 of content: "
+                            "%(chunk_etag)s")
+                    logger.debug(msg % locals())
 
                     if bytes_read == 0:
                         # Delete the last chunk, because it's of zero size.
