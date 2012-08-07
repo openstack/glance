@@ -71,13 +71,13 @@ class RequestContext(context.RequestContext):
 
     def is_image_sharable(self, image, **kwargs):
         """Return True if the image can be shared to others in this context."""
-        # Only allow sharing if we have an owner
-        if self.owner is None:
-            return False
-
         # Is admin == image sharable
         if self.is_admin:
             return True
+
+        # Only allow sharing if we have an owner
+        if self.owner is None:
+            return False
 
         # If we own the image, we can share it
         if self.owner == image.owner:
