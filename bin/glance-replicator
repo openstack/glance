@@ -52,15 +52,25 @@ COMMANDS = """Commands:
 """
 
 
-class UploadException(Exception):
-    pass
+IMAGE_ALREADY_PRESENT_MESSAGE = _('The image %s is already present on '
+                                  'the slave, but our check for it did '
+                                  'not find it. This indicates that we '
+                                  'do not have permissions to see all '
+                                  'the images on the slave server.')
 
 
 class AuthenticationException(Exception):
     pass
 
+class ImageAlreadyPresentException(Exception):
+    pass
+
 
 class ServerErrorException(Exception):
+    pass
+
+
+class UploadException(Exception):
     pass
 
 
@@ -111,7 +121,10 @@ class ImageService(object):
             raise ServerErrorException(response.read())
 
         if code in [401, 403]:
-            raise AuthenticationException()
+            raise AuthenticationException(response.read())
+
+        if code == 409:
+            raise ImageAlreadyPresentException(response.read())
 
         if ignore_result_body:
             # NOTE: because we are pipelining requests through a single HTTP
@@ -364,7 +377,7 @@ def replication_load(options, args):
             image_uuid = ent
             logging.info(_('Considering: %s') % image_uuid)
 
-            meta_file_name = os.path.join(path, uuid)
+            meta_file_name = os.path.join(path, image_uuid)
             with open(meta_file_name) as meta_file:
                 meta = json.loads(meta_file.read())
 
@@ -397,10 +410,13 @@ def replication_load(options, args):
                     continue
 
                 # Upload the image itself
-                with open(os.path.join(path, uuid + '.img')) as img_file:
-                    headers, body = client.add_image(meta, img_file)
-
-                _check_upload_response_headers(headers, body)
+                with open(os.path.join(path, image_uuid + '.img')) as img_file:
+                    try:
+                        headers, body = client.add_image(meta, img_file)
+                        _check_upload_response_headers(headers, body)
+                    except ImageAlreadyPresentException:
+                        logging.error(IMAGE_ALREADY_PRESENT_MESSAGE
+                                      % image_uuid)
 
 
 def replication_livecopy(options, args):
@@ -455,8 +471,12 @@ def replication_livecopy(options, args):
             logging.info(_('%s is being synced') % image['id'])
             if not options.metaonly:
                 image_response = master_client.get_image(image['id'])
-                headers, body = slave_client.add_image(image, image_response)
-                _check_upload_response_headers(headers, body)
+                try:
+                    headers, body = slave_client.add_image(image,
+                                                           image_response)
+                    _check_upload_response_headers(headers, body)
+                except ImageAlreadyPresentException:
+                    logging.error(IMAGE_ALREADY_PRESENT_MESSAGE % image['id'])
 
 
 def replication_compare(options, args):
