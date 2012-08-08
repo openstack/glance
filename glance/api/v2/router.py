@@ -15,7 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glance.api.v2 import image_access
 from glance.api.v2 import image_data
 from glance.api.v2 import image_tags
 from glance.api.v2 import images
@@ -38,14 +37,6 @@ class API(wsgi.Router):
         mapper.connect('/schemas/images',
                        controller=schemas_resource,
                        action='images',
-                       conditions={'method': ['GET']})
-        mapper.connect('/schemas/image/access',
-                       controller=schemas_resource,
-                       action='access',
-                       conditions={'method': ['GET']})
-        mapper.connect('/schemas/image/accesses',
-                       controller=schemas_resource,
-                       action='accesses',
                        conditions={'method': ['GET']})
 
         images_resource = images.create_resource(custom_image_properties)
@@ -87,24 +78,6 @@ class API(wsgi.Router):
                        conditions={'method': ['PUT']})
         mapper.connect('/images/{image_id}/tags/{tag_value}',
                        controller=image_tags_resource,
-                       action='delete',
-                       conditions={'method': ['DELETE']})
-
-        image_access_resource = image_access.create_resource()
-        mapper.connect('/images/{image_id}/access',
-                       controller=image_access_resource,
-                       action='index',
-                       conditions={'method': ['GET']})
-        mapper.connect('/images/{image_id}/access',
-                       controller=image_access_resource,
-                       action='create',
-                       conditions={'method': ['POST']})
-        mapper.connect('/images/{image_id}/access/{tenant_id}',
-                       controller=image_access_resource,
-                       action='show',
-                       conditions={'method': ['GET']})
-        mapper.connect('/images/{image_id}/access/{tenant_id}',
-                       controller=image_access_resource,
                        action='delete',
                        conditions={'method': ['DELETE']})
 

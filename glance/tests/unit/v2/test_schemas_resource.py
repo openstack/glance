@@ -40,23 +40,3 @@ class TestSchemasController(test_utils.BaseTestCase):
         expected = set(['{schema}', '{first}', '{next}'])
         actual = set([link['href'] for link in output['links']])
         self.assertEqual(actual, expected)
-
-    def test_access(self):
-        req = unit_test_utils.get_fake_request()
-        output = self.controller.access(req)
-        self.assertEqual(output['name'], 'access')
-        expected = set(['tenant_id', 'can_share', 'schema', 'self', 'image'])
-        self.assertEqual(set(output['properties'].keys()), expected)
-        expected = set(['{schema}', '{self}', '{image}'])
-        actual = set([link['href'] for link in output['links']])
-        self.assertEqual(actual, expected)
-
-    def test_accesses(self):
-        req = unit_test_utils.get_fake_request()
-        output = self.controller.accesses(req)
-        self.assertEqual(output['name'], 'accesses')
-        expected = set(['accesses', 'schema', 'first', 'next'])
-        self.assertEqual(set(output['properties'].keys()), expected)
-        expected = set(['{schema}', '{first}', '{next}'])
-        actual = set([link['href'] for link in output['links']])
-        self.assertEqual(actual, expected)

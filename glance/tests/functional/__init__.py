@@ -421,7 +421,6 @@ class FunctionalTest(test_utils.BaseTestCase):
         conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(conf_dir)
         self.copy_data_file('schema-image.json', conf_dir)
-        self.copy_data_file('schema-access.json', conf_dir)
         self.copy_data_file('policy.json', conf_dir)
         self.policy_file = os.path.join(conf_dir, 'policy.json')
 

@@ -91,7 +91,6 @@ class TestImages(functional.FunctionalTest):
         self.assertTrue(image['created_at'])
         self.assertTrue(image['updated_at'])
         self.assertEqual(image['updated_at'], image['created_at'])
-        self.assertEqual(image['owner'], TENANT1)
 
         # The image should be mutable, including adding new properties
         path = self._url('/v2/images/%s' % image_id)
@@ -234,50 +233,6 @@ class TestImages(functional.FunctionalTest):
         response = requests.delete(path, headers=headers)
         self.assertEqual(404, response.status_code)
 
-        # Share the image with TENANT2
-        path = self._url('/v2/images/%s/access' % image_id)
-        data = json.dumps({'tenant_id': TENANT2, 'can_share': False})
-        request_headers = {'Content-Type': 'application/json'}
-        headers = self._headers(request_headers)
-        response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
-
-        # TENANT2 should see the image in their list
-        path = self._url('/v2/images')
-        headers = self._headers({'X-Tenant-Id': TENANT2})
-        response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
-        images = json.loads(response.text)['images']
-        self.assertEqual(image_id, images[0]['id'])
-
-        # TENANT2 should be able to access the image directly
-        path = self._url('/v2/images/%s' % image_id)
-        headers = self._headers({'X-Tenant-Id': TENANT2})
-        response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
-
-        # TENANT2 should not be able to modify the image
-        path = self._url('/v2/images/%s' % image_id)
-        headers = self._headers({
-            'Content-Type': 'application/json',
-            'X-Tenant-Id': TENANT2,
-        })
-        data = json.dumps({'name': 'image-2'})
-        response = requests.put(path, headers=headers, data=data)
-        self.assertEqual(404, response.status_code)
-
-        # TENANT2 should not be able to delete the image, either
-        path = self._url('/v2/images/%s' % image_id)
-        headers = self._headers({'X-Tenant-Id': TENANT2})
-        response = requests.delete(path, headers=headers)
-        self.assertEqual(404, response.status_code)
-
-        # As an unshared tenant, TENANT3 should not have access to the image
-        path = self._url('/v2/images/%s' % image_id)
-        headers = self._headers({'X-Tenant-Id': TENANT3})
-        response = requests.get(path, headers=headers)
-        self.assertEqual(404, response.status_code)
-
         # Publicize the image as an admin of TENANT1
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({
@@ -317,97 +272,6 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'X-Tenant-Id': TENANT3})
         response = requests.delete(path, headers=headers)
         self.assertEqual(404, response.status_code)
-
-        self.stop_servers()
-
-    def test_access_lifecycle(self):
-        # Create an image for our tests
-        path = self._url('/v2/images')
-        headers = self._headers({'Content-Type': 'application/json'})
-        data = json.dumps({'name': 'image-1'})
-        response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code)
-        image_id = json.loads(response.text)['id']
-
-        # Image acccess list should be empty
-        path = self._url('/v2/images/%s/access' % image_id)
-        response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
-        access_records = json.loads(response.text)['access_records']
-        self.assertEqual(0, len(access_records))
-
-        # Other tenants shouldn't be able to share by default, and shouldn't
-        # even know the image exists
-        path = self._url('/v2/images/%s/access' % image_id)
-        data = json.dumps({'tenant_id': TENANT3, 'can_share': False})
-        request_headers = {
-            'Content-Type': 'application/json',
-            'X-Tenant-Id': TENANT2,
-        }
-        headers = self._headers(request_headers)
-        response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(404, response.status_code)
-
-        # Share the image with another tenant
-        path = self._url('/v2/images/%s/access' % image_id)
-        data = json.dumps({'tenant_id': TENANT2, 'can_share': True})
-        headers = self._headers({'Content-Type': 'application/json'})
-        response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
-        access_location = response.headers['Location']
-
-        # Ensure the access record was actually created
-        response = requests.get(access_location, headers=self._headers())
-        self.assertEqual(200, response.status_code)
-
-        # Make sure the sharee can further share the image
-        path = self._url('/v2/images/%s/access' % image_id)
-        data = json.dumps({'tenant_id': TENANT3, 'can_share': False})
-        request_headers = {
-            'Content-Type': 'application/json',
-            'X-Tenant-Id': TENANT2,
-        }
-        headers = self._headers(request_headers)
-        response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
-        access_location = response.headers['Location']
-
-        # Ensure the access record was actually created
-        response = requests.get(access_location, headers=self._headers())
-        self.assertEqual(200, response.status_code)
-
-        # The third tenant should not be able to share it further
-        path = self._url('/v2/images/%s/access' % image_id)
-        data = json.dumps({'tenant_id': TENANT4, 'can_share': False})
-        request_headers = {
-            'Content-Type': 'application/json',
-            'X-Tenant-Id': TENANT3,
-        }
-        headers = self._headers(request_headers)
-        response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code)
-
-        # Image acccess list should now contain 2 entries
-        path = self._url('/v2/images/%s/access' % image_id)
-        response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
-        access_records = json.loads(response.text)['access_records']
-        self.assertEqual(2, len(access_records))
-
-        # Delete an access record
-        response = requests.delete(access_location, headers=self._headers())
-        self.assertEqual(204, response.status_code)
-
-        # Ensure the access record was actually deleted
-        response = requests.get(access_location, headers=self._headers())
-        self.assertEqual(404, response.status_code)
-
-        # Image acccess list should now contain 1 entry
-        path = self._url('/v2/images/%s/access' % image_id)
-        response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
-        access_records = json.loads(response.text)['access_records']
-        self.assertEqual(1, len(access_records))
 
         self.stop_servers()
 

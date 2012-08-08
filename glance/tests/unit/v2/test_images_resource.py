@@ -175,12 +175,12 @@ class TestImagesController(test_utils.BaseTestCase):
                           filters={'size_max': 'blah'})
 
     def test_index_with_filters_return_many(self):
-        path = '/images?owner=%s' % TENANT1
+        path = '/images?status=queued'
         request = unit_test_utils.get_fake_request(path)
-        output = self.controller.index(request, filters={'owner': TENANT1})
-        self.assertEqual(2, len(output['images']))
+        output = self.controller.index(request, filters={'status': 'queued'})
+        self.assertEqual(3, len(output['images']))
         actual = set([image['id'] for image in output['images']])
-        expected = set([UUID1, UUID2])
+        expected = set([UUID1, UUID2, UUID3])
         self.assertEqual(actual, expected)
 
     def test_index_with_nonexistant_name_filter(self):
@@ -203,10 +203,10 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual(2, len(output['images']))
 
     def test_index_with_many_filters(self):
-        request = unit_test_utils.get_fake_request('/images?owner=%s&name=%s' %
-        (TENANT1, '1'))
+        url = '/images?status=queued&name=2'
+        request = unit_test_utils.get_fake_request(url)
         output = self.controller.index(request,
-                                       filters={'owner': TENANT1, 'name': '2'})
+                filters={'status': 'queued', 'name': '2'})
         self.assertEqual(1, len(output['images']))
         actual = set([image['id'] for image in output['images']])
         expected = set([UUID2])
@@ -330,12 +330,6 @@ class TestImagesController(test_utils.BaseTestCase):
         }
         self.assertEqual(expected, output)
 
-    def test_create_with_owner_as_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
-        image = {'name': 'image-1', 'owner': utils.generate_uuid()}
-        output = self.controller.create(request, image)
-        self.assertEqual(image['owner'], output['owner'])
-
     def test_create_public_image_as_admin(self):
         request = unit_test_utils.get_fake_request()
         image = {'name': 'image-1', 'is_public': True}
@@ -405,19 +399,6 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         request.body = json.dumps({'name': 'image-1'})
         output = self.deserializer.create(request)
         expected = {'image': {'name': 'image-1', 'properties': {}}}
-        self.assertEqual(expected, output)
-
-    def test_create_with_owner_forbidden(self):
-        request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'owner': TENANT2})
-        self.assertRaises(webob.exc.HTTPForbidden,
-                          self.deserializer.create, request)
-
-    def test_create_with_owner_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
-        request.body = json.dumps({'owner': TENANT2})
-        output = self.deserializer.create(request)
-        expected = {'image': {'owner': TENANT2, 'properties': {}}}
         self.assertEqual(expected, output)
 
     def test_create_public(self):
@@ -737,7 +718,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 {
                     'id': unit_test_utils.UUID1,
                     'name': 'image-1',
-                    'owner': TENANT1,
                     'status': 'queued',
                     'visibility': 'public',
                     'checksum': None,
@@ -747,13 +727,11 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'size': 1024,
                     'self': '/v2/images/%s' % unit_test_utils.UUID1,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
-                    'access': '/v2/images/%s/access' % unit_test_utils.UUID1,
                     'schema': '/v2/schemas/image',
                 },
                 {
                     'id': unit_test_utils.UUID2,
                     'name': 'image-2',
-                    'owner': None,
                     'status': 'queued',
                     'visibility': 'private',
                     'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -763,7 +741,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'size': None,
                     'self': '/v2/images/%s' % unit_test_utils.UUID2,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                    'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
                     'schema': '/v2/schemas/image',
                 },
             ],
@@ -812,7 +789,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 {
                     'id': unit_test_utils.UUID1,
                     'name': 'image-1',
-                    'owner': TENANT1,
                     'status': 'queued',
                     'visibility': 'public',
                     'checksum': None,
@@ -822,13 +798,11 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'size': 1024,
                     'self': '/v2/images/%s' % unit_test_utils.UUID1,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
-                    'access': '/v2/images/%s/access' % unit_test_utils.UUID1,
                     'schema': '/v2/schemas/image',
                 },
                 {
                     'id': unit_test_utils.UUID2,
                     'name': 'image-2',
-                    'owner': TENANT2,
                     'status': 'queued',
                     'visibility': 'private',
                     'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -838,7 +812,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'size': None,
                     'self': '/v2/images/%s' % unit_test_utils.UUID2,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                    'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
                     'schema': '/v2/schemas/image',
                 },
             ],
@@ -888,7 +861,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 {
                     'id': unit_test_utils.UUID1,
                     'name': 'image-1',
-                    'owner': TENANT1,
                     'status': 'queued',
                     'visibility': 'public',
                     'checksum': None,
@@ -898,13 +870,11 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'size': 1024,
                     'self': '/v2/images/%s' % unit_test_utils.UUID1,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
-                    'access': '/v2/images/%s/access' % unit_test_utils.UUID1,
                     'schema': '/v2/schemas/image',
                 },
                 {
                     'id': unit_test_utils.UUID2,
                     'name': 'image-2',
-                    'owner': TENANT2,
                     'status': 'queued',
                     'visibility': 'private',
                     'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -914,7 +884,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'size': None,
                     'self': '/v2/images/%s' % unit_test_utils.UUID2,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                    'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
                     'schema': '/v2/schemas/image',
                 },
             ],
@@ -963,7 +932,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 {
                     'id': unit_test_utils.UUID1,
                     'name': 'image-1',
-                    'owner': TENANT1,
                     'status': 'queued',
                     'visibility': 'public',
                     'checksum': None,
@@ -973,13 +941,11 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'size': 1024,
                     'self': '/v2/images/%s' % unit_test_utils.UUID1,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
-                    'access': '/v2/images/%s/access' % unit_test_utils.UUID1,
                     'schema': '/v2/schemas/image',
                 },
                 {
                     'id': unit_test_utils.UUID2,
                     'name': 'image-2',
-                    'owner': TENANT2,
                     'status': 'queued',
                     'visibility': 'private',
                     'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -989,7 +955,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'size': None,
                     'self': '/v2/images/%s' % unit_test_utils.UUID2,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                    'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
                     'schema': '/v2/schemas/image',
                 },
             ],
@@ -1024,7 +989,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         expected = {
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
-            'owner': TENANT2,
             'status': 'queued',
             'visibility': 'public',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -1034,7 +998,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'size': 1024,
             'self': '/v2/images/%s' % unit_test_utils.UUID2,
             'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-            'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
             'schema': '/v2/schemas/image',
         }
         response = webob.Response()
@@ -1060,7 +1023,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         expected = {
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
-            'owner': TENANT2,
             'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -1070,7 +1032,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'size': 1024,
             'self': self_link,
             'file': '%s/file' % self_link,
-            'access': '%s/access' % self_link,
             'schema': '/v2/schemas/image',
         }
         response = webob.Response()
@@ -1097,7 +1058,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         expected = {
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
-            'owner': TENANT2,
             'status': 'queued',
             'visibility': 'public',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -1107,7 +1067,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'size': 1024,
             'self': self_link,
             'file': '%s/file' % self_link,
-            'access': '%s/access' % self_link,
             'schema': '/v2/schemas/image',
         }
         response = webob.Response()
@@ -1149,7 +1108,6 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
         expected = {
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
-            'owner': TENANT2,
             'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -1160,7 +1118,6 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'color': 'green',
             'self': '/v2/images/%s' % unit_test_utils.UUID2,
             'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-            'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
             'schema': '/v2/schemas/image',
         }
         response = webob.Response()
@@ -1172,7 +1129,6 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
         expected = {
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
-            'owner': TENANT2,
             'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -1183,7 +1139,6 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'color': 'invalid',
             'self': '/v2/images/%s' % unit_test_utils.UUID2,
             'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-            'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
             'schema': '/v2/schemas/image',
         }
         response = webob.Response()
@@ -1217,7 +1172,6 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
         expected = {
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
-            'owner': TENANT2,
             'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -1228,7 +1182,6 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'size': 1024,
             'self': '/v2/images/%s' % unit_test_utils.UUID2,
             'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-            'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
             'schema': '/v2/schemas/image',
         }
         response = webob.Response()
@@ -1244,7 +1197,6 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
         expected = {
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
-            'owner': TENANT2,
             'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -1255,7 +1207,6 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'size': 1024,
             'self': '/v2/images/%s' % unit_test_utils.UUID2,
             'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-            'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
             'schema': '/v2/schemas/image',
         }
         response = webob.Response()
@@ -1268,7 +1219,6 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
         expected = {
             'id': unit_test_utils.UUID2,
             'name': 'image-2',
-            'owner': TENANT2,
             'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -1278,7 +1228,6 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'size': 1024,
             'self': '/v2/images/%s' % unit_test_utils.UUID2,
             'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-            'access': '/v2/images/%s/access' % unit_test_utils.UUID2,
             'schema': '/v2/schemas/image',
         }
         response = webob.Response()

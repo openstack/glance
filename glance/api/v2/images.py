@@ -66,7 +66,7 @@ class ImagesController(object):
 
     @utils.mutating
     def create(self, req, image):
-        image.setdefault('owner', req.context.owner)
+        image['owner'] = req.context.owner
         image['status'] = 'queued'
 
         tags = self._extract_tags(image)
@@ -166,7 +166,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         # defined properties contained in a 'properties' dictionary
         image = {'properties': body}
         for key in ['id', 'name', 'visibility', 'created_at', 'updated_at',
-                    'tags', 'owner', 'status']:
+                    'tags', 'status']:
             try:
                 image[key] = image['properties'].pop(key)
             except KeyError:
@@ -176,7 +176,6 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             image['is_public'] = image.pop('visibility') == 'public'
 
         self._check_readonly(image)
-        self._check_adminonly(image, request.context)
         return {'image': image}
 
     @staticmethod
@@ -184,13 +183,6 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         for key in ['created_at', 'updated_at', 'status']:
             if key in image:
                 msg = "Attribute \'%s\' is read-only." % key
-                raise webob.exc.HTTPForbidden(explanation=unicode(msg))
-
-    @staticmethod
-    def _check_adminonly(image, context):
-        for key in ['owner']:
-            if key in image and not context.is_admin:
-                msg = "Must be admin to set attribute \'%s\'." % key
                 raise webob.exc.HTTPForbidden(explanation=unicode(msg))
 
     def create(self, request):
@@ -271,7 +263,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
     def _format_image(self, image):
         _image = image['properties']
         for key in ['id', 'name', 'created_at', 'updated_at', 'tags', 'size',
-                    'owner', 'checksum', 'status']:
+                    'checksum', 'status']:
             _image[key] = image[key]
         if CONF.show_image_direct_url and image['location']:
             _image['direct_url'] = image['location']
@@ -279,7 +271,6 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         _image = self.schema.filter(_image)
         _image['self'] = self._get_image_href(image)
         _image['file'] = self._get_image_href(image, 'file')
-        _image['access'] = self._get_image_href(image, 'access')
         _image['schema'] = '/v2/schemas/image'
         self._serialize_datetimes(_image)
         return _image
@@ -342,11 +333,6 @@ _BASE_PROPERTIES = {
       'enum': ['queued', 'saving', 'active', 'killed',
                'deleted', 'pending_delete'],
     },
-    'owner': {
-        'type': 'string',
-        'description': 'Tenant who can modify the image',
-        'maxLength': 36,
-    },
     'visibility': {
         'type': 'string',
         'description': 'Scope of image accessibility',
@@ -387,14 +373,12 @@ _BASE_PROPERTIES = {
         'description': 'URL to access the image file kept in external store',
     },
     'self': {'type': 'string'},
-    'access': {'type': 'string'},
     'file': {'type': 'string'},
     'schema': {'type': 'string'},
 }
 
 _BASE_LINKS = [
     {'rel': 'self', 'href': '{self}'},
-    {'rel': 'related', 'href': '{access}'},
     {'rel': 'enclosure', 'href': '{file}'},
     {'rel': 'describedby', 'href': '{schema}'},
 ]
