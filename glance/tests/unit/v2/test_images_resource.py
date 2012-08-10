@@ -19,7 +19,6 @@ import json
 import webob
 
 import glance.api.v2.images
-from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
 import glance.schema
@@ -46,6 +45,28 @@ TENANT3 = '5a3e60e8-cfa9-4a9e-a90a-62b42cea92b8'
 TENANT4 = 'c6c87f25-8a94-47ed-8c83-053c25f42df4'
 
 
+def _fixture(id, **kwargs):
+    obj = {
+        'id': id,
+        'name': 'image-1',
+        'is_public': False,
+        'properties': {},
+        'checksum': None,
+        'owner': None,
+        'status': 'queued',
+        'tags': [],
+        'size': None,
+        'location': None,
+        'min_ram': None,
+        'min_disk': None,
+        'protected': False,
+        'disk_format': None,
+        'container_format': None,
+    }
+    obj.update(kwargs)
+    return obj
+
+
 class TestImagesController(test_utils.BaseTestCase):
 
     def setUp(self):
@@ -58,43 +79,11 @@ class TestImagesController(test_utils.BaseTestCase):
     def _create_images(self):
         self.db.reset()
         self.images = [
-            {
-                'id': UUID1,
-                'owner': TENANT1,
-                'location': 'swift+http://storeurl.com/container/%s' % UUID1,
-                'name': '1',
-                'is_public': True,
-                'size': 256,
-                'container_format': 'ami',
-                'disk_format': 'ami',
-            },
-            {
-                'id': UUID2,
-                'owner': TENANT1,
-                'name': '2',
-                'is_public': True,
-                'size': 512,
-                'container_format': None,
-                'disk_format': None,
-            },
-            {
-                'id': UUID3,
-                'owner': TENANT3,
-                'name': '3',
-                'is_public': True,
-                'size': 512,
-                'container_format': None,
-                'disk_format': None,
-            },
-            {
-                'id': UUID4,
-                'owner': TENANT4,
-                'name': '4',
-                'is_public': False,
-                'size': 1024,
-                'container_format': None,
-                'disk_format': None,
-            },
+            _fixture(UUID1, owner=TENANT1, name='1', size=256, is_public=True,
+                     location='swift+http://example.com/container/%s' % UUID1),
+            _fixture(UUID2, owner=TENANT1, name='2', size=512, is_public=True),
+            _fixture(UUID3, owner=TENANT3, name='3', size=512, is_public=True),
+            _fixture(UUID4, owner=TENANT4, name='4', size=1024),
         ]
         [self.db.image_create(None, image) for image in self.images]
 
@@ -298,23 +287,8 @@ class TestImagesController(test_utils.BaseTestCase):
     def test_show(self):
         request = unit_test_utils.get_fake_request()
         output = self.controller.show(request, image_id=UUID2)
-        for key in ['created_at', 'updated_at']:
-            output.pop(key)
-        expected = {
-            'id': UUID2,
-            'name': '2',
-            'owner': TENANT1,
-            'size': 512,
-            'location': None,
-            'status': 'queued',
-            'is_public': True,
-            'tags': [],
-            'properties': {},
-            'deleted': False,
-            'container_format': None,
-            'disk_format': None,
-        }
-        self.assertEqual(expected, output)
+        self.assertEqual(UUID2, output['id'])
+        self.assertEqual('2', output['name'])
 
     def test_show_non_existant(self):
         request = unit_test_utils.get_fake_request()
@@ -326,58 +300,23 @@ class TestImagesController(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request()
         image = {'name': 'image-1'}
         output = self.controller.create(request, image)
-        for key in ['id', 'created_at', 'updated_at']:
-            output.pop(key)
-        expected = {
-            'name': 'image-1',
-            'owner': TENANT1,
-            'location': None,
-            'status': 'queued',
-            'is_public': False,
-            'properties': {},
-            'tags': [],
-            'deleted': False,
-        }
-        self.assertEqual(expected, output)
+        self.assertEqual('image-1', output['name'])
+        self.assertEqual({}, output['properties'])
+        self.assertEqual([], output['tags'])
+        self.assertEqual(False, output['is_public'])
 
     def test_create_public_image_as_admin(self):
         request = unit_test_utils.get_fake_request()
         image = {'name': 'image-1', 'is_public': True}
         output = self.controller.create(request, image)
-        for key in ['id', 'created_at', 'updated_at']:
-            output.pop(key)
-        expected = {
-            'name': 'image-1',
-            'owner': TENANT1,
-            'location': None,
-            'status': 'queued',
-            'is_public': True,
-            'tags': [],
-            'properties': {},
-            'deleted': False,
-        }
-        self.assertEqual(expected, output)
+        self.assertEqual(True, output['is_public'])
 
     def test_update(self):
         request = unit_test_utils.get_fake_request()
         image = {'name': 'image-2'}
         output = self.controller.update(request, UUID1, image)
-        for key in ['id', 'created_at', 'updated_at']:
-            output.pop(key)
-        expected = {
-            'name': 'image-2',
-            'owner': TENANT1,
-            'size': 256,
-            'location': 'swift+http://storeurl.com/container/%s' % UUID1,
-            'status': 'queued',
-            'is_public': True,
-            'tags': ['ping', 'pong'],
-            'properties': {},
-            'deleted': False,
-            'container_format': 'ami',
-            'disk_format': 'ami',
-        }
-        self.assertEqual(expected, output)
+        self.assertEqual(UUID1, output['id'])
+        self.assertEqual('image-2', output['name'])
 
     def test_update_non_existant(self):
         request = unit_test_utils.get_fake_request()
@@ -695,60 +634,36 @@ class TestImagesSerializer(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImagesSerializer, self).setUp()
         self.serializer = glance.api.v2.images.ResponseSerializer()
+        self.fixtures = [
+            _fixture(UUID1, name='image-1', size=1024, tags=['one', 'two'],
+                    created_at=DATETIME, updated_at=DATETIME, owner=TENANT1,
+                    is_public=True, container_format='ami', disk_format='ami'),
+            _fixture(UUID2, name='image-2',
+                    created_at=DATETIME, updated_at=DATETIME,
+                    checksum='ca425b88f047ce8ec45ee90e813ada91'),
+        ]
 
     def test_index(self):
-        fixtures = [
-            {
-                'id': unit_test_utils.UUID1,
-                'name': 'image-1',
-                'is_public': True,
-                'properties': {},
-                'checksum': None,
-                'owner': TENANT1,
-                'status': 'queued',
-                'created_at': DATETIME,
-                'updated_at': DATETIME,
-                'tags': ['one', 'two'],
-                'size': 1024,
-                'container_format': 'ami',
-                'disk_format': 'ami',
-            },
-            {
-                'id': unit_test_utils.UUID2,
-                'name': 'image-2',
-                'is_public': False,
-                'owner': None,
-                'status': 'queued',
-                'properties': {},
-                'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                'created_at': DATETIME,
-                'updated_at': DATETIME,
-                'tags': [],
-                'size': None,
-                'container_format': None,
-                'disk_format': None,
-            },
-        ]
         expected = {
             'images': [
                 {
-                    'id': unit_test_utils.UUID1,
+                    'id': UUID1,
                     'name': 'image-1',
                     'status': 'queued',
                     'visibility': 'public',
-                    'checksum': None,
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                     'tags': ['one', 'two'],
                     'size': 1024,
                     'container_format': 'ami',
                     'disk_format': 'ami',
-                    'self': '/v2/images/%s' % unit_test_utils.UUID1,
-                    'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
+                    'self': '/v2/images/%s' % UUID1,
+                    'file': '/v2/images/%s/file' % UUID1,
                     'schema': '/v2/schemas/image',
+                    'checksum': None,
                 },
                 {
-                    'id': unit_test_utils.UUID2,
+                    'id': UUID2,
                     'name': 'image-2',
                     'status': 'queued',
                     'visibility': 'private',
@@ -756,10 +671,10 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                     'tags': [],
-                    'size': None,
-                    'self': '/v2/images/%s' % unit_test_utils.UUID2,
-                    'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+                    'self': '/v2/images/%s' % UUID2,
+                    'file': '/v2/images/%s/file' % UUID2,
                     'schema': '/v2/schemas/image',
+                    'size': None,
                 },
             ],
             'first': '/v2/images',
@@ -767,340 +682,95 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         }
         request = webob.Request.blank('/v2/images')
         response = webob.Response(request=request)
-        result = {'images': fixtures}
+        result = {'images': self.fixtures}
         self.serializer.index(response, result)
         self.assertEqual(expected, json.loads(response.body))
         self.assertEqual('application/json', response.content_type)
 
     def test_index_next_marker(self):
-
-        fixtures = [
-            {
-                'id': unit_test_utils.UUID1,
-                'name': 'image-1',
-                'owner': TENANT1,
-                'status': 'queued',
-                'is_public': True,
-                'checksum': None,
-                'properties': {},
-                'created_at': DATETIME,
-                'updated_at': DATETIME,
-                'tags': ['one', 'two'],
-                'size': 1024,
-                'container_format': 'ami',
-                'disk_format': 'ami',
-            },
-            {
-                'id': unit_test_utils.UUID2,
-                'name': 'image-2',
-                'owner': TENANT2,
-                'status': 'queued',
-                'is_public': False,
-                'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                'properties': {},
-                'created_at': DATETIME,
-                'updated_at': DATETIME,
-                'tags': [],
-                'size': None,
-                'container_format': None,
-                'disk_format': None,
-            },
-        ]
-        expected = {
-            'images': [
-                {
-                    'id': unit_test_utils.UUID1,
-                    'name': 'image-1',
-                    'status': 'queued',
-                    'visibility': 'public',
-                    'checksum': None,
-                    'created_at': ISOTIME,
-                    'updated_at': ISOTIME,
-                    'tags': ['one', 'two'],
-                    'size': 1024,
-                    'container_format': 'ami',
-                    'disk_format': 'ami',
-                    'self': '/v2/images/%s' % unit_test_utils.UUID1,
-                    'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
-                    'schema': '/v2/schemas/image',
-                },
-                {
-                    'id': unit_test_utils.UUID2,
-                    'name': 'image-2',
-                    'status': 'queued',
-                    'visibility': 'private',
-                    'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                    'created_at': ISOTIME,
-                    'updated_at': ISOTIME,
-                    'tags': [],
-                    'size': None,
-                    'self': '/v2/images/%s' % unit_test_utils.UUID2,
-                    'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                    'schema': '/v2/schemas/image',
-                },
-            ],
-            'first': '/v2/images',
-            'next': '/v2/images?marker=%s' % unit_test_utils.UUID2,
-            'schema': '/v2/schemas/images',
-        }
         request = webob.Request.blank('/v2/images')
         response = webob.Response(request=request)
-        result = {'images': fixtures,
-                  'next_marker': unit_test_utils.UUID2,
-        }
+        result = {'images': self.fixtures, 'next_marker': UUID2}
         self.serializer.index(response, result)
-        self.assertEqual(expected, json.loads(response.body))
+        output = json.loads(response.body)
+        self.assertEqual('/v2/images?marker=%s' % UUID2, output['next'])
 
-    def test_index_next_forwarding_query_parameters_no_next(self):
-        fixtures = [
-            {
-                'id': unit_test_utils.UUID1,
-                'name': 'image-1',
-                'owner': TENANT1,
-                'status': 'queued',
-                'is_public': True,
-                'checksum': None,
-                'properties': {},
-                'created_at': DATETIME,
-                'updated_at': DATETIME,
-                'tags': ['one', 'two'],
-                'size': 1024,
-                'container_format': 'ami',
-                'disk_format': 'ami',
-            },
-            {
-                'id': unit_test_utils.UUID2,
-                'name': 'image-2',
-                'owner': TENANT2,
-                'status': 'queued',
-                'is_public': False,
-                'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                'properties': {},
-                'created_at': DATETIME,
-                'updated_at': DATETIME,
-                'tags': [],
-                'size': None,
-                'container_format': None,
-                'disk_format': None,
-            },
-        ]
-        expected = {
-            'images': [
-                {
-                    'id': unit_test_utils.UUID1,
-                    'name': 'image-1',
-                    'status': 'queued',
-                    'visibility': 'public',
-                    'checksum': None,
-                    'created_at': ISOTIME,
-                    'updated_at': ISOTIME,
-                    'tags': ['one', 'two'],
-                    'size': 1024,
-                    'container_format': 'ami',
-                    'disk_format': 'ami',
-                    'self': '/v2/images/%s' % unit_test_utils.UUID1,
-                    'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
-                    'schema': '/v2/schemas/image',
-                },
-                {
-                    'id': unit_test_utils.UUID2,
-                    'name': 'image-2',
-                    'status': 'queued',
-                    'visibility': 'private',
-                    'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                    'created_at': ISOTIME,
-                    'updated_at': ISOTIME,
-                    'tags': [],
-                    'size': None,
-                    'self': '/v2/images/%s' % unit_test_utils.UUID2,
-                    'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                    'schema': '/v2/schemas/image',
-                },
-            ],
-            'first': '/v2/images?sort_key=id&sort_dir=asc&limit=10',
-            'schema': '/v2/schemas/images',
-        }
+    def test_index_carries_query_parameters(self):
         url = '/v2/images?limit=10&sort_key=id&sort_dir=asc'
         request = webob.Request.blank(url)
         response = webob.Response(request=request)
-        result = {'images': fixtures}
+        result = {'images': self.fixtures, 'next_marker': UUID2}
         self.serializer.index(response, result)
-        self.assertEqual(expected, json.loads(response.body))
-
-    def test_index_next_forwarding_query_parameters(self):
-
-        fixtures = [
-            {
-                'id': unit_test_utils.UUID1,
-                'name': 'image-1',
-                'owner': TENANT1,
-                'status': 'queued',
-                'is_public': True,
-                'checksum': None,
-                'properties': {},
-                'created_at': DATETIME,
-                'updated_at': DATETIME,
-                'tags': ['one', 'two'],
-                'size': 1024,
-            },
-            {
-                'id': unit_test_utils.UUID2,
-                'name': 'image-2',
-                'owner': TENANT2,
-                'status': 'queued',
-                'is_public': False,
-                'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                'properties': {},
-                'created_at': DATETIME,
-                'updated_at': DATETIME,
-                'tags': [],
-                'size': None,
-            },
-        ]
-        expected = {
-            'images': [
-                {
-                    'id': unit_test_utils.UUID1,
-                    'name': 'image-1',
-                    'status': 'queued',
-                    'visibility': 'public',
-                    'checksum': None,
-                    'created_at': ISOTIME,
-                    'updated_at': ISOTIME,
-                    'tags': ['one', 'two'],
-                    'size': 1024,
-                    'self': '/v2/images/%s' % unit_test_utils.UUID1,
-                    'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
-                    'schema': '/v2/schemas/image',
-                },
-                {
-                    'id': unit_test_utils.UUID2,
-                    'name': 'image-2',
-                    'status': 'queued',
-                    'visibility': 'private',
-                    'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-                    'created_at': ISOTIME,
-                    'updated_at': ISOTIME,
-                    'tags': [],
-                    'size': None,
-                    'self': '/v2/images/%s' % unit_test_utils.UUID2,
-                    'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
-                    'schema': '/v2/schemas/image',
-                },
-            ],
-            'first': '/v2/images?sort_key=id&sort_dir=asc&limit=2',
-            'next': '/v2/images?sort_key=id&sort_dir=asc&limit=2&marker=%s'
-                                                    % unit_test_utils.UUID2,
-            'schema': '/v2/schemas/images',
-        }
-        url = '/v2/images?limit=2&sort_key=id&sort_dir=asc'
-        request = webob.Request.blank(url)
-        response = webob.Response(request=request)
-        result = {'images': fixtures,
-                  'next_marker': unit_test_utils.UUID2,
-        }
-        self.serializer.index(response, result)
-        self.assertEqual(expected, json.loads(response.body))
+        output = json.loads(response.body)
+        self.assertEqual('/v2/images?sort_key=id&sort_dir=asc&limit=10',
+                         output['first'])
+        expect_next = '/v2/images?sort_key=id&sort_dir=asc&limit=10&marker=%s'
+        self.assertEqual(expect_next % UUID2, output['next'])
 
     def test_show(self):
-        fixture = {
-            'id': unit_test_utils.UUID2,
-            'name': 'image-2',
-            'owner': TENANT2,
-            'status': 'queued',
-            'is_public': True,
-            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-            'properties': {},
-            'created_at': DATETIME,
-            'updated_at': DATETIME,
-            'tags': ['three', 'four'],
-            'size': 1024,
-        }
         expected = {
-            'id': unit_test_utils.UUID2,
-            'name': 'image-2',
+            'id': UUID1,
+            'name': 'image-1',
             'status': 'queued',
             'visibility': 'public',
-            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+            'checksum': None,
             'created_at': ISOTIME,
             'updated_at': ISOTIME,
-            'tags': ['three', 'four'],
+            'tags': ['one', 'two'],
             'size': 1024,
-            'self': '/v2/images/%s' % unit_test_utils.UUID2,
-            'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+            'self': '/v2/images/%s' % UUID1,
+            'file': '/v2/images/%s/file' % UUID1,
             'schema': '/v2/schemas/image',
+            'container_format': 'ami',
+            'disk_format': 'ami',
         }
         response = webob.Response()
-        self.serializer.show(response, fixture)
+        self.serializer.show(response, self.fixtures[0])
         self.assertEqual(expected, json.loads(response.body))
         self.assertEqual('application/json', response.content_type)
 
     def test_create(self):
-        fixture = {
-            'id': unit_test_utils.UUID2,
-            'name': 'image-2',
-            'owner': TENANT2,
-            'status': 'queued',
-            'is_public': False,
-            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-            'properties': {},
-            'created_at': DATETIME,
-            'updated_at': DATETIME,
-            'tags': [],
-            'size': 1024,
-        }
-        self_link = '/v2/images/%s' % unit_test_utils.UUID2
         expected = {
-            'id': unit_test_utils.UUID2,
-            'name': 'image-2',
-            'status': 'queued',
-            'visibility': 'private',
-            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-            'created_at': ISOTIME,
-            'updated_at': ISOTIME,
-            'tags': [],
-            'size': 1024,
-            'self': self_link,
-            'file': '%s/file' % self_link,
-            'schema': '/v2/schemas/image',
-        }
-        response = webob.Response()
-        self.serializer.create(response, fixture)
-        self.assertEqual(expected, json.loads(response.body))
-        self.assertEqual('application/json', response.content_type)
-        self.assertEqual(response.location, self_link)
-
-    def test_update(self):
-        fixture = {
-            'id': unit_test_utils.UUID2,
-            'name': 'image-2',
-            'owner': TENANT2,
-            'status': 'queued',
-            'is_public': True,
-            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-            'properties': {},
-            'created_at': DATETIME,
-            'updated_at': DATETIME,
-            'tags': ['five'],
-            'size': 1024,
-        }
-        self_link = '/v2/images/%s' % unit_test_utils.UUID2
-        expected = {
-            'id': unit_test_utils.UUID2,
-            'name': 'image-2',
+            'id': UUID1,
+            'name': 'image-1',
             'status': 'queued',
             'visibility': 'public',
-            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+            'checksum': None,
             'created_at': ISOTIME,
             'updated_at': ISOTIME,
-            'tags': ['five'],
+            'tags': ['one', 'two'],
             'size': 1024,
-            'self': self_link,
-            'file': '%s/file' % self_link,
+            'self': '/v2/images/%s' % UUID1,
+            'file': '/v2/images/%s/file' % UUID1,
             'schema': '/v2/schemas/image',
+            'container_format': 'ami',
+            'disk_format': 'ami',
         }
         response = webob.Response()
-        self.serializer.update(response, fixture)
+        self.serializer.create(response, self.fixtures[0])
+        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
+        self.assertEqual(response.location, '/v2/images/%s' % UUID1)
+
+    def test_update(self):
+        expected = {
+            'id': UUID1,
+            'name': 'image-1',
+            'status': 'queued',
+            'visibility': 'public',
+            'checksum': None,
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
+            'tags': ['one', 'two'],
+            'size': 1024,
+            'self': '/v2/images/%s' % UUID1,
+            'file': '/v2/images/%s/file' % UUID1,
+            'schema': '/v2/schemas/image',
+            'container_format': 'ami',
+            'disk_format': 'ami',
+        }
+        response = webob.Response()
+        self.serializer.update(response, self.fixtures[0])
         self.assertEqual(expected, json.loads(response.body))
         self.assertEqual('application/json', response.content_type)
 
@@ -1120,23 +790,14 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
         schema = glance.api.v2.images.get_schema(custom_image_properties)
         self.serializer = glance.api.v2.images.ResponseSerializer(schema)
 
-        self.fixture = {
-            'id': unit_test_utils.UUID2,
-            'name': 'image-2',
-            'owner': TENANT2,
-            'status': 'queued',
-            'is_public': False,
-            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-            'created_at': DATETIME,
-            'updated_at': DATETIME,
-            'tags': [],
-            'size': 1024,
-            'properties': {'color': 'green', 'mood': 'grouchy'},
-        }
+        self.fixture = _fixture(UUID2, name='image-2', owner=TENANT2,
+                checksum='ca425b88f047ce8ec45ee90e813ada91',
+                created_at=DATETIME, updated_at=DATETIME,
+                size=1024, properties={'color': 'green', 'mood': 'grouchy'})
 
     def test_show(self):
         expected = {
-            'id': unit_test_utils.UUID2,
+            'id': UUID2,
             'name': 'image-2',
             'status': 'queued',
             'visibility': 'private',
@@ -1146,8 +807,8 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'tags': [],
             'size': 1024,
             'color': 'green',
-            'self': '/v2/images/%s' % unit_test_utils.UUID2,
-            'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+            'self': '/v2/images/%s' % UUID2,
+            'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
         }
         response = webob.Response()
@@ -1157,7 +818,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
     def test_show_reports_invalid_data(self):
         self.fixture['properties']['color'] = 'invalid'
         expected = {
-            'id': unit_test_utils.UUID2,
+            'id': UUID2,
             'name': 'image-2',
             'status': 'queued',
             'visibility': 'private',
@@ -1167,8 +828,8 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'tags': [],
             'size': 1024,
             'color': 'invalid',
-            'self': '/v2/images/%s' % unit_test_utils.UUID2,
-            'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+            'self': '/v2/images/%s' % UUID2,
+            'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
         }
         response = webob.Response()
@@ -1181,26 +842,15 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImagesSerializerWithAdditionalProperties, self).setUp()
         self.config(allow_additional_image_properties=True)
-        self.fixture = {
-            'id': unit_test_utils.UUID2,
-            'name': 'image-2',
-            'owner': TENANT2,
-            'status': 'queued',
-            'is_public': False,
-            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-            'created_at': DATETIME,
-            'updated_at': DATETIME,
-            'properties': {
-                'marx': 'groucho',
-            },
-            'tags': [],
-            'size': 1024,
-        }
+        self.fixture = _fixture(UUID2, name='image-2', owner=TENANT2,
+            checksum='ca425b88f047ce8ec45ee90e813ada91',
+            created_at=DATETIME, updated_at=DATETIME,
+            properties={'marx': 'groucho'}, size=1024)
 
     def test_show(self):
         serializer = glance.api.v2.images.ResponseSerializer()
         expected = {
-            'id': unit_test_utils.UUID2,
+            'id': UUID2,
             'name': 'image-2',
             'status': 'queued',
             'visibility': 'private',
@@ -1210,8 +860,8 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'marx': 'groucho',
             'tags': [],
             'size': 1024,
-            'self': '/v2/images/%s' % unit_test_utils.UUID2,
-            'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+            'self': '/v2/images/%s' % UUID2,
+            'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
         }
         response = webob.Response()
@@ -1225,7 +875,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
         serializer = glance.api.v2.images.ResponseSerializer()
         self.fixture['properties']['marx'] = 123
         expected = {
-            'id': unit_test_utils.UUID2,
+            'id': UUID2,
             'name': 'image-2',
             'status': 'queued',
             'visibility': 'private',
@@ -1235,8 +885,8 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'marx': 123,
             'tags': [],
             'size': 1024,
-            'self': '/v2/images/%s' % unit_test_utils.UUID2,
-            'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+            'self': '/v2/images/%s' % UUID2,
+            'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
         }
         response = webob.Response()
@@ -1247,7 +897,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
         self.config(allow_additional_image_properties=False)
         serializer = glance.api.v2.images.ResponseSerializer()
         expected = {
-            'id': unit_test_utils.UUID2,
+            'id': UUID2,
             'name': 'image-2',
             'status': 'queued',
             'visibility': 'private',
@@ -1256,8 +906,8 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'updated_at': ISOTIME,
             'tags': [],
             'size': 1024,
-            'self': '/v2/images/%s' % unit_test_utils.UUID2,
-            'file': '/v2/images/%s/file' % unit_test_utils.UUID2,
+            'self': '/v2/images/%s' % UUID2,
+            'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
         }
         response = webob.Response()
@@ -1266,44 +916,24 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
 
 
 class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
-
     def setUp(self):
         super(TestImagesSerializerDirectUrl, self).setUp()
         self.serializer = glance.api.v2.images.ResponseSerializer()
-        self.active_image = {
-            'id': unit_test_utils.UUID1,
-            'name': 'image-1',
-            'is_public': True,
-            'properties': {},
-            'checksum': None,
-            'owner': TENANT1,
-            'status': 'active',
-            'created_at': DATETIME,
-            'updated_at': DATETIME,
-            'tags': ['one', 'two'],
-            'size': 1024,
-            'location': 'http://some/fake/location',
-        }
-        self.queued_image = {
-            'id': unit_test_utils.UUID2,
-            'name': 'image-2',
-            'is_public': False,
-            'owner': None,
-            'status': 'queued',
-            'properties': {},
-            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-            'created_at': DATETIME,
-            'updated_at': DATETIME,
-            'tags': [],
-            'size': None,
-            'location': None,
-        }
-        self.fixtures = [self.active_image, self.queued_image]
+
+        self.active_image = _fixture(UUID1, name='image-1', is_public=True,
+                status='active', size=1024,
+                created_at=DATETIME, updated_at=DATETIME,
+                location='http://some/fake/location')
+
+        self.queued_image = _fixture(UUID2, name='image-2', status='active',
+                created_at=DATETIME, updated_at=DATETIME,
+                checksum='ca425b88f047ce8ec45ee90e813ada91')
 
     def _do_index(self):
         request = webob.Request.blank('/v2/images')
         response = webob.Response(request=request)
-        self.serializer.index(response, {'images': self.fixtures})
+        self.serializer.index(response,
+                {'images': [self.active_image, self.queued_image]})
         return json.loads(response.body)['images']
 
     def _do_show(self, image):
@@ -1317,8 +947,8 @@ class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
         images = self._do_index()
 
         # NOTE(markwash): ordering sanity check
-        self.assertEqual(images[0]['id'], unit_test_utils.UUID1)
-        self.assertEqual(images[1]['id'], unit_test_utils.UUID2)
+        self.assertEqual(images[0]['id'], UUID1)
+        self.assertEqual(images[1]['id'], UUID2)
 
         self.assertEqual(images[0]['direct_url'], 'http://some/fake/location')
         self.assertFalse('direct_url' in images[1])
