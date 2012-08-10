@@ -65,6 +65,8 @@ class TestImagesController(test_utils.BaseTestCase):
                 'name': '1',
                 'is_public': True,
                 'size': 256,
+                'container_format': 'ami',
+                'disk_format': 'ami',
             },
             {
                 'id': UUID2,
@@ -72,6 +74,8 @@ class TestImagesController(test_utils.BaseTestCase):
                 'name': '2',
                 'is_public': True,
                 'size': 512,
+                'container_format': None,
+                'disk_format': None,
             },
             {
                 'id': UUID3,
@@ -79,6 +83,8 @@ class TestImagesController(test_utils.BaseTestCase):
                 'name': '3',
                 'is_public': True,
                 'size': 512,
+                'container_format': None,
+                'disk_format': None,
             },
             {
                 'id': UUID4,
@@ -86,6 +92,8 @@ class TestImagesController(test_utils.BaseTestCase):
                 'name': '4',
                 'is_public': False,
                 'size': 1024,
+                'container_format': None,
+                'disk_format': None,
             },
         ]
         [self.db.image_create(None, image) for image in self.images]
@@ -303,6 +311,8 @@ class TestImagesController(test_utils.BaseTestCase):
             'tags': [],
             'properties': {},
             'deleted': False,
+            'container_format': None,
+            'disk_format': None,
         }
         self.assertEqual(expected, output)
 
@@ -364,6 +374,8 @@ class TestImagesController(test_utils.BaseTestCase):
             'tags': ['ping', 'pong'],
             'properties': {},
             'deleted': False,
+            'container_format': 'ami',
+            'disk_format': 'ami',
         }
         self.assertEqual(expected, output)
 
@@ -698,6 +710,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'updated_at': DATETIME,
                 'tags': ['one', 'two'],
                 'size': 1024,
+                'container_format': 'ami',
+                'disk_format': 'ami',
             },
             {
                 'id': unit_test_utils.UUID2,
@@ -711,6 +725,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'updated_at': DATETIME,
                 'tags': [],
                 'size': None,
+                'container_format': None,
+                'disk_format': None,
             },
         ]
         expected = {
@@ -725,6 +741,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'updated_at': ISOTIME,
                     'tags': ['one', 'two'],
                     'size': 1024,
+                    'container_format': 'ami',
+                    'disk_format': 'ami',
                     'self': '/v2/images/%s' % unit_test_utils.UUID1,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
                     'schema': '/v2/schemas/image',
@@ -769,6 +787,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'updated_at': DATETIME,
                 'tags': ['one', 'two'],
                 'size': 1024,
+                'container_format': 'ami',
+                'disk_format': 'ami',
             },
             {
                 'id': unit_test_utils.UUID2,
@@ -782,6 +802,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'updated_at': DATETIME,
                 'tags': [],
                 'size': None,
+                'container_format': None,
+                'disk_format': None,
             },
         ]
         expected = {
@@ -796,6 +818,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'updated_at': ISOTIME,
                     'tags': ['one', 'two'],
                     'size': 1024,
+                    'container_format': 'ami',
+                    'disk_format': 'ami',
                     'self': '/v2/images/%s' % unit_test_utils.UUID1,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
                     'schema': '/v2/schemas/image',
@@ -841,6 +865,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'updated_at': DATETIME,
                 'tags': ['one', 'two'],
                 'size': 1024,
+                'container_format': 'ami',
+                'disk_format': 'ami',
             },
             {
                 'id': unit_test_utils.UUID2,
@@ -854,6 +880,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                 'updated_at': DATETIME,
                 'tags': [],
                 'size': None,
+                'container_format': None,
+                'disk_format': None,
             },
         ]
         expected = {
@@ -868,6 +896,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'updated_at': ISOTIME,
                     'tags': ['one', 'two'],
                     'size': 1024,
+                    'container_format': 'ami',
+                    'disk_format': 'ami',
                     'self': '/v2/images/%s' % unit_test_utils.UUID1,
                     'file': '/v2/images/%s/file' % unit_test_utils.UUID1,
                     'schema': '/v2/schemas/image',

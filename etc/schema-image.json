@@ -1,14 +1,1 @@
-{
-    "type": {
-      "type": "string",
-      "description": "The type code for the image",
-      "required": true,
-      "enum": ["kernel", "ramdisk", "filesystem", "iso9660", "disk"]
-    },
-    "format": {
-      "type": "string",
-      "description": "The format code for the image",
-      "required": true,
-      "enum": ["raw", "vhd", "vmdk", "vdi", "qcow2", "qed"]
-    }
-}
+{}

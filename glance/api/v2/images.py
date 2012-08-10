@@ -267,6 +267,11 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             _image[key] = image[key]
         if CONF.show_image_direct_url and image['location']:
             _image['direct_url'] = image['location']
+
+        for key in ['container_format', 'disk_format']:
+            if image.get(key):
+                _image[key] = image[key]
+
         _image['visibility'] = 'public' if image['is_public'] else 'private'
         _image = self.schema.filter(_image)
         _image['self'] = self._get_image_href(image)
@@ -347,6 +352,19 @@ _BASE_PROPERTIES = {
     'size': {
         'type': 'integer',
         'description': 'Size of image file in bytes',
+    },
+    'container_format': {
+        'type': 'string',
+        'description': '',
+        'type': 'string',
+        'enum': ['bare', 'ovf', 'ami', 'aki', 'ari'],
+    },
+    'disk_format': {
+        'type': 'string',
+        'description': '',
+        'type': 'string',
+        'enum': ['raw', 'vhd', 'vmdk', 'vdi', 'iso', 'qcow2',
+                 'aki', 'ari', 'ami'],
     },
     'created_at': {
         'type': 'string',
