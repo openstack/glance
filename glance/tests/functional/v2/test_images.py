@@ -611,6 +611,8 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         image = json.loads(response.text)['images'][0]
         self.assertTrue('direct_url' in image)
 
+        self.stop_servers()
+
     def test_image_direct_url_not_visible(self):
 
         self.api_server.show_image_direct_url = False
@@ -655,3 +657,5 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         image = json.loads(response.text)['images'][0]
         self.assertFalse('direct_url' in image)
+
+        self.stop_servers()
