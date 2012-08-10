@@ -48,7 +48,7 @@ TENANT4 = 'c6c87f25-8a94-47ed-8c83-053c25f42df4'
 def _fixture(id, **kwargs):
     obj = {
         'id': id,
-        'name': 'image-1',
+        'name': None,
         'is_public': False,
         'properties': {},
         'checksum': None,
@@ -57,11 +57,10 @@ def _fixture(id, **kwargs):
         'tags': [],
         'size': None,
         'location': None,
-        'min_ram': None,
-        'min_disk': None,
         'protected': False,
         'disk_format': None,
         'container_format': None,
+        'deleted': False,
     }
     obj.update(kwargs)
     return obj
@@ -635,12 +634,15 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         super(TestImagesSerializer, self).setUp()
         self.serializer = glance.api.v2.images.ResponseSerializer()
         self.fixtures = [
+            #NOTE(bcwaldon): This first fixture has every property defined
             _fixture(UUID1, name='image-1', size=1024, tags=['one', 'two'],
                     created_at=DATETIME, updated_at=DATETIME, owner=TENANT1,
-                    is_public=True, container_format='ami', disk_format='ami'),
-            _fixture(UUID2, name='image-2',
-                    created_at=DATETIME, updated_at=DATETIME,
+                    is_public=True, container_format='ami', disk_format='ami',
                     checksum='ca425b88f047ce8ec45ee90e813ada91'),
+
+            #NOTE(bcwaldon): This second fixture depends on default behavior
+            # and sets most values to None
+            _fixture(UUID2, created_at=DATETIME, updated_at=DATETIME),
         ]
 
     def test_index(self):
@@ -651,30 +653,27 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'name': 'image-1',
                     'status': 'queued',
                     'visibility': 'public',
-                    'created_at': ISOTIME,
-                    'updated_at': ISOTIME,
                     'tags': ['one', 'two'],
                     'size': 1024,
+                    'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
                     'container_format': 'ami',
                     'disk_format': 'ami',
+                    'created_at': ISOTIME,
+                    'updated_at': ISOTIME,
                     'self': '/v2/images/%s' % UUID1,
                     'file': '/v2/images/%s/file' % UUID1,
                     'schema': '/v2/schemas/image',
-                    'checksum': None,
                 },
                 {
                     'id': UUID2,
-                    'name': 'image-2',
                     'status': 'queued',
                     'visibility': 'private',
-                    'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+                    'tags': [],
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
-                    'tags': [],
                     'self': '/v2/images/%s' % UUID2,
                     'file': '/v2/images/%s/file' % UUID2,
                     'schema': '/v2/schemas/image',
-                    'size': None,
                 },
             ],
             'first': '/v2/images',
@@ -707,27 +706,43 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         expect_next = '/v2/images?sort_key=id&sort_dir=asc&limit=10&marker=%s'
         self.assertEqual(expect_next % UUID2, output['next'])
 
-    def test_show(self):
+    def test_show_full_fixture(self):
         expected = {
             'id': UUID1,
             'name': 'image-1',
             'status': 'queued',
             'visibility': 'public',
-            'checksum': None,
-            'created_at': ISOTIME,
-            'updated_at': ISOTIME,
             'tags': ['one', 'two'],
             'size': 1024,
+            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+            'container_format': 'ami',
+            'disk_format': 'ami',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
             'self': '/v2/images/%s' % UUID1,
             'file': '/v2/images/%s/file' % UUID1,
             'schema': '/v2/schemas/image',
-            'container_format': 'ami',
-            'disk_format': 'ami',
         }
         response = webob.Response()
         self.serializer.show(response, self.fixtures[0])
         self.assertEqual(expected, json.loads(response.body))
         self.assertEqual('application/json', response.content_type)
+
+    def test_show_minimal_fixture(self):
+        expected = {
+            'id': UUID2,
+            'status': 'queued',
+            'visibility': 'private',
+            'tags': [],
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
+            'self': '/v2/images/%s' % UUID2,
+            'file': '/v2/images/%s/file' % UUID2,
+            'schema': '/v2/schemas/image',
+        }
+        response = webob.Response()
+        self.serializer.show(response, self.fixtures[1])
+        self.assertEqual(expected, json.loads(response.body))
 
     def test_create(self):
         expected = {
@@ -735,16 +750,16 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'name': 'image-1',
             'status': 'queued',
             'visibility': 'public',
-            'checksum': None,
-            'created_at': ISOTIME,
-            'updated_at': ISOTIME,
             'tags': ['one', 'two'],
             'size': 1024,
+            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+            'container_format': 'ami',
+            'disk_format': 'ami',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
             'self': '/v2/images/%s' % UUID1,
             'file': '/v2/images/%s/file' % UUID1,
             'schema': '/v2/schemas/image',
-            'container_format': 'ami',
-            'disk_format': 'ami',
         }
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
@@ -758,16 +773,16 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'name': 'image-1',
             'status': 'queued',
             'visibility': 'public',
-            'checksum': None,
-            'created_at': ISOTIME,
-            'updated_at': ISOTIME,
             'tags': ['one', 'two'],
             'size': 1024,
+            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
+            'container_format': 'ami',
+            'disk_format': 'ami',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
             'self': '/v2/images/%s' % UUID1,
             'file': '/v2/images/%s/file' % UUID1,
             'schema': '/v2/schemas/image',
-            'container_format': 'ami',
-            'disk_format': 'ami',
         }
         response = webob.Response()
         self.serializer.update(response, self.fixtures[0])
@@ -802,11 +817,11 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-            'created_at': ISOTIME,
-            'updated_at': ISOTIME,
             'tags': [],
             'size': 1024,
             'color': 'green',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
             'self': '/v2/images/%s' % UUID2,
             'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
@@ -823,11 +838,11 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-            'created_at': ISOTIME,
-            'updated_at': ISOTIME,
             'tags': [],
             'size': 1024,
             'color': 'invalid',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
             'self': '/v2/images/%s' % UUID2,
             'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
@@ -855,11 +870,11 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-            'created_at': ISOTIME,
-            'updated_at': ISOTIME,
             'marx': 'groucho',
             'tags': [],
             'size': 1024,
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
             'self': '/v2/images/%s' % UUID2,
             'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
@@ -880,11 +895,11 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-            'created_at': ISOTIME,
-            'updated_at': ISOTIME,
             'marx': 123,
             'tags': [],
             'size': 1024,
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
             'self': '/v2/images/%s' % UUID2,
             'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
@@ -902,10 +917,10 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'status': 'queued',
             'visibility': 'private',
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-            'created_at': ISOTIME,
-            'updated_at': ISOTIME,
             'tags': [],
             'size': 1024,
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
             'self': '/v2/images/%s' % UUID2,
             'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',

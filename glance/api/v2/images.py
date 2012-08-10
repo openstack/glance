@@ -261,24 +261,30 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         ]
 
     def _format_image(self, image):
-        _image = image['properties']
-        for key in ['id', 'name', 'created_at', 'updated_at', 'tags', 'size',
-                    'checksum', 'status']:
-            _image[key] = image[key]
-        if CONF.show_image_direct_url and image['location']:
-            _image['direct_url'] = image['location']
+        #NOTE(bcwaldon): merge the contained properties dict with the
+        # top-level image object
+        image_view = image['properties']
+        attributes = ['id', 'name', 'disk_format', 'container_format',
+                      'size', 'status', 'checksum', 'tags',
+                      'created_at', 'updated_at']
+        for key in attributes:
+            image_view[key] = image[key]
 
-        for key in ['container_format', 'disk_format']:
-            if image.get(key):
-                _image[key] = image[key]
+        location = image['location']
+        if CONF.show_image_direct_url and location is not None:
+            image_view['direct_url'] = location
 
-        _image['visibility'] = 'public' if image['is_public'] else 'private'
-        _image = self.schema.filter(_image)
-        _image['self'] = self._get_image_href(image)
-        _image['file'] = self._get_image_href(image, 'file')
-        _image['schema'] = '/v2/schemas/image'
-        self._serialize_datetimes(_image)
-        return _image
+        visibility = 'public' if image['is_public'] else 'private'
+        image_view['visibility'] = visibility
+
+        image_view['self'] = self._get_image_href(image)
+        image_view['file'] = self._get_image_href(image, 'file')
+        image_view['schema'] = '/v2/schemas/image'
+
+        self._serialize_datetimes(image_view)
+        image_view = self.schema.filter(image_view)
+
+        return image_view
 
     @staticmethod
     def _serialize_datetimes(image):
