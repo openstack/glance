@@ -183,7 +183,7 @@ class KeystoneStrategy(BaseStrategy):
         elif resp.status == 404:
             raise exception.AuthUrlNotFound(url=token_url)
         else:
-            raise Exception(_('Unexpected response: %s' % resp.status))
+            raise Exception(_('Unexpected response: %s') % resp.status)
 
     def _v2_auth(self, token_url):
 
@@ -268,7 +268,7 @@ def get_endpoint(service_catalog, service_type='image', endpoint_region=None,
         try:
             s_type = service['type']
         except KeyError:
-            msg = _('Encountered service with no "type": %s' % s_type)
+            msg = _('Encountered service with no "type": %s') % s_type
             LOG.warn(msg)
             continue
 
