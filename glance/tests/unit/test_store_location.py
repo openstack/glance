@@ -49,7 +49,11 @@ class TestStoreLocation(base.StoreClearingUnitTest):
             's3://accesskey:secretwith/aslash@s3.amazonaws.com/bucket/key-id',
             's3+http://accesskey:secret@s3.amazonaws.com/bucket/key-id',
             's3+https://accesskey:secretkey@s3.amazonaws.com/bucket/key-id',
-            'file:///var/lib/glance/images/1']
+            'file:///var/lib/glance/images/1',
+            'rbd://imagename',
+            'rbd://fsid/pool/image/snap',
+            'rbd://%2F/%2F/%2F/%2F',
+            ]
 
         for uri in good_store_uris:
             loc = location.get_location_from_uri(uri)
@@ -273,6 +277,61 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         bad_uri = 's3://user:pass@http://example.com:8080/images/1'
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
 
+    def test_rbd_store_location(self):
+        """
+        Test the specific StoreLocation for the RBD store
+        """
+        uri = 'rbd://imagename'
+        loc = glance.store.rbd.StoreLocation({})
+        loc.parse_uri(uri)
+
+        self.assertEqual('imagename', loc.image)
+        self.assertEqual(None, loc.fsid)
+        self.assertEqual(None, loc.pool)
+        self.assertEqual(None, loc.snapshot)
+
+        uri = 'rbd://fsid/pool/image/snap'
+        loc = glance.store.rbd.StoreLocation({})
+        loc.parse_uri(uri)
+
+        self.assertEqual('image', loc.image)
+        self.assertEqual('fsid', loc.fsid)
+        self.assertEqual('pool', loc.pool)
+        self.assertEqual('snap', loc.snapshot)
+
+        uri = 'rbd://%2f/%2f/%2f/%2f'
+        loc = glance.store.rbd.StoreLocation({})
+        loc.parse_uri(uri)
+
+        self.assertEqual('/', loc.image)
+        self.assertEqual('/', loc.fsid)
+        self.assertEqual('/', loc.pool)
+        self.assertEqual('/', loc.snapshot)
+
+        bad_uri = 'rbd:/image'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = 'rbd://image/extra'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = 'rbd://image/'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = 'http://image'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = 'http://fsid/pool/image/snap'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = 'rbd://fsid/pool/image/'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = 'rbd://fsid/pool/image/snap/'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = 'http://///'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
     def test_get_store_from_scheme(self):
         """
         Test that the backend returned by glance.store.get_backend_class
@@ -288,7 +347,8 @@ class TestStoreLocation(base.StoreClearingUnitTest):
             'file': glance.store.filesystem.Store,
             'filesystem': glance.store.filesystem.Store,
             'http': glance.store.http.Store,
-            'https': glance.store.http.Store}
+            'https': glance.store.http.Store,
+            'rbd': glance.store.rbd.Store}
 
         ctx = context.RequestContext()
         for scheme, store in good_results.items():
