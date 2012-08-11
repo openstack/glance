@@ -162,11 +162,16 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         except exception.InvalidObject as e:
             raise webob.exc.HTTPBadRequest(explanation=unicode(e))
 
+        # Ensure all specified properties are allowed
+        self._check_readonly(body)
+        self._check_reserved(body)
+
         # Create a dict of base image properties, with user- and deployer-
         # defined properties contained in a 'properties' dictionary
         image = {'properties': body}
-        for key in ['id', 'name', 'visibility', 'created_at', 'updated_at',
-                    'tags', 'status']:
+        for key in ['checksum', 'created_at', 'container_format',
+                'disk_format', 'id', 'min_disk', 'min_ram', 'name', 'size',
+                'status', 'tags', 'updated_at', 'visibility']:
             try:
                 image[key] = image['properties'].pop(key)
             except KeyError:
@@ -175,14 +180,22 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         if 'visibility' in image:
             image['is_public'] = image.pop('visibility') == 'public'
 
-        self._check_readonly(image)
         return {'image': image}
 
     @staticmethod
     def _check_readonly(image):
-        for key in ['created_at', 'updated_at', 'status']:
+        for key in ['created_at', 'updated_at', 'status', 'checksum', 'size',
+                'direct_url', 'self', 'file', 'schema']:
             if key in image:
                 msg = "Attribute \'%s\' is read-only." % key
+                raise webob.exc.HTTPForbidden(explanation=unicode(msg))
+
+    @staticmethod
+    def _check_reserved(image):
+        for key in ['owner', 'protected', 'is_public', 'location',
+                'deleted', 'deleted_at']:
+            if key in image:
+                msg = "Attribute \'%s\' is reserved." % key
                 raise webob.exc.HTTPForbidden(explanation=unicode(msg))
 
     def create(self, request):

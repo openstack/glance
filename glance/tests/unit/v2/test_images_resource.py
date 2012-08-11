@@ -338,80 +338,104 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         super(TestImagesDeserializer, self).setUp()
         self.deserializer = glance.api.v2.images.RequestDeserializer()
 
-    def test_create_with_id(self):
+    def test_create_minimal(self):
         request = unit_test_utils.get_fake_request()
-        image_id = utils.generate_uuid()
-        request.body = json.dumps({'id': image_id})
+        request.body = json.dumps({})
         output = self.deserializer.create(request)
-        expected = {'image': {'id': image_id, 'properties': {}}}
+        expected = {'image': {'properties': {}}}
         self.assertEqual(expected, output)
 
-    def test_create_with_name(self):
+    def test_create_full(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'name': 'image-1'})
+        request.body = json.dumps({
+            'id': UUID3,
+            'name': 'image-1',
+            'visibility': 'public',
+            'tags': ['one', 'two'],
+            'container_format': 'ami',
+            'disk_format': 'ami',
+            'min_ram': 128,
+            'min_disk': 10,
+            'foo': 'bar',
+        })
         output = self.deserializer.create(request)
-        expected = {'image': {'name': 'image-1', 'properties': {}}}
-        self.assertEqual(expected, output)
-
-    def test_create_public(self):
-        request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'visibility': 'public'})
-        output = self.deserializer.create(request)
-        expected = {'image': {'is_public': True, 'properties': {}}}
-        self.assertEqual(expected, output)
-
-    def test_create_private(self):
-        request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'visibility': 'private'})
-        output = self.deserializer.create(request)
-        expected = {'image': {'is_public': False, 'properties': {}}}
+        expected = {'image': {
+            'id': UUID3,
+            'name': 'image-1',
+            'is_public': True,
+            'tags': ['one', 'two'],
+            'container_format': 'ami',
+            'disk_format': 'ami',
+            'min_ram': 128,
+            'min_disk': 10,
+            'properties': {'foo': 'bar'},
+        }}
         self.assertEqual(expected, output)
 
     def test_create_readonly_attributes_forbidden(self):
-        for key in ['created_at', 'updated_at']:
+        bodies = [
+            {'created_at': ISOTIME},
+            {'updated_at': ISOTIME},
+            {'status': 'saving'},
+            {'direct_url': 'http://example.com'},
+            {'size': 10},
+            {'checksum': 'asdf'},
+            {'self': 'http://example.com'},
+            {'file': 'http://example.com'},
+            {'schema': 'http://example.com'},
+        ]
+
+        for body in bodies:
             request = unit_test_utils.get_fake_request()
-            request.body = json.dumps({key: ISOTIME})
+            request.body = json.dumps(body)
             self.assertRaises(webob.exc.HTTPForbidden,
-                              self.deserializer.update, request)
-
-    def test_create_status_attribute_forbidden(self):
-        request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'status': 'saving'})
-        self.assertRaises(webob.exc.HTTPForbidden,
-                          self.deserializer.update, request)
-
-    def test_create_with_tags(self):
-        request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'tags': ['one', 'two']})
-        output = self.deserializer.create(request)
-        expected = {'image': {'tags': ['one', 'two'], 'properties': {}}}
-        self.assertEqual(expected, output)
+                              self.deserializer.create, request)
 
     def test_update(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'name': 'image-1', 'visibility': 'public'})
+        request.body = json.dumps({
+            'id': UUID3,
+            'name': 'image-1',
+            'visibility': 'public',
+            'tags': ['one', 'two'],
+            'container_format': 'ami',
+            'disk_format': 'ami',
+            'min_ram': 128,
+            'min_disk': 10,
+            'foo': 'bar',
+        })
         output = self.deserializer.update(request)
-        expected = {
-            'image': {
-                'name': 'image-1',
-                'is_public': True,
-                'properties': {},
-            },
-        }
+        expected = {'image': {
+            'id': UUID3,
+            'name': 'image-1',
+            'is_public': True,
+            'tags': ['one', 'two'],
+            'container_format': 'ami',
+            'disk_format': 'ami',
+            'min_ram': 128,
+            'min_disk': 10,
+            'properties': {'foo': 'bar'},
+        }}
         self.assertEqual(expected, output)
 
     def test_update_readonly_attributes_forbidden(self):
-        for key in ['created_at', 'updated_at']:
+        bodies = [
+            {'created_at': ISOTIME},
+            {'updated_at': ISOTIME},
+            {'status': 'saving'},
+            {'direct_url': 'http://example.com'},
+            {'size': 10},
+            {'checksum': 'asdf'},
+            {'self': 'http://example.com'},
+            {'file': 'http://example.com'},
+            {'schema': 'http://example.com'},
+        ]
+
+        for body in bodies:
             request = unit_test_utils.get_fake_request()
-            request.body = json.dumps({key: ISOTIME})
+            request.body = json.dumps(body)
             self.assertRaises(webob.exc.HTTPForbidden,
                               self.deserializer.update, request)
-
-    def test_update_status_attribute_forbidden(self):
-        request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'status': 'saving'})
-        self.assertRaises(webob.exc.HTTPForbidden,
-                          self.deserializer.update, request)
 
     def test_index(self):
         marker = utils.generate_uuid()
