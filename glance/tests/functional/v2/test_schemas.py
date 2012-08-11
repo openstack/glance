@@ -51,6 +51,8 @@ class TestSchemas(functional.FunctionalTest):
             'status',
             'schema',
             'direct_url',
+            'min_ram',
+            'min_disk',
         ])
         self.assertEqual(expected, set(image_schema['properties'].keys()))
 
