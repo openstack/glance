@@ -19,18 +19,20 @@
 Time related utilities and helper functions.
 """
 
+import calendar
 import datetime
 
 import iso8601
 
 
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
+PERFECT_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 
 
 def isotime(at=None):
     """Stringify time in ISO 8601 format"""
     if not at:
-        at = datetime.datetime.utcnow()
+        at = utcnow()
     str = at.strftime(TIME_FORMAT)
     tz = at.tzinfo.tzname(None) if at.tzinfo else 'UTC'
     str += ('Z' if tz == 'UTC' else tz)
@@ -47,10 +49,32 @@ def parse_isotime(timestr):
         raise ValueError(e.message)
 
 
+def strtime(at=None, fmt=PERFECT_TIME_FORMAT):
+    """Returns formatted utcnow."""
+    if not at:
+        at = utcnow()
+    return at.strftime(fmt)
+
+
+def parse_strtime(timestr, fmt=PERFECT_TIME_FORMAT):
+    """Turn a formatted time back into a datetime."""
+    return datetime.datetime.strptime(timestr, fmt)
+
+
 def normalize_time(timestamp):
     """Normalize time in arbitrary timezone to UTC"""
     offset = timestamp.utcoffset()
     return timestamp.replace(tzinfo=None) - offset if offset else timestamp
+
+
+def is_older_than(before, seconds):
+    """Return True if before is older than seconds."""
+    return utcnow() - before > datetime.timedelta(seconds=seconds)
+
+
+def utcnow_ts():
+    """Timestamp version of our utcnow function."""
+    return calendar.timegm(utcnow().timetuple())
 
 
 def utcnow():
@@ -66,6 +90,17 @@ utcnow.override_time = None
 def set_time_override(override_time=datetime.datetime.utcnow()):
     """Override utils.utcnow to return a constant time."""
     utcnow.override_time = override_time
+
+
+def advance_time_delta(timedelta):
+    """Advance overriden time using a datetime.timedelta."""
+    assert(not utcnow.override_time is None)
+    utcnow.override_time += timedelta
+
+
+def advance_time_seconds(seconds):
+    """Advance overriden time by seconds."""
+    advance_time_delta(datetime.timedelta(0, seconds))
 
 
 def clear_time_override():
