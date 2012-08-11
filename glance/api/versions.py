@@ -42,7 +42,7 @@ class Controller(object):
             }
 
         version_objs = [
-            build_version_object(2, 'v2', 'EXPERIMENTAL'),
+            build_version_object(2.0, 'v2', 'EXPERIMENTAL'),
             build_version_object(1.1, 'v1', 'CURRENT'),
             build_version_object(1.0, 'v1', 'SUPPORTED'),
         ]

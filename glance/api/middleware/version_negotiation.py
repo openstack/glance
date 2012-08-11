@@ -79,7 +79,7 @@ class VersionNegotiationFilter(wsgi.Middleware):
         """
         if subject in ('v1', 'v1.0', 'v1.1'):
             major_version = 1
-        elif subject == 'v2':
+        elif subject in ('v2', 'v2.0'):
             major_version = 2
         else:
             raise ValueError()
