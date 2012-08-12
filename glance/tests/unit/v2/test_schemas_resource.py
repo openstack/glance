@@ -31,7 +31,7 @@ class TestSchemasController(test_utils.BaseTestCase):
         expected = set(['status', 'name', 'tags', 'checksum', 'created_at',
                         'disk_format', 'updated_at', 'visibility', 'self',
                         'file', 'container_format', 'schema', 'id', 'size',
-                        'direct_url', 'min_ram', 'min_disk'])
+                        'direct_url', 'min_ram', 'min_disk', 'protected'])
         self.assertEqual(set(output['properties'].keys()), expected)
 
     def test_images(self):

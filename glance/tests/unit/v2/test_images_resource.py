@@ -357,6 +357,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             'min_ram': 128,
             'min_disk': 10,
             'foo': 'bar',
+            'protected': True,
         })
         output = self.deserializer.create(request)
         expected = {'image': {
@@ -369,6 +370,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             'min_ram': 128,
             'min_disk': 10,
             'properties': {'foo': 'bar'},
+            'protected': True,
         }}
         self.assertEqual(expected, output)
 
@@ -403,6 +405,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             'min_ram': 128,
             'min_disk': 10,
             'foo': 'bar',
+            'protected': True,
         })
         output = self.deserializer.update(request)
         expected = {'image': {
@@ -415,6 +418,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             'min_ram': 128,
             'min_disk': 10,
             'properties': {'foo': 'bar'},
+            'protected': True,
         }}
         self.assertEqual(expected, output)
 
@@ -680,6 +684,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'name': 'image-1',
                     'status': 'queued',
                     'visibility': 'public',
+                    'protected': False,
                     'tags': ['one', 'two'],
                     'size': 1024,
                     'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -697,6 +702,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'id': UUID2,
                     'status': 'queued',
                     'visibility': 'private',
+                    'protected': False,
                     'tags': [],
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
@@ -741,6 +747,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'name': 'image-1',
             'status': 'queued',
             'visibility': 'public',
+            'protected': False,
             'tags': ['one', 'two'],
             'size': 1024,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -764,6 +771,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'id': UUID2,
             'status': 'queued',
             'visibility': 'private',
+            'protected': False,
             'tags': [],
             'created_at': ISOTIME,
             'updated_at': ISOTIME,
@@ -781,6 +789,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'name': 'image-1',
             'status': 'queued',
             'visibility': 'public',
+            'protected': False,
             'tags': ['one', 'two'],
             'size': 1024,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -806,6 +815,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'name': 'image-1',
             'status': 'queued',
             'visibility': 'public',
+            'protected': False,
             'tags': ['one', 'two'],
             'size': 1024,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -851,6 +861,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'name': 'image-2',
             'status': 'queued',
             'visibility': 'private',
+            'protected': False,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'tags': [],
             'size': 1024,
@@ -872,6 +883,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'name': 'image-2',
             'status': 'queued',
             'visibility': 'private',
+            'protected': False,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'tags': [],
             'size': 1024,
@@ -904,6 +916,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'name': 'image-2',
             'status': 'queued',
             'visibility': 'private',
+            'protected': False,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'marx': 'groucho',
             'tags': [],
@@ -929,6 +942,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'name': 'image-2',
             'status': 'queued',
             'visibility': 'private',
+            'protected': False,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'marx': 123,
             'tags': [],
@@ -951,6 +965,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'name': 'image-2',
             'status': 'queued',
             'visibility': 'private',
+            'protected': False,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'tags': [],
             'size': 1024,

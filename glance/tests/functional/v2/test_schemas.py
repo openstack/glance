@@ -53,6 +53,7 @@ class TestSchemas(functional.FunctionalTest):
             'direct_url',
             'min_ram',
             'min_disk',
+            'protected',
         ])
         self.assertEqual(expected, set(image_schema['properties'].keys()))
 
