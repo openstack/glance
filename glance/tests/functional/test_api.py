@@ -34,7 +34,7 @@ class TestRootApi(functional.FunctionalTest):
         url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
         versions = {'versions': [
             {
-                'id': 'v2',
+                'id': 'v2.0',
                 'status': 'EXPERIMENTAL',
                 'links': [{'rel': 'self', 'href': url % '2'}],
             },
