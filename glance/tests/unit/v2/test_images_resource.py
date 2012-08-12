@@ -312,6 +312,12 @@ class TestImagesController(test_utils.BaseTestCase):
         output = self.controller.create(request, image)
         self.assertEqual(True, output['is_public'])
 
+    def test_create_duplicate_tags(self):
+        request = unit_test_utils.get_fake_request()
+        image = {'tags': ['ping', 'ping']}
+        output = self.controller.create(request, image)
+        self.assertEqual(['ping'], output['tags'])
+
     def test_update(self):
         request = unit_test_utils.get_fake_request()
         image = {'name': 'image-2'}
@@ -324,6 +330,12 @@ class TestImagesController(test_utils.BaseTestCase):
         image = {'name': 'image-2'}
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.update,
                           request, utils.generate_uuid(), image)
+
+    def test_update_duplicate_tags(self):
+        request = unit_test_utils.get_fake_request()
+        image = {'tags': ['ping', 'ping']}
+        output = self.controller.update(request, UUID1, image)
+        self.assertEqual(['ping'], output['tags'])
 
     def test_index_with_invalid_marker(self):
         fake_uuid = utils.generate_uuid()

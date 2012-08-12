@@ -28,7 +28,9 @@ class Controller(object):
 
     @utils.mutating
     def update(self, req, image_id, tag_value):
-        self.db_api.image_tag_create(req.context, image_id, tag_value)
+        context = req.context
+        if tag_value not in self.db_api.image_tag_get_all(context, image_id):
+            self.db_api.image_tag_create(context, image_id, tag_value)
 
     @utils.mutating
     def delete(self, req, image_id, tag_value):
