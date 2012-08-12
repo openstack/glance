@@ -266,7 +266,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         image_view = image['properties']
         attributes = ['id', 'name', 'disk_format', 'container_format',
                       'size', 'status', 'checksum', 'tags',
-                      'created_at', 'updated_at']
+                      'created_at', 'updated_at', 'min_ram', 'min_disk']
         for key in attributes:
             image_view[key] = image[key]
 
@@ -395,6 +395,14 @@ _BASE_PROPERTIES = {
     'direct_url': {
         'type': 'string',
         'description': 'URL to access the image file kept in external store',
+    },
+    'min_ram': {
+        'type': 'integer',
+        'description': 'Amount of ram (in MB) required to boot image.',
+    },
+    'min_disk': {
+        'type': 'integer',
+        'description': 'Amount of disk space (in GB) required to boot image.',
     },
     'self': {'type': 'string'},
     'file': {'type': 'string'},

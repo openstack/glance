@@ -61,6 +61,8 @@ def _fixture(id, **kwargs):
         'disk_format': None,
         'container_format': None,
         'deleted': False,
+        'min_ram': None,
+        'min_disk': None,
     }
     obj.update(kwargs)
     return obj
@@ -638,7 +640,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             _fixture(UUID1, name='image-1', size=1024, tags=['one', 'two'],
                     created_at=DATETIME, updated_at=DATETIME, owner=TENANT1,
                     is_public=True, container_format='ami', disk_format='ami',
-                    checksum='ca425b88f047ce8ec45ee90e813ada91'),
+                    checksum='ca425b88f047ce8ec45ee90e813ada91',
+                    min_ram=128, min_disk=10),
 
             #NOTE(bcwaldon): This second fixture depends on default behavior
             # and sets most values to None
@@ -658,6 +661,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
                     'container_format': 'ami',
                     'disk_format': 'ami',
+                    'min_ram': 128,
+                    'min_disk': 10,
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                     'self': '/v2/images/%s' % UUID1,
@@ -717,6 +722,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'container_format': 'ami',
             'disk_format': 'ami',
+            'min_ram': 128,
+            'min_disk': 10,
             'created_at': ISOTIME,
             'updated_at': ISOTIME,
             'self': '/v2/images/%s' % UUID1,
@@ -755,6 +762,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'container_format': 'ami',
             'disk_format': 'ami',
+            'min_ram': 128,
+            'min_disk': 10,
             'created_at': ISOTIME,
             'updated_at': ISOTIME,
             'self': '/v2/images/%s' % UUID1,
@@ -778,6 +787,8 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'container_format': 'ami',
             'disk_format': 'ami',
+            'min_ram': 128,
+            'min_disk': 10,
             'created_at': ISOTIME,
             'updated_at': ISOTIME,
             'self': '/v2/images/%s' % UUID1,
