@@ -59,7 +59,7 @@ swift_opts = [
                default=DEFAULT_LARGE_OBJECT_CHUNK_SIZE),
     cfg.BoolOpt('swift_store_create_container_on_put', default=False),
     cfg.BoolOpt('swift_store_multi_tenant', default=False),
-    cfg.BoolOpt('swift_store_admin_tenants', default=[]),
+    cfg.ListOpt('swift_store_admin_tenants', default=[]),
     ]
 
 CONF = cfg.CONF
