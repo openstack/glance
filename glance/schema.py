@@ -36,9 +36,13 @@ class Schema(object):
     def filter(self, obj):
         filtered = {}
         for key, value in obj.iteritems():
-            if key in self.properties:
+            if self._filter_func(self.properties, key) and value is not None:
                 filtered[key] = value
         return filtered
+
+    @staticmethod
+    def _filter_func(properties, key):
+        return key in properties
 
     def merge_properties(self, properties):
         # Ensure custom props aren't attempting to override base props
@@ -67,8 +71,9 @@ class Schema(object):
 
 
 class PermissiveSchema(Schema):
-    def filter(self, obj):
-        return obj
+    @staticmethod
+    def _filter_func(properties, key):
+        return True
 
     def raw(self):
         raw = super(PermissiveSchema, self).raw()
