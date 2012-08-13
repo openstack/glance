@@ -17,19 +17,14 @@
 import setuptools
 
 from glance.openstack.common import setup
-
-setup.write_vcsversion('glance/vcsversion.py')
-
-# import this after write_vcsversion because version imports vcsversion
-from glance import version
-
+from glance.version import version_info as version
 
 requires = setup.parse_requirements()
 depend_links = setup.parse_dependency_links()
 
 setuptools.setup(
     name='glance',
-    version=version.canonical_version_string(),
+    version=version.canonical_version_string(always=True),
     description='The Glance project provides services for discovering, '
                 'registering, and retrieving virtual machine images',
     license='Apache License (2.0)',

@@ -74,9 +74,9 @@ copyright = u'2010-present, OpenStack, LLC.'
 # built documents.
 #
 # The short X.Y version.
-from glance import version as glance_version
+from glance.version import version_info as glance_version
 # The full version, including alpha/beta/rc tags.
-release = glance_version.version_string()
+release = glance_version.version_string_with_vcs()
 # The short X.Y version.
 version = glance_version.canonical_version_string()
 
