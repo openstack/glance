@@ -32,6 +32,17 @@ class TestImageTagsController(test_utils.BaseTestCase):
     def test_create_tag(self):
         request = unit_test_utils.get_fake_request()
         self.controller.update(request, unit_test_utils.UUID1, 'dink')
+        context = request.context
+        tags = self.db.image_tag_get_all(context, unit_test_utils.UUID1)
+        self.assertEqual(1, len([tag for tag in tags if tag == 'dink']))
+
+    def test_create_duplicate_tag_ignored(self):
+        request = unit_test_utils.get_fake_request()
+        self.controller.update(request, unit_test_utils.UUID1, 'dink')
+        self.controller.update(request, unit_test_utils.UUID1, 'dink')
+        context = request.context
+        tags = self.db.image_tag_get_all(context, unit_test_utils.UUID1)
+        self.assertEqual(1, len([tag for tag in tags if tag == 'dink']))
 
     def test_delete_tag(self):
         request = unit_test_utils.get_fake_request()

@@ -56,7 +56,9 @@ class ImagesController(object):
 
     def _extract_tags(self, image):
         try:
-            return image.pop('tags')
+            #NOTE(bcwaldon): cast to set to make the list unique, then
+            # cast back to list since that's a more sane response type
+            return list(set(image.pop('tags')))
         except KeyError:
             pass
 
