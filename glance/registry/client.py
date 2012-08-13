@@ -24,7 +24,10 @@ import json
 
 from glance.common.client import BaseClient
 from glance.common import crypt
+import glance.openstack.common.log as logging
 from glance.registry.api.v1 import images
+
+LOG = logging.getLogger(__name__)
 
 
 class RegistryClient(BaseClient):
@@ -80,6 +83,22 @@ class RegistryClient(BaseClient):
             image = self.decrypt_metadata(image)
         return image_list
 
+    def do_request(self, method, action, **kwargs):
+        try:
+            res = super(RegistryClient, self).do_request(method,
+                  action, **kwargs)
+            status = res.status
+            request_id = res.getheader('x-openstack-request-id')
+            msg = _("Registry request %(method)s %(action)s HTTP %(status)s"\
+                  " request id %(request_id)s")
+            LOG.debug(msg % locals())
+
+        except:
+            LOG.exception(_("Registry request %(method)s %(action)s Exception")
+                        % locals())
+            raise
+        return res
+
     def get_images_detailed(self, **kwargs):
         """
         Returns a list of detailed image data mappings from Registry
@@ -118,7 +137,7 @@ class RegistryClient(BaseClient):
                                       image_metadata['image'])
         body = json.dumps(image_metadata)
 
-        res = self.do_request("POST", "/images", body, headers=headers)
+        res = self.do_request("POST", "/images", body=body, headers=headers)
         # Registry returns a JSONified dict(image=image_info)
         data = json.loads(res.read())
         image = data['image']
@@ -142,7 +161,8 @@ class RegistryClient(BaseClient):
         if purge_props:
             headers["X-Glance-Registry-Purge-Props"] = "true"
 
-        res = self.do_request("PUT", "/images/%s" % image_id, body, headers)
+        res = self.do_request("PUT", "/images/%s" % image_id, body=body,
+                              headers=headers)
         data = json.loads(res.read())
         image = data['image']
         return self.decrypt_metadata(image)
@@ -181,7 +201,7 @@ class RegistryClient(BaseClient):
         headers = {'Content-Type': 'application/json', }
 
         res = self.do_request("PUT", "/images/%s/members" % image_id,
-                              body, headers)
+                              body=body, headers=headers)
         return self.get_status_code(res) == 204
 
     def add_member(self, image_id, member_id, can_share=None):
@@ -193,8 +213,9 @@ class RegistryClient(BaseClient):
             body = json.dumps(dict(member=dict(can_share=can_share)))
             headers['Content-Type'] = 'application/json'
 
-        res = self.do_request("PUT", "/images/%s/members/%s" %
-                              (image_id, member_id), body, headers)
+        url = "/images/%s/members/%s" % (image_id, member_id)
+        res = self.do_request("PUT", url, body=body,
+                              headers=headers)
         return self.get_status_code(res) == 204
 
     def delete_member(self, image_id, member_id):
