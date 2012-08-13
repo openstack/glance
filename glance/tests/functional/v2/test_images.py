@@ -88,6 +88,7 @@ class TestImages(functional.FunctionalTest):
         self.assertFalse('checksum' in image)
         self.assertFalse('size' in image)
         self.assertEqual('bar', image['foo'])
+        self.assertEqual(False, image['protected'])
         self.assertTrue(image['created_at'])
         self.assertTrue(image['updated_at'])
         self.assertEqual(image['updated_at'], image['created_at'])
@@ -95,7 +96,7 @@ class TestImages(functional.FunctionalTest):
         # The image should be mutable, including adding new properties
         path = self._url('/v2/images/%s' % image_id)
         data = json.dumps({'name': 'image-2', 'format': 'vhd',
-                           'foo': 'baz', 'ping': 'pong'})
+                           'foo': 'baz', 'ping': 'pong', 'protected': True})
         response = requests.put(path, headers=self._headers(), data=data)
         self.assertEqual(200, response.status_code)
 
@@ -105,6 +106,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual('vhd', image['format'])
         self.assertEqual('baz', image['foo'])
         self.assertEqual('pong', image['ping'])
+        self.assertEqual(True, image['protected'])
 
         # Updates should persist across requests
         path = self._url('/v2/images/%s' % image_id)
@@ -115,6 +117,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual('image-2', image['name'])
         self.assertEqual('baz', image['foo'])
         self.assertEqual('pong', image['ping'])
+        self.assertEqual(True, image['protected'])
 
         # Try to download data before its uploaded
         path = self._url('/v2/images/%s/file' % image_id)
@@ -156,6 +159,17 @@ class TestImages(functional.FunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         self.assertEqual(5, json.loads(response.text)['size'])
+
+        # Deletion should not work on protected images
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(403, response.status_code)
+
+        # Unprotect image for deletion
+        path = self._url('/v2/images/%s' % image_id)
+        data = json.dumps({'protected': False})
+        response = requests.put(path, headers=self._headers(), data=data)
+        self.assertEqual(200, response.status_code)
 
         # Deletion should work
         path = self._url('/v2/images/%s' % image_id)

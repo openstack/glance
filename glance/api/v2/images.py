@@ -112,11 +112,14 @@ class ImagesController(object):
                             for image in images]
         return result
 
-    def show(self, req, image_id):
+    def _get_image(self, context, image_id):
         try:
-            image = self.db_api.image_get(req.context, image_id)
+            return self.db_api.image_get(context, image_id)
         except (exception.NotFound, exception.Forbidden):
             raise webob.exc.HTTPNotFound()
+
+    def show(self, req, image_id):
+        image = self._get_image(req.context, image_id)
         image = self._normalize_properties(dict(image))
         return self._append_tags(req.context, image)
 
@@ -143,6 +146,12 @@ class ImagesController(object):
 
     @utils.mutating
     def delete(self, req, image_id):
+        image = self._get_image(req.context, image_id)
+
+        if image['protected']:
+            msg = _("Unable to delete as image is protected.")
+            raise webob.exc.HTTPForbidden(explanation=msg)
+
         try:
             self.db_api.image_destroy(req.context, image_id)
         except (exception.NotFound, exception.Forbidden):
@@ -171,7 +180,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         image = {'properties': body}
         for key in ['checksum', 'created_at', 'container_format',
                 'disk_format', 'id', 'min_disk', 'min_ram', 'name', 'size',
-                'status', 'tags', 'updated_at', 'visibility']:
+                'status', 'tags', 'updated_at', 'visibility', 'protected']:
             try:
                 image[key] = image['properties'].pop(key)
             except KeyError:
@@ -192,8 +201,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
     @staticmethod
     def _check_reserved(image):
-        for key in ['owner', 'protected', 'is_public', 'location',
-                'deleted', 'deleted_at']:
+        for key in ['owner', 'is_public', 'location', 'deleted', 'deleted_at']:
             if key in image:
                 msg = "Attribute \'%s\' is reserved." % key
                 raise webob.exc.HTTPForbidden(explanation=unicode(msg))
@@ -278,7 +286,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         # top-level image object
         image_view = image['properties']
         attributes = ['id', 'name', 'disk_format', 'container_format',
-                      'size', 'status', 'checksum', 'tags',
+                      'size', 'status', 'checksum', 'tags', 'protected',
                       'created_at', 'updated_at', 'min_ram', 'min_disk']
         for key in attributes:
             image_view[key] = image[key]
@@ -361,6 +369,10 @@ _BASE_PROPERTIES = {
         'type': 'string',
         'description': 'Scope of image accessibility',
         'enum': ['public', 'private'],
+    },
+    'protected': {
+        'type': 'boolean',
+        'description': 'If true, image will not be deletable.',
     },
     'checksum': {
         'type': 'string',
