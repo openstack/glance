@@ -64,7 +64,7 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'content-type': 'application/json'})
         data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(201, response.status_code)
         image_location_header = response.headers['Location']
 
         # Returned image entity should have a generated id and status
@@ -202,7 +202,7 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'Content-Type': 'application/json'})
         data = json.dumps({'name': 'image-1'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(201, response.status_code)
         image_id = json.loads(response.text)['id']
 
         # TENANT1 should see the image in their list
@@ -295,7 +295,7 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'Content-Type': 'application/json'})
         data = json.dumps({'name': 'image-1', 'tags': ['sniff', 'sniff']})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(201, response.status_code)
         image_id = json.loads(response.text)['id']
 
         # Image should show a list with a single tag
@@ -384,7 +384,7 @@ class TestImages(functional.FunctionalTest):
         for fixture in fixtures:
             data = json.dumps(fixture)
             response = requests.post(path, headers=headers, data=data)
-            self.assertEqual(200, response.status_code)
+            self.assertEqual(201, response.status_code)
             images.append(json.loads(response.text))
 
         # Image list should contain 7 images
@@ -474,7 +474,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         headers = self._headers({'content-type': 'application/json'})
         data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(201, response.status_code)
 
         # Get the image id
         image = json.loads(response.text)
@@ -529,7 +529,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         headers = self._headers({'content-type': 'application/json'})
         data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(201, response.status_code)
 
         # Get the image id
         image = json.loads(response.text)

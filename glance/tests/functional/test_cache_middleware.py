@@ -138,7 +138,7 @@ class BaseCacheMiddlewareTest(object):
         response, content = http.request(path, 'POST',
                                          headers=headers,
                                          body=json.dumps(image_entity))
-        self.assertEqual(response.status, 200)
+        self.assertEqual(response.status, 201)
         data = json.loads(content)
         image_id = data['id']
 
