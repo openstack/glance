@@ -25,6 +25,7 @@ import json
 import os
 import socket
 import sys
+import warnings
 
 import glance.api.v1
 from glance.common import animation
@@ -34,6 +35,11 @@ from glance.common import utils
 
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
 SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
+
+warn_msg = ("The 'glance.client' module is deprecated in favor of the "
+            "'glanceclient' module provided by python-glanceclient (see "
+            "http://github.com/openstack/python-glanceclient).")
+warnings.warn(warn_msg, stacklevel=2)
 
 
 class V1Client(base_client.BaseClient):

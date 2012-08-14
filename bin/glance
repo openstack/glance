@@ -28,7 +28,7 @@ import optparse
 import os
 import sys
 import time
-
+import warnings
 from urlparse import urlparse
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
@@ -41,7 +41,10 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 gettext.install('glance', unicode=1)
 
-from glance import client as glance_client
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    from glance import client as glance_client
+
 from glance.common import exception
 from glance.common import utils
 from glance.version import version_info as version
@@ -1022,6 +1025,9 @@ if __name__ == '__main__':
     usage = """
 %prog <command> [options] [args]
 
+WARNING! This tool is deprecated in favor of python-glanceclient (see
+http://github.com/openstack/python-glanceclient).
+
 Commands:
 
     help <command>  Output help for one of the commands below
@@ -1055,6 +1061,10 @@ Member Commands:
 
     members-replace  Replaces all membership for an image
 """
+
+    print >> sys.stderr, ("WARNING! This tool is deprecated in favor of "
+                          "python-glanceclient (see "
+                          "http://github.com/openstack/python-glanceclient).")
 
     oparser = optparse.OptionParser(version='%%prog %s'
                                     % version.version_string(),
