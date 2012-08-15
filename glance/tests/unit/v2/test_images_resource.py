@@ -327,6 +327,7 @@ class TestImagesController(test_utils.BaseTestCase):
         output = self.controller.update(request, UUID1, image)
         self.assertEqual(UUID1, output['id'])
         self.assertEqual('image-2', output['name'])
+        self.assertNotEqual(output['created_at'], output['updated_at'])
 
     def test_update_non_existant(self):
         request = unit_test_utils.get_fake_request()

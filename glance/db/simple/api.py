@@ -19,6 +19,7 @@ import uuid
 
 from glance.common import exception
 import glance.openstack.common.log as logging
+from glance.openstack.common import timeutils
 
 
 LOG = logging.getLogger(__name__)
@@ -281,6 +282,12 @@ def image_update(context, image_id, image_values):
     except KeyError:
         raise exception.NotFound(image_id=image_id)
 
+    properties = image_values.pop('properties', {})
+    properties = [{'name': k,
+                   'value': v,
+                   'deleted': False} for k, v in properties.items()]
+    image['properties'] = properties
+    image['updated_at'] = timeutils.utcnow()
     image.update(image_values)
     DATA['images'][image_id] = image
     return image

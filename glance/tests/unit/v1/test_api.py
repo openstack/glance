@@ -1749,6 +1749,9 @@ class TestRegistryAPI(base.IsolatedUnitTest):
 
         res_dict = json.loads(res.body)
 
+        self.assertNotEquals(res_dict['image']['created_at'],
+                            res_dict['image']['updated_at'])
+
         for k, v in fixture.iteritems():
             self.assertEquals(v, res_dict['image'][k])
 
