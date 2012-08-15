@@ -316,6 +316,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
                 image[key] = timeutils.isotime(value)
 
     def create(self, response, image):
+        response.status_int = 201
         response.body = json.dumps(self._format_image(image))
         response.content_type = 'application/json'
         response.location = self._get_image_href(image)

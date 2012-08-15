@@ -817,6 +817,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         }
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
+        self.assertEqual(response.status_int, 201)
         self.assertEqual(expected, json.loads(response.body))
         self.assertEqual('application/json', response.content_type)
         self.assertEqual(response.location, '/v2/images/%s' % UUID1)
