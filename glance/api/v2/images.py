@@ -167,6 +167,9 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
     def _parse_image(self, request):
         output = super(RequestDeserializer, self).default(request)
+        if not 'body' in output:
+            msg = _('Body expected in request.')
+            raise webob.exc.HTTPBadRequest(explanation=msg)
         body = output.pop('body')
         try:
             self.schema.validate(body)

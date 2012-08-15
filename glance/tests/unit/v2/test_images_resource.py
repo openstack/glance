@@ -357,6 +357,11 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         expected = {'image': {'properties': {}}}
         self.assertEqual(expected, output)
 
+    def test_create_no_body(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
+                          request)
+
     def test_create_full(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({
@@ -433,6 +438,11 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             'protected': True,
         }}
         self.assertEqual(expected, output)
+
+    def test_update_no_body(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.update,
+                          request)
 
     def test_update_readonly_attributes_forbidden(self):
         bodies = [
