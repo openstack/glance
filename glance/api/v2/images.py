@@ -20,6 +20,7 @@ import urllib
 
 import webob.exc
 
+from glance.api import policy
 import glance.api.v2 as v2
 from glance.common import exception
 from glance.common import utils
@@ -37,9 +38,17 @@ CONF = cfg.CONF
 
 
 class ImagesController(object):
-    def __init__(self, db_api=None):
+    def __init__(self, db_api=None, policy_enforcer=None):
         self.db_api = db_api or glance.db.get_api()
         self.db_api.configure_db()
+        self.policy = policy_enforcer or policy.Enforcer()
+
+    def _enforce(self, req, action):
+        """Authorize an action against our policies"""
+        try:
+            self.policy.enforce(req.context, action, {})
+        except exception.Forbidden:
+            raise webob.exc.HTTPForbidden()
 
     def _normalize_properties(self, image):
         """Convert the properties from the stored format to a dict
@@ -68,6 +77,10 @@ class ImagesController(object):
 
     @utils.mutating
     def create(self, req, image):
+        self._enforce(req, 'add_image')
+        is_public = image.get('is_public')
+        if is_public:
+            self._enforce(req, 'publicize_image')
         image['owner'] = req.context.owner
         image['status'] = 'queued'
 
@@ -87,6 +100,7 @@ class ImagesController(object):
 
     def index(self, req, marker=None, limit=None, sort_key='created_at',
               sort_dir='desc', filters={}):
+        self._enforce(req, 'get_images')
         filters['deleted'] = False
         #NOTE(bcwaldon): is_public=True gets public images and those
         # owned by the authenticated tenant
@@ -121,12 +135,17 @@ class ImagesController(object):
             raise webob.exc.HTTPNotFound()
 
     def show(self, req, image_id):
+        self._enforce(req, 'get_image')
         image = self._get_image(req.context, image_id)
         image = self._normalize_properties(dict(image))
         return self._append_tags(req.context, image)
 
     @utils.mutating
     def update(self, req, image_id, image):
+        self._enforce(req, 'modify_image')
+        is_public = image.get('is_public')
+        if is_public:
+            self._enforce(req, 'publicize_image')
         tags = self._extract_tags(image)
 
         try:
@@ -148,6 +167,7 @@ class ImagesController(object):
 
     @utils.mutating
     def delete(self, req, image_id):
+        self._enforce(req, 'delete_image')
         image = self._get_image(req.context, image_id)
 
         if image['protected']:

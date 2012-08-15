@@ -108,3 +108,16 @@ class FakeStoreAPI(object):
         self.data[image_id] = (data, size or len(data))
         checksum = 'Z'
         return (image_id, size, checksum)
+
+
+class FakePolicyEnforcer(object):
+    def __init__(self, *_args, **kwargs):
+        self.rules = {}
+
+    def enforce(self, _ctxt, action, _target, **kwargs):
+        """Raise Forbidden if a rule for given action is set to false."""
+        if self.rules.get(action) is False:
+            raise exception.Forbidden()
+
+    def set_rules(self, rules):
+        self.rules = rules

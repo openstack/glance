@@ -22,6 +22,7 @@ import glance.api.v2.images
 from glance.common import utils
 from glance.openstack.common import cfg
 import glance.schema
+from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 import glance.store
@@ -73,8 +74,10 @@ class TestImagesController(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImagesController, self).setUp()
         self.db = unit_test_utils.FakeDB()
+        self.policy = unit_test_utils.FakePolicyEnforcer()
         self._create_images()
-        self.controller = glance.api.v2.images.ImagesController(self.db)
+        self.controller = glance.api.v2.images.ImagesController(self.db,
+                                                                self.policy)
         glance.store.create_stores()
 
     def _create_images(self):
@@ -337,11 +340,95 @@ class TestImagesController(test_utils.BaseTestCase):
         output = self.controller.update(request, UUID1, image)
         self.assertEqual(['ping'], output['tags'])
 
+    def test_delete(self):
+        request = unit_test_utils.get_fake_request()
+        try:
+            self.controller.delete(request, UUID1)
+        except Exception as e:
+            self.fail("Delete raised exception: %s" % e)
+
+    def test_delete_non_existant(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPNotFound, self.controller.delete,
+                          request, utils.generate_uuid())
+
     def test_index_with_invalid_marker(self):
         fake_uuid = utils.generate_uuid()
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.controller.index, request, marker=fake_uuid)
+
+
+class TestImagesControllerPolicies(base.IsolatedUnitTest):
+
+    def setUp(self):
+        super(TestImagesControllerPolicies, self).setUp()
+        self.db = unit_test_utils.FakeDB()
+        self.policy = unit_test_utils.FakePolicyEnforcer()
+        self.controller = glance.api.v2.images.ImagesController(self.db,
+                                                                self.policy)
+
+    def test_index_unauthorized(self):
+        rules = {"get_images": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.index,
+                          request)
+
+    def test_show_unauthorized(self):
+        rules = {"get_image": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.show,
+                          request, image_id=UUID2)
+
+    def test_create_public_image_unauthorized(self):
+        rules = {"publicize_image": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        image = {'name': 'image-1', 'is_public': True}
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.create,
+                          request, image)
+
+    def test_update_unauthorized(self):
+        rules = {"modify_image": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        image = {'name': 'image-2'}
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
+                          request, UUID1, image)
+
+    def test_update_publicize_image_unauthorized(self):
+        rules = {"publicize_image": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        image = {'name': 'image-1', 'is_public': True}
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
+                          request, UUID1, image)
+
+    def test_update_public_image_unauthorized(self):
+        rules = {"modify_image": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        image = {'name': 'image-1', 'is_public': True}
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
+                          request, UUID1, image)
+
+    def test_update_public_image_unauthorized_but_not_publicizing(self):
+        rules = {"publicize_image": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        image = {'name': 'image-2', 'is_public': False}
+        output = self.controller.update(request, UUID1, image)
+        self.assertEqual(UUID1, output['id'])
+        self.assertEqual('image-2', output['name'])
+
+    def test_delete_unauthorized(self):
+        rules = {"delete_image": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.delete,
+                          request, UUID1)
 
 
 class TestImagesDeserializer(test_utils.BaseTestCase):
