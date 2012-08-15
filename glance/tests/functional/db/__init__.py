@@ -110,6 +110,31 @@ class BaseTestCase(object):
                   for p in image['properties']]
         self.assertEqual(expected, actual)
 
+    def test_image_update_core_attribute(self):
+        fixture = {'status': 'queued'}
+        image = self.db_api.image_update(self.adm_context, UUID3, fixture)
+        self.assertEqual('queued', image['status'])
+        self.assertNotEqual(image['created_at'], image['updated_at'])
+
+    def test_image_update(self):
+        fixture = {'status': 'queued', 'properties': {'ping': 'pong'}}
+        image = self.db_api.image_update(self.adm_context, UUID3, fixture)
+        expected = [{'name': 'ping', 'value': 'pong'}]
+        actual = [{'name': p['name'], 'value': p['value']}
+                  for p in image['properties']]
+        self.assertEqual(expected, actual)
+        self.assertEqual('queued', image['status'])
+        self.assertNotEqual(image['created_at'], image['updated_at'])
+
+    def test_image_update_properties(self):
+        fixture = {'properties': {'ping': 'pong'}}
+        image = self.db_api.image_update(self.adm_context, UUID3, fixture)
+        expected = [{'name': 'ping', 'value': 'pong'}]
+        actual = [{'name': p['name'], 'value': p['value']}
+                  for p in image['properties']]
+        self.assertEqual(expected, actual)
+        self.assertNotEqual(image['created_at'], image['updated_at'])
+
     def test_image_property_delete(self):
         fixture = {'name': 'ping', 'value': 'pong', 'image_id': UUID1}
         prop = self.db_api.image_property_create(self.context, fixture)

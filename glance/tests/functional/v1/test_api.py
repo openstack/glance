@@ -265,6 +265,7 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(len(data['properties']), 2)
         self.assertEqual(data['properties']['arch'], "x86_64")
         self.assertEqual(data['properties']['distro'], "Ubuntu")
+        self.assertNotEqual(data['created_at'], data['updated_at'])
 
         # DELETE image
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,

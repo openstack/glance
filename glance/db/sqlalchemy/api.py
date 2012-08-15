@@ -648,6 +648,9 @@ def _image_update(context, values, image_id, purge_props=False):
         if image_id:
             # Don't drop created_at if we're passing it in...
             _drop_protected_attrs(models.Image, values)
+            #NOTE(iccha-sethi): updated_at must be explicitly set in case
+            #                   only ImageProperty table was modifited
+            values['updated_at'] = timeutils.utcnow()
         image_ref.update(values)
 
         # Validate the attributes before we go any further. From my
