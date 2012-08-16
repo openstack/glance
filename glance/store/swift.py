@@ -233,16 +233,16 @@ class Store(glance.store.base.Store):
         self.container = CONF.swift_store_container
 
         if self.multi_tenant:
-            if context is None:
+            if self.context is None:
                 reason = _("Multi-tenant Swift storage requires a context.")
                 raise exception.BadStoreConfiguration(store_name="swift",
                                                       reason=reason)
-            self.token = context.auth_tok
+            self.token = self.context.auth_tok
             self.key = None  # multi-tenant uses tokens, not (passwords)
-            if context.tenant and context.user:
-                self.user = context.tenant + ':' + context.user
-            if context.service_catalog:
-                service_catalog = context.service_catalog
+            if self.context.tenant and self.context.user:
+                self.user = self.context.tenant + ':' + self.context.user
+            if self.context.service_catalog:
+                service_catalog = self.context.service_catalog
                 self.storage_url = self._get_swift_endpoint(service_catalog)
 
         try:
