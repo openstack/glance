@@ -23,7 +23,6 @@ import stubout
 
 from glance.api.middleware import context
 from glance.common import config
-from glance.image_cache import pruner
 from glance.tests import utils as test_utils
 
 

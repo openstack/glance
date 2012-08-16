@@ -15,14 +15,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import commands
-import datetime
 import os
-import re
 
 from glance.common import crypt
 from glance.common import utils
-from glance.openstack.common import importutils
 from glance.tests import utils as test_utils
 
 

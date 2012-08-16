@@ -24,7 +24,6 @@ import StringIO
 
 import stubout
 
-from glance.common import exception
 from glance.common import utils
 from glance import image_cache
 from glance.tests import utils as test_utils
