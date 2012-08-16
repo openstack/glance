@@ -180,3 +180,12 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         self.assertEqual(checksum, response.headers['Content-MD5'])
         self.assertEqual('application/octet-stream',
                          response.headers['Content-Type'])
+
+    def test_upload(self):
+        request = webob.Request.blank('/')
+        request.environ = {}
+        response = webob.Response()
+        response.request = request
+        self.serializer.upload(response, {})
+        self.assertEqual(201, response.status_int)
+        self.assertEqual('0', response.headers['Content-Length'])

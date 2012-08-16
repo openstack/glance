@@ -93,6 +93,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.app_iter = common.size_checked_iter(
                 response, result['meta'], size, result['data'], notifier)
 
+    def upload(self, response, result):
+        response.status_int = 201
+
 
 def create_resource():
     """Image data resource factory method"""
