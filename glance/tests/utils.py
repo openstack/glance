@@ -22,6 +22,7 @@ import functools
 import os
 import random
 import socket
+import StringIO
 import subprocess
 import unittest
 
@@ -364,3 +365,15 @@ class FakeAuthMiddleware(wsgi.Middleware):
         }
 
         req.context = context.RequestContext(**kwargs)
+
+
+class FakeHTTPResponse(object):
+    def __init__(self, status=200, headers=None, data=None, *args, **kwargs):
+        data = data or 'I am a teapot, short and stout\n'
+        self.data = StringIO.StringIO(data)
+        self.read = self.data.read
+        self.status = status
+        self.headers = headers or {'content-length': len(data)}
+
+    def getheader(self, name, default=None):
+        return self.headers.get(name.lower(), default)

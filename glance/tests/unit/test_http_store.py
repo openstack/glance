@@ -15,8 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import StringIO
-
 import stubout
 
 from glance.common import config
@@ -38,18 +36,6 @@ from glance.tests import utils, stubs as test_stubs
 FAKE_RESPONSE_STACK = []
 
 
-class FakeHTTPResponse(object):
-    def __init__(self, status=200, headers=None, data=None, *args, **kwargs):
-        data = data or 'I am a teapot, short and stout\n'
-        self.data = StringIO.StringIO(data)
-        self.read = self.data.read
-        self.status = status
-        self.headers = headers or {'content-length': len(data)}
-
-    def getheader(self, name, default=None):
-        return self.headers.get(name.lower(), default)
-
-
 def stub_out_http_backend(stubs):
     """
     Stubs out the httplib.HTTPRequest.getresponse to return
@@ -69,7 +55,7 @@ def stub_out_http_backend(stubs):
         def getresponse(self):
             if len(FAKE_RESPONSE_STACK):
                 return FAKE_RESPONSE_STACK.pop()
-            return FakeHTTPResponse()
+            return utils.FakeHTTPResponse()
 
         def request(self, *_args, **_kwargs):
             pass
@@ -126,10 +112,10 @@ class TestHttpStore(base.StoreClearingUnitTest):
         # return the default 200 OK with the expected data after resolving
         # both redirects.
         redirect_headers_1 = {"location": "http://example.com/teapot.img"}
-        redirect_resp_1 = FakeHTTPResponse(status=302,
+        redirect_resp_1 = utils.FakeHTTPResponse(status=302,
                                            headers=redirect_headers_1)
         redirect_headers_2 = {"location": "http://example.com/teapot_real.img"}
-        redirect_resp_2 = FakeHTTPResponse(status=301,
+        redirect_resp_2 = utils.FakeHTTPResponse(status=301,
                                            headers=redirect_headers_2)
         FAKE_RESPONSE_STACK.append(redirect_resp_1)
         FAKE_RESPONSE_STACK.append(redirect_resp_2)
@@ -147,7 +133,7 @@ class TestHttpStore(base.StoreClearingUnitTest):
     def test_http_get_max_redirects(self):
         # Add more than MAX_REDIRECTS redirects to the response stack
         redirect_headers = {"location": "http://example.com/teapot.img"}
-        redirect_resp = FakeHTTPResponse(status=302,
+        redirect_resp = utils.FakeHTTPResponse(status=302,
                                          headers=redirect_headers)
         for i in xrange(MAX_REDIRECTS + 2):
             FAKE_RESPONSE_STACK.append(redirect_resp)
@@ -158,7 +144,7 @@ class TestHttpStore(base.StoreClearingUnitTest):
 
     def test_http_get_redirect_invalid(self):
         redirect_headers = {"location": "http://example.com/teapot.img"}
-        redirect_resp = FakeHTTPResponse(status=307,
+        redirect_resp = utils.FakeHTTPResponse(status=307,
                                          headers=redirect_headers)
         FAKE_RESPONSE_STACK.append(redirect_resp)
 
@@ -167,7 +153,7 @@ class TestHttpStore(base.StoreClearingUnitTest):
         self.assertRaises(exception.BadStoreUri, self.store.get, loc)
 
     def test_http_get_not_found(self):
-        not_found_resp = FakeHTTPResponse(status=404,
+        not_found_resp = utils.FakeHTTPResponse(status=404,
                                           data="404 Not Found")
         FAKE_RESPONSE_STACK.append(not_found_resp)
 

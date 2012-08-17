@@ -39,43 +39,41 @@ VERBOSE = False
 DEBUG = False
 
 
+class FakeRegistryConnection(object):
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def connect(self):
+        return True
+
+    def close(self):
+        return True
+
+    def request(self, method, url, body=None, headers=None):
+        self.req = webob.Request.blank("/" + url.lstrip("/"))
+        self.req.method = method
+        if headers:
+            self.req.headers = headers
+        if body:
+            self.req.body = body
+
+    def getresponse(self):
+        mapper = routes.Mapper()
+        api = context.UnauthenticatedContextMiddleware(rserver.API(mapper))
+        webob_res = self.req.get_response(api)
+
+        return utils.FakeHTTPResponse(status=webob_res.status_int,
+                                      headers=webob_res.headers,
+                                      data=webob_res.body)
+
+
 def stub_out_registry_and_store_server(stubs, base_dir):
     """
     Mocks calls to 127.0.0.1 on 9191 and 9292 for testing so
     that a real Glance server does not need to be up and
     running
     """
-
-    class FakeRegistryConnection(object):
-
-        def __init__(self, *args, **kwargs):
-            pass
-
-        def connect(self):
-            return True
-
-        def close(self):
-            return True
-
-        def request(self, method, url, body=None, headers=None):
-            self.req = webob.Request.blank("/" + url.lstrip("/"))
-            self.req.method = method
-            if headers:
-                self.req.headers = headers
-            if body:
-                self.req.body = body
-
-        def getresponse(self):
-            mapper = routes.Mapper()
-            api = context.UnauthenticatedContextMiddleware(rserver.API(mapper))
-            res = self.req.get_response(api)
-
-            # httplib.Response has a read() method...fake it out
-            def fake_reader():
-                return res.body
-
-            setattr(res, 'read', fake_reader)
-            return res
 
     class FakeSocket(object):
 
@@ -198,38 +196,6 @@ def stub_out_registry_server(stubs, **kwargs):
     that a real Glance Registry server does not need to be up and
     running
     """
-
-    class FakeRegistryConnection(object):
-
-        def __init__(self, *args, **kwargs):
-            pass
-
-        def connect(self):
-            return True
-
-        def close(self):
-            return True
-
-        def request(self, method, url, body=None, headers=None):
-            self.req = webob.Request.blank("/" + url.lstrip("/"))
-            self.req.method = method
-            if headers:
-                self.req.headers = headers
-            if body:
-                self.req.body = body
-
-        def getresponse(self):
-            mapper = routes.Mapper()
-            api = context.UnauthenticatedContextMiddleware(rserver.API(mapper))
-            res = self.req.get_response(api)
-
-            # httplib.Response has a read() method...fake it out
-            def fake_reader():
-                return res.body
-
-            setattr(res, 'read', fake_reader)
-            return res
-
     def fake_get_connection_type(client):
         """
         Returns the proper connection type
