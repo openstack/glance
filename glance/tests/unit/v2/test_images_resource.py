@@ -445,6 +445,12 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         expected = {'image': {'properties': {}}}
         self.assertEqual(expected, output)
 
+    def test_create_invalid_id(self):
+        request = unit_test_utils.get_fake_request()
+        request.body = json.dumps({'id': 'gabe'})
+        self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
+                          request)
+
     def test_create_no_body(self):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
