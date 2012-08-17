@@ -38,6 +38,7 @@ import json
 from glance.common import crypt
 from glance.store.location import get_location_from_uri
 import glance.store.swift  # Needed to register driver for location
+from glance.tests import functional
 from glance.tests.functional.store_utils import (setup_swift,
                                                  get_swift_uri,
                                                  setup_s3,
@@ -594,3 +595,30 @@ class TestSwift(test_api.TestApi):
         self.assertEqual(response.status, 200)
 
         self.stop_servers()
+
+
+class TestSwiftStartup(functional.FunctionalTest):
+
+    """Simple tests to make sure API server starts with alternate options"""
+
+    def test_multi_tenant_mode(self):
+        """
+        Test startup in multi_tenant mode.
+        """
+        self.cleanup()
+
+        self.default_store = 'swift'
+        self.swift_store_multi_tenant = True
+        self.swift_store_auth_address = 'XXX'
+        self.swift_store_user = 'XXX'
+        self.swift_store_key = 'XXX'
+        self.known_stores = ['glance.store.swift.Store']
+
+        # ensure that the API server fails to launch
+        self.start_server(self.api_server,
+                          expect_launch=True,
+                          expect_exit=False,
+                          expected_exitcode=0,
+                          **self.__dict__.copy())
+
+        self.stop_server(self.api_server, 'API server')
