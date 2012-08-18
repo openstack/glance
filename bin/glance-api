@@ -52,10 +52,8 @@ if __name__ == '__main__':
         config.parse_args()
         log.setup('glance')
 
-        app = config.load_paste_app()
-
         server = wsgi.Server()
-        server.start(app, default_port=9292)
+        server.start(config.load_paste_app, default_port=9292)
         server.wait()
     except exception.WorkerCreationFailure, e:
         fail(2, e)

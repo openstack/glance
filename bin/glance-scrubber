@@ -66,6 +66,6 @@ if __name__ == '__main__':
         else:
             import eventlet
             pool = eventlet.greenpool.GreenPool(1000)
-            scrubber = app.run(pool)
+            scrubber = app().run(pool)
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
