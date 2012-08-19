@@ -51,6 +51,9 @@ common_opts = [
                 help=_('Whether to include the backend image storage location '
                 'in image properties. Revealing storage location can be a '
                 'security risk, so use this setting with caution!')),
+    cfg.IntOpt('image_size_cap', default=1099511627776,
+               help=_("Maximum size of image a user can upload in bytes. "
+                      "Defaults to 1099511627776 bytes (1 TB).")),
 ]
 
 CONF = cfg.CONF

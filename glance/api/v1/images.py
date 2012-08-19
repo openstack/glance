@@ -57,12 +57,6 @@ SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
 SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
 
 
-# 1 PiB, which is a *huge* image by anyone's measure.  This is just to protect
-# against client programming errors (or DoS attacks) in the image metadata.
-# We have a known limit of 1 << 63 in the database -- images.size is declared
-# as a BigInteger.
-IMAGE_SIZE_CAP = 1 << 50
-
 # Defined at module level due to _is_opt_registered
 # identity check (not equality).
 default_store_opt = cfg.StrOpt('default_store', default='file')
@@ -374,15 +368,6 @@ class Controller(controller.BaseController):
 
             image_data = req.body_file
 
-            if req.content_length:
-                image_size = int(req.content_length)
-            elif 'x-image-meta-size' in req.headers:
-                image_size = int(req.headers['x-image-meta-size'])
-            else:
-                LOG.debug(_("Got request with no content-length and no "
-                            "x-image-meta-size header"))
-                image_size = 0
-
         scheme = req.headers.get('x-image-meta-store', CONF.default_store)
 
         store = self.get_store_or_400(req, scheme)
@@ -391,22 +376,15 @@ class Controller(controller.BaseController):
         LOG.debug(_("Setting image %s to status 'saving'"), image_id)
         registry.update_image_metadata(req.context, image_id,
                                        {'status': 'saving'})
+
+        LOG.debug(_("Uploading image data for image %(image_id)s "
+                    "to %(scheme)s store"), locals())
+
         try:
-            LOG.debug(_("Uploading image data for image %(image_id)s "
-                        "to %(scheme)s store"), locals())
-
-            if image_size > IMAGE_SIZE_CAP:
-                max_image_size = IMAGE_SIZE_CAP
-                msg = _("Denying attempt to upload image larger than "
-                        "%(max_image_size)d. Supplied image size was "
-                        "%(image_size)d") % locals()
-                LOG.warn(msg)
-                raise HTTPBadRequest(explanation=msg, request=req)
-
             location, size, checksum = store.add(
                 image_meta['id'],
                 utils.CooperativeReader(image_data),
-                image_size)
+                image_meta['size'])
 
             # Verify any supplied checksum value matches checksum
             # returned from store when adding image
@@ -467,6 +445,12 @@ class Controller(controller.BaseController):
             self.notifier.error('image.upload', msg)
             raise HTTPServiceUnavailable(explanation=msg, request=req,
                                          content_type='text/plain')
+
+        except exception.ImageSizeLimitExceeded, e:
+            msg = _("Denying attempt to upload image larger than %d.")
+            self._safe_kill(req, image_id)
+            raise HTTPBadRequest(explanation=msg % CONF.image_size_cap,
+                                 request=req, content_type='text/plain')
 
         except HTTPError, e:
             self._safe_kill(req, image_id)
@@ -840,17 +824,29 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
             raise HTTPBadRequest(explanation=msg, request=request)
 
         image_meta = result['image_meta']
-        if 'size' in image_meta:
-            incoming_image_size = image_meta['size']
-            if incoming_image_size > IMAGE_SIZE_CAP:
-                max_image_size = IMAGE_SIZE_CAP
-                msg = _("Denying attempt to upload image larger than "
-                        "%(max_image_size)d. Supplied image size was "
-                        "%(incoming_image_size)d") % locals()
-                LOG.warn(msg)
-                raise HTTPBadRequest(explanation=msg, request=request)
+        if request.content_length:
+            image_size = request.content_length
+        elif 'size' in image_meta:
+            image_size = image_meta['size']
+        else:
+            image_size = None
 
         data = request.body_file if self.has_body(request) else None
+
+        if image_size is None and data is not None:
+            data = utils.limiting_iter(data, CONF.image_size_cap)
+
+            #NOTE(bcwaldon): this is a hack to make sure the downstream code
+            # gets the correct image data
+            request.body_file = data
+
+        elif image_size > CONF.image_size_cap:
+            max_image_size = CONF.image_size_cap
+            msg = _("Denying attempt to upload image larger than %d.")
+            LOG.warn(msg % max_image_size)
+            raise HTTPBadRequest(explanation=msg % max_image_size,
+                                 request=request)
+
         result['image_data'] = data
         return result
 
