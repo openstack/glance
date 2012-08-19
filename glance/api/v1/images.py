@@ -471,7 +471,11 @@ class Controller(controller.BaseController):
         except HTTPError, e:
             self._safe_kill(req, image_id)
             self.notifier.error('image.upload', e.explanation)
-            raise
+            #NOTE(bcwaldon): Ideally, we would just call 'raise' here,
+            # but something in the above function calls is affecting the
+            # exception context and we must explicitly re-raise the
+            # caught exception.
+            raise e
 
         except Exception, e:
             tb_info = traceback.format_exc()

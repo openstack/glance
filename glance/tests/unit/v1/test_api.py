@@ -29,12 +29,14 @@ import glance.api.middleware.context as context_middleware
 import glance.api.common
 from glance.api.v1 import images
 from glance.api.v1 import router
+import glance.common.config
 from glance.common import utils
 import glance.context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
 from glance.registry.api import v1 as rserver
+import glance.store.filesystem
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
@@ -2185,6 +2187,23 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
         self.assertEqual(len(res.body), 0)
+
+    def test_add_image_checksum_mismatch(self):
+        fixture_headers = {
+            'x-image-meta-checksum': 'asdf',
+            'x-image-meta-size': '4',
+            'x-image-meta-name': 'fake image #3',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.body = "XXXX"
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
 
     def test_add_image_bad_store(self):
         """Tests raises BadRequest for invalid store header"""
