@@ -19,6 +19,7 @@ import datetime
 import hashlib
 import httplib
 import json
+import StringIO
 
 import routes
 from sqlalchemy import exc
@@ -29,15 +30,20 @@ import glance.api.middleware.context as context_middleware
 import glance.api.common
 from glance.api.v1 import images
 from glance.api.v1 import router
+import glance.common.config
 from glance.common import utils
 import glance.context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
+from glance.openstack.common import cfg
 from glance.openstack.common import timeutils
 from glance.registry.api import v1 as rserver
+import glance.store.filesystem
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
+
+CONF = cfg.CONF
 
 _gen_uuid = utils.generate_uuid
 
@@ -2146,10 +2152,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 400)
 
-    def test_add_image_size_too_big(self):
+    def test_add_image_size_header_too_big(self):
         """Tests raises BadRequest for supplied image size that is too big"""
-        IMAGE_SIZE_CAP = 1 << 50
-        fixture_headers = {'x-image-meta-size': IMAGE_SIZE_CAP + 1,
+        fixture_headers = {'x-image-meta-size': CONF.image_size_cap + 1,
                            'x-image-meta-name': 'fake image #3'}
 
         req = webob.Request.blank("/images")
@@ -2157,10 +2162,47 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         for k, v in fixture_headers.iteritems():
             req.headers[k] = v
 
-        req.headers['Content-Type'] = 'application/octet-stream'
-        req.body = "chunk00000remainder"
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertEquals(res.status_int, 400)
+
+    def test_add_image_size_chunked_data_too_big(self):
+        self.config(image_size_cap=512)
+        fixture_headers = {
+            'x-image-meta-name': 'fake image #3',
+            'x-image-meta-container_format': 'ami',
+            'x-image-meta-disk_format': 'ami',
+            'transfer-encoding': 'chunked',
+            'content-type': 'application/octet-stream',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+
+        req.body_file = StringIO.StringIO('X' * (CONF.image_size_cap + 1))
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_add_image_size_data_too_big(self):
+        self.config(image_size_cap=512)
+        fixture_headers = {
+            'x-image-meta-name': 'fake image #3',
+            'x-image-meta-container_format': 'ami',
+            'x-image-meta-disk_format': 'ami',
+            'content-type': 'application/octet-stream',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+
+        req.body = 'X' * (CONF.image_size_cap + 1)
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
 
     def test_add_image_zero_size(self):
         """Tests creating an active image with explicitly zero size"""
@@ -2509,6 +2551,58 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.headers['x-image-meta-is-public'] = 'true'
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 403)
+
+    def test_update_image_size_header_too_big(self):
+        """Tests raises BadRequest for supplied image size that is too big"""
+        fixture_headers = {'x-image-meta-size': CONF.image_size_cap + 1}
+
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'PUT'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_update_image_size_data_too_big(self):
+        self.config(image_size_cap=512)
+
+        fixture_headers = {'content-type': 'application/octet-stream'}
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'PUT'
+
+        req.body = 'X' * (CONF.image_size_cap + 1)
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_update_image_size_chunked_data_too_big(self):
+        self.config(image_size_cap=512)
+
+        # Create new image that has no data
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        req.headers['x-image-meta-name'] = 'something'
+        req.headers['x-image-meta-container_format'] = 'ami'
+        req.headers['x-image-meta-disk_format'] = 'ami'
+        res = req.get_response(self.api)
+        image_id = json.loads(res.body)['image']['id']
+
+        fixture_headers = {
+            'content-type': 'application/octet-stream',
+            'transfer-encoding': 'chunked',
+        }
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'PUT'
+
+        req.body_file = StringIO.StringIO('X' * (CONF.image_size_cap + 1))
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
 
     def test_get_index_sort_name_asc(self):
         """

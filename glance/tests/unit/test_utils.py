@@ -17,6 +17,7 @@
 
 import tempfile
 
+from glance.common import exception
 from glance.common import utils
 from glance.tests import utils as test_utils
 
@@ -70,3 +71,19 @@ class TestUtils(test_utils.BaseTestCase):
                 byte = reader.read(1)
 
         self.assertEquals(bytes_read, BYTES)
+
+    def test_limited_iter_reads_succeed(self):
+        fap = 'abcdefghij'
+        fap = utils.limiting_iter(fap, 10)
+        bytes_read = 0
+        for chunk in fap:
+            bytes_read += len(chunk)
+        self.assertEqual(10, bytes_read)
+
+    def test_limited_iter_reads_fail(self):
+        fap = 'abcdefghij'
+        fap = utils.limiting_iter(fap, 9)
+        for i, chunk in enumerate(fap):
+            if i == 8:
+                break
+        self.assertRaises(exception.ImageSizeLimitExceeded, fap.next)

@@ -125,6 +125,20 @@ class CooperativeReader(object):
         return cooperative_iter(self.fd.__iter__())
 
 
+def limiting_iter(iter, limit):
+    """
+    Iterator designed to fail when reading image data past the configured
+    allowable amount.
+    """
+    bytes_read = 0
+    for chunk in iter:
+        bytes_read += len(chunk)
+        if bytes_read > limit:
+            raise exception.ImageSizeLimitExceeded()
+        else:
+            yield chunk
+
+
 def image_meta_to_http_headers(image_meta):
     """
     Returns a set of image metadata into a dict
