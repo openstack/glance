@@ -77,6 +77,23 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPConflict, self.controller.upload,
                           request, unit_test_utils.UUID1, 'YYYY', 4)
 
+    def test_upload_storage_full(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                         self.controller.upload,
+                         request, unit_test_utils.UUID2, 'YYYYYYY', 7)
+
+    def test_upload_storage_forbidden(self):
+        request = unit_test_utils.get_fake_request(user=unit_test_utils.USER2)
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.upload,
+                          request, unit_test_utils.UUID2, 'YY', 2)
+
+    def test_upload_storage_write_denied(self):
+        request = unit_test_utils.get_fake_request(user=unit_test_utils.USER3)
+        self.assertRaises(webob.exc.HTTPServiceUnavailable,
+                         self.controller.upload,
+                         request, unit_test_utils.UUID2, 'YY', 2)
+
     def test_upload_download_no_size(self):
         request = unit_test_utils.get_fake_request()
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', None)
