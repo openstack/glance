@@ -55,6 +55,10 @@ The actions that may have a rule enforced on them are:
 
 * ``manage_image_cache`` - Allowed to use the image cache management API
 
+* Added in v2:
+
+* ``download_image`` - Allowed to call the ``GET /images/<IMAGE_ID>/file`` API call
+
 
 To limit an action to a particular role or roles, you list the roles like so ::
 

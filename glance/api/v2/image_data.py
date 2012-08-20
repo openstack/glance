@@ -16,6 +16,7 @@
 import webob.exc
 
 from glance.api import common
+from glance.api import policy
 import glance.api.v2 as v2
 from glance.common import exception
 from glance.common import utils
@@ -26,17 +27,25 @@ import glance.store
 
 
 class ImageDataController(object):
-    def __init__(self, db_api=None, store_api=None):
+    def __init__(self, db_api=None, store_api=None, policy_enforcer=None):
         self.db_api = db_api or glance.db.get_api()
         self.db_api.configure_db()
         self.store_api = store_api or glance.store
         self.store_api.create_stores()
+        self.policy = policy_enforcer or policy.Enforcer()
 
     def _get_image(self, context, image_id):
         try:
             return self.db_api.image_get(context, image_id)
         except exception.NotFound:
             raise webob.exc.HTTPNotFound(_("Image does not exist"))
+
+    def _enforce(self, req, action):
+        """Authorize an action against our policies"""
+        try:
+            self.policy.enforce(req.context, action, {})
+        except exception.Forbidden:
+            raise webob.exc.HTTPForbidden()
 
     @utils.mutating
     def upload(self, req, image_id, data, size):
@@ -53,6 +62,7 @@ class ImageDataController(object):
         self.db_api.image_update(req.context, image_id, values)
 
     def download(self, req, image_id):
+        self._enforce(req, 'download_image')
         ctx = req.context
         image = self._get_image(ctx, image_id)
         location = image['location']

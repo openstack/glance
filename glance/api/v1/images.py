@@ -265,6 +265,7 @@ class Controller(controller.BaseController):
         :raises HTTPNotFound if image is not available to user
         """
         self._enforce(req, 'get_image')
+        self._enforce(req, 'download_image')
         image_meta = self.get_active_image_meta_or_404(req, id)
 
         if image_meta.get('size') == 0:

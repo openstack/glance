@@ -32,7 +32,8 @@ class TestImagesController(base.StoreClearingUnitTest):
 
         self.controller = glance.api.v2.image_data.ImageDataController(
                 db_api=unit_test_utils.FakeDB(),
-                store_api=unit_test_utils.FakeStoreAPI())
+                store_api=unit_test_utils.FakeStoreAPI(),
+                policy_enforcer=unit_test_utils.FakePolicyEnforcer())
 
     def test_download(self):
         request = unit_test_utils.get_fake_request()
@@ -76,6 +77,24 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual(set(['data', 'meta']), set(output.keys()))
         self.assertEqual(4, output['meta']['size'])
         self.assertEqual('YYYY', output['data'])
+
+
+class TestImageDataControllerPolicies(base.IsolatedUnitTest):
+
+    def setUp(self):
+        super(TestImageDataControllerPolicies, self).setUp()
+        self.db = unit_test_utils.FakeDB()
+        self.policy = unit_test_utils.FakePolicyEnforcer()
+        self.controller = glance.api.v2.image_data.ImageDataController(
+                                                self.db,
+                                                policy_enforcer=self.policy)
+
+    def test_download_unauthorized(self):
+        rules = {"download_image": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.download,
+                          request, image_id=unit_test_utils.UUID2)
 
 
 class TestImageDataDeserializer(test_utils.BaseTestCase):
