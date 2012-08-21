@@ -28,6 +28,8 @@ import unittest
 
 import nose.plugins.skip
 
+# NOTE(ameade): this import is necessary so that common cfg opts are registered
+from glance.common import config
 from glance.common import utils
 from glance.common import wsgi
 from glance import context
