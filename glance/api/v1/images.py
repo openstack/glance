@@ -834,7 +834,7 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
         data = request.body_file if self.has_body(request) else None
 
         if image_size is None and data is not None:
-            data = utils.limiting_iter(data, CONF.image_size_cap)
+            data = utils.LimitingReader(data, CONF.image_size_cap)
 
             #NOTE(bcwaldon): this is a hack to make sure the downstream code
             # gets the correct image data
