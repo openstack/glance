@@ -23,6 +23,9 @@ import stubout
 
 from glance.openstack.common import cfg
 from glance import store
+# NOTE(ameade): this import is necessary. Since we override a cfg opt it
+# registers we must have that opt loaded.
+from glance.store import filesystem
 from glance.store import location
 from glance.tests import stubs
 from glance.tests import utils as test_utils

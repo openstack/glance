@@ -2952,6 +2952,13 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 403)
 
+    def test_show_image_unauthorized_download(self):
+        rules = {"download_image": [["false:false"]]}
+        self.set_policy_rules(rules)
+        req = webob.Request.blank("/images/%s" % UUID2)
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 403)
+
     def test_delete_image(self):
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'DELETE'
