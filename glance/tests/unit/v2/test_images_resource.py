@@ -75,9 +75,11 @@ class TestImagesController(test_utils.BaseTestCase):
         super(TestImagesController, self).setUp()
         self.db = unit_test_utils.FakeDB()
         self.policy = unit_test_utils.FakePolicyEnforcer()
+        self.notifier = unit_test_utils.FakeNotifier()
         self._create_images()
         self.controller = glance.api.v2.images.ImagesController(self.db,
-                                                                self.policy)
+                                                                self.policy,
+                                                                self.notifier)
         glance.store.create_stores()
 
     def _create_images(self):
@@ -308,18 +310,36 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual({}, output['properties'])
         self.assertEqual([], output['tags'])
         self.assertEqual(False, output['is_public'])
+        output_log = self.notifier.get_log()
+        expected_log = {'notification_type': "INFO",
+                        'event_type': "image.update",
+                        'payload': output,
+        }
+        self.assertEqual(output_log, expected_log)
 
     def test_create_public_image_as_admin(self):
         request = unit_test_utils.get_fake_request()
         image = {'name': 'image-1', 'is_public': True}
         output = self.controller.create(request, image)
         self.assertEqual(True, output['is_public'])
+        output_log = self.notifier.get_log()
+        expected_log = {'notification_type': "INFO",
+                        'event_type': "image.update",
+                        'payload': output,
+        }
+        self.assertEqual(output_log, expected_log)
 
     def test_create_duplicate_tags(self):
         request = unit_test_utils.get_fake_request()
         image = {'tags': ['ping', 'ping']}
         output = self.controller.create(request, image)
         self.assertEqual(['ping'], output['tags'])
+        output_log = self.notifier.get_log()
+        expected_log = {'notification_type': "INFO",
+                        'event_type': "image.update",
+                        'payload': output,
+         }
+        self.assertEqual(output_log, expected_log)
 
     def test_update(self):
         request = unit_test_utils.get_fake_request()
@@ -328,6 +348,12 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual(UUID1, output['id'])
         self.assertEqual('image-2', output['name'])
         self.assertNotEqual(output['created_at'], output['updated_at'])
+        output_log = self.notifier.get_log()
+        expected_log = {'notification_type': "INFO",
+                        'event_type': "image.update",
+                        'payload': output,
+        }
+        self.assertEqual(output_log, expected_log)
 
     def test_update_non_existent(self):
         request = unit_test_utils.get_fake_request()
@@ -340,11 +366,20 @@ class TestImagesController(test_utils.BaseTestCase):
         image = {'tags': ['ping', 'ping']}
         output = self.controller.update(request, UUID1, image)
         self.assertEqual(['ping'], output['tags'])
+        output_log = self.notifier.get_log()
+        expected_log = {'notification_type': "INFO",
+                        'event_type': "image.update",
+                        'payload': output,
+        }
+        self.assertEqual(output_log, expected_log)
 
     def test_delete(self):
         request = unit_test_utils.get_fake_request()
         try:
-            self.controller.delete(request, UUID1)
+            image = self.controller.delete(request, UUID1)
+            output_log = self.notifier.get_log()
+            self.assertEqual(output_log['notification_type'], "INFO")
+            self.assertEqual(output_log['event_type'], "image.delete")
         except Exception as e:
             self.fail("Delete raised exception: %s" % e)
 

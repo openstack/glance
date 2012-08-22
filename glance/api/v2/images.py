@@ -26,6 +26,7 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.db
+import glance.notifier
 from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
@@ -38,10 +39,11 @@ CONF = cfg.CONF
 
 
 class ImagesController(object):
-    def __init__(self, db_api=None, policy_enforcer=None):
+    def __init__(self, db_api=None, policy_enforcer=None, notifier=None):
         self.db_api = db_api or glance.db.get_api()
         self.db_api.configure_db()
         self.policy = policy_enforcer or policy.Enforcer()
+        self.notifier = notifier or glance.notifier.Notifier()
 
     def _enforce(self, req, action):
         """Authorize an action against our policies"""
@@ -95,8 +97,9 @@ class ImagesController(object):
             image['tags'] = []
 
         v2.update_image_read_acl(req, self.db_api, image)
-
-        return self._normalize_properties(dict(image))
+        image = self._normalize_properties(dict(image))
+        self.notifier.info('image.update', image)
+        return image
 
     def index(self, req, marker=None, limit=None, sort_key='created_at',
               sort_dir='desc', filters={}):
@@ -151,7 +154,9 @@ class ImagesController(object):
         try:
             image = self.db_api.image_update(req.context, image_id, image)
         except (exception.NotFound, exception.Forbidden):
-            raise webob.exc.HTTPNotFound()
+            msg = ("Failed to find image %(image_id)s to update" % locals())
+            LOG.info(msg)
+            raise webob.exc.HTTPNotFound(explanation=msg)
 
         image = self._normalize_properties(dict(image))
 
@@ -163,6 +168,7 @@ class ImagesController(object):
         else:
             self._append_tags(req.context, image)
 
+        self.notifier.info('image.update', image)
         return image
 
     @utils.mutating
@@ -171,13 +177,18 @@ class ImagesController(object):
         image = self._get_image(req.context, image_id)
 
         if image['protected']:
-            msg = _("Unable to delete as image is protected.")
+            msg = _("Unable to delete as image %(image_id)s is protected"
+                    % locals())
             raise webob.exc.HTTPForbidden(explanation=msg)
 
         try:
             self.db_api.image_destroy(req.context, image_id)
         except (exception.NotFound, exception.Forbidden):
+            msg = ("Failed to find image %(image_id)s to delete" % locals())
+            LOG.info(msg)
             raise webob.exc.HTTPNotFound()
+        else:
+            self.notifier.info('image.delete', image)
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
