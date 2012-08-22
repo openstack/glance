@@ -210,6 +210,11 @@ class Store(glance.store.base.Store):
                     f.write(buf)
         except IOError as e:
             if e.errno in [errno.EFBIG, errno.ENOSPC]:
+                try:
+                    os.unlink(filepath)
+                except Exception:
+                    msg = _('Unable to remove partial image data for image %s')
+                    LOG.error(msg % image_id)
                 raise exception.StorageFull()
             elif e.errno == errno.EACCES:
                 raise exception.StorageWriteDenied()
