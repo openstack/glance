@@ -448,7 +448,7 @@ class Controller(controller.BaseController):
                                          content_type='text/plain')
 
         except exception.ImageSizeLimitExceeded, e:
-            msg = _("Denying attempt to upload image larger than %d.")
+            msg = _("Denying attempt to upload image larger than %d bytes.")
             self._safe_kill(req, image_id)
             raise HTTPBadRequest(explanation=msg % CONF.image_size_cap,
                                  request=req, content_type='text/plain')
@@ -843,7 +843,7 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
 
         elif image_size > CONF.image_size_cap:
             max_image_size = CONF.image_size_cap
-            msg = _("Denying attempt to upload image larger than %d.")
+            msg = _("Denying attempt to upload image larger than %d bytes.")
             LOG.warn(msg % max_image_size)
             raise HTTPBadRequest(explanation=msg % max_image_size,
                                  request=request)
