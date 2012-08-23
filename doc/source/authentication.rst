@@ -117,18 +117,6 @@ configuration file, select the appropriate deployment flavor by adding a
   in the ``admin_role`` config attribute in both ``glance-registry.conf`` and
   ``glance-api.conf``.
 
-Sharing Images With Others
---------------------------
-
-It is possible to allow a private image to be shared with one or more
-alternate tenants.  This is done through image *memberships*, which
-are available via the `members` resource of images.  (For more
-details, see :doc:`glanceapi`.)  Essentially, a membership is an
-association between an image and a tenant which has permission to
-access that image.  These membership associations may also have a
-`can_share` attribute, which, if set to `true`, delegates the
-authority to share an image to the named tenant.
-
 Configuring the Glance Client to use Keystone
 ---------------------------------------------
 
