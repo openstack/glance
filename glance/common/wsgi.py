@@ -455,7 +455,11 @@ class JSONRequestDeserializer(object):
         return False
 
     def from_json(self, datastring):
-        return json.loads(datastring)
+        try:
+            return json.loads(datastring)
+        except ValueError:
+            msg = _('Malformed JSON in request body.')
+            raise webob.exc.HTTPBadRequest(explanation=msg)
 
     def default(self, request):
         if self.has_body(request):
