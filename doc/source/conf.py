@@ -42,8 +42,7 @@ sys.path = [os.path.abspath('../../glance'),
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.coverage',
+extensions = ['sphinx.ext.coverage',
               'sphinx.ext.ifconfig',
               'sphinx.ext.intersphinx',
               'sphinx.ext.pngmath',
@@ -95,7 +94,7 @@ version = glance_version.canonical_version_string()
 
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
-exclude_trees = []
+exclude_trees = ['api']
 
 # The reST default role (for this markup: `text`) to use for all documents.
 #default_role = None
@@ -200,10 +199,10 @@ html_last_updated_fmt = os.popen(git_cmd).read()
 #html_additional_pages = {}
 
 # If false, no module index is generated.
-#html_use_modindex = True
+html_use_modindex = False
 
 # If false, no index is generated.
-#html_use_index = True
+html_use_index = False
 
 # If true, the index is split into individual pages for each letter.
 #html_split_index = False
