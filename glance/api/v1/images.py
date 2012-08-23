@@ -485,9 +485,11 @@ class Controller(controller.BaseController):
         image_meta['status'] = 'active'
 
         try:
-            return registry.update_image_metadata(req.context,
+            image_meta_data = registry.update_image_metadata(req.context,
                                                   image_id,
                                                   image_meta)
+            self.notifier.info("image.update", image_meta_data)
+            return image_meta_data
         except exception.Invalid, e:
             msg = (_("Failed to activate image. Got error: %(e)s")
                    % locals())
