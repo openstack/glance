@@ -156,7 +156,7 @@ class Controller(object):
                 self.db_api.image_member_delete(req.context, memb,
                                                 session=session)
 
-        # Now add the non-existant ones
+        # Now add the non-existent ones
         for memb in add:
             self.db_api.image_member_create(req.context, memb, session=session)
 

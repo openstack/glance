@@ -47,7 +47,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.download,
                           request, unit_test_utils.UUID2)
 
-    def test_download_non_existant_image(self):
+    def test_download_non_existent_image(self):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.download,
                           request, utils.generate_uuid())
@@ -60,7 +60,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual(4, output['meta']['size'])
         self.assertEqual('YYYY', output['data'])
 
-    def test_upload_non_existant_image(self):
+    def test_upload_non_existent_image(self):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.upload,
                           request, utils.generate_uuid(), 'YYYY', 4)

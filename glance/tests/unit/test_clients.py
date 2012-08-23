@@ -1163,7 +1163,7 @@ class TestRegistryClient(base.IsolatedUnitTest):
         self.assertEquals(num_members, 0)
 
     def test_get_image_members_not_existing(self):
-        """Tests getting non-existant image members"""
+        """Tests getting non-existent image members"""
         self.assertRaises(exception.NotFound,
                           self.client.get_image_members,
                           _gen_uuid())
@@ -2099,7 +2099,7 @@ class TestClient(base.IsolatedUnitTest):
         self.assertEquals(num_members, 0)
 
     def test_get_image_members_not_existing(self):
-        """Tests getting non-existant image members"""
+        """Tests getting non-existent image members"""
         self.assertRaises(exception.NotFound,
                           self.client.get_image_members,
                           _gen_uuid())
