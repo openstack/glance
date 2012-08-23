@@ -50,8 +50,8 @@ Concepts
    statuses
    formats
 
-Using Glance
-============
+Managing Glance
+===============
 
 .. toctree::
    :maxdepth: 1
@@ -59,12 +59,20 @@ Using Glance
    installing
    controllingservers
    configuring
+   db
+   policies
+   cache
+   authentication
+
+Using Glance
+============
+
+.. toctree::
+   :maxdepth: 1
+
    glance
    glanceapi
    client
-   authentication
-   policies
-   cache
 
 Developer Docs
 ==============
