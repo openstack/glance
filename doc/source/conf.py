@@ -143,7 +143,7 @@ man_pages = [
      [u'OpenStack'], 1),
     ('man/glancescrubber', 'glance-scrubber', u'Glance Scrubber Service',
      [u'OpenStack'], 1)
- ]
+]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -235,8 +235,8 @@ htmlhelp_basename = 'glancedoc'
 # (source start file, target name, title, author,
 # documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Glance.tex', u'Glance Documentation',
-   u'Glance Team', 'manual'),
+    ('index', 'Glance.tex', u'Glance Documentation',
+     u'Glance Team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
