@@ -2228,6 +2228,23 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, 200)
         self.assertEqual(len(res.body), 0)
 
+    def test_add_image_checksum_mismatch(self):
+        fixture_headers = {
+            'x-image-meta-checksum': 'asdf',
+            'x-image-meta-size': '4',
+            'x-image-meta-name': 'fake image #3',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.body = "XXXX"
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
     def test_add_image_bad_store(self):
         """Tests raises BadRequest for invalid store header"""
         fixture_headers = {'x-image-meta-store': 'bad',
