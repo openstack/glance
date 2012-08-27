@@ -184,7 +184,7 @@ class TestImagesController(test_utils.BaseTestCase):
         expected = set([UUID1, UUID2, UUID3])
         self.assertEqual(actual, expected)
 
-    def test_index_with_nonexistant_name_filter(self):
+    def test_index_with_nonexistent_name_filter(self):
         request = unit_test_utils.get_fake_request('/images?name=%s' % 'blah')
         images = self.controller.index(request,
                                        filters={'name': 'blah'})['images']
@@ -294,7 +294,7 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual(UUID2, output['id'])
         self.assertEqual('2', output['name'])
 
-    def test_show_non_existant(self):
+    def test_show_non_existent(self):
         request = unit_test_utils.get_fake_request()
         image_id = utils.generate_uuid()
         self.assertRaises(webob.exc.HTTPNotFound,
@@ -329,7 +329,7 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual('image-2', output['name'])
         self.assertNotEqual(output['created_at'], output['updated_at'])
 
-    def test_update_non_existant(self):
+    def test_update_non_existent(self):
         request = unit_test_utils.get_fake_request()
         image = {'name': 'image-2'}
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.update,
@@ -348,7 +348,7 @@ class TestImagesController(test_utils.BaseTestCase):
         except Exception as e:
             self.fail("Delete raised exception: %s" % e)
 
-    def test_delete_non_existant(self):
+    def test_delete_non_existent(self):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.delete,
                           request, utils.generate_uuid())
