@@ -125,6 +125,11 @@ class BaseTestCase(object):
         # of a core image entity
         self.assertFalse('tags' in image)
 
+    def test_image_create_duplicate_id(self):
+        self.assertRaises(exception.Duplicate,
+                          self.db_api.image_create,
+                          self.context, {'id': UUID1, 'status': 'queued'})
+
     def test_image_create_properties(self):
         fixture = {'status': 'queued', 'properties': {'ping': 'pong'}}
         image = self.db_api.image_create(self.context, fixture)
