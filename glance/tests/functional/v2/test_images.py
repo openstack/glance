@@ -89,24 +89,34 @@ class TestImages(functional.FunctionalTest):
         self.assertFalse('size' in image)
         self.assertEqual('bar', image['foo'])
         self.assertEqual(False, image['protected'])
+        self.assertEqual('kernel', image['type'])
         self.assertTrue(image['created_at'])
         self.assertTrue(image['updated_at'])
         self.assertEqual(image['updated_at'], image['created_at'])
 
-        # The image should be mutable, including adding new properties
+        # The image should be mutable, including adding and removing properties
         path = self._url('/v2/images/%s' % image_id)
-        data = json.dumps({'name': 'image-2', 'format': 'vhd',
-                           'foo': 'baz', 'ping': 'pong', 'protected': True})
-        response = requests.put(path, headers=self._headers(), data=data)
-        self.assertEqual(200, response.status_code)
+        media_type = 'application/openstack-images-v2.0-json-patch'
+        headers = self._headers({'content-type': media_type})
+        data = json.dumps([
+            {'replace': '/name', 'value': 'image-2'},
+            {'replace': '/disk_format', 'value': 'vhd'},
+            {'replace': '/foo', 'value': 'baz'},
+            {'add': '/ping', 'value': 'pong'},
+            {'replace': '/protected', 'value': True},
+            {'remove': '/type'},
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
 
         # Returned image entity should reflect the changes
         image = json.loads(response.text)
         self.assertEqual('image-2', image['name'])
-        self.assertEqual('vhd', image['format'])
+        self.assertEqual('vhd', image['disk_format'])
         self.assertEqual('baz', image['foo'])
         self.assertEqual('pong', image['ping'])
         self.assertEqual(True, image['protected'])
+        self.assertFalse('type' in image, response.text)
 
         # Updates should persist across requests
         path = self._url('/v2/images/%s' % image_id)
@@ -118,6 +128,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual('baz', image['foo'])
         self.assertEqual('pong', image['ping'])
         self.assertEqual(True, image['protected'])
+        self.assertFalse('type' in image, response.text)
 
         # Try to download data before its uploaded
         path = self._url('/v2/images/%s/file' % image_id)
@@ -167,9 +178,11 @@ class TestImages(functional.FunctionalTest):
 
         # Unprotect image for deletion
         path = self._url('/v2/images/%s' % image_id)
-        data = json.dumps({'protected': False})
-        response = requests.put(path, headers=self._headers(), data=data)
-        self.assertEqual(200, response.status_code)
+        media_type = 'application/openstack-images-v2.0-json-patch'
+        headers = self._headers({'content-type': media_type})
+        data = json.dumps([{'replace': '/protected', 'value': False}])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
 
         # Deletion should work
         path = self._url('/v2/images/%s' % image_id)
@@ -234,11 +247,11 @@ class TestImages(functional.FunctionalTest):
         # TENANT2 should not be able to modify the image, either
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/openstack-images-v2.0-json-patch',
             'X-Tenant-Id': TENANT2,
         })
-        data = json.dumps({'name': 'image-2'})
-        response = requests.put(path, headers=headers, data=data)
+        data = json.dumps([{'replace': '/name', 'value': 'image-2'}])
+        response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(404, response.status_code)
 
         # TENANT2 should not be able to delete the image, either
@@ -250,11 +263,11 @@ class TestImages(functional.FunctionalTest):
         # Publicize the image as an admin of TENANT1
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/openstack-images-v2.0-json-patch',
             'X-Roles': 'admin',
         })
-        data = json.dumps({'visibility': 'public'})
-        response = requests.put(path, headers=headers, data=data)
+        data = json.dumps([{'replace': '/visibility', 'value': 'public'}])
+        response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(200, response.status_code)
 
         # TENANT3 should now see the image in their list
@@ -274,11 +287,11 @@ class TestImages(functional.FunctionalTest):
         # TENANT3 still should not be able to modify the image
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/openstack-images-v2.0-json-patch',
             'X-Tenant-Id': TENANT3,
         })
-        data = json.dumps({'name': 'image-2'})
-        response = requests.put(path, headers=headers, data=data)
+        data = json.dumps([{'replace': '/name', 'value': 'image-2'}])
+        response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(404, response.status_code)
 
         # TENANT3 should not be able to delete the image, either
@@ -307,9 +320,11 @@ class TestImages(functional.FunctionalTest):
 
         # Update image with duplicate tag - it should be ignored
         path = self._url('/v2/images/%s' % image_id)
-        headers = self._headers({'Content-Type': 'application/json'})
-        data = json.dumps({'tags': ['sniff', 'snozz', 'snozz']})
-        response = requests.put(path, headers=headers, data=data)
+        media_type = 'application/openstack-images-v2.0-json-patch'
+        headers = self._headers({'content-type': media_type})
+        data = json.dumps([{'replace': '/tags',
+                            'value': ['sniff', 'snozz', 'snozz']}])
+        response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(200, response.status_code)
         tags = json.loads(response.text)['tags']
         self.assertEqual(['snozz', 'sniff'], tags)

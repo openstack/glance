@@ -359,13 +359,12 @@ class TestImagesController(test_utils.BaseTestCase):
          }
         self.assertEqual(output_log, expected_log)
 
-    def test_update(self):
+    def test_update_no_changes(self):
         request = unit_test_utils.get_fake_request()
-        image = {'name': 'image-2'}
-        output = self.controller.update(request, UUID1, image)
-        self.assertEqual(UUID1, output['id'])
-        self.assertEqual('image-2', output['name'])
-        self.assertNotEqual(output['created_at'], output['updated_at'])
+        output = self.controller.update(request, UUID1, changes=[])
+        self.assertEqual(output['id'], UUID1)
+        self.assertEqual(output['created_at'], output['updated_at'])
+        self.assertTrue('tags' in output)
         output_log = self.notifier.get_log()
         expected_log = {'notification_type': "INFO",
                         'event_type': "image.update",
@@ -373,16 +372,158 @@ class TestImagesController(test_utils.BaseTestCase):
         }
         self.assertEqual(output_log, expected_log)
 
-    def test_update_non_existent(self):
+    def test_update_image_doesnt_exist(self):
         request = unit_test_utils.get_fake_request()
-        image = {'name': 'image-2'}
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.update,
-                          request, utils.generate_uuid(), image)
+                          request, utils.generate_uuid(), changes=[])
+
+    def test_update_replace_base_attribute(self):
+        self.db.image_update(None, UUID1, {'properties': {'foo': 'bar'}})
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'replace', 'path': ['name'], 'value': 'fedora'}]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output['id'], UUID1)
+        self.assertEqual(output['name'], 'fedora')
+        self.assertEqual(output['properties'], {'foo': 'bar'})
+        self.assertNotEqual(output['created_at'], output['updated_at'])
+
+    def test_update_replace_tags(self):
+        request = unit_test_utils.get_fake_request()
+        changes = [
+            {'op': 'replace', 'path': ['tags'], 'value': ['king', 'kong']},
+        ]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output['id'], UUID1)
+        self.assertEqual(output['tags'], ['king', 'kong'])
+        self.assertNotEqual(output['created_at'], output['updated_at'])
+
+    def test_update_replace_property(self):
+        request = unit_test_utils.get_fake_request()
+        properties = {'foo': 'bar', 'snitch': 'golden'}
+        self.db.image_update(None, UUID1, {'properties': properties})
+
+        output = self.controller.show(request, UUID1)
+        self.assertEqual(output['properties']['foo'], 'bar')
+        self.assertEqual(output['properties']['snitch'], 'golden')
+
+        changes = [
+            {'op': 'replace', 'path': ['properties', 'foo'], 'value': 'baz'},
+        ]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output['id'], UUID1)
+        self.assertEqual(output['properties']['foo'], 'baz')
+        self.assertEqual(output['properties']['snitch'], 'golden')
+        self.assertNotEqual(output['created_at'], output['updated_at'])
+
+    def test_update_add_property(self):
+        request = unit_test_utils.get_fake_request()
+        output = self.controller.show(request, UUID1)
+        self.assertEqual(len(output['properties']), 0)
+
+        changes = [
+            {'op': 'add', 'path': ['properties', 'murphy'], 'value': 'brown'},
+        ]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output['id'], UUID1)
+        self.assertEqual(output['properties'], {'murphy': 'brown'})
+        self.assertNotEqual(output['created_at'], output['updated_at'])
+
+    def test_update_remove_property(self):
+        request = unit_test_utils.get_fake_request()
+        properties = {'foo': 'bar', 'snitch': 'golden'}
+        self.db.image_update(None, UUID1, {'properties': properties})
+
+        output = self.controller.show(request, UUID1)
+        self.assertEqual(output['properties']['foo'], 'bar')
+        self.assertEqual(output['properties']['snitch'], 'golden')
+
+        changes = [
+            {'op': 'remove', 'path': ['properties', 'snitch']},
+        ]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output['id'], UUID1)
+        self.assertEqual(output['properties'], {'foo': 'bar'})
+        self.assertNotEqual(output['created_at'], output['updated_at'])
+
+    def test_update_multiple_changes(self):
+        request = unit_test_utils.get_fake_request()
+        properties = {'foo': 'bar', 'snitch': 'golden'}
+        self.db.image_update(None, UUID1, {'properties': properties})
+
+        changes = [
+            {'op': 'replace', 'path': ['min_ram'], 'value': 128},
+            {'op': 'replace', 'path': ['properties', 'foo'], 'value': 'baz'},
+            {'op': 'remove', 'path': ['properties', 'snitch']},
+            {'op': 'add', 'path': ['properties', 'kb'], 'value': 'dvorak'},
+        ]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output['id'], UUID1)
+        self.assertEqual(output['min_ram'], 128)
+        self.assertEqual(len(output['properties']), 2)
+        self.assertEqual(output['properties']['foo'], 'baz')
+        self.assertEqual(output['properties']['kb'], 'dvorak')
+        self.assertNotEqual(output['created_at'], output['updated_at'])
+
+    def test_update_replace_missing_property(self):
+        request = unit_test_utils.get_fake_request()
+        output = self.controller.show(request, UUID1)
+        self.assertEqual(len(output['properties']), 0)
+
+        changes = [
+            {'op': 'replace', 'path': ['properties', 'foo'], 'value': 'baz'},
+        ]
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.update, request, UUID1, changes)
+
+    def test_update_add_property_already_present(self):
+        request = unit_test_utils.get_fake_request()
+        properties = {'foo': 'bar'}
+        self.db.image_update(None, UUID1, {'properties': properties})
+
+        output = self.controller.show(request, UUID1)
+        self.assertEqual(output['properties'], {'foo': 'bar'})
+
+        changes = [
+            {'op': 'add', 'path': ['properties', 'foo'], 'value': 'baz'},
+        ]
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.update, request, UUID1, changes)
+
+    def test_update_remove_missing_property(self):
+        request = unit_test_utils.get_fake_request()
+        output = self.controller.show(request, UUID1)
+        self.assertEqual(len(output['properties']), 0)
+
+        changes = [
+            {'op': 'remove', 'path': ['properties', 'foo']},
+        ]
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.update, request, UUID1, changes)
+
+    def test_update_assertion_errors(self):
+        request = unit_test_utils.get_fake_request()
+        changes = [
+            {'op': 'add', 'path': ['properties', 'a', 'b'], 'value': 'c'},
+            {'op': 'add', 'path': ['prolilies', 'foo'], 'value': 'bar'},
+            {'op': 'replace', 'path': [], 'value': 'stuff'},
+            {'op': 'add', 'path': ['name'], 'value': 'Beulah'},
+            {'op': 'remove', 'path': ['name']},
+            {'op': 'test', 'path': ['properties', 'options'], 'value': 'puts'},
+        ]
+        for change in changes:
+            try:
+                self.controller.update(request, UUID1, [change])
+            except AssertionError:
+                pass  # AssertionError is the desired behavior
+            else:
+                self.fail('Failed to raise AssertionError on %s' % change)
 
     def test_update_duplicate_tags(self):
         request = unit_test_utils.get_fake_request()
-        image = {'tags': ['ping', 'ping']}
-        output = self.controller.update(request, UUID1, image)
+        changes = [
+            {'op': 'replace', 'path': ['tags'], 'value': ['ping', 'ping']},
+        ]
+        output = self.controller.update(request, UUID1, changes)
         self.assertEqual(['ping'], output['tags'])
         output_log = self.notifier.get_log()
         expected_log = {'notification_type': "INFO",
@@ -448,34 +589,25 @@ class TestImagesControllerPolicies(base.IsolatedUnitTest):
         rules = {"modify_image": False}
         self.policy.set_rules(rules)
         request = unit_test_utils.get_fake_request()
-        image = {'name': 'image-2'}
+        changes = [{'op': 'replace', 'path': ['name'], 'value': 'image-2'}]
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
-                          request, UUID1, image)
+                          request, UUID1, changes)
 
     def test_update_publicize_image_unauthorized(self):
         rules = {"publicize_image": False}
         self.policy.set_rules(rules)
         request = unit_test_utils.get_fake_request()
-        image = {'name': 'image-1', 'is_public': True}
+        changes = [{'op': 'replace', 'path': ['is_public'], 'value': True}]
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
-                          request, UUID1, image)
+                          request, UUID1, changes)
 
-    def test_update_public_image_unauthorized(self):
-        rules = {"modify_image": False}
-        self.policy.set_rules(rules)
-        request = unit_test_utils.get_fake_request()
-        image = {'name': 'image-1', 'is_public': True}
-        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
-                          request, UUID1, image)
-
-    def test_update_public_image_unauthorized_but_not_publicizing(self):
+    def test_update_depublicize_image_unauthorized(self):
         rules = {"publicize_image": False}
         self.policy.set_rules(rules)
         request = unit_test_utils.get_fake_request()
-        image = {'name': 'image-2', 'is_public': False}
-        output = self.controller.update(request, UUID1, image)
-        self.assertEqual(UUID1, output['id'])
-        self.assertEqual('image-2', output['name'])
+        changes = [{'op': 'replace', 'path': ['is_public'], 'value': False}]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertFalse(output['is_public'])
 
     def test_delete_unauthorized(self):
         rules = {"delete_image": False}
@@ -557,58 +689,210 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             self.assertRaises(webob.exc.HTTPForbidden,
                               self.deserializer.create, request)
 
-    def test_update(self):
+    def _get_fake_patch_request(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({
-            'id': UUID3,
-            'name': 'image-1',
-            'visibility': 'public',
-            'tags': ['one', 'two'],
-            'container_format': 'ami',
-            'disk_format': 'ami',
-            'min_ram': 128,
-            'min_disk': 10,
-            'foo': 'bar',
-            'protected': True,
-        })
+        request.content_type = 'application/openstack-images-v2.0-json-patch'
+        return request
+
+    def test_update_empty_body(self):
+        request = self._get_fake_patch_request()
+        request.body = json.dumps([])
         output = self.deserializer.update(request)
-        expected = {'image': {
-            'id': UUID3,
-            'name': 'image-1',
-            'is_public': True,
-            'tags': ['one', 'two'],
-            'container_format': 'ami',
-            'disk_format': 'ami',
-            'min_ram': 128,
-            'min_disk': 10,
-            'properties': {'foo': 'bar'},
-            'protected': True,
-        }}
-        self.assertEqual(expected, output)
+        expected = {'changes': []}
+        self.assertEquals(output, expected)
 
-    def test_update_no_body(self):
+    def test_update_invalid_content_type(self):
         request = unit_test_utils.get_fake_request()
-        self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.update,
-                          request)
+        request.content_type = 'application/json-patch'
+        request.body = json.dumps([])
+        try:
+            self.deserializer.update(request)
+        except webob.exc.HTTPUnsupportedMediaType as e:
+            # desired result, but must have correct Accept-Patch header
+            self.assertEqual(e.headers['Accept-Patch'],
+                             'application/openstack-images-v2.0-json-patch')
+        else:
+            self.fail('Did not raise HTTPUnsupportedMediaType')
 
-    def test_update_readonly_attributes_forbidden(self):
+    def test_update_body_not_a_list(self):
         bodies = [
-            {'created_at': ISOTIME},
-            {'updated_at': ISOTIME},
-            {'status': 'saving'},
-            {'direct_url': 'http://example.com'},
-            {'size': 10},
-            {'checksum': 'asdf'},
-            {'self': 'http://example.com'},
-            {'file': 'http://example.com'},
-            {'schema': 'http://example.com'},
+            {'add': '/someprop', 'value': 'somevalue'},
+            'just some string',
+            123,
+            True,
+            False,
+            None,
+        ]
+        for body in bodies:
+            request = self._get_fake_patch_request()
+            request.body = json.dumps(body)
+            self.assertRaises(webob.exc.HTTPBadRequest,
+                              self.deserializer.update, request)
+
+    def test_update_invalid_changes(self):
+        changes = [
+            ['a', 'list', 'of', 'stuff'],
+            'just some string',
+            123,
+            True,
+            False,
+            None,
+        ]
+        for change in changes:
+            request = self._get_fake_patch_request()
+            request.body = json.dumps([change])
+            self.assertRaises(webob.exc.HTTPBadRequest,
+                              self.deserializer.update, request)
+
+    def test_update(self):
+        request = self._get_fake_patch_request()
+        body = [
+            {'replace': '/name', 'value': 'fedora'},
+            {'replace': '/tags', 'value': ['king', 'kong']},
+            {'replace': '/foo', 'value': 'bar'},
+            {'add': '/bebim', 'value': 'bap'},
+            {'remove': '/sparks'},
+        ]
+        request.body = json.dumps(body)
+        output = self.deserializer.update(request)
+        expected = {'changes': [
+            {'op': 'replace', 'path': ['name'], 'value': 'fedora'},
+            {'op': 'replace', 'path': ['tags'], 'value': ['king', 'kong']},
+            {'op': 'replace', 'path': ['properties', 'foo'], 'value': 'bar'},
+            {'op': 'add', 'path': ['properties', 'bebim'], 'value': 'bap'},
+            {'op': 'remove', 'path': ['properties', 'sparks']},
+        ]}
+        self.assertEquals(output, expected)
+
+    def test_update_base_attributes(self):
+        request = self._get_fake_patch_request()
+        body = [
+            {'replace': '/id', 'value': UUID1},
+            {'replace': '/name', 'value': 'fedora'},
+            {'replace': '/visibility', 'value': 'public'},
+            {'replace': '/visibility', 'value': 'private'},
+            {'replace': '/tags', 'value': ['king', 'kong']},
+            {'replace': '/protected', 'value': True},
+            {'replace': '/container_format', 'value': 'bare'},
+            {'replace': '/disk_format', 'value': 'raw'},
+            {'replace': '/min_ram', 'value': 128},
+            {'replace': '/min_disk', 'value': 10},
+        ]
+        request.body = json.dumps(body)
+        output = self.deserializer.update(request)
+        expected = {'changes': [
+            {'op': 'replace', 'path': ['id'], 'value': UUID1},
+            {'op': 'replace', 'path': ['name'], 'value': 'fedora'},
+            {'op': 'replace', 'path': ['is_public'], 'value': True},
+            {'op': 'replace', 'path': ['is_public'], 'value': False},
+            {'op': 'replace', 'path': ['tags'], 'value': ['king', 'kong']},
+            {'op': 'replace', 'path': ['protected'], 'value': True},
+            {'op': 'replace', 'path': ['container_format'], 'value': 'bare'},
+            {'op': 'replace', 'path': ['disk_format'], 'value': 'raw'},
+            {'op': 'replace', 'path': ['min_ram'], 'value': 128},
+            {'op': 'replace', 'path': ['min_disk'], 'value': 10},
+        ]}
+        self.assertEquals(output, expected)
+
+    def test_update_readonly_attributes(self):
+        samples = {
+            'status': 'active',
+            'checksum': 'abcdefghijklmnopqrstuvwxyz012345',
+            'size': 9001,
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
+            'direct_url': '/a/b/c/d',
+            'self': '/e/f/g/h',
+            'file': '/e/f/g/h/file',
+            'schema': '/i/j/k',
+        }
+
+        for key, value in samples.items():
+            request = self._get_fake_patch_request()
+            body = [{'replace': '/%s' % key, 'value': value}]
+            request.body = json.dumps(body)
+            try:
+                self.deserializer.update(request)
+            except webob.exc.HTTPForbidden:
+                pass  # desired behavior
+            else:
+                self.fail("Updating %s did not result in HTTPForbidden" % key)
+
+    def test_update_reserved_attributes(self):
+        samples = {
+            'owner': TENANT1,
+            'is_public': True,
+            'location': '/a/b/c/d',
+            'deleted': False,
+            'deleted_at': ISOTIME,
+        }
+
+        for key, value in samples.items():
+            request = self._get_fake_patch_request()
+            body = [{'replace': '/%s' % key, 'value': value}]
+            request.body = json.dumps(body)
+            try:
+                self.deserializer.update(request)
+            except webob.exc.HTTPForbidden:
+                pass  # desired behavior
+            else:
+                self.fail("Updating %s did not result in HTTPForbidden" % key)
+
+    def test_update_invalid_attributes(self):
+        keys = [
+            'noslash',
+            '//twoslash',
+            '/other/twoslash'
+            '/trailingslash/',
+            '/lone~tilde'
+            '/trailingtilde~'
         ]
 
-        for body in bodies:
-            request = unit_test_utils.get_fake_request()
+        for key in keys:
+            request = self._get_fake_patch_request()
+            body = [{'replace': '%s' % key, 'value': 'dummy'}]
             request.body = json.dumps(body)
-            self.assertRaises(webob.exc.HTTPForbidden,
-                              self.deserializer.update, request)
+            try:
+                self.deserializer.update(request)
+            except webob.exc.HTTPBadRequest:
+                pass  # desired behavior
+            else:
+                self.fail("Updating %s did not result in HTTPBadRequest" % key)
+
+    def test_update_pointer_encoding(self):
+        samples = {
+            '/keywith~1slash': 'keywith/slash',
+            '/keywith~0tilde': 'keywith~tilde',
+            '/tricky~01': 'tricky~1',
+        }
+
+        for encoded, decoded in samples.items():
+            request = self._get_fake_patch_request()
+            body = [{'replace': '%s' % encoded, 'value': 'dummy'}]
+            request.body = json.dumps(body)
+            output = self.deserializer.update(request)
+            self.assertEqual(output['changes'][0]['path'][1], decoded)
+
+    def test_update_multiple_operations(self):
+        request = self._get_fake_patch_request()
+        body = [{'replace': '/foo', 'add': '/bar', 'value': 'snore'}]
+        request.body = json.dumps(body)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.update, request)
+
+    def test_update_missing_operations(self):
+        request = self._get_fake_patch_request()
+        body = [{'value': 'arcata'}]
+        request.body = json.dumps(body)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.update, request)
+
+    def test_update_missing_value(self):
+        request = self._get_fake_patch_request()
+        body = [{'replace': '/colburn'}]
+        request.body = json.dumps(body)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.update, request)
 
     def test_index(self):
         marker = utils.generate_uuid()
@@ -755,19 +1039,18 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
 
     def test_update(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'name': 'image-1', 'pants': 'off'})
+        request.content_type = 'application/openstack-images-v2.0-json-patch'
+        request.body = json.dumps([{'add': '/pants', 'value': 'off'}])
         output = self.deserializer.update(request)
-        expected = {
-            'image': {
-                'name': 'image-1',
-                'properties': {'pants': 'off'},
-            },
-        }
+        expected = {'changes': [
+            {'op': 'add', 'path': ['properties', 'pants'], 'value': 'off'},
+        ]}
         self.assertEqual(expected, output)
 
     def test_update_bad_data(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'name': 'image-1', 'pants': 'borked'})
+        request.content_type = 'application/openstack-images-v2.0-json-patch'
+        request.body = json.dumps([{'add': '/pants', 'value': 'cutoffs'}])
         self.assertRaises(webob.exc.HTTPBadRequest,
                 self.deserializer.update, request)
 
@@ -792,18 +1075,33 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.create, request)
 
+    def test_update_with_numeric_property(self):
+        request = unit_test_utils.get_fake_request()
+        request.content_type = 'application/openstack-images-v2.0-json-patch'
+        request.body = json.dumps([{'add': '/foo', 'value': 123}])
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.update, request)
+
     def test_create_with_list_property(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'foo': ['bar']})
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.create, request)
 
+    def test_update_with_list_property(self):
+        request = unit_test_utils.get_fake_request()
+        request.content_type = 'application/openstack-images-v2.0-json-patch'
+        request.body = json.dumps([{'add': '/foo', 'value': ['bar', 'baz']}])
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.update, request)
+
     def test_update(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'foo': 'bar'})
+        request.content_type = 'application/openstack-images-v2.0-json-patch'
+        request.body = json.dumps([{'add': '/foo', 'value': 'bar'}])
         output = self.deserializer.update(request)
-        expected = {'image': {'properties': {'foo': 'bar'}}}
-        self.assertEqual(expected, output)
+        change = {'op': 'add', 'path': ['properties', 'foo'], 'value': 'bar'}
+        self.assertEqual(output, {'changes': [change]})
 
 
 class TestImagesDeserializerNoAdditionalProperties(test_utils.BaseTestCase):
@@ -822,7 +1120,8 @@ class TestImagesDeserializerNoAdditionalProperties(test_utils.BaseTestCase):
 
     def test_update(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'foo': 'bar'})
+        request.content_type = 'application/openstack-images-v2.0-json-patch'
+        request.body = json.dumps([{'add': '/foo', 'value': 'bar'}])
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.update, request)
 

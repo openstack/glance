@@ -51,7 +51,7 @@ class API(wsgi.Router):
         mapper.connect('/images/{image_id}',
                        controller=images_resource,
                        action='update',
-                       conditions={'method': ['PUT']})
+                       conditions={'method': ['PATCH']})
         mapper.connect('/images/{image_id}',
                        controller=images_resource,
                        action='show',
