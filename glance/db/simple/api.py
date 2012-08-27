@@ -83,15 +83,23 @@ def _image_format(image_id, **values):
     dt = datetime.datetime.now()
     image = {
         'id': image_id,
-        'name': 'image-name',
+        'name': None,
         'owner': None,
         'location': None,
         'status': 'queued',
+        'protected': False,
         'is_public': False,
-        'deleted': False,
+        'container_format': None,
+        'disk_format': None,
+        'min_ram': 0,
+        'min_disk': 0,
+        'size': None,
+        'checksum': None,
+        'tags': [],
         'created_at': dt,
         'updated_at': dt,
-        'tags': [],
+        'deleted_at': None,
+        'deleted': False,
     }
 
     #NOTE(bcwaldon): store properties as a list to match sqlalchemy driver
