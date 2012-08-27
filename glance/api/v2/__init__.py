@@ -16,10 +16,9 @@
 import webob.exc
 
 from glance.common import exception
-from glance.store import set_acls
 
 
-def update_image_read_acl(req, db_api, image):
+def update_image_read_acl(req, store_api, db_api, image):
     """Helper function to set ACL permissions on images in the image store"""
     location_uri = image['location']
     public = image['is_public']
@@ -36,9 +35,9 @@ def update_image_read_acl(req, db_api, image):
                         write_tenants.append(member['member'])
                     else:
                         read_tenants.append(member['member'])
-            set_acls(req.context, location_uri, public=public,
-                     read_tenants=read_tenants,
-                     write_tenants=write_tenants)
+            store_api.set_acls(req.context, location_uri, public=public,
+                               read_tenants=read_tenants,
+                               write_tenants=write_tenants)
         except exception.UnknownScheme:
             msg = _("Store for image_id not found: %s") % image_id
             raise webob.exc.HTTPBadRequest(explanation=msg,

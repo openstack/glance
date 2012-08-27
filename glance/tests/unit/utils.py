@@ -31,6 +31,8 @@ TENANT2 = '2c014f32-55eb-467d-8fcb-4bd706012f81'
 USER1 = '54492ba0-f4df-4e4e-be62-27f4d76b29cf'
 USER2 = '0b3b3006-cb76-4517-ae32-51397e22c754'
 
+BASE_URI = 'swift+http://storeurl.com/container'
+
 
 def get_fake_request(path='', method='POST', is_admin=False):
     req = wsgi.Request.blank(path)
@@ -58,7 +60,7 @@ class FakeDB(object):
     def init_db():
         images = [
             {'id': UUID1, 'owner': TENANT1,
-             'location': 'swift+http://storeurl.com/container/%s' % UUID1},
+             'location': '%s/%s' % (BASE_URI, UUID1)},
             {'id': UUID2, 'owner': TENANT1},
         ]
         [simple_db.image_create(None, image) for image in images]
@@ -86,10 +88,13 @@ class FakeDB(object):
 class FakeStoreAPI(object):
     def __init__(self):
         self.data = {
-            'swift+http://storeurl.com/container/%s' % UUID1: ('XXX', 3),
+            '%s/%s' % (BASE_URI, UUID1): ('XXX', 3),
         }
 
     def create_stores(self):
+        pass
+
+    def set_acls(*_args, **_kwargs):
         pass
 
     def get_from_backend(self, context, location):
@@ -97,6 +102,15 @@ class FakeStoreAPI(object):
             return self.data[location]
         except KeyError:
             raise exception.NotFound()
+
+    def safe_delete_from_backend(self, uri, context, id, **kwargs):
+        try:
+            del self.data[uri]
+        except KeyError:
+            pass
+
+    def schedule_delayed_delete_from_backend(self, uri, id, **kwargs):
+        pass
 
     def get_size_from_backend(self, context, location):
         return self.get_from_backend(context, location)[1]

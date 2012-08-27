@@ -23,7 +23,7 @@ from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.registry import configure_registry_client
 from glance.store import (delete_from_backend,
-                          schedule_delete_from_backend)
+                          safe_delete_from_backend)
 from glance.store.http import Store, MAX_REDIRECTS
 from glance.store.location import get_location_from_uri
 from glance.tests.unit import base
@@ -185,6 +185,6 @@ class TestHttpStore(base.StoreClearingUnitTest):
         ctx = context.RequestContext()
         stub_out_registry_image_update(self.stubs)
         try:
-            schedule_delete_from_backend(uri, ctx, 'image_id')
+            safe_delete_from_backend(uri, ctx, 'image_id')
         except exception.StoreDeleteNotSupported:
             self.fail('StoreDeleteNotSupported should be swallowed')

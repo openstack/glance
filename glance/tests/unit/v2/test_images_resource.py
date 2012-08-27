@@ -34,6 +34,8 @@ ISOTIME = '2012-05-16T15:27:36Z'
 
 CONF = cfg.CONF
 
+BASE_URI = unit_test_utils.BASE_URI
+
 
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
 UUID2 = 'a85abd86-55b3-4d5b-b0b4-5d0a6e6042fc'
@@ -76,17 +78,19 @@ class TestImagesController(test_utils.BaseTestCase):
         self.db = unit_test_utils.FakeDB()
         self.policy = unit_test_utils.FakePolicyEnforcer()
         self.notifier = unit_test_utils.FakeNotifier()
+        self.store = unit_test_utils.FakeStoreAPI()
         self._create_images()
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 self.policy,
-                                                                self.notifier)
+                                                                self.notifier,
+                                                                self.store)
         glance.store.create_stores()
 
     def _create_images(self):
         self.db.reset()
         self.images = [
             _fixture(UUID1, owner=TENANT1, name='1', size=256, is_public=True,
-                     location='swift+http://example.com/container/%s' % UUID1),
+                     location='%s/%s' % (BASE_URI, UUID1)),
             _fixture(UUID2, owner=TENANT1, name='2', size=512, is_public=True),
             _fixture(UUID3, owner=TENANT3, name='3', size=512, is_public=True),
             _fixture(UUID4, owner=TENANT4, name='4', size=1024),
@@ -393,6 +397,7 @@ class TestImagesController(test_utils.BaseTestCase):
 
     def test_delete(self):
         request = unit_test_utils.get_fake_request()
+        self.assertTrue(filter(lambda k: UUID1 in k, self.store.data))
         try:
             image = self.controller.delete(request, UUID1)
             output_log = self.notifier.get_log()
@@ -400,6 +405,39 @@ class TestImagesController(test_utils.BaseTestCase):
             self.assertEqual(output_log['event_type'], "image.delete")
         except Exception as e:
             self.fail("Delete raised exception: %s" % e)
+
+        deleted_img = self.db.image_get(request.context, UUID1,
+                                        force_show_deleted=True)
+        self.assertTrue(deleted_img['deleted'])
+        self.assertEqual(deleted_img['status'], 'deleted')
+        self.assertFalse(filter(lambda k: UUID1 in k, self.store.data))
+
+    def test_delete_not_in_store(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertTrue(filter(lambda k: UUID1 in k, self.store.data))
+        for k in self.store.data:
+            if UUID1 in k:
+                del self.store.data[k]
+                break
+
+        self.controller.delete(request, UUID1)
+        deleted_img = self.db.image_get(request.context, UUID1,
+                                        force_show_deleted=True)
+        self.assertTrue(deleted_img['deleted'])
+        self.assertEqual(deleted_img['status'], 'deleted')
+        self.assertFalse(filter(lambda k: UUID1 in k, self.store.data))
+
+    def test_delayed_delete(self):
+        self.config(delayed_delete=True)
+        request = unit_test_utils.get_fake_request()
+        self.assertTrue(filter(lambda k: UUID1 in k, self.store.data))
+
+        self.controller.delete(request, UUID1)
+        deleted_img = self.db.image_get(request.context, UUID1,
+                                        force_show_deleted=True)
+        self.assertTrue(deleted_img['deleted'])
+        self.assertEqual(deleted_img['status'], 'pending_delete')
+        self.assertTrue(filter(lambda k: UUID1 in k, self.store.data))
 
     def test_delete_non_existent(self):
         request = unit_test_utils.get_fake_request()
