@@ -14,8 +14,8 @@
       License for the specific language governing permissions and limitations
       under the License.
 
-Glance Authentication With Keystone
-===================================
+Authentication With Keystone
+============================
 
 Glance may optionally be integrated with Keystone.  Setting this up is
 relatively straightforward, as the Keystone distribution includes the
