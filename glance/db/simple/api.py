@@ -105,11 +105,13 @@ def _image_format(image_id, **values):
     return image
 
 
-def _filter_images(images, filters):
+def _filter_images(images, filters, context):
     filtered_images = []
     if 'properties' in filters:
         prop_filter = filters.pop('properties')
         filters.update(prop_filter)
+
+    is_public_filter = filters.pop('is_public', None)
 
     for i, image in enumerate(images):
         add = True
@@ -141,6 +143,23 @@ def _filter_images(images, filters):
 
         if add:
             filtered_images.append(image)
+
+    #NOTE(bcwaldon): This hacky code is only here to match what the
+    # sqlalchemy driver wants - refactor it out of the db layer when
+    # it seems appropriate
+    if is_public_filter is not None:
+        def _filter_ownership(image):
+            has_ownership = image['owner'] == context.owner
+            can_see = image['is_public'] or has_ownership or context.is_admin
+
+            if can_see:
+                return has_ownership or \
+                        (can_see and image['is_public'] == is_public_filter)
+            else:
+                return False
+
+        filtered_images = filter(_filter_ownership, filtered_images)
+
     return filtered_images
 
 
@@ -187,6 +206,13 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
         LOG.info('Unable to get deleted image')
         raise exception.NotFound()
 
+    if (not context.is_admin) \
+            and (not image.get('is_public')) \
+            and (image['owner'] is not None) \
+            and (image['owner'] != context.owner):
+        LOG.info('Unable to get unowned image')
+        raise exception.Forbidden()
+
     return image
 
 
@@ -195,7 +221,7 @@ def image_get_all(context, filters=None, marker=None, limit=None,
                   sort_key='created_at', sort_dir='desc'):
     filters = filters or {}
     images = DATA['images'].values()
-    images = _filter_images(images, filters)
+    images = _filter_images(images, filters, context)
     images = _sort_images(images, sort_key, sort_dir)
     images = _do_pagination(context, images, marker, limit,
                             filters.get('deleted'))
