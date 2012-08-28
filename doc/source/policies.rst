@@ -17,47 +17,62 @@
 Policies
 ========
 
-Glance's API calls may be restricted to certain sets of users using
-a Policy configuration file.
+Glance's public API calls may be restricted to certain sets of users using a 
+policy configuration file. This document explains exactly how policies are
+configured and what they apply to. 
 
-This document explains exactly how policies work and how the policy
-configuration file is constructed.
-
-Basics
-------
-
-A policy is composed of a set of rules that are used by the Policy "Brain"
-in determining if a particular action may be performed by a particular
-role.
+A policy is composed of a set of rules that are used by the policy "Brain" in 
+determining if a particular action may be performed by the authorized tenant.
 
 Constructing a Policy Configuration File
 ----------------------------------------
 
-Policy configuration files are simply serialized JSON dictionaries that
-contain sets of rules. Each top-level key is the name of a rule. Each rule
+A policy configuration file is a simply JSON object that contain sets of 
+rules. Each top-level key is the name of a rule. Each rule
 is a string that describes an action that may be performed in the Glance API.
 
 The actions that may have a rule enforced on them are:
 
-* ``get_images`` - Allowed to call the ``GET /images`` and
-  ``GET /images/detail`` API calls
+* ``get_images`` - List available image entities
+  
+  * ``GET /v1/images``
+  * ``GET /v1/images/detail``
+  * ``GET /v2/images``
 
-* ``get_image`` - Allowed to call the ``HEAD /images/<IMAGE_ID>`` and
-  ``GET /images/<IMAGE_ID>`` API calls
+* ``get_image`` - Retrieve a specific image entity
+  
+  * ``HEAD /v1/images/<IMAGE_ID>``
+  * ``GET /v1/images/<IMAGE_ID>``
+  * ``GET /v2/images/<IMAGE_ID>``
 
-* ``add_image`` - Allowed to call the ``POST /images`` API call
+* ``download_image`` - Download binary image data
+  
+  * ``GET /v1/images/<IMAGE_ID>``
+  * ``GET /v2/images/<IMAGE_ID>/file``
 
-* ``modify_image`` - Allowed to call the ``PUT /images/<IMAGE_ID>`` API call
+* ``add_image`` - Create an image entity
+  
+  * ``POST /v1/images``
+  * ``POST /v2/images``
 
-* ``publicize_image`` - Allowed to create or update images with attribute ``is_public=true``
+* ``modify_image`` - Update an image entity
 
-* ``delete_image`` - Allowed to call the ``DELETE /images/<IMAGE_ID>`` API call
+  * ``PUT /v1/images/<IMAGE_ID>``
+  * ``PUT /v2/images/<IMAGE_ID>``
+
+* ``publicize_image`` - Create or update images with attribute
+
+  * ``POST /v1/images`` with attribute ``is_public`` = ``true``
+  * ``PUT /v1/images/<IMAGE_ID>`` with attribute ``is_public`` = ``true``
+  * ``POST /v2/images`` with attribute ``visibility`` = ``public``
+  * ``PUT /v2/images/<IMAGE_ID>`` with attribute ``visibility`` = ``public``
+
+* ``delete_image`` - Delete an image entity and associated binary data
+
+  * ``DELETE /v1/images/<IMAGE_ID>``
+  * ``DELETE /v2/images/<IMAGE_ID>``
 
 * ``manage_image_cache`` - Allowed to use the image cache management API
-
-* Added in v2:
-
-* ``download_image`` - Allowed to call the ``GET /images/<IMAGE_ID>/file`` API call
 
 
 To limit an action to a particular role or roles, you list the roles like so ::
