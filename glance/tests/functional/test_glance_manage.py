@@ -53,8 +53,11 @@ class TestGlanceManage(functional.FunctionalTest):
 
         self.assertTrue('CREATE TABLE images' in out)
         self.assertTrue('CREATE TABLE image_tags' in out)
-        self.assertTrue('CREATE TABLE image_members' in out)
-        self.assertTrue('CREATE TABLE image_properties' in out)
+
+        #NOTE(bcwaldon): For some reason we need double-quotes around
+        # these two table names
+        self.assertTrue('CREATE TABLE "image_members"' in out)
+        self.assertTrue('CREATE TABLE "image_properties"' in out)
 
     @depends_on_exe('sqlite3')
     @skip_if_disabled

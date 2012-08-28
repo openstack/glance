@@ -81,11 +81,6 @@ def do_db_sync(args):
     Place a database under migration control and upgrade,
     creating first if necessary.
     """
-    # override auto-create flag, as complete DB should always
-    # be created on sync if not already existing
-    CONF.register_opts(glance.db.sqlalchemy.api.db_opts)
-    CONF.set_override('db_auto_create', True)
-    glance.db.sqlalchemy.api.configure_db()
     version = args.pop(0) if args else None
     current_version = args.pop(0) if args else None
     glance.db.sqlalchemy.migration.db_sync(version, current_version)
