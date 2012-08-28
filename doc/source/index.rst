@@ -70,8 +70,8 @@ Using Glance
 .. toctree::
    :maxdepth: 1
 
-   glanceclient
    glanceapi
+   glanceclient
 
 Developer Docs
 ==============

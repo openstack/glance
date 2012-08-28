@@ -14,8 +14,8 @@
       License for the specific language governing permissions and limitations
       under the License.
 
-The Glance REST API
-===================
+Using Glance's Public APIs
+==========================
 
 Glance has a RESTful API that exposes both metadata about registered virtual
 machine images and the image data itself.
