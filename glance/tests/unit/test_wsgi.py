@@ -177,6 +177,11 @@ class JSONRequestDeserializerTest(test_utils.BaseTestCase):
         actual = wsgi.JSONRequestDeserializer().from_json(fixture)
         self.assertEqual(actual, expected)
 
+    def test_from_json_malformed(self):
+        fixture = 'kjasdklfjsklajf'
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                wsgi.JSONRequestDeserializer().from_json, fixture)
+
     def test_default_no_body(self):
         request = wsgi.Request.blank('/')
         actual = wsgi.JSONRequestDeserializer().default(request)
