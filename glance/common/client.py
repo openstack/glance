@@ -539,7 +539,7 @@ class BaseClient(object):
                 # conflict.
                 for header, value in headers.items():
                     if use_sendfile or header.lower() != 'content-length':
-                        c.putheader(header, value)
+                        c.putheader(header, str(value))
 
                 iter = self.image_iterator(c, headers, body)
 
