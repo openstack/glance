@@ -163,6 +163,16 @@ class BaseTestCase(object):
                                       force_show_deleted=True)
         self.assertEquals(image['id'], self.fixtures[0]['id'])
 
+    def test_image_get_not_owned(self):
+        TENANT1 = utils.generate_uuid()
+        TENANT2 = utils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2)
+        image = self.db_api.image_create(
+                ctxt1, {'status': 'queued', 'owner': TENANT1})
+        self.assertRaises(exception.Forbidden,
+                          self.db_api.image_get, ctxt2, image['id'])
+
     def test_image_get_all(self):
         images = self.db_api.image_get_all(self.context)
         self.assertEquals(3, len(images))
@@ -275,6 +285,27 @@ class BaseTestCase(object):
         # A limit of zero should actually mean zero
         images = self.db_api.image_get_all(self.context, limit=0)
         self.assertEquals(0, len(images))
+
+    def test_image_get_all_owned(self):
+        TENANT1 = utils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        UUIDX = utils.generate_uuid()
+        self.db_api.image_create(ctxt1,
+                {'id': UUIDX, 'status': 'queued', 'owner': TENANT1})
+
+        TENANT2 = utils.generate_uuid()
+        ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2)
+        UUIDY = utils.generate_uuid()
+        self.db_api.image_create(ctxt2,
+                {'id': UUIDY, 'status': 'queued', 'owner': TENANT2})
+
+        # NOTE(bcwaldon): the is_public=True flag indicates that you want
+        # to get all images that are public AND those that are owned by the
+        # calling context
+        images = self.db_api.image_get_all(ctxt1, filters={'is_public': True})
+        image_ids = [image['id'] for image in images]
+        expected = [UUIDX, UUID3, UUID2, UUID1]
+        self.assertEqual(expected, image_ids)
 
     def test_image_paginate(self):
         """Paginate through a list of images using limit and marker"""
