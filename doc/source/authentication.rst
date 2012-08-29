@@ -116,37 +116,3 @@ configuration file, select the appropriate deployment flavor by adding a
   which users should be granted admin-level privileges, you must define it
   in the ``admin_role`` config attribute in both ``glance-registry.conf`` and
   ``glance-api.conf``.
-
-Configuring the Glance Client to use Keystone
----------------------------------------------
-
-Once the Glance API and Registry servers have been configured to use
-Keystone, you will need to configure the Glance client (``bin/glance``)
-to use Keystone as well. Like the other OpenStack projects, this is
-done through a common set of environment variables. These credentials may
-may alternatively be specified using the following switches to
-the ``bin/glance`` command:
-
-  OS_USERNAME=<USERNAME>, -I <USERNAME>, --os_username=<USERNAME>
-                        User name used to acquire an authentication token
-  OS_PASSWORD=<PASSWORD>, -K <PASSWORD>, --os_password=<PASSWORD>
-                        Password used to acquire an authentication token
-  OS_TENANT_NAME=<TENANT_NAME> -T <TENANT_NAME>, --os_tenant_name=<TENANT_NAME>
-                        Tenant name
-  OS_AUTH_URL=<AUTH_URL>, -N <AUTH_URL>, --os_auth_url=<AUTH_URL>
-                        Authentication endpoint
-  OS_REGION_NAME=<REGION_NAME>, -R <REGION_NAME>, --os_region_name=<REGION_NAME>
-                        Used to select a specific region while
-                        authenticating against Keystone
-
-Or, if a pre-authenticated token is preferred, the following option allows
-the client-side interaction with keystone to be bypassed (useful if a long
-sequence of commands is being scripted):
-
-  OS_TOKEN=<TOKEN>, -A <TOKEN>, --os_auth_token=<TOKEN>
-                        User's authentication token that identifies the
-                        client to the glance server. This is not
-                        an admin token.
-
-In general the command line switch takes precedence over the corresponding
-OS_* environment variable, if both are set.
