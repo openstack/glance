@@ -42,7 +42,7 @@ class BaseContextMiddleware(wsgi.Middleware):
         try:
             request_id = resp.request.context.request_id
         except AttributeError:
-            LOG.error(_('Unable to retrieve request id from context'))
+            LOG.warn(_('Unable to retrieve request id from context'))
         else:
             resp.headers['x-openstack-request-id'] = 'req-%s' % request_id
         return resp
