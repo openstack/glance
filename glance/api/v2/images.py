@@ -58,8 +58,12 @@ class ImagesController(object):
         like {<key>: <value>} in image create and update calls. This
         function takes the extra step that the db api should be
         responsible for in the image get calls.
+
+        The db api will also return deleted image properties that must
+        be filtered out.
         """
-        properties = [(p['name'], p['value']) for p in image['properties']]
+        properties = [(p['name'], p['value'])
+                      for p in image['properties'] if not p['deleted']]
         image['properties'] = dict(properties)
         return image
 

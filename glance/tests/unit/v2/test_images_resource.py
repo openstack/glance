@@ -294,6 +294,24 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual(UUID2, output['id'])
         self.assertEqual('2', output['name'])
 
+    def test_show_deleted_properties(self):
+        """ Ensure that the api filters out deleted image properties. """
+
+        # get the image properties into the odd state
+        image = {
+            'id': utils.generate_uuid(),
+            'status': 'active',
+            'properties': {'poo': 'bear'},
+        }
+        self.db.image_create(None, image)
+        self.db.image_update(None, image['id'],
+                             {'properties': {'yin': 'yang'}},
+                             purge_props=True)
+
+        request = unit_test_utils.get_fake_request()
+        output = self.controller.show(request, image['id'])
+        self.assertEqual(output['properties'], {'yin': 'yang'})
+
     def test_show_non_existent(self):
         request = unit_test_utils.get_fake_request()
         image_id = utils.generate_uuid()

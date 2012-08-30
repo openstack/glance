@@ -301,18 +301,27 @@ def image_create(context, image_values):
 
 
 @log_call
-def image_update(context, image_id, image_values):
+def image_update(context, image_id, image_values, purge_props=False):
     global DATA
     try:
         image = DATA['images'][image_id]
     except KeyError:
         raise exception.NotFound(image_id=image_id)
 
-    properties = image_values.pop('properties', {})
-    properties = [{'name': k,
-                   'value': v,
-                   'deleted': False} for k, v in properties.items()]
-    image['properties'] = properties
+    # replace values for properties that already exist
+    new_properties = image_values.pop('properties', {})
+    for prop in image['properties']:
+        if prop['name'] in new_properties:
+            prop['value'] = new_properties.pop(prop['name'])
+        elif purge_props:
+            # this matches weirdness in the sqlalchemy api
+            prop['deleted'] = True
+
+    # add in any completly new properties
+    image['properties'].extend([
+            {'name': k, 'value': v, 'deleted': False}
+             for k, v in new_properties.items()])
+
     image['updated_at'] = timeutils.utcnow()
     image.update(image_values)
     DATA['images'][image_id] = image

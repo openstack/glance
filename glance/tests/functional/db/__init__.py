@@ -128,12 +128,28 @@ class BaseTestCase(object):
 
     def test_image_update_properties(self):
         fixture = {'properties': {'ping': 'pong'}}
-        image = self.db_api.image_update(self.adm_context, UUID3, fixture)
-        expected = [{'name': 'ping', 'value': 'pong'}]
-        actual = [{'name': p['name'], 'value': p['value']}
-                  for p in image['properties']]
+        image = self.db_api.image_update(self.adm_context, UUID1, fixture)
+        expected = {'ping': 'pong', 'foo': 'bar'}
+        actual = dict((p['name'], p['value']) for p in image['properties'])
         self.assertEqual(expected, actual)
         self.assertNotEqual(image['created_at'], image['updated_at'])
+
+    def test_image_update_purge_properties(self):
+        fixture = {'properties': {'ping': 'pong'}}
+        image = self.db_api.image_update(self.adm_context, UUID1,
+                                         fixture, purge_props=True)
+        properties = dict((p['name'], p) for p in image['properties'])
+
+        # New properties are set
+        self.assertTrue('ping' in properties)
+        self.assertEqual(properties['ping']['value'], 'pong')
+        self.assertEqual(properties['ping']['deleted'], False)
+
+        # Original properties still show up, but with deleted=True
+        # TODO(markwash): db api should not return deleted properties
+        self.assertTrue('foo' in properties)
+        self.assertEqual(properties['foo']['value'], 'bar')
+        self.assertEqual(properties['foo']['deleted'], True)
 
     def test_image_property_delete(self):
         fixture = {'name': 'ping', 'value': 'pong', 'image_id': UUID1}
