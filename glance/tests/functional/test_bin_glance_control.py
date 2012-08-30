@@ -27,9 +27,9 @@ from glance.tests import functional
 from glance.tests.utils import skip_if_disabled
 
 
-class TestRespawn(functional.FunctionalTest):
+class TestGlanceControl(functional.FunctionalTest):
 
-    """Functional test for glance-control --respawn """
+    """Functional test for glance-control"""
 
     def get_versions(self):
         path = "http://%s:%d" % ("127.0.0.1", self.api_port)
@@ -152,3 +152,51 @@ class TestRespawn(functional.FunctionalTest):
 
         # ensure the server has not been respawned
         self.connection_unavailable('bouncing')
+
+    @skip_if_disabled
+    def test_reload(self):
+        """Exercise `glance-control api reload`"""
+        self.cleanup()
+
+        # start API server, allowing glance-control to continue running
+        self.start_with_retry(self.api_server,
+                              'api_port',
+                              3,
+                              expect_launch=True,
+                              expect_exit=False,
+                              expect_confirmation=False,
+                              **self.__dict__.copy())
+
+        # ensure the service pid has been cached
+        pid_cached = lambda: os.path.exists(self.api_server.pid_file)
+        self.wait_for(pid_cached)
+
+        # ensure glance-control has had a chance to waitpid on child
+        time.sleep(1)
+
+        # verify server health with version negotiation
+        self.get_versions()
+
+        self.reload_server(self.api_server, True)
+
+        # ensure API service port is re-activated
+        launch_msg = self.wait_for_servers([self.api_server])
+        self.assertTrue(launch_msg is None, launch_msg)
+
+        # verify server health with version negotiation
+        self.get_versions()
+
+        # deliberately stop server
+        proc_file = '/proc/%d' % self.get_pid()
+        self.stop_server(self.api_server, 'API server')
+
+        # ensure last server process has gone away
+        process_died = lambda: not os.path.exists(proc_file)
+        self.wait_for(process_died)
+
+        # deliberately stopped server should not be respawned
+        launch_msg = self.wait_for_servers([self.api_server], False)
+        self.assertTrue(launch_msg is None, launch_msg)
+
+        # ensure the server has not been respawned
+        self.connection_unavailable('deliberately stopped')
