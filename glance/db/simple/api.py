@@ -306,6 +306,15 @@ def image_create(context, image_values):
     if image_id in DATA['images']:
         raise exception.Duplicate()
 
+    allowed_keys = set(['id', 'name', 'status', 'min_ram', 'min_disk', 'size',
+                        'checksum', 'location', 'owner', 'protected',
+                        'is_public', 'container_format', 'disk_format',
+                        'created_at', 'updated_at', 'deleted_at', 'deleted',
+                        'properties', 'tags'])
+
+    if set(image_values.keys()) - allowed_keys:
+        raise exception.Invalid()
+
     image = _image_format(image_id, **image_values)
     DATA['images'][image_id] = image
     DATA['tags'][image_id] = image.pop('tags', [])
