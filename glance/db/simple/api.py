@@ -306,6 +306,9 @@ def image_create(context, image_values):
     if image_id in DATA['images']:
         raise exception.Duplicate()
 
+    if 'status' not in image_values:
+        raise exception.Invalid('status is a required attribute')
+
     allowed_keys = set(['id', 'name', 'status', 'min_ram', 'min_disk', 'size',
                         'checksum', 'location', 'owner', 'protected',
                         'is_public', 'container_format', 'disk_format',

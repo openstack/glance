@@ -98,6 +98,13 @@ class BaseTestCase(object):
     def reset(self):
         pass
 
+    def test_image_create_requires_status(self):
+        fixture = {'name': 'mark', 'size': 12}
+        self.assertRaises(exception.Invalid,
+                          self.db_api.image_create, self.context, fixture)
+        fixture = {'name': 'mark', 'size': 12, 'status': 'queued'}
+        self.db_api.image_create(self.context, fixture)
+
     def test_image_create_defaults(self):
         image = self.db_api.image_create(self.context, {'status': 'queued'})
 

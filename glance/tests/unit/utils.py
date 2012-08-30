@@ -59,9 +59,9 @@ class FakeDB(object):
     @staticmethod
     def init_db():
         images = [
-            {'id': UUID1, 'owner': TENANT1,
+            {'id': UUID1, 'owner': TENANT1, 'status': 'queued',
              'location': '%s/%s' % (BASE_URI, UUID1)},
-            {'id': UUID2, 'owner': TENANT1},
+            {'id': UUID2, 'owner': TENANT1, 'status': 'queued'},
         ]
         [simple_db.image_create(None, image) for image in images]
 

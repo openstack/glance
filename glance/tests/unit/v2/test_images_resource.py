@@ -197,12 +197,7 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual(0, len(images))
 
     def test_index_with_non_default_is_public_filter(self):
-        image = {
-            'id': utils.generate_uuid(),
-            'owner': TENANT3,
-            'name': '3',
-            'is_public': False
-        }
+        image = _fixture(utils.generate_uuid(), is_public=False, owner=TENANT3)
         self.db.image_create(None, image)
         path = '/images?visibility=private'
         request = unit_test_utils.get_fake_request(path)
