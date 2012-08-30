@@ -26,6 +26,8 @@ import stubout
 
 from glance.common import utils
 from glance import image_cache
+#NOTE(bcwaldon): This is imported to load the registry config options
+import glance.registry
 from glance.tests import utils as test_utils
 from glance.tests.utils import skip_if_disabled, xattr_writes_supported
 
@@ -181,6 +183,31 @@ class ImageCacheTestCase(object):
         for x in xrange(5, 10):
             self.assertTrue(self.cache.is_cached(x),
                             "Image %s was not cached!" % x)
+
+    @skip_if_disabled
+    def test_prune_to_zero(self):
+        """Test that an image_cache_max_size of 0 doesn't kill the pruner
+
+        This is a test specifically for LP #1039854
+        """
+        self.assertEqual(0, self.cache.get_cache_size())
+
+        FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
+        self.assertTrue(self.cache.cache_image_file('xxx', FIXTURE_FILE))
+
+        self.assertEqual(1024, self.cache.get_cache_size())
+
+        # OK, hit the image that is now cached...
+        buff = StringIO.StringIO()
+        with self.cache.open_for_read('xxx') as cache_file:
+            for chunk in cache_file:
+                buff.write(chunk)
+
+        self.config(image_cache_max_size=0)
+        self.cache.prune()
+
+        self.assertEqual(0, self.cache.get_cache_size())
+        self.assertFalse(self.cache.is_cached('xxx'))
 
     @skip_if_disabled
     def test_queue(self):

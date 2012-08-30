@@ -272,7 +272,11 @@ class Driver(base.Driver):
         with self.get_db() as db:
             cur = db.execute("""SELECT image_id FROM cached_images
                              ORDER BY last_accessed LIMIT 1""")
-            image_id = cur.fetchone()[0]
+            try:
+                image_id = cur.fetchone()[0]
+            except TypeError:
+                # There are no more cached images
+                return None
 
         path = self.get_image_filepath(image_id)
         file_info = os.stat(path)
