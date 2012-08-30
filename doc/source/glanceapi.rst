@@ -17,52 +17,58 @@
 Using Glance's Public APIs
 ==========================
 
-Glance has a RESTful API that exposes both metadata about registered virtual
-machine images and the image data itself.
+Glance fully implements versions 1.0, 1.1 and 2.0 of the OpenStack Images API.
+The Images API specification is developed alongside Glance, but is not
+considered part of the Glance project.
 
-A host that runs the ``bin/glance-api`` service is said to be a *Glance API
-Server*.
+Authentication
+--------------
 
-Assume there is a Glance API server running at the URL
-``http://glance.example.com``.
+Glance depends on Keystone and the OpenStack Identity API to handle
+authentication of clients. You must obtain an authentication token from
+Keystone using and send it along with all API requests to Glance through
+the ``X-Auth-Token`` header. Glance will communicate back to Keystone to
+verify the token validity and obtain your identity credentials.
 
-Let's walk through how a user might request information from this server.
+Using v1.X
+----------
 
-Requesting a List of Public VM Images
--------------------------------------
+For the purpose of examples, assume there is a Glance API server running
+at the URL ``http://glance.example.com`` on the default port 80.
 
-We want to see a list of available virtual machine images that the Glance
-server knows about.
+List Available Images
+*********************
 
-We issue a ``GET`` request to ``http://glance.example.com/images/`` to retrieve
-this list of available *public* images. The data is returned as a JSON-encoded
+We want to see a list of available images that the authenticated user has
+access to. This includes images owned by the user, images shared with the user
+and public images.
+
+We issue a ``GET`` request to ``http://glance.example.com/v1/images`` to
+retrieve this list of available images. The data is returned as a JSON-encoded
 mapping in the following format::
 
   {'images': [
-    {'uri': 'http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9',
+    {'uri': 'http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9',
      'name': 'Ubuntu 10.04 Plain',
      'disk_format': 'vhd',
      'container_format': 'ovf',
      'size': '5368709120'}
     ...]}
 
-.. note::
 
-  All images returned from the above `GET` request are *public* images
+List Available Images in More Detail
+************************************
 
+We want to see a more detailed list of available images that the authenticated
+user has access to. This includes images owned by the user, images shared with
+the user and public images.
 
-Requesting Detailed Metadata on Public VM Images
-------------------------------------------------
-
-We want to see more detailed information on available virtual machine images
-that the Glance server knows about.
-
-We issue a ``GET`` request to ``http://glance.example.com/images/detail`` to
-retrieve this list of available *public* images. The data is returned as a
+We issue a ``GET`` request to ``http://glance.example.com/v1/images/detail`` to
+retrieve this list of available images. The data is returned as a
 JSON-encoded mapping in the following format::
 
   {'images': [
-    {'uri': 'http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9',
+    {'uri': 'http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9',
      'name': 'Ubuntu 10.04 Plain 5GB',
      'disk_format': 'vhd',
      'container_format': 'ovf',
@@ -80,8 +86,6 @@ JSON-encoded mapping in the following format::
     ...]}
 
 .. note::
-
-  All images returned from the above `GET` request are *public* images
 
   All timestamps returned are in UTC
 
@@ -106,10 +110,10 @@ JSON-encoded mapping in the following format::
   The `owner` field is a string which may either be null or which will
   indicate the owner of the image
 
-Filtering Images Returned via ``GET /images`` and ``GET /images/detail``
-------------------------------------------------------------------------
+Filtering Images Lists
+**********************
 
-Both the ``GET /images`` and ``GET /images/detail`` requests take query
+Both the ``GET /v1/images`` and ``GET /v1/images/detail`` requests take query
 parameters that serve to filter the returned list of images. The following
 list details these query parameters.
 
@@ -156,30 +160,29 @@ These two resources also accept sort parameters:
   Results will be sorted in the direction ``DIR``. Accepted values are ``asc``
   for ascending or ``desc`` (default) for descending.
 
-
-Requesting Detailed Metadata on a Specific Image
-------------------------------------------------
+Retrieve Image Metadata
+***********************
 
 We want to see detailed information for a specific virtual machine image
 that the Glance server knows about.
 
-We have queried the Glance server for a list of public images and the
+We have queried the Glance server for a list of images and the
 data returned includes the `uri` field for each available image. This
 `uri` field value contains the exact location needed to get the metadata
 for a specific image.
 
 Continuing the example from above, in order to get metadata about the
-first public image returned, we can issue a ``HEAD`` request to the Glance
+first image returned, we can issue a ``HEAD`` request to the Glance
 server for the image's URI.
 
 We issue a ``HEAD`` request to
-``http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9`` to
+``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9`` to
 retrieve complete metadata for that image. The metadata is returned as a
 set of HTTP headers that begin with the prefix ``x-image-meta-``. The
 following shows an example of the HTTP headers returned from the above
 ``HEAD`` request::
 
-  x-image-meta-uri              http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9
+  x-image-meta-uri              http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9
   x-image-meta-name             Ubuntu 10.04 Plain 5GB
   x-image-meta-disk_format      vhd
   x-image-meta-container_format ovf
@@ -218,23 +221,23 @@ following shows an example of the HTTP headers returned from the above
   be null or which will indicate the owner of the image
 
 
-Retrieving a Virtual Machine Image
-----------------------------------
+Retrieve Raw Image Data
+***********************
 
 We want to retrieve that actual raw data for a specific virtual machine image
 that the Glance server knows about.
 
-We have queried the Glance server for a list of public images and the
+We have queried the Glance server for a list of images and the
 data returned includes the `uri` field for each available image. This
 `uri` field value contains the exact location needed to get the metadata
 for a specific image.
 
 Continuing the example from above, in order to get metadata about the
-first public image returned, we can issue a ``HEAD`` request to the Glance
+first image returned, we can issue a ``HEAD`` request to the Glance
 server for the image's URI.
 
 We issue a ``GET`` request to
-``http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9`` to
+``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9`` to
 retrieve metadata for that image as well as the image itself encoded
 into the response body.
 
@@ -242,7 +245,7 @@ The metadata is returned as a set of HTTP headers that begin with the
 prefix ``x-image-meta-``. The following shows an example of the HTTP headers
 returned from the above ``GET`` request::
 
-  x-image-meta-uri              http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9
+  x-image-meta-uri              http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9
   x-image-meta-name             Ubuntu 10.04 Plain 5GB
   x-image-meta-disk_format      vhd
   x-image-meta-container_format ovf
@@ -288,8 +291,8 @@ returned from the above ``GET`` request::
   `application/octet-stream`.
 
 
-Adding a New Virtual Machine Image
-----------------------------------
+Add a New Image
+***************
 
 We have created a new virtual machine image in some way (created a
 "golden image" or snapshotted/backed up an existing image) and we
@@ -303,15 +306,14 @@ Assuming, like in the examples above, that a Glance API server is running
 at ``glance.example.com``, we issue a ``POST`` request to add an image to
 Glance::
 
-  POST http://glance.example.com/images/
+  POST http://glance.example.com/v1/images
 
 The metadata about the image is sent to Glance in HTTP headers. The body
 of the HTTP request to the Glance API will be the MIME-encoded disk
 image data.
 
 
-Adding Image Metadata in HTTP Headers
-*************************************
+**Image Metadata in HTTP Headers**
 
 Glance will view as image metadata any HTTP header that it receives in a
 ``POST`` request where the header key is prefixed with the strings
@@ -396,7 +398,7 @@ The list of metadata headers that Glance accepts are listed below.
   a public image, meaning that any user may view its metadata and may read
   the disk image from Glance.
 
-  When not present, the image is assumed to be *not public* and specific to
+  When not present, the image is assumed to be *not public* and owned by
   a user.
 
 * ``x-image-meta-min-ram``
@@ -444,8 +446,8 @@ The list of metadata headers that Glance accepts are listed below.
   of image properties.
 
 
-Updating an Image
-*****************
+Update an Image
+***************
 
 Glance will view as image metadata any HTTP header that it receives in a
 ``PUT`` request where the header key is prefixed with the strings
@@ -462,8 +464,8 @@ headers.
 See more about image statuses here: :doc:`Image Statuses <statuses>`
 
 
-Requesting Image Memberships
-----------------------------
+List Image Memberships
+**********************
 
 We want to see a list of the other system tenants (or users, if
 "owner_is_tenant" is False) that may access a given virtual machine image that
@@ -471,9 +473,9 @@ the Glance server knows about.  We take the `uri` field of the image data,
 append ``/members`` to it, and issue a ``GET`` request on the resulting URL.
 
 Continuing from the example above, in order to get the memberships for the
-first public image returned, we can issue a ``GET`` request to the Glance
+first image returned, we can issue a ``GET`` request to the Glance
 server for
-``http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9/members``
+``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members``
 .  What we will get back is JSON data such as the following::
 
   {'members': [
@@ -486,11 +488,11 @@ that tenant is authorized to further share the image, the `can_share` field is
 `true`.
 
 
-Requesting Shared Images
-------------------------
+List Shared Images
+******************
 
 We want to see a list of images which are shared with a given tenant.  We issue
-a ``GET`` request to ``http://glance.example.com/shared-images/tenant1``.  We
+a ``GET`` request to ``http://glance.example.com/v1/shared-images/tenant1``.  We
 will get back JSON data such as the following::
 
   {'shared_images': [
@@ -503,12 +505,12 @@ The `image_id` field identifies an image shared with the tenant named by
 `can_share` field is `true`.
 
 
-Adding a Member to an Image
----------------------------
+Add a Member to an Image
+************************
 
 We want to authorize a tenant to access a private image.  We issue a ``PUT``
 request to
-``http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9/members/tenant1``
+``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members/tenant1``
 .  With no body, this will add the membership to the image, leaving existing
 memberships unmodified and defaulting new memberships to have `can_share`
 set to `false`. We may also optionally attach a body of the following form::
@@ -522,20 +524,20 @@ If such a body is provided, both existing and new memberships will have
 will return a 204 ("No Content") status code.
 
 
-Removing a Member from an Image
--------------------------------
+Remove a Member from an Image
+*****************************
 
 We want to revoke a tenant's right to access a private image.  We issue a
-``DELETE`` request to ``http://glance.example.com/images/1/members/tenant1``.
+``DELETE`` request to ``http://glance.example.com/v1/images/1/members/tenant1``.
 This query will return a 204 ("No Content") status code.
 
 
-Replacing a Membership List for an Image
-----------------------------------------
+Replace a Membership List for an Image
+**************************************
 
 The full membership list for a given image may be replaced.  We issue a ``PUT``
 request to
-``http://glance.example.com/images/71c675ab-d94f-49cd-a114-e12490b328d9/members``
+``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members``
 with a body of the following form::
 
   {'memberships': [
