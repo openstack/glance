@@ -63,6 +63,7 @@ Managing Glance
    policies
    cache
    authentication
+   notifications
 
 Using Glance
 ============
