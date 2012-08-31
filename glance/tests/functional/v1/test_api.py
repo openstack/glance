@@ -447,6 +447,28 @@ class TestApi(functional.FunctionalTest):
         self.stop_servers()
 
     @skip_if_disabled
+    def test_v1_not_enabled(self):
+        self.cleanup()
+        self.api_server.enable_v1_api = False
+        self.start_servers(**self.__dict__.copy())
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 300)
+        self.stop_servers()
+
+    @skip_if_disabled
+    def test_v1_enabled(self):
+        self.cleanup()
+        self.api_server.enable_v1_api = True
+        self.start_servers(**self.__dict__.copy())
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        self.stop_servers()
+
+    @skip_if_disabled
     def test_zero_initial_size(self):
         """
         A test to ensure that an image with size explicitly set to zero

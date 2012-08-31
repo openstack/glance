@@ -24,6 +24,9 @@ return
 from glance.api import versions
 from glance.common import wsgi
 import glance.openstack.common.log as logging
+from glance.openstack.common import cfg
+
+CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 
@@ -77,9 +80,9 @@ class VersionNegotiationFilter(wsgi.Middleware):
         :returns version found in the subject
         :raises ValueError if no acceptable version could be found
         """
-        if subject in ('v1', 'v1.0', 'v1.1'):
+        if subject in ('v1', 'v1.0', 'v1.1') and CONF.enable_v1_api:
             major_version = 1
-        elif subject in ('v2', 'v2.0'):
+        elif subject in ('v2', 'v2.0') and CONF.enable_v2_api:
             major_version = 2
         else:
             raise ValueError()

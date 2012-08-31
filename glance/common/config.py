@@ -54,6 +54,10 @@ common_opts = [
     cfg.IntOpt('image_size_cap', default=1099511627776,
                help=_("Maximum size of image a user can upload in bytes. "
                       "Defaults to 1099511627776 bytes (1 TB).")),
+    cfg.BoolOpt('enable_v1_api', default=True,
+                help=_("Deploy the v1 OpenStack Images API. ")),
+    cfg.BoolOpt('enable_v2_api', default=True,
+                help=_("Deploy the v2 OpenStack Images API. ")),
 ]
 
 CONF = cfg.CONF

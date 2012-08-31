@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2011 OpenStack LLC.
+# Copyright 2011-2012 OpenStack LLC.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -14,3 +14,18 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+import paste.urlmap
+
+from glance.openstack.common import cfg
+
+
+CONF = cfg.CONF
+
+
+def root_app_factory(loader, global_conf, **local_conf):
+    if not CONF.enable_v1_api:
+        del local_conf['/v1']
+    if not CONF.enable_v2_api:
+        del local_conf['/v2']
+    return paste.urlmap.urlmap_factory(loader, global_conf, **local_conf)

@@ -67,6 +67,8 @@ class Server(object):
         self.exec_env = None
         self.deployment_flavor = ''
         self.show_image_direct_url = False
+        self.enable_v1_api = True
+        self.enable_v2_api = True
         self.server_control_options = ''
         self.needs_database = False
 
@@ -276,6 +278,8 @@ policy_default_rule = %(policy_default_rule)s
 db_auto_create = False
 sql_connection = %(sql_connection)s
 show_image_direct_url = %(show_image_direct_url)s
+enable_v1_api = %(enable_v1_api)s
+enable_v2_api= %(enable_v2_api)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
 """
@@ -300,7 +304,7 @@ pipeline = versionnegotiation fakeauth context rootapp
 pipeline = versionnegotiation context rootapp
 
 [composite:rootapp]
-use = egg:Paste#urlmap
+paste.composite_factory = glance.api:root_app_factory
 /: apiversions
 /v1: apiv1app
 /v2: apiv2app

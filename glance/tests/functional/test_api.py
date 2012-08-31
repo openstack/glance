@@ -25,6 +25,100 @@ from glance.tests import functional
 
 class TestRootApi(functional.FunctionalTest):
 
+    def test_version_configurations(self):
+        """Test that versioning is handled properly through all channels"""
+
+        #v1 and v2 api enabled
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
+        versions = {'versions': [
+            {
+                'id': 'v2.0',
+                'status': 'EXPERIMENTAL',
+                'links': [{'rel': 'self', 'href': url % '2'}],
+            },
+            {
+                'id': 'v1.1',
+                'status': 'CURRENT',
+                'links': [{'rel': 'self', 'href': url % '1'}],
+            },
+            {
+                'id': 'v1.0',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self', 'href': url % '1'}],
+            },
+        ]}
+        versions_json = json.dumps(versions)
+        images = {'images': []}
+        images_json = json.dumps(images)
+
+        # Verify version choices returned.
+        path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 300)
+        self.assertEqual(content, versions_json)
+        self.stop_servers()
+
+        #v2 api enabled
+        self.cleanup()
+        self.api_server.enable_v1_api = False
+        self.api_server.enable_v2_api = True
+        self.start_servers(**self.__dict__.copy())
+
+        url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
+        versions = {'versions': [
+            {
+                'id': 'v2.0',
+                'status': 'EXPERIMENTAL',
+                'links': [{'rel': 'self', 'href': url % '2'}],
+            },
+        ]}
+        versions_json = json.dumps(versions)
+        images = {'images': []}
+        images_json = json.dumps(images)
+
+        # Verify version choices returned.
+        path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 300)
+        self.assertEqual(content, versions_json)
+        self.stop_servers()
+
+        #v1 api enabled
+        self.cleanup()
+        self.api_server.enable_v1_api = True
+        self.api_server.enable_v2_api = False
+        self.start_servers(**self.__dict__.copy())
+
+        url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
+        versions = {'versions': [
+            {
+                'id': 'v1.1',
+                'status': 'CURRENT',
+                'links': [{'rel': 'self', 'href': url % '1'}],
+            },
+            {
+                'id': 'v1.0',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self', 'href': url % '1'}],
+            },
+        ]}
+        versions_json = json.dumps(versions)
+        images = {'images': []}
+        images_json = json.dumps(images)
+
+        # Verify version choices returned.
+        path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 300)
+        self.assertEqual(content, versions_json)
+        self.stop_servers()
+
     def test_version_variations(self):
         """Test that versioning is handled properly through all channels"""
 

@@ -21,6 +21,10 @@ import json
 import webob.dec
 
 from glance.common import wsgi
+from glance.openstack.common import cfg
+
+
+CONF = cfg.CONF
 
 
 class Controller(object):
@@ -41,11 +45,15 @@ class Controller(object):
                 ],
             }
 
-        version_objs = [
-            build_version_object(2.0, 'v2', 'EXPERIMENTAL'),
-            build_version_object(1.1, 'v1', 'CURRENT'),
-            build_version_object(1.0, 'v1', 'SUPPORTED'),
-        ]
+        version_objs = []
+        if CONF.enable_v2_api:
+            version_objs.append(
+                build_version_object(2.0, 'v2', 'EXPERIMENTAL'))
+        if CONF.enable_v1_api:
+            version_objs.append(
+                build_version_object(1.1, 'v1', 'CURRENT'))
+            version_objs.append(
+                build_version_object(1.0, 'v1', 'SUPPORTED'))
 
         response = webob.Response(request=req,
                                   status=httplib.MULTIPLE_CHOICES,
