@@ -22,6 +22,7 @@ from glance.openstack.common import importutils
 
 sql_connection_opt = cfg.StrOpt('sql_connection',
                                 default='sqlite:///glance.sqlite',
+                                secret=True,
                                 metavar='CONNECTION',
                                 help='A valid SQLAlchemy connection '
                                      'string for the registry database. '

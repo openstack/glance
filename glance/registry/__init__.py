@@ -37,12 +37,12 @@ registry_client_opts = [
     cfg.StrOpt('registry_client_key_file'),
     cfg.StrOpt('registry_client_cert_file'),
     cfg.StrOpt('registry_client_ca_file'),
-    cfg.StrOpt('metadata_encryption_key'),
+    cfg.StrOpt('metadata_encryption_key', secret=True),
     ]
 registry_client_ctx_opts = [
-    cfg.StrOpt('admin_user'),
-    cfg.StrOpt('admin_password'),
-    cfg.StrOpt('admin_tenant_name'),
+    cfg.StrOpt('admin_user', secret=True),
+    cfg.StrOpt('admin_password', secret=True),
+    cfg.StrOpt('admin_tenant_name', secret=True),
     cfg.StrOpt('auth_url'),
     cfg.StrOpt('auth_strategy', default='noauth'),
     cfg.StrOpt('auth_region'),
