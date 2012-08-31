@@ -1,0 +1,38 @@
+#!/usr/bin/make -f
+
+# Verbose mode
+#export DH_VERBOSE=1
+
+WITH_PYTHON2 = $(shell test -f /usr/bin/dh_python2 && echo "--with python2")
+
+%:
+	dh $@ ${WITH_PYTHON2}
+
+get-orig-source:
+	uscan --verbose --force-download --rename --destdir=../build-area
+
+override_dh_install:
+	dh_install
+
+ifeq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))
+override_dh_auto_test:
+#	bash run_tests.sh -N
+endif
+
+override_dh_auto_build:
+	dh_auto_build
+ifeq (,$(findstring nodocs, $(DEB_BUILD_OPTIONS)))
+	mkdir doc/build
+	python setup.py build_sphinx
+else
+	mkdir -p doc/build/html
+endif
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -rf doc/build
+	rm -rf glance.sqlite
+
+override_dh_installinit:
+	dh_installinit --name glance-api
+	dh_installinit --name glance-registry

@@ -1,0 +1,3 @@
+version=3
+https://launchpad.net/glance/+download https://launchpad.net/glance/.*/glance-(.*)\.tar\.gz
+http://glance.openstack.org/tarballs/ glance-(.*).tar.gz

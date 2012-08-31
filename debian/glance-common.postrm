@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+case $1 in
+	purge)
+		if (which deluser && getent passwd glance) > /dev/null 2>&1; then
+			deluser --system --quiet --backup-to /var/lib glance
+		fi	
+		if (which delgroup && getent group glance) > /dev/null 2>&1; then
+			delgroup --system --quiet glance
+		fi
+		;;
+esac
+
+#DEBHELPER#

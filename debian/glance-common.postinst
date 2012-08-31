@@ -1,0 +1,21 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" = "configure" ]
+then
+	if ! getent group glance > /dev/null 2>&1
+	then
+		addgroup --system glance >/dev/null
+	fi
+	if ! getent passwd glance > /dev/null 2>&1
+	then
+        adduser --system --home /var/lib/glance --ingroup glance --no-create-home --shell /bin/false glance
+	fi
+	chown -R glance:adm /var/log/glance/
+	chmod 0750 /var/log/glance/
+	chown glance:glance -R /var/lib/glance/ /etc/glance/
+	chmod 0750 /etc/glance/
+fi
+
+#DEBHELPER#

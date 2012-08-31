@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+case $1 in
+	remove|purge)
+		if [ -x /etc/init.d/glance-registry ]; then
+			invoke-rc.d glance-registry stop || true
+		fi
+	;;
+esac
+
+#DEBHELPER#

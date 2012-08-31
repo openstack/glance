@@ -1,0 +1,9 @@
+Document: glance-doc
+Title: Glance Documentation
+Author: OpenStack
+Abstract: Sphinx documentation for Glance
+Section: Network/File Transfer
+
+Format: HTML
+Index: /usr/share/doc/python-glance-doc/html/index.html
+Files: /usr/share/doc/python-glance-doc/html/*

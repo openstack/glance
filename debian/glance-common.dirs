@@ -1,0 +1,6 @@
+/etc/glance/
+/var/lib/glance/
+/var/log/glance/
+/var/lib/glance/image-cache
+/var/lib/glance/images
+/var/log/glance/

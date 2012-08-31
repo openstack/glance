@@ -1,0 +1,26 @@
+Index: glance/etc/glance-api.conf
+===================================================================
+--- glance.orig/etc/glance-api.conf	2012-07-24 20:49:24.649816988 -0700
++++ glance/etc/glance-api.conf	2012-07-24 20:52:03.309810007 -0700
+@@ -35,7 +35,7 @@
+ # SQLAlchemy connection string for the reference implementation
+ # registry server. Any valid SQLAlchemy connection string is fine.
+ # See: http://www.sqlalchemy.org/docs/05/reference/sqlalchemy/connections.html#sqlalchemy.create_engine
+-sql_connection = sqlite:///glance.sqlite
++sql_connection = sqlite:////var/lib/glance/glance.sqlite
+ 
+ # Period in seconds after which SQLAlchemy should reestablish its connection
+ # to the database.
+Index: glance/etc/glance-registry.conf
+===================================================================
+--- glance.orig/etc/glance-registry.conf	2012-07-24 20:51:10.497812331 -0700
++++ glance/etc/glance-registry.conf	2012-07-24 20:51:11.301812296 -0700
+@@ -21,7 +21,7 @@
+ # SQLAlchemy connection string for the reference implementation
+ # registry server. Any valid SQLAlchemy connection string is fine.
+ # See: http://www.sqlalchemy.org/docs/05/reference/sqlalchemy/connections.html#sqlalchemy.create_engine
+-sql_connection = sqlite:///glance.sqlite
++sql_connection = sqlite:////var/lib/glance/glance.sqlite
+ 
+ # Period in seconds after which SQLAlchemy should reestablish its connection
+ # to the database.

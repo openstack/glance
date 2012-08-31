@@ -1,0 +1,5 @@
+/var/lib/glance/images
+/var/lib/glance/image-cache
+/var/lib/glance/image-cache/incomplete
+/var/lib/glance/image-cache/invalid
+/var/lib/glance/image-cache/queue
