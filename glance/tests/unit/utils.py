@@ -121,3 +121,28 @@ class FakePolicyEnforcer(object):
 
     def set_rules(self, rules):
         self.rules = rules
+
+
+class FakeNotifier(object):
+    def __init__(self, *_args, **kwargs):
+        self.log = {'notification_type': "",
+                    'event_type': "",
+                    'payload': "", }
+
+    def warn(self, event_type, payload):
+        self.log['notification_type'] = "WARN"
+        self.log['event_type'] = event_type
+        self.log['payload'] = payload
+
+    def info(self, event_type, payload):
+        self.log['notification_type'] = "INFO"
+        self.log['event_type'] = event_type
+        self.log['payload'] = payload
+
+    def error(self, event_type, payload):
+        self.log['notification_type'] = "ERROR"
+        self.log['event_type'] = event_type
+        self.log['payload'] = payload
+
+    def get_log(self):
+        return self.log

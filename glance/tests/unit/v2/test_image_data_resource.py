@@ -29,11 +29,12 @@ class TestImagesController(base.StoreClearingUnitTest):
         super(TestImagesController, self).setUp()
 
         self.config(verbose=True, debug=True)
-
+        self.notifier = unit_test_utils.FakeNotifier()
         self.controller = glance.api.v2.image_data.ImageDataController(
                 db_api=unit_test_utils.FakeDB(),
                 store_api=unit_test_utils.FakeStoreAPI(),
-                policy_enforcer=unit_test_utils.FakePolicyEnforcer())
+                policy_enforcer=unit_test_utils.FakePolicyEnforcer(),
+                notifier=self.notifier)
 
     def test_download(self):
         request = unit_test_utils.get_fake_request()
@@ -59,6 +60,12 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual(set(['data', 'meta']), set(output.keys()))
         self.assertEqual(4, output['meta']['size'])
         self.assertEqual('YYYY', output['data'])
+        output_log = self.notifier.get_log()
+        expected_log = {'notification_type': "INFO",
+                        'event_type': "image.upload",
+                        'payload': output['meta'],
+        }
+        self.assertEqual(output_log, expected_log)
 
     def test_upload_non_existent_image(self):
         request = unit_test_utils.get_fake_request()
@@ -165,7 +172,8 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImageDataSerializer, self).setUp()
-        self.serializer = glance.api.v2.image_data.ResponseSerializer()
+        self.serializer = glance.api.v2.image_data.ResponseSerializer(
+            notifier=unit_test_utils.FakeNotifier())
 
     def test_download(self):
         request = webob.Request.blank('/')
