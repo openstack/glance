@@ -24,6 +24,7 @@ import StringIO
 
 import stubout
 
+from glance.common import exception
 from glance.common import utils
 from glance import image_cache
 #NOTE(bcwaldon): This is imported to load the registry config options
@@ -319,6 +320,29 @@ class ImageCacheTestCase(object):
         self.assertFalse(os.path.exists(incomplete_file_path))
         self.assertFalse(os.path.exists(invalid_file_path))
 
+    def test_caching_iterator_handles_backend_failure(self):
+        """
+        Test that when the backend fails, caching_iter does not continue trying
+        to consume data, and rolls back the cache.
+        """
+        def faulty_backend():
+            data = ['a', 'b', 'c', 'Fail', 'd', 'e', 'f']
+            for d in data:
+                if d == 'Fail':
+                    raise exception.GlanceException('Backend failure')
+                yield d
+
+        def consume(image_id):
+            caching_iter = self.cache.get_caching_iter(image_id, None,
+                                                       faulty_backend())
+            # excercise the caching_iter
+            list(caching_iter)
+
+        image_id = '1'
+        self.assertRaises(exception.GlanceException, consume, image_id)
+        # make sure bad image was not cached
+        self.assertFalse(self.cache.is_cached(image_id))
+
     def test_caching_iterator_falloffend(self):
         """
         Test to see if the caching iterator interacts properly with the driver
@@ -346,6 +370,36 @@ class ImageCacheTestCase(object):
         invalid_file_path = os.path.join(self.cache_dir, 'invalid', image_id)
         self.assertFalse(os.path.exists(incomplete_file_path))
         self.assertTrue(os.path.exists(invalid_file_path))
+
+    def test_gate_caching_iter_good_checksum(self):
+        image = "12345678990abcdefghijklmnop"
+        image_id = 123
+
+        md5 = hashlib.md5()
+        md5.update(image)
+        checksum = md5.hexdigest()
+
+        cache = image_cache.ImageCache()
+        img_iter = cache.get_caching_iter(image_id, checksum, image)
+        for chunk in img_iter:
+            pass
+        # checksum is valid, fake image should be cached:
+        self.assertTrue(cache.is_cached(image_id))
+
+    def test_gate_caching_iter_bad_checksum(self):
+        image = "12345678990abcdefghijklmnop"
+        image_id = 123
+        checksum = "foobar"  # bad.
+
+        cache = image_cache.ImageCache()
+        img_iter = cache.get_caching_iter(image_id, checksum, image)
+
+        def reader():
+            for chunk in img_iter:
+                pass
+        self.assertRaises(exception.GlanceException, reader)
+        # checksum is invalid, caching will fail:
+        self.assertFalse(cache.is_cached(image_id))
 
 
 class TestImageCacheXattr(test_utils.BaseTestCase,
@@ -381,9 +435,7 @@ class TestImageCacheXattr(test_utils.BaseTestCase,
         self.disabled = False
         self.config(image_cache_dir=self.cache_dir,
                     image_cache_driver='xattr',
-                    image_cache_max_size=1024 * 5,
-                    registry_host='127.0.0.1',
-                    registry_port=9191)
+                    image_cache_max_size=1024 * 5)
         self.cache = image_cache.ImageCache()
 
         if not xattr_writes_supported(self.cache_dir):
@@ -428,44 +480,13 @@ class TestImageCacheSqlite(test_utils.BaseTestCase,
                                       random.randint(0, 1000000))
         self.config(image_cache_dir=self.cache_dir,
                     image_cache_driver='sqlite',
-                    image_cache_max_size=1024 * 5,
-                    registry_host='127.0.0.1',
-                    registry_port=9191)
+                    image_cache_max_size=1024 * 5)
         self.cache = image_cache.ImageCache()
 
     def tearDown(self):
         super(TestImageCacheSqlite, self).tearDown()
         if os.path.exists(self.cache_dir):
             shutil.rmtree(self.cache_dir)
-
-    def test_gate_caching_iter_good_checksum(self):
-        image = "12345678990abcdefghijklmnop"
-        image_id = 123
-
-        md5 = hashlib.md5()
-        md5.update(image)
-        checksum = md5.hexdigest()
-
-        cache = image_cache.ImageCache()
-        img_iter = cache.get_caching_iter(image_id, checksum, image)
-        for chunk in img_iter:
-            pass
-        # checksum is valid, fake image should be cached:
-        self.assertTrue(cache.is_cached(image_id))
-
-    def test_gate_caching_iter_bad_checksum(self):
-        image = "12345678990abcdefghijklmnop"
-        image_id = 123
-        checksum = "foobar"  # bad.
-
-        cache = image_cache.ImageCache()
-        img_iter = cache.get_caching_iter(image_id, checksum, image)
-
-        def reader():
-            for chunk in img_iter:
-                pass
-        # checksum is invalid, caching will fail:
-        self.assertFalse(cache.is_cached(image_id))
 
 
 class TestImageCacheNoDep(test_utils.BaseTestCase):

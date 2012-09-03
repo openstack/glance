@@ -15,6 +15,7 @@
 
 import errno
 
+from glance.common import exception
 from glance.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -49,8 +50,8 @@ def size_checked_iter(response, image_meta, expected_size, image_iter,
                 "disconnected after writing only %(bytes_written)d "
                 "bytes") % locals()
         LOG.error(msg)
-        raise IOError(errno.EPIPE, _("Corrupt image download for "
-                                     "image %(image_id)s") % locals())
+        raise exception.GlanceException(_("Corrupt image download for "
+                                          "image %(image_id)s") % locals())
 
 
 def image_send_notification(bytes_written, expected_size, image_meta, request,
