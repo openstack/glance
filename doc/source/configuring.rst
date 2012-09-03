@@ -607,10 +607,24 @@ configuration file, select the appropriate deployment flavor like so::
   [paste_deploy]
   flavor = caching
 
-And that would give you a transparent image cache on the API server.
+Enabling the Image Cache Management Middleware
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There is an optional ``cachemanage`` middleware that allows you to
+directly interact with cache images. Use this flavor in place of the
+``cache`` flavor in your api config file.
+
+  [paste_deploy]
+  flavor = cachemanage
 
 Configuration Options Affecting the Image Cache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note::
+
+  These configuration options must be set in both the glance-cache
+  and glance-api configuration files.
+
 
 One main configuration file option affects the image cache.
 
@@ -666,10 +680,6 @@ to or less than this value. The ``glance-cache-pruner`` executable is designed
 to be run via cron on a regular basis. See more about this executable in
 :doc:`Controlling the Growth of the Image Cache <cache>`
 
-.. note::
-
-  These configuration options must be set in both the glance-cache
-  and glance-api configuration files.
 
 Configuring the Glance Registry
 -------------------------------
