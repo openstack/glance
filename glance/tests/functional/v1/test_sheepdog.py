@@ -12,7 +12,7 @@ This test has requires a Sheepdog cluster.
 import ConfigParser
 import os
 
-from glance.tests.functional import test_api
+from glance.tests.functional.v1 import test_api
 
 
 class TestSheepdog(test_api.TestApi):

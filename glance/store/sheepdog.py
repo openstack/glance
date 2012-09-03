@@ -21,14 +21,14 @@ import hashlib
 import logging
 import subprocess
 
-from glance.common import cfg
 from glance.common import exception
+from glance.openstack.common import cfg
 import glance.store
 import glance.store.base
 import glance.store.location
 
 
-logger = logging.getLogger('glance.store.sheepdog')
+LOG = logging.getLogger(__name__)
 
 DEFAULT_CHUNKSIZE_MB = 64  # 64 MiB
 DEFAULT_COLLIEPATH = '/usr/sbin/collie'
@@ -43,6 +43,27 @@ EXIT_EXISTS  = 3  # the object already exists so cannot be created
 EXIT_FULL    = 4  # no more space is left in the cluster
 EXIT_MISSING = 5  # the specified object does not exist
 EXIT_USAGE   = 64  # invalid command, arguments or options
+
+sheepdog_store_opts = [
+    cfg.IntOpt('sheepdog_store_chunk_size_mb',
+               default=DEFAULT_CHUNKSIZE_MB,
+               help='The chunk size for the underlying '
+                    'sheepdog store, in MB.'),
+    cfg.StrOpt('sheepdog_gateway',
+               default=DEFAULT_GATEWAY,
+               help='The IP of the sheepdog gateway.'),
+    cfg.StrOpt('sheepdog_collie_path',
+               default=DEFAULT_COLLIEPATH,
+               help='The path of the collie binary.'),
+    cfg.StrOpt('sheepdog_port',
+               default=DEFAULT_PORT,
+               help='The port that the sheepdog gateway '
+                    'listens on.'),
+    ]
+
+
+CONF = cfg.CONF
+CONF.register_opts(sheepdog_store_opts)
 
 
 class StorageBackendError(exception.GlanceException):
@@ -91,8 +112,8 @@ class ChunkedRead(object):
                 raise exception.NotFound(
                     _('Sheepdog image %s does not exist') % self.image)
             elif obj.returncode != EXIT_SUCCESS:
-                logger.warning('Collie exited during vdi read with '
-                               'error code: %s' % obj.returncode)
+                LOG.warning('Collie exited during vdi read with '
+                            'error code: %s' % obj.returncode)
                 raise StorageBackendError()
             yield output[0]
             self.offset += store.chunk_size
@@ -102,22 +123,9 @@ class Store(glance.store.base.Store):
     """An implementation of the Sheepdog backend adapter."""
 
     EXAMPLE_URL = "sheepdog://<IMAGE>"
-    sheepdog_store_opts = [
-        cfg.IntOpt('sheepdog_store_chunk_size_mb',
-                   default=DEFAULT_CHUNKSIZE_MB,
-                   help='The chunk size for the underlying '
-                        'sheepdog store, in MB.'),
-        cfg.StrOpt('sheepdog_gateway',
-                   default=DEFAULT_GATEWAY,
-                   help='The IP of the sheepdog gateway.'),
-        cfg.StrOpt('sheepdog_collie_path',
-                   default=DEFAULT_COLLIEPATH,
-                   help='The path of the collie binary.'),
-        cfg.StrOpt('sheepdog_port',
-                   default=DEFAULT_PORT,
-                   help='The port that the sheepdog gateway '
-                        'listens on.'),
-        ]
+
+    def get_schemes(self):
+        return ('sheepdog',)
 
     def _exec_collie(self, args):
         """
@@ -140,12 +148,10 @@ class Store(glance.store.base.Store):
         this method. If the store was not able to successfully configure
         itself, it should raise `exception.BadStoreConfiguration`
         """
-        self.conf.register_opts(self.sheepdog_store_opts)
-        self.chunk_size = getattr(self.conf,
-            'sheepdog_store_chunk_size_mb') * 1024 ** 2
-        self.collie_path = getattr(self.conf, 'sheepdog_collie_path')
-        self.gateway = getattr(self.conf, 'sheepdog_gateway')
-        self.port = getattr(self.conf, 'sheepdog_port')
+        self.chunk_size = CONF.sheepdog_store_chunk_size_mb * 1024 ** 2
+        self.collie_path = CONF.sheepdog_collie_path
+        self.gateway = CONF.sheepdog_gateway
+        self.port = CONF.sheepdog_port
 
     def get(self, location):
         """
@@ -185,8 +191,8 @@ class Store(glance.store.base.Store):
             raise exception.Duplicate(
                  _('Sheepdog image %s already exists') % image_id)
         elif obj.returncode != EXIT_SUCCESS:
-            logger.warning('Collie exited during vdi write with error code: '
-                           '%s' % obj.returncode)
+            LOG.warning('Collie exited during vdi write with error code: '
+                        '%s' % obj.returncode)
             raise StorageBackendError()
 
         offset = 0
@@ -201,12 +207,12 @@ class Store(glance.store.base.Store):
             output = obj.communicate(data)
             obj.stdin.close()
             if obj.returncode == EXIT_FULL:
-                logger.warning('Collie exited during vdi write because'
-                               'no more space is left in the cluster')
+                LOG.warning('Collie exited during vdi write because'
+                            'no more space is left in the cluster')
                 raise exception.StorageFull()
             elif obj.returncode != EXIT_SUCCESS:
-                logger.warning('Collie exited during vdi write with '
-                               'error code: %s' % obj.returncode)
+                LOG.warning('Collie exited during vdi write with '
+                            'error code: %s' % obj.returncode)
                 raise StorageBackendError()
 
             bytes_left -= length
@@ -233,8 +239,6 @@ class Store(glance.store.base.Store):
             raise exception.NotFound(
                  _('Sheepdog image %s does not exist') % loc.image)
         elif obj.returncode != EXIT_SUCCESS:
-            logger.warning('collie vdi delete failed with exit code: '
-                           '%s' % obj.returncode)
+            LOG.warning('collie vdi delete failed with exit code: '
+                        '%s' % obj.returncode)
             raise StorageBackendError()
-
-glance.store.register_store(__name__, ['sheepdog'])
