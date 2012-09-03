@@ -47,7 +47,8 @@ from glance import registry
 from glance.store import (create_stores,
                           get_from_backend,
                           get_size_from_backend,
-                          schedule_delete_from_backend,
+                          safe_delete_from_backend,
+                          schedule_delayed_delete_from_backend,
                           get_store_from_location,
                           get_store_from_scheme)
 
@@ -758,8 +759,15 @@ class Controller(controller.BaseController):
         # See https://bugs.launchpad.net/glance/+bug/747799
         try:
             if image['location']:
-                schedule_delete_from_backend(image['location'],
+                if CONF.delayed_delete:
+                    schedule_delayed_delete_from_backend(image['location'], id)
+                    registry.update_image_metadata(req.context, id,
+                                                  {'status': 'pending_delete'})
+                else:
+                    safe_delete_from_backend(image['location'],
                                              req.context, id)
+                    registry.update_image_metadata(req.context, id,
+                                                   {'status': 'deleted'})
             registry.delete_image_metadata(req.context, id)
         except exception.NotFound, e:
             msg = ("Failed to find image to delete: %(e)s" % locals())

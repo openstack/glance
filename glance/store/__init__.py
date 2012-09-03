@@ -24,7 +24,6 @@ from glance.common import utils
 from glance.openstack.common import cfg
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
-from glance import registry
 from glance.store import location
 
 LOG = logging.getLogger(__name__)
@@ -254,26 +253,24 @@ def get_store_from_location(uri):
     return loc.store_name
 
 
-def schedule_delete_from_backend(uri, context, image_id, **kwargs):
-    """
-    Given a uri and a time, schedule the deletion of an image.
-    """
-    if not CONF.delayed_delete:
-        registry.update_image_metadata(context, image_id,
-                                       {'status': 'deleted'})
-        try:
-            return delete_from_backend(context, uri, **kwargs)
-        except (UnsupportedBackend,
-                exception.StoreDeleteNotSupported,
-                exception.NotFound):
-            exc_type = sys.exc_info()[0].__name__
-            msg = (_("Failed to delete image at %s from store (%s)") %
-                   (uri, exc_type))
-            LOG.error(msg)
-        finally:
-            # avoid falling through to the delayed deletion logic
-            return
+def safe_delete_from_backend(uri, context, image_id, **kwargs):
+    """Given a uri, delete an image from the store."""
+    try:
+        return delete_from_backend(context, uri, **kwargs)
+    except exception.NotFound:
+        msg = _('Failed to delete image in store at URI: %s')
+        LOG.warn(msg % uri)
+    except exception.StoreDeleteNotSupported as e:
+        LOG.warn(str(e))
+    except UnsupportedBackend:
+        exc_type = sys.exc_info()[0].__name__
+        msg = (_('Failed to delete image at %s from store (%s)') %
+               (uri, exc_type))
+        LOG.error(msg)
 
+
+def schedule_delayed_delete_from_backend(uri, image_id, **kwargs):
+    """Given a uri, schedule the deletion of an image."""
     datadir = CONF.scrubber_datadir
     delete_time = time.time() + CONF.scrub_time
     file_path = os.path.join(datadir, str(image_id))
@@ -288,9 +285,6 @@ def schedule_delete_from_backend(uri, context, image_id, **kwargs):
         f.write('\n'.join([uri, str(int(delete_time))]))
     os.chmod(file_path, 0600)
     os.utime(file_path, (delete_time, delete_time))
-
-    registry.update_image_metadata(context, image_id,
-                                   {'status': 'pending_delete'})
 
 
 def add_to_backend(context, scheme, image_id, data, size):

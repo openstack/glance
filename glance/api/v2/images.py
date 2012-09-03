@@ -32,6 +32,7 @@ from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 import glance.schema
+import glance.store
 
 
 LOG = logging.getLogger(__name__)
@@ -40,11 +41,14 @@ CONF = cfg.CONF
 
 
 class ImagesController(object):
-    def __init__(self, db_api=None, policy_enforcer=None, notifier=None):
+    def __init__(self, db_api=None, policy_enforcer=None, notifier=None,
+            store_api=None):
         self.db_api = db_api or glance.db.get_api()
         self.db_api.configure_db()
         self.policy = policy_enforcer or policy.Enforcer()
         self.notifier = notifier or glance.notifier.Notifier()
+        self.store_api = store_api or glance.store
+        self.store_api.create_stores()
 
     def _enforce(self, req, action):
         """Authorize an action against our policies"""
@@ -101,7 +105,7 @@ class ImagesController(object):
         else:
             image['tags'] = []
 
-        v2.update_image_read_acl(req, self.db_api, image)
+        v2.update_image_read_acl(req, self.store_api, self.db_api, image)
         image = self._normalize_properties(dict(image))
         self.notifier.info('image.update', image)
         return image
@@ -173,7 +177,7 @@ class ImagesController(object):
                 raise webob.exc.HTTPNotFound()
             image = self._normalize_properties(dict(image))
 
-        v2.update_image_read_acl(req, self.db_api, image)
+        v2.update_image_read_acl(req, self.store_api, self.db_api, image)
 
         if tags is not None:
             self.db_api.image_tag_set_all(req.context, image_id, tags)
@@ -263,6 +267,18 @@ class ImagesController(object):
             msg = _("Unable to delete as image %(image_id)s is protected"
                     % locals())
             raise webob.exc.HTTPForbidden(explanation=msg)
+
+        if image['location']:
+            if CONF.delayed_delete:
+                self.store_api.schedule_delayed_delete_from_backend(
+                                image['location'], id)
+                self.db_api.image_update(req.context, image_id,
+                                         {'status': 'pending_delete'})
+            else:
+                self.store_api.safe_delete_from_backend(image['location'],
+                                                        req.context, id)
+                self.db_api.image_update(req.context, image_id,
+                                         {'status': 'deleted'})
 
         try:
             self.db_api.image_destroy(req.context, image_id)
