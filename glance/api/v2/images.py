@@ -16,6 +16,7 @@
 import copy
 import datetime
 import json
+import re
 import urllib
 
 import webob.exc
@@ -148,21 +149,29 @@ class ImagesController(object):
         return self._append_tags(req.context, image)
 
     @utils.mutating
-    def update(self, req, image_id, image):
+    def update(self, req, image_id, changes):
         self._enforce(req, 'modify_image')
-        is_public = image.get('is_public')
-        if is_public:
-            self._enforce(req, 'publicize_image')
-        tags = self._extract_tags(image)
-
+        context = req.context
         try:
-            image = self.db_api.image_update(req.context, image_id, image)
+            image = self.db_api.image_get(context, image_id)
         except (exception.NotFound, exception.Forbidden):
             msg = ("Failed to find image %(image_id)s to update" % locals())
             LOG.info(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
 
         image = self._normalize_properties(dict(image))
+        updates = self._extract_updates(req, image, changes)
+
+        tags = None
+        if len(updates) > 0:
+            tags = self._extract_tags(updates)
+            purge_props = 'properties' in updates
+            try:
+                image = self.db_api.image_update(context, image_id, updates,
+                                                 purge_props)
+            except (exception.NotFound, exception.Forbidden):
+                raise webob.exc.HTTPNotFound()
+            image = self._normalize_properties(dict(image))
 
         v2.update_image_read_acl(req, self.db_api, image)
 
@@ -174,6 +183,76 @@ class ImagesController(object):
 
         self.notifier.info('image.update', image)
         return image
+
+    def _extract_updates(self, req, image, changes):
+        """ Determine the updates to pass to the database api.
+
+        Given the current image, convert a list of changes to be made
+        into the corresponding update dictionary that should be passed to
+        db_api.image_update.
+
+        Changes have the following parts
+        op    - 'add' a new attribute, 'replace' an existing attribute, or
+                'remove' an existing attribute.
+        path  - A list of path parts for determining which attribute the
+                the operation applies to.
+        value - For 'add' and 'replace', the new value the attribute should
+                assume.
+
+        For the current use case, there are two types of valid paths. For base
+        attributes (fields stored directly on the Image object) the path
+        must take the form ['<attribute name>']. These attributes are always
+        present so the only valid operation on them is 'replace'. For image
+        properties, the path takes the form ['properties', '<property name>']
+        and all operations are valid.
+
+        Future refactoring should simplify this code by hardening the image
+        abstraction such that database details such as how image properties
+        are stored do not have any influence here.
+        """
+        updates = {}
+        property_updates = image['properties']
+        for change in changes:
+            path = change['path']
+            if len(path) == 1:
+                assert change['op'] == 'replace'
+                key = change['path'][0]
+                if key == 'is_public' and change['value']:
+                    self._enforce(req, 'publicize_image')
+                updates[key] = change['value']
+            else:
+                assert len(path) == 2
+                assert path[0] == 'properties'
+                update_method_name = '_do_%s_property' % change['op']
+                assert hasattr(self, update_method_name)
+                update_method = getattr(self, update_method_name)
+                update_method(property_updates, change)
+                updates['properties'] = property_updates
+        return updates
+
+    def _do_replace_property(self, updates, change):
+        """ Replace a single image property, ensuring it's present. """
+        key = change['path'][1]
+        if key not in updates:
+            msg = _("Property %s does not exist.")
+            raise webob.exc.HTTPConflict(msg % key)
+        updates[key] = change['value']
+
+    def _do_add_property(self, updates, change):
+        """ Add a new image property, ensuring it does not already exist. """
+        key = change['path'][1]
+        if key in updates:
+            msg = _("Property %s already present.")
+            raise webob.exc.HTTPConflict(msg % key)
+        updates[key] = change['value']
+
+    def _do_remove_property(self, updates, change):
+        """ Remove an image property, ensuring it's present. """
+        key = change['path'][1]
+        if key not in updates:
+            msg = _("Property %s does not exist.")
+            raise webob.exc.HTTPConflict(msg % key)
+        del updates[key]
 
     @utils.mutating
     def delete(self, req, image_id):
@@ -196,16 +275,21 @@ class ImagesController(object):
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
+
+    _readonly_properties = ['created_at', 'updated_at', 'status', 'checksum',
+            'size', 'direct_url', 'self', 'file', 'schema']
+    _reserved_properties = ['owner', 'is_public', 'location',
+            'deleted', 'deleted_at']
+    _base_properties = ['checksum', 'created_at', 'container_format',
+            'disk_format', 'id', 'min_disk', 'min_ram', 'name', 'size',
+            'status', 'tags', 'updated_at', 'visibility', 'protected']
+
     def __init__(self, schema=None):
         super(RequestDeserializer, self).__init__()
         self.schema = schema or get_schema()
 
     def _parse_image(self, request):
-        output = super(RequestDeserializer, self).default(request)
-        if not 'body' in output:
-            msg = _('Body expected in request.')
-            raise webob.exc.HTTPBadRequest(explanation=msg)
-        body = output.pop('body')
+        body = self._get_request_body(request)
         try:
             self.schema.validate(body)
         except exception.InvalidObject as e:
@@ -218,9 +302,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         # Create a dict of base image properties, with user- and deployer-
         # defined properties contained in a 'properties' dictionary
         image = {'properties': body}
-        for key in ['checksum', 'created_at', 'container_format',
-                'disk_format', 'id', 'min_disk', 'min_ram', 'name', 'size',
-                'status', 'tags', 'updated_at', 'visibility', 'protected']:
+        for key in self._base_properties:
             try:
                 image[key] = image['properties'].pop(key)
             except KeyError:
@@ -231,17 +313,23 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
         return {'image': image}
 
-    @staticmethod
-    def _check_readonly(image):
-        for key in ['created_at', 'updated_at', 'status', 'checksum', 'size',
-                'direct_url', 'self', 'file', 'schema']:
+    def _get_request_body(self, request):
+        output = super(RequestDeserializer, self).default(request)
+        if not 'body' in output:
+            msg = _('Body expected in request.')
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        return output['body']
+
+    @classmethod
+    def _check_readonly(cls, image):
+        for key in cls._readonly_properties:
             if key in image:
                 msg = "Attribute \'%s\' is read-only." % key
                 raise webob.exc.HTTPForbidden(explanation=unicode(msg))
 
-    @staticmethod
-    def _check_reserved(image):
-        for key in ['owner', 'is_public', 'location', 'deleted', 'deleted_at']:
+    @classmethod
+    def _check_reserved(cls, image):
+        for key in cls._reserved_properties:
             if key in image:
                 msg = "Attribute \'%s\' is reserved." % key
                 raise webob.exc.HTTPForbidden(explanation=unicode(msg))
@@ -249,8 +337,108 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
     def create(self, request):
         return self._parse_image(request)
 
+    def _get_change_operation(self, raw_change):
+        op = None
+        for key in ['replace', 'add', 'remove']:
+            if key in raw_change:
+                if op is not None:
+                    msg = _('Operation objects must contain only one member'
+                            ' named "add", "remove", or "replace".')
+                    raise webob.exc.HTTPBadRequest(explanation=msg)
+                op = key
+        if op is None:
+            msg = _('Operation objects must contain exactly one member'
+                    ' named "add", "remove", or "replace".')
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        return op
+
+    def _get_change_path(self, raw_change, op):
+        key = self._decode_json_pointer(raw_change[op])
+        if key in self._readonly_properties:
+            msg = "Attribute \'%s\' is read-only." % key
+            raise webob.exc.HTTPForbidden(explanation=unicode(msg))
+        if key in self._reserved_properties:
+            msg = "Attribute \'%s\' is reserved." % key
+            raise webob.exc.HTTPForbidden(explanation=unicode(msg))
+
+        # For image properties, we need to put "properties" at the beginning
+        if key not in self._base_properties:
+            return ['properties', key]
+        return [key]
+
+    def _decode_json_pointer(self, pointer):
+        """ Parse a json pointer.
+
+        Json Pointers are defined in
+        http://tools.ietf.org/html/draft-pbryan-zyp-json-pointer .
+        The pointers use '/' for separation between object attributes, such
+        that '/A/B' would evaluate to C in {"A": {"B": "C"}}. A '/' character
+        in an attribute name is encoded as "~1" and a '~' character is encoded
+        as "~0".
+        """
+        self._validate_json_pointer(pointer)
+        return pointer.lstrip('/').replace('~1', '/').replace('~0', '~')
+
+    def _validate_json_pointer(self, pointer):
+        """ Validate a json pointer.
+
+        We only accept a limited form of json pointers. Specifically, we do
+        not allow multiple levels of indirection, so there can only be one '/'
+        in the pointer, located at the start of the string.
+        """
+        if not pointer.startswith('/'):
+            msg = _('Pointer `%s` does not start with "/".' % pointer)
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        if '/' in pointer[1:]:
+            msg = _('Pointer `%s` contains more than one "/".' % pointer)
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        if re.match('~[^01]', pointer):
+            msg = _('Pointer `%s` contains "~" not part of'
+                    ' a recognized escape sequence.' % pointer)
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
+    def _get_change_value(self, raw_change, op):
+        if 'value' not in raw_change:
+            msg = _('Operation "%s" requires a member named "value".')
+            raise webob.exc.HTTPBadRequest(explanation=msg % op)
+        return raw_change['value']
+
+    def _validate_change(self, change):
+        if change['op'] == 'delete':
+            return
+        partial_image = {change['path'][-1]: change['value']}
+        try:
+            self.schema.validate(partial_image)
+        except exception.InvalidObject as e:
+            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+
     def update(self, request):
-        return self._parse_image(request)
+        changes = []
+        valid_content_types = [
+            'application/openstack-images-v2.0-json-patch'
+        ]
+        if request.content_type not in valid_content_types:
+            headers = {'Accept-Patch': ','.join(valid_content_types)}
+            raise webob.exc.HTTPUnsupportedMediaType(headers=headers)
+        body = self._get_request_body(request)
+        if not isinstance(body, list):
+            msg = _('Request body must be a JSON array of operation objects.')
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        for raw_change in body:
+            if not isinstance(raw_change, dict):
+                msg = _('Operations must be JSON objects.')
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+            op = self._get_change_operation(raw_change)
+            path = self._get_change_path(raw_change, op)
+            change = {'op': op, 'path': path}
+            if not op == 'remove':
+                change['value'] = self._get_change_value(raw_change, op)
+                self._validate_change(change)
+                if change['path'] == ['visibility']:
+                    change['path'] = ['is_public']
+                    change['value'] = change['value'] == 'public'
+            changes.append(change)
+        return {'changes': changes}
 
     def _validate_limit(self, limit):
         try:
