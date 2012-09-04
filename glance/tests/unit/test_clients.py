@@ -21,6 +21,7 @@ import tempfile
 
 from glance import client
 from glance.common import client as base_client
+from glance.common import config
 from glance.common import exception
 from glance.common import utils
 from glance import context
@@ -36,6 +37,9 @@ _gen_uuid = utils.generate_uuid
 
 UUID1 = _gen_uuid()
 UUID2 = _gen_uuid()
+
+#NOTE(bcwaldon): needed to init config_dir cli opt
+config.parse_args()
 
 
 class TestBadClients(test_utils.BaseTestCase):

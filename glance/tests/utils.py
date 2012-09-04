@@ -28,7 +28,6 @@ import unittest
 
 import nose.plugins.skip
 
-# NOTE(ameade): this import is necessary so that common cfg opts are registered
 from glance.common import config
 from glance.common import utils
 from glance.common import wsgi
@@ -54,6 +53,11 @@ class BaseTestCase(unittest.TestCase):
 
     def setUp(self):
         super(BaseTestCase, self).setUp()
+
+        #NOTE(bcwaldon): parse_args has to be called to register certain
+        # command-line options - specifically we need config_dir for
+        # the following policy tests
+        config.parse_args()
 
     def tearDown(self):
         super(BaseTestCase, self).tearDown()

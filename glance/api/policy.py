@@ -28,12 +28,18 @@ from glance.openstack.common import policy
 LOG = logging.getLogger(__name__)
 
 policy_opts = (
-    cfg.StrOpt('policy_file', default=None),
+    cfg.StrOpt('policy_file', default='policy.json'),
     cfg.StrOpt('policy_default_rule', default='default'),
     )
 
 CONF = cfg.CONF
 CONF.register_opts(policy_opts)
+
+
+DEFAULT_RULES = {
+    'default': [[]],
+    'manage_image_cache': [['role:admin']]
+}
 
 
 class Enforcer(object):
@@ -52,20 +58,23 @@ class Enforcer(object):
 
     def load_rules(self):
         """Set the rules found in the json file on disk"""
-        rules = self._read_policy_file()
+        if self.policy_path:
+            rules = self._read_policy_file()
+            LOG.debug(_('Loaded policy rules: %s') % rules)
+        else:
+            rules = DEFAULT_RULES
+            LOG.debug(_('Using default policy rules: %s') % rules)
         self.set_rules(rules)
 
     @staticmethod
     def _find_policy_file():
         """Locate the policy json data file"""
-        if CONF.policy_file:
-            return CONF.policy_file
-
-        policy_file = CONF.find_file('policy.json')
-        if not policy_file:
-            raise cfg.ConfigFilesNotFoundError(('policy.json',))
-
-        return policy_file
+        policy_file = CONF.find_file(CONF.policy_file)
+        if policy_file:
+            return policy_file
+        else:
+            LOG.warn(_('Unable to find policy file'))
+            return None
 
     def _read_policy_file(self):
         """Read contents of the policy file
