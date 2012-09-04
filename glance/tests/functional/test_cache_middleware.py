@@ -334,6 +334,8 @@ class BaseCacheManageMiddlewareTest(object):
         response, content = http.request(path, 'PUT')
         self.assertEqual(response.status, 403)
 
+        self.stop_servers()
+
     @skip_if_disabled
     def test_cache_manage_get_cached_images(self):
         """

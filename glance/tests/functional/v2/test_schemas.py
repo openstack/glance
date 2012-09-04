@@ -64,3 +64,5 @@ class TestSchemas(functional.FunctionalTest):
         images_schema = json.loads(response.text)
         item_schema = images_schema['properties']['images']['items']
         self.assertEqual(item_schema, image_schema)
+
+        self.stop_servers()

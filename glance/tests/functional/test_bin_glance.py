@@ -65,6 +65,8 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertNotEqual(0, exitcode)
         self._assertNotIn('SSL23_GET_SERVER_HELLO', out)
 
+        self.stop_servers()
+
     def test_add_with_location_and_id(self):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
@@ -121,6 +123,8 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual('0', size, "Expected image to be 0 bytes in size, "
                                     "but got %s. " % size)
 
+        self.stop_servers()
+
     def test_add_with_location(self):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
@@ -163,6 +167,8 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual('0', size, "Expected image to be 0 bytes in size, "
                                     "but got %s. " % size)
 
+        self.stop_servers()
+
     def test_add_no_name(self):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
@@ -203,6 +209,8 @@ class TestBinGlance(functional.FunctionalTest):
         image_id, name, disk_format, container_format, size = \
             [c.strip() for c in line.split()]
         self.assertEqual('None', name)
+
+        self.stop_servers()
 
     @requires(teardown=teardown_http)
     def test_add_copying_from(self):
@@ -247,6 +255,8 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual('5120', size, "Expected image to be 5120 bytes "
                                        " in size, but got %s. " % size)
+
+        self.stop_servers()
 
     def _do_test_update_external_source(self, source):
         self.cleanup()
@@ -299,6 +309,8 @@ class TestBinGlance(functional.FunctionalTest):
         ]
         lines = out.split("\n")
         self.assertTrue(set(lines) >= set(expected_lines))
+
+        self.stop_servers()
 
     @requires(teardown=teardown_http)
     def test_update_copying_from(self):
@@ -362,6 +374,8 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual('0', size, "Expected image to be 0 bytes in size, "
                                     "but got %s. " % size)
+
+        self.stop_servers()
 
     def test_add_list_delete_list(self):
         """
@@ -1054,6 +1068,8 @@ class TestBinGlance(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         self.assertEqual('Deleted image %s' % image_id, out.strip())
 
+        self.stop_servers()
+
     def test_protected_image(self):
         """
         We test the following:
@@ -1252,3 +1268,5 @@ class TestBinGlance(functional.FunctionalTest):
 
         self.assertEqual(0, exitcode)
         self.assertEqual('', out.strip())
+
+        self.stop_servers()
