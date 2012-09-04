@@ -193,13 +193,15 @@ class StoreLocation(glance.store.location.StoreLocation):
 
         HTTPS is assumed, unless 'swift+http' is specified.
         """
-        if self.scheme in ('swift+https', 'swift'):
-            auth_scheme = 'https://'
+        if self.auth_or_store_url.startswith('http'):
+            return self.auth_or_store_url
         else:
-            auth_scheme = 'http://'
+            if self.scheme in ('swift+https', 'swift'):
+                auth_scheme = 'https://'
+            else:
+                auth_scheme = 'http://'
 
-        full_url = ''.join([auth_scheme, self.auth_or_store_url])
-        return full_url
+            return ''.join([auth_scheme, self.auth_or_store_url])
 
 
 class Store(glance.store.base.Store):
