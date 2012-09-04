@@ -138,6 +138,11 @@ class BaseTestCase(object):
                   for p in image['properties']]
         self.assertEqual(expected, actual)
 
+    def test_image_create_unknown_attribtues(self):
+        fixture = {'ping': 'pong'}
+        self.assertRaises(exception.Invalid,
+                          self.db_api.image_create, self.context, fixture)
+
     def test_image_update_core_attribute(self):
         fixture = {'status': 'queued'}
         image = self.db_api.image_update(self.adm_context, UUID3, fixture)
