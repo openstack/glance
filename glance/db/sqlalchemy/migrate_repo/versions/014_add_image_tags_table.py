@@ -28,6 +28,11 @@ def define_image_tags_table(meta):
         schema.Column('image_id', glance_schema.String(36),
                       schema.ForeignKey('images.id'), nullable=False),
         schema.Column('value', glance_schema.String(255), nullable=False),
+        schema.Column('created_at', glance_schema.DateTime(), nullable=False),
+        schema.Column('updated_at', glance_schema.DateTime()),
+        schema.Column('deleted_at', glance_schema.DateTime()),
+        schema.Column('deleted', glance_schema.Boolean(), nullable=False,
+                      default=False),
         mysql_engine='InnoDB')
 
     schema.Index('ix_image_tags_image_id',
