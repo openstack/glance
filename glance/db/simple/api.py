@@ -300,9 +300,13 @@ def image_member_delete(context, member):
 
 @log_call
 def image_create(context, image_values):
-    image_id = image_values.get('id', str(uuid.uuid4()))
-    image = _image_format(image_id, **image_values)
     global DATA
+    image_id = image_values.get('id', str(uuid.uuid4()))
+
+    if image_id in DATA['images']:
+        raise exception.Duplicate()
+
+    image = _image_format(image_id, **image_values)
     DATA['images'][image_id] = image
     DATA['tags'][image_id] = image.pop('tags', [])
     return image
