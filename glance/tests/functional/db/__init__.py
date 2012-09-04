@@ -189,6 +189,11 @@ class BaseTestCase(object):
         self.assertRaises(exception.Forbidden,
                           self.db_api.image_get, ctxt2, image['id'])
 
+    def test_image_get_not_found(self):
+        UUID = utils.generate_uuid()
+        self.assertRaises(exception.NotFound,
+                          self.db_api.image_get, self.context, UUID)
+
     def test_image_get_all(self):
         images = self.db_api.image_get_all(self.context)
         self.assertEquals(3, len(images))
