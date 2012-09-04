@@ -18,6 +18,7 @@
 
 import copy
 import datetime
+import uuid
 
 from glance.common import exception
 from glance.common import utils
@@ -99,8 +100,30 @@ class BaseTestCase(object):
 
     def test_image_create_defaults(self):
         image = self.db_api.image_create(self.context, {'status': 'queued'})
-        self.assertTrue(image['id'])
+
+        self.assertEqual(None, image['name'])
+        self.assertEqual(None, image['container_format'])
+        self.assertEqual(0, image['min_ram'])
+        self.assertEqual(0, image['min_disk'])
+        self.assertEqual(None, image['owner'])
+        self.assertEqual(False, image['is_public'])
+        self.assertEqual(None, image['size'])
+        self.assertEqual(None, image['checksum'])
+        self.assertEqual(None, image['disk_format'])
+        self.assertEqual(None, image['location'])
+        self.assertEqual(False, image['protected'])
+        self.assertEqual(False, image['deleted'])
+        self.assertEqual(None, image['deleted_at'])
         self.assertEqual([], image['properties'])
+
+        # These values aren't predictable, but they should be populated
+        self.assertTrue(uuid.UUID(image['id']))
+        self.assertTrue(isinstance(image['created_at'], datetime.datetime))
+        self.assertTrue(isinstance(image['updated_at'], datetime.datetime))
+
+        #NOTE(bcwaldon): the tags attribute should not be returned as a part
+        # of a core image entity
+        self.assertFalse('tags' in image)
 
     def test_image_create_properties(self):
         fixture = {'status': 'queued', 'properties': {'ping': 'pong'}}
