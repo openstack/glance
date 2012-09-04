@@ -133,14 +133,7 @@ class TestRespawn(functional.FunctionalTest):
         self.api_server.server_control_options += ' --respawn'
         self.api_server.default_store = 'shouldnotexist'
 
-        # start API server, allowing glance-control to continue running
-        self.start_with_retry(self.api_server,
-                              'api_port',
-                              1,
-                              expect_launch=False,
-                              expect_exit=False,
-                              expect_confirmation=False,
-                              **self.__dict__.copy())
+        exitcode, out, err = self.api_server.start(**self.__dict__.copy())
 
         # ensure the service pid has been cached
         pid_cached = lambda: os.path.exists(self.api_server.pid_file)
