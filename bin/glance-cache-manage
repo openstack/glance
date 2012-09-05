@@ -61,8 +61,7 @@ def catch_error(action):
                        options.host)
                 return FAILURE
             except exception.Forbidden:
-                print ("Not authorized to make this request. Check "
-                       "your credentials (OS_AUTH_USER, OS_AUTH_KEY, ...).")
+                print "Not authorized to make this request."
                 return FAILURE
             except Exception, e:
                 options = args[0]
