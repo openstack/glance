@@ -237,16 +237,21 @@ class ImageCache(object):
                             yield chunk
                     cache_file.flush()
 
-                if image_checksum and \
-                        image_checksum != current_checksum.hexdigest():
-                    msg = _("Checksum verification failed.  Aborted caching "
-                            "of image %s." % image_id)
-                    raise exception.GlanceException(msg)
+                    if (image_checksum and
+                            image_checksum != current_checksum.hexdigest()):
+                        msg = _("Checksum verification failed. Aborted "
+                                "caching of image '%s'." % image_id)
+                        raise exception.GlanceException(msg)
 
-            except Exception:
+            except exception.GlanceException as e:
+                # image_iter has given us bad, (size_checked_iter has found a
+                # bad length), or corrupt data (checksum is wrong).
+                LOG.exception(e)
+                raise
+            except Exception as e:
                 LOG.exception(_("Exception encountered while tee'ing "
-                                "image '%s' into cache. Continuing "
-                                "with response.") % image_id)
+                                "image '%s' into cache: %s. Continuing "
+                                "with response.") % (image_id, e))
 
             # NOTE(markwash): continue responding even if caching failed
             for chunk in image_iter:
