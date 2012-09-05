@@ -880,10 +880,11 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
 
     def _inject_location_header(self, response, image_meta):
         location = self._get_image_location(image_meta)
-        response.headers['Location'] = location
+        response.headers['Location'] = location.encode('utf-8')
 
     def _inject_checksum_header(self, response, image_meta):
-        response.headers['ETag'] = image_meta['checksum']
+        if image_meta['checksum'] is not None:
+            response.headers['ETag'] = image_meta['checksum'].encode('utf-8')
 
     def _inject_image_meta_headers(self, response, image_meta):
         """
@@ -900,7 +901,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
         headers = utils.image_meta_to_http_headers(image_meta)
 
         for k, v in headers.items():
-            response.headers[k] = v
+            response.headers[k.encode('utf-8')] = v.encode('utf-8')
 
     def _get_image_location(self, image_meta):
         """Build a relative url to reach the image defined by image_meta."""
@@ -918,12 +919,12 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
         image_id = image_meta['id']
 
         image_iter = result['image_iterator']
-        # image_meta['size'] is a str
+        # image_meta['size'] should be an int, but could possibly be a str
         expected_size = int(image_meta['size'])
         response.app_iter = common.size_checked_iter(
                 response, image_meta, expected_size, image_iter, self.notifier)
         # Using app_iter blanks content-length, so we set it here...
-        response.headers['Content-Length'] = image_meta['size']
+        response.headers['Content-Length'] = str(image_meta['size'])
         response.headers['Content-Type'] = 'application/octet-stream'
 
         self._inject_image_meta_headers(response, image_meta)

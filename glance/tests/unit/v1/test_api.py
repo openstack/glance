@@ -1,4 +1,5 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
+# -*- coding: utf-8 -*-
 
 # Copyright 2010-2011 OpenStack, LLC
 # All Rights Reserved.
@@ -3177,7 +3178,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
                  'updated_at': timeutils.utcnow(),
                  'deleted_at': None,
                  'deleted': False,
-                 'checksum': None,
+                 'checksum': '06ff575a2856444fbe93100157ed74ab92eb7eff',
                  'size': 19,
                  'owner': _gen_uuid(),
                  'location': "file:///tmp/glance-tests/2",
@@ -3197,6 +3198,56 @@ class TestImageSerializer(base.IsolatedUnitTest):
         self.serializer.meta(response, self.FIXTURE)
         for key, value in exp_headers.iteritems():
             self.assertEquals(value, response.headers[key])
+
+    def test_meta_utf8(self):
+        # We get unicode strings from JSON, and therefore all strings in the
+        # metadata will actually be unicode when handled internally. But we
+        # want to output utf-8.
+        FIXTURE = {
+             'image_meta': {
+                 'id': unicode(UUID2),
+                 'name': u'fake image #2 with utf-8 éàè',
+                 'status': u'active',
+                 'disk_format': u'vhd',
+                 'container_format': u'ovf',
+                 'is_public': True,
+                 'created_at': timeutils.utcnow(),
+                 'updated_at': timeutils.utcnow(),
+                 'deleted_at': None,
+                 'deleted': False,
+                 'checksum': u'06ff575a2856444fbe93100157ed74ab92eb7eff',
+                 'size': 19,
+                 'owner': unicode(_gen_uuid()),
+                 'location': u"file:///tmp/glance-tests/2",
+                 'properties': {
+                     u'prop_éé': u'ça marche',
+                     u'prop_çé': u'çé',
+                     }
+                 }
+             }
+        exp_headers = {'x-image-meta-id': UUID2.encode('utf-8'),
+                       'x-image-meta-location': 'file:///tmp/glance-tests/2',
+                       'ETag': '06ff575a2856444fbe93100157ed74ab92eb7eff',
+                       'x-image-meta-size': '19',  # str, not int
+                       'x-image-meta-name': 'fake image #2 with utf-8 éàè',
+                       'x-image-meta-property-prop_éé': 'ça marche',
+                       'x-image-meta-property-prop_çé': u'çé'.encode('utf-8')}
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'HEAD'
+        req.remote_addr = "1.2.3.4"
+        req.context = self.context
+        response = webob.Response(request=req)
+        self.serializer.meta(response, FIXTURE)
+        self.assertNotEqual(type(FIXTURE['image_meta']['name']),
+                            type(response.headers['x-image-meta-name']))
+        self.assertEqual(response.headers['x-image-meta-name'].decode('utf-8'),
+                         FIXTURE['image_meta']['name'])
+        for key, value in exp_headers.iteritems():
+            self.assertEquals(value, response.headers[key])
+
+        FIXTURE['image_meta']['properties'][u'prop_bad'] = 'çé'
+        self.assertRaises(UnicodeDecodeError,
+                          self.serializer.meta, response, FIXTURE)
 
     def test_show(self):
         exp_headers = {'x-image-meta-id': UUID2,
