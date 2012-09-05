@@ -46,9 +46,6 @@ sa_logger = None
 LOG = os_logging.getLogger(__name__)
 
 
-CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
-DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi',
-               'iso']
 STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
             'deleted']
 
@@ -535,8 +532,6 @@ def validate_image(values):
     :param values: Mapping of image metadata to check
     """
     status = values.get('status')
-    disk_format = values.get('disk_format')
-    container_format = values.get('container_format')
 
     status = values.get('status', None)
     if not status:
@@ -545,53 +540,6 @@ def validate_image(values):
 
     if status not in STATUSES:
         msg = "Invalid image status '%s' for image." % status
-        raise exception.Invalid(msg)
-
-    def _amazon_format(disk, container):
-        amazon_formats = ('aki', 'ari', 'ami')
-        return ((disk in amazon_formats and
-                 (container in CONTAINER_FORMATS or container is None)) or
-                (container in amazon_formats and
-                 (disk in DISK_FORMATS or disk is None)))
-
-    def _only_one_of(a, b):
-        return (a and b is None) or (b and a is None)
-
-    if _amazon_format(disk_format, container_format):
-        if _only_one_of(container_format, disk_format):
-            container_format = (container_format if disk_format is None
-                                else disk_format)
-            values['container_format'] = container_format
-            disk_format = container_format
-            values['disk_format'] = disk_format
-        elif container_format != disk_format:
-            msg = ("Invalid mix of disk and container formats. "
-                   "When setting a disk or container format to "
-                   "one of 'aki', 'ari', or 'ami', the container "
-                   "and disk formats must match.")
-            raise exception.Invalid(msg)
-
-    def _required_format_absent(format, formats):
-        activating = status == 'active'
-        unrecognized = format not in formats
-        # We don't mind having format = None when we're just registering
-        # an image, but if the image is being activated, make sure that the
-        # format is valid. Conversely if the format happens to be set on
-        # registration, it must be one of the recognized formats.
-        return ((activating and (not format or unrecognized))
-                or (not activating and format and unrecognized))
-
-    if _required_format_absent(disk_format, DISK_FORMATS):
-        msg = "Invalid disk format '%s' for image." % disk_format
-        raise exception.Invalid(msg)
-
-    if _required_format_absent(container_format, CONTAINER_FORMATS):
-        msg = "Invalid container format '%s' for image." % container_format
-        raise exception.Invalid(msg)
-
-    name = values.get('name')
-    if name and len(name) > 255:
-        msg = _('Image name too long: %d') % len(name)
         raise exception.Invalid(msg)
 
     return values

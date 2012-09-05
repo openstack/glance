@@ -57,6 +57,9 @@ from glance.store import (create_stores,
 LOG = logging.getLogger(__name__)
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
 SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
+CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
+DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi',
+               'iso']
 
 
 # Defined at module level due to _is_opt_registered
@@ -65,6 +68,43 @@ default_store_opt = cfg.StrOpt('default_store', default='file')
 
 CONF = cfg.CONF
 CONF.register_opt(default_store_opt)
+
+
+def validate_image_meta(req, values):
+
+    name = values.get('name')
+    disk_format = values.get('disk_format')
+    container_format = values.get('container_format')
+
+    if 'disk_format' in values:
+        if not disk_format in DISK_FORMATS:
+            msg = "Invalid disk format '%s' for image." % disk_format
+            raise HTTPBadRequest(explanation=msg, request=req)
+
+    if 'container_format' in values:
+        if not container_format in CONTAINER_FORMATS:
+            msg = "Invalid container format '%s' for image." % container_format
+            raise HTTPBadRequest(explanation=msg, request=req)
+
+    if name and len(name) > 255:
+        msg = _('Image name too long: %d') % len(name)
+        raise HTTPBadRequest(explanation=msg, request=req)
+
+    amazon_formats = ('aki', 'ari', 'ami')
+
+    if disk_format in amazon_formats or container_format in amazon_formats:
+        if disk_format is None:
+            values['disk_format'] = container_format
+        elif container_format is None:
+            values['container_format'] = disk_format
+        elif container_format != disk_format:
+            msg = ("Invalid mix of disk and container formats. "
+                   "When setting a disk or container format to "
+                   "one of 'aki', 'ari', or 'ami', the container "
+                   "and disk formats must match.")
+            raise HTTPBadRequest(explanation=msg, request=req)
+
+    return values
 
 
 class Controller(controller.BaseController):
@@ -566,6 +606,8 @@ class Controller(controller.BaseController):
 
     def _handle_source(self, req, image_id, image_meta, image_data):
         if image_data:
+            image_meta = self._validate_image_for_activation(req, image_id,
+                                                        image_meta)
             image_meta = self._upload_and_activate(req, image_meta)
         elif self._copy_from(req):
             msg = _('Triggering asynchronous copy from external source')
@@ -574,8 +616,22 @@ class Controller(controller.BaseController):
         else:
             location = image_meta.get('location')
             if location:
+                self._validate_image_for_activation(req, image_id, image_meta)
                 image_meta = self._activate(req, image_id, location)
         return image_meta
+
+    def _validate_image_for_activation(self, req, id, values):
+        """Ensures that all required image metadata values are valid."""
+        image = self.get_image_meta_or_404(req, id)
+        if not 'disk_format' in values:
+            values['disk_format'] = image['disk_format']
+        if not 'container_format' in values:
+            values['container_format'] = image['container_format']
+        if not 'name' in values:
+            values['name'] = image['name']
+
+        values = validate_image_meta(req, values)
+        return values
 
     @utils.mutating
     def create(self, req, image_meta, image_data):
@@ -851,6 +907,7 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
             raise HTTPBadRequest(explanation=msg, request=request)
 
         image_meta = result['image_meta']
+        image_meta = validate_image_meta(request, image_meta)
         if request.content_length:
             image_size = request.content_length
         elif 'size' in image_meta:
