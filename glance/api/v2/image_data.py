@@ -23,7 +23,10 @@ from glance.common import utils
 from glance.common import wsgi
 import glance.db
 import glance.notifier
+import glance.openstack.common.log as logging
 import glance.store
+
+LOG = logging.getLogger(__name__)
 
 
 class ImageDataController(object):
@@ -51,12 +54,41 @@ class ImageDataController(object):
 
     @utils.mutating
     def upload(self, req, image_id, data, size):
-        image = self._get_image(req.context, image_id)
         try:
+            image = self._get_image(req.context, image_id)
             location, size, checksum = self.store_api.add_to_backend(
                     req.context, 'file', image_id, data, size)
-        except exception.Duplicate:
-            raise webob.exc.HTTPConflict()
+
+        except exception.Duplicate, e:
+            msg = _("Unable to upload duplicate image data for image: %s")
+            LOG.debug(msg % image_id)
+            raise webob.exc.HTTPConflict(explanation=msg, request=req)
+
+        except exception.Forbidden, e:
+            msg = _("Not allowed to upload image data for image %s")
+            LOG.debug(msg % image_id)
+            raise webob.exc.HTTPForbidden(explanation=msg, request=req)
+
+        except exception.StorageFull, e:
+            msg = _("Image storage media is full: %s") % e
+            LOG.error(msg)
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
+                                                     request=req)
+
+        except exception.StorageWriteDenied, e:
+            msg = _("Insufficient permissions on image storage media: %s") % e
+            LOG.error(msg)
+            raise webob.exc.HTTPServiceUnavailable(explanation=msg,
+                                                  request=req)
+
+        except webob.exc.HTTPError, e:
+            LOG.error("Failed to upload image data due to HTTP error")
+            raise
+
+        except Exception, e:
+            LOG.exception("Failed to upload image data due to internal error")
+            raise
+
         else:
             v2.update_image_read_acl(req, self.store_api, self.db_api, image)
             values = {'location': location, 'size': size, 'checksum': checksum}
