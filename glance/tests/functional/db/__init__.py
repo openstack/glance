@@ -366,7 +366,7 @@ class BaseTestCase(object):
         images = self.db_api.image_get_all(ctxt1, filters={'is_public': True})
         image_ids = [image['id'] for image in images]
         expected = [UUIDX, UUID3, UUID2, UUID1]
-        self.assertEqual(expected, image_ids)
+        self.assertEqual(sorted(expected), sorted(image_ids))
 
     def test_image_paginate(self):
         """Paginate through a list of images using limit and marker"""
