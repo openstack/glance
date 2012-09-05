@@ -20,7 +20,6 @@ Utilities for consuming the auto-generated versioninfo files.
 
 import datetime
 import pkg_resources
-import os
 
 import setup
 
@@ -107,7 +106,7 @@ class VersionInfo(object):
             versioninfo = "%s/versioninfo" % self.package
             try:
                 raw_version = pkg_resources.resource_string(requirement,
-                                                             versioninfo)
+                                                            versioninfo)
                 self.version = self._newer_version(raw_version.strip())
             except (IOError, pkg_resources.DistributionNotFound):
                 self.version = self._generate_version()
