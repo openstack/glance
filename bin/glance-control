@@ -346,6 +346,6 @@ if __name__ == '__main__':
     if command == 'reload' or command == 'force-reload':
         for server in servers:
             do_stop(server, args, graceful=True)
-            do_start(server, args)
+            do_start('Restart', server, args)
 
     sys.exit(exitcode)

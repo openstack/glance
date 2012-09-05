@@ -139,6 +139,23 @@ class Server(object):
                        expected_exitcode=expected_exitcode,
                        context=overridden)
 
+    def reload(self, expect_exit=True, expected_exitcode=0, **kwargs):
+        """
+        Call glane-control reload for a specific server.
+
+        Any kwargs passed to this method will override the configuration
+        value in the conf file used in starting the servers.
+        """
+        cmd = ("%(server_control)s %(server_name)s reload "
+               "%(conf_file_name)s --pid-file=%(pid_file)s "
+               "%(server_control_options)s"
+               % self.__dict__)
+        return execute(cmd,
+                       no_venv=self.no_venv,
+                       exec_env=self.exec_env,
+                       expect_exit=expect_exit,
+                       expected_exitcode=expected_exitcode)
+
     def create_database(self):
         """Create database if required for this server"""
         if self.needs_database:
@@ -669,6 +686,43 @@ class FunctionalTest(test_utils.BaseTestCase):
             msg += self.dump_logs(failed)
 
         return msg if expect_launch else None
+
+    def reload_server(self,
+                      server,
+                      expect_launch,
+                      expect_exit=True,
+                      expected_exitcode=0,
+                      **kwargs):
+        """
+        Reload a running server
+
+        Any kwargs passed to this method will override the configuration
+        value in the conf file used in starting the server.
+
+        :param server: the server to launch
+        :param expect_launch: true iff the server is expected to
+                              successfully start
+        :param expect_exit: true iff the launched process is expected
+                            to exit in a timely fashion
+        :param expected_exitcode: expected exitcode from the launcher
+        """
+        self.cleanup()
+
+        # Start up the requested server
+        exitcode, out, err = server.reload(expect_exit=expect_exit,
+                                           expected_exitcode=expected_exitcode,
+                                           **kwargs)
+        if expect_exit:
+            self.assertEqual(expected_exitcode, exitcode,
+                             "Failed to spin up the requested server. "
+                             "Got: %s" % err)
+
+            self.assertTrue(re.search("Restarting glance-[a-z]+ with", out))
+
+        self.launched_servers.append(server)
+
+        launch_msg = self.wait_for_servers([server], expect_launch)
+        self.assertTrue(launch_msg is None, launch_msg)
 
     def stop_server(self, server, name):
         """
