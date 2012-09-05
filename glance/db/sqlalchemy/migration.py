@@ -98,6 +98,9 @@ def version_control(version=None):
 def _version_control(version):
     """
     Place a database under migration control
+
+    This will only set the specific version of a database, it won't
+    run any migrations.
     """
     repo_path = get_migrate_repo_path()
     sql_connection = CONF.sql_connection
@@ -114,7 +117,7 @@ def db_sync(version=None, current_version=None):
     """
     sql_connection = CONF.sql_connection
     try:
-        _version_control(current_version)
+        _version_control(current_version or 0)
     except versioning_exceptions.DatabaseAlreadyControlledError, e:
         if current_version is not None:
             msg = (_("database '%(sql_connection)s' is already under "

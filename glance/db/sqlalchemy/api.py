@@ -840,5 +840,6 @@ def image_tag_get_all(context, image_id, session=None):
     tags = session.query(models.ImageTag).\
                    filter_by(image_id=image_id).\
                    filter_by(deleted=False).\
+                   order_by(sqlalchemy.asc(models.ImageTag.created_at)).\
                    all()
     return [tag['value'] for tag in tags]
