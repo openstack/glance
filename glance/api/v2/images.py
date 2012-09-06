@@ -559,16 +559,19 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def create(self, response, image):
         response.status_int = 201
-        response.body = json.dumps(self._format_image(image))
+        body = json.dumps(self._format_image(image), ensure_ascii=False)
+        response.unicode_body = unicode(body)
         response.content_type = 'application/json'
         response.location = self._get_image_href(image)
 
     def show(self, response, image):
-        response.body = json.dumps(self._format_image(image))
+        body = json.dumps(self._format_image(image), ensure_ascii=False)
+        response.unicode_body = unicode(body)
         response.content_type = 'application/json'
 
     def update(self, response, image):
-        response.body = json.dumps(self._format_image(image))
+        body = json.dumps(self._format_image(image), ensure_ascii=False)
+        response.unicode_body = unicode(body)
         response.content_type = 'application/json'
 
     def index(self, response, result):
@@ -586,7 +589,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             params['marker'] = result['next_marker']
             next_query = urllib.urlencode(params)
             body['next'] = '/v2/images?%s' % next_query
-        response.body = json.dumps(body)
+        response.unicode_body = unicode(json.dumps(body, ensure_ascii=False))
         response.content_type = 'application/json'
 
     def delete(self, response, result):
