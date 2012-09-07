@@ -1337,6 +1337,142 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         self.assertEqual('application/json', response.content_type)
 
 
+class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(TestImagesSerializerWithUnicode, self).setUp()
+        self.serializer = glance.api.v2.images.ResponseSerializer()
+        self.fixtures = [
+            #NOTE(bcwaldon): This first fixture has every property defined
+            _fixture(UUID1, name=u'OpenStack\u2122-1',
+                    size=1024, tags=[u'\u2160', u'\u2161'],
+                    created_at=DATETIME, updated_at=DATETIME, owner=TENANT1,
+                    is_public=True, container_format='ami', disk_format='ami',
+                    checksum=u'ca425b88f047ce8ec45ee90e813ada91',
+                    min_ram=128, min_disk=10,
+                    properties={'lang': u'Fran\u00E7ais',
+                                u'dispos\u00E9': u'f\u00E2ch\u00E9'}),
+        ]
+
+    def test_index(self):
+        expected = {
+            u'images': [
+                {
+                    u'id': UUID1,
+                    u'name': u'OpenStack\u2122-1',
+                    u'status': u'queued',
+                    u'visibility': u'public',
+                    u'protected': False,
+                    u'tags': [u'\u2160', u'\u2161'],
+                    u'size': 1024,
+                    u'checksum': u'ca425b88f047ce8ec45ee90e813ada91',
+                    u'container_format': u'ami',
+                    u'disk_format': u'ami',
+                    u'min_ram': 128,
+                    u'min_disk': 10,
+                    u'created_at': unicode(ISOTIME),
+                    u'updated_at': unicode(ISOTIME),
+                    u'self': u'/v2/images/%s' % UUID1,
+                    u'file': u'/v2/images/%s/file' % UUID1,
+                    u'schema': u'/v2/schemas/image',
+                    u'lang': u'Fran\u00E7ais',
+                    u'dispos\u00E9': u'f\u00E2ch\u00E9',
+                },
+            ],
+            u'first': u'/v2/images',
+            u'schema': u'/v2/schemas/images',
+        }
+        request = webob.Request.blank('/v2/images')
+        response = webob.Response(request=request)
+        result = {u'images': self.fixtures}
+        self.serializer.index(response, result)
+        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
+
+    def test_show_full_fixture(self):
+        expected = {
+            u'id': UUID1,
+            u'name': u'OpenStack\u2122-1',
+            u'status': u'queued',
+            u'visibility': u'public',
+            u'protected': False,
+            u'tags': [u'\u2160', u'\u2161'],
+            u'size': 1024,
+            u'checksum': u'ca425b88f047ce8ec45ee90e813ada91',
+            u'container_format': u'ami',
+            u'disk_format': u'ami',
+            u'min_ram': 128,
+            u'min_disk': 10,
+            u'created_at': unicode(ISOTIME),
+            u'updated_at': unicode(ISOTIME),
+            u'self': u'/v2/images/%s' % UUID1,
+            u'file': u'/v2/images/%s/file' % UUID1,
+            u'schema': u'/v2/schemas/image',
+            u'lang': u'Fran\u00E7ais',
+            u'dispos\u00E9': u'f\u00E2ch\u00E9',
+        }
+        response = webob.Response()
+        self.serializer.show(response, self.fixtures[0])
+        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
+
+    def test_create(self):
+        expected = {
+            u'id': UUID1,
+            u'name': u'OpenStack\u2122-1',
+            u'status': u'queued',
+            u'visibility': u'public',
+            u'protected': False,
+            u'tags': [u'\u2160', u'\u2161'],
+            u'size': 1024,
+            u'checksum': u'ca425b88f047ce8ec45ee90e813ada91',
+            u'container_format': u'ami',
+            u'disk_format': u'ami',
+            u'min_ram': 128,
+            u'min_disk': 10,
+            u'created_at': unicode(ISOTIME),
+            u'updated_at': unicode(ISOTIME),
+            u'self': u'/v2/images/%s' % UUID1,
+            u'file': u'/v2/images/%s/file' % UUID1,
+            u'schema': u'/v2/schemas/image',
+            u'lang': u'Fran\u00E7ais',
+            u'dispos\u00E9': u'f\u00E2ch\u00E9',
+        }
+        response = webob.Response()
+        self.serializer.create(response, self.fixtures[0])
+        self.assertEqual(response.status_int, 201)
+        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
+        self.assertEqual(response.location, '/v2/images/%s' % UUID1)
+
+    def test_update(self):
+        expected = {
+            u'id': UUID1,
+            u'name': u'OpenStack\u2122-1',
+            u'status': u'queued',
+            u'visibility': u'public',
+            u'protected': False,
+            u'tags': [u'\u2160', u'\u2161'],
+            u'size': 1024,
+            u'checksum': u'ca425b88f047ce8ec45ee90e813ada91',
+            u'container_format': u'ami',
+            u'disk_format': u'ami',
+            u'min_ram': 128,
+            u'min_disk': 10,
+            u'created_at': unicode(ISOTIME),
+            u'updated_at': unicode(ISOTIME),
+            u'self': u'/v2/images/%s' % UUID1,
+            u'file': u'/v2/images/%s/file' % UUID1,
+            u'schema': u'/v2/schemas/image',
+            u'lang': u'Fran\u00E7ais',
+            u'dispos\u00E9': u'f\u00E2ch\u00E9',
+        }
+        response = webob.Response()
+        self.serializer.update(response, self.fixtures[0])
+        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
+
+
 class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
 
     def setUp(self):
