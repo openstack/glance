@@ -22,6 +22,7 @@
 import sys
 import traceback
 
+import eventlet
 from webob.exc import (HTTPError,
                        HTTPNotFound,
                        HTTPConflict,
@@ -91,6 +92,7 @@ class Controller(controller.BaseController):
         self.notifier = notifier.Notifier()
         registry.configure_registry_client()
         self.policy = policy.Enforcer()
+        self.pool = eventlet.GreenPool(size=1024)
 
     def _enforce(self, req, action):
         """Authorize an action against our policies"""
@@ -356,8 +358,14 @@ class Controller(controller.BaseController):
 
         copy_from = self._copy_from(req)
         if copy_from:
-            image_data, image_size = self._get_from_store(req.context,
-                                                          copy_from)
+            try:
+                image_data, image_size = self._get_from_store(req.context,
+                                                              copy_from)
+            except Exception as e:
+                self._safe_kill(req, image_meta['id'])
+                msg = _("Copy from external source failed: %s") % e
+                LOG.error(msg)
+                return
             image_meta['size'] = image_size or image_meta['size']
         else:
             try:
@@ -549,7 +557,7 @@ class Controller(controller.BaseController):
         # issue/12/fix-for-issue-6-broke-chunked-transfer
         req.is_body_readable = True
         location = self._upload(req, image_meta)
-        return self._activate(req, image_id, location)
+        return self._activate(req, image_id, location) if location else None
 
     def _get_size(self, context, image_meta, location):
         # retrieve the image size from remote store (if not provided)
@@ -557,8 +565,12 @@ class Controller(controller.BaseController):
                                                                   location)
 
     def _handle_source(self, req, image_id, image_meta, image_data):
-        if image_data or self._copy_from(req):
+        if image_data:
             image_meta = self._upload_and_activate(req, image_meta)
+        elif self._copy_from(req):
+            msg = _('Triggering asynchronous copy from external source')
+            LOG.info(msg)
+            self.pool.spawn_n(self._upload_and_activate, req, image_meta)
         else:
             location = image_meta.get('location')
             if location:
