@@ -251,7 +251,9 @@ class Server(object):
             signal.signal(signal.SIGINT, signal.SIG_IGN)
             self.run_server()
             self.logger.info(_('Child %d exiting normally') % os.getpid())
-            return
+            # self.pool.waitall() has been called by run_server, so
+            # its safe to exit here
+            sys.exit(0)
         else:
             self.logger.info(_('Started child %s') % pid)
             self.children.append(pid)
