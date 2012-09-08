@@ -37,7 +37,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 gettext.install('glance', unicode=1)
 
-from glance import client as glance_client
+import glance.image_cache.client
 from glance.common import exception
 from glance.common import utils
 from glance.version import version_info as version
@@ -258,7 +258,8 @@ def get_client(options):
     specified by the --host and --port options
     supplied to the CLI
     """
-    return glance_client.get_client(host=options.host,
+    return glance.image_cache.client.get_client(
+                host=options.host,
                 port=options.port,
                 username=options.os_username,
                 password=options.os_password,
