@@ -186,8 +186,6 @@ def stub_out_registry_and_store_server(stubs, base_dir):
               glance.common.client.BaseClient._sendable)
     stubs.Set(glance.common.client.BaseClient, '_sendable',
               fake_sendable)
-    stubs.Set(glance.common.client.ImageBodyIterator, '__iter__',
-              fake_image_iter)
 
 
 def stub_out_registry_server(stubs, **kwargs):
@@ -212,5 +210,3 @@ def stub_out_registry_server(stubs, **kwargs):
 
     stubs.Set(glance.common.client.BaseClient, 'get_connection_type',
               fake_get_connection_type)
-    stubs.Set(glance.common.client.ImageBodyIterator, '__iter__',
-              fake_image_iter)

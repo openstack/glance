@@ -15,12 +15,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
 import time
 
-from glance.tests import functional
+import httplib2
 
-from glance import client
-from glance.registry import client as registry_client
+from glance.tests import functional
 from glance.tests.utils import execute
 
 
@@ -35,95 +35,55 @@ class TestScrubber(functional.FunctionalTest):
 
     """Test that delayed_delete works and the scrubber deletes"""
 
-    def _get_client(self):
-        return client.Client("localhost", self.api_port)
-
-    def _get_registry_client(self):
-        return registry_client.RegistryClient('localhost',
-                                              self.registry_port)
-
-    def test_immediate_delete(self):
-        """
-        test that images get deleted immediately by default
-        """
-
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
-
-        client = self._get_client()
-        registry = self._get_registry_client()
-        meta = client.add_image(TEST_IMAGE_META, TEST_IMAGE_DATA)
-        id = meta['id']
-
-        filters = {'deleted': True, 'is_public': 'none',
-                   'status': 'pending_delete'}
-        recs = registry.get_images_detailed(filters=filters)
-        self.assertFalse(recs)
-
-        client.delete_image(id)
-        recs = registry.get_images_detailed(filters=filters)
-        self.assertFalse(recs)
-
-        filters = {'deleted': True, 'is_public': 'none', 'status': 'deleted'}
-        recs = registry.get_images_detailed(filters=filters)
-        self.assertTrue(recs)
-        for rec in recs:
-            self.assertEqual(rec['status'], 'deleted')
-
-        self.stop_servers()
-
     def test_delayed_delete(self):
         """
         test that images don't get deleted immediatly and that the scrubber
         scrubs them
         """
-
         self.cleanup()
         self.start_servers(delayed_delete=True, daemon=True)
 
-        client = self._get_client()
-        registry = self._get_registry_client()
-        meta = client.add_image(TEST_IMAGE_META, TEST_IMAGE_DATA)
-        id = meta['id']
+        headers = {
+            'x-image-meta-name': 'test_image',
+            'x-image-meta-is_public': 'true',
+            'x-image-meta-disk_format': 'raw',
+            'x-image-meta-container_format': 'ovf',
+            'content-type': 'application/octet-stream',
+        }
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', body='XXX',
+                                         headers=headers)
+        self.assertEqual(response.status, 201)
+        image = json.loads(content)['image']
+        self.assertEqual('active', image['status'])
+        image_id = image['id']
 
-        filters = {'deleted': True, 'is_public': 'none',
-                   'status': 'pending_delete'}
-        recs = registry.get_images_detailed(filters=filters)
-        self.assertFalse(recs)
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
 
-        client.delete_image(id)
-        recs = registry.get_images_detailed(filters=filters)
-        self.assertTrue(recs)
-
-        filters = {'deleted': True, 'is_public': 'none'}
-        recs = registry.get_images_detailed(filters=filters)
-        self.assertTrue(recs)
-        for rec in recs:
-            self.assertEqual(rec['status'], 'pending_delete')
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual('pending_delete', response['x-image-meta-status'])
 
         # NOTE(jkoelker) The build servers sometimes take longer than
         #                15 seconds to scrub. Give it up to 5 min, checking
         #                checking every 15 seconds. When/if it flips to
         #                deleted, bail immediatly.
-        deleted = set()
-        recs = []
         for _ in xrange(3):
             time.sleep(5)
 
-            recs = registry.get_images_detailed(filters=filters)
-            self.assertTrue(recs)
-
-            # NOTE(jkoelker) Reset the deleted set for this loop
-            deleted = set()
-            for rec in recs:
-                deleted.add(rec['status'] == 'deleted')
-
-            if False not in deleted:
+            response, content = http.request(path, 'HEAD')
+            if response['x-image-meta-status'] == 'deleted' and \
+               response['x-image-meta-deleted'] == 'True':
                 break
-
-        self.assertTrue(recs)
-        for rec in recs:
-            self.assertEqual(rec['status'], 'deleted')
+            else:
+                continue
+        else:
+            self.fail('image was never scrubbed')
 
         self.stop_servers()
 
@@ -135,31 +95,31 @@ class TestScrubber(functional.FunctionalTest):
         self.cleanup()
         self.start_servers(delayed_delete=True, daemon=False)
 
-        client = self._get_client()
-        registry = self._get_registry_client()
+        headers = {
+            'x-image-meta-name': 'test_image',
+            'x-image-meta-is_public': 'true',
+            'x-image-meta-disk_format': 'raw',
+            'x-image-meta-container_format': 'ovf',
+            'content-type': 'application/octet-stream',
+        }
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', body='XXX',
+                                         headers=headers)
+        self.assertEqual(response.status, 201)
+        image = json.loads(content)['image']
+        self.assertEqual('active', image['status'])
+        image_id = image['id']
 
-        # add some images and ensure it was successful
-        img_ids = []
-        for i in range(0, 3):
-            meta = client.add_image(TEST_IMAGE_META, TEST_IMAGE_DATA)
-            id = meta['id']
-            img_ids.append(id)
-        filters = {'deleted': True, 'is_public': 'none',
-                   'status': 'pending_delete'}
-        recs = registry.get_images_detailed(filters=filters)
-        self.assertFalse(recs)
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
 
-        # delete those images
-        for img_id in img_ids:
-            client.delete_image(img_id)
-        recs = registry.get_images_detailed(filters=filters)
-        self.assertTrue(recs)
-
-        filters = {'deleted': True, 'is_public': 'none'}
-        recs = registry.get_images_detailed(filters=filters)
-        self.assertTrue(recs)
-        for rec in recs:
-            self.assertEqual(rec['status'], 'pending_delete')
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual('pending_delete', response['x-image-meta-status'])
 
         # wait for the scrub time on the image to pass
         time.sleep(self.api_server.scrub_time)
@@ -170,10 +130,20 @@ class TestScrubber(functional.FunctionalTest):
         exitcode, out, err = execute(cmd, raise_error=False)
         self.assertEqual(0, exitcode)
 
-        filters = {'deleted': True, 'is_public': 'none'}
-        recs = registry.get_images_detailed(filters=filters)
-        self.assertTrue(recs)
-        for rec in recs:
-            self.assertEqual(rec['status'], 'deleted')
+        # NOTE(jkoelker) The build servers sometimes take longer than
+        #                15 seconds to scrub. Give it up to 5 min, checking
+        #                checking every 15 seconds. When/if it flips to
+        #                deleted, bail immediatly.
+        for _ in xrange(3):
+            time.sleep(5)
+
+            response, content = http.request(path, 'HEAD')
+            if response['x-image-meta-status'] == 'deleted' and \
+               response['x-image-meta-deleted'] == 'True':
+                break
+            else:
+                continue
+        else:
+            self.fail('image was never scrubbed')
 
         self.stop_servers()
