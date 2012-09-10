@@ -2916,6 +2916,13 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code,
                           res.body)
 
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        self.assertEquals(res.headers['x-image-meta-deleted'], 'True')
+        self.assertEquals(res.headers['x-image-meta-status'], 'deleted')
+
     def test_delete_non_exists_image(self):
         req = webob.Request.blank("/images/%s" % _gen_uuid())
         req.method = 'DELETE'
@@ -2923,17 +2930,15 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
 
     def test_delete_queued_image(self):
-        """
-        Here, we try to delete an image that is in the queued state.
+        """Delete an image in a queued state
+
         Bug #747799 demonstrated that trying to DELETE an image
         that had had its save process killed manually results in failure
         because the location attribute is None.
+
+        Bug #1048851 demonstrated that the status was not properly
+        being updated to 'deleted' from 'queued'.
         """
-        # Add an image by reserving a place in the database for an image
-        # without really any attributes or information on the image and then
-        # later doing an update with the image body and other attributes.
-        # We will stop the process after the reservation stage, then
-        # try to delete the image.
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
                            'x-image-meta-container-format': 'ovf',
@@ -2954,6 +2959,48 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'DELETE'
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 200)
+
+        req = webob.Request.blank('/images/%s' % res_body['id'])
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        self.assertEquals(res.headers['x-image-meta-deleted'], 'True')
+        self.assertEquals(res.headers['x-image-meta-status'], 'deleted')
+
+    def test_delete_queued_image_delayed_delete(self):
+        """Delete an image in a queued state when delayed_delete is on
+
+        Bug #1048851 demonstrated that the status was not properly
+        being updated to 'deleted' from 'queued'.
+        """
+        self.config(delayed_delete=True)
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.CREATED)
+
+        res_body = json.loads(res.body)['image']
+        self.assertEquals('queued', res_body['status'])
+
+        # Now try to delete the image...
+        req = webob.Request.blank("/images/%s" % res_body['id'])
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        req = webob.Request.blank('/images/%s' % res_body['id'])
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        self.assertEquals(res.headers['x-image-meta-deleted'], 'True')
+        self.assertEquals(res.headers['x-image-meta-status'], 'deleted')
 
     def test_delete_protected_image(self):
         fixture_headers = {'x-image-meta-store': 'file',

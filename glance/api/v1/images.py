@@ -821,21 +821,21 @@ class Controller(controller.BaseController):
                                 request=req,
                                 content_type="text/plain")
 
-        # The image's location field may be None in the case
-        # of a saving or queued image, therefore don't ask a backend
-        # to delete the image if the backend doesn't yet store it.
-        # See https://bugs.launchpad.net/glance/+bug/747799
+        status = 'deleted'
         try:
+            # The image's location field may be None in the case
+            # of a saving or queued image, therefore don't ask a backend
+            # to delete the image if the backend doesn't yet store it.
+            # See https://bugs.launchpad.net/glance/+bug/747799
             if image['location']:
                 if CONF.delayed_delete:
+                    status = 'pending_delete'
                     schedule_delayed_delete_from_backend(image['location'], id)
-                    registry.update_image_metadata(req.context, id,
-                                                  {'status': 'pending_delete'})
                 else:
                     safe_delete_from_backend(image['location'],
                                              req.context, id)
-                    registry.update_image_metadata(req.context, id,
-                                                   {'status': 'deleted'})
+
+            registry.update_image_metadata(req.context, id, {'status': status})
             registry.delete_image_metadata(req.context, id)
         except exception.NotFound, e:
             msg = ("Failed to find image to delete: %(e)s" % locals())

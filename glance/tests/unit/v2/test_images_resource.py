@@ -548,6 +548,34 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual(deleted_img['status'], 'deleted')
         self.assertFalse(filter(lambda k: UUID1 in k, self.store.data))
 
+    def test_delete_queued_updates_status(self):
+        """Ensure status of queued image is updated (LP bug #1048851)"""
+        request = unit_test_utils.get_fake_request()
+        image = self.db.image_create(request.context, {'status': 'queued'})
+        image_id = image['id']
+        self.controller.delete(request, image_id)
+
+        image = self.db.image_get(request.context, image_id,
+                                  force_show_deleted=True)
+        self.assertTrue(image['deleted'])
+        self.assertEqual(image['status'], 'deleted')
+
+    def test_delete_queued_updates_status_delayed_delete(self):
+        """
+        Ensure status of queued image is updated (LP bug #1048851)
+        to 'deleted' when delayed_delete isenabled
+        """
+        self.config(delayed_delete=True)
+        request = unit_test_utils.get_fake_request()
+        image = self.db.image_create(request.context, {'status': 'queued'})
+        image_id = image['id']
+        self.controller.delete(request, image_id)
+
+        image = self.db.image_get(request.context, image_id,
+                                  force_show_deleted=True)
+        self.assertTrue(image['deleted'])
+        self.assertEqual(image['status'], 'deleted')
+
     def test_delete_not_in_store(self):
         request = unit_test_utils.get_fake_request()
         self.assertTrue(filter(lambda k: UUID1 in k, self.store.data))
