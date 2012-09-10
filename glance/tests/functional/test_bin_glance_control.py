@@ -21,6 +21,7 @@ import os
 import signal
 import socket
 import sys
+import tempfile
 import time
 
 from glance.tests import functional
@@ -63,6 +64,45 @@ class TestGlanceControl(functional.FunctionalTest):
             exc_value = sys.exc_info()[1]
             self.assertTrue('Connection refused' in exc_value or
                             'ECONNREFUSED' in exc_value)
+
+    def _do_test_fallback_pidfile(self, pid_file):
+        self.cleanup()
+
+        self.api_server.pid_file = pid_file
+        exitcode, out, err = self.api_server.start(expect_exit=True,
+                                                   **self.__dict__.copy())
+        lines = out.split('\n')
+        warn = ('Falling back to a temp file, '
+                'you can stop glance-api service using:')
+        self.assertTrue(warn in lines)
+        fallback = lines[lines.index(warn) + 1].split()[-1]
+        self.assertTrue(os.path.exists(fallback))
+        self.api_server.pid_file = fallback
+        self.assertTrue(os.path.exists('/proc/%s' % self.get_pid()))
+
+        self.stop_server(self.api_server, 'API server')
+
+    @skip_if_disabled
+    def test_fallback_pidfile_uncreateable_dir(self):
+        """
+        We test that glance-control falls back to a temporary pid file
+        for non-existent pid file directory that cannot be created.
+        """
+        parent = tempfile.mkdtemp()
+        os.chmod(parent, 0)
+        pid_file = os.path.join(parent, 'pids', 'api.pid')
+        self._do_test_fallback_pidfile(pid_file)
+
+    @skip_if_disabled
+    def test_fallback_pidfile_unwriteable_dir(self):
+        """
+        We test that glance-control falls back to a temporary pid file
+        for unwriteable pid file directory.
+        """
+        parent = tempfile.mkdtemp()
+        os.chmod(parent, 0)
+        pid_file = os.path.join(parent, 'api.pid')
+        self._do_test_fallback_pidfile(pid_file)
 
     @skip_if_disabled
     def test_respawn(self):
