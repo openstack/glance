@@ -192,7 +192,8 @@ class ApiServer(Server):
     Server object that starts/stops/manages the API server
     """
 
-    def __init__(self, test_dir, port, policy_file, delayed_delete=False):
+    def __init__(self, test_dir, port, policy_file, delayed_delete=False,
+                 pid_file=None):
         super(ApiServer, self).__init__(test_dir, port)
         self.server_name = 'api'
         self.default_store = 'file'
@@ -201,8 +202,8 @@ class ApiServer(Server):
         self.metadata_encryption_key = "012345678901234567890123456789ab"
         self.image_dir = os.path.join(self.test_dir,
                                          "images")
-        self.pid_file = os.path.join(self.test_dir,
-                                         "api.pid")
+        self.pid_file = pid_file or os.path.join(self.test_dir,
+                                                 "api.pid")
         self.scrubber_datadir = os.path.join(self.test_dir,
                                              "scrubber")
         self.log_file = os.path.join(self.test_dir, "api.log")

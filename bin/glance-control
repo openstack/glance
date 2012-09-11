@@ -31,6 +31,7 @@ import resource
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
@@ -92,9 +93,9 @@ def pid_files(server, pid_file):
         yield pid_file, pid
 
 
-def do_start(verb, server, args):
-    if verb != 'Respawn':
-        for pid_file, pid in pid_files(server, CONF.pid_file):
+def do_start(verb, pid_file, server, args):
+    if verb != 'Respawn' and pid_file == CONF.pid_file:
+        for pid_file, pid in pid_files(server, pid_file):
             if os.path.exists('/proc/%s' % pid):
                 print ("%s appears to already be running: %s" %
                        (server, pid_file))
@@ -114,14 +115,6 @@ def do_start(verb, server, args):
         os.environ['PYTHON_EGG_CACHE'] = '/tmp'
 
     def write_pid_file(pid_file, pid):
-        dir, file = os.path.split(pid_file)
-        if not os.path.exists(dir):
-            try:
-                os.makedirs(dir)
-            except OSError, err:
-                if err.errno == errno.EACCES:
-                    sys.exit('Unable to create %s.  Running as non-root?'
-                             % dir)
         fp = open(pid_file, 'w')
         fp.write('%d\n' % pid)
         fp.close()
@@ -197,7 +190,6 @@ def do_start(verb, server, args):
                 break
             time.sleep(0.05)
 
-    pid_file = get_pid_file(server, CONF.pid_file)
 
     conf_file = None
     if args and os.path.exists(args[0]):
@@ -207,8 +199,26 @@ def do_start(verb, server, args):
 
 
 def get_pid_file(pid, pid_file):
-    return (os.path.abspath(pid_file) if pid_file else
-            '/var/run/glance/%s.pid' % server)
+    pid_file = (os.path.abspath(pid_file) if pid_file else
+                '/var/run/glance/%s.pid' % server)
+    dir, file = os.path.split(pid_file)
+
+    if not os.path.exists(dir):
+        try:
+            os.makedirs(dir)
+        except OSError:
+            pass
+
+    if not os.access(dir, os.W_OK):
+        fallback = os.path.join(tempfile.mkdtemp(), '%s.pid' % server)
+        msg = ('Unable to create pid file %s.  Running as non-root?\n'
+               'Falling back to a temp file, you can stop %s service using:\n'
+               '  %s %s stop --pid-file %s'
+               % (pid_file, server, __file__, server, fallback))
+        print msg
+        pid_file = fallback
+
+    return pid_file
 
 
 def do_stop(server, args, graceful=False):
@@ -306,14 +316,13 @@ if __name__ == '__main__':
         while children:
             pid, status = os.wait()
             if pid in children:
-                (server, args) = children.pop(pid)
-                pid_file = get_pid_file(server, CONF.pid_file)
+                (pid_file, server, args) = children.pop(pid)
                 running = os.path.exists(pid_file)
                 one_second_ago = time.time() - 1
                 bouncing = (running and
                             os.path.getmtime(pid_file) >= one_second_ago)
                 if running and not bouncing:
-                    args = (server, args)
+                    args = (pid_file, server, args)
                     new_pid = do_start('Respawn', *args)
                     children[new_pid] = args
                 else:
@@ -321,9 +330,10 @@ if __name__ == '__main__':
                     print 'Supressed respawn as %s was %s.' % (server, rsn)
 
     if command == 'start':
+        pid_file = get_pid_file(server, CONF.pid_file)
         children = {}
         for server in servers:
-            args = (server, args)
+            args = (pid_file, server, args)
             pid = do_start('Start', *args)
             children[pid] = args
 
@@ -341,11 +351,13 @@ if __name__ == '__main__':
         for server in servers:
             do_stop(server, args)
         for server in servers:
-            do_start('Restart', server, args)
+            pid_file = get_pid_file(server, CONF.pid_file)
+            do_start('Restart', pid_file, server, args)
 
     if command == 'reload' or command == 'force-reload':
         for server in servers:
             do_stop(server, args, graceful=True)
-            do_start('Restart', server, args)
+            pid_file = get_pid_file(server, CONF.pid_file)
+            do_start('Restart', pid_file, server, args)
 
     sys.exit(exitcode)
