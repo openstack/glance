@@ -51,6 +51,7 @@ swift_opts = [
     cfg.StrOpt('swift_store_user', secret=True),
     cfg.StrOpt('swift_store_key', secret=True),
     cfg.StrOpt('swift_store_auth_version', default='2'),
+    cfg.StrOpt('swift_store_region'),
     cfg.StrOpt('swift_store_container',
                default=DEFAULT_CONTAINER),
     cfg.IntOpt('swift_store_large_object_size',
@@ -218,6 +219,7 @@ class Store(glance.store.base.Store):
         self.snet = CONF.swift_enable_snet
         self.multi_tenant = CONF.swift_store_multi_tenant
         self.admin_tenants = CONF.swift_store_admin_tenants
+        self.region = CONF.swift_store_region
         self.auth_version = self._option_get('swift_store_auth_version')
         self.storage_url = None
         self.token = None
@@ -330,7 +332,7 @@ class Store(glance.store.base.Store):
     def _swift_connection_for_location(self, loc):
         if loc.user:
             return self._make_swift_connection(
-                loc.swift_url, loc.user, loc.key)
+                loc.swift_url, loc.user, loc.key, region=self.region)
         else:
             if self.multi_tenant:
                 return self._make_swift_connection(
@@ -341,8 +343,8 @@ class Store(glance.store.base.Store):
                 LOG.error(reason)
                 raise exception.BadStoreUri(message=reason)
 
-    def _make_swift_connection(self, auth_url, user, key, storage_url=None,
-                               token=None):
+    def _make_swift_connection(self, auth_url, user, key, region=None,
+                               storage_url=None, token=None):
         """
         Creates a connection using the Swift client library.
 
@@ -350,6 +352,7 @@ class Store(glance.store.base.Store):
                         v2 style Keystone auth.
         :param user A string containing the tenant:user information.
         :param key  A string containing the key/password for the connection.
+        :param region   A string containing the swift endpoint region
         :param storage_url A string containing the storage URL.
         :param token A string containing the token
         """
@@ -377,8 +380,11 @@ class Store(glance.store.base.Store):
                 None, user, None, preauthurl=storage_url, preauthtoken=token,
                 snet=snet, tenant_name=tenant_name, auth_version='2')
         else:
+            os_options = {}
+            if region:
+                os_options['region_name'] = region
             return swiftclient.Connection(
-                full_auth_url, user, key, snet=snet,
+                full_auth_url, user, key, snet=snet, os_options=os_options,
                 tenant_name=tenant_name, auth_version=auth_version)
 
     def _option_get(self, param):

@@ -20,7 +20,7 @@ iso8601>=0.1.4
 
 
 # For Swift storage backend.
-python-swiftclient>=1,<2
+python-swiftclient>=1.2,<2
 
 # Note you will need gcc buildtools installed and must
 # have installed libxml headers for lxml to be successfully
