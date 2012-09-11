@@ -36,7 +36,7 @@ class TestRootApi(functional.FunctionalTest):
         versions = {'versions': [
             {
                 'id': 'v2.0',
-                'status': 'EXPERIMENTAL',
+                'status': 'CURRENT',
                 'links': [{'rel': 'self', 'href': url % '2'}],
             },
             {
@@ -72,7 +72,7 @@ class TestRootApi(functional.FunctionalTest):
         versions = {'versions': [
             {
                 'id': 'v2.0',
-                'status': 'EXPERIMENTAL',
+                'status': 'CURRENT',
                 'links': [{'rel': 'self', 'href': url % '2'}],
             },
         ]}
@@ -129,7 +129,7 @@ class TestRootApi(functional.FunctionalTest):
         versions = {'versions': [
             {
                 'id': 'v2.0',
-                'status': 'EXPERIMENTAL',
+                'status': 'CURRENT',
                 'links': [{'rel': 'self', 'href': url % '2'}],
             },
             {
