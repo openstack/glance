@@ -210,6 +210,7 @@ class ApiServer(Server):
         self.s3_store_access_key = ""
         self.s3_store_secret_key = ""
         self.s3_store_bucket = ""
+        self.s3_store_bucket_url_format = ""
         self.swift_store_auth_address = ""
         self.swift_store_user = ""
         self.swift_store_key = ""
@@ -254,6 +255,7 @@ s3_store_host = %(s3_store_host)s
 s3_store_access_key = %(s3_store_access_key)s
 s3_store_secret_key = %(s3_store_secret_key)s
 s3_store_bucket = %(s3_store_bucket)s
+s3_store_bucket_url_format = %(s3_store_bucket_url_format)s
 swift_store_auth_address = %(swift_store_auth_address)s
 swift_store_user = %(swift_store_user)s
 swift_store_key = %(swift_store_key)s

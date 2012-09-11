@@ -40,6 +40,7 @@ s3_opts = [
     cfg.StrOpt('s3_store_bucket'),
     cfg.StrOpt('s3_store_object_buffer_dir'),
     cfg.BoolOpt('s3_store_create_bucket_on_put', default=False),
+    cfg.StrOpt('s3_store_bucket_url_format', default='subdomain'),
     ]
 
 CONF = cfg.CONF
@@ -288,7 +289,8 @@ class Store(glance.store.base.Store):
 
         s3_conn = S3Connection(loc.accesskey, loc.secretkey,
                                host=loc.s3serviceurl,
-                               is_secure=(loc.scheme == 's3+https'))
+                               is_secure=(loc.scheme == 's3+https'),
+                               calling_format=get_calling_format())
         bucket_obj = get_bucket(s3_conn, loc.bucket)
 
         key = get_key(bucket_obj, loc.key)
@@ -336,7 +338,8 @@ class Store(glance.store.base.Store):
 
         s3_conn = S3Connection(loc.accesskey, loc.secretkey,
                                host=loc.s3serviceurl,
-                               is_secure=(loc.scheme == 's3+https'))
+                               is_secure=(loc.scheme == 's3+https'),
+                               calling_format=get_calling_format())
 
         create_bucket_if_missing(self.bucket, s3_conn)
 
@@ -415,7 +418,8 @@ class Store(glance.store.base.Store):
         from boto.s3.connection import S3Connection
         s3_conn = S3Connection(loc.accesskey, loc.secretkey,
                                host=loc.s3serviceurl,
-                               is_secure=(loc.scheme == 's3+https'))
+                               is_secure=(loc.scheme == 's3+https'),
+                               calling_format=get_calling_format())
         bucket_obj = get_bucket(s3_conn, loc.bucket)
 
         # Close the key when we're through.
@@ -510,3 +514,13 @@ def get_key(bucket, obj):
         LOG.error(msg)
         raise exception.NotFound(msg)
     return key
+
+
+def get_calling_format(bucket_format=None):
+    import boto.s3.connection
+    if bucket_format is None:
+        bucket_format = CONF.s3_store_bucket_url_format
+    if bucket_format.lower() == 'path':
+        return boto.s3.connection.OrdinaryCallingFormat()
+    else:
+        return boto.s3.connection.SubdomainCallingFormat()

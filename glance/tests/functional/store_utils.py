@@ -27,7 +27,7 @@ import os
 import random
 import thread
 
-from glance.store.s3 import get_s3_location
+from glance.store.s3 import get_s3_location, get_calling_format
 
 
 FIVE_KB = 5 * 1024
@@ -243,7 +243,11 @@ def setup_s3(test):
         test.disabled = True
         return
 
-    s3_conn = S3Connection(access_key, secret_key, host=s3_host)
+    calling_format = get_calling_format(test.s3_store_bucket_url_format)
+    s3_conn = S3Connection(access_key, secret_key,
+                           host=s3_host,
+                           is_secure=False,
+                           calling_format=calling_format)
 
     test.bucket = None
     try:
