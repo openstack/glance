@@ -59,8 +59,8 @@ class TestFilesystemStore(store_tests.BaseTestCase, unittest.TestCase):
         store.configure_add()
         return store
 
-    def get_default_store_specs(self, image_id):
-        return {
-            'scheme': 'file',
-            'path': os.path.join(self.store_dir, image_id),
-        }
+    def stash_image(self, image_id, image_data):
+        filepath = os.path.join(self.store_dir, image_id)
+        with open(filepath, 'w') as fap:
+            fap.write(image_data)
+        return 'file://%s' % filepath
