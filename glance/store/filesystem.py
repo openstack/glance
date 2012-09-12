@@ -149,7 +149,11 @@ class Store(glance.store.base.Store):
         else:
             msg = _("Found image at %s. Returning in ChunkedFile.") % filepath
             LOG.debug(msg)
-            return (ChunkedFile(filepath), None)
+            try:
+                image_size = str(os.path.getsize(filepath))
+            except os.error:
+                image_size = None
+            return (ChunkedFile(filepath), image_size)
 
     def delete(self, location):
         """
