@@ -48,7 +48,7 @@ class Controller(object):
         version_objs = []
         if CONF.enable_v2_api:
             version_objs.append(
-                build_version_object(2.0, 'v2', 'EXPERIMENTAL'))
+                build_version_object(2.0, 'v2', 'CURRENT'))
         if CONF.enable_v1_api:
             version_objs.append(
                 build_version_object(1.1, 'v1', 'CURRENT'))
