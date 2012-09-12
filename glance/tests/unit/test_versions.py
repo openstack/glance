@@ -39,7 +39,7 @@ class VersionsTest(base.IsolatedUnitTest):
         expected = [
             {
                 'id': 'v2.0',
-                'status': 'EXPERIMENTAL',
+                'status': 'CURRENT',
                 'links': [{'rel': 'self',
                            'href': 'http://127.0.0.1:9292/v2/'}],
             },
