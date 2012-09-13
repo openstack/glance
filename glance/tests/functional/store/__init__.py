@@ -17,6 +17,8 @@
 
 import StringIO
 
+import nose.plugins.skip
+
 from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import cfg
@@ -60,7 +62,11 @@ class BaseTestCase(object):
         image_id = utils.generate_uuid()
         image_data = StringIO.StringIO('XXX')
         image_checksum = 'bc9189406be84ec297464a514221406d'
-        uri, add_size, add_checksum = store.add(image_id, image_data, 3)
+        try:
+            uri, add_size, add_checksum = store.add(image_id, image_data, 3)
+        except NotImplementedError:
+            msg = 'Configured store can not add images'
+            raise nose.SkipTest(msg)
 
         self.assertEqual(3, add_size)
         self.assertEqual(image_checksum, add_checksum)
