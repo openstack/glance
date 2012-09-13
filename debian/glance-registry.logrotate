@@ -1,0 +1,7 @@
+/var/log/glance/glance-registry.log {
+    daily
+    missingok
+    compress
+    delaycompress
+    notifempty
+}

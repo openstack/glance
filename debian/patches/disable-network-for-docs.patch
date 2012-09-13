@@ -1,0 +1,14 @@
+Description: Dont allow network access for building docs.
+Author: Chuck Short <zulcss@ubuntu.com>
+Forwarded: no
+diff -Naurp glance-2012.1.orig/doc/source/conf.py glance-2012.1/doc/source/conf.py
+--- glance-2012.1.orig/doc/source/conf.py	2012-03-30 09:12:40.000000000 -0400
++++ glance-2012.1/doc/source/conf.py	2012-04-02 08:52:12.109238365 -0400
+@@ -45,7 +45,6 @@ sys.path = [os.path.abspath('../../glanc
+ extensions = ['sphinx.ext.autodoc',
+               'sphinx.ext.coverage',
+               'sphinx.ext.ifconfig',
+-              'sphinx.ext.intersphinx',
+               'sphinx.ext.pngmath',
+               'sphinx.ext.graphviz']
+ 

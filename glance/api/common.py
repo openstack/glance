@@ -25,6 +25,7 @@ def size_checked_iter(response, image_meta, expected_size, image_iter,
         notifier):
     image_id = image_meta['id']
     bytes_written = 0
+    is_block_device = getattr(image_iter, 'is_block_device', False)
 
     def notify_image_sent_hook(env):
         image_send_notification(bytes_written, expected_size,
@@ -37,8 +38,15 @@ def size_checked_iter(response, image_meta, expected_size, image_iter,
 
     try:
         for chunk in image_iter:
-            yield chunk
-            bytes_written += len(chunk)
+            chunk_length = len(chunk)
+            bytes_remaining = expected_size - bytes_written
+            if is_block_device and (bytes_remaining <= chunk_length):
+                yield chunk[:bytes_remaining]
+                bytes_written += bytes_remaining
+                break # make SURE we don't keep going
+            else:
+                yield chunk
+                bytes_written += chunk_length
     except Exception, err:
         msg = _("An error occurred reading from backend storage "
                 "for image %(image_id)s: %(err)s") % locals()
@@ -47,8 +55,8 @@ def size_checked_iter(response, image_meta, expected_size, image_iter,
 
     if expected_size != bytes_written:
         msg = _("Backend storage for image %(image_id)s "
-                "disconnected after writing only %(bytes_written)d "
-                "bytes") % locals()
+                "disconnected after writing %(bytes_written)d "
+                "bytes out of %(expected_size)d.") % locals()
         LOG.error(msg)
         raise exception.GlanceException(_("Corrupt image download for "
                                           "image %(image_id)s") % locals())

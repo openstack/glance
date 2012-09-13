@@ -1,0 +1,98 @@
+Author: Adam Gandelman <admag@canonical.com>
+Date: 05-24-2012
+Subject: Ensure version control and valid database models 
+
+Since Folsom-1, glance no longer auto-creates database models by default.
+Ubuntu patches disabled this in Essex / 12.04 along with some other precautions
+such as refusing to start without consistent database schema, and ensuring
+database is version controlled before any migrations are run.  To maintain
+consistent behavior with Essex on Ubuntu, this patch adds check of database
+models at service startup and requires databases to be version controlled
+before running any migrations (requiring 'glance-manage version_control 0' before
+initializing a new datbase via 'glance-manage db_sync')
+
+Index: glance/glance/db/sqlalchemy/api.py
+===================================================================
+--- glance.orig/glance/db/sqlalchemy/api.py	2012-06-15 11:46:04.380813622 -0700
++++ glance/glance/db/sqlalchemy/api.py	2012-06-15 12:32:27.932711363 -0700
+@@ -23,6 +23,7 @@
+ """
+ 
+ import logging
++import os
+ import time
+ 
+ import sqlalchemy
+@@ -89,6 +90,32 @@
+                 raise
+ 
+ 
++def ensure_db_models():
++    """
++    Ensure connection to database and sqlalchemy models are consistent.
++    Connection errors would have been caught in models.register_models(),
++    which also auto-generations all tables outside of migration version
++    control. To avoid auto-creation, we can catch connection errors as well
++    as schema inconsitencies between sqlalchemy models and db.  If they exist,
++    throw an error and inform user to migrate the database manually.
++    """
++    session = get_session()
++    try:
++        # NOTE(adam_g); list of models (tables) as of 03/07/2012, defined
++        # in glance.registry.db.models.
++        test_image = session.query(models.Image).first()
++        test_image_property = session.query(models.ImageProperty).first()
++        test_image_member = session.query(models.ImageMember).first()
++    except Exception, e:
++        logger.error(e)
++        msg = (_('Could not ensure database connection and consistency. '\
++                 'Ensure database configuration and permissions are correct '\
++                 'and database has been migrated since last upgrade by '\
++                 'running \'glance-manage db_sync\''))
++        logger.error(msg)
++        raise e
++
++
+ def configure_db():
+     """
+     Establish the database, create an engine if needed, and
+@@ -122,7 +149,7 @@
+         if CONF.debug:
+             sa_logger.setLevel(logging.DEBUG)
+ 
+-        if CONF.db_auto_create:
++        if 'AUTO_REGISTER_DB_MODELS' in os.environ or CONF.db_auto_create:
+             logger.info('auto-creating glance registry DB')
+             models.register_models(_ENGINE)
+             try:
+@@ -132,6 +159,7 @@
+                 pass
+         else:
+             logger.info('not auto-creating glance registry DB')
++            ensure_db_models()
+ 
+ 
+ def check_mutate_authorization(context, image_ref):
+Index: glance/glance/db/sqlalchemy/migration.py
+===================================================================
+--- glance.orig/glance/db/sqlalchemy/migration.py	2012-06-15 11:46:04.360813621 -0700
++++ glance/glance/db/sqlalchemy/migration.py	2012-06-15 12:33:46.680708471 -0700
+@@ -121,6 +121,18 @@
+                      "migration control") % locals())
+             raise exception.DatabaseMigrationError(msg)
+ 
++    # Attempt to get migration_repo version.  Should succeed
++    # if db was created under version control.
++    try:
++        db_version()
++    except exception.DatabaseMigrationError:
++        # If it was not created under VC, do nothing until user puts it
++        # under VC and sets appropriate version.
++        msg = (_("Database '%(sql_connection)s' does not appear to be under "
++                 "version control.  Refusing to migrate.  You can enable  "
++                 "version control for by using 'glance-manage version_control "
++                 " [VERSION #]") % locals())
++        raise exception.DatabaseMigrationError(msg)
+     upgrade(version=version)
+ 
+ 
