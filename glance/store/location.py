@@ -79,13 +79,12 @@ def get_location_from_uri(uri):
 def register_scheme_map(scheme_map):
     """
     Given a mapping of 'scheme' to store_name, adds the mapping to the
-    known list of schemes.
+    known list of schemes if it does not already exist.
     """
     for (k, v) in scheme_map.items():
-        LOG.debug("Registering scheme %s with %s", k, v)
-        if k in SCHEME_TO_CLS_MAP:
-            LOG.warn("Overwriting scheme %s with %s", k, v)
-        SCHEME_TO_CLS_MAP[k] = v
+        if k not in SCHEME_TO_CLS_MAP:
+            LOG.debug("Registering scheme %s with %s", k, v)
+            SCHEME_TO_CLS_MAP[k] = v
 
 
 class Location(object):
