@@ -89,8 +89,8 @@ class RegistryClient(BaseClient):
                   action, **kwargs)
             status = res.status
             request_id = res.getheader('x-openstack-request-id')
-            msg = _("Registry request %(method)s %(action)s HTTP %(status)s"\
-                  " request id %(request_id)s")
+            msg = _("Registry request %(method)s %(action)s HTTP %(status)s"
+                    " request id %(request_id)s")
             LOG.debug(msg % locals())
 
         except:
