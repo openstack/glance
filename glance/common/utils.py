@@ -386,7 +386,7 @@ def get_terminal_size():
 
     height_width = func.get(platform.os.name, _get_terminal_size_unknownOS)()
 
-    if height_width == None:
+    if height_width is None:
         raise exception.Invalid()
 
     for i in height_width:
