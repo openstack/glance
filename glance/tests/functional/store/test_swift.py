@@ -71,13 +71,10 @@ def parse_config(config):
     for option in options:
         out[option] = config.defaults()[option]
 
-#    out['swift_store_container'] = _uniq(out['swift_store_container'])
-
     return out
 
 
 def swift_connect(auth_url, auth_version, user, key):
-    auth_url = auth_url + '/tokens'
     try:
         return swiftclient.Connection(authurl=auth_url,
                                       auth_version=auth_version,
@@ -264,13 +261,7 @@ class TestSwiftStore(store_tests.BaseTestCase, unittest.TestCase):
                               manifest_container,
                               segment)
 
-    def test_get_remote_image(self):
-        """Get an image that was created externally to Glance
-
-        Rather than depending on local configuration to build
-        a connetion to Swift, we depend on the URI of the image.
-        """
-        image_id = utils.generate_uuid()
+    def stash_image(self, image_id, image_data):
         container_name = self.swift_config['swift_store_container']
         swift_put_object(self.swift_client,
                          container_name,
@@ -287,16 +278,7 @@ class TestSwiftStore(store_tests.BaseTestCase, unittest.TestCase):
         path = os.path.join(auth_url.path, container_name, image_id)
 
         # This is an auth url with /<CONTAINER>/<OBJECT> on the end
-        faux_obj_url = 'swift+http://%s%s' % (netloc, path)
-
-        store = self.get_store()
-        location = glance.store.location.Location(
-                self.store_name,
-                store.get_store_location_class(),
-                uri=faux_obj_url)
-        (get_iter, get_size) = store.get(location)
-        self.assertEqual('3', get_size)
-        self.assertEqual('XXX', ''.join(get_iter))
+        return 'swift+http://%s%s' % (netloc, path)
 
     def test_multitenant(self):
         """Ensure an image is properly configured when using multitenancy."""

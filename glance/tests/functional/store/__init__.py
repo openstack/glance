@@ -44,6 +44,15 @@ class BaseTestCase(object):
     def get_store(self, **kwargs):
         raise NotImplementedError('get_store() must be implemented')
 
+    def stash_image(self, image_id, image_data):
+        """Store image data in the backend manually
+
+        :param image_id: image identifier
+        :param image_data: string representing image data fixture
+        :return URI referencing newly-created backend object
+        """
+        raise NotImplementedError('stash_image must be implemented')
+
     def test_lifecycle(self):
         """Add, get and delete an image"""
         store = self.get_store()
@@ -70,3 +79,16 @@ class BaseTestCase(object):
         store.delete(location)
 
         self.assertRaises(exception.NotFound, store.get, location)
+
+    def test_get_remote_image(self):
+        """Get an image that was created externally to Glance"""
+        image_id = utils.generate_uuid()
+        image_uri = self.stash_image(image_id, 'XXX')
+        store = self.get_store()
+        location = glance.store.location.Location(
+                self.store_name,
+                store.get_store_location_class(),
+                uri=image_uri)
+        (get_iter, get_size) = store.get(location)
+        self.assertEqual('3', get_size)
+        self.assertEqual('XXX', ''.join(get_iter))
