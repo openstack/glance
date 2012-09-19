@@ -202,8 +202,7 @@ class TestMigrations(utils.BaseTestCase):
 
         # Now walk it back down to 0 from the latest, testing
         # the downgrade paths.
-        for version in reversed(
-            xrange(0, TestMigrations.REPOSITORY.latest)):
+        for version in reversed(xrange(0, TestMigrations.REPOSITORY.latest)):
             migration_api.downgrade(version)
             cur_version = migration_api.db_version()
             self.assertEqual(cur_version, version)

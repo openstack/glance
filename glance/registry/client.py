@@ -49,18 +49,18 @@ class RegistryClient(BaseClient):
                             **kwargs)
 
     def decrypt_metadata(self, image_metadata):
-        if (self.metadata_encryption_key is not None
-            and 'location' in image_metadata.keys()
-            and image_metadata['location'] is not None):
+        if (self.metadata_encryption_key is not None and
+            'location' in image_metadata.keys() and
+            image_metadata['location'] is not None):
             location = crypt.urlsafe_decrypt(self.metadata_encryption_key,
                                              image_metadata['location'])
             image_metadata['location'] = location
         return image_metadata
 
     def encrypt_metadata(self, image_metadata):
-        if (self.metadata_encryption_key is not None
-            and 'location' in image_metadata.keys()
-            and image_metadata['location'] is not None):
+        if (self.metadata_encryption_key is not None and
+            'location' in image_metadata.keys() and
+            image_metadata['location'] is not None):
             location = crypt.urlsafe_encrypt(self.metadata_encryption_key,
                                              image_metadata['location'], 64)
             image_metadata['location'] = location
