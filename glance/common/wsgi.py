@@ -58,7 +58,7 @@ socket_opts = [
     cfg.StrOpt('key_file'),
 ]
 
-workers_opt = cfg.IntOpt('workers', default=0)
+workers_opt = cfg.IntOpt('workers', default=1)
 
 CONF = cfg.CONF
 CONF.register_opts(bind_opts)
