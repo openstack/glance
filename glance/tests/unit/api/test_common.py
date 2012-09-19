@@ -95,8 +95,9 @@ class TestSizeCheckedIter(unittest.TestCase):
     def test_too_few_chunks(self):
         resp = self._get_webob_response()
         meta = self._get_image_metadata()
-        checked_image = glance.api.common.size_checked_iter(
-                 resp, meta, 6, ['AB', 'CD'], None)
+        checked_image = glance.api.common.size_checked_iter(resp, meta, 6,
+                                                            ['AB', 'CD'],
+                                                            None)
 
         self.assertEqual('AB', checked_image.next())
         self.assertEqual('CD', checked_image.next())
@@ -105,8 +106,9 @@ class TestSizeCheckedIter(unittest.TestCase):
     def test_too_much_data(self):
         resp = self._get_webob_response()
         meta = self._get_image_metadata()
-        checked_image = glance.api.common.size_checked_iter(
-                 resp, meta, 3, ['AB', 'CD'], None)
+        checked_image = glance.api.common.size_checked_iter(resp, meta, 3,
+                                                            ['AB', 'CD'],
+                                                            None)
 
         self.assertEqual('AB', checked_image.next())
         self.assertEqual('CD', checked_image.next())
@@ -115,8 +117,9 @@ class TestSizeCheckedIter(unittest.TestCase):
     def test_too_little_data(self):
         resp = self._get_webob_response()
         meta = self._get_image_metadata()
-        checked_image = glance.api.common.size_checked_iter(
-                 resp, meta, 6, ['AB', 'CD', 'E'], None)
+        checked_image = glance.api.common.size_checked_iter(resp, meta, 6,
+                                                            ['AB', 'CD', 'E'],
+                                                            None)
 
         self.assertEqual('AB', checked_image.next())
         self.assertEqual('CD', checked_image.next())

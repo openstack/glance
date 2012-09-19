@@ -1300,8 +1300,8 @@ class TestApi(functional.FunctionalTest):
         # POST queued image
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         headers = {
-           'X-Image-Meta-Name': 'Image1',
-           'X-Image-Meta-Is-Public': 'True',
+            'X-Image-Meta-Name': 'Image1',
+            'X-Image-Meta-Is-Public': 'True',
         }
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)

@@ -342,9 +342,8 @@ def image_update(context, image_id, image_values, purge_props=False):
             prop['deleted'] = True
 
     # add in any completly new properties
-    image['properties'].extend([
-            {'name': k, 'value': v, 'deleted': False}
-             for k, v in new_properties.items()])
+    image['properties'].extend([{'name': k, 'value': v, 'deleted': False}
+                                for k, v in new_properties.items()])
 
     image['updated_at'] = timeutils.utcnow()
     image.update(image_values)

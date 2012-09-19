@@ -133,8 +133,8 @@ class RegistryClient(BaseClient):
         if 'image' not in image_metadata.keys():
             image_metadata = dict(image=image_metadata)
 
-        image_metadata['image'] = self.encrypt_metadata(
-                                      image_metadata['image'])
+        encrypted_metadata = self.encrypt_metadata(image_metadata['image'])
+        image_metadata['image'] = encrypted_metadata
         body = json.dumps(image_metadata)
 
         res = self.do_request("POST", "/images", body=body, headers=headers)
@@ -150,8 +150,8 @@ class RegistryClient(BaseClient):
         if 'image' not in image_metadata.keys():
             image_metadata = dict(image=image_metadata)
 
-        image_metadata['image'] = self.encrypt_metadata(
-                                      image_metadata['image'])
+        encrypted_metadata = self.encrypt_metadata(image_metadata['image'])
+        image_metadata['image'] = encrypted_metadata
         body = json.dumps(image_metadata)
 
         headers = {
