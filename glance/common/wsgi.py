@@ -193,7 +193,7 @@ class Server(object):
 
         if CONF.workers == 0:
             # Useful for profiling, test, debug etc.
-            self.pool = eventlet.GreenPool(size=self.threads)
+            self.pool = self.create_pool()
             self.pool.spawn_n(self._single_run, self.app_func(), self.sock)
             return
         else:
@@ -203,6 +203,10 @@ class Server(object):
             signal.signal(signal.SIGHUP, hup)
             while len(self.children) < CONF.workers:
                 self.run_child()
+
+    def create_pool(self):
+        eventlet.patcher.monkey_patch(all=False, socket=True)
+        return eventlet.GreenPool(size=self.threads)
 
     def wait_on_children(self):
         while self.running:
@@ -266,8 +270,7 @@ class Server(object):
         except Exception:
             msg = _("eventlet 'poll' hub is not available on this platform")
             raise exception.WorkerCreationFailure(reason=msg)
-        eventlet.patcher.monkey_patch(all=False, socket=True)
-        self.pool = eventlet.GreenPool(size=self.threads)
+        self.pool = self.create_pool()
         try:
             eventlet.wsgi.server(self.sock, self.app_func(),
                     log=WritableLogger(self.logger), custom_pool=self.pool)
