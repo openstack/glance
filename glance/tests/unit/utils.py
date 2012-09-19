@@ -40,11 +40,11 @@ def get_fake_request(path='', method='POST', is_admin=False, user=USER1):
     req.method = method
 
     kwargs = {
-            'user': user,
-            'tenant': TENANT1,
-            'roles': [],
-            'is_admin': is_admin,
-        }
+        'user': user,
+        'tenant': TENANT1,
+        'roles': [],
+        'is_admin': is_admin,
+    }
 
     req.context = glance.context.RequestContext(**kwargs)
 

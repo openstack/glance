@@ -236,8 +236,8 @@ class SwiftTests(object):
         http:// in the swift_store_auth_address config value
         """
         loc = get_location_from_uri("swift+http://%s:key@auth_address/"
-                                    "glance/%s" % (
-                self.swift_store_user, FAKE_UUID))
+                                    "glance/%s" %
+                                    (self.swift_store_user, FAKE_UUID))
         (image_swift, image_size) = self.store.get(loc)
         self.assertEqual(image_size, 5120)
 

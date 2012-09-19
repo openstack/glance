@@ -78,7 +78,7 @@ class V2Token(object):
             "adminURL": "http://localhost:9292",
             "internalURL": "http://localhost:9292",
             "publicURL": "http://localhost:9292"
-    }
+        }
 
     @property
     def base_token(self):

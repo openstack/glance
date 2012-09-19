@@ -51,7 +51,7 @@ rbd_opts = [
     cfg.StrOpt('rbd_store_pool', default=DEFAULT_POOL),
     cfg.StrOpt('rbd_store_user', default=DEFAULT_USER),
     cfg.StrOpt('rbd_store_ceph_conf', default=DEFAULT_CONFFILE),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(rbd_opts)
@@ -196,11 +196,11 @@ class Store(glance.store.base.Store):
             librbd.create(ioctx, name, size, order, old_format=False,
                           features=rbd.RBD_FEATURE_LAYERING)
             return StoreLocation({
-                    'fsid': fsid,
-                    'pool': self.pool,
-                    'image': name,
-                    'snapshot': DEFAULT_SNAPNAME,
-                    })
+                'fsid': fsid,
+                'pool': self.pool,
+                'image': name,
+                'snapshot': DEFAULT_SNAPNAME,
+            })
         else:
             librbd.create(ioctx, name, size, order, old_format=True)
             return StoreLocation({'image': name})

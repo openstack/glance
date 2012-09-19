@@ -41,7 +41,7 @@ s3_opts = [
     cfg.StrOpt('s3_store_object_buffer_dir'),
     cfg.BoolOpt('s3_store_create_bucket_on_put', default=False),
     cfg.StrOpt('s3_store_bucket_url_format', default='subdomain'),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(s3_opts)
@@ -102,16 +102,14 @@ class StoreLocation(glance.store.location.StoreLocation):
         # s3://accesskey:secretkey@https://s3.amazonaws.com/bucket/key-id
         # are immediately rejected.
         if uri.count('://') != 1:
-            reason = _(
-                    "URI cannot contain more than one occurrence of a scheme."
-                    "If you have specified a URI like "
-                    "s3://accesskey:secretkey@https://s3.amazonaws.com/bucket/"
-                    "key-id"
-                    ", you need to change it to use the s3+https:// scheme, "
-                    "like so: "
-                    "s3+https://accesskey:secretkey@s3.amazonaws.com/bucket/"
-                    "key-id"
-                      )
+            reason = _("URI cannot contain more than one occurrence "
+                       "of a scheme. If you have specified a URI like "
+                       "s3://accesskey:secretkey@"
+                       "https://s3.amazonaws.com/bucket/key-id"
+                       ", you need to change it to use the "
+                       "s3+https:// scheme, like so: "
+                       "s3+https://accesskey:secretkey@"
+                       "s3.amazonaws.com/bucket/key-id")
             LOG.error(_("Invalid store uri %(uri)s: %(reason)s") % locals())
             raise exception.BadStoreUri(message=reason)
 

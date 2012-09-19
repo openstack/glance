@@ -89,12 +89,14 @@ def upgrade(migrate_engine):
     # which returns all the images that have a type set
     # but that DO NOT yet have an image_property record
     # with key of type.
-    sel = select([images], from_obj=[
+    from_stmt = [
         images.outerjoin(image_properties,
                          and_(images.c.id == image_properties.c.image_id,
-                              image_properties.c.key == 'type'))]).where(
-            and_(image_properties.c.image_id == None,
-                 images.c.type != None))
+                              image_properties.c.key == 'type'))
+    ]
+    and_stmt = and_(image_properties.c.image_id == None,
+                    images.c.type != None)
+    sel = select([images], from_obj=from_stmt).where(and_stmt)
     image_records = conn.execute(sel).fetchall()
     property_insert = image_properties.insert()
     for record in image_records:

@@ -195,9 +195,9 @@ class KeystoneStrategy(BaseStrategy):
                 "passwordCredentials": {
                     "username": creds['username'],
                     "password": creds['password']
-                    }
                 }
             }
+        }
 
         headers = {}
         headers['Content-Type'] = 'application/json'

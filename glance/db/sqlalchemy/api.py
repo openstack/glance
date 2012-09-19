@@ -54,7 +54,7 @@ db_opts = [
     cfg.IntOpt('sql_max_retries', default=10),
     cfg.IntOpt('sql_retry_interval', default=1),
     cfg.BoolOpt('db_auto_create', default=False),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(db_opts)

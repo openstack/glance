@@ -34,7 +34,7 @@ from glance.version import version_info as version
 paste_deploy_opts = [
     cfg.StrOpt('flavor'),
     cfg.StrOpt('config_file'),
-    ]
+]
 common_opts = [
     cfg.BoolOpt('allow_additional_image_properties', default=True,
                 help=_('Whether to allow users to specify image properties '

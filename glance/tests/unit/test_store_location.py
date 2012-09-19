@@ -53,7 +53,7 @@ class TestStoreLocation(base.StoreClearingUnitTest):
             'rbd://imagename',
             'rbd://fsid/pool/image/snap',
             'rbd://%2F/%2F/%2F/%2F',
-            ]
+        ]
 
         for uri in good_store_uris:
             loc = location.get_location_from_uri(uri)
