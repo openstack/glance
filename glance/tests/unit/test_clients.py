@@ -884,12 +884,13 @@ class TestRegistryClient(base.IsolatedUnitTest):
 
     def test_add_image_basic(self):
         """Tests that we can add image metadata and returns the new id"""
-        fixture = {'name': 'fake public image',
-                   'is_public': True,
-                   'disk_format': 'vmdk',
-                   'container_format': 'ovf',
-                   'size': 19,
-                  }
+        fixture = {
+            'name': 'fake public image',
+            'is_public': True,
+            'disk_format': 'vmdk',
+            'container_format': 'ovf',
+            'size': 19,
+        }
 
         new_image = self.client.add_image(fixture)
 
@@ -925,14 +926,15 @@ class TestRegistryClient(base.IsolatedUnitTest):
 
     def test_add_image_already_exists(self):
         """Tests proper exception is raised if image with ID already exists"""
-        fixture = {'id': UUID2,
-                   'name': 'fake public image',
-                   'is_public': True,
-                   'disk_format': 'vmdk',
-                   'container_format': 'ovf',
-                   'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
-                  }
+        fixture = {
+            'id': UUID2,
+            'name': 'fake public image',
+            'is_public': True,
+            'disk_format': 'vmdk',
+            'container_format': 'ovf',
+            'size': 19,
+            'location': "file:///tmp/glance-tests/2",
+        }
 
         self.assertRaises(exception.Duplicate,
                           self.client.add_image,
@@ -940,14 +942,15 @@ class TestRegistryClient(base.IsolatedUnitTest):
 
     def test_add_image_with_bad_status(self):
         """Tests proper exception is raised if a bad status is set"""
-        fixture = {'name': 'fake public image',
-                   'is_public': True,
-                   'disk_format': 'vmdk',
-                   'container_format': 'ovf',
-                   'status': 'bad status',
-                   'size': 19,
-                   'location': "file:///tmp/glance-tests/2",
-                  }
+        fixture = {
+            'name': 'fake public image',
+            'is_public': True,
+            'disk_format': 'vmdk',
+            'container_format': 'ovf',
+            'status': 'bad status',
+            'size': 19,
+            'location': "file:///tmp/glance-tests/2",
+        }
 
         self.assertRaises(exception.Invalid,
                           self.client.add_image,
@@ -968,12 +971,13 @@ class TestRegistryClient(base.IsolatedUnitTest):
 
     def test_update_image_not_existing(self):
         """Tests non existing image update doesn't work"""
-        fixture = {'name': 'fake public image',
-                   'is_public': True,
-                   'disk_format': 'vmdk',
-                   'container_format': 'ovf',
-                   'status': 'bad status',
-                  }
+        fixture = {
+            'name': 'fake public image',
+            'is_public': True,
+            'disk_format': 'vmdk',
+            'container_format': 'ovf',
+            'status': 'bad status',
+        }
 
         self.assertRaises(exception.NotFound,
                           self.client.update_image,

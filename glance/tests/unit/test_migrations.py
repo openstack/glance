@@ -137,8 +137,7 @@ class TestMigrations(utils.BaseTestCase):
                            "|| tablename || ' cascade;' "
                            "from pg_tables where schemaname = 'public';\" | "
                            "psql -d %(database)s | grep '^\s*drop' | "
-                           "psql -d %(database)s"
-                          ) % locals()
+                           "psql -d %(database)s") % locals()
                 exitcode, out, err = utils.execute(cmd)
                 self.assertEqual(0, exitcode)
 

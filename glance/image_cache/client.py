@@ -107,8 +107,7 @@ def get_client(host, port=None, timeout=None, use_ssl=False, username=None,
                  auth_url=auth_url or os.getenv('OS_AUTH_URL'),
                  strategy=force_strategy or auth_strategy or
                           os.getenv('OS_AUTH_STRATEGY', 'noauth'),
-                 region=region or os.getenv('OS_REGION_NAME'),
-    )
+                 region=region or os.getenv('OS_REGION_NAME'))
 
     if creds['strategy'] == 'keystone' and not creds['auth_url']:
         msg = ("--os_auth_url option or OS_AUTH_URL environment variable "

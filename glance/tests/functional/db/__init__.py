@@ -269,9 +269,10 @@ class BaseTestCase(object):
 
     def test_image_get_all_size_min_max(self):
         images = self.db_api.image_get_all(self.context,
-                                      filters={'size_min': 10,
+                                           filters={
+                                               'size_min': 10,
                                                'size_max': 15,
-                                              })
+                                           })
         self.assertEquals(len(images), 1)
         self.assertEquals(images[0]['id'], self.fixtures[0]['id'])
 

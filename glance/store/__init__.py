@@ -30,12 +30,13 @@ LOG = logging.getLogger(__name__)
 
 store_opts = [
     cfg.ListOpt('known_stores',
-                default=['glance.store.filesystem.Store',
-                         'glance.store.http.Store',
-                         'glance.store.rbd.Store',
-                         'glance.store.s3.Store',
-                         'glance.store.swift.Store',
-                        ]),
+                default=[
+                    'glance.store.filesystem.Store',
+                    'glance.store.http.Store',
+                    'glance.store.rbd.Store',
+                    'glance.store.s3.Store',
+                    'glance.store.swift.Store',
+                ]),
     cfg.StrOpt('scrubber_datadir',
                default='/var/lib/glance/scrubber'),
     cfg.BoolOpt('delayed_delete', default=False),
