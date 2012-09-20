@@ -168,7 +168,7 @@ with compression enabled). Typically it is recommended
 to have one worker process per CPU. The value `0` will
 prevent any new processes from being created.
 
-Optional. Default: ``0``
+Optional. Default: ``1``
 
 Configurating SSL Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~
