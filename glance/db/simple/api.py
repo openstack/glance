@@ -239,8 +239,9 @@ def image_get_all(context, filters=None, marker=None, limit=None,
 @log_call
 def image_property_create(context, values):
     image = image_get(context, values['image_id'])
-    prop = _image_property_format(values['image_id'], values['name'],
-                values['value'])
+    prop = _image_property_format(values['image_id'],
+                                  values['name'],
+                                  values['value'])
     image['properties'].append(prop)
     return prop
 

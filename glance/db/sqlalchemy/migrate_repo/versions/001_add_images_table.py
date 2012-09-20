@@ -22,22 +22,29 @@ from glance.db.sqlalchemy.migrate_repo.schema import (
 
 
 def define_images_table(meta):
-    images = Table('images', meta,
-        Column('id', Integer(), primary_key=True, nullable=False),
-        Column('name', String(255)),
-        Column('type', String(30)),
-        Column('size', Integer()),
-        Column('status', String(30), nullable=False),
-        Column('is_public', Boolean(), nullable=False, default=False,
-               index=True),
-        Column('location', Text()),
-        Column('created_at', DateTime(), nullable=False),
-        Column('updated_at', DateTime()),
-        Column('deleted_at', DateTime()),
-        Column('deleted', Boolean(), nullable=False, default=False,
-               index=True),
-        mysql_engine='InnoDB',
-        extend_existing=True)
+    images = Table('images',
+                   meta,
+                   Column('id', Integer(), primary_key=True, nullable=False),
+                   Column('name', String(255)),
+                   Column('type', String(30)),
+                   Column('size', Integer()),
+                   Column('status', String(30), nullable=False),
+                   Column('is_public',
+                          Boolean(),
+                          nullable=False,
+                          default=False,
+                          index=True),
+                   Column('location', Text()),
+                   Column('created_at', DateTime(), nullable=False),
+                   Column('updated_at', DateTime()),
+                   Column('deleted_at', DateTime()),
+                   Column('deleted',
+                          Boolean(),
+                          nullable=False,
+                          default=False,
+                          index=True),
+                   mysql_engine='InnoDB',
+                   extend_existing=True)
 
     return images
 

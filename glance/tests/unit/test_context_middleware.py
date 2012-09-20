@@ -8,7 +8,7 @@ from glance.tests.unit import base
 
 class TestContextMiddleware(base.IsolatedUnitTest):
     def _build_request(self, roles=None, identity_status='Confirmed',
-            service_catalog=None):
+                       service_catalog=None):
         req = webob.Request.blank('/')
         req.headers['x-auth-token'] = 'token1'
         req.headers['x-identity-status'] = identity_status

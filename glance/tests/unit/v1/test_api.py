@@ -1701,7 +1701,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         res_dict = json.loads(res.body)
 
         self.assertNotEquals(res_dict['image']['created_at'],
-                            res_dict['image']['updated_at'])
+                             res_dict['image']['updated_at'])
 
         for k, v in fixture.iteritems():
             self.assertEquals(v, res_dict['image'][k])
@@ -1954,11 +1954,13 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                 self._do_test_defaulted_format(key, value)
 
     def test_bad_disk_format(self):
-        fixture_headers = {'x-image-meta-store': 'bad',
-                   'x-image-meta-name': 'bogus',
-                   'x-image-meta-location': 'http://localhost:0/image.tar.gz',
-                   'x-image-meta-disk-format': 'invalid',
-                   'x-image-meta-container-format': 'ami'}
+        fixture_headers = {
+            'x-image-meta-store': 'bad',
+            'x-image-meta-name': 'bogus',
+            'x-image-meta-location': 'http://localhost:0/image.tar.gz',
+            'x-image-meta-disk-format': 'invalid',
+            'x-image-meta-container-format': 'ami',
+        }
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
@@ -1970,10 +1972,12 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertTrue('Invalid disk format' in res.body, res.body)
 
     def test_create_with_location_no_container_format(self):
-        fixture_headers = {'x-image-meta-store': 'bad',
-                   'x-image-meta-name': 'bogus',
-                   'x-image-meta-location': 'http://localhost:0/image.tar.gz',
-                   'x-image-meta-disk-format': 'vhd'}
+        fixture_headers = {
+            'x-image-meta-store': 'bad',
+            'x-image-meta-name': 'bogus',
+            'x-image-meta-location': 'http://localhost:0/image.tar.gz',
+            'x-image-meta-disk-format': 'vhd',
+        }
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
@@ -1985,11 +1989,13 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertTrue('Invalid container format' in res.body)
 
     def test_bad_container_format(self):
-        fixture_headers = {'x-image-meta-store': 'bad',
-                   'x-image-meta-name': 'bogus',
-                   'x-image-meta-location': 'http://localhost:0/image.tar.gz',
-                   'x-image-meta-disk-format': 'vhd',
-                   'x-image-meta-container-format': 'invalid'}
+        fixture_headers = {
+            'x-image-meta-store': 'bad',
+            'x-image-meta-name': 'bogus',
+            'x-image-meta-location': 'http://localhost:0/image.tar.gz',
+            'x-image-meta-disk-format': 'vhd',
+            'x-image-meta-container-format': 'invalid',
+        }
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
@@ -2001,12 +2007,14 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertTrue('Invalid container format' in res.body)
 
     def test_bad_image_size(self):
-        fixture_headers = {'x-image-meta-store': 'bad',
-                   'x-image-meta-name': 'bogus',
-                   'x-image-meta-location': 'http://example.com/image.tar.gz',
-                   'x-image-meta-disk-format': 'vhd',
-                   'x-image-meta-size': 'invalid',
-                   'x-image-meta-container-format': 'bare'}
+        fixture_headers = {
+            'x-image-meta-store': 'bad',
+            'x-image-meta-name': 'bogus',
+            'x-image-meta-location': 'http://example.com/image.tar.gz',
+            'x-image-meta-disk-format': 'vhd',
+            'x-image-meta-size': 'invalid',
+            'x-image-meta-container-format': 'bare',
+        }
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
@@ -2018,11 +2026,13 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertTrue('Incoming image size' in res.body)
 
     def test_bad_image_name(self):
-        fixture_headers = {'x-image-meta-store': 'bad',
-                   'x-image-meta-name': 'X' * 256,
-                   'x-image-meta-location': 'http://example.com/image.tar.gz',
-                   'x-image-meta-disk-format': 'vhd',
-                   'x-image-meta-container-format': 'bare'}
+        fixture_headers = {
+            'x-image-meta-store': 'bad',
+            'x-image-meta-name': 'X' * 256,
+            'x-image-meta-location': 'http://example.com/image.tar.gz',
+            'x-image-meta-disk-format': 'vhd',
+            'x-image-meta-container-format': 'bare',
+        }
 
         req = webob.Request.blank("/images")
         req.method = 'POST'

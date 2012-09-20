@@ -1030,7 +1030,8 @@ class TestRegistryClient(base.IsolatedUnitTest):
         """Tests replacing image members"""
         self.assertTrue(self.client.add_member(UUID2, 'pattieblack'))
         self.assertTrue(self.client.replace_members(UUID2,
-                          dict(member_id='pattieblack2')))
+                                                    dict(member_id='pattie'
+                                                                   'black2')))
 
     def test_add_delete_member(self):
         """Tests deleting image members"""

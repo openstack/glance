@@ -147,8 +147,10 @@ class TestSSL(functional.FunctionalTest):
         headers = minimal_headers('Image1')
         path = "https://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         https = httplib2.Http(disable_ssl_certificate_validation=True)
-        response, content = https.request(path, 'POST', headers=headers,
-                                         body=image_data)
+        response, content = https.request(path,
+                                          'POST',
+                                          headers=headers,
+                                          body=image_data)
         self.assertEqual(response.status, 201)
         data = json.loads(content)
         self.assertEqual(data['image']['checksum'],
@@ -191,16 +193,17 @@ class TestSSL(functional.FunctionalTest):
 
         for expected_key, expected_value in expected_image_headers.items():
             self.assertEqual(response[expected_key], expected_value,
-                            "For key '%s' expected header value '%s'. Got '%s'"
-                            % (expected_key, expected_value,
-                               response[expected_key]))
+                             "For key '%s' expected header value '%s'. "
+                             "Got '%s'" % (expected_key,
+                                           expected_value,
+                                           response[expected_key]))
 
         for expected_key, expected_value in expected_std_headers.items():
             self.assertEqual(response[expected_key], expected_value,
-                            "For key '%s' expected header value '%s'. Got '%s'"
-                            % (expected_key,
-                               expected_value,
-                               response[expected_key]))
+                             "For key '%s' expected header value '%s'. "
+                             "Got '%s'" % (expected_key,
+                                           expected_value,
+                                           response[expected_key]))
 
         self.assertEqual(content, "*" * FIVE_KB)
         self.assertEqual(hashlib.md5(content).hexdigest(),
@@ -244,11 +247,12 @@ class TestSSL(functional.FunctionalTest):
         image = json.loads(content)
 
         for expected_key, expected_value in expected_image.items():
-            self.assertEqual(expected_value, image['images'][0][expected_key],
-                            "For key '%s' expected header value '%s'. Got '%s'"
-                            % (expected_key,
-                               expected_value,
-                               image['images'][0][expected_key]))
+            self.assertEqual(expected_value,
+                             image['images'][0][expected_key],
+                             "For key '%s' expected header value '%s'. "
+                             "Got '%s'" % (expected_key,
+                                           expected_value,
+                                           image['images'][0][expected_key]))
 
         # 7. PUT image with custom properties of "distro" and "arch"
         # Verify 200 returned
@@ -285,11 +289,12 @@ class TestSSL(functional.FunctionalTest):
         image = json.loads(content)
 
         for expected_key, expected_value in expected_image.items():
-            self.assertEqual(expected_value, image['images'][0][expected_key],
-                            "For key '%s' expected header value '%s'. Got '%s'"
-                            % (expected_key,
-                               expected_value,
-                               image['images'][0][expected_key]))
+            self.assertEqual(expected_value,
+                             image['images'][0][expected_key],
+                             "For key '%s' expected header value '%s'. "
+                             "Got '%s'" % (expected_key,
+                                           expected_value,
+                                           image['images'][0][expected_key]))
 
         # 9. PUT image and remove a previously existing property.
         headers = {'X-Image-Meta-Property-Arch': 'x86_64'}
@@ -411,8 +416,10 @@ class TestSSL(functional.FunctionalTest):
         path = "https://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                                image_id)
         https = httplib2.Http(disable_ssl_certificate_validation=True)
-        response, content = https.request(path, 'PUT', headers=headers,
-                                         body=image_data)
+        response, content = https.request(path,
+                                          'PUT',
+                                          headers=headers,
+                                          body=image_data)
         self.assertEqual(response.status, 200)
         data = json.loads(content)
         self.assertEqual(data['image']['checksum'],
@@ -669,8 +676,9 @@ class TestSSL(functional.FunctionalTest):
             test_data_file.flush()
         path = "https://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         https = httplib2.Http(disable_ssl_certificate_validation=True)
-        response, content = https.request(path, 'POST',
-                            body=test_data_file.name)
+        response, content = https.request(path,
+                                          'POST',
+                                          body=test_data_file.name)
         self.assertEqual(response.status, 400)
         expected = "Content-Type must be application/octet-stream"
         self.assertTrue(expected in content,

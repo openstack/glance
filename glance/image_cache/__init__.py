@@ -289,7 +289,7 @@ class ImageCache(object):
         CHUNKSIZE = 64 * 1024 * 1024
 
         return self.cache_image_iter(image_id,
-                utils.chunkiter(image_file, CHUNKSIZE))
+                                     utils.chunkiter(image_file, CHUNKSIZE))
 
     def open_for_read(self, image_id):
         """

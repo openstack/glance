@@ -294,7 +294,7 @@ class Store(glance.store.base.Store):
             if e.http_status == httplib.NOT_FOUND:
                 uri = location.get_store_uri()
                 raise exception.NotFound(_("Swift could not find image at "
-                                         "uri %(uri)s") % locals())
+                                           "uri %(uri)s") % locals())
             else:
                 raise
 
@@ -543,7 +543,8 @@ class Store(glance.store.base.Store):
         except swiftclient.ClientException, e:
             if e.http_status == httplib.CONFLICT:
                 raise exception.Duplicate(_("Swift already has an image at "
-                                          "location %s") % location.get_uri())
+                                            "location %s") %
+                                          location.get_uri())
             msg = (_("Failed to add object to Swift.\n"
                      "Got error from Swift: %(e)s") % locals())
             LOG.error(msg)
@@ -597,7 +598,7 @@ class Store(glance.store.base.Store):
             if e.http_status == httplib.NOT_FOUND:
                 uri = location.get_store_uri()
                 raise exception.NotFound(_("Swift could not find image at "
-                                         "uri %(uri)s") % locals())
+                                           "uri %(uri)s") % locals())
             else:
                 raise
 
@@ -638,7 +639,7 @@ class Store(glance.store.base.Store):
                 if e.http_status == httplib.NOT_FOUND:
                     uri = location.get_store_uri()
                     raise exception.NotFound(_("Swift could not find image at "
-                                             "uri %(uri)s") % locals())
+                                               "uri %(uri)s") % locals())
                 else:
                     raise
 
@@ -677,14 +678,14 @@ def create_container_if_missing(container, swift_conn):
                     swift_conn.put_container(container)
                 except swiftclient.ClientException, e:
                     msg = _("Failed to add container to Swift.\n"
-                           "Got error from Swift: %(e)s") % locals()
+                            "Got error from Swift: %(e)s") % locals()
                     raise glance.store.BackendException(msg)
             else:
                 msg = (_("The container %(container)s does not exist in "
-                       "Swift. Please set the "
-                       "swift_store_create_container_on_put option"
-                       "to add container to Swift automatically.")
-                       % locals())
+                         "Swift. Please set the "
+                         "swift_store_create_container_on_put option"
+                         "to add container to Swift automatically.") %
+                       locals())
                 raise glance.store.BackendException(msg)
         else:
             raise

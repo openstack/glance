@@ -76,8 +76,7 @@ class TestCacheMiddlewareRequestStashCacheInfo(unittest.TestCase):
 class ChecksumTestCacheFilter(glance.api.middleware.cache.CacheFilter):
     def __init__(self):
         class DummyCache(object):
-            def get_caching_iter(self, image_id, image_checksum,
-                    app_iter):
+            def get_caching_iter(self, image_id, image_checksum, app_iter):
                 self.image_checksum = image_checksum
 
         self.cache = DummyCache()

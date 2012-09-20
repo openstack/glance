@@ -296,8 +296,9 @@ class Store(glance.store.base.Store):
         msg = _("Retrieved image object from S3 using (s3_host=%(s3_host)s, "
                 "access_key=%(accesskey)s, bucket=%(bucket)s, "
                 "key=%(obj_name)s)") % ({'s3_host': loc.s3serviceurl,
-                'accesskey': loc.accesskey, 'bucket': loc.bucket,
-                'obj_name': loc.key})
+                                         'accesskey': loc.accesskey,
+                                         'bucket': loc.bucket,
+                                         'obj_name': loc.key})
         LOG.debug(msg)
 
         return key
@@ -358,8 +359,9 @@ class Store(glance.store.base.Store):
         msg = _("Adding image object to S3 using (s3_host=%(s3_host)s, "
                 "access_key=%(access_key)s, bucket=%(bucket)s, "
                 "key=%(obj_name)s)") % ({'s3_host': self.s3_host,
-                'access_key': self.access_key, 'bucket': self.bucket,
-                'obj_name': obj_name})
+                                         'access_key': self.access_key,
+                                         'bucket': self.bucket,
+                                         'obj_name': obj_name})
         LOG.debug(msg)
 
         key = bucket_obj.new_key(obj_name)
@@ -426,8 +428,9 @@ class Store(glance.store.base.Store):
         msg = _("Deleting image object from S3 using (s3_host=%(s3_host)s, "
                 "access_key=%(accesskey)s, bucket=%(bucket)s, "
                 "key=%(obj_name)s)") % ({'s3_host': loc.s3serviceurl,
-                'accesskey': loc.accesskey, 'bucket': loc.bucket,
-                'obj_name': loc.key})
+                                         'accesskey': loc.accesskey,
+                                         'bucket': loc.bucket,
+                                         'obj_name': loc.key})
         LOG.debug(msg)
 
         return key.delete()

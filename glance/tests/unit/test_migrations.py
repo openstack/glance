@@ -165,18 +165,22 @@ class TestMigrations(utils.BaseTestCase):
         # Create the initial version of the images table
         meta = MetaData()
         meta.bind = engine
-        images_001 = Table('images', meta,
-            Column('id', models.Integer, primary_key=True),
-            Column('name', String(255)),
-            Column('type', String(30)),
-            Column('size', Integer),
-            Column('status', String(30)),
-            Column('is_public', Boolean, default=False),
-            Column('location', Text),
-            Column('created_at', DateTime(), nullable=False),
-            Column('updated_at', DateTime()),
-            Column('deleted_at', DateTime()),
-            Column('deleted', Boolean(), nullable=False, default=False))
+        images_001 = Table('images',
+                           meta,
+                           Column('id', models.Integer, primary_key=True),
+                           Column('name', String(255)),
+                           Column('type', String(30)),
+                           Column('size', Integer),
+                           Column('status', String(30)),
+                           Column('is_public', Boolean, default=False),
+                           Column('location', Text),
+                           Column('created_at', DateTime(), nullable=False),
+                           Column('updated_at', DateTime()),
+                           Column('deleted_at', DateTime()),
+                           Column('deleted',
+                                  Boolean(),
+                                  nullable=False,
+                                  default=False))
         images_001.create()
 
     def _walk_versions(self, initial_version=0):

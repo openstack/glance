@@ -84,7 +84,7 @@ class TestPasteApp(test_utils.BaseTestCase):
     def test_load_paste_app_paste_config_not_found(self):
         expected_middleware = context.UnauthenticatedContextMiddleware
         self.assertRaises(RuntimeError, self._do_test_load_paste_app,
-        expected_middleware, make_paste_file=False)
+                          expected_middleware, make_paste_file=False)
 
     def test_load_paste_app_with_paste_flavor(self):
         pipeline = ('[pipeline:glance-registry-incomplete]\n'

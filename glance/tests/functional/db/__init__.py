@@ -240,13 +240,15 @@ class BaseTestCase(object):
 
     def test_image_get_all_with_filter(self):
         images = self.db_api.image_get_all(self.context,
-                                      filters={'id': self.fixtures[0]['id']})
+                                           filters={
+                                               'id': self.fixtures[0]['id'],
+                                           })
         self.assertEquals(len(images), 1)
         self.assertEquals(images[0]['id'], self.fixtures[0]['id'])
 
     def test_image_get_all_with_filter_user_defined_property(self):
         images = self.db_api.image_get_all(self.context,
-                                      filters={'foo': 'bar'})
+                                           filters={'foo': 'bar'})
         self.assertEquals(len(images), 1)
         self.assertEquals(images[0]['id'], self.fixtures[0]['id'])
 
@@ -255,16 +257,20 @@ class BaseTestCase(object):
         prop = self.db_api.image_property_create(self.context,
                                                  fixture)
         images = self.db_api.image_get_all(self.context,
-                             filters={'properties': {'poo': 'bear'}})
+                                           filters={
+                                               'properties': {'poo': 'bear'},
+                                           })
         self.assertEquals(len(images), 1)
         self.db_api.image_property_delete(self.context, prop)
         images = self.db_api.image_get_all(self.context,
-                             filters={'properties': {'poo': 'bear'}})
+                                           filters={
+                                               'properties': {'poo': 'bear'},
+                                           })
         self.assertEquals(len(images), 0)
 
     def test_image_get_all_with_filter_undefined_property(self):
         images = self.db_api.image_get_all(self.context,
-                                      filters={'poo': 'bear'})
+                                           filters={'poo': 'bear'})
         self.assertEquals(len(images), 0)
 
     def test_image_get_all_size_min_max(self):
@@ -278,20 +284,20 @@ class BaseTestCase(object):
 
     def test_image_get_all_size_min(self):
         images = self.db_api.image_get_all(self.context,
-                                      filters={'size_min': 15})
+                                           filters={'size_min': 15})
         self.assertEquals(len(images), 2)
         self.assertEquals(images[0]['id'], self.fixtures[2]['id'])
         self.assertEquals(images[1]['id'], self.fixtures[1]['id'])
 
     def test_image_get_all_size_range(self):
         images = self.db_api.image_get_all(self.context,
-                                      filters={'size_max': 15,
-                                               'size_min': 20})
+                                           filters={'size_max': 15,
+                                                    'size_min': 20})
         self.assertEquals(len(images), 0)
 
     def test_image_get_all_size_max(self):
         images = self.db_api.image_get_all(self.context,
-                                      filters={'size_max': 15})
+                                           filters={'size_max': 15})
         self.assertEquals(len(images), 1)
         self.assertEquals(images[0]['id'], self.fixtures[0]['id'])
 
@@ -352,14 +358,16 @@ class BaseTestCase(object):
         TENANT1 = utils.generate_uuid()
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
         UUIDX = utils.generate_uuid()
-        self.db_api.image_create(ctxt1,
-                {'id': UUIDX, 'status': 'queued', 'owner': TENANT1})
+        self.db_api.image_create(ctxt1, {'id': UUIDX,
+                                         'status': 'queued',
+                                         'owner': TENANT1})
 
         TENANT2 = utils.generate_uuid()
         ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2)
         UUIDY = utils.generate_uuid()
-        self.db_api.image_create(ctxt2,
-                {'id': UUIDY, 'status': 'queued', 'owner': TENANT2})
+        self.db_api.image_create(ctxt2, {'id': UUIDY,
+                                         'status': 'queued',
+                                         'owner': TENANT2})
 
         # NOTE(bcwaldon): the is_public=True flag indicates that you want
         # to get all images that are public AND those that are owned by the
@@ -457,7 +465,8 @@ class BaseTestCase(object):
     def test_image_member_update(self):
         TENANT1 = utils.generate_uuid()
         member = self.db_api.image_member_create(self.context,
-                                        {'member': TENANT1, 'image_id': UUID1})
+                                                 {'member': TENANT1,
+                                                  'image_id': UUID1})
         member_id = member.pop('id')
 
         expected = {'member': TENANT1, 'image_id': UUID1, 'can_share': False}

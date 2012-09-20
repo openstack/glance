@@ -127,7 +127,7 @@ def swift_head_object(swift_conn, container_name, obj_name):
 
 
 def keystone_authenticate(auth_url, auth_version, tenant_name,
-        username, password):
+                          username, password):
     assert int(auth_version) == 2, 'Only auth version 2 is supported'
 
     import keystoneclient.v2_0.client
@@ -314,8 +314,10 @@ class TestSwiftStore(store_tests.BaseTestCase, unittest.TestCase):
 
         read_tenant = utils.generate_uuid()
         write_tenant = utils.generate_uuid()
-        store.set_acls(location, public=False,
-                read_tenants=[read_tenant], write_tenants=[write_tenant])
+        store.set_acls(location,
+                       public=False,
+                       read_tenants=[read_tenant],
+                       write_tenants=[write_tenant])
 
         container_name = location.store_location.container
         container, _ = swift_get_container(self.swift_client, container_name)

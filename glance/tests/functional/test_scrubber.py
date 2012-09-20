@@ -25,10 +25,12 @@ from glance.tests.utils import execute
 
 
 TEST_IMAGE_DATA = '*' * 5 * 1024
-TEST_IMAGE_META = {'name': 'test_image',
-                  'is_public': False,
-                  'disk_format': 'raw',
-                  'container_format': 'ovf'}
+TEST_IMAGE_META = {
+    'name': 'test_image',
+    'is_public': False,
+    'disk_format': 'raw',
+    'container_format': 'ovf',
+}
 
 
 class TestScrubber(functional.FunctionalTest):

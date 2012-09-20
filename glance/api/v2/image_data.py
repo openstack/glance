@@ -73,13 +73,13 @@ class ImageDataController(object):
             msg = _("Image storage media is full: %s") % e
             LOG.error(msg)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
-                                                     request=req)
+                                                      request=req)
 
         except exception.StorageWriteDenied, e:
             msg = _("Insufficient permissions on image storage media: %s") % e
             LOG.error(msg)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
-                                                  request=req)
+                                                   request=req)
 
         except webob.exc.HTTPError, e:
             LOG.error("Failed to upload image data due to HTTP error")

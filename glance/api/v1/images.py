@@ -58,7 +58,7 @@ SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
 SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
 CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
 DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi',
-               'iso']
+                'iso']
 
 
 # Defined at module level due to _is_opt_registered
@@ -361,8 +361,8 @@ class Controller(controller.BaseController):
             image_meta = registry.add_image_metadata(req.context, image_meta)
             return image_meta
         except exception.Duplicate:
-            msg = (_("An image with identifier %s already exists")
-                  % image_meta['id'])
+            msg = (_("An image with identifier %s already exists") %
+                   image_meta['id'])
             LOG.error(msg)
             raise HTTPConflict(explanation=msg,
                                request=req,
@@ -440,9 +440,9 @@ class Controller(controller.BaseController):
             supplied_checksum = image_meta.get('checksum')
             if supplied_checksum and supplied_checksum != checksum:
                 msg = _("Supplied checksum (%(supplied_checksum)s) and "
-                       "checksum generated from uploaded image "
-                       "(%(checksum)s) did not match. Setting image "
-                       "status to 'killed'.") % locals()
+                        "checksum generated from uploaded image "
+                        "(%(checksum)s) did not match. Setting image "
+                        "status to 'killed'.") % locals()
                 LOG.error(msg)
                 self._safe_kill(req, image_id)
                 raise HTTPBadRequest(explanation=msg,
@@ -515,7 +515,7 @@ class Controller(controller.BaseController):
 
             msg = _("Error uploading image: (%(class_name)s): "
                     "%(exc)s") % ({'class_name': e.__class__.__name__,
-                    'exc': str(e)})
+                                   'exc': str(e)})
 
             raise HTTPBadRequest(explanation=msg, request=req)
 
@@ -534,8 +534,8 @@ class Controller(controller.BaseController):
 
         try:
             image_meta_data = registry.update_image_metadata(req.context,
-                                                  image_id,
-                                                  image_meta)
+                                                             image_id,
+                                                             image_meta)
             self.notifier.info("image.update", image_meta_data)
             return image_meta_data
         except exception.Invalid, e:
@@ -572,7 +572,7 @@ class Controller(controller.BaseController):
         except Exception, e:
             LOG.error(_("Unable to kill image %(id)s: "
                         "%(exc)s") % ({'id': image_id,
-                        'exc': repr(e)}))
+                                       'exc': repr(e)}))
 
     def _upload_and_activate(self, req, image_meta):
         """
@@ -600,8 +600,9 @@ class Controller(controller.BaseController):
 
     def _handle_source(self, req, image_id, image_meta, image_data):
         if image_data:
-            image_meta = self._validate_image_for_activation(req, image_id,
-                                                        image_meta)
+            image_meta = self._validate_image_for_activation(req,
+                                                             image_id,
+                                                             image_meta)
             image_meta = self._upload_and_activate(req, image_meta)
         elif self._copy_from(req):
             msg = _('Triggering asynchronous copy from external source')

@@ -180,7 +180,7 @@ class JSONRequestDeserializerTest(test_utils.BaseTestCase):
     def test_from_json_malformed(self):
         fixture = 'kjasdklfjsklajf'
         self.assertRaises(webob.exc.HTTPBadRequest,
-                wsgi.JSONRequestDeserializer().from_json, fixture)
+                          wsgi.JSONRequestDeserializer().from_json, fixture)
 
     def test_default_no_body(self):
         request = wsgi.Request.blank('/')

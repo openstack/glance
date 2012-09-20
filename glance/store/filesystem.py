@@ -208,7 +208,7 @@ class Store(glance.store.base.Store):
         try:
             with open(filepath, 'wb') as f:
                 for buf in utils.chunkreadable(image_file,
-                                              ChunkedFile.CHUNKSIZE):
+                                               ChunkedFile.CHUNKSIZE):
                     bytes_written += len(buf)
                     checksum.update(buf)
                     f.write(buf)

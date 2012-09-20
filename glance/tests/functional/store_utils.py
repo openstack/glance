@@ -200,7 +200,7 @@ def get_swift_uri(test, image_id):
     uri = ('swift+https://%(swift_store_user)s:%(swift_store_key)s' %
            test.__dict__)
     uri += ('@%(swift_store_auth_address)s/%(swift_store_container)s/' %
-           test.__dict__)
+            test.__dict__)
     uri += image_id
     return uri.replace('@http://', '@')
 
