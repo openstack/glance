@@ -37,36 +37,33 @@ glance_replicator = imp.load_source('glance_replicator',
 sys.dont_write_bytecode = False
 
 
-IMG_RESPONSE_ACTIVE = {'content-length': '0',
-                       'property-image_state': 'available',
-                       'min_ram': '0',
-                       'disk_format': 'aki',
-                       'updated_at': '2012-06-25T02:10:36',
-                       'date': 'Thu, 28 Jun 2012 07:20:05 GMT',
-                       'owner': '8aef75b5c0074a59aa99188fdb4b9e90',
-                       'id': '6d55dd55-053a-4765-b7bc-b30df0ea3861',
-                       'size': '4660272',
-                       'property-image_location':
-                           ('ubuntu-bucket/oneiric-server-cloudimg-amd64-'
-                            'vmlinuz-generic.manifest.xml'),
-                       'property-architecture': 'x86_64',
-                       'etag': 'f46cfe7fb3acaff49a3567031b9b53bb',
-                       'location':
-                           ('http://127.0.0.1:9292/v1/images/'
-                            '6d55dd55-053a-4765-b7bc-b30df0ea3861'),
-                       'container_format': 'aki',
-                       'status': 'active',
-                       'deleted': 'False',
-                       'min_disk': '0',
-                       'is_public': 'False',
-                       'name':
-                           ('ubuntu-bucket/oneiric-server-cloudimg-amd64-'
-                            'vmlinuz-generic'),
-                       'checksum': 'f46cfe7fb3acaff49a3567031b9b53bb',
-                       'created_at': '2012-06-25T02:10:32',
-                       'protected': 'False',
-                       'content-type': 'text/html; charset=UTF-8'
-                       }
+IMG_RESPONSE_ACTIVE = {
+    'content-length': '0',
+    'property-image_state': 'available',
+    'min_ram': '0',
+    'disk_format': 'aki',
+    'updated_at': '2012-06-25T02:10:36',
+    'date': 'Thu, 28 Jun 2012 07:20:05 GMT',
+    'owner': '8aef75b5c0074a59aa99188fdb4b9e90',
+    'id': '6d55dd55-053a-4765-b7bc-b30df0ea3861',
+    'size': '4660272',
+    'property-image_location': 'ubuntu-bucket/oneiric-server-cloudimg-amd64-'
+                               'vmlinuz-generic.manifest.xml',
+    'property-architecture': 'x86_64',
+    'etag': 'f46cfe7fb3acaff49a3567031b9b53bb',
+    'location': 'http://127.0.0.1:9292/v1/images/'
+                '6d55dd55-053a-4765-b7bc-b30df0ea3861',
+    'container_format': 'aki',
+    'status': 'active',
+    'deleted': 'False',
+    'min_disk': '0',
+    'is_public': 'False',
+    'name': 'ubuntu-bucket/oneiric-server-cloudimg-amd64-vmlinuz-generic',
+    'checksum': 'f46cfe7fb3acaff49a3567031b9b53bb',
+    'created_at': '2012-06-25T02:10:32',
+    'protected': 'False',
+    'content-type': 'text/html; charset=UTF-8'
+}
 
 IMG_RESPONSE_QUEUED = copy.copy(IMG_RESPONSE_ACTIVE)
 IMG_RESPONSE_QUEUED['status'] = 'queued'

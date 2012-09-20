@@ -602,7 +602,7 @@ class Store(glance.store.base.Store):
                 raise
 
     def set_acls(self, location, public=False, read_tenants=[],
-                     write_tenants=[]):
+                 write_tenants=[]):
         """
         Sets the read and write access control list for an image in the
         backend store.

@@ -275,8 +275,8 @@ class Driver(base.Driver):
             final_path = self.get_image_filepath(image_id)
             LOG.debug(_("Fetch finished, moving "
                         "'%(incomplete_path)s' to '%(final_path)s'"),
-                         dict(incomplete_path=incomplete_path,
-                              final_path=final_path))
+                      dict(incomplete_path=incomplete_path,
+                           final_path=final_path))
             os.rename(incomplete_path, final_path)
 
             # Make sure that we "pop" the image from the queue...

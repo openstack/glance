@@ -144,8 +144,8 @@ def _filter_images(images, filters, context):
                 for p in image['properties']:
                     properties = {p['name']: p['value'],
                                   'deleted': p['deleted']}
-                add = properties.get(key) == value and \
-                                             properties.get('deleted') is False
+                add = (properties.get(key) == value and
+                       properties.get('deleted') is False)
             if not add:
                 break
 
@@ -161,8 +161,8 @@ def _filter_images(images, filters, context):
             can_see = image['is_public'] or has_ownership or context.is_admin
 
             if can_see:
-                return has_ownership or \
-                        (can_see and image['is_public'] == is_public_filter)
+                return (has_ownership or
+                        (can_see and image['is_public'] == is_public_filter))
             else:
                 return False
 

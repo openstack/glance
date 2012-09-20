@@ -106,7 +106,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
             read_len = fixture_object.len
             if read_len > MAX_SWIFT_OBJECT_SIZE:
                 msg = ('Image size:%d exceeds Swift max:%d' %
-                        (read_len, MAX_SWIFT_OBJECT_SIZE))
+                       (read_len, MAX_SWIFT_OBJECT_SIZE))
                 raise swiftclient.ClientException(
                         msg, http_status=httplib.REQUEST_ENTITY_TOO_LARGE)
             fixture_objects[fixture_key] = fixture_object
@@ -323,7 +323,7 @@ class SwiftTests(object):
             expected_swift_size = FIVE_KB
             expected_swift_contents = "*" * expected_swift_size
             expected_checksum = \
-                    hashlib.md5(expected_swift_contents).hexdigest()
+                hashlib.md5(expected_swift_contents).hexdigest()
 
             image_swift = StringIO.StringIO(expected_swift_contents)
 
@@ -638,8 +638,7 @@ class TestStoreAuthV1(base.StoreClearingUnitTest, SwiftTests):
         self.config(**conf)
         super(TestStoreAuthV1, self).setUp()
         self.stubs = stubout.StubOutForTesting()
-        stub_out_swiftclient(self.stubs,
-                                     conf['swift_store_auth_version'])
+        stub_out_swiftclient(self.stubs, conf['swift_store_auth_version'])
         self.store = Store()
 
     def tearDown(self):

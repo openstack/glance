@@ -77,8 +77,8 @@ class TestScrubber(functional.FunctionalTest):
             time.sleep(5)
 
             response, content = http.request(path, 'HEAD')
-            if response['x-image-meta-status'] == 'deleted' and \
-               response['x-image-meta-deleted'] == 'True':
+            if (response['x-image-meta-status'] == 'deleted' and
+                response['x-image-meta-deleted'] == 'True'):
                 break
             else:
                 continue
@@ -138,8 +138,8 @@ class TestScrubber(functional.FunctionalTest):
             time.sleep(5)
 
             response, content = http.request(path, 'HEAD')
-            if response['x-image-meta-status'] == 'deleted' and \
-               response['x-image-meta-deleted'] == 'True':
+            if (response['x-image-meta-status'] == 'deleted' and
+                response['x-image-meta-deleted'] == 'True'):
                 break
             else:
                 continue

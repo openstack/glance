@@ -1837,7 +1837,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests replacing image members raises right exception
         """
         self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
-                                                     is_admin=False)
+                                                 is_admin=False)
         fixture = dict(member_id='pattieblack')
 
         req = webob.Request.blank('/images/%s/members' % UUID2)
@@ -1853,7 +1853,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests adding image members raises right exception
         """
         self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
-                                                     is_admin=False)
+                                                 is_admin=False)
         req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
         req.method = 'PUT'
 
@@ -1865,7 +1865,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests deleting image members raises right exception
         """
         self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
-                                                     is_admin=False)
+                                                 is_admin=False)
         req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
         req.method = 'DELETE'
 
@@ -3087,7 +3087,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         Tests replacing image members raises right exception
         """
         self.api = test_utils.FakeAuthMiddleware(router.API(self.mapper),
-                                                     is_admin=False)
+                                                 is_admin=False)
         fixture = dict(member_id='pattieblack')
 
         req = webob.Request.blank('/images/%s/members' % UUID2)
@@ -3103,7 +3103,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         Tests adding image members raises right exception
         """
         self.api = test_utils.FakeAuthMiddleware(router.API(self.mapper),
-                                                     is_admin=False)
+                                                 is_admin=False)
         req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
         req.method = 'PUT'
 
@@ -3115,7 +3115,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         Tests deleting image members raises right exception
         """
         self.api = test_utils.FakeAuthMiddleware(router.API(self.mapper),
-                                                     is_admin=False)
+                                                 is_admin=False)
         req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
         req.method = 'DELETE'
 

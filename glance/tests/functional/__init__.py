@@ -200,12 +200,9 @@ class ApiServer(Server):
         self.key_file = ""
         self.cert_file = ""
         self.metadata_encryption_key = "012345678901234567890123456789ab"
-        self.image_dir = os.path.join(self.test_dir,
-                                         "images")
-        self.pid_file = pid_file or os.path.join(self.test_dir,
-                                                 "api.pid")
-        self.scrubber_datadir = os.path.join(self.test_dir,
-                                             "scrubber")
+        self.image_dir = os.path.join(self.test_dir, "images")
+        self.pid_file = pid_file or os.path.join(self.test_dir, "api.pid")
+        self.scrubber_datadir = os.path.join(self.test_dir, "scrubber")
         self.log_file = os.path.join(self.test_dir, "api.log")
         self.s3_store_host = "s3.amazonaws.com"
         self.s3_store_access_key = ""
@@ -360,8 +357,7 @@ class RegistryServer(Server):
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
                                              default_sql_connection)
 
-        self.pid_file = os.path.join(self.test_dir,
-                                         "registry.pid")
+        self.pid_file = os.path.join(self.test_dir, "registry.pid")
         self.log_file = os.path.join(self.test_dir, "registry.log")
         self.owner_is_tenant = True
         self.server_control_options = '--capture-output'

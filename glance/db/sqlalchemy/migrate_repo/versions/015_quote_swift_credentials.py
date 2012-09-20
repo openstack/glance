@@ -50,14 +50,14 @@ def migrate_location_credentials(migrate_engine, to_quoted):
 
     images_table = sqlalchemy.Table('images', meta, autoload=True)
 
-    images = images_table.select(images_table.c.location.startswith('swift')).\
-             execute()
+    images = images_table.select(images_table.c.location.startswith('swift'))\
+                         .execute()
 
     for image in images:
         fixed_uri = fix_uri_credentials(image['location'], to_quoted)
-        images_table.update().\
-            where(images_table.c.id == image['id']).\
-            values(location=fixed_uri).execute()
+        images_table.update()\
+                    .where(images_table.c.id == image['id'])\
+                    .values(location=fixed_uri).execute()
 
 
 def fix_uri_credentials(uri, to_quoted):

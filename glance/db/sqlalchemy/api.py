@@ -26,8 +26,8 @@ import logging
 import time
 
 import sqlalchemy
-import sqlalchemy.orm
-import sqlalchemy.sql
+import sqlalchemy.orm as sa_orm
+import sqlalchemy.sql as sa_sql
 
 from glance.common import exception
 from glance.db.sqlalchemy import migration
@@ -145,9 +145,9 @@ def get_session(autocommit=True, expire_on_commit=False):
     global _MAKER
     if not _MAKER:
         assert _ENGINE
-        _MAKER = sqlalchemy.orm.sessionmaker(bind=_ENGINE,
-                                             autocommit=autocommit,
-                                             expire_on_commit=expire_on_commit)
+        _MAKER = sa_orm.sessionmaker(bind=_ENGINE,
+                                     autocommit=autocommit,
+                                     expire_on_commit=expire_on_commit)
     return _MAKER()
 
 
@@ -174,7 +174,7 @@ def wrap_db_error(f):
             remaining_attempts = _MAX_RETRIES
             while True:
                 LOG.warning(_('SQL connection failed. %d attempts left.'),
-                                remaining_attempts)
+                            remaining_attempts)
                 remaining_attempts -= 1
                 time.sleep(_RETRY_INTERVAL)
                 try:
@@ -230,9 +230,9 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
     session = session or get_session()
 
     try:
-        query = session.query(models.Image).\
-                options(sqlalchemy.orm.joinedload(models.Image.properties)).\
-                filter_by(id=image_id)
+        query = session.query(models.Image)\
+                       .options(sa_orm.joinedload(models.Image.properties))\
+                       .filter_by(id=image_id)
 
         # filter out deleted images if context disallows it
         if not force_show_deleted and not can_show_deleted(context):
@@ -240,7 +240,7 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
 
         image = query.one()
 
-    except sqlalchemy.orm.exc.NoResultFound:
+    except sa_orm.exc.NoResultFound:
         raise exception.NotFound("No image found with ID %s" % image_id)
 
     # Make sure they can look at it
@@ -414,10 +414,10 @@ def paginate_query(query, model, limit, sort_keys, marker=None,
                 raise ValueError(_("Unknown sort direction, "
                                    "must be 'desc' or 'asc'"))
 
-            criteria = sqlalchemy.sql.and_(*crit_attrs)
+            criteria = sa_sql.and_(*crit_attrs)
             criteria_list.append(criteria)
 
-        f = sqlalchemy.sql.or_(*criteria_list)
+        f = sa_sql.or_(*criteria_list)
         query = query.filter(f)
 
     if limit is not None:
@@ -442,8 +442,8 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     filters = filters or {}
 
     session = get_session()
-    query = session.query(models.Image).\
-            options(sqlalchemy.orm.joinedload(models.Image.properties))
+    query = session.query(models.Image)\
+                   .options(sa_orm.joinedload(models.Image.properties))
 
     if 'is_public' in filters and filters['is_public'] is not None:
         the_filter = [models.Image.is_public == filters['is_public']]
@@ -453,7 +453,7 @@ def image_get_all(context, filters=None, marker=None, limit=None,
                 models.Image.members.any(member=context.owner, deleted=False)
             ])
         if len(the_filter) > 1:
-            query = query.filter(sqlalchemy.sql.or_(*the_filter))
+            query = query.filter(sa_sql.or_(*the_filter))
         else:
             query = query.filter(the_filter[0])
         del filters['is_public']
@@ -768,13 +768,13 @@ def image_tag_create(context, image_id, value, session=None):
 def image_tag_delete(context, image_id, value, session=None):
     """Delete an image tag."""
     session = session or get_session()
-    query = session.query(models.ImageTag).\
-                    filter_by(image_id=image_id).\
-                    filter_by(value=value).\
-                    filter_by(deleted=False)
+    query = session.query(models.ImageTag)\
+                   .filter_by(image_id=image_id)\
+                   .filter_by(value=value)\
+                   .filter_by(deleted=False)
     try:
         tag_ref = query.one()
-    except sqlalchemy.orm.exc.NoResultFound:
+    except sa_orm.exc.NoResultFound:
         raise exception.NotFound()
 
     tag_ref.delete(session=session)
@@ -783,9 +783,9 @@ def image_tag_delete(context, image_id, value, session=None):
 def image_tag_get_all(context, image_id, session=None):
     """Get a list of tags for a specific image."""
     session = session or get_session()
-    tags = session.query(models.ImageTag).\
-                   filter_by(image_id=image_id).\
-                   filter_by(deleted=False).\
-                   order_by(sqlalchemy.asc(models.ImageTag.created_at)).\
-                   all()
+    tags = session.query(models.ImageTag)\
+                  .filter_by(image_id=image_id)\
+                  .filter_by(deleted=False)\
+                  .order_by(sqlalchemy.asc(models.ImageTag.created_at))\
+                  .all()
     return [tag['value'] for tag in tags]

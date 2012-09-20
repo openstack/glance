@@ -170,7 +170,7 @@ class ImageCache(object):
         overage = current_size - max_size
         LOG.debug(_("Image cache currently %(overage)d bytes over max "
                     "size. Starting prune to max size of %(max_size)d ") %
-                     locals())
+                  locals())
 
         total_bytes_pruned = 0
         total_files_pruned = 0
