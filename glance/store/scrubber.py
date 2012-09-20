@@ -122,6 +122,9 @@ class Scrubber(object):
 
         LOG.info(_("Deleting %s images") % len(delete_work))
         pool.starmap(self._delete, delete_work)
+        # NOTE(bourke): When not running as a daemon, a slight pause is needed
+        # to allow the starmap to begin it's work.
+        eventlet.sleep(0.1)
 
         if self.cleanup:
             self._cleanup(pool)
