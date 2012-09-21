@@ -37,7 +37,7 @@ LOG = logging.getLogger(__name__)
 
 sqlite_opts = [
     cfg.StrOpt('image_cache_sqlite_db', default='cache.db'),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(sqlite_opts)

@@ -61,7 +61,7 @@ swift_opts = [
     cfg.BoolOpt('swift_store_create_container_on_put', default=False),
     cfg.BoolOpt('swift_store_multi_tenant', default=False),
     cfg.ListOpt('swift_store_admin_tenants', default=[]),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(swift_opts)
@@ -128,14 +128,12 @@ class StoreLocation(glance.store.location.StoreLocation):
         # swift://user:pass@http://authurl.com/v1/container/obj
         # are immediately rejected.
         if uri.count('://') != 1:
-            reason = _(
-                    "URI cannot contain more than one occurrence of a scheme."
-                    "If you have specified a URI like "
-                    "swift://user:pass@http://authurl.com/v1/container/obj"
-                    ", you need to change it to use the swift+http:// scheme, "
-                    "like so: "
-                    "swift+http://user:pass@authurl.com/v1/container/obj"
-                    )
+            reason = _("URI cannot contain more than one occurrence "
+                       "of a scheme. If you have specified a URI like "
+                       "swift://user:pass@http://authurl.com/v1/container/obj"
+                       ", you need to change it to use the "
+                       "swift+http:// scheme, like so: "
+                       "swift+http://user:pass@authurl.com/v1/container/obj")
             LOG.error(_("Invalid store uri %(uri)s: %(reason)s") % locals())
             raise exception.BadStoreUri(message=reason)
 

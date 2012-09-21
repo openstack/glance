@@ -27,7 +27,7 @@ from glance.openstack.common import timeutils
 
 notifier_opts = [
     cfg.StrOpt('notifier_strategy', default='default')
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(notifier_opts)

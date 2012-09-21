@@ -70,7 +70,7 @@ qpid_opts = [
     cfg.BoolOpt('qpid_tcp_nodelay',
                 default=True,
                 help='Disable Nagle algorithm'),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(qpid_opts)

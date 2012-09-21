@@ -34,7 +34,7 @@ image_cache_opts = [
     cfg.IntOpt('image_cache_max_size', default=10 * (1024 ** 3)),  # 10 GB
     cfg.IntOpt('image_cache_stall_time', default=86400),  # 24 hours
     cfg.StrOpt('image_cache_dir'),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(image_cache_opts)

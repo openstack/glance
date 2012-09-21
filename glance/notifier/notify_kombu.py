@@ -39,7 +39,7 @@ rabbit_opts = [
     cfg.StrOpt('rabbit_max_retries', default=0),
     cfg.StrOpt('rabbit_retry_backoff', default=2),
     cfg.StrOpt('rabbit_retry_max_backoff', default=30)
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(rabbit_opts)

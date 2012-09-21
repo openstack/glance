@@ -40,7 +40,7 @@ store_opts = [
                default='/var/lib/glance/scrubber'),
     cfg.BoolOpt('delayed_delete', default=False),
     cfg.IntOpt('scrub_time', default=0),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(store_opts)

@@ -36,7 +36,7 @@ LOG = logging.getLogger(__name__)
 scrubber_opts = [
     cfg.BoolOpt('cleanup_scrubber', default=False),
     cfg.IntOpt('cleanup_scrubber_time', default=86400)
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(scrubber_opts)

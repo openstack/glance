@@ -341,23 +341,21 @@ class TestMigrations(utils.BaseTestCase):
         unquoted_locations = [
             'swift://acct:usr:pass@example.com/container/obj-id',
             'file://foo',
-            ]
+        ]
         quoted_locations = [
             'swift://acct%3Ausr:pass@example.com/container/obj-id',
             'file://foo',
-            ]
+        ]
 
         # Insert images with an unquoted image location
         now = datetime.datetime.now()
-        kwargs = dict(
-            deleted=False,
-            created_at=now,
-            updated_at=now,
-            status='active',
-            is_public=True,
-            min_disk=0,
-            min_ram=0,
-            )
+        kwargs = dict(deleted=False,
+                      created_at=now,
+                      updated_at=now,
+                      status='active',
+                      is_public=True,
+                      min_disk=0,
+                      min_ram=0)
         for i, location in enumerate(unquoted_locations):
             kwargs.update(location=location, id=i)
             conn.execute(images_table.insert(), [kwargs])

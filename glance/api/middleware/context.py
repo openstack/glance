@@ -29,7 +29,7 @@ context_opts = [
     cfg.BoolOpt('owner_is_tenant', default=True),
     cfg.StrOpt('admin_role', default='admin'),
     cfg.BoolOpt('allow_anonymous_access', default=False),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(context_opts)

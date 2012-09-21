@@ -3270,7 +3270,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
             'receiver_tenant_id': self.receiving_tenant,
             'receiver_user_id': self.receiving_user,
             'destination_ip': '1.2.3.4',
-            }
+        }
 
         def fake_info(_event_type, _payload):
             self.assertEqual(_payload, expected_payload)
@@ -3299,7 +3299,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
             'receiver_tenant_id': self.receiving_tenant,
             'receiver_user_id': self.receiving_user,
             'destination_ip': '1.2.3.4',
-            }
+        }
 
         def fake_error(_event_type, _payload):
             self.assertEqual(_payload, expected_payload)
