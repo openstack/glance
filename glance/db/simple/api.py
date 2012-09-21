@@ -15,9 +15,9 @@
 
 import datetime
 import functools
-import uuid
 
 from glance.common import exception
+from glance.common import utils
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 
@@ -71,6 +71,7 @@ def _image_property_format(image_id, name, value):
 
 def _image_member_format(image_id, tenant_id, can_share):
     return {
+        'id': utils.generate_uuid(),
         'image_id': image_id,
         'member': tenant_id,
         'can_share': can_share,
@@ -284,24 +285,23 @@ def image_member_create(context, values):
 
 
 @log_call
-def image_member_delete(context, member):
+def image_member_delete(context, member_id):
     global DATA
-    mem = None
-    for p in DATA['members']:
-        if (p['member'] == member['member'] and
-            p['image_id'] == member['image_id']):
-            mem = p
-    if not mem:
+    for member in DATA['members']:
+        if (member['id'] == member_id):
+            break
+    else:
         raise exception.NotFound()
-    mem['deleted_at'] = datetime.datetime.utcnow()
-    mem['deleted'] = True
-    return mem
+
+    member['deleted_at'] = datetime.datetime.utcnow()
+    member['deleted'] = True
+    return member
 
 
 @log_call
 def image_create(context, image_values):
     global DATA
-    image_id = image_values.get('id', str(uuid.uuid4()))
+    image_id = image_values.get('id', utils.generate_uuid())
 
     if image_id in DATA['images']:
         raise exception.Duplicate()
