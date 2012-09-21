@@ -695,10 +695,11 @@ def _image_member_format(member_ref):
     }
 
 
-def image_member_update(context, memb_id, values, session=None):
+def image_member_update(context, memb_id, values):
     """Update an ImageMember object"""
+    session = get_session()
     memb_ref = _image_member_get(context, memb_id, session)
-    _image_member_update(context, memb_ref, values, session=session)
+    _image_member_update(context, memb_ref, values, session)
     return _image_member_format(memb_ref)
 
 

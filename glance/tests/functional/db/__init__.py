@@ -454,6 +454,30 @@ class BaseTestCase(object):
         }
         self.assertEqual(expected, actual)
 
+    def test_image_member_update(self):
+        TENANT1 = utils.generate_uuid()
+        member = self.db_api.image_member_create(self.context,
+                                        {'member': TENANT1, 'image_id': UUID1})
+        member_id = member.pop('id')
+
+        expected = {'member': TENANT1, 'image_id': UUID1, 'can_share': False}
+        self.assertEqual(expected, member)
+
+        member = self.db_api.image_member_update(self.context,
+                                                 member_id,
+                                                 {'can_share': True})
+
+        member.pop('id')
+        expected = {'member': TENANT1, 'image_id': UUID1, 'can_share': True}
+        self.assertEqual(expected, member)
+
+        members = self.db_api.image_member_find(self.context,
+                                                member=TENANT1,
+                                                image_id=UUID1)
+        member = members[0]
+        member.pop('id')
+        self.assertEqual(expected, member)
+
     def test_image_member_find(self):
         TENANT1 = utils.generate_uuid()
         TENANT2 = utils.generate_uuid()

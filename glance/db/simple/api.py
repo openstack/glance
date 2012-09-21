@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import datetime
 import functools
 
@@ -269,7 +270,7 @@ def image_member_find(context, image_id=None, member=None):
     members = DATA['members']
     for f in filters:
         members = filter(f, members)
-    return members
+    return [copy.deepcopy(member) for member in members]
 
 
 @log_call
@@ -279,7 +280,18 @@ def image_member_create(context, values):
                                   values.get('can_share', False))
     global DATA
     DATA['members'].append(member)
-    return member
+    return copy.deepcopy(member)
+
+
+@log_call
+def image_member_update(context, member_id, values):
+    global DATA
+    for member in DATA['members']:
+        if (member['id'] == member_id):
+            member.update(values)
+            return copy.deepcopy(member)
+    else:
+        raise exception.NotFound()
 
 
 @log_call
