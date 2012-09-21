@@ -3140,24 +3140,25 @@ class TestImageSerializer(base.IsolatedUnitTest):
                 yield x
 
         self.FIXTURE = {
-             'image_iterator': image_iter(),
-             'image_meta': {
-                 'id': UUID2,
-                 'name': 'fake image #2',
-                 'status': 'active',
-                 'disk_format': 'vhd',
-                 'container_format': 'ovf',
-                 'is_public': True,
-                 'created_at': timeutils.utcnow(),
-                 'updated_at': timeutils.utcnow(),
-                 'deleted_at': None,
-                 'deleted': False,
-                 'checksum': '06ff575a2856444fbe93100157ed74ab92eb7eff',
-                 'size': 19,
-                 'owner': _gen_uuid(),
-                 'location': "file:///tmp/glance-tests/2",
-                 'properties': {}}
-             }
+            'image_iterator': image_iter(),
+            'image_meta': {
+                'id': UUID2,
+                'name': 'fake image #2',
+                'status': 'active',
+                'disk_format': 'vhd',
+                'container_format': 'ovf',
+                'is_public': True,
+                'created_at': timeutils.utcnow(),
+                'updated_at': timeutils.utcnow(),
+                'deleted_at': None,
+                'deleted': False,
+                'checksum': '06ff575a2856444fbe93100157ed74ab92eb7eff',
+                'size': 19,
+                'owner': _gen_uuid(),
+                'location': "file:///tmp/glance-tests/2",
+                'properties': {},
+            }
+        }
 
     def test_meta(self):
         exp_headers = {'x-image-meta-id': UUID2,
@@ -3178,27 +3179,27 @@ class TestImageSerializer(base.IsolatedUnitTest):
         # metadata will actually be unicode when handled internally. But we
         # want to output utf-8.
         FIXTURE = {
-             'image_meta': {
-                 'id': unicode(UUID2),
-                 'name': u'fake image #2 with utf-8 éàè',
-                 'status': u'active',
-                 'disk_format': u'vhd',
-                 'container_format': u'ovf',
-                 'is_public': True,
-                 'created_at': timeutils.utcnow(),
-                 'updated_at': timeutils.utcnow(),
-                 'deleted_at': None,
-                 'deleted': False,
-                 'checksum': u'06ff575a2856444fbe93100157ed74ab92eb7eff',
-                 'size': 19,
-                 'owner': unicode(_gen_uuid()),
-                 'location': u"file:///tmp/glance-tests/2",
-                 'properties': {
-                     u'prop_éé': u'ça marche',
-                     u'prop_çé': u'çé',
-                     }
-                 }
-             }
+            'image_meta': {
+                'id': unicode(UUID2),
+                'name': u'fake image #2 with utf-8 éàè',
+                'status': u'active',
+                'disk_format': u'vhd',
+                'container_format': u'ovf',
+                'is_public': True,
+                'created_at': timeutils.utcnow(),
+                'updated_at': timeutils.utcnow(),
+                'deleted_at': None,
+                'deleted': False,
+                'checksum': u'06ff575a2856444fbe93100157ed74ab92eb7eff',
+                'size': 19,
+                'owner': unicode(_gen_uuid()),
+                'location': u"file:///tmp/glance-tests/2",
+                'properties': {
+                    u'prop_éé': u'ça marche',
+                    u'prop_çé': u'çé',
+                }
+            }
+        }
         exp_headers = {'x-image-meta-id': UUID2.encode('utf-8'),
                        'x-image-meta-location': 'file:///tmp/glance-tests/2',
                        'ETag': '06ff575a2856444fbe93100157ed74ab92eb7eff',

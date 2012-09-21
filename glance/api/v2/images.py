@@ -578,9 +578,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         params.pop('marker', None)
         query = urllib.urlencode(params)
         body = {
-               'images': [self._format_image(i) for i in result['images']],
-               'first': '/v2/images',
-               'schema': '/v2/schemas/images',
+            'images': [self._format_image(i) for i in result['images']],
+            'first': '/v2/images',
+            'schema': '/v2/schemas/images',
         }
         if query:
             body['first'] = '%s?%s' % (body['first'], query)
@@ -608,10 +608,10 @@ _BASE_PROPERTIES = {
         'maxLength': 255,
     },
     'status': {
-      'type': 'string',
-      'description': 'Status of the image',
-      'enum': ['queued', 'saving', 'active', 'killed',
-               'deleted', 'pending_delete'],
+        'type': 'string',
+        'description': 'Status of the image',
+        'enum': ['queued', 'saving', 'active', 'killed',
+                 'deleted', 'pending_delete'],
     },
     'visibility': {
         'type': 'string',
