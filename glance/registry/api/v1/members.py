@@ -131,8 +131,7 @@ class Controller(object):
             # Try to find the corresponding membership
             members = self.db_api.image_member_find(req.context,
                                                     image_id=datum['image_id'],
-                                                    member=datum['member'],
-                                                    session=session)
+                                                    member=datum['member'])
             try:
                 member = members[0]
             except IndexError:
@@ -228,8 +227,7 @@ class Controller(object):
         session = self.db_api.get_session()
         members = self.db_api.image_member_find(req.context,
                                                 image_id=image_id,
-                                                member=id,
-                                                session=session)
+                                                member=id)
         if members:
             if can_share is not None:
                 values = dict(can_share=can_share)
@@ -279,8 +277,7 @@ class Controller(object):
             session = self.db_api.get_session()
             members = self.db_api.image_member_find(req.context,
                                                     image_id=image_id,
-                                                    member=id,
-                                                    session=session)
+                                                    member=id)
             self.db_api.image_member_delete(req.context, members[0]['id'])
         except exception.NotFound:
             pass
@@ -321,8 +318,7 @@ def make_member_list(members, **attr_map):
                                   if v in memb.keys()])
 
     # Return the list of members with the given attribute mapping
-    return [_fetch_memb(memb, attr_map) for memb in members
-            if not memb.deleted]
+    return [_fetch_memb(memb, attr_map) for memb in members]
 
 
 def create_resource():

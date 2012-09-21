@@ -219,8 +219,9 @@ def image_destroy(context, image_id):
         for prop_ref in image_ref.properties:
             image_property_delete(context, prop_ref, session=session)
 
-        for memb_ref in image_member_find(context, image_id=image_id):
-            _image_member_delete(context, memb_ref, session=session)
+        members = _image_member_find(context, session, image_id=image_id)
+        for memb_ref in members:
+            _image_member_delete(context, memb_ref, session)
 
         return image_ref
 
@@ -685,13 +686,25 @@ def image_property_delete(context, prop_ref, session=None):
 def image_member_create(context, values, session=None):
     """Create an ImageMember object"""
     memb_ref = models.ImageMember()
-    return _image_member_update(context, memb_ref, values, session=session)
+    _image_member_update(context, memb_ref, values, session=session)
+    return _image_member_format(memb_ref)
+
+
+def _image_member_format(member_ref):
+    """Format a member ref for consumption outside of this module"""
+    return {
+        'id': member_ref['id'],
+        'image_id': member_ref['image_id'],
+        'member': member_ref['member'],
+        'can_share': member_ref['can_share'],
+    }
 
 
 def image_member_update(context, memb_id, values, session=None):
     """Update an ImageMember object"""
     memb_ref = _image_member_get(context, memb_id, session)
-    return _image_member_update(context, memb_ref, values, session=session)
+    _image_member_update(context, memb_ref, values, session=session)
+    return _image_member_format(memb_ref)
 
 
 def _image_member_update(context, memb_ref, values, session=None):
@@ -708,12 +721,11 @@ def image_member_delete(context, memb_id, session=None):
     """Delete an ImageMember object"""
     session = session or get_session()
     member_ref = _image_member_get(context, memb_id, session)
-    return _image_member_delete(context, member_ref, session)
+    _image_member_delete(context, member_ref, session)
 
 
 def _image_member_delete(context, memb_ref, session):
     memb_ref.delete(session=session)
-    return memb_ref
 
 
 def _image_member_get(context, memb_id, session):
@@ -723,24 +735,27 @@ def _image_member_get(context, memb_id, session):
     return query.one()
 
 
-def image_member_find(context, image_id=None, member=None, session=None):
+def image_member_find(context, image_id=None, member=None):
     """Find all members that meet the given criteria
 
     :param image_id: identifier of image entity
     :param member: tenant to which membership has been granted
     """
-    session = session or get_session()
+    session = get_session()
+    members = _image_member_find(context, session, image_id, member)
+    return [_image_member_format(m) for m in members]
 
+
+def _image_member_find(context, session, image_id=None, member=None):
     # Note lack of permissions check; this function is called from
     # is_image_visible(), so avoid recursive calls
     query = session.query(models.ImageMember)
+    query = query.filter_by(deleted=False)
 
     if image_id is not None:
         query = query.filter_by(image_id=image_id)
     if member is not None:
         query = query.filter_by(member=member)
-    if not can_show_deleted(context):
-        query = query.filter_by(deleted=False)
 
     return query.all()
 
