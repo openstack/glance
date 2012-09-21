@@ -124,39 +124,3 @@ class TestMiscellaneous(functional.FunctionalTest):
                         "in output: %s" % out)
 
         self.stop_servers()
-
-    def test_api_treats_size_as_a_normal_property(self):
-        """
-        A test for LP bug #825024 -- glance client currently
-        treats size as a normal property.
-        """
-
-        self.cleanup()
-        self.start_servers()
-
-        # 1. POST /images with public image named Image1
-        # attribute and no custom properties. Verify a 200 OK is returned
-        with tempfile.NamedTemporaryFile() as image_file:
-            image_file.write("XXX")
-            image_file.flush()
-            image_file_name = image_file.name
-            suffix = 'size=12345 --silent-upload < %s' % image_file_name
-            cmd = minimal_add_command(self.api_port, 'MyImage', suffix)
-
-            exitcode, out, err = execute(cmd)
-
-        image_id = out.strip().split(':')[1].strip()
-        self.assertEqual(0, exitcode)
-        self.assertTrue('Found non-settable field size. Removing.' in out)
-        self.assertTrue('Added new image with ID: %s' % image_id in out)
-
-        # 2. Verify image added as public image
-        cmd = "bin/glance --port=%d show %s" % (self.api_port, image_id)
-
-        exitcode, out, err = execute(cmd)
-
-        self.assertEqual(0, exitcode)
-        lines = out.split("\n")[2:-1]
-        self.assertFalse("12345" in out)
-
-        self.stop_servers()

@@ -37,8 +37,6 @@ import json
 import os
 import tempfile
 
-from glance import client as glance_client
-from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import timeutils
 from glance.tests import functional
@@ -1232,98 +1230,5 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'DELETE')
         self.assertEqual(response.status, 404)
-
-        self.stop_servers()
-
-    @skip_if_disabled
-    def test_certificate_validation(self):
-        """
-        Check SSL client cerificate verification
-        """
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
-
-        # 0. GET /images
-        # Verify no public images
-        path = "https://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
-        https = httplib2.Http(disable_ssl_certificate_validation=True)
-        response, content = https.request(path, 'GET')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(content, '{"images": []}')
-
-        # 1. POST /images with public image named Image1
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Status': 'active',
-                   'X-Image-Meta-Container-Format': 'ovf',
-                   'X-Image-Meta-Disk-Format': 'vdi',
-                   'X-Image-Meta-Size': '19',
-                   'X-Image-Meta-Is-Public': 'True'}
-        path = "https://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
-        https = httplib2.Http(disable_ssl_certificate_validation=True)
-        response, content = https.request(path, 'POST', headers=headers)
-        self.assertEqual(response.status, 201)
-        data = json.loads(content)
-
-        image_id = data['image']['id']
-
-        # 2. Attempt to delete the image *without* CA file
-        path = "https://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
-        secure_cli = glance_client.Client(host="127.0.0.1", port=self.api_port,
-                                          use_ssl=True, insecure=False)
-        try:
-            secure_cli.delete_image(image_id)
-            self.fail("Client with no CA file deleted image %s" % image_id)
-        except exception.ClientConnectionError, e:
-            pass
-
-        # 3. Delete the image with a secure client *with* CA file
-        secure_cli2 = glance_client.Client(host="127.0.0.1",
-                                           port=self.api_port, use_ssl=True,
-                                           ca_file=self.ca_file,
-                                           insecure=False)
-        try:
-            secure_cli2.delete_image(image_id)
-        except exception.ClientConnectionError, e:
-            self.fail("Secure client failed to delete image %s" % image_id)
-
-        # Verify image is deleted
-        path = "https://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
-        https = httplib2.Http(disable_ssl_certificate_validation=True)
-        response, content = https.request(path, 'GET')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(content, '{"images": []}')
-
-        # 4. POST another image
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-Status': 'active',
-                   'X-Image-Meta-Container-Format': 'ovf',
-                   'X-Image-Meta-Disk-Format': 'vdi',
-                   'X-Image-Meta-Size': '19',
-                   'X-Image-Meta-Is-Public': 'True'}
-        path = "https://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
-        https = httplib2.Http(disable_ssl_certificate_validation=True)
-        response, content = https.request(path, 'POST', headers=headers)
-        self.assertEqual(response.status, 201)
-        data = json.loads(content)
-
-        image_id = data['image']['id']
-
-        # 5. Delete the image with an insecure client
-        insecure_cli = glance_client.Client(host="127.0.0.1",
-                                            port=self.api_port, use_ssl=True,
-                                            insecure=True)
-        try:
-            insecure_cli.delete_image(image_id)
-        except exception.ClientConnectionError, e:
-            self.fail("Insecure client failed to delete image")
-
-        # Verify image is deleted
-        path = "https://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
-        https = httplib2.Http(disable_ssl_certificate_validation=True)
-        response, content = https.request(path, 'GET')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(content, '{"images": []}')
 
         self.stop_servers()
