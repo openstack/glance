@@ -795,6 +795,12 @@ Optional. Default: ``30``
 Maximum seconds to wait before reconnecting on failures when using
 ``rabbit`` strategy.
 
+* ``rabbit_durable_queues``
+
+Optional. Default: ``False``
+
+Controls durability of exchange and queue when using ``rabbit`` strategy.
+
 * ``qpid_notification_exchange``
 
 Optional. Default: ``glance``

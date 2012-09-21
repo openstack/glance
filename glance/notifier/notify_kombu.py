@@ -38,8 +38,9 @@ rabbit_opts = [
                default='glance_notifications'),
     cfg.StrOpt('rabbit_max_retries', default=0),
     cfg.StrOpt('rabbit_retry_backoff', default=2),
-    cfg.StrOpt('rabbit_retry_max_backoff', default=30)
-    ]
+    cfg.StrOpt('rabbit_retry_max_backoff', default=30),
+    cfg.StrOpt('rabbit_durable_queues', default=False),
+]
 
 CONF = cfg.CONF
 CONF.register_opts(rabbit_opts)
@@ -103,6 +104,7 @@ class RabbitStrategy(strategy.Strategy):
         self.exchange = kombu.entity.Exchange(
                 channel=self.channel,
                 type="topic",
+                durable=CONF.rabbit_durable_queues,
                 name=CONF.rabbit_notification_exchange)
 
         # NOTE(jerdfelt): Normally the consumer would create the queues,
@@ -113,7 +115,7 @@ class RabbitStrategy(strategy.Strategy):
             queue = kombu.entity.Queue(
                     channel=self.channel,
                     exchange=self.exchange,
-                    durable=True,
+                    durable=CONF.rabbit_durable_queues,
                     name=routing_key,
                     routing_key=routing_key)
             queue.declare()
