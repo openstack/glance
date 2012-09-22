@@ -236,7 +236,7 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
                        .filter_by(id=image_id)
 
         # filter out deleted images if context disallows it
-        if not force_show_deleted and not can_show_deleted(context):
+        if not force_show_deleted and not _can_show_deleted(context):
             query = query.filter_by(deleted=False)
 
         image = query.one()
@@ -757,7 +757,7 @@ def _image_member_find(context, session, image_id=None, member=None):
 
 
 # pylint: disable-msg=C0111
-def can_show_deleted(context):
+def _can_show_deleted(context):
     """
     Calculates whether to include deleted objects based on context.
     Currently just looks for a flag called deleted in the context dict.
