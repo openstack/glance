@@ -104,7 +104,7 @@ Optional. Default: ``None``
 
 Specified on the command line only.
 
-Takes a path to a configuration directory from which all *.conf fragments
+Takes a path to a configuration directory from which all \*.conf fragments
 are loaded. This provides an alternative to multiple --config-file options
 when it is inconvenient to explicitly enumerate all the config files, for
 example when an unknown number of config fragments are being generated
@@ -688,6 +688,10 @@ There are a number of configuration options in Glance that control how
 this registry server operates. These configuration options are specified in the
 ``glance-registry.conf`` config file in the section ``[DEFAULT]``.
 
+**IMPORTANT NOTE**: The glance-registry service is only used in conjunction
+with the glance-api service when clients are using the v1 REST API. See
+`Configuring Glance APIs`_ for more info.
+
 * ``sql_connection=CONNECTION_STRING`` (``--sql-connection`` when specified
   on command line)
 
@@ -936,3 +940,24 @@ Policy file to load when starting the API server
 Optional. Default: "default"
 
 Name of the rule in the policy configuration file to use as the default rule
+
+Configuring Glance APIs
+-----------------------
+
+The glance-api service implents versions 1 and 2 of the OpenStack
+Images API. Disable either version of the Images API using the
+following options:
+
+* ``enable_v1_api=<True|False>``
+
+Optional. Default: ``True``
+
+* ``enable_v2_api=<True|False>``
+
+Optional. Default: ``True``
+
+**IMPORTANT NOTE**: The v1 API is implemented on top of the
+glance-registry service while the v2 API is not. This means that
+in order to use the v2 API, you must copy the necessary sql
+configuration from your glance-registry service to your
+glance-api configuration file.
