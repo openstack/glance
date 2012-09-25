@@ -193,10 +193,10 @@ class ApiServer(Server):
     """
 
     def __init__(self, test_dir, port, policy_file, delayed_delete=False,
-                 pid_file=None):
+                 pid_file=None, **kwargs):
         super(ApiServer, self).__init__(test_dir, port)
         self.server_name = 'api'
-        self.default_store = 'file'
+        self.default_store = kwargs.get("default_store", "file")
         self.key_file = ""
         self.cert_file = ""
         self.metadata_encryption_key = "012345678901234567890123456789ab"
@@ -209,10 +209,15 @@ class ApiServer(Server):
         self.s3_store_secret_key = ""
         self.s3_store_bucket = ""
         self.s3_store_bucket_url_format = ""
-        self.swift_store_auth_address = ""
-        self.swift_store_user = ""
-        self.swift_store_key = ""
-        self.swift_store_container = ""
+        self.swift_store_auth_version = kwargs.get("swift_store_auth_version",
+                                                   "2")
+        self.swift_store_auth_address = kwargs.get("swift_store_auth_address",
+                                                   "")
+        self.swift_store_user = kwargs.get("swift_store_user", "")
+        self.swift_store_key = kwargs.get("swift_store_key", "")
+        self.swift_store_container = kwargs.get("swift_store_container", "")
+        self.swift_store_create_container_on_put = kwargs.get(
+            "swift_store_create_container_on_put", "True")
         self.swift_store_large_object_size = 5 * 1024
         self.swift_store_large_object_chunk_size = 200
         self.swift_store_multi_tenant = False
@@ -255,10 +260,12 @@ s3_store_access_key = %(s3_store_access_key)s
 s3_store_secret_key = %(s3_store_secret_key)s
 s3_store_bucket = %(s3_store_bucket)s
 s3_store_bucket_url_format = %(s3_store_bucket_url_format)s
+swift_store_auth_version = %(swift_store_auth_version)s
 swift_store_auth_address = %(swift_store_auth_address)s
 swift_store_user = %(swift_store_user)s
 swift_store_key = %(swift_store_key)s
 swift_store_container = %(swift_store_container)s
+swift_store_create_container_on_put = %(swift_store_create_container_on_put)s
 swift_store_large_object_size = %(swift_store_large_object_size)s
 swift_store_large_object_chunk_size = %(swift_store_large_object_chunk_size)s
 swift_store_multi_tenant = %(swift_store_multi_tenant)s
@@ -404,7 +411,7 @@ class ScrubberDaemon(Server):
     Server object that starts/stops/manages the Scrubber server
     """
 
-    def __init__(self, test_dir, daemon=False):
+    def __init__(self, test_dir, daemon=False, **kwargs):
         # NOTE(jkoelker): Set the port to 0 since we actually don't listen
         super(ScrubberDaemon, self).__init__(test_dir, 0)
         self.server_name = 'scrubber'
@@ -414,6 +421,13 @@ class ScrubberDaemon(Server):
                                              "scrubber")
         self.pid_file = os.path.join(self.test_dir, "scrubber.pid")
         self.log_file = os.path.join(self.test_dir, "scrubber.log")
+        self.swift_store_auth_address = kwargs.get("swift_store_auth_address",
+                                                   "")
+        self.swift_store_user = kwargs.get("swift_store_user", "")
+        self.swift_store_key = kwargs.get("swift_store_key", "")
+        self.swift_store_container = kwargs.get("swift_store_container", "")
+        self.swift_store_auth_version = kwargs.get("swift_store_auth_version",
+                                                   "2")
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
@@ -423,6 +437,11 @@ wakeup_time = 2
 scrubber_datadir = %(scrubber_datadir)s
 registry_host = 127.0.0.1
 registry_port = %(registry_port)s
+swift_store_auth_address = %(swift_store_auth_address)s
+swift_store_user = %(swift_store_user)s
+swift_store_key = %(swift_store_key)s
+swift_store_container = %(swift_store_container)s
+swift_store_auth_version = %(swift_store_auth_version)s
 """
 
 
