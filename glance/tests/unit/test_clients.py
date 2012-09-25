@@ -34,7 +34,7 @@ UUID1 = _gen_uuid()
 UUID2 = _gen_uuid()
 
 #NOTE(bcwaldon): needed to init config_dir cli opt
-config.parse_args()
+config.parse_args(args=[])
 
 
 class TestRegistryClient(base.IsolatedUnitTest):
