@@ -57,7 +57,7 @@ class BaseTestCase(unittest.TestCase):
         #NOTE(bcwaldon): parse_args has to be called to register certain
         # command-line options - specifically we need config_dir for
         # the following policy tests
-        config.parse_args()
+        config.parse_args(args=[])
 
     def tearDown(self):
         super(BaseTestCase, self).tearDown()
