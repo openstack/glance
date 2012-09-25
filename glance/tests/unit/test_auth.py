@@ -498,16 +498,20 @@ class TestEndpoints(utils.BaseTestCase):
 
     def setUp(self):
         self.service_catalog = [
-            {'endpoint_links': [],
-             'endpoints': [
-                 {'adminURL': 'http://localhost:8080/',
-                 'region': 'RegionOne',
-                 'internalURL': 'http://internalURL/',
-                 'publicURL': 'http://publicURL/'},
-             ],
-             'type': 'object-store',
-             'name': 'Object Storage Service',
-            }]
+            {
+                'endpoint_links': [],
+                'endpoints': [
+                    {
+                        'adminURL': 'http://localhost:8080/',
+                        'region': 'RegionOne',
+                        'internalURL': 'http://internalURL/',
+                        'publicURL': 'http://publicURL/',
+                    },
+                ],
+                'type': 'object-store',
+                'name': 'Object Storage Service',
+            }
+        ]
 
     def test_get_endpoint_with_custom_server_type(self):
         endpoint = auth.get_endpoint(self.service_catalog,

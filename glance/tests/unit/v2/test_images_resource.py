@@ -328,9 +328,10 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual([], output['tags'])
         self.assertEqual(False, output['is_public'])
         output_log = self.notifier.get_log()
-        expected_log = {'notification_type': "INFO",
-                        'event_type': "image.update",
-                        'payload': output,
+        expected_log = {
+            'notification_type': "INFO",
+            'event_type': "image.update",
+            'payload': output,
         }
         self.assertEqual(output_log, expected_log)
 
@@ -340,9 +341,10 @@ class TestImagesController(test_utils.BaseTestCase):
         output = self.controller.create(request, image)
         self.assertEqual(True, output['is_public'])
         output_log = self.notifier.get_log()
-        expected_log = {'notification_type': "INFO",
-                        'event_type': "image.update",
-                        'payload': output,
+        expected_log = {
+            'notification_type': "INFO",
+            'event_type': "image.update",
+            'payload': output,
         }
         self.assertEqual(output_log, expected_log)
 
@@ -352,10 +354,11 @@ class TestImagesController(test_utils.BaseTestCase):
         output = self.controller.create(request, image)
         self.assertEqual(['ping'], output['tags'])
         output_log = self.notifier.get_log()
-        expected_log = {'notification_type': "INFO",
-                        'event_type': "image.update",
-                        'payload': output,
-         }
+        expected_log = {
+            'notification_type': "INFO",
+            'event_type': "image.update",
+            'payload': output,
+        }
         self.assertEqual(output_log, expected_log)
 
     def test_update_no_changes(self):
@@ -365,9 +368,10 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual(output['created_at'], output['updated_at'])
         self.assertTrue('tags' in output)
         output_log = self.notifier.get_log()
-        expected_log = {'notification_type': "INFO",
-                        'event_type': "image.update",
-                        'payload': output,
+        expected_log = {
+            'notification_type': "INFO",
+            'event_type': "image.update",
+            'payload': output,
         }
         self.assertEqual(output_log, expected_log)
 
@@ -525,9 +529,10 @@ class TestImagesController(test_utils.BaseTestCase):
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(['ping'], output['tags'])
         output_log = self.notifier.get_log()
-        expected_log = {'notification_type': "INFO",
-                        'event_type': "image.update",
-                        'payload': output,
+        expected_log = {
+            'notification_type': "INFO",
+            'event_type': "image.update",
+            'payload': output,
         }
         self.assertEqual(output_log, expected_log)
 

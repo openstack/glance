@@ -45,15 +45,16 @@ class RequestContext(object):
     def to_dict(self):
         # NOTE(ameade): These keys are named to correspond with the default
         # format string for logging the context in openstack common
-        return {'request_id': self.request_id,
-                'user_id': self.user,
-                'tenant_id': self.tenant,
-                'is_admin': self.is_admin,
-                'project_id': self.tenant,
-                'read_deleted': self.show_deleted,
-                'roles': self.roles,
-                'auth_token': self.auth_tok,
-                'service_catalog': self.service_catalog,
+        return {
+            'request_id': self.request_id,
+            'user_id': self.user,
+            'tenant_id': self.tenant,
+            'is_admin': self.is_admin,
+            'project_id': self.tenant,
+            'read_deleted': self.show_deleted,
+            'roles': self.roles,
+            'auth_token': self.auth_tok,
+            'service_catalog': self.service_catalog,
         }
 
     @classmethod

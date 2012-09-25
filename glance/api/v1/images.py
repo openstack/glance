@@ -29,8 +29,7 @@ from webob.exc import (HTTPError,
                        HTTPBadRequest,
                        HTTPForbidden,
                        HTTPRequestEntityTooLarge,
-                       HTTPServiceUnavailable,
-                      )
+                       HTTPServiceUnavailable)
 
 from glance.api import common
 from glance.api import policy

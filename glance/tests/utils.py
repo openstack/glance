@@ -328,10 +328,11 @@ def xattr_writes_supported(path):
 
 
 def minimal_headers(name, public=True):
-    headers = {'Content-Type': 'application/octet-stream',
-               'X-Image-Meta-Name': name,
-               'X-Image-Meta-disk_format': 'raw',
-               'X-Image-Meta-container_format': 'ovf',
+    headers = {
+        'Content-Type': 'application/octet-stream',
+        'X-Image-Meta-Name': name,
+        'X-Image-Meta-disk_format': 'raw',
+        'X-Image-Meta-container_format': 'ovf',
     }
     if public:
         headers['X-Image-Meta-Is-Public'] = 'True'
