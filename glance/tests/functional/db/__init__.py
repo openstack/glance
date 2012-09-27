@@ -435,6 +435,21 @@ class BaseTestCase(object):
         self.assertRaises(exception.NotFound, self.db_api.image_tag_delete,
                           self.context, UUID1, 'snap')
 
+    def test_image_member_create(self):
+        memberships = self.db_api.image_member_find(self.context)
+        #NOTE(bcwaldon): we do this magic to translate sqlalchemy models
+        # into something usable.
+        memberships = [(m['member'], m['image_id']) for m in memberships]
+        self.assertEqual([], memberships)
+
+        TENANT1 = utils.generate_uuid()
+        self.db_api.image_member_create(self.context,
+                                        {'member': TENANT1, 'image_id': UUID1})
+
+        memberships = self.db_api.image_member_find(self.context)
+        memberships = [(m['member'], m['image_id']) for m in memberships]
+        self.assertEqual([(TENANT1, UUID1)], memberships)
+
     def test_image_member_find(self):
         TENANT1 = utils.generate_uuid()
         TENANT2 = utils.generate_uuid()
