@@ -400,6 +400,16 @@ class BaseTestCase(object):
         tag = self.db_api.image_tag_create(self.context, UUID1, 'snap')
         self.assertEqual('snap', tag)
 
+    def test_image_tag_set_all(self):
+        tags = self.db_api.image_tag_get_all(self.context, UUID1)
+        self.assertEqual([], tags)
+
+        self.db_api.image_tag_set_all(self.context, UUID1, ['ping', 'pong'])
+
+        tags = self.db_api.image_tag_get_all(self.context, UUID1)
+        #NOTE(bcwaldon): tag ordering should match exactly what was provided
+        self.assertEqual(['ping', 'pong'], tags)
+
     def test_image_tag_get_all(self):
         self.db_api.image_tag_create(self.context, UUID1, 'snap')
         self.db_api.image_tag_create(self.context, UUID1, 'snarf')

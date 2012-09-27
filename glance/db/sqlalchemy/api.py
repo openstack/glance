@@ -751,7 +751,10 @@ def image_tag_set_all(context, image_id, tags):
     tags = set(tags)
 
     tags_to_create = tags - existing_tags
-    for tag in tags_to_create:
+    #NOTE(bcwaldon): we call 'reversed' here to ensure the ImageTag.id fields
+    # will be populated in the order required to reflect the correct ordering
+    # on a subsequent call to image_tag_get_all
+    for tag in reversed(list(tags_to_create)):
         image_tag_create(context, image_id, tag, session)
 
     tags_to_delete = existing_tags - tags
