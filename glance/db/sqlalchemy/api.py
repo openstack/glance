@@ -640,8 +640,8 @@ def _set_properties_for_image(context, image_ref, properties,
                        'value': value}
         if name in orig_properties:
             prop_ref = orig_properties[name]
-            image_property_update(context, prop_ref, prop_values,
-                                  session=session)
+            _image_property_update(context, prop_ref, prop_values,
+                                   session=session)
         else:
             image_property_create(context, prop_values, session=session)
 
@@ -655,11 +655,6 @@ def _set_properties_for_image(context, image_ref, properties,
 def image_property_create(context, values, session=None):
     """Create an ImageProperty object"""
     prop_ref = models.ImageProperty()
-    return _image_property_update(context, prop_ref, values, session=session)
-
-
-def image_property_update(context, prop_ref, values, session=None):
-    """Update an ImageProperty object"""
     return _image_property_update(context, prop_ref, values, session=session)
 
 
