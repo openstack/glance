@@ -81,7 +81,7 @@ class FakeHTTPConnection(object):
         self.port = 9292
 
     def prime_request(self, method, url, in_body, in_headers,
-                      out_body, out_headers):
+                      out_code, out_body, out_headers):
         if not url.startswith('/'):
             url = '/' + url
 
@@ -93,7 +93,7 @@ class FakeHTTPConnection(object):
         for key in out_headers:
             flat_headers.append((key, out_headers[key]))
 
-        self.reqs[hashable] = (out_body, flat_headers)
+        self.reqs[hashable] = (out_code, out_body, flat_headers)
 
     def request(self, method, url, body, headers):
         self.count += 1
@@ -116,10 +116,10 @@ class FakeHTTPConnection(object):
 
     def getresponse(self):
         class FakeResponse(object):
-            def __init__(self, (body, headers)):
+            def __init__(self, (code, body, headers)):
                 self.body = StringIO.StringIO(body)
                 self.headers = headers
-                self.status = 200
+                self.status = code
 
             def read(self, count=1000000):
                 return self.body.read(count)
@@ -131,6 +131,19 @@ class FakeHTTPConnection(object):
 
 
 class ImageServiceTestCase(test_utils.BaseTestCase):
+    def test_rest_errors(self):
+        c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
+
+        for code, exc in [(400, glance_replicator.ServerErrorException),
+                          (401, glance_replicator.AuthenticationException),
+                          (403, glance_replicator.AuthenticationException),
+                          (409,
+                           glance_replicator.ImageAlreadyPresentException),
+                          (500, glance_replicator.ServerErrorException)]:
+            c.conn.prime_request('GET', 'v1/images/123', '',
+                                 {'x-auth-token': 'noauth'}, code, '', {})
+            self.assertRaises(exc, c.get_image, '123')
+
     def test_rest_get_images(self):
         c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
 
@@ -138,12 +151,12 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
         resp = {'images': [IMG_RESPONSE_ACTIVE, IMG_RESPONSE_QUEUED]}
         c.conn.prime_request('GET', 'v1/images/detail?is_public=None', '',
                              {'x-auth-token': 'noauth'},
-                             json.dumps(resp), {})
+                             200, json.dumps(resp), {})
         c.conn.prime_request('GET',
                              ('v1/images/detail?marker=%s&is_public=None'
                               % IMG_RESPONSE_QUEUED['id']),
                              '', {'x-auth-token': 'noauth'},
-                             json.dumps({'images': []}), {})
+                             200, json.dumps({'images': []}), {})
 
         imgs = list(c.get_images())
         self.assertEquals(len(imgs), 2)
@@ -156,7 +169,7 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
         c.conn.prime_request('GET',
                              'v1/images/%s' % IMG_RESPONSE_ACTIVE['id'],
                              '', {'x-auth-token': 'noauth'},
-                             image_contents, IMG_RESPONSE_ACTIVE)
+                             200, image_contents, IMG_RESPONSE_ACTIVE)
 
         body = c.get_image(IMG_RESPONSE_ACTIVE['id'])
         self.assertEquals(body.read(), image_contents)
@@ -174,7 +187,7 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
         c.conn.prime_request('HEAD',
                              'v1/images/%s' % IMG_RESPONSE_ACTIVE['id'],
                              '', {'x-auth-token': 'noauth'},
-                             '', IMG_RESPONSE_ACTIVE)
+                             200, '', IMG_RESPONSE_ACTIVE)
 
         header = c.get_image_meta(IMG_RESPONSE_ACTIVE['id'])
         self.assertTrue('id' in header)
@@ -201,8 +214,20 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
 
         c.conn.prime_request('POST', 'v1/images',
                              image_body, image_meta_with_proto,
-                             '', IMG_RESPONSE_ACTIVE)
+                             200, '', IMG_RESPONSE_ACTIVE)
 
         headers, body = c.add_image(IMG_RESPONSE_ACTIVE, image_body)
         self.assertEquals(headers, IMG_RESPONSE_ACTIVE)
         self.assertEquals(c.conn.count, 1)
+
+    def test_rest_add_image_meta(self):
+        c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
+
+        image_meta = {'id': 123}
+        image_meta_headers = \
+            glance_replicator.ImageService._dict_to_headers(image_meta)
+        image_meta_headers['x-auth-token'] = 'noauth'
+        image_meta_headers['Content-Type'] = 'application/octet-stream'
+        c.conn.prime_request('PUT', 'v1/images/%s' % image_meta['id'],
+                             '', image_meta_headers, 200, '', '')
+        headers, body = c.add_image_meta(image_meta)
