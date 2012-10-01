@@ -105,7 +105,6 @@ class ImagesController(object):
         else:
             image['tags'] = []
 
-        v2.update_image_read_acl(req, self.store_api, self.db_api, image)
         image = self._normalize_properties(dict(image))
         self.notifier.info('image.update', image)
         return image
@@ -176,8 +175,6 @@ class ImagesController(object):
             except (exception.NotFound, exception.Forbidden):
                 raise webob.exc.HTTPNotFound()
             image = self._normalize_properties(dict(image))
-
-        v2.update_image_read_acl(req, self.store_api, self.db_api, image)
 
         if tags is not None:
             self.db_api.image_tag_set_all(req.context, image_id, tags)
