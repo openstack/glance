@@ -30,11 +30,10 @@ def update_image_read_acl(req, store_api, db_api, image):
             members = db_api.image_member_find(req.context,
                                                image_id=image_id)
             for member in members:
-                if not member['deleted']:
-                    if member['can_share']:
-                        write_tenants.append(member['member'])
-                    else:
-                        read_tenants.append(member['member'])
+                if member['can_share']:
+                    write_tenants.append(member['member'])
+                else:
+                    read_tenants.append(member['member'])
             store_api.set_acls(req.context, location_uri, public=public,
                                read_tenants=read_tenants,
                                write_tenants=write_tenants)

@@ -437,9 +437,6 @@ class BaseTestCase(object):
 
     def test_image_member_create(self):
         memberships = self.db_api.image_member_find(self.context)
-        #NOTE(bcwaldon): we do this magic to translate sqlalchemy models
-        # into something usable.
-        memberships = [(m['member'], m['image_id']) for m in memberships]
         self.assertEqual([], memberships)
 
         TENANT1 = utils.generate_uuid()
@@ -447,8 +444,15 @@ class BaseTestCase(object):
                                         {'member': TENANT1, 'image_id': UUID1})
 
         memberships = self.db_api.image_member_find(self.context)
-        memberships = [(m['member'], m['image_id']) for m in memberships]
-        self.assertEqual([(TENANT1, UUID1)], memberships)
+        self.assertEqual(1, len(memberships))
+        actual = memberships[0]
+        actual.pop('id')
+        expected = {
+            'member': TENANT1,
+            'image_id': UUID1,
+            'can_share': False,
+        }
+        self.assertEqual(expected, actual)
 
     def test_image_member_find(self):
         TENANT1 = utils.generate_uuid()
@@ -486,9 +490,8 @@ class BaseTestCase(object):
 
     def test_image_member_delete(self):
         TENANT1 = utils.generate_uuid()
-        fixture = {'member': TENANT1, 'image_id': UUID1}
+        fixture = {'member': TENANT1, 'image_id': UUID1, 'can_share': True}
         member = self.db_api.image_member_create(self.context, fixture)
+        self.assertEqual(1, len(self.db_api.image_member_find(self.context)))
         member = self.db_api.image_member_delete(self.context, member['id'])
-        self.assertNotEqual(None, member['deleted_at'])
-        self.assertTrue(isinstance(member['deleted_at'], datetime.datetime))
-        self.assertTrue(member['deleted'])
+        self.assertEqual(0, len(self.db_api.image_member_find(self.context)))

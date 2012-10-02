@@ -75,8 +75,6 @@ def _image_member_format(image_id, tenant_id, can_share):
         'image_id': image_id,
         'member': tenant_id,
         'can_share': can_share,
-        'deleted': False,
-        'deleted_at': None,
     }
 
 
@@ -287,15 +285,12 @@ def image_member_create(context, values):
 @log_call
 def image_member_delete(context, member_id):
     global DATA
-    for member in DATA['members']:
+    for i, member in enumerate(DATA['members']):
         if (member['id'] == member_id):
+            del DATA['members'][i]
             break
     else:
         raise exception.NotFound()
-
-    member['deleted_at'] = datetime.datetime.utcnow()
-    member['deleted'] = True
-    return member
 
 
 @log_call
