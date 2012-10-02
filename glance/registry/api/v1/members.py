@@ -154,16 +154,16 @@ class Controller(object):
         # the existing image memberships...
         existing_members = self.db_api.image_member_find(req.context,
                                                          image_id=image['id'])
-        for memb in existing_members:
-            if memb['id'] in existing:
+        for member in existing_members:
+            if member['id'] in existing:
                 # Just update the membership in place
-                update = existing[memb['id']]['values']
-                self.db_api.image_member_update(req.context, memb, update,
-                                                session=session)
+                update = existing[member['id']]['values']
+                self.db_api.image_member_update(req.context,
+                                                member['id'],
+                                                update)
             else:
                 # Outdated one; needs to be deleted
-                self.db_api.image_member_delete(req.context, memb,
-                                                session=session)
+                self.db_api.image_member_delete(req.context, member['id'])
 
         # Now add the non-existent ones
         for memb in add:
@@ -233,8 +233,9 @@ class Controller(object):
         if members:
             if can_share is not None:
                 values = dict(can_share=can_share)
-                self.db_api.image_member_update(req.context, members[0],
-                                                values, session=session)
+                self.db_api.image_member_update(req.context,
+                                                members[0]['id'],
+                                                values)
         else:
             values = dict(image_id=image['id'], member=id,
                           can_share=bool(can_share))
@@ -280,9 +281,7 @@ class Controller(object):
                                                     image_id=image_id,
                                                     member=id,
                                                     session=session)
-            self.db_api.image_member_delete(req.context,
-                                            members[0],
-                                            session=session)
+            self.db_api.image_member_delete(req.context, members[0]['id'])
         except exception.NotFound:
             pass
 

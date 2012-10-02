@@ -220,7 +220,7 @@ def image_destroy(context, image_id):
             image_property_delete(context, prop_ref, session=session)
 
         for memb_ref in image_member_find(context, image_id=image_id):
-            image_member_delete(context, memb_ref, session=session)
+            _image_member_delete(context, memb_ref, session=session)
 
         return image_ref
 
@@ -683,8 +683,9 @@ def image_member_create(context, values, session=None):
     return _image_member_update(context, memb_ref, values, session=session)
 
 
-def image_member_update(context, memb_ref, values, session=None):
+def image_member_update(context, memb_id, values, session=None):
     """Update an ImageMember object"""
+    memb_ref = _image_member_get(context, memb_id, session)
     return _image_member_update(context, memb_ref, values, session=session)
 
 
@@ -698,11 +699,23 @@ def _image_member_update(context, memb_ref, values, session=None):
     return memb_ref
 
 
-def image_member_delete(context, memb_ref, session=None):
+def image_member_delete(context, memb_id, session=None):
     """Delete an ImageMember object"""
     session = session or get_session()
+    member_ref = _image_member_get(context, memb_id, session)
+    return _image_member_delete(context, member_ref, session)
+
+
+def _image_member_delete(context, memb_ref, session):
     memb_ref.delete(session=session)
     return memb_ref
+
+
+def _image_member_get(context, memb_id, session):
+    """Fetch an ImageMember entity by id"""
+    query = session.query(models.ImageMember)
+    query = query.filter_by(id=memb_id)
+    return query.one()
 
 
 def image_member_find(context, image_id=None, member=None, session=None):

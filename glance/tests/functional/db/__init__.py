@@ -488,7 +488,7 @@ class BaseTestCase(object):
         TENANT1 = utils.generate_uuid()
         fixture = {'member': TENANT1, 'image_id': UUID1}
         member = self.db_api.image_member_create(self.context, fixture)
-        member = self.db_api.image_member_delete(self.context, member)
+        member = self.db_api.image_member_delete(self.context, member['id'])
         self.assertNotEqual(None, member['deleted_at'])
         self.assertTrue(isinstance(member['deleted_at'], datetime.datetime))
         self.assertTrue(member['deleted'])
