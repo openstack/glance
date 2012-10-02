@@ -467,14 +467,12 @@ class Controller(controller.BaseController):
             msg = _("Attempt to upload duplicate image: %s") % e
             LOG.error(msg)
             self._safe_kill(req, image_id)
-            self.notifier.error('image.upload', msg)
             raise HTTPConflict(explanation=msg, request=req)
 
         except exception.Forbidden, e:
             msg = _("Forbidden upload attempt: %s") % e
             LOG.error(msg)
             self._safe_kill(req, image_id)
-            self.notifier.error('image.upload', msg)
             raise HTTPForbidden(explanation=msg,
                                 request=req,
                                 content_type="text/plain")
@@ -503,7 +501,6 @@ class Controller(controller.BaseController):
 
         except HTTPError, e:
             self._safe_kill(req, image_id)
-            self.notifier.error('image.upload', e.explanation)
             #NOTE(bcwaldon): Ideally, we would just call 'raise' here,
             # but something in the above function calls is affecting the
             # exception context and we must explicitly re-raise the
@@ -520,7 +517,6 @@ class Controller(controller.BaseController):
                     "%(exc)s") % ({'class_name': e.__class__.__name__,
                     'exc': str(e)})
 
-            self.notifier.error('image.upload', msg)
             raise HTTPBadRequest(explanation=msg, request=req)
 
     def _activate(self, req, image_id, location):
@@ -547,7 +543,6 @@ class Controller(controller.BaseController):
                    % locals())
             for line in msg.split('\n'):
                 LOG.error(line)
-            self.notifier.error('image.update', msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
@@ -768,7 +763,6 @@ class Controller(controller.BaseController):
                    % locals())
             for line in msg.split('\n'):
                 LOG.error(line)
-            self.notifier.error('image.update', msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
@@ -776,7 +770,6 @@ class Controller(controller.BaseController):
             msg = ("Failed to find image to update: %(e)s" % locals())
             for line in msg.split('\n'):
                 LOG.info(line)
-            self.notifier.info('image.update', msg)
             raise HTTPNotFound(explanation=msg,
                                request=req,
                                content_type="text/plain")
@@ -784,7 +777,6 @@ class Controller(controller.BaseController):
             msg = ("Forbidden to update image: %(e)s" % locals())
             for line in msg.split('\n'):
                 LOG.info(line)
-            self.notifier.info('image.update', msg)
             raise HTTPForbidden(explanation=msg,
                                 request=req,
                                 content_type="text/plain")
@@ -840,7 +832,6 @@ class Controller(controller.BaseController):
             msg = ("Failed to find image to delete: %(e)s" % locals())
             for line in msg.split('\n'):
                 LOG.info(line)
-            self.notifier.info('image.delete', msg)
             raise HTTPNotFound(explanation=msg,
                                request=req,
                                content_type="text/plain")
@@ -848,7 +839,6 @@ class Controller(controller.BaseController):
             msg = ("Forbidden to delete image: %(e)s" % locals())
             for line in msg.split('\n'):
                 LOG.info(line)
-            self.notifier.info('image.delete', msg)
             raise HTTPForbidden(explanation=msg,
                                 request=req,
                                 content_type="text/plain")
