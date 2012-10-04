@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
 import time
 
 import httplib2
@@ -43,8 +44,8 @@ class TestMultiprocessing(functional.FunctionalTest):
         self.stop_servers()
 
     def _get_children(self):
-        cmd = ("ps -fu $USER | grep glance-api | "
-               "grep -v grep | awk '{print $2}' | sort -nr")
+        cmd = ("ps -f -U %d | grep glance-api | grep -v grep | "
+               "awk '{print $2}' | sort -nr" % os.getuid())
         _, out, _ = execute(cmd, raise_error=True)
         return out.split('\n')[0:2]
 
