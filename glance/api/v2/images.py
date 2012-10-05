@@ -113,10 +113,7 @@ class ImagesController(object):
               sort_dir='desc', filters={}):
         self._enforce(req, 'get_images')
         filters['deleted'] = False
-        #NOTE(bcwaldon): is_public=True gets public images and those
-        # owned by the authenticated tenant
         result = {}
-        filters.setdefault('is_public', True)
         if limit is None:
             limit = CONF.limit_param_default
         limit = min(CONF.api_limit_max, limit)

@@ -369,10 +369,7 @@ class TestDriver(base.IsolatedUnitTest):
                                          'status': 'queued',
                                          'owner': TENANT2})
 
-        # NOTE(bcwaldon): the is_public=True flag indicates that you want
-        # to get all images that are public AND those that are owned by the
-        # calling context
-        images = self.db_api.image_get_all(ctxt1, filters={'is_public': True})
+        images = self.db_api.image_get_all(ctxt1)
         image_ids = [image['id'] for image in images]
         expected = [UUIDX, UUID3, UUID2, UUID1]
         self.assertEqual(sorted(expected), sorted(image_ids))
@@ -528,3 +525,151 @@ class TestDriver(base.IsolatedUnitTest):
         self.assertEqual(1, len(self.db_api.image_member_find(self.context)))
         member = self.db_api.image_member_delete(self.context, member['id'])
         self.assertEqual(0, len(self.db_api.image_member_find(self.context)))
+
+
+class TestVisibility(base.IsolatedUnitTest):
+    def setUp(self):
+        super(TestVisibility, self).setUp()
+        self.db_api = db_tests.get_db(self.config)
+        db_tests.reset_db(self.db_api)
+        self.setup_tenants()
+        self.setup_contexts()
+        self.fixtures = self.build_image_fixtures()
+        self.create_images(self.fixtures)
+
+    def setup_tenants(self):
+        self.admin_tenant = utils.generate_uuid()
+        self.tenant1 = utils.generate_uuid()
+        self.tenant2 = utils.generate_uuid()
+
+    def setup_contexts(self):
+        self.admin_context = context.RequestContext(
+                is_admin=True, tenant=self.admin_tenant)
+        self.admin_none_context = context.RequestContext(
+                is_admin=True, tenant=None)
+        self.tenant1_context = context.RequestContext(tenant=self.tenant1)
+        self.tenant2_context = context.RequestContext(tenant=self.tenant2)
+        self.none_context = context.RequestContext(tenant=None)
+
+    def build_image_fixtures(self):
+        fixtures = []
+        owners = {
+            'Unowned': None,
+            'Admin Tenant': self.admin_tenant,
+            'Tenant 1': self.tenant1,
+            'Tenant 2': self.tenant2,
+        }
+        visibilities = {'public': True, 'private': False}
+        for owner_label, owner in owners.items():
+            for visibility, is_public in visibilities.items():
+                fixture = {
+                    'name': '%s, %s' % (owner_label, visibility),
+                    'owner': owner,
+                    'is_public': is_public,
+                }
+                fixtures.append(fixture)
+        return [build_image_fixture(**fixture) for fixture in fixtures]
+
+    def create_images(self, images):
+        for fixture in images:
+            self.db_api.image_create(self.admin_context, fixture)
+
+    def test_unknown_admin_sees_all(self):
+        images = self.db_api.image_get_all(self.admin_none_context)
+        self.assertEquals(len(images), 8)
+
+    def test_unknown_admin_is_public_true(self):
+        images = self.db_api.image_get_all(self.admin_none_context,
+                                           filters={'is_public': True})
+        self.assertEquals(len(images), 4)
+        for i in images:
+            self.assertTrue(i['is_public'])
+
+    def test_unknown_admin_is_public_false(self):
+        images = self.db_api.image_get_all(self.admin_none_context,
+                                           filters={'is_public': False})
+        self.assertEquals(len(images), 4)
+        for i in images:
+            self.assertFalse(i['is_public'])
+
+    def test_unknown_admin_is_public_none(self):
+        images = self.db_api.image_get_all(self.admin_none_context,
+                                           filters={'is_public': None})
+        self.assertEquals(len(images), 8)
+
+    def test_known_admin_sees_all(self):
+        images = self.db_api.image_get_all(self.admin_context)
+        self.assertEquals(len(images), 8)
+
+    def test_known_admin_is_public_true(self):
+        images = self.db_api.image_get_all(self.admin_context,
+                                           filters={'is_public': True})
+        self.assertEquals(len(images), 4)
+        for i in images:
+            self.assertTrue(i['is_public'])
+
+    def test_known_admin_is_public_false(self):
+        images = self.db_api.image_get_all(self.admin_context,
+                                           filters={'is_public': False})
+        self.assertEquals(len(images), 4)
+        for i in images:
+            self.assertFalse(i['is_public'])
+
+    def test_known_admin_is_public_none(self):
+        images = self.db_api.image_get_all(self.admin_context,
+                                           filters={'is_public': None})
+        self.assertEquals(len(images), 8)
+
+    def test_what_unknown_user_sees(self):
+        images = self.db_api.image_get_all(self.none_context)
+        self.assertEquals(len(images), 4)
+        for i in images:
+            self.assertTrue(i['is_public'])
+
+    def test_unknown_user_is_public_true(self):
+        images = self.db_api.image_get_all(self.none_context,
+                                           filters={'is_public': True})
+        self.assertEquals(len(images), 4)
+        for i in images:
+            self.assertTrue(i['is_public'])
+
+    def test_unknown_user_is_public_false(self):
+        images = self.db_api.image_get_all(self.none_context,
+                                           filters={'is_public': False})
+        self.assertEquals(len(images), 0)
+
+    def test_unknown_user_is_public_none(self):
+        images = self.db_api.image_get_all(self.none_context,
+                                           filters={'is_public': None})
+        self.assertEquals(len(images), 4)
+        for i in images:
+            self.assertTrue(i['is_public'])
+
+    def test_what_tenant1_sees(self):
+        images = self.db_api.image_get_all(self.tenant1_context)
+        self.assertEquals(len(images), 5)
+        for i in images:
+            if not i['is_public']:
+                self.assertEquals(i['owner'], self.tenant1)
+
+    def test_tenant1_is_public_true(self):
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           filters={'is_public': True})
+        self.assertEquals(len(images), 4)
+        for i in images:
+            self.assertTrue(i['is_public'])
+
+    def test_tenant1_is_public_false(self):
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           filters={'is_public': False})
+        self.assertEquals(len(images), 1)
+        self.assertFalse(images[0]['is_public'])
+        self.assertEquals(images[0]['owner'], self.tenant1)
+
+    def test_tenant1_is_public_none(self):
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           filters={'is_public': None})
+        self.assertEquals(len(images), 5)
+        for i in images:
+            if not i['is_public']:
+                self.assertEquals(i['owner'], self.tenant1)

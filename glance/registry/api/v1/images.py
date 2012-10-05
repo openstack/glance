@@ -56,12 +56,19 @@ class Controller(object):
         self.db_api = glance.db.get_api()
         self.db_api.configure_db()
 
-    def _get_images(self, context, **params):
+    def _get_images(self, context, filters, **params):
         """
         Get images, wrapping in exception if necessary.
         """
+        # NOTE(markwash): for backwards compatibility, is_public=True for
+        # admins actually means "treat me as if I'm not an admin and show me
+        # all my images"
+        if context.is_admin and filters.get('is_public') is True:
+            context.is_admin = False
+            del filters['is_public']
         try:
-            return self.db_api.image_get_all(context, **params)
+            return self.db_api.image_get_all(context, filters=filters,
+                                             **params)
         except exception.NotFound, e:
             msg = _("Invalid marker. Image could not be found.")
             raise exc.HTTPBadRequest(explanation=msg)
@@ -152,8 +159,6 @@ class Controller(object):
         if req.context.is_admin:
             # Only admin gets to look for non-public images
             filters['is_public'] = self._get_is_public(req)
-        else:
-            filters['is_public'] = True
 
         for param in req.params:
             if param in SUPPORTED_FILTERS:

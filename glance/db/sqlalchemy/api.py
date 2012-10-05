@@ -446,18 +446,20 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     query = session.query(models.Image)\
                    .options(sa_orm.joinedload(models.Image.properties))
 
-    if 'is_public' in filters and filters['is_public'] is not None:
-        the_filter = [models.Image.is_public == filters['is_public']]
-        if filters['is_public'] and context.owner is not None:
-            the_filter.extend([
-                (models.Image.owner == context.owner),
-                models.Image.members.any(member=context.owner, deleted=False)
-            ])
-        if len(the_filter) > 1:
-            query = query.filter(sa_sql.or_(*the_filter))
-        else:
-            query = query.filter(the_filter[0])
+    # NOTE(markwash) treat is_public=None as if it weren't filtered
+    if 'is_public' in filters and filters['is_public'] is None:
         del filters['is_public']
+
+    if not context.is_admin:
+        visibility_filters = [models.Image.is_public == True]
+
+        if context.owner is not None:
+            visibility_filters.extend([
+                models.Image.owner == context.owner,
+                models.Image.members.any(member=context.owner, deleted=False),
+            ])
+
+        query = query.filter(sa_sql.or_(*visibility_filters))
 
     showing_deleted = False
     if 'changes-since' in filters:

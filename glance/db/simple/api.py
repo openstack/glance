@@ -119,9 +119,15 @@ def _filter_images(images, filters, context):
         prop_filter = filters.pop('properties')
         filters.update(prop_filter)
 
-    is_public_filter = filters.pop('is_public', None)
+    if 'is_public' in filters and filters['is_public'] is None:
+        filters.pop('is_public')
 
     for i, image in enumerate(images):
+        has_ownership = context.owner and image['owner'] == context.owner
+        can_see = image['is_public'] or has_ownership or context.is_admin
+        if not can_see:
+            continue
+
         add = True
         for k, value in filters.iteritems():
             key = k
@@ -151,22 +157,6 @@ def _filter_images(images, filters, context):
 
         if add:
             filtered_images.append(image)
-
-    #NOTE(bcwaldon): This hacky code is only here to match what the
-    # sqlalchemy driver wants - refactor it out of the db layer when
-    # it seems appropriate
-    if is_public_filter is not None:
-        def _filter_ownership(image):
-            has_ownership = image['owner'] == context.owner
-            can_see = image['is_public'] or has_ownership or context.is_admin
-
-            if can_see:
-                return (has_ownership or
-                        (can_see and image['is_public'] == is_public_filter))
-            else:
-                return False
-
-        filtered_images = filter(_filter_ownership, filtered_images)
 
     return filtered_images
 
