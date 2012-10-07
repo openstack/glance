@@ -103,7 +103,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         """Establish a clean test environment"""
         super(TestRegistryAPI, self).setUp()
         self.mapper = routes.Mapper()
-        self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper))
+        self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
+                                                 is_admin=True)
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',
