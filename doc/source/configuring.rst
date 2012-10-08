@@ -227,6 +227,14 @@ The path to a Certifying Authority's cert file to use in SSL connections to the
 registry server, if any. Alternately, you may set the
 ``GLANCE_CLIENT_CA_FILE`` environ variable to a filepath of the CA cert file
 
+* ``registry_client_insecure=False``
+
+Optional. Default: False.
+
+When using SSL in connections to the registry server, do not require
+validation via a certifying authority. This is the registry's equivalent of
+specifying --insecure on the command line using glanceclient for the API
+
 Configuring Logging in Glance
 -----------------------------
 

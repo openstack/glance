@@ -37,6 +37,7 @@ registry_client_opts = [
     cfg.StrOpt('registry_client_key_file'),
     cfg.StrOpt('registry_client_cert_file'),
     cfg.StrOpt('registry_client_ca_file'),
+    cfg.BoolOpt('registry_client_insecure', default=False),
     cfg.StrOpt('metadata_encryption_key', secret=True),
 ]
 registry_client_ctx_opts = [
@@ -84,7 +85,8 @@ def configure_registry_client():
         'use_ssl': CONF.registry_client_protocol.lower() == 'https',
         'key_file': CONF.registry_client_key_file,
         'cert_file': CONF.registry_client_cert_file,
-        'ca_file': CONF.registry_client_ca_file
+        'ca_file': CONF.registry_client_ca_file,
+        'insecure': CONF.registry_client_insecure,
     }
 
 
