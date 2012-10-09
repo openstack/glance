@@ -1873,6 +1873,19 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
 
+    def test_delete_member_invalid(self):
+        """
+        Tests deleting a invalid/non existing member raises right exception
+        """
+        self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
+                                                 is_admin=True)
+        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
+        req.method = 'DELETE'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
+        self.assertTrue('Membership could not be found' in res.body)
+
 
 class TestGlanceAPI(base.IsolatedUnitTest):
     def setUp(self):
