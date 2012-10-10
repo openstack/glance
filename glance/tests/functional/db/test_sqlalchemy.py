@@ -16,23 +16,30 @@
 
 import glance.db.sqlalchemy.api
 from glance.db.sqlalchemy import models as db_models
-import glance.tests.functional.db as tests
-from glance.tests.unit import base
+import glance.tests.functional.db as db_tests
 
 
-class TestSqlalchemyDriver(base.IsolatedUnitTest, tests.BaseTestCase):
+def get_db(config):
+    config(sql_connection='sqlite://', verbose=False, debug=False)
+    db_api = glance.db.sqlalchemy.api
+    db_api.configure_db()
+    return db_api
 
-    def setUp(self):
-        base.IsolatedUnitTest.setUp(self)
-        tests.BaseTestCase.setUp(self)
 
-    def configure(self):
-        self.config(sql_connection='sqlite://',
-                    verbose=False,
-                    debug=False)
-        self.db_api = glance.db.sqlalchemy.api
-        self.db_api.configure_db()
+def reset_db(db_api):
+    db_models.unregister_models(db_api._ENGINE)
+    db_models.register_models(db_api._ENGINE)
 
-    def reset(self):
-        db_models.unregister_models(self.db_api._ENGINE)
-        db_models.register_models(self.db_api._ENGINE)
+
+def setUpModule():
+    """Stub in get_db and reset_db for testing the sqlalchemy db api."""
+    db_tests.load(get_db, reset_db)
+
+
+def tearDownModule():
+    """Reset get_db and reset_db for cleanliness."""
+    db_tests.reset()
+
+
+#NOTE(markwash): Pull in all the base test cases
+from glance.tests.functional.db.base import *
