@@ -44,7 +44,8 @@ def get_isolated_test_env():
     is created.
     """
     test_id = random.randint(0, 100000)
-    test_dir = os.path.join("/", "tmp", "test.%d" % test_id)
+    test_tmp_dir = os.getenv('GLANCE_TEST_TMP_DIR', '/tmp')
+    test_dir = os.path.join(test_tmp_dir, "test.%d" % test_id)
     utils.safe_mkdirs(test_dir)
     return test_id, test_dir
 
