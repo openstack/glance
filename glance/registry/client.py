@@ -86,7 +86,8 @@ class RegistryClient(BaseClient):
     def do_request(self, method, action, **kwargs):
         try:
             res = super(RegistryClient, self).do_request(method,
-                  action, **kwargs)
+                                                         action,
+                                                         **kwargs)
             status = res.status
             request_id = res.getheader('x-openstack-request-id')
             msg = _("Registry request %(method)s %(action)s HTTP %(status)s"
@@ -94,8 +95,8 @@ class RegistryClient(BaseClient):
             LOG.debug(msg % locals())
 
         except:
-            LOG.exception(_("Registry request %(method)s %(action)s Exception")
-                        % locals())
+            LOG.exception(_("Registry request %(method)s %(action)s "
+                            "Exception") % locals())
             raise
         return res
 

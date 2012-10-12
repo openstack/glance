@@ -330,9 +330,10 @@ class TestQpidNotifier(utils.BaseTestCase):
         self.mock_connection.open()
         self.mock_connection.session().AndReturn(self.mock_session)
         for p in ["info", "warn", "error"]:
-            expected_address = ('glance/glance_notifications.%s ; {"node": '
-                '{"x-declare": {"auto-delete": true, "durable": false}, '
-                '"type": "topic"}, "create": "always"}' % p)
+            expected_address = ('glance/glance_notifications.%s ; '
+                                '{"node": {"x-declare": {"auto-delete": true, '
+                                '"durable": false}, "type": "topic"}, '
+                                '"create": "always"}' % p)
             self.mock_session.sender(expected_address).AndReturn(
                     self.mock_sender)
         self.mock_sender.send(mox.IgnoreArg())

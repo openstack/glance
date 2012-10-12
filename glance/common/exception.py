@@ -189,12 +189,12 @@ class BadRegistryConnectionConfiguration(GlanceException):
 
 class BadStoreConfiguration(GlanceException):
     message = _("Store %(store_name)s could not be configured correctly. "
-               "Reason: %(reason)s")
+                "Reason: %(reason)s")
 
 
 class BadDriverConfiguration(GlanceException):
     message = _("Driver %(driver_name)s could not be configured correctly. "
-               "Reason: %(reason)s")
+                "Reason: %(reason)s")
 
 
 class StoreDeleteNotSupported(GlanceException):
@@ -203,7 +203,7 @@ class StoreDeleteNotSupported(GlanceException):
 
 class StoreAddDisabled(GlanceException):
     message = _("Configuration for store failed. Adding images to this "
-               "store is disabled.")
+                "store is disabled.")
 
 
 class InvalidNotifierStrategy(GlanceException):

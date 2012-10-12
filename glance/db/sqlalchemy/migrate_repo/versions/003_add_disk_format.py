@@ -27,23 +27,30 @@ def get_images_table(meta):
     Returns the Table object for the images table that
     corresponds to the images table definition of this version.
     """
-    images = Table('images', meta,
-        Column('id', Integer(), primary_key=True, nullable=False),
-        Column('name', String(255)),
-        Column('disk_format', String(20)),
-        Column('container_format', String(20)),
-        Column('size', Integer()),
-        Column('status', String(30), nullable=False),
-        Column('is_public', Boolean(), nullable=False, default=False,
-               index=True),
-        Column('location', Text()),
-        Column('created_at', DateTime(), nullable=False),
-        Column('updated_at', DateTime()),
-        Column('deleted_at', DateTime()),
-        Column('deleted', Boolean(), nullable=False, default=False,
-               index=True),
-        mysql_engine='InnoDB',
-        useexisting=True)
+    images = Table('images',
+                   meta,
+                   Column('id', Integer(), primary_key=True, nullable=False),
+                   Column('name', String(255)),
+                   Column('disk_format', String(20)),
+                   Column('container_format', String(20)),
+                   Column('size', Integer()),
+                   Column('status', String(30), nullable=False),
+                   Column('is_public',
+                          Boolean(),
+                          nullable=False,
+                          default=False,
+                          index=True),
+                   Column('location', Text()),
+                   Column('created_at', DateTime(), nullable=False),
+                   Column('updated_at', DateTime()),
+                   Column('deleted_at', DateTime()),
+                   Column('deleted',
+                          Boolean(),
+                          nullable=False,
+                          default=False,
+                          index=True),
+                   mysql_engine='InnoDB',
+                   useexisting=True)
 
     return images
 

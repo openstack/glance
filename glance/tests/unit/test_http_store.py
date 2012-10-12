@@ -113,10 +113,10 @@ class TestHttpStore(base.StoreClearingUnitTest):
         # both redirects.
         redirect_headers_1 = {"location": "http://example.com/teapot.img"}
         redirect_resp_1 = utils.FakeHTTPResponse(status=302,
-                                           headers=redirect_headers_1)
+                                                 headers=redirect_headers_1)
         redirect_headers_2 = {"location": "http://example.com/teapot_real.img"}
         redirect_resp_2 = utils.FakeHTTPResponse(status=301,
-                                           headers=redirect_headers_2)
+                                                 headers=redirect_headers_2)
         FAKE_RESPONSE_STACK.append(redirect_resp_1)
         FAKE_RESPONSE_STACK.append(redirect_resp_2)
 
@@ -134,7 +134,7 @@ class TestHttpStore(base.StoreClearingUnitTest):
         # Add more than MAX_REDIRECTS redirects to the response stack
         redirect_headers = {"location": "http://example.com/teapot.img"}
         redirect_resp = utils.FakeHTTPResponse(status=302,
-                                         headers=redirect_headers)
+                                               headers=redirect_headers)
         for i in xrange(MAX_REDIRECTS + 2):
             FAKE_RESPONSE_STACK.append(redirect_resp)
 
@@ -145,7 +145,7 @@ class TestHttpStore(base.StoreClearingUnitTest):
     def test_http_get_redirect_invalid(self):
         redirect_headers = {"location": "http://example.com/teapot.img"}
         redirect_resp = utils.FakeHTTPResponse(status=307,
-                                         headers=redirect_headers)
+                                               headers=redirect_headers)
         FAKE_RESPONSE_STACK.append(redirect_resp)
 
         uri = "http://netloc/path/to/file.tar.gz"
@@ -154,7 +154,7 @@ class TestHttpStore(base.StoreClearingUnitTest):
 
     def test_http_get_not_found(self):
         not_found_resp = utils.FakeHTTPResponse(status=404,
-                                          data="404 Not Found")
+                                                data="404 Not Found")
         FAKE_RESPONSE_STACK.append(not_found_resp)
 
         uri = "http://netloc/path/to/file.tar.gz"

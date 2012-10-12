@@ -59,9 +59,12 @@ SWIFT_CONF = {'verbose': True,
 def stub_out_swiftclient(stubs, swift_store_auth_version):
     fixture_containers = ['glance']
     fixture_container_headers = {}
-    fixture_headers = {'glance/%s' % FAKE_UUID:
-                {'content-length': FIVE_KB,
-                 'etag': 'c2e5db72bd7fd153f53ede5da5a06de3'}}
+    fixture_headers = {
+        'glance/%s' % FAKE_UUID: {
+            'content-length': FIVE_KB,
+            'etag': 'c2e5db72bd7fd153f53ede5da5a06de3'
+        }
+    }
     fixture_objects = {'glance/%s' % FAKE_UUID:
                        StringIO.StringIO("*" * FIVE_KB)}
 
@@ -69,7 +72,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
         if container not in fixture_containers:
             msg = "No container %s found" % container
             raise swiftclient.ClientException(msg,
-                        http_status=httplib.NOT_FOUND)
+                                              http_status=httplib.NOT_FOUND)
         return fixture_container_headers
 
     def fake_put_container(url, token, container, **kwargs):
@@ -118,7 +121,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
             msg = ("Object PUT failed - Object with key %s already exists"
                    % fixture_key)
             raise swiftclient.ClientException(msg,
-                        http_status=httplib.CONFLICT)
+                                              http_status=httplib.CONFLICT)
 
     def fake_get_object(url, token, container, name, **kwargs):
         # GET returns the tuple (list of headers, file object)
@@ -126,7 +129,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
         if not fixture_key in fixture_headers:
             msg = "Object GET failed"
             raise swiftclient.ClientException(msg,
-                        http_status=httplib.NOT_FOUND)
+                                              http_status=httplib.NOT_FOUND)
 
         fixture = fixture_headers[fixture_key]
         if 'manifest' in fixture:
@@ -151,7 +154,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
         except KeyError:
             msg = "Object HEAD failed - Object does not exist"
             raise swiftclient.ClientException(msg,
-                        http_status=httplib.NOT_FOUND)
+                                              http_status=httplib.NOT_FOUND)
 
     def fake_delete_object(url, token, container, name, **kwargs):
         # DELETE returns nothing
@@ -159,7 +162,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
         if fixture_key not in fixture_headers.keys():
             msg = "Object DELETE failed - Object does not exist"
             raise swiftclient.ClientException(msg,
-                        http_status=httplib.NOT_FOUND)
+                                              http_status=httplib.NOT_FOUND)
         else:
             del fixture_headers[fixture_key]
             del fixture_objects[fixture_key]

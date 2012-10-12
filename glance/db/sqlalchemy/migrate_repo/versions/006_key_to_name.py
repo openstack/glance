@@ -43,20 +43,30 @@ def get_image_properties_table(meta):
 
     images = get_images_table(meta)
 
-    image_properties = Table('image_properties', meta,
-        Column('id', Integer(), primary_key=True, nullable=False),
-        Column('image_id', Integer(), ForeignKey('images.id'), nullable=False,
-               index=True),
-        Column('name', String(255), nullable=False),
-        Column('value', Text()),
-        Column('created_at', DateTime(), nullable=False),
-        Column('updated_at', DateTime()),
-        Column('deleted_at', DateTime()),
-        Column('deleted', Boolean(), nullable=False, default=False,
-               index=True),
-        UniqueConstraint('image_id', 'name'),
-        mysql_engine='InnoDB',
-        useexisting=True)
+    image_properties = Table('image_properties',
+                             meta,
+                             Column('id',
+                                    Integer(),
+                                    primary_key=True,
+                                    nullable=False),
+                             Column('image_id',
+                                    Integer(),
+                                    ForeignKey('images.id'),
+                                    nullable=False,
+                                    index=True),
+                             Column('name', String(255), nullable=False),
+                             Column('value', Text()),
+                             Column('created_at', DateTime(), nullable=False),
+                             Column('updated_at', DateTime()),
+                             Column('deleted_at', DateTime()),
+                             Column('deleted',
+                                    Boolean(),
+                                    nullable=False,
+                                    default=False,
+                                    index=True),
+                             UniqueConstraint('image_id', 'name'),
+                             mysql_engine='InnoDB',
+                             useexisting=True)
 
     return image_properties
 
@@ -71,7 +81,7 @@ def upgrade(migrate_engine):
 
     index = Index('ix_image_properties_image_id_key',
                   image_properties.c.image_id,
-          image_properties.c.key)
+                  image_properties.c.key)
     index.rename('ix_image_properties_image_id_name')
 
     image_properties = get_image_properties_table(meta)
@@ -86,7 +96,7 @@ def downgrade(migrate_engine):
 
     index = Index('ix_image_properties_image_id_name',
                   image_properties.c.image_id,
-          image_properties.c.name)
+                  image_properties.c.name)
     index.rename('ix_image_properties_image_id_key')
 
     image_properties.columns['name'].alter(name="key")

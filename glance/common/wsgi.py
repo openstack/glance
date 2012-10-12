@@ -98,9 +98,13 @@ def get_socket(default_port):
     # TODO(jaypipes): eventlet's greened socket module does not actually
     # support IPv6 in getaddrinfo(). We need to get around this in the
     # future or monitor upstream for a fix
-    address_family = [addr[0] for addr in socket.getaddrinfo(bind_addr[0],
-            bind_addr[1], socket.AF_UNSPEC, socket.SOCK_STREAM)
-            if addr[0] in (socket.AF_INET, socket.AF_INET6)][0]
+    address_family = [
+        addr[0] for addr in socket.getaddrinfo(bind_addr[0],
+                                               bind_addr[1],
+                                               socket.AF_UNSPEC,
+                                               socket.SOCK_STREAM)
+        if addr[0] in (socket.AF_INET, socket.AF_INET6)
+    ][0]
 
     cert_file = CONF.cert_file
     key_file = CONF.key_file
@@ -272,8 +276,10 @@ class Server(object):
             raise exception.WorkerCreationFailure(reason=msg)
         self.pool = self.create_pool()
         try:
-            eventlet.wsgi.server(self.sock, self.app_func(),
-                    log=WritableLogger(self.logger), custom_pool=self.pool)
+            eventlet.wsgi.server(self.sock,
+                                 self.app_func(),
+                                 log=WritableLogger(self.logger),
+                                 custom_pool=self.pool)
         except socket.error, err:
             if err[0] != errno.EINVAL:
                 raise

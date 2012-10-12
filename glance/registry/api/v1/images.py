@@ -399,8 +399,8 @@ class Controller(object):
             msg = _("Image %(id)s not found")
             LOG.info(msg % {'id': id})
             raise exc.HTTPNotFound(body='Image not found',
-                               request=req,
-                               content_type='text/plain')
+                                   request=req,
+                                   content_type='text/plain')
         except exception.ForbiddenPublicImage:
             msg = _("Update denied for public image %(id)s")
             LOG.info(msg % {'id': id})
@@ -411,8 +411,8 @@ class Controller(object):
             msg = _("Access denied to image %(id)s but returning 'not found'")
             LOG.info(msg % {'id': id})
             raise exc.HTTPNotFound(body='Image not found',
-                               request=req,
-                               content_type='text/plain')
+                                   request=req,
+                                   content_type='text/plain')
 
 
 def make_image_dict(image):
