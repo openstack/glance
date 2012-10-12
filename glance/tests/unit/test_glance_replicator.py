@@ -20,6 +20,7 @@ import json
 import os
 import StringIO
 import sys
+import UserDict
 
 from glance.tests import utils as test_utils
 
@@ -241,3 +242,33 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
         c.conn.prime_request('PUT', 'v1/images/%s' % image_meta['id'],
                              '', image_meta_headers, 200, '', '')
         headers, body = c.add_image_meta(image_meta)
+
+
+class FakeImageService(object):
+    def __init__(self, http_conn, authtoken):
+        pass
+
+    def get_images(self):
+        return [{'status': 'active', 'size': 100, 'id': 123},
+                {'status': 'deleted', 'size': 200, 'id': 456},
+                {'status': 'active', 'size': 300, 'id': 789}]
+
+
+class ReplicationCommandsTestCase(test_utils.BaseTestCase):
+    def test_replication_size(self):
+        options = UserDict.UserDict()
+        options.slavetoken = 'slavetoken'
+        args = ['localhost:9292']
+
+        stdout = sys.stdout
+        sys.stdout = StringIO.StringIO()
+        try:
+            glance_replicator.replication_size(options, args,
+                                               imageservice=FakeImageService)
+            sys.stdout.seek(0)
+            output = sys.stdout.read()
+        finally:
+            sys.stdout = stdout
+
+        output = output.rstrip()
+        self.assertEqual(output, 'Total size is 400 bytes across 2 images')

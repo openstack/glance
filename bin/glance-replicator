@@ -255,7 +255,7 @@ class ImageService(object):
         return headers, body
 
 
-def replication_size(options, args):
+def replication_size(options, args, imageservice=None):
     """%(prog)s size <server:port>
 
     Determine the size of a glance instance if dumped to disk.
@@ -269,7 +269,9 @@ def replication_size(options, args):
     total_size = 0
     count = 0
 
-    client = ImageService(httplib.HTTPConnection(server, port),
+    if not imageservice:
+        imageservice = ImageService
+    client = imageservice(httplib.HTTPConnection(server, port),
                           options.slavetoken)
     for image in client.get_images():
         logging.debug(_('Considering image: %(image)s') % {'image': image})
