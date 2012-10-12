@@ -177,7 +177,7 @@ class ImageService(object):
         d = {}
         for (header, value) in headers:
             if header.startswith('x-image-meta-property-'):
-                prop = header.replace('x-image-meta-properties', '')
+                prop = header.replace('x-image-meta-property-', '')
                 d.setdefault('properties', {})
                 d['properties'][prop] = value
             else:

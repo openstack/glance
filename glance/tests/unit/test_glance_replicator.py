@@ -175,10 +175,16 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
         self.assertEquals(body.read(), image_contents)
 
     def test_rest_header_list_to_dict(self):
-        i = [('x-image-meta-banana', 42), ('gerkin', 12)]
+        i = [('x-image-meta-banana', 42),
+             ('gerkin', 12),
+             ('x-image-meta-property-frog', 11),
+             ('x-image-meta-property-duck', 12)]
         o = glance_replicator.ImageService._header_list_to_dict(i)
         self.assertTrue('banana' in o)
         self.assertTrue('gerkin' in o)
+        self.assertTrue('properties' in o)
+        self.assertTrue('frog' in o['properties'])
+        self.assertTrue('duck' in o['properties'])
         self.assertFalse('x-image-meta-banana' in o)
 
     def test_rest_get_image_meta(self):
@@ -194,10 +200,14 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
 
     def test_rest_dict_to_headers(self):
         i = {'banana': 42,
-             'gerkin': 12}
+             'gerkin': 12,
+             'properties': {'frog': 1}
+             }
         o = glance_replicator.ImageService._dict_to_headers(i)
         self.assertTrue('x-image-meta-banana' in o)
         self.assertTrue('x-image-meta-gerkin' in o)
+        self.assertTrue('x-image-meta-property-frog' in o)
+        self.assertFalse('properties' in o)
 
     def test_rest_add_image(self):
         c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
