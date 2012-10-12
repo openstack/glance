@@ -349,7 +349,7 @@ def minimal_add_command(port, name, suffix='', public=True):
 
 class FakeAuthMiddleware(wsgi.Middleware):
 
-    def __init__(self, app, is_admin=True):
+    def __init__(self, app, is_admin=False):
         super(FakeAuthMiddleware, self).__init__(app)
         self.is_admin = is_admin
 
