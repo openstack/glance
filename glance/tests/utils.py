@@ -360,6 +360,8 @@ class FakeAuthMiddleware(wsgi.Middleware):
         roles = []
         if auth_tok:
             user, tenant, role = auth_tok.split(':')
+            if tenant.lower() == 'none':
+                tenant = None
             roles = [role]
             req.headers['X-User-Id'] = user
             req.headers['X-Tenant-Id'] = tenant

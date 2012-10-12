@@ -1451,3 +1451,102 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual('tenant2', response['x-image-meta-owner'])
 
         self.stop_servers()
+
+    @skip_if_disabled
+    def test_image_visibility_to_different_users(self):
+        self.cleanup()
+        self.api_server.deployment_flavor = 'fakeauth'
+        self.registry_server.deployment_flavor = 'fakeauth'
+        self.start_servers(**self.__dict__.copy())
+
+        owners = ['admin', 'tenant1', 'tenant2', 'none']
+        visibilities = {'public': 'True', 'private': 'False'}
+        image_ids = {}
+
+        for owner in owners:
+            for visibility, is_public in visibilities.items():
+                name = '%s-%s' % (owner, visibility),
+                headers = {
+                    'Content-Type': 'application/octet-stream',
+                    'X-Image-Meta-Name': name,
+                    'X-Image-Meta-Status': 'active',
+                    'X-Image-Meta-Is-Public': is_public,
+                    'X-Image-Meta-Owner': owner,
+                    'X-Auth-Token': 'createuser:createtenant:admin',
+                }
+                path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+                http = httplib2.Http()
+                response, content = http.request(path, 'POST',
+                                                 headers=headers)
+                self.assertEqual(response.status, 201)
+                data = json.loads(content)
+                image_ids[name] = data['image']['id']
+
+        def list_images(tenant, role='', is_public=None):
+            auth_token = 'user:%s:%s' % (tenant, role)
+            headers = {'X-Auth-Token': auth_token}
+            path = "http://127.0.0.1:%d/v1/images/detail" % self.api_port
+            if is_public is not None:
+                path += '?is_public=%s' % is_public
+            http = httplib2.Http()
+            response, content = http.request(path, 'GET', headers=headers)
+            self.assertEqual(response.status, 200)
+            return json.loads(content)['images']
+
+        # 1. Known user sees public and their own images
+        images = list_images('tenant1')
+        self.assertEquals(len(images), 5)
+        for image in images:
+            self.assertTrue(image['is_public'] or image['owner'] == 'tenant1')
+
+        # 2. Unknown user sees only public images
+        images = list_images('none')
+        self.assertEquals(len(images), 4)
+        for image in images:
+            self.assertTrue(image['is_public'])
+
+        # 3. Unknown admin sees only public images
+        images = list_images('none', role='admin')
+        self.assertEquals(len(images), 4)
+        for image in images:
+            self.assertTrue(image['is_public'])
+
+        # 4. Unknown admin, is_public=none, shows all images
+        images = list_images('none', role='admin', is_public='none')
+        self.assertEquals(len(images), 8)
+
+        # 5. Unknown admin, is_public=true, shows only public images
+        images = list_images('none', role='admin', is_public='true')
+        self.assertEquals(len(images), 4)
+        for image in images:
+            self.assertTrue(image['is_public'])
+
+        # 6. Unknown admin, is_public=false, sees only private images
+        images = list_images('none', role='admin', is_public='false')
+        self.assertEquals(len(images), 4)
+        for image in images:
+            self.assertFalse(image['is_public'])
+
+        # 7. Known admin sees public and their own images
+        images = list_images('admin', role='admin')
+        self.assertEquals(len(images), 5)
+        for image in images:
+            self.assertTrue(image['is_public'] or image['owner'] == 'admin')
+
+        # 8. Known admin, is_public=none, shows all images
+        images = list_images('admin', role='admin', is_public='none')
+        self.assertEquals(len(images), 8)
+
+        # 9. Known admin, is_public=true, sees all public and their images
+        images = list_images('admin', role='admin', is_public='true')
+        self.assertEquals(len(images), 5)
+        for image in images:
+            self.assertTrue(image['is_public'] or image['owner'] == 'admin')
+
+        # 10. Known admin, is_public=false, sees all private images
+        images = list_images('admin', role='admin', is_public='false')
+        self.assertEquals(len(images), 4)
+        for image in images:
+            self.assertFalse(image['is_public'])
+
+        self.stop_servers()
