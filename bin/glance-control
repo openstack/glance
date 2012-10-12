@@ -49,7 +49,7 @@ from glance.openstack.common import cfg
 
 CONF = cfg.CONF
 
-ALL_COMMANDS = ['start', 'stop', 'shutdown', 'restart',
+ALL_COMMANDS = ['start', 'status', 'stop', 'shutdown', 'restart',
                 'reload', 'force-reload']
 ALL_SERVERS = ['glance-api', 'glance-registry', 'glance-scrubber']
 GRACEFUL_SHUTDOWN_SERVERS = ['glance-api', 'glance-registry',
@@ -197,6 +197,14 @@ def do_start(verb, pid_file, server, args):
     return launch(pid_file, conf_file, CONF.capture_output, CONF.await_child)
 
 
+def do_check_status(pid_file, server):
+    if os.path.exists(pid_file):
+        pid = open(pid_file).read().strip()
+        print "%s running: %s" % (server, pid)
+    else:
+        print "No %s running" % server
+
+
 def get_pid_file(pid, pid_file):
     pid_file = (os.path.abspath(pid_file) if pid_file else
                 '/var/run/glance/%s.pid' % server)
@@ -337,6 +345,11 @@ if __name__ == '__main__':
             children[pid] = args
 
         anticipate_respawn(children)
+
+    if command == 'status':
+        for server in servers:
+            pid_file = get_pid_file(server, CONF.pid_file)
+            do_check_status(pid_file, server)
 
     if command == 'stop':
         for server in servers:
