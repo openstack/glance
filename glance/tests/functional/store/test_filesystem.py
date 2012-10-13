@@ -45,7 +45,8 @@ class TestFilesystemStore(store_tests.BaseTestCase, unittest.TestCase):
             fap.write("[DEFAULT]\n")
             fap.write("filesystem_store_datadir=%s" % self.store_dir)
 
-        glance.openstack.common.cfg.CONF(default_config_files=[config_file])
+        glance.openstack.common.cfg.CONF(default_config_files=[config_file],
+                                         args=[])
 
         super(TestFilesystemStore, self).setUp()
 
