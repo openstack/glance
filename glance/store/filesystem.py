@@ -126,7 +126,12 @@ class Store(glance.store.base.Store):
             LOG.info(msg)
             try:
                 os.makedirs(self.datadir)
-            except IOError:
+            except (IOError, OSError):
+                if os.path.exists(self.datadir):
+                    # NOTE(markwash): If the path now exists, some other
+                    # process must have beat us in the race condition. But it
+                    # doesn't hurt, so we can safely ignore the error.
+                    return
                 reason = _("Unable to create datadir: %s") % self.datadir
                 LOG.error(reason)
                 raise exception.BadStoreConfiguration(store_name="filesystem",
