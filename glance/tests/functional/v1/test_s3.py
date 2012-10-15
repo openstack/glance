@@ -65,10 +65,10 @@ class TestS3(test_api.TestApi):
         found in the environs or /tests/functional/test_s3.conf, if found.
         If the connection fails, mark all tests to skip.
         """
+        setup_s3(self)
+
         if self.disabled:
             return
-
-        setup_s3(self)
 
         self.default_store = 's3'
 
