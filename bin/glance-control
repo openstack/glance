@@ -106,9 +106,9 @@ def do_start(verb, pid_file, server, args):
 
         try:
             resource.setrlimit(resource.RLIMIT_NOFILE,
-                    (MAX_DESCRIPTORS, MAX_DESCRIPTORS))
+                               (MAX_DESCRIPTORS, MAX_DESCRIPTORS))
             resource.setrlimit(resource.RLIMIT_DATA,
-                    (MAX_MEMORY, MAX_MEMORY))
+                               (MAX_MEMORY, MAX_MEMORY))
         except ValueError:
             action = 'increase file descriptor limit'
             print 'Unable to %s.  Running as non-root?' % action
@@ -189,7 +189,6 @@ def do_start(verb, pid_file, server, args):
                 exitcode = os.WEXITSTATUS(status)
                 break
             time.sleep(0.05)
-
 
     conf_file = None
     if args and os.path.exists(args[0]):
@@ -273,7 +272,7 @@ if __name__ == '__main__':
             cfg.BoolOpt('respawn',
                         default=False,
                         help='Restart service on unexpected death'),
-        ]
+    ]
     CONF.register_cli_opts(opts)
 
     args = config.parse_args(usage=USAGE)
