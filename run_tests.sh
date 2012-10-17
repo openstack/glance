@@ -24,8 +24,9 @@ function process_option {
     -N|--no-virtual-env) let always_venv=0; let never_venv=1;;
     -p|--pep8) let just_pep8=1;;
     -f|--force) let force=1;;
-    --unittests-only) noseargs="$noseargs --exclude-dir=glance/tests/functional";;
-    -c|--coverage) noseargs="$noseargs --with-coverage --cover-package=glance";;
+    --unittests-only) noseopts="$noseopts --exclude-dir=glance/tests/functional";;
+    -c|--coverage) noseopts="$noseopts --with-coverage --cover-package=glance";;
+    -*) noseopts="$noseopts $1";;
     *) noseargs="$noseargs $1"
   esac
 }
@@ -35,6 +36,7 @@ with_venv=tools/with_venv.sh
 always_venv=0
 never_venv=0
 force=0
+noseopts=
 noseargs=
 wrapper=""
 just_pep8=0
@@ -67,7 +69,7 @@ function run_pep8 {
 }
 
 
-NOSETESTS="nosetests $noseargs"
+NOSETESTS="nosetests $noseopts $noseargs"
 
 if [ $never_venv -eq 0 ]
 then
