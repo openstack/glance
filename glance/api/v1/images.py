@@ -709,6 +709,14 @@ class Controller(controller.BaseController):
         orig_image_meta = self.get_image_meta_or_404(req, id)
         orig_status = orig_image_meta['status']
 
+        # Do not allow any updates on a deleted image.
+        # Fix for LP Bug #1060930
+        if orig_status == 'deleted':
+            msg = _("Forbidden to update deleted image.")
+            raise HTTPForbidden(explanation=msg,
+                                request=req,
+                                content_type="text/plain")
+
         # The default behaviour for a PUT /images/<IMAGE_ID> is to
         # override any properties that were previously set. This, however,
         # leads to a number of issues for the common use case where a caller
