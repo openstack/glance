@@ -43,6 +43,7 @@ setuptools.setup(
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 2.6',
         'Environment :: No Input/Output (Daemon)',
+        'Environment :: OpenStack',
     ],
     scripts=['bin/glance-api',
              'bin/glance-cache-prefetcher',
