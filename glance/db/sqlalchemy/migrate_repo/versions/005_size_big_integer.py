@@ -51,7 +51,7 @@ def get_images_table(meta):
                           default=False,
                           index=True),
                    mysql_engine='InnoDB',
-                   useexisting=True)
+                   extend_existing=True)
 
     return images
 
