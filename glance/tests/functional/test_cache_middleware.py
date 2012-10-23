@@ -305,7 +305,7 @@ class BaseCacheManageMiddlewareTest(object):
         self.assertEqual(image_id1, cached_images[0]['image_id'])
 
         # Set policy to disallow access to cache management
-        rules = {"manage_image_cache": [["false:false"]]}
+        rules = {"manage_image_cache": '!'}
         self.set_policy_rules(rules)
 
         # Verify an unprivileged user cannot see cached images

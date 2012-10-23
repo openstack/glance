@@ -30,7 +30,7 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         enforcer.enforce(context, 'get_image', {})
 
     def test_policy_file_custom_rules_default_location(self):
-        rules = {"get_image": [["false:false"]]}
+        rules = {"get_image": '!'}
         self.set_policy_rules(rules)
 
         enforcer = glance.api.policy.Enforcer()
@@ -42,7 +42,7 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
     def test_policy_file_custom_location(self):
         self.config(policy_file=os.path.join(self.test_dir, 'gobble.gobble'))
 
-        rules = {"get_image": [["false:false"]]}
+        rules = {"get_image": '!'}
         self.set_policy_rules(rules)
 
         enforcer = glance.api.policy.Enforcer()
@@ -50,6 +50,17 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         context = glance.context.RequestContext(roles=[])
         self.assertRaises(exception.Forbidden,
                           enforcer.enforce, context, 'get_image', {})
+
+    def test_policy_file_check(self):
+        self.config(policy_file=os.path.join(self.test_dir, 'gobble.gobble'))
+
+        rules = {"get_image": '!'}
+        self.set_policy_rules(rules)
+
+        enforcer = glance.api.policy.Enforcer()
+
+        context = glance.context.RequestContext(roles=[])
+        self.assertEqual(enforcer.check(context, 'get_image', {}), False)
 
 
 class TestPolicyEnforcerNoFile(test_utils.BaseTestCase):

@@ -37,8 +37,8 @@ CONF.register_opts(policy_opts)
 
 
 DEFAULT_RULES = {
-    'default': [[]],
-    'manage_image_cache': [['role:admin']]
+    'default': policy.TrueCheck(),
+    'manage_image_cache': policy.RoleCheck('role', 'admin'),
 }
 
 
@@ -52,18 +52,23 @@ class Enforcer(object):
         self.policy_file_contents = None
 
     def set_rules(self, rules):
-        """Create a new Brain based on the provided dict of rules"""
-        brain = policy.Brain(rules, self.default_rule)
-        policy.set_brain(brain)
+        """Create a new Rules object based on the provided dict of rules"""
+        rules_obj = policy.Rules(rules, self.default_rule)
+        policy.set_rules(rules_obj)
 
     def load_rules(self):
         """Set the rules found in the json file on disk"""
         if self.policy_path:
             rules = self._read_policy_file()
-            LOG.debug(_('Loaded policy rules: %s') % rules)
+            rule_type = ""
         else:
             rules = DEFAULT_RULES
-            LOG.debug(_('Using default policy rules: %s') % rules)
+            rule_type = "default "
+
+        text_rules = dict((k, str(v)) for k, v in rules.items())
+        LOG.debug(_('Loaded %(rule_type)spolicy rules: %(text_rules)s') %
+                  locals())
+
         self.set_rules(rules)
 
     @staticmethod
@@ -86,9 +91,31 @@ class Enforcer(object):
             LOG.debug(_("Loading policy from %s") % self.policy_path)
             with open(self.policy_path) as fap:
                 raw_contents = fap.read()
-                self.policy_file_contents = json.loads(raw_contents)
+                rules_dict = json.loads(raw_contents)
+                self.policy_file_contents = dict(
+                    (k, policy.parse_rule(v))
+                    for k, v in rules_dict.items())
             self.policy_file_mtime = mtime
         return self.policy_file_contents
+
+    def _check(self, context, rule, target, *args, **kwargs):
+        """Verifies that the action is valid on the target in this context.
+
+           :param context: Glance request context
+           :param rule: String representing the action to be checked
+           :param object: Dictionary representing the object of the action.
+           :raises: `glance.common.exception.Forbidden`
+           :returns: A non-False value if access is allowed.
+        """
+        self.load_rules()
+
+        credentials = {
+            'roles': context.roles,
+            'user': context.user,
+            'tenant': context.tenant,
+        }
+
+        return policy.check(rule, target, credentials, *args, **kwargs)
 
     def enforce(self, context, action, target):
         """Verifies that the action is valid on the target in this context.
@@ -97,16 +124,17 @@ class Enforcer(object):
            :param action: String representing the action to be checked
            :param object: Dictionary representing the object of the action.
            :raises: `glance.common.exception.Forbidden`
-           :returns: None
+           :returns: A non-False value if access is allowed.
         """
-        self.load_rules()
+        return self._check(context, action, target,
+                           exception.Forbidden, action=action)
 
-        match_list = ('rule:%s' % action,)
-        credentials = {
-            'roles': context.roles,
-            'user': context.user,
-            'tenant': context.tenant,
-        }
+    def check(self, context, action, target):
+        """Verifies that the action is valid on the target in this context.
 
-        policy.enforce(match_list, target, credentials,
-                       exception.Forbidden, action=action)
+           :param context: Glance request context
+           :param action: String representing the action to be checked
+           :param object: Dictionary representing the object of the action.
+           :returns: A non-False value if access is allowed.
+        """
+        return self._check(context, action, target)
