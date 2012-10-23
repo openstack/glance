@@ -121,10 +121,9 @@ class Scrubber(object):
                 delete_work.append((id, uri, now))
 
         LOG.info(_("Deleting %s images") % len(delete_work))
-        pool.starmap(self._delete, delete_work)
-        # NOTE(bourke): When not running as a daemon, a slight pause is needed
-        # to allow the starmap to begin it's work.
-        eventlet.sleep(0.1)
+        # NOTE(bourke): The starmap must be iterated to do work
+        for job in pool.starmap(self._delete, delete_work):
+            pass
 
         if self.cleanup:
             self._cleanup(pool)
@@ -187,7 +186,9 @@ class Scrubber(object):
                                 now))
 
         LOG.info(_("Deleting %s images") % len(delete_work))
-        pool.starmap(self._delete, delete_work)
+        # NOTE(bourke): The starmap must be iterated to do work
+        for job in pool.starmap(self._delete, delete_work):
+            pass
 
 
 def read_queue_file(file_path):
