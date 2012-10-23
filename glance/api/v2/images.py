@@ -162,6 +162,12 @@ class ImagesController(object):
             LOG.info(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
 
+        if image['status'] == 'deleted':
+            msg = _("Forbidden to update deleted image.")
+            raise webob.exc.HTTPForbidden(explanation=msg,
+                                          request=req,
+                                          content_type="text/plain")
+
         image = self._normalize_properties(dict(image))
         updates = self._extract_updates(req, image, changes)
 

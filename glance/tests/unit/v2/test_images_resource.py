@@ -383,6 +383,12 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.update,
                           request, utils.generate_uuid(), changes=[])
 
+    def test_update_deleted_image_admin(self):
+        request = unit_test_utils.get_fake_request(is_admin=True)
+        self.controller.delete(request, UUID1)
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
+                          request, UUID1, changes=[])
+
     def test_update_replace_base_attribute(self):
         self.db.image_update(None, UUID1, {'properties': {'foo': 'bar'}})
         request = unit_test_utils.get_fake_request()
