@@ -2238,7 +2238,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEquals(res.status_int, httplib.BAD_REQUEST)
 
     def test_add_image_unauthorized(self):
-        rules = {"add_image": [["false:false"]]}
+        rules = {"add_image": '!'}
         self.set_policy_rules(rules)
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
@@ -2256,7 +2256,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEquals(res.status_int, 403)
 
     def test_add_public_image_unauthorized(self):
-        rules = {"add_image": [], "publicize_image": [["false:false"]]}
+        rules = {"add_image": '@', "publicize_image": '!'}
         self.set_policy_rules(rules)
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-is-public': 'true',
@@ -2502,7 +2502,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def test_publicize_image_unauthorized(self):
         """Create a non-public image then fail to make public"""
-        rules = {"add_image": [], "publicize_image": [["false:false"]]}
+        rules = {"add_image": '@', "publicize_image": '!'}
         self.set_policy_rules(rules)
 
         fixture_headers = {'x-image-meta-store': 'file',
@@ -2731,14 +2731,14 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEquals(res.status_int, 400)
 
     def test_get_images_detailed_unauthorized(self):
-        rules = {"get_images": [["false:false"]]}
+        rules = {"get_images": '!'}
         self.set_policy_rules(rules)
         req = webob.Request.blank('/images/detail')
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 403)
 
     def test_get_images_unauthorized(self):
-        rules = {"get_images": [["false:false"]]}
+        rules = {"get_images": '!'}
         self.set_policy_rules(rules)
         req = webob.Request.blank('/images/detail')
         res = req.get_response(self.api)
@@ -2899,7 +2899,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             self.assertEquals(value, res.headers[key])
 
     def test_image_meta_unauthorized(self):
-        rules = {"get_image": [["false:false"]]}
+        rules = {"get_image": '!'}
         self.set_policy_rules(rules)
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'HEAD'
@@ -2919,14 +2919,14 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
 
     def test_show_image_unauthorized(self):
-        rules = {"get_image": [["false:false"]]}
+        rules = {"get_image": '!'}
         self.set_policy_rules(rules)
         req = webob.Request.blank("/images/%s" % UUID2)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 403)
 
     def test_show_image_unauthorized_download(self):
-        rules = {"download_image": [["false:false"]]}
+        rules = {"download_image": '!'}
         self.set_policy_rules(rules)
         req = webob.Request.blank("/images/%s" % UUID2)
         res = req.get_response(self.api)
@@ -3054,7 +3054,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEquals(res.status_int, httplib.FORBIDDEN)
 
     def test_delete_image_unauthorized(self):
-        rules = {"delete_image": [["false:false"]]}
+        rules = {"delete_image": '!'}
         self.set_policy_rules(rules)
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'DELETE'
