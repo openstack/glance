@@ -15,18 +15,26 @@
 
 
 import glance.db.simple.api
-import glance.tests.functional.db as tests
-from glance.tests.unit import base
+import glance.tests.functional.db as db_tests
 
 
-class TestSimpleDriver(base.IsolatedUnitTest, tests.BaseTestCase):
+def get_db(config):
+    return glance.db.simple.api
 
-    def setUp(self):
-        base.IsolatedUnitTest.setUp(self)
-        tests.BaseTestCase.setUp(self)
 
-    def configure(self):
-        self.db_api = glance.db.simple.api
+def reset_db(db_api):
+    db_api.reset()
 
-    def reset(self):
-        self.db_api.reset()
+
+def setUpModule():
+    """Stub in get_db and reset_db for testing the simple db api."""
+    db_tests.load(get_db, reset_db)
+
+
+def tearDownModule():
+    """Reset get_db and reset_db for cleanliness."""
+    db_tests.reset()
+
+
+#NOTE(markwash): Pull in all the base test cases
+from glance.tests.functional.db.base import *
