@@ -829,6 +829,12 @@ class Controller(controller.BaseController):
                                 request=req,
                                 content_type="text/plain")
 
+        if image['status'] == 'deleted':
+            msg = _("Forbidden to delete a deleted image.")
+            LOG.debug(msg)
+            raise HTTPForbidden(explanation=msg, request=req,
+                                content_type="text/plain")
+
         if image['location'] and CONF.delayed_delete:
             status = 'pending_delete'
         else:
