@@ -142,9 +142,12 @@ class ImagesController(object):
 
     def _get_image(self, context, image_id):
         try:
-            return self.db_api.image_get(context, image_id)
+            image = self.db_api.image_get(context, image_id)
+            if image['deleted']:
+                raise exception.NotFound()
         except (exception.NotFound, exception.Forbidden):
             raise webob.exc.HTTPNotFound()
+        return image
 
     def show(self, req, image_id):
         self._enforce(req, 'get_image')
@@ -158,6 +161,8 @@ class ImagesController(object):
         context = req.context
         try:
             image = self.db_api.image_get(context, image_id)
+            if image['deleted']:
+                raise exception.NotFound()
         except (exception.NotFound, exception.Forbidden):
             msg = ("Failed to find image %(image_id)s to update" % locals())
             LOG.info(msg)
