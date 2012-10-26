@@ -119,12 +119,14 @@ def db_sync(version=None, current_version=None):
     try:
         _version_control(current_version or 0)
     except versioning_exceptions.DatabaseAlreadyControlledError, e:
-        if current_version is not None:
-            msg = (_("database '%(sql_connection)s' is already under "
-                     "migration control") % locals())
-            raise exception.DatabaseMigrationError(msg)
+        pass
 
-    upgrade(version=version)
+    if current_version is None:
+        current_version = int(db_version())
+    if version is not None and int(version) < current_version:
+        downgrade(version=version)
+    elif version is None or int(version) > current_version:
+        upgrade(version=version)
 
 
 def get_migrate_repo_path():

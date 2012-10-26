@@ -211,6 +211,20 @@ class TestMigrations(utils.BaseTestCase):
             cur_version = migration_api.db_version()
             self.assertEqual(cur_version, version)
 
+    def test_db_sync(self):
+        initial_version = 0
+        migration_api.db_sync(initial_version)
+        cur_version = migration_api.db_version()
+        self.assertEqual(cur_version, initial_version)
+
+        migration_api.db_sync(TestMigrations.REPOSITORY.latest)
+        cur_version = migration_api.db_version()
+        self.assertEqual(cur_version, TestMigrations.REPOSITORY.latest)
+
+        migration_api.db_sync(initial_version)
+        cur_version = migration_api.db_version()
+        self.assertEqual(cur_version, initial_version)
+
     def test_no_data_loss_2_to_3_to_2(self):
         """
         Here, we test that in the case when we moved a column "type" from the
