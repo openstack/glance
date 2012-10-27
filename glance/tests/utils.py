@@ -387,3 +387,9 @@ class FakeHTTPResponse(object):
 
     def getheader(self, name, default=None):
         return self.headers.get(name.lower(), default)
+
+    def getheaders(self):
+        return self.headers or {}
+
+    def read(self, amt):
+        self.data.read(amt)

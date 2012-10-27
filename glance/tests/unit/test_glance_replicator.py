@@ -18,8 +18,10 @@ import copy
 import imp
 import json
 import os
+import shutil
 import StringIO
 import sys
+import tempfile
 import UserDict
 
 from glance.tests import utils as test_utils
@@ -249,9 +251,16 @@ class FakeImageService(object):
         pass
 
     def get_images(self):
-        return [{'status': 'active', 'size': 100, 'id': 123},
-                {'status': 'deleted', 'size': 200, 'id': 456},
-                {'status': 'active', 'size': 300, 'id': 789}]
+        return [{'status': 'active', 'size': 100, 'id': '123'},
+                {'status': 'deleted', 'size': 200, 'id': '456'},
+                {'status': 'active', 'size': 300, 'id': '789'}]
+
+    def get_image(self, id):
+        return test_utils.FakeHTTPResponse()
+
+
+def get_image_service():
+    return FakeImageService
 
 
 class ReplicationCommandsTestCase(test_utils.BaseTestCase):
@@ -261,14 +270,56 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
         args = ['localhost:9292']
 
         stdout = sys.stdout
+        orig_img_service = glance_replicator.get_image_service
         sys.stdout = StringIO.StringIO()
         try:
-            glance_replicator.replication_size(options, args,
-                                               imageservice=FakeImageService)
+            glance_replicator.get_image_service = get_image_service
+            glance_replicator.replication_size(options, args)
             sys.stdout.seek(0)
             output = sys.stdout.read()
         finally:
             sys.stdout = stdout
+            glance_replicator.get_image_service = orig_img_service
 
         output = output.rstrip()
         self.assertEqual(output, 'Total size is 400 bytes across 2 images')
+
+    def test_replication_dump(self):
+        tempdir = tempfile.mkdtemp()
+
+        orig_img_service = glance_replicator.get_image_service
+        try:
+            options = UserDict.UserDict()
+            options.chunksize = 4096
+            options.mastertoken = 'mastertoken'
+            options.metaonly = False
+            args = ['localhost:9292', tempdir]
+
+            glance_replicator.get_image_service = get_image_service
+            glance_replicator.replication_dump(options, args)
+
+            for active in ['123', '789']:
+                imgfile = os.path.join(tempdir, active)
+                self.assertTrue(os.path.exists(imgfile))
+                self.assertTrue(os.path.exists('%s.img' % imgfile))
+
+                with open(imgfile) as f:
+                    d = json.loads(f.read())
+                    self.assertTrue('status' in d)
+                    self.assertTrue('id' in d)
+                    self.assertTrue('size' in d)
+
+            for inactive in ['456']:
+                imgfile = os.path.join(tempdir, inactive)
+                self.assertTrue(os.path.exists(imgfile))
+                self.assertFalse(os.path.exists('%s.img' % imgfile))
+
+                with open(imgfile) as f:
+                    d = json.loads(f.read())
+                    self.assertTrue('status' in d)
+                    self.assertTrue('id' in d)
+                    self.assertTrue('size' in d)
+
+        finally:
+            glance_replicator.get_image_service = orig_img_service
+            shutil.rmtree(tempdir)

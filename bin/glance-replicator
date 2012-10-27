@@ -254,8 +254,15 @@ class ImageService(object):
         body = response.read()
         return headers, body
 
+def get_image_service():
+    """Get a copy of the image service.
 
-def replication_size(options, args, imageservice=None):
+    This is done like this to make it easier to mock out ImageService.
+    """
+    return ImageService
+
+
+def replication_size(options, args):
     """%(prog)s size <server:port>
 
     Determine the size of a glance instance if dumped to disk.
@@ -269,8 +276,7 @@ def replication_size(options, args, imageservice=None):
     total_size = 0
     count = 0
 
-    if not imageservice:
-        imageservice = ImageService
+    imageservice = get_image_service()
     client = imageservice(httplib.HTTPConnection(server, port),
                           options.slavetoken)
     for image in client.get_images():
@@ -295,7 +301,8 @@ def replication_dump(options, args):
     server_port = args.pop()
     server, port = server_port.split(':')
 
-    client = ImageService(httplib.HTTPConnection(server, port),
+    imageservice = get_image_service()
+    client = imageservice(httplib.HTTPConnection(server, port),
                           options.mastertoken)
     for image in client.get_images():
         logging.info(_('Considering: %s' % image['id']))
