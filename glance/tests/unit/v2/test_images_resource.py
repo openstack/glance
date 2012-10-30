@@ -108,6 +108,20 @@ class TestImagesController(test_utils.BaseTestCase):
         expected = set([UUID3])
         self.assertEqual(actual, expected)
 
+    def test_index_admin(self):
+        request = unit_test_utils.get_fake_request(is_admin=True)
+        output = self.controller.index(request)
+        self.assertEqual(4, len(output['images']))
+
+    def test_index_admin_deleted_images_hidden(self):
+        request = unit_test_utils.get_fake_request(is_admin=True)
+        self.controller.delete(request, UUID1)
+        output = self.controller.index(request)
+        self.assertEqual(3, len(output['images']))
+        actual = set([image['id'] for image in output['images']])
+        expected = set([UUID2, UUID3, UUID4])
+        self.assertEqual(actual, expected)
+
     def test_index_return_parameters(self):
         self.config(limit_param_default=1, api_limit_max=3)
         request = unit_test_utils.get_fake_request()
@@ -322,6 +336,12 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.show, request, image_id)
 
+    def test_show_deleted_image_admin(self):
+        request = unit_test_utils.get_fake_request(is_admin=True)
+        self.controller.delete(request, UUID1)
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.controller.show, request, UUID1)
+
     def test_create(self):
         request = unit_test_utils.get_fake_request()
         image = {'name': 'image-1'}
@@ -386,7 +406,7 @@ class TestImagesController(test_utils.BaseTestCase):
     def test_update_deleted_image_admin(self):
         request = unit_test_utils.get_fake_request(is_admin=True)
         self.controller.delete(request, UUID1)
-        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
+        self.assertRaises(webob.exc.HTTPNotFound, self.controller.update,
                           request, UUID1, changes=[])
 
     def test_update_replace_base_attribute(self):
@@ -621,6 +641,12 @@ class TestImagesController(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.delete,
                           request, utils.generate_uuid())
+
+    def test_delete_already_deleted_image_admin(self):
+        request = unit_test_utils.get_fake_request(is_admin=True)
+        self.controller.delete(request, UUID1)
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.controller.delete, request, UUID1)
 
     def test_index_with_invalid_marker(self):
         fake_uuid = utils.generate_uuid()
