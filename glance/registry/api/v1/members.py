@@ -273,14 +273,16 @@ class Controller(object):
             raise webob.exc.HTTPForbidden(msg)
 
         # Look up an existing membership
-        try:
-            session = self.db_api.get_session()
-            members = self.db_api.image_member_find(req.context,
-                                                    image_id=image_id,
-                                                    member=id)
+        members = self.db_api.image_member_find(req.context,
+                                                image_id=image_id,
+                                                member=id)
+        if members:
             self.db_api.image_member_delete(req.context, members[0]['id'])
-        except exception.NotFound:
-            pass
+        else:
+            msg = _("%(id)s is not a member of image %(image_id)s")
+            LOG.debug(msg % locals())
+            msg = _("Membership could not be found.")
+            raise webob.exc.HTTPNotFound(explanation=msg)
 
         # Make an appropriate result
         msg = _("Successfully deleted a membership from image %(id)s")
