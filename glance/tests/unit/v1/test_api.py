@@ -198,6 +198,38 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 404)
 
+    def test_show_deleted_image_as_admin(self):
+        """
+        Tests that the /images/<id> registry API endpoint
+        returns a 200 for deleted image to admin user.
+        """
+        # Delete image #2
+        req = webob.Request.blank('/images/%s' % UUID2)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        req = webob.Request.blank('/images/%s' % UUID2)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+    def test_show_deleted_image_as_nonadmin(self):
+        """
+        Tests that the /images/<id> registry API endpoint
+        returns a 404 for deleted image to non-admin user.
+        """
+        # Delete image #2
+        req = webob.Request.blank('/images/%s' % UUID2)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
+                                            is_admin=False)
+        req = webob.Request.blank('/images/%s' % UUID2)
+        res = req.get_response(api)
+        self.assertEquals(res.status_int, 404)
+
     def test_get_root(self):
         """
         Tests that the root registry API returns "index",
@@ -2371,6 +2403,19 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPForbidden.code)
         self.assertTrue('Forbidden to update deleted image' in res.body)
+
+    def test_delete_deleted_image(self):
+        """Tests that exception raised trying to delete a deleted image"""
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPForbidden.code)
+        self.assertTrue('Forbidden to delete a deleted image' in res.body)
 
     def test_register_and_upload(self):
         """
