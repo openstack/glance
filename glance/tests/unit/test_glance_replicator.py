@@ -23,6 +23,7 @@ import StringIO
 import sys
 import tempfile
 import UserDict
+import uuid
 
 from glance.tests import utils as test_utils
 
@@ -143,9 +144,12 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
                           (409,
                            glance_replicator.ImageAlreadyPresentException),
                           (500, glance_replicator.ServerErrorException)]:
-            c.conn.prime_request('GET', 'v1/images/123', '',
+            c.conn.prime_request('GET',
+                                 ('v1/images/'
+                                  '5dcddce0-cba5-4f18-9cf4-9853c7b207a6'), '',
                                  {'x-auth-token': 'noauth'}, code, '', {})
-            self.assertRaises(exc, c.get_image, '123')
+            self.assertRaises(exc, c.get_image,
+                              '5dcddce0-cba5-4f18-9cf4-9853c7b207a6')
 
     def test_rest_get_images(self):
         c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
@@ -236,7 +240,7 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
     def test_rest_add_image_meta(self):
         c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
 
-        image_meta = {'id': 123}
+        image_meta = {'id': '5dcddce0-cba5-4f18-9cf4-9853c7b207a6'}
         image_meta_headers = \
             glance_replicator.ImageService._dict_to_headers(image_meta)
         image_meta_headers['x-auth-token'] = 'noauth'
@@ -246,17 +250,61 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
         headers, body = c.add_image_meta(image_meta)
 
 
+class FakeHttpResponse(object):
+    def __init__(self, headers, data):
+        self.headers = headers
+        self.data = StringIO.StringIO(data)
+
+    def getheaders(self):
+        return self.headers
+
+    def read(self, amt=None):
+        return self.data.read(amt)
+
+
+FAKEIMAGES = [{'status': 'active', 'size': 100, 'dontrepl': 'banana',
+               'id': '5dcddce0-cba5-4f18-9cf4-9853c7b207a6'},
+              {'status': 'deleted', 'size': 200, 'dontrepl': 'banana',
+               'id': 'f4da1d2a-40e8-4710-b3aa-0222a4cc887b'},
+              {'status': 'active', 'size': 300, 'dontrepl': 'banana',
+               'id': '37ff82db-afca-48c7-ae0b-ddc7cf83e3db'}]
+FAKEIMAGES_LIVEMASTER = [{'status': 'active', 'size': 100,
+                          'dontrepl': 'banana',
+                          'id': '5dcddce0-cba5-4f18-9cf4-9853c7b207a6'},
+                         {'status': 'deleted', 'size': 200,
+                          'dontrepl': 'banana',
+                          'id': 'f4da1d2a-40e8-4710-b3aa-0222a4cc887b'},
+                         {'status': 'deleted', 'size': 300,
+                          'dontrepl': 'banana',
+                          'id': '37ff82db-afca-48c7-ae0b-ddc7cf83e3db'},
+                         {'status': 'active', 'size': 100,
+                          'dontrepl': 'banana',
+                          'id': '15648dd7-8dd0-401c-bd51-550e1ba9a088'}]
+
+
 class FakeImageService(object):
     def __init__(self, http_conn, authtoken):
-        pass
+        self.authtoken = authtoken
 
     def get_images(self):
-        return [{'status': 'active', 'size': 100, 'id': '123'},
-                {'status': 'deleted', 'size': 200, 'id': '456'},
-                {'status': 'active', 'size': 300, 'id': '789'}]
+        if self.authtoken == 'livemastertoken':
+            return FAKEIMAGES_LIVEMASTER
+        return FAKEIMAGES
 
     def get_image(self, id):
-        return test_utils.FakeHTTPResponse()
+        return FakeHttpResponse({}, 'data')
+
+    def get_image_meta(self, id):
+        for img in FAKEIMAGES:
+            if img['id'] == id:
+                return img
+        return {}
+
+    def add_image_meta(self, meta):
+        return {'status': 200}, None
+
+    def add_image(self, meta, data):
+        return {'status': 200}, None
 
 
 def get_image_service():
@@ -287,18 +335,19 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
     def test_replication_dump(self):
         tempdir = tempfile.mkdtemp()
 
+        options = UserDict.UserDict()
+        options.chunksize = 4096
+        options.mastertoken = 'mastertoken'
+        options.metaonly = False
+        args = ['localhost:9292', tempdir]
+
         orig_img_service = glance_replicator.get_image_service
         try:
-            options = UserDict.UserDict()
-            options.chunksize = 4096
-            options.mastertoken = 'mastertoken'
-            options.metaonly = False
-            args = ['localhost:9292', tempdir]
-
             glance_replicator.get_image_service = get_image_service
             glance_replicator.replication_dump(options, args)
 
-            for active in ['123', '789']:
+            for active in ['5dcddce0-cba5-4f18-9cf4-9853c7b207a6',
+                           '37ff82db-afca-48c7-ae0b-ddc7cf83e3db']:
                 imgfile = os.path.join(tempdir, active)
                 self.assertTrue(os.path.exists(imgfile))
                 self.assertTrue(os.path.exists('%s.img' % imgfile))
@@ -309,7 +358,7 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
                     self.assertTrue('id' in d)
                     self.assertTrue('size' in d)
 
-            for inactive in ['456']:
+            for inactive in ['f4da1d2a-40e8-4710-b3aa-0222a4cc887b']:
                 imgfile = os.path.join(tempdir, inactive)
                 self.assertTrue(os.path.exists(imgfile))
                 self.assertFalse(os.path.exists('%s.img' % imgfile))
@@ -323,3 +372,141 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
         finally:
             glance_replicator.get_image_service = orig_img_service
             shutil.rmtree(tempdir)
+
+    def test_replication_load(self):
+        tempdir = tempfile.mkdtemp()
+
+        def write_image(img, data):
+            imgfile = os.path.join(tempdir, img['id'])
+            with open(imgfile, 'w') as f:
+                f.write(json.dumps(img))
+
+            if data:
+                with open('%s.img' % imgfile, 'w') as f:
+                    f.write(data)
+
+        try:
+            for img in FAKEIMAGES:
+                cimg = copy.copy(img)
+                # We need at least one image where the stashed metadata on disk
+                # is newer than what the fake has
+                if cimg['id'] == '5dcddce0-cba5-4f18-9cf4-9853c7b207a6':
+                    cimg['extra'] = 'thisissomeextra'
+
+                # This is an image where the metadata change should be ignored
+                if cimg['id'] == 'f4da1d2a-40e8-4710-b3aa-0222a4cc887b':
+                    cimg['dontrepl'] = 'thisisyetmoreextra'
+
+                write_image(cimg, 'kjdhfkjshdfkjhsdkfd')
+
+            # And an image which isn't on the destination at all
+            new_id = str(uuid.uuid4())
+            cimg['id'] = new_id
+            write_image(cimg, 'dskjfhskjhfkfdhksjdhf')
+
+            # And an image which isn't on the destination, but lacks image
+            # data
+            new_id_missing_data = str(uuid.uuid4())
+            cimg['id'] = new_id_missing_data
+            write_image(cimg, None)
+
+            # A file which should be ignored
+            badfile = os.path.join(tempdir, 'kjdfhf')
+            with open(badfile, 'w') as f:
+                f.write(json.dumps([1, 2, 3, 4, 5]))
+
+            # Finally, we're ready to test
+            options = UserDict.UserDict()
+            options.dontreplicate = 'dontrepl dontreplabsent'
+            options.slavetoken = 'slavetoken'
+            args = ['localhost:9292', tempdir]
+
+            orig_img_service = glance_replicator.get_image_service
+            try:
+                glance_replicator.get_image_service = get_image_service
+                updated = glance_replicator.replication_load(options, args)
+            finally:
+                glance_replicator.get_image_service = orig_img_service
+
+            self.assertTrue('5dcddce0-cba5-4f18-9cf4-9853c7b207a6' in updated)
+            self.assertFalse('f4da1d2a-40e8-4710-b3aa-0222a4cc887b' in updated)
+            self.assertTrue(new_id in updated)
+            self.assertFalse(new_id_missing_data in updated)
+
+        finally:
+            shutil.rmtree(tempdir)
+
+    def test_replication_livecopy(self):
+        options = UserDict.UserDict()
+        options.chunksize = 4096
+        options.dontreplicate = 'dontrepl dontreplabsent'
+        options.mastertoken = 'livemastertoken'
+        options.slavetoken = 'liveslavetoken'
+        options.metaonly = False
+        args = ['localhost:9292', 'localhost:9393']
+
+        orig_img_service = glance_replicator.get_image_service
+        try:
+            glance_replicator.get_image_service = get_image_service
+            updated = glance_replicator.replication_livecopy(options, args)
+        finally:
+            glance_replicator.get_image_service = orig_img_service
+
+        self.assertEqual(len(updated), 2)
+
+    def test_replication_compare(self):
+        options = UserDict.UserDict()
+        options.chunksize = 4096
+        options.dontreplicate = 'dontrepl dontreplabsent'
+        options.mastertoken = 'livemastertoken'
+        options.slavetoken = 'liveslavetoken'
+        options.metaonly = False
+        args = ['localhost:9292', 'localhost:9393']
+
+        orig_img_service = glance_replicator.get_image_service
+        try:
+            glance_replicator.get_image_service = get_image_service
+            differences = glance_replicator.replication_compare(options, args)
+        finally:
+            glance_replicator.get_image_service = orig_img_service
+
+        self.assertTrue('15648dd7-8dd0-401c-bd51-550e1ba9a088' in differences)
+        self.assertEqual(differences['15648dd7-8dd0-401c-bd51-550e1ba9a088'],
+                         'missing')
+        self.assertTrue('37ff82db-afca-48c7-ae0b-ddc7cf83e3db' in differences)
+        self.assertEqual(differences['37ff82db-afca-48c7-ae0b-ddc7cf83e3db'],
+                         'diff')
+
+
+class ReplicationUtilitiesTestCase(test_utils.BaseTestCase):
+    def test_check_upload_response_headers(self):
+        glance_replicator._check_upload_response_headers({'status': 'active'},
+                                                         None)
+
+        d = {'image': {'status': 'active'}}
+        glance_replicator._check_upload_response_headers({},
+                                                         json.dumps(d))
+
+        self.assertRaises(
+            glance_replicator.UploadException,
+            glance_replicator._check_upload_response_headers, {}, None)
+
+    def test_image_present(self):
+        client = FakeImageService(None, 'noauth')
+        self.assertTrue(glance_replicator._image_present(
+                client, '5dcddce0-cba5-4f18-9cf4-9853c7b207a6'))
+        self.assertFalse(glance_replicator._image_present(
+                client, uuid.uuid4()))
+
+    def test_dict_diff(self):
+        a = {'a': 1, 'b': 2, 'c': 3}
+        b = {'a': 1, 'b': 2}
+        c = {'a': 1, 'b': 1, 'c': 3}
+        d = {'a': 1, 'b': 2, 'c': 3, 'd': 4}
+
+        # Only things that the first dict has which the second dict doesn't
+        # matter here.
+        self.assertFalse(glance_replicator._dict_diff(a, a))
+        self.assertTrue(glance_replicator._dict_diff(a, b))
+        self.assertTrue(glance_replicator._dict_diff(a, c))
+        self.assertFalse(glance_replicator._dict_diff(a, d))

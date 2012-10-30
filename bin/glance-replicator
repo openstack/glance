@@ -378,8 +378,12 @@ def replication_load(options, args):
     path = args.pop()
     server_port = args.pop()
     server, port = server_port.split(':')
-    client = ImageService(httplib.HTTPConnection(server, port),
+
+    imageservice = get_image_service()
+    client = imageservice(httplib.HTTPConnection(server, port),
                           options.slavetoken)
+
+    updated = []
 
     for ent in os.listdir(path):
         if is_uuid_like(ent):
@@ -401,6 +405,7 @@ def replication_load(options, args):
                 # NOTE(mikal): Perhaps we just need to update the metadata?
                 # Note that we don't attempt to change an image file once it
                 # has been uploaded.
+                logging.debug(_('Image %s already present'), image_uuid)
                 headers = client.get_image_meta(image_uuid)
                 for key in options.dontreplicate.split(' '):
                     if key in headers:
@@ -412,6 +417,7 @@ def replication_load(options, args):
                     logging.info(_('... metadata has changed'))
                     headers, body = client.add_image_meta(meta)
                     _check_upload_response_headers(headers, body)
+                    updated.append(meta['id'])
 
             else:
                 if not os.path.exists(os.path.join(path, image_uuid + '.img')):
@@ -423,9 +429,12 @@ def replication_load(options, args):
                     try:
                         headers, body = client.add_image(meta, img_file)
                         _check_upload_response_headers(headers, body)
+                        updated.append(meta['id'])
                     except ImageAlreadyPresentException:
                         logging.error(IMAGE_ALREADY_PRESENT_MESSAGE
                                       % image_uuid)
+
+    return updated
 
 
 def replication_livecopy(options, args):
@@ -437,15 +446,19 @@ def replication_livecopy(options, args):
     toserver:port:   the location of the slave glance instance.
     """
 
+    imageservice = get_image_service()
+
     slave_server_port = args.pop()
     slave_server, slave_port = slave_server_port.split(':')
     slave_conn = httplib.HTTPConnection(slave_server, slave_port)
-    slave_client = ImageService(slave_conn, options.slavetoken)
+    slave_client = imageservice(slave_conn, options.slavetoken)
 
     master_server_port = args.pop()
     master_server, master_port = master_server_port.split(':')
     master_conn = httplib.HTTPConnection(master_server, master_port)
-    master_client = ImageService(master_conn, options.mastertoken)
+    master_client = imageservice(master_conn, options.mastertoken)
+
+    updated = []
 
     for image in master_client.get_images():
         logging.info(_('Considering %(id)s') % {'id': image['id']})
@@ -475,6 +488,7 @@ def replication_livecopy(options, args):
                     logging.info(_('... metadata has changed'))
                     headers, body = slave_client.add_image_meta(image)
                     _check_upload_response_headers(headers, body)
+                    updated.append(image['id'])
 
         elif image['status'] == 'active':
             logging.info(_('%s is being synced') % image['id'])
@@ -484,8 +498,11 @@ def replication_livecopy(options, args):
                     headers, body = slave_client.add_image(image,
                                                            image_response)
                     _check_upload_response_headers(headers, body)
+                    updated.append(image['id'])
                 except ImageAlreadyPresentException:
                     logging.error(IMAGE_ALREADY_PRESENT_MESSAGE % image['id'])
+
+    return updated
 
 
 def replication_compare(options, args):
@@ -497,15 +514,19 @@ def replication_compare(options, args):
     toserver:port:   the location of the slave glance instance.
     """
 
+    imageservice = get_image_service()
+
     slave_server_port = args.pop()
     slave_server, slave_port = slave_server_port.split(':')
     slave_conn = httplib.HTTPConnection(slave_server, slave_port)
-    slave_client = ImageService(slave_conn, options.slavetoken)
+    slave_client = imageservice(slave_conn, options.slavetoken)
 
     master_server_port = args.pop()
     master_server, master_port = master_server_port.split(':')
     master_conn = httplib.HTTPConnection(master_server, master_port)
-    master_client = ImageService(master_conn, options.mastertoken)
+    master_client = imageservice(master_conn, options.mastertoken)
+
+    differences = {}
 
     for image in master_client.get_images():
         if _image_present(slave_client, image['id']):
@@ -530,6 +551,7 @@ def replication_compare(options, args):
                                       'master_value': image[key],
                                       'slave_value': headers.get(key,
                                                                  'undefined')})
+                    differences[image['id']] = 'diff'
                 else:
                     logging.debug(_('%(image_id)s is identical')
                                     % {'image_id': image['id']})
@@ -537,6 +559,9 @@ def replication_compare(options, args):
         elif image['status'] == 'active':
             logging.info(_('%s: entirely missing from the destination')
                            % image['id'])
+            differences[image['id']] = 'missing'
+
+    return differences
 
 
 def _check_upload_response_headers(headers, body):
