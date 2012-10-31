@@ -143,28 +143,21 @@ class ImagesController(object):
                 raise exception.NotFound()
         except (exception.NotFound, exception.Forbidden):
             raise webob.exc.HTTPNotFound()
-        return image
+        else:
+            return dict(image)
 
     def show(self, req, image_id):
         self._enforce(req, 'get_image')
         image = self._get_image(req.context, image_id)
-        image = self._normalize_properties(dict(image))
+        image = self._normalize_properties(image)
         return self._append_tags(req.context, image)
 
     @utils.mutating
     def update(self, req, image_id, changes):
         self._enforce(req, 'modify_image')
         context = req.context
-        try:
-            image = self.db_api.image_get(context, image_id)
-            if image['deleted']:
-                raise exception.NotFound()
-        except (exception.NotFound, exception.Forbidden):
-            msg = ("Failed to find image %(image_id)s to update" % locals())
-            LOG.info(msg)
-            raise webob.exc.HTTPNotFound(explanation=msg)
-
-        image = self._normalize_properties(dict(image))
+        image = self._get_image(context, image_id)
+        image = self._normalize_properties(image)
         updates = self._extract_updates(req, image, changes)
 
         tags = None
