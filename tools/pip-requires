@@ -3,7 +3,7 @@
 # package to get the right headers...
 greenlet>=0.3.1
 
-SQLAlchemy>=0.7
+SQLAlchemy>=0.7,<=0.7.9
 anyjson
 eventlet>=0.9.12
 PasteDeploy
