@@ -827,22 +827,28 @@ class Controller(controller.BaseController):
             raise HTTPForbidden(explanation=msg, request=req,
                                 content_type="text/plain")
 
-        status = 'deleted'
+        if image['location'] and CONF.delayed_delete:
+            status = 'pending_delete'
+        else:
+            status = 'deleted'
+
         try:
+            # Delete the image from the registry first, since we rely on it
+            # for authorization checks.
+            # See https://bugs.launchpad.net/glance/+bug/1065187
+            registry.update_image_metadata(req.context, id, {'status': status})
+            registry.delete_image_metadata(req.context, id)
+
             # The image's location field may be None in the case
             # of a saving or queued image, therefore don't ask a backend
             # to delete the image if the backend doesn't yet store it.
             # See https://bugs.launchpad.net/glance/+bug/747799
             if image['location']:
                 if CONF.delayed_delete:
-                    status = 'pending_delete'
                     schedule_delayed_delete_from_backend(image['location'], id)
                 else:
                     safe_delete_from_backend(image['location'],
                                              req.context, id)
-
-            registry.update_image_metadata(req.context, id, {'status': status})
-            registry.delete_image_metadata(req.context, id)
         except exception.NotFound, e:
             msg = ("Failed to find image to delete: %(e)s" % locals())
             for line in msg.split('\n'):

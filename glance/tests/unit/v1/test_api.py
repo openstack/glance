@@ -3015,6 +3015,26 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
 
+    def test_delete_not_allowed(self):
+        # Verify we can get the image data
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'GET'
+        req.headers['X-Auth-Token'] = 'user:tenant:'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        self.assertEqual(len(res.body), 19)
+
+        # Verify we cannot delete the image
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 403)
+
+        # Verify the image data is still there
+        req.method = 'GET'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        self.assertEqual(len(res.body), 19)
+
     def test_delete_queued_image(self):
         """Delete an image in a queued state
 
