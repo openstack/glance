@@ -41,14 +41,6 @@ class TestUtils(test_utils.BaseTestCase):
         unique = set(uuids)
         self.assertEqual(len(uuids), len(list(unique)))
 
-    def test_is_uuid_like_success(self):
-        fixture = 'b694bf02-6b01-4905-a50e-fcf7bce7e4d2'
-        self.assertTrue(utils.is_uuid_like(fixture))
-
-    def test_is_uuid_like_fails(self):
-        fixture = 'pants'
-        self.assertFalse(utils.is_uuid_like(fixture))
-
     def test_cooperative_reader(self):
         """Ensure cooperative reader class accesses all bytes of file"""
         BYTES = 1024
