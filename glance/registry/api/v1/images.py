@@ -28,6 +28,7 @@ import glance.db
 from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
+from glance.openstack.common import uuidutils
 
 
 LOG = logging.getLogger(__name__)
@@ -213,7 +214,7 @@ class Controller(object):
         """Parse a marker query param into something usable."""
         marker = req.params.get('marker', None)
 
-        if marker and not utils.is_uuid_like(marker):
+        if marker and not uuidutils.is_uuid_like(marker):
             msg = _('Invalid marker format')
             raise exc.HTTPBadRequest(explanation=msg)
 
@@ -343,7 +344,7 @@ class Controller(object):
             image_data['owner'] = req.context.owner
 
         image_id = image_data.get('id')
-        if image_id and not utils.is_uuid_like(image_id):
+        if image_id and not uuidutils.is_uuid_like(image_id):
             msg = _("Rejecting image creation request for invalid image "
                     "id '%(bad_id)s'")
             LOG.info(msg % {'bad_id': image_id})

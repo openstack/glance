@@ -243,14 +243,6 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 
-def is_uuid_like(value):
-    try:
-        uuid.UUID(value)
-        return True
-    except Exception:
-        return False
-
-
 def safe_mkdirs(path):
     try:
         os.makedirs(path)
