@@ -14,7 +14,6 @@
 #    under the License.
 
 import copy
-import datetime
 import functools
 
 from glance.common import exception
@@ -80,7 +79,7 @@ def _image_member_format(image_id, tenant_id, can_share):
 
 
 def _image_format(image_id, **values):
-    dt = datetime.datetime.now()
+    dt = timeutils.utcnow()
     image = {
         'id': image_id,
         'name': None,
@@ -245,7 +244,7 @@ def image_property_delete(context, prop_ref, session=None):
             prop = p
     if not prop:
         raise exception.NotFound()
-    prop['deleted_at'] = datetime.datetime.utcnow()
+    prop['deleted_at'] = timeutils.utcnow()
     prop['deleted'] = True
     return prop
 
@@ -354,7 +353,7 @@ def image_destroy(context, image_id):
     global DATA
     try:
         DATA['images'][image_id]['deleted'] = True
-        DATA['images'][image_id]['deleted_at'] = datetime.datetime.utcnow()
+        DATA['images'][image_id]['deleted_at'] = timeutils.utcnow()
     except KeyError:
         raise exception.NotFound()
 
