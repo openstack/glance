@@ -60,7 +60,13 @@ class FakeRegistryConnection(object):
 
     def getresponse(self):
         mapper = routes.Mapper()
-        api = context.UnauthenticatedContextMiddleware(rserver.API(mapper))
+        server = rserver.API(mapper)
+        # NOTE(markwash): we need to pass through context auth information if
+        # we have it.
+        if 'X-Auth-Token' in self.req.headers:
+            api = utils.FakeAuthMiddleware(server)
+        else:
+            api = context.UnauthenticatedContextMiddleware(server)
         webob_res = self.req.get_response(api)
 
         return utils.FakeHTTPResponse(status=webob_res.status_int,

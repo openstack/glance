@@ -368,6 +368,7 @@ class FakeAuthMiddleware(wsgi.Middleware):
             'tenant': tenant,
             'roles': roles,
             'is_admin': self.is_admin,
+            'auth_tok': auth_tok,
         }
 
         req.context = context.RequestContext(**kwargs)
