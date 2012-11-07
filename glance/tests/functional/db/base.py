@@ -23,6 +23,7 @@ import uuid
 from glance.common import exception
 from glance.common import utils
 from glance import context
+from glance.openstack.common import timeutils
 import glance.tests.functional.db as db_tests
 from glance.tests.unit import base
 
@@ -36,7 +37,7 @@ UUID1, UUID2, UUID3 = sorted([utils.generate_uuid() for x in range(3)])
 
 
 def build_image_fixture(**kwargs):
-    default_datetime = datetime.datetime.now()
+    default_datetime = timeutils.utcnow()
     image = {
         'id': utils.generate_uuid(),
         'name': 'fake image #2',
@@ -69,8 +70,12 @@ class TestDriver(base.IsolatedUnitTest):
         self.create_images(self.fixtures)
         super(TestDriver, self).setUp()
 
+    def tearDown(self):
+        timeutils.clear_time_override()
+        super(TestDriver, self).tearDown()
+
     def build_image_fixtures(self):
-        dt1 = datetime.datetime.now()
+        dt1 = timeutils.utcnow()
         dt2 = dt1 + datetime.timedelta(microseconds=5)
         fixtures = [
             {
@@ -106,7 +111,9 @@ class TestDriver(base.IsolatedUnitTest):
         self.db_api.image_create(self.context, fixture)
 
     def test_image_create_defaults(self):
+        timeutils.set_time_override()
         image = self.db_api.image_create(self.context, {'status': 'queued'})
+        create_time = timeutils.utcnow()
 
         self.assertEqual(None, image['name'])
         self.assertEqual(None, image['container_format'])
@@ -122,11 +129,11 @@ class TestDriver(base.IsolatedUnitTest):
         self.assertEqual(False, image['deleted'])
         self.assertEqual(None, image['deleted_at'])
         self.assertEqual([], image['properties'])
+        self.assertEqual(image['created_at'], create_time)
+        self.assertEqual(image['updated_at'], create_time)
 
-        # These values aren't predictable, but they should be populated
+        # Image IDs aren't predictable, but they should be populated
         self.assertTrue(uuid.UUID(image['id']))
-        self.assertTrue(isinstance(image['created_at'], datetime.datetime))
-        self.assertTrue(isinstance(image['updated_at'], datetime.datetime))
 
         #NOTE(bcwaldon): the tags attribute should not be returned as a part
         # of a core image entity
@@ -194,9 +201,9 @@ class TestDriver(base.IsolatedUnitTest):
     def test_image_property_delete(self):
         fixture = {'name': 'ping', 'value': 'pong', 'image_id': UUID1}
         prop = self.db_api.image_property_create(self.context, fixture)
+        timeutils.set_time_override()
         prop = self.db_api.image_property_delete(self.context, prop)
-        self.assertNotEqual(None, prop['deleted_at'])
-        self.assertTrue(isinstance(prop['deleted_at'], datetime.datetime))
+        self.assertEqual(prop['deleted_at'], timeutils.utcnow())
         self.assertTrue(prop['deleted'])
 
     def test_image_get(self):
@@ -209,9 +216,11 @@ class TestDriver(base.IsolatedUnitTest):
                           self.context, UUID1)
 
     def test_image_get_allow_deleted(self):
+        timeutils.set_time_override()
         self.db_api.image_destroy(self.adm_context, UUID1)
         image = self.db_api.image_get(self.adm_context, UUID1)
         self.assertEquals(image['id'], self.fixtures[0]['id'])
+        self.assertEquals(image['deleted_at'], timeutils.utcnow())
 
     def test_image_get_force_allow_deleted(self):
         self.db_api.image_destroy(self.adm_context, UUID1)
