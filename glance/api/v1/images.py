@@ -727,6 +727,15 @@ class Controller(controller.BaseController):
                                 content_type="text/plain")
 
         image = self.get_image_meta_or_404(req, id)
+
+        if not (req.context.is_admin
+                or image['owner'] == None
+                or image['owner'] == req.context.owner):
+            msg = _("Unable to delete image you do not own")
+            logger.debug(msg)
+            raise HTTPForbidden(msg, request=req,
+                                content_type="text/plain")
+
         if image['protected']:
             msg = _("Image is protected")
             logger.debug(msg)
