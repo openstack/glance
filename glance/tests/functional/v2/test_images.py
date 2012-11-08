@@ -218,6 +218,12 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(201, response.status_code)
         image_id = json.loads(response.text)['id']
 
+        # Upload some image data
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(path, headers=headers, data='ZZZZZ')
+        self.assertEqual(201, response.status_code)
+
         # TENANT1 should see the image in their list
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
@@ -299,6 +305,12 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'X-Tenant-Id': TENANT3})
         response = requests.delete(path, headers=headers)
         self.assertEqual(404, response.status_code)
+
+        # Image data should still be present after the failed delete
+        path = self._url('/v2/images/%s/file' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(response.text, 'ZZZZZ')
 
         self.stop_servers()
 
