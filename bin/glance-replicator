@@ -62,6 +62,7 @@ IMAGE_ALREADY_PRESENT_MESSAGE = _('The image %s is already present on '
 class AuthenticationException(Exception):
     pass
 
+
 class ImageAlreadyPresentException(Exception):
     pass
 
@@ -254,6 +255,7 @@ class ImageService(object):
         body = response.read()
         return headers, body
 
+
 def get_image_service():
     """Get a copy of the image service.
 
@@ -341,17 +343,16 @@ def _dict_diff(a, b):
     # Only things the master has which the slave lacks matter
     if set(a.keys()) - set(b.keys()):
         logging.debug(_('metadata diff -- master has extra keys: %(keys)s')
-                        % {'keys': ' '.join(set(a.keys()) - set(b.keys()))})
+                      % {'keys': ' '.join(set(a.keys()) - set(b.keys()))})
         return True
 
     for key in a:
         if str(a[key]) != str(b[key]):
             logging.debug(_('metadata diff -- value differs for key '
-                            '%(key)s: master "%(master_value)s" vs '
-                            'slave "%(slave_value)s"')
-                            % {'key': key,
-                               'master_value': a[key],
-                               'slave_value': b[key]})
+                          '%(key)s: master "%(master_value)s" vs '
+                          'slave "%(slave_value)s"') %
+                          {'key': key, 'master_value': a[key],
+                          'slave_value': b[key]})
             return True
 
     return False
@@ -544,21 +545,21 @@ def replication_compare(options, args):
             for key in image:
                 if image[key] != headers.get(key, None):
                     logging.info(_('%(image_id)s: field %(key)s differs '
-                                   '(source is %(master_value)s, destination '
-                                   'is %(slave_value)s)')
-                                   % {'image_id': image['id'],
-                                      'key': key,
-                                      'master_value': image[key],
-                                      'slave_value': headers.get(key,
-                                                                 'undefined')})
+                                 '(source is %(master_value)s, destination '
+                                 'is %(slave_value)s)')
+                                 % {'image_id': image['id'],
+                                    'key': key,
+                                    'master_value': image[key],
+                                    'slave_value': headers.get(key,
+                                                               'undefined')})
                     differences[image['id']] = 'diff'
                 else:
                     logging.debug(_('%(image_id)s is identical')
-                                    % {'image_id': image['id']})
+                                  % {'image_id': image['id']})
 
         elif image['status'] == 'active':
             logging.info(_('%s: entirely missing from the destination')
-                           % image['id'])
+                         % image['id'])
             differences[image['id']] = 'missing'
 
     return differences
@@ -650,13 +651,11 @@ def lookup_command(parser, command_name):
     """
     BASE_COMMANDS = {'help': print_help}
 
-    REPLICATION_COMMANDS = {
-                'compare':   replication_compare,
-                'dump':      replication_dump,
-                'livecopy':  replication_livecopy,
-                'load':      replication_load,
-                'size':      replication_size,
-                }
+    REPLICATION_COMMANDS = {'compare': replication_compare,
+                            'dump': replication_dump,
+                            'livecopy': replication_livecopy,
+                            'load': replication_load,
+                            'size': replication_size}
 
     commands = {}
     for command_set in (BASE_COMMANDS, REPLICATION_COMMANDS):

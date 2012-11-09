@@ -314,15 +314,15 @@ def create_options(parser):
                            "user confirmation")
 
     parser.add_option('--os-auth-token',
-                      dest = 'os_auth_token',
+                      dest='os_auth_token',
                       default=env('OS_AUTH_TOKEN'),
                       help='Defaults to env[OS_AUTH_TOKEN]')
     parser.add_option('-A', '--os_auth_token', '--auth_token',
-                      dest = 'os_auth_token',
+                      dest='os_auth_token',
                       help=optparse.SUPPRESS_HELP)
 
     parser.add_option('--os-username',
-                      dest = 'os_username',
+                      dest='os_username',
                       default=env('OS_USERNAME'),
                       help='Defaults to env[OS_USERNAME]')
     parser.add_option('-I', '--os_username',
