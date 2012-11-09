@@ -219,7 +219,7 @@ class Server(object):
                 if os.WIFEXITED(status) or os.WIFSIGNALED(status):
                     self.logger.error(_('Removing dead child %s') % pid)
                     self.children.remove(pid)
-                    if os.WIFEXITED(status) and os.WEXITSTATUS(status) == 2:
+                    if os.WIFEXITED(status) and os.WEXITSTATUS(status) != 0:
                         self.logger.error(_('Not respawning child %d, cannot '
                                             'recover from termination') % pid)
                         if not self.children:
