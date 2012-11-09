@@ -24,6 +24,7 @@ from glance.common import exception
 from glance.common import utils
 from glance import context
 from glance.openstack.common import timeutils
+from glance.openstack.common import uuidutils
 import glance.tests.functional.db as db_tests
 from glance.tests.unit import base
 
@@ -409,6 +410,52 @@ class TestDriver(base.IsolatedUnitTest):
     def test_image_get_all_limit_marker(self):
         images = self.db_api.image_get_all(self.context, limit=2)
         self.assertEquals(2, len(images))
+
+    def test_image_get_multiple_members(self):
+        TENANT1 = uuidutils.generate_uuid()
+        TENANT2 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       owner_is_tenant=True)
+        ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
+                                       owner_is_tenant=False)
+        UUIDX = uuidutils.generate_uuid()
+        #we need private image and context.owner should not match image owner
+        self.db_api.image_create(ctxt1, {'id': UUIDX,
+                                         'status': 'queued',
+                                         'is_public': False,
+                                         'owner': TENANT1})
+        values = {'image_id': UUIDX, 'member': TENANT2, 'can_share': False}
+        self.db_api.image_member_create(ctxt1, values)
+
+        image = self.db_api.image_get(ctxt2, UUIDX)
+        self.assertEquals(UUIDX, image['id'])
+
+    def test_is_image_visible(self):
+        TENANT1 = uuidutils.generate_uuid()
+        TENANT2 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       owner_is_tenant=True)
+        ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
+                                       owner_is_tenant=False)
+        UUIDX = uuidutils.generate_uuid()
+        #we need private image and context.owner should not match image owner
+        image = self.db_api.image_create(ctxt1, {'id': UUIDX,
+                                                 'status': 'queued',
+                                                 'is_public': False,
+                                                 'owner': TENANT1})
+
+        values = {'image_id': UUIDX, 'member': TENANT2, 'can_share': False}
+        self.db_api.image_member_create(ctxt1, values)
+
+        result = self.db_api.is_image_visible(ctxt2, image)
+        self.assertTrue(result)
+
+        # image should not be visible for a deleted memeber
+        members = self.db_api.image_member_find(ctxt1, image_id=UUIDX)
+        self.db_api.image_member_delete(ctxt1, members[0]['id'])
+
+        result = self.db_api.is_image_visible(ctxt2, image)
+        self.assertFalse(result)
 
     def test_image_tag_create(self):
         tag = self.db_api.image_tag_create(self.context, UUID1, 'snap')

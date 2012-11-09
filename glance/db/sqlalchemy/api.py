@@ -323,7 +323,7 @@ def is_image_visible(context, image):
                                     image_id=image['id'],
                                     member=context.owner)
         if members:
-            return not members[0]['deleted']
+            return True
 
     # Private image
     return False

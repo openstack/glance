@@ -207,8 +207,11 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
             and (not image.get('is_public')) \
             and (image['owner'] is not None) \
             and (image['owner'] != context.owner):
-        LOG.info('Unable to get unowned image')
-        raise exception.Forbidden()
+        members = image_member_find(context, image_id=image_id,
+                                    member=context.owner)
+        if not members:
+            LOG.info('Unable to get unowned image')
+            raise exception.Forbidden()
 
     return image
 
@@ -467,7 +470,7 @@ def is_image_visible(context, image):
                                     image_id=image['id'],
                                     member=context.owner)
         if members:
-            return not members[0]['deleted']
+            return True
 
     # Private image
     return False
