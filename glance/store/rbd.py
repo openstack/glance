@@ -69,6 +69,9 @@ class StoreLocation(glance.store.location.StoreLocation):
     """
 
     def process_specs(self):
+        # convert to ascii since librbd doesn't handle unicode
+        for key, value in self.specs.iteritems():
+            self.specs[key] = str(value)
         self.fsid = self.specs.get('fsid')
         self.pool = self.specs.get('pool')
         self.image = self.specs.get('image')
@@ -92,7 +95,14 @@ class StoreLocation(glance.store.location.StoreLocation):
             reason = _('URI must start with rbd://')
             LOG.error(_("Invalid URI: %(uri)s: %(reason)s") % locals())
             raise exception.BadStoreUri(message=reason)
-        pieces = uri[len(prefix):].split('/')
+        # convert to ascii since librbd doesn't handle unicode
+        try:
+            ascii_uri = str(uri)
+        except UnicodeError:
+            reason = _('URI contains non-ascii characters')
+            LOG.error(_("Invalid URI: %(uri)s: %(reason)s") % locals())
+            raise exception.BadStoreUri(message=reason)
+        pieces = ascii_uri[len(prefix):].split('/')
         if len(pieces) == 1:
             self.fsid, self.pool, self.image, self.snapshot = \
                 (None, None, pieces[0], None)
