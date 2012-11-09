@@ -290,6 +290,15 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         self.assertEqual(None, loc.pool)
         self.assertEqual(None, loc.snapshot)
 
+        uri = u'rbd://imagename'
+        loc = glance.store.rbd.StoreLocation({})
+        loc.parse_uri(uri)
+
+        self.assertEqual('imagename', loc.image)
+        self.assertEqual(None, loc.fsid)
+        self.assertEqual(None, loc.pool)
+        self.assertEqual(None, loc.snapshot)
+
         uri = 'rbd://fsid/pool/image/snap'
         loc = glance.store.rbd.StoreLocation({})
         loc.parse_uri(uri)
@@ -299,7 +308,25 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         self.assertEqual('pool', loc.pool)
         self.assertEqual('snap', loc.snapshot)
 
+        uri = u'rbd://fsid/pool/image/snap'
+        loc = glance.store.rbd.StoreLocation({})
+        loc.parse_uri(uri)
+
+        self.assertEqual('image', loc.image)
+        self.assertEqual('fsid', loc.fsid)
+        self.assertEqual('pool', loc.pool)
+        self.assertEqual('snap', loc.snapshot)
+
         uri = 'rbd://%2f/%2f/%2f/%2f'
+        loc = glance.store.rbd.StoreLocation({})
+        loc.parse_uri(uri)
+
+        self.assertEqual('/', loc.image)
+        self.assertEqual('/', loc.fsid)
+        self.assertEqual('/', loc.pool)
+        self.assertEqual('/', loc.snapshot)
+
+        uri = u'rbd://%2f/%2f/%2f/%2f'
         loc = glance.store.rbd.StoreLocation({})
         loc.parse_uri(uri)
 
@@ -330,6 +357,9 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
 
         bad_uri = 'http://///'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = 'rbd://' + unichr(300)
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
 
     def test_get_store_from_scheme(self):
