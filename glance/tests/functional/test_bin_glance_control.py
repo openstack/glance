@@ -240,3 +240,30 @@ class TestGlanceControl(functional.FunctionalTest):
 
         # ensure the server has not been respawned
         self.connection_unavailable('deliberately stopped')
+
+    @skip_if_disabled
+    def test_infinite_child_death(self):
+        """Ensure child processes don't respawn forever if they can't start"""
+        self.cleanup()
+        self.api_server.default_store = 'shouldnotexist'
+        self.api_server.workers = 2
+
+        exitcode, out, err = self.api_server.start(**self.__dict__.copy())
+
+        # ensure the service pid has been cached
+        pid_cached = lambda: os.path.exists(self.api_server.pid_file)
+        self.wait_for(pid_cached)
+
+        # ensure glance-control has had a chance to waitpid on child
+        time.sleep(1)
+
+        # bouncing server should not be respawned
+        launch_msg = self.wait_for_servers([self.api_server], False)
+        self.assertTrue(launch_msg is None, launch_msg)
+
+        # ensure server process has gone away
+        process_died = lambda: not os.path.exists('/proc/%d' % self.get_pid())
+        self.wait_for(process_died)
+
+        # ensure the server has not been respawned
+        self.connection_unavailable('bouncing')
