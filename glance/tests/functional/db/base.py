@@ -21,9 +21,9 @@ import datetime
 import uuid
 
 from glance.common import exception
-from glance.common import utils
 from glance import context
 from glance.openstack.common import timeutils
+from glance.openstack.common import uuidutils
 import glance.tests.functional.db as db_tests
 from glance.tests.unit import base
 
@@ -33,13 +33,13 @@ from glance.tests.unit import base
 # we get the default (created_at). Some tests below expect the fixtures to be
 # returned in array-order, so if if the created_at timestamps are the same,
 # these tests rely on the UUID* values being in order
-UUID1, UUID2, UUID3 = sorted([utils.generate_uuid() for x in range(3)])
+UUID1, UUID2, UUID3 = sorted([uuidutils.generate_uuid() for x in range(3)])
 
 
 def build_image_fixture(**kwargs):
     default_datetime = timeutils.utcnow()
     image = {
-        'id': utils.generate_uuid(),
+        'id': uuidutils.generate_uuid(),
         'name': 'fake image #2',
         'status': 'active',
         'disk_format': 'vhd',
@@ -229,8 +229,8 @@ class TestDriver(base.IsolatedUnitTest):
         self.assertEquals(image['id'], self.fixtures[0]['id'])
 
     def test_image_get_not_owned(self):
-        TENANT1 = utils.generate_uuid()
-        TENANT2 = utils.generate_uuid()
+        TENANT1 = uuidutils.generate_uuid()
+        TENANT2 = uuidutils.generate_uuid()
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
         ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2)
         image = self.db_api.image_create(
@@ -239,7 +239,7 @@ class TestDriver(base.IsolatedUnitTest):
                           self.db_api.image_get, ctxt2, image['id'])
 
     def test_image_get_not_found(self):
-        UUID = utils.generate_uuid()
+        UUID = uuidutils.generate_uuid()
         self.assertRaises(exception.NotFound,
                           self.db_api.image_get, self.context, UUID)
 
@@ -364,16 +364,16 @@ class TestDriver(base.IsolatedUnitTest):
         self.assertEquals(0, len(images))
 
     def test_image_get_all_owned(self):
-        TENANT1 = utils.generate_uuid()
+        TENANT1 = uuidutils.generate_uuid()
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
-        UUIDX = utils.generate_uuid()
+        UUIDX = uuidutils.generate_uuid()
         self.db_api.image_create(ctxt1, {'id': UUIDX,
                                          'status': 'queued',
                                          'owner': TENANT1})
 
-        TENANT2 = utils.generate_uuid()
+        TENANT2 = uuidutils.generate_uuid()
         ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2)
-        UUIDY = utils.generate_uuid()
+        UUIDY = uuidutils.generate_uuid()
         self.db_api.image_create(ctxt2, {'id': UUIDY,
                                          'status': 'queued',
                                          'owner': TENANT2})
@@ -385,7 +385,7 @@ class TestDriver(base.IsolatedUnitTest):
 
     def test_image_paginate(self):
         """Paginate through a list of images using limit and marker"""
-        extra_uuids = [utils.generate_uuid() for i in range(2)]
+        extra_uuids = [uuidutils.generate_uuid() for i in range(2)]
         extra_images = [build_image_fixture(id=_id) for _id in extra_uuids]
         self.create_images(extra_images)
 
@@ -453,7 +453,7 @@ class TestDriver(base.IsolatedUnitTest):
         memberships = self.db_api.image_member_find(self.context)
         self.assertEqual([], memberships)
 
-        TENANT1 = utils.generate_uuid()
+        TENANT1 = uuidutils.generate_uuid()
         self.db_api.image_member_create(self.context,
                                         {'member': TENANT1, 'image_id': UUID1})
 
@@ -469,7 +469,7 @@ class TestDriver(base.IsolatedUnitTest):
         self.assertEqual(expected, actual)
 
     def test_image_member_update(self):
-        TENANT1 = utils.generate_uuid()
+        TENANT1 = uuidutils.generate_uuid()
         member = self.db_api.image_member_create(self.context,
                                                  {'member': TENANT1,
                                                   'image_id': UUID1})
@@ -494,8 +494,8 @@ class TestDriver(base.IsolatedUnitTest):
         self.assertEqual(expected, member)
 
     def test_image_member_find(self):
-        TENANT1 = utils.generate_uuid()
-        TENANT2 = utils.generate_uuid()
+        TENANT1 = uuidutils.generate_uuid()
+        TENANT2 = uuidutils.generate_uuid()
         fixtures = [
             {'member': TENANT1, 'image_id': UUID1},
             {'member': TENANT1, 'image_id': UUID2},
@@ -522,13 +522,14 @@ class TestDriver(base.IsolatedUnitTest):
                                                image_id=UUID1)
         _assertMemberListMatch([fixtures[2]], output)
 
+        image_id = uuidutils.generate_uuid()
         output = self.db_api.image_member_find(self.context,
                                                member=TENANT2,
-                                               image_id=utils.generate_uuid())
+                                               image_id=image_id)
         _assertMemberListMatch([], output)
 
     def test_image_member_delete(self):
-        TENANT1 = utils.generate_uuid()
+        TENANT1 = uuidutils.generate_uuid()
         fixture = {'member': TENANT1, 'image_id': UUID1, 'can_share': True}
         member = self.db_api.image_member_create(self.context, fixture)
         self.assertEqual(1, len(self.db_api.image_member_find(self.context)))
@@ -547,9 +548,9 @@ class TestVisibility(base.IsolatedUnitTest):
         self.create_images(self.fixtures)
 
     def setup_tenants(self):
-        self.admin_tenant = utils.generate_uuid()
-        self.tenant1 = utils.generate_uuid()
-        self.tenant2 = utils.generate_uuid()
+        self.admin_tenant = uuidutils.generate_uuid()
+        self.tenant1 = uuidutils.generate_uuid()
+        self.tenant2 = uuidutils.generate_uuid()
 
     def setup_contexts(self):
         self.admin_context = context.RequestContext(

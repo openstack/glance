@@ -33,8 +33,8 @@ import urllib
 
 import nose.plugins.skip
 
-from glance.common import utils
 import glance.openstack.common.cfg
+from glance.openstack.common import uuidutils
 import glance.store.swift
 import glance.tests.functional.store as store_tests
 
@@ -201,7 +201,7 @@ class TestSwiftStore(store_tests.BaseTestCase, unittest.TestCase):
             swift_store_large_object_chunk_size=2,  # 2 MB
         )
         store = self.get_store()
-        image_id = utils.generate_uuid()
+        image_id = uuidutils.generate_uuid()
         image_size = 5242880  # 5 MB
         image_data = StringIO.StringIO('X' * image_size)
         image_checksum = 'eb7f8c3716b9f059cee7617a4ba9d0d3'
@@ -302,7 +302,7 @@ class TestSwiftStore(store_tests.BaseTestCase, unittest.TestCase):
                 auth_tok=auth_token)
         store = self.get_store(context=context)
 
-        image_id = utils.generate_uuid()
+        image_id = uuidutils.generate_uuid()
         image_data = StringIO.StringIO('XXX')
         uri, _, _ = store.add(image_id, image_data, 3)
 
@@ -312,8 +312,8 @@ class TestSwiftStore(store_tests.BaseTestCase, unittest.TestCase):
                 uri=uri,
                 image_id=image_id)
 
-        read_tenant = utils.generate_uuid()
-        write_tenant = utils.generate_uuid()
+        read_tenant = uudiutils.generate_uuid()
+        write_tenant = uuidutils.generate_uuid()
         store.set_acls(location,
                        public=False,
                        read_tenants=[read_tenant],

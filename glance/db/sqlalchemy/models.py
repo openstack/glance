@@ -27,9 +27,9 @@ from sqlalchemy import ForeignKey, DateTime, Boolean, Text
 from sqlalchemy.orm import relationship, backref, object_mapper
 from sqlalchemy import UniqueConstraint
 
-from glance.common import utils
 import glance.db.sqlalchemy.api
 from glance.openstack.common import timeutils
+from glance.openstack.common import uuidutils
 
 BASE = declarative_base()
 
@@ -101,7 +101,7 @@ class Image(BASE, ModelBase):
     """Represents an image in the datastore"""
     __tablename__ = 'images'
 
-    id = Column(String(36), primary_key=True, default=utils.generate_uuid)
+    id = Column(String(36), primary_key=True, default=uuidutils.generate_uuid)
     name = Column(String(255))
     disk_format = Column(String(20))
     container_format = Column(String(20))

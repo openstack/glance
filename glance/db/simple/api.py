@@ -17,9 +17,9 @@ import copy
 import functools
 
 from glance.common import exception
-from glance.common import utils
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
+from glance.openstack.common import uuidutils
 
 
 LOG = logging.getLogger(__name__)
@@ -71,7 +71,7 @@ def _image_property_format(image_id, name, value):
 
 def _image_member_format(image_id, tenant_id, can_share):
     return {
-        'id': utils.generate_uuid(),
+        'id': uuidutils.generate_uuid(),
         'image_id': image_id,
         'member': tenant_id,
         'can_share': can_share,
@@ -298,7 +298,7 @@ def image_member_delete(context, member_id):
 @log_call
 def image_create(context, image_values):
     global DATA
-    image_id = image_values.get('id', utils.generate_uuid())
+    image_id = image_values.get('id', uuidutils.generate_uuid())
 
     if image_id in DATA['images']:
         raise exception.Duplicate()

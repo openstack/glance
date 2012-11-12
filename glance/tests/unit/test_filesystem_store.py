@@ -22,7 +22,7 @@ import hashlib
 import StringIO
 
 from glance.common import exception
-from glance.common import utils
+from glance.openstack.common import uuidutils
 from glance.store.filesystem import Store, ChunkedFile
 from glance.store.location import get_location_from_uri
 from glance.tests.unit import base
@@ -45,7 +45,7 @@ class TestStore(base.IsolatedUnitTest):
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
         # First add an image...
-        image_id = utils.generate_uuid()
+        image_id = uuidutils.generate_uuid()
         file_contents = "chunk00000remainder"
         location = "file://%s/%s" % (self.test_dir, image_id)
         image_file = StringIO.StringIO(file_contents)
@@ -83,7 +83,7 @@ class TestStore(base.IsolatedUnitTest):
     def test_add(self):
         """Test that we can add an image via the filesystem backend"""
         ChunkedFile.CHUNKSIZE = 1024
-        expected_image_id = utils.generate_uuid()
+        expected_image_id = uuidutils.generate_uuid()
         expected_file_size = 1024 * 5  # 5K
         expected_file_contents = "*" * expected_file_size
         expected_checksum = hashlib.md5(expected_file_contents).hexdigest()
@@ -118,7 +118,7 @@ class TestStore(base.IsolatedUnitTest):
         raises an appropriate exception
         """
         ChunkedFile.CHUNKSIZE = 1024
-        image_id = utils.generate_uuid()
+        image_id = uuidutils.generate_uuid()
         file_size = 1024 * 5  # 5K
         file_contents = "*" * file_size
         location = "file://%s/%s" % (self.test_dir, image_id)
@@ -134,7 +134,7 @@ class TestStore(base.IsolatedUnitTest):
 
     def _do_test_add_failure(self, errno, exception):
         ChunkedFile.CHUNKSIZE = 1024
-        image_id = utils.generate_uuid()
+        image_id = uuidutils.generate_uuid()
         file_size = 1024 * 5  # 5K
         file_contents = "*" * file_size
         location = "file://%s/%s" % (self.test_dir, image_id)
@@ -183,7 +183,7 @@ class TestStore(base.IsolatedUnitTest):
         Test we can delete an existing image in the filesystem store
         """
         # First add an image
-        image_id = utils.generate_uuid()
+        image_id = uuidutils.generate_uuid()
         file_size = 1024 * 5  # 5K
         file_contents = "*" * file_size
         location = "file://%s/%s" % (self.test_dir, image_id)
