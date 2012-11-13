@@ -175,7 +175,7 @@ class Server(object):
         """
         def kill_children(*args):
             """Kills the entire process group."""
-            self.logger.error(_('SIGTERM or SIGINT received'))
+            self.logger.info(_('SIGTERM or SIGINT received'))
             signal.signal(signal.SIGTERM, signal.SIG_IGN)
             signal.signal(signal.SIGINT, signal.SIG_IGN)
             self.running = False
@@ -185,7 +185,7 @@ class Server(object):
             """
             Shuts down the server, but allows running requests to complete
             """
-            self.logger.error(_('SIGHUP received'))
+            self.logger.info(_('SIGHUP received'))
             signal.signal(signal.SIGHUP, signal.SIG_IGN)
             self.running = False
 
@@ -217,13 +217,13 @@ class Server(object):
             try:
                 pid, status = os.wait()
                 if os.WIFEXITED(status) or os.WIFSIGNALED(status):
-                    self.logger.error(_('Removing dead child %s') % pid)
+                    self.logger.info(_('Removing dead child %s') % pid)
                     self.children.remove(pid)
                     if os.WIFEXITED(status) and os.WEXITSTATUS(status) != 0:
                         self.logger.error(_('Not respawning child %d, cannot '
                                             'recover from termination') % pid)
                         if not self.children:
-                            self.logger.error(
+                            self.logger.info(
                                 _('All workers have terminated. Exiting'))
                             self.running = False
                     else:
