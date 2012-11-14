@@ -47,27 +47,6 @@ CONF = cfg.CONF
 CONF.register_opts(store_opts)
 
 
-class ImageAddResult(object):
-
-    """
-    Class that represents the succesful result of adding
-    an image to a backend store.
-    """
-
-    def __init__(self, location, bytes_written, checksum=None):
-        """
-        Initialize the object
-
-        :param location: `glance.store.StoreLocation` object representing
-                         the location of the image in the backend store
-        :param bytes_written: Number of bytes written to store
-        :param checksum: Optional checksum of the image data
-        """
-        self.location = location
-        self.bytes_written = bytes_written
-        self.checksum = checksum
-
-
 class BackendException(Exception):
     pass
 

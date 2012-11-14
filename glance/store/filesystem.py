@@ -185,14 +185,14 @@ class Store(glance.store.base.Store):
     def add(self, image_id, image_file, image_size):
         """
         Stores an image file with supplied identifier to the backend
-        storage system and returns an `glance.store.ImageAddResult` object
-        containing information about the stored image.
+        storage system and returns a tuple containing information
+        about the stored image.
 
         :param image_id: The opaque image identifier
         :param image_file: The image data to write, as a file-like object
         :param image_size: The size of the image data to write, in bytes
 
-        :retval `glance.store.ImageAddResult` object
+        :retval tuple of URL in backing store, bytes written, and checksum
         :raises `glance.common.exception.Duplicate` if the image already
                 existed
 
