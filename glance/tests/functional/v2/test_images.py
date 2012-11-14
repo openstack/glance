@@ -298,13 +298,13 @@ class TestImages(functional.FunctionalTest):
         })
         data = json.dumps([{'replace': '/name', 'value': 'image-2'}])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(403, response.status_code)
 
         # TENANT3 should not be able to delete the image, either
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'X-Tenant-Id': TENANT3})
         response = requests.delete(path, headers=headers)
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(403, response.status_code)
 
         # Image data should still be present after the failed delete
         path = self._url('/v2/images/%s/file' % image_id)

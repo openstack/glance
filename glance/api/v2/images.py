@@ -167,8 +167,10 @@ class ImagesController(object):
             try:
                 image = self.db_api.image_update(context, image_id, updates,
                                                  purge_props)
-            except (exception.NotFound, exception.Forbidden):
+            except exception.NotFound:
                 raise webob.exc.HTTPNotFound()
+            except exception.Forbidden:
+                raise webob.exc.HTTPForbidden()
             image = self._normalize_properties(dict(image))
 
         if tags is not None:
@@ -276,10 +278,12 @@ class ImagesController(object):
                 else:
                     self.store_api.safe_delete_from_backend(image['location'],
                                                             req.context, id)
-        except (exception.NotFound, exception.Forbidden):
+        except exception.NotFound:
             msg = ("Failed to find image %(image_id)s to delete" % locals())
             LOG.info(msg)
             raise webob.exc.HTTPNotFound()
+        except exception.Forbidden:
+            raise webob.exc.HTTPForbidden()
         else:
             self.notifier.info('image.delete', image)
 
