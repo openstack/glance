@@ -167,7 +167,7 @@ def _do_pagination(context, images, marker, limit, show_deleted):
         start = 0
     else:
         # Check that the image is accessible
-        image_get(context, marker, force_show_deleted=show_deleted)
+        _image_get(context, marker, force_show_deleted=show_deleted)
 
         for i, image in enumerate(images):
             if image['id'] == marker:
@@ -191,8 +191,7 @@ def _sort_images(images, sort_key, sort_dir):
     return images
 
 
-@log_call
-def image_get(context, image_id, session=None, force_show_deleted=False):
+def _image_get(context, image_id, force_show_deleted=False):
     try:
         image = DATA['images'][image_id]
     except KeyError:
@@ -211,6 +210,12 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
 
 
 @log_call
+def image_get(context, image_id, session=None, force_show_deleted=False):
+    image = _image_get(context, image_id, force_show_deleted)
+    return copy.deepcopy(image)
+
+
+@log_call
 def image_get_all(context, filters=None, marker=None, limit=None,
                   sort_key='created_at', sort_dir='desc'):
     filters = filters or {}
@@ -224,7 +229,7 @@ def image_get_all(context, filters=None, marker=None, limit=None,
 
 @log_call
 def image_property_create(context, values):
-    image = image_get(context, values['image_id'])
+    image = _image_get(context, values['image_id'])
     prop = _image_property_format(values['image_id'],
                                   values['name'],
                                   values['value'])
@@ -351,13 +356,14 @@ def image_destroy(context, image_id):
     try:
         DATA['images'][image_id]['deleted'] = True
         DATA['images'][image_id]['deleted_at'] = timeutils.utcnow()
+        return copy.deepcopy(DATA['images'][image_id])
     except KeyError:
         raise exception.NotFound()
 
 
 @log_call
 def image_tag_get_all(context, image_id):
-    image_get(context, image_id)
+    _image_get(context, image_id)
     return DATA['tags'].get(image_id, [])
 
 
