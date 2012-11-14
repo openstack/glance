@@ -37,8 +37,8 @@ import json
 import os
 import tempfile
 
-from glance.common import utils
 from glance.openstack.common import timeutils
+from glance.openstack.common import uuidutils
 from glance.tests import functional
 from glance.tests.utils import skip_if_disabled, minimal_headers
 
@@ -1252,7 +1252,7 @@ class TestSSL(functional.FunctionalTest):
         # 1. DELETE /images/1
         # Verify 404 returned
         path = "https://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
-                                               utils.generate_uuid())
+                                               uuidutils.generate_uuid())
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'DELETE')
         self.assertEqual(response.status, 404)

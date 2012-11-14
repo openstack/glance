@@ -19,14 +19,14 @@ import json
 
 import requests
 
-from glance.common import utils
+from glance.openstack.common import uuidutils
 from glance.tests import functional
 
 
-TENANT1 = utils.generate_uuid()
-TENANT2 = utils.generate_uuid()
-TENANT3 = utils.generate_uuid()
-TENANT4 = utils.generate_uuid()
+TENANT1 = uuidutils.generate_uuid()
+TENANT2 = uuidutils.generate_uuid()
+TENANT3 = uuidutils.generate_uuid()
+TENANT4 = uuidutils.generate_uuid()
 
 
 class TestImages(functional.FunctionalTest):

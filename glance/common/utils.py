@@ -239,10 +239,6 @@ def bool_from_string(subject):
     return False
 
 
-def generate_uuid():
-    return str(uuid.uuid4())
-
-
 def safe_mkdirs(path):
     try:
         os.makedirs(path)

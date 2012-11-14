@@ -18,7 +18,7 @@ import StringIO
 import webob
 
 import glance.api.v2.image_data
-from glance.common import utils
+from glance.openstack.common import uuidutils
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
@@ -51,7 +51,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_download_non_existent_image(self):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.download,
-                          request, utils.generate_uuid())
+                          request, uuidutils.generate_uuid())
 
     def test_upload_download(self):
         request = unit_test_utils.get_fake_request()
@@ -71,7 +71,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_upload_non_existent_image(self):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.upload,
-                          request, utils.generate_uuid(), 'YYYY', 4)
+                          request, uuidutils.generate_uuid(), 'YYYY', 4)
 
     def test_upload_data_exists(self):
         request = unit_test_utils.get_fake_request()

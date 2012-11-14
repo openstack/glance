@@ -24,8 +24,8 @@ import boto.s3.connection
 import stubout
 
 from glance.common import exception
-from glance.common import utils
 from glance.openstack.common import cfg
+from glance.openstack.common import uuidutils
 from glance.store.location import get_location_from_uri
 import glance.store.s3
 from glance.store.s3 import Store, get_s3_location
@@ -34,7 +34,7 @@ from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
 
-FAKE_UUID = utils.generate_uuid()
+FAKE_UUID = uuidutils.generate_uuid()
 
 FIVE_KB = (5 * 1024)
 S3_CONF = {'verbose': True,
@@ -234,7 +234,7 @@ class TestStore(base.StoreClearingUnitTest):
 
     def test_add(self):
         """Test that we can add an image via the s3 backend"""
-        expected_image_id = utils.generate_uuid()
+        expected_image_id = uuidutils.generate_uuid()
         expected_s3_size = FIVE_KB
         expected_s3_contents = "*" * expected_s3_size
         expected_checksum = hashlib.md5(expected_s3_contents).hexdigest()
@@ -280,7 +280,7 @@ class TestStore(base.StoreClearingUnitTest):
                       'localhost',
                       'localhost:8080/v1']
         for variation in variations:
-            expected_image_id = utils.generate_uuid()
+            expected_image_id = uuidutils.generate_uuid()
             expected_s3_size = FIVE_KB
             expected_s3_contents = "*" * expected_s3_size
             expected_checksum = hashlib.md5(expected_s3_contents).hexdigest()

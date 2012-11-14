@@ -19,16 +19,16 @@ import datetime
 
 from glance.common import config
 from glance.common import exception
-from glance.common import utils
 from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
+from glance.openstack.common import uuidutils
 from glance.registry import client as rclient
 from glance.tests.unit import base
 
 
-_gen_uuid = utils.generate_uuid
+_gen_uuid = uuidutils.generate_uuid
 
 UUID1 = _gen_uuid()
 UUID2 = _gen_uuid()
