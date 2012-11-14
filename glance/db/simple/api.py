@@ -203,15 +203,9 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
         LOG.info('Unable to get deleted image')
         raise exception.NotFound()
 
-    if (not context.is_admin) \
-            and (not image.get('is_public')) \
-            and (image['owner'] is not None) \
-            and (image['owner'] != context.owner):
-        members = image_member_find(context, image_id=image_id,
-                                    member=context.owner)
-        if not members:
-            LOG.info('Unable to get unowned image')
-            raise exception.Forbidden()
+    if not is_image_visible(context, image):
+        LOG.info('Unable to get unowned image')
+        raise exception.Forbidden("Image not visible to you")
 
     return image
 
