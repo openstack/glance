@@ -20,6 +20,7 @@ import socket
 import uuid
 
 from glance.common import exception
+import glance.domain
 from glance.openstack.common import cfg
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
@@ -85,3 +86,54 @@ class Notifier(object):
     def error(self, event_type, payload):
         msg = self.generate_message(event_type, "ERROR", payload)
         self.strategy.error(msg)
+
+
+def format_image_notification(image):
+    """
+    Given a glance.domain.Image object, return a dictionary of relevant
+    notification information.
+    """
+    return {
+        'id': image.image_id,
+        'name': image.name,
+        'status': image.status,
+        'created_at': timeutils.isotime(image.created_at),
+        'updated_at': timeutils.isotime(image.updated_at),
+        'min_disk': image.min_disk,
+        'min_ram': image.min_ram,
+        'protected': image.protected,
+        'location': image.location,
+        'checksum': image.checksum,
+        'owner': image.owner,
+        'disk_format': image.disk_format,
+        'container_format': image.container_format,
+        'size': image.size,
+        'is_public': image.visibility == 'public',
+        'properties': dict(image.extra_properties),
+        'tags': list(image.tags),
+        'deleted': False,
+        'deleted_at': None,
+    }
+
+
+class ImageRepoProxy(glance.domain.ImageRepoProxy):
+
+    def __init__(self, image_repo, notifier):
+        self.image_repo = image_repo
+        self.notifier = notifier
+        super(ImageRepoProxy, self).__init__(image_repo)
+
+    def save(self, image):
+        self.image_repo.save(image)
+        self.notifier.info('image.update', format_image_notification(image))
+
+    def add(self, image):
+        self.image_repo.add(image)
+        self.notifier.info('image.update', format_image_notification(image))
+
+    def remove(self, image):
+        self.image_repo.remove(image)
+        payload = format_image_notification(image)
+        payload['deleted'] = True
+        payload['deleted_at'] = timeutils.isotime()
+        self.notifier.info('image.delete', payload)

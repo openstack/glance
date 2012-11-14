@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import kombu.entity
 import mox
 try:
@@ -30,6 +31,25 @@ import glance.notifier.notify_kombu
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
 from glance.tests import utils
+import glance.tests.unit.utils as unit_test_utils
+
+
+DATETIME = datetime.datetime(2012, 5, 16, 15, 27, 36, 325355)
+
+
+UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
+TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
+
+
+class ImageRepoStub(object):
+    def remove(self, *args, **kwargs):
+        return 'image_from_get'
+
+    def save(self, *args, **kwargs):
+        return 'image_from_save'
+
+    def add(self, *args, **kwargs):
+        return 'image_from_add'
 
 
 class TestNotifier(utils.BaseTestCase):
@@ -406,3 +426,42 @@ class TestRabbitContentType(utils.BaseTestCase):
     def test_content_type_passed(self):
         self.notifier.warn("test_event", "test_message")
         self.assertEquals(self.called['content_type'], 'application/json')
+
+
+class TestImageNotifications(utils.BaseTestCase):
+    """Test Image Notifications work"""
+
+    def setUp(self):
+        self.image = glance.domain.Image(
+                image_id=UUID1, name='image-1', status='active', size=1024,
+                created_at=DATETIME, updated_at=DATETIME, owner=TENANT1,
+                visibility='public', container_format='ami',
+                tags=['one', 'two'], disk_format='ami', min_ram=128,
+                min_disk=10, checksum='ca425b88f047ce8ec45ee90e813ada91')
+        self.image_repo_stub = ImageRepoStub()
+        self.notifier = unit_test_utils.FakeNotifier()
+        self.image_repo_proxy = glance.notifier.ImageRepoProxy(
+                self.image_repo_stub, self.notifier)
+        super(TestImageNotifications, self).setUp()
+
+    def test_image_save_notification(self):
+        self.image_repo_proxy.save(self.image)
+        output_log = self.notifier.get_log()
+        self.assertEqual(output_log['notification_type'], 'INFO')
+        self.assertEqual(output_log['event_type'], 'image.update')
+        self.assertEqual(output_log['payload']['id'], self.image.image_id)
+
+    def test_image_add_notification(self):
+        self.image_repo_proxy.add(self.image)
+        output_log = self.notifier.get_log()
+        self.assertEqual(output_log['notification_type'], 'INFO')
+        self.assertEqual(output_log['event_type'], 'image.update')
+        self.assertEqual(output_log['payload']['id'], self.image.image_id)
+
+    def test_image_delete_notification(self):
+        self.image_repo_proxy.remove(self.image)
+        output_log = self.notifier.get_log()
+        self.assertEqual(output_log['notification_type'], 'INFO')
+        self.assertEqual(output_log['event_type'], 'image.delete')
+        self.assertEqual(output_log['payload']['id'], self.image.image_id)
+        self.assertTrue(output_log['payload']['deleted'])
