@@ -26,6 +26,8 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.db
+import glance.domain
+import glance.gateway
 import glance.notifier
 from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
@@ -47,247 +49,129 @@ class ImagesController(object):
         self.policy = policy_enforcer or policy.Enforcer()
         self.notifier = notifier or glance.notifier.Notifier()
         self.store_api = store_api or glance.store
-
-    def _enforce(self, req, action):
-        """Authorize an action against our policies"""
-        try:
-            self.policy.enforce(req.context, action, {})
-        except exception.Forbidden:
-            raise webob.exc.HTTPForbidden()
-
-    def _normalize_properties(self, image):
-        """Convert the properties from the stored format to a dict
-
-        The db api returns a list of dicts that look like
-        {'name': <key>, 'value': <value>}, while it expects a format
-        like {<key>: <value>} in image create and update calls. This
-        function takes the extra step that the db api should be
-        responsible for in the image get calls.
-
-        The db api will also return deleted image properties that must
-        be filtered out.
-        """
-        properties = [(p['name'], p['value'])
-                      for p in image['properties'] if not p['deleted']]
-        image['properties'] = dict(properties)
-        return image
-
-    def _extract_tags(self, image):
-        try:
-            #NOTE(bcwaldon): cast to set to make the list unique, then
-            # cast back to list since that's a more sane response type
-            return list(set(image.pop('tags')))
-        except KeyError:
-            pass
-
-    def _append_tags(self, context, image):
-        image['tags'] = self.db_api.image_tag_get_all(context, image['id'])
-        return image
+        self.gateway = glance.gateway.Gateway(self.db_api, self.store_api,
+                                              self.notifier, self.policy)
 
     @utils.mutating
-    def create(self, req, image):
-        self._enforce(req, 'add_image')
-        is_public = image.get('is_public')
-        if is_public:
-            self._enforce(req, 'publicize_image')
-        image['owner'] = req.context.owner
-        image['status'] = 'queued'
+    def create(self, req, image, extra_properties, tags):
+        image_factory = self.gateway.get_image_factory(req.context)
+        image_repo = self.gateway.get_repo(req.context)
+        try:
+            image = image_factory.new_image(extra_properties=extra_properties,
+                                            tags=tags, **image)
+            image_repo.add(image)
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=unicode(e))
 
-        tags = self._extract_tags(image)
-
-        image = dict(self.db_api.image_create(req.context, image))
-
-        if tags is not None:
-            self.db_api.image_tag_set_all(req.context, image['id'], tags)
-            image['tags'] = tags
-        else:
-            image['tags'] = []
-
-        image = self._normalize_properties(dict(image))
-        self.notifier.info('image.update', image)
         return image
 
     def index(self, req, marker=None, limit=None, sort_key='created_at',
-              sort_dir='desc', filters={}):
-        self._enforce(req, 'get_images')
-        filters['deleted'] = False
+              sort_dir='desc', filters=None):
         result = {}
+        if filters is None:
+            filters = {}
+        filters['deleted'] = False
+
         if limit is None:
             limit = CONF.limit_param_default
         limit = min(CONF.api_limit_max, limit)
 
+        image_repo = self.gateway.get_repo(req.context)
         try:
-            images = self.db_api.image_get_all(req.context, filters=filters,
-                                               marker=marker, limit=limit,
-                                               sort_key=sort_key,
-                                               sort_dir=sort_dir)
+            images = image_repo.list(marker=marker, limit=limit,
+                                     sort_key=sort_key, sort_dir=sort_dir,
+                                     filters=filters)
             if len(images) != 0 and len(images) == limit:
-                result['next_marker'] = images[-1]['id']
-        except exception.InvalidFilterRangeValue as e:
+                result['next_marker'] = images[-1].image_id
+        except (exception.NotFound, exception.InvalidSortKey,
+                exception.InvalidFilterRangeValue) as e:
             raise webob.exc.HTTPBadRequest(explanation=unicode(e))
-        except exception.InvalidSortKey as e:
-            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
-        except exception.NotFound as e:
-            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
-        images = [self._normalize_properties(dict(image)) for image in images]
-        result['images'] = [self._append_tags(req.context, image)
-                            for image in images]
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+        result['images'] = images
         return result
 
-    def _get_image(self, context, image_id):
-        try:
-            image = self.db_api.image_get(context, image_id)
-            if image['deleted']:
-                raise exception.NotFound()
-        except (exception.NotFound, exception.Forbidden):
-            raise webob.exc.HTTPNotFound()
-        else:
-            return dict(image)
-
     def show(self, req, image_id):
-        self._enforce(req, 'get_image')
-        image = self._get_image(req.context, image_id)
-        image = self._normalize_properties(image)
-        return self._append_tags(req.context, image)
+        image_repo = self.gateway.get_repo(req.context)
+        try:
+            return image_repo.get(image_id)
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=unicode(e))
 
     @utils.mutating
     def update(self, req, image_id, changes):
-        self._enforce(req, 'modify_image')
-        context = req.context
-        image = self._get_image(context, image_id)
-        image = self._normalize_properties(image)
-        updates = self._extract_updates(req, image, changes)
+        image_repo = self.gateway.get_repo(req.context)
+        try:
+            image = image_repo.get(image_id)
 
-        tags = None
-        if len(updates) > 0:
-            tags = self._extract_tags(updates)
-            purge_props = 'properties' in updates
-            try:
-                image = self.db_api.image_update(context, image_id, updates,
-                                                 purge_props)
-            except exception.NotFound:
-                raise webob.exc.HTTPNotFound()
-            except exception.Forbidden:
-                raise webob.exc.HTTPForbidden()
-            image = self._normalize_properties(dict(image))
+            for change in changes:
+                change_method_name = '_do_%s' % change['op']
+                assert hasattr(self, change_method_name)
+                change_method = getattr(self, change_method_name)
+                change_method(req, image, change)
 
-        if tags is not None:
-            self.db_api.image_tag_set_all(req.context, image_id, tags)
-            image['tags'] = tags
-        else:
-            self._append_tags(req.context, image)
+            if len(changes) > 0:
+                    image_repo.save(image)
 
-        self.notifier.info('image.update', image)
+        except exception.NotFound:
+            msg = _("Failed to find image %(image_id)s to update" % locals())
+            LOG.info(msg)
+            raise webob.exc.HTTPNotFound(explanation=msg)
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+
         return image
 
-    def _extract_updates(self, req, image, changes):
-        """ Determine the updates to pass to the database api.
-
-        Given the current image, convert a list of changes to be made
-        into the corresponding update dictionary that should be passed to
-        db_api.image_update.
-
-        Changes have the following parts
-        op    - 'add' a new attribute, 'replace' an existing attribute, or
-                'remove' an existing attribute.
-        path  - A list of path parts for determining which attribute the
-                the operation applies to.
-        value - For 'add' and 'replace', the new value the attribute should
-                assume.
-
-        For the current use case, there are two types of valid paths. For base
-        attributes (fields stored directly on the Image object) the path
-        must take the form ['<attribute name>']. These attributes are always
-        present so the only valid operation on them is 'replace'. For image
-        properties, the path takes the form ['properties', '<property name>']
-        and all operations are valid.
-
-        Future refactoring should simplify this code by hardening the image
-        abstraction such that database details such as how image properties
-        are stored do not have any influence here.
-        """
-        updates = {}
-        property_updates = image['properties']
-        for change in changes:
-            path = change['path']
-            if len(path) == 1:
-                assert change['op'] == 'replace'
-                key = change['path'][0]
-                if key == 'is_public' and change['value']:
-                    self._enforce(req, 'publicize_image')
-                updates[key] = change['value']
-            else:
-                assert len(path) == 2
-                assert path[0] == 'properties'
-                update_method_name = '_do_%s_property' % change['op']
-                assert hasattr(self, update_method_name)
-                update_method = getattr(self, update_method_name)
-                update_method(property_updates, change)
-                updates['properties'] = property_updates
-        return updates
-
-    def _do_replace_property(self, updates, change):
-        """ Replace a single image property, ensuring it's present. """
-        key = change['path'][1]
-        if key not in updates:
+    def _do_replace(self, req, image, change):
+        path = change['path']
+        value = change['value']
+        if hasattr(image, path):
+            setattr(image, path, value)
+        elif path in image.extra_properties:
+            image.extra_properties[path] = change['value']
+        else:
             msg = _("Property %s does not exist.")
-            raise webob.exc.HTTPConflict(msg % key)
-        updates[key] = change['value']
+            raise webob.exc.HTTPConflict(msg % path)
 
-    def _do_add_property(self, updates, change):
-        """ Add a new image property, ensuring it does not already exist. """
-        key = change['path'][1]
-        if key in updates:
+    def _do_add(self, req, image, change):
+        path = change['path']
+        value = change['value']
+        if hasattr(image, path) or path in image.extra_properties:
             msg = _("Property %s already present.")
-            raise webob.exc.HTTPConflict(msg % key)
-        updates[key] = change['value']
+            raise webob.exc.HTTPConflict(msg % path)
+        image.extra_properties[path] = value
 
-    def _do_remove_property(self, updates, change):
-        """ Remove an image property, ensuring it's present. """
-        key = change['path'][1]
-        if key not in updates:
+    def _do_remove(self, req, image, change):
+        path = change['path']
+        if hasattr(image, path):
+            msg = _("Property %s may not be removed.")
+            raise webob.exc.HTTPForbidden(msg % path)
+        elif path in image.extra_properties:
+            del image.extra_properties[path]
+        else:
             msg = _("Property %s does not exist.")
-            raise webob.exc.HTTPConflict(msg % key)
-        del updates[key]
+            raise webob.exc.HTTPConflict(msg % path)
 
     @utils.mutating
     def delete(self, req, image_id):
-        self._enforce(req, 'delete_image')
-        image = self._get_image(req.context, image_id)
-
-        if image['protected']:
-            msg = _("Unable to delete as image %(image_id)s is protected"
-                    % locals())
-            raise webob.exc.HTTPForbidden(explanation=msg)
-
-        if image['location'] and CONF.delayed_delete:
-            status = 'pending_delete'
-        else:
-            status = 'deleted'
-
+        image_repo = self.gateway.get_repo(req.context)
         try:
-            self.db_api.image_update(req.context, image_id, {'status': status})
-            self.db_api.image_destroy(req.context, image_id)
-
-            if image['location']:
-                if CONF.delayed_delete:
-                    self.store_api.schedule_delayed_delete_from_backend(
-                                    image['location'], id)
-                else:
-                    self.store_api.safe_delete_from_backend(image['location'],
-                                                            req.context, id)
-        except exception.NotFound:
-            msg = (_("Failed to find image %(image_id)s to delete") % locals())
+            image = image_repo.get(image_id)
+            image.delete()
+            image_repo.remove(image)
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+        except exception.NotFound as e:
+            msg = ("Failed to find image %(image_id)s to delete" % locals())
             LOG.info(msg)
             raise webob.exc.HTTPNotFound()
-        except exception.Forbidden:
-            raise webob.exc.HTTPForbidden()
-        else:
-            self.notifier.info('image.delete', image)
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
+    _disallowed_properties = ['direct_url', 'self', 'file', 'schema']
     _readonly_properties = ['created_at', 'updated_at', 'status', 'checksum',
                             'size', 'direct_url', 'self', 'file', 'schema']
     _reserved_properties = ['owner', 'is_public', 'location', 'deleted',
@@ -301,31 +185,6 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         super(RequestDeserializer, self).__init__()
         self.schema = schema or get_schema()
 
-    def _parse_image(self, request):
-        body = self._get_request_body(request)
-        try:
-            self.schema.validate(body)
-        except exception.InvalidObject as e:
-            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
-
-        # Ensure all specified properties are allowed
-        self._check_readonly(body)
-        self._check_reserved(body)
-
-        # Create a dict of base image properties, with user- and deployer-
-        # defined properties contained in a 'properties' dictionary
-        image = {'properties': body}
-        for key in self._base_properties:
-            try:
-                image[key] = image['properties'].pop(key)
-            except KeyError:
-                pass
-
-        if 'visibility' in image:
-            image['is_public'] = image.pop('visibility') == 'public'
-
-        return {'image': image}
-
     def _get_request_body(self, request):
         output = super(RequestDeserializer, self).default(request)
         if not 'body' in output:
@@ -334,21 +193,28 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         return output['body']
 
     @classmethod
-    def _check_readonly(cls, image):
-        for key in cls._readonly_properties:
+    def _check_allowed(cls, image):
+        for key in cls._disallowed_properties:
             if key in image:
                 msg = "Attribute \'%s\' is read-only." % key
                 raise webob.exc.HTTPForbidden(explanation=unicode(msg))
 
-    @classmethod
-    def _check_reserved(cls, image):
-        for key in cls._reserved_properties:
-            if key in image:
-                msg = "Attribute \'%s\' is reserved." % key
-                raise webob.exc.HTTPForbidden(explanation=unicode(msg))
-
     def create(self, request):
-        return self._parse_image(request)
+        body = self._get_request_body(request)
+        self._check_allowed(body)
+        try:
+            self.schema.validate(body)
+        except exception.InvalidObject as e:
+            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+        image = {}
+        properties = body
+        tags = properties.pop('tags', None)
+        for key in self._base_properties:
+            try:
+                image[key] = properties.pop(key)
+            except KeyError:
+                pass
+        return dict(image=image, extra_properties=properties, tags=tags)
 
     def _get_change_operation(self, raw_change):
         op = None
@@ -373,11 +239,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         if key in self._reserved_properties:
             msg = "Attribute \'%s\' is reserved." % key
             raise webob.exc.HTTPForbidden(explanation=unicode(msg))
-
-        # For image properties, we need to put "properties" at the beginning
-        if key not in self._base_properties:
-            return ['properties', key]
-        return [key]
+        return key
 
     def _decode_json_pointer(self, pointer):
         """ Parse a json pointer.
@@ -419,7 +281,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
     def _validate_change(self, change):
         if change['op'] == 'delete':
             return
-        partial_image = {change['path'][-1]: change['value']}
+        partial_image = {change['path']: change['value']}
         try:
             self.schema.validate(partial_image)
         except exception.InvalidObject as e:
@@ -447,9 +309,6 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             if not op == 'remove':
                 change['value'] = self._get_change_value(raw_change, op)
                 self._validate_change(change)
-                if change['path'] == ['visibility']:
-                    change['path'] = ['is_public']
-                    change['value'] = change['value'] == 'public'
             changes.append(change)
         return {'changes': changes}
 
@@ -510,64 +369,44 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         self.schema = schema or get_schema()
 
     def _get_image_href(self, image, subcollection=''):
-        base_href = '/v2/images/%s' % image['id']
+        base_href = '/v2/images/%s' % image.image_id
         if subcollection:
             base_href = '%s/%s' % (base_href, subcollection)
         return base_href
 
-    def _get_image_links(self, image):
-        return [
-            {'rel': 'self', 'href': self._get_image_href(image)},
-            {'rel': 'file', 'href': self._get_image_href(image, 'file')},
-            {'rel': 'describedby', 'href': '/v2/schemas/image'},
-        ]
-
     def _format_image(self, image):
-        #NOTE(bcwaldon): merge the contained properties dict with the
-        # top-level image object
-        image_view = image['properties']
-        attributes = ['id', 'name', 'disk_format', 'container_format',
-                      'size', 'status', 'checksum', 'tags', 'protected',
-                      'created_at', 'updated_at', 'min_ram', 'min_disk']
+        image_view = dict(image.extra_properties)
+        attributes = ['name', 'disk_format', 'container_format', 'visibility',
+                      'size', 'status', 'checksum', 'protected',
+                      'min_ram', 'min_disk']
         for key in attributes:
-            image_view[key] = image[key]
-
-        location = image['location']
-        if CONF.show_image_direct_url and location is not None:
-            image_view['direct_url'] = location
-
-        visibility = 'public' if image['is_public'] else 'private'
-        image_view['visibility'] = visibility
-
+            image_view[key] = getattr(image, key)
+        image_view['id'] = image.image_id
+        image_view['created_at'] = timeutils.isotime(image.created_at)
+        image_view['updated_at'] = timeutils.isotime(image.updated_at)
+        if CONF.show_image_direct_url and image.location is not None:  # domain
+            image_view['direct_url'] = image.location
+        image_view['tags'] = list(image.tags)
         image_view['self'] = self._get_image_href(image)
         image_view['file'] = self._get_image_href(image, 'file')
         image_view['schema'] = '/v2/schemas/image'
-
-        self._serialize_datetimes(image_view)
-        image_view = self.schema.filter(image_view)
-
+        image_view = self.schema.filter(image_view)  # domain
         return image_view
-
-    @staticmethod
-    def _serialize_datetimes(image):
-        for (key, value) in image.iteritems():
-            if isinstance(value, datetime.datetime):
-                image[key] = timeutils.isotime(value)
 
     def create(self, response, image):
         response.status_int = 201
-        body = json.dumps(self._format_image(image), ensure_ascii=False)
-        response.unicode_body = unicode(body)
-        response.content_type = 'application/json'
+        self.show(response, image)
         response.location = self._get_image_href(image)
 
     def show(self, response, image):
-        body = json.dumps(self._format_image(image), ensure_ascii=False)
+        image_view = self._format_image(image)
+        body = json.dumps(image_view, ensure_ascii=False)
         response.unicode_body = unicode(body)
         response.content_type = 'application/json'
 
     def update(self, response, image):
-        body = json.dumps(self._format_image(image), ensure_ascii=False)
+        image_view = self._format_image(image)
+        body = json.dumps(image_view, ensure_ascii=False)
         response.unicode_body = unicode(body)
         response.content_type = 'application/json'
 

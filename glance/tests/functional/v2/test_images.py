@@ -70,7 +70,40 @@ class TestImages(functional.FunctionalTest):
         # Returned image entity should have a generated id and status
         image = json.loads(response.text)
         image_id = image['id']
-        self.assertEqual(image['status'], 'queued')
+        checked_keys = set([
+            u'status',
+            u'name',
+            u'tags',
+            u'created_at',
+            u'updated_at',
+            u'visibility',
+            u'self',
+            u'protected',
+            u'id',
+            u'file',
+            u'min_disk',
+            u'foo',
+            u'type',
+            u'min_ram',
+            u'schema',
+        ])
+        self.assertEqual(set(image.keys()), checked_keys)
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-1',
+            'tags': [],
+            'visibility': 'private',
+            'self': '/v2/images/%s' % image_id,
+            'protected': False,
+            'file': '/v2/images/%s/file' % image_id,
+            'min_disk': 0,
+            'foo': 'bar',
+            'type': 'kernel',
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(image[key], value, key)
 
         # Image list should now have one entry
         path = self._url('/v2/images')
@@ -346,7 +379,7 @@ class TestImages(functional.FunctionalTest):
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         tags = json.loads(response.text)['tags']
-        self.assertEqual(['sniff', 'snozz'], tags)
+        self.assertEqual(['snozz', 'sniff'], tags)
 
         # Attempt to tag the image with a duplicate should be ignored
         path = self._url('/v2/images/%s/tags/snozz' % image_id)
@@ -363,7 +396,7 @@ class TestImages(functional.FunctionalTest):
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         tags = json.loads(response.text)['tags']
-        self.assertEqual(['sniff', 'snozz', 'gabe@example.com'], tags)
+        self.assertEqual(['gabe@example.com', 'snozz', 'sniff'], tags)
 
         # The tag should be deletable
         path = self._url('/v2/images/%s/tags/gabe%%40example.com' % image_id)
@@ -375,7 +408,7 @@ class TestImages(functional.FunctionalTest):
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         tags = json.loads(response.text)['tags']
-        self.assertEqual(['sniff', 'snozz'], tags)
+        self.assertEqual(['snozz', 'sniff'], tags)
 
         # Deleting the same tag should return a 404
         path = self._url('/v2/images/%s/tags/gabe%%40example.com' % image_id)
