@@ -24,7 +24,6 @@ import glance.store.location as location
 import glance.store.s3
 import glance.store.swift
 from glance.tests.unit import base
-from glance.tests import utils
 
 
 class TestStoreLocation(base.StoreClearingUnitTest):

@@ -23,7 +23,6 @@ from __future__ import with_statement
 import hashlib
 import math
 import urllib
-import urlparse
 
 from glance.common import exception
 from glance.openstack.common import cfg

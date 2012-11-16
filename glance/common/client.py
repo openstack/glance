@@ -25,7 +25,6 @@ import functools
 import httplib
 import os
 import re
-import select
 import urllib
 import urlparse
 

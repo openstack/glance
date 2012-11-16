@@ -32,7 +32,6 @@ from glance.api.v1 import images
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
-import glance.db
 from glance import image_cache
 import glance.openstack.common.log as logging
 from glance import registry

@@ -27,7 +27,6 @@ from sqlalchemy import exc
 import stubout
 import webob
 
-import glance.api.middleware.context as context_middleware
 import glance.api.common
 from glance.api.v1 import images
 from glance.api.v1 import router
