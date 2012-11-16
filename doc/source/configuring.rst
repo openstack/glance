@@ -711,7 +711,7 @@ command-line for the ``glance-manage`` program.
 Sets the SQLAlchemy connection string to use when connecting to the registry
 database. Please see the documentation for
 `SQLAlchemy connection strings <http://www.sqlalchemy.org/docs/05/reference/sqlalchemy/connections.html>`_
-online.
+online. You must urlencode any special characters in CONNECTION_STRING.
 
 * ``sql_timeout=SECONDS``
   on command line)
