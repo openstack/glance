@@ -35,7 +35,6 @@ class ImageDataController(object):
         self.db_api = db_api or glance.db.get_api()
         self.db_api.configure_db()
         self.store_api = store_api or glance.store
-        self.store_api.create_stores()
         self.policy = policy_enforcer or policy.Enforcer()
         self.notifier = notifier or glance.notifier.Notifier()
 

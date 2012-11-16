@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2010 OpenStack LLC.
+# Copyright 2010-2012 OpenStack LLC.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -19,7 +19,6 @@
 /images endpoint for Glance v1 API
 """
 
-import sys
 import traceback
 
 import eventlet
@@ -34,7 +33,6 @@ from webob.exc import (HTTPError,
 from glance.api import common
 from glance.api import policy
 import glance.api.v1
-from glance import context
 from glance.api.v1 import controller
 from glance.api.v1 import filters
 from glance.common import exception
@@ -44,8 +42,7 @@ from glance import notifier
 from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 from glance import registry
-from glance.store import (create_stores,
-                          get_from_backend,
+from glance.store import (get_from_backend,
                           get_size_from_backend,
                           safe_delete_from_backend,
                           schedule_delayed_delete_from_backend,
@@ -53,20 +50,13 @@ from glance.store import (create_stores,
                           get_store_from_scheme)
 
 
+CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
 SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
 CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
 DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi',
                 'iso']
-
-
-# Defined at module level due to _is_opt_registered
-# identity check (not equality).
-default_store_opt = cfg.StrOpt('default_store', default='file')
-
-CONF = cfg.CONF
-CONF.register_opt(default_store_opt)
 
 
 def validate_image_meta(req, values):
@@ -126,8 +116,6 @@ class Controller(controller.BaseController):
     """
 
     def __init__(self):
-        create_stores()
-        self.verify_scheme_or_exit(CONF.default_store)
         self.notifier = notifier.Notifier()
         registry.configure_registry_client()
         self.policy = policy.Enforcer()
@@ -884,23 +872,6 @@ class Controller(controller.BaseController):
             raise HTTPBadRequest(explanation=msg,
                                  request=request,
                                  content_type='text/plain')
-
-    def verify_scheme_or_exit(self, scheme):
-        """
-        Verifies availability of the storage backend for the
-        given scheme or exits
-
-        :param scheme: The backend store scheme
-        """
-        try:
-            get_store_from_scheme(context.RequestContext(), scheme)
-        except exception.UnknownScheme:
-            msg = _("Store for scheme %s not found")
-            LOG.error(msg % scheme)
-            # message on stderr will only be visible if started directly via
-            # bin/glance-api, as opposed to being daemonized by glance-control
-            sys.stderr.write(msg % scheme)
-            sys.exit(255)
 
 
 class ImageDeserializer(wsgi.JSONRequestDeserializer):

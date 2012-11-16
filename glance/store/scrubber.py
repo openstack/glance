@@ -92,8 +92,6 @@ class Scrubber(object):
 
         utils.safe_mkdirs(self.datadir)
 
-        store.create_stores()
-
     def run(self, pool, event=None):
         now = time.time()
 

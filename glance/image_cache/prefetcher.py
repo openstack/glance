@@ -27,12 +27,6 @@ from glance.image_cache import base
 import glance.openstack.common.log as logging
 from glance import registry
 import glance.store
-import glance.store.filesystem
-from glance.store import get_from_backend
-import glance.store.http
-import glance.store.rbd
-import glance.store.s3
-import glance.store.swift
 
 
 LOG = logging.getLogger(__name__)
@@ -41,7 +35,6 @@ LOG = logging.getLogger(__name__)
 class Prefetcher(base.CacheApp):
 
     def __init__(self):
-        glance.store.create_stores()
         super(Prefetcher, self).__init__()
         registry.configure_registry_client()
         registry.configure_registry_admin_creds()
@@ -60,7 +53,8 @@ class Prefetcher(base.CacheApp):
             LOG.warn(_("No metadata found for image '%s'"), image_id)
             return False
 
-        image_data, image_size = get_from_backend(ctx, image_meta['location'])
+        location = image_meta['location']
+        image_data, image_size = glance.store.get_from_backend(ctx, location)
         LOG.debug(_("Caching image '%s'"), image_id)
         self.cache.cache_image_iter(image_id, image_data)
         return True

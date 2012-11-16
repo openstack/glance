@@ -17,7 +17,6 @@
 
 import stubout
 
-from glance.common import config
 from glance.common import exception
 from glance import context
 from glance.db.sqlalchemy import api as db_api

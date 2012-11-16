@@ -40,6 +40,7 @@ from glance.common import config
 from glance.common import wsgi
 from glance.common import exception
 from glance.openstack.common import log
+import glance.store
 
 
 def fail(returncode, e):
@@ -51,6 +52,9 @@ if __name__ == '__main__':
     try:
         config.parse_args()
         log.setup('glance')
+
+        glance.store.create_stores()
+        glance.store.verify_default_store()
 
         server = wsgi.Server()
         server.start(config.load_paste_app, default_port=9292)

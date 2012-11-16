@@ -48,7 +48,6 @@ class ImagesController(object):
         self.policy = policy_enforcer or policy.Enforcer()
         self.notifier = notifier or glance.notifier.Notifier()
         self.store_api = store_api or glance.store
-        self.store_api.create_stores()
 
     def _enforce(self, req, action):
         """Authorize an action against our policies"""
