@@ -29,6 +29,7 @@ from webob.exc import (HTTPError,
                        HTTPBadRequest,
                        HTTPForbidden,
                        HTTPRequestEntityTooLarge,
+                       HTTPInternalServerError,
                        HTTPServiceUnavailable)
 
 from glance.api import common
@@ -273,7 +274,7 @@ class Controller(controller.BaseController):
                 if source.lower().startswith(scheme):
                     return source
             msg = _("External sourcing not supported for store %s") % source
-            LOG.error(msg)
+            LOG.debug(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
@@ -363,20 +364,20 @@ class Controller(controller.BaseController):
         except exception.Duplicate:
             msg = (_("An image with identifier %s already exists") %
                    image_meta['id'])
-            LOG.error(msg)
+            LOG.debug(msg)
             raise HTTPConflict(explanation=msg,
                                request=req,
                                content_type="text/plain")
         except exception.Invalid, e:
             msg = (_("Failed to reserve image. Got error: %(e)s") % locals())
             for line in msg.split('\n'):
-                LOG.error(line)
+                LOG.debug(line)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
         except exception.Forbidden:
             msg = _("Forbidden to reserve image.")
-            LOG.error(msg)
+            LOG.debug(msg)
             raise HTTPForbidden(explanation=msg,
                                 request=req,
                                 content_type="text/plain")
@@ -403,7 +404,7 @@ class Controller(controller.BaseController):
             except Exception as e:
                 self._safe_kill(req, image_meta['id'])
                 msg = _("Copy from external source failed: %s") % e
-                LOG.error(msg)
+                LOG.debug(msg)
                 return
             image_meta['size'] = image_size or image_meta['size']
         else:
@@ -412,7 +413,7 @@ class Controller(controller.BaseController):
             except exception.InvalidContentType:
                 self._safe_kill(req, image_meta['id'])
                 msg = _("Content-Type must be application/octet-stream")
-                LOG.error(msg)
+                LOG.debug(msg)
                 raise HTTPBadRequest(explanation=msg)
 
             image_data = req.body_file
@@ -443,7 +444,7 @@ class Controller(controller.BaseController):
                         "checksum generated from uploaded image "
                         "(%(checksum)s) did not match. Setting image "
                         "status to 'killed'.") % locals()
-                LOG.error(msg)
+                LOG.debug(msg)
                 self._safe_kill(req, image_id)
                 raise HTTPBadRequest(explanation=msg,
                                      content_type="text/plain",
@@ -465,13 +466,13 @@ class Controller(controller.BaseController):
 
         except exception.Duplicate, e:
             msg = _("Attempt to upload duplicate image: %s") % e
-            LOG.error(msg)
+            LOG.debug(msg)
             self._safe_kill(req, image_id)
             raise HTTPConflict(explanation=msg, request=req)
 
         except exception.Forbidden, e:
             msg = _("Forbidden upload attempt: %s") % e
-            LOG.error(msg)
+            LOG.debug(msg)
             self._safe_kill(req, image_id)
             raise HTTPForbidden(explanation=msg,
                                 request=req,
@@ -508,16 +509,9 @@ class Controller(controller.BaseController):
             raise e
 
         except Exception, e:
-            tb_info = traceback.format_exc()
-            LOG.error(tb_info)
-
+            LOG.exception(_("Failed to upload image"))
             self._safe_kill(req, image_id)
-
-            msg = _("Error uploading image: (%(class_name)s): "
-                    "%(exc)s") % ({'class_name': e.__class__.__name__,
-                                   'exc': str(e)})
-
-            raise HTTPBadRequest(explanation=msg, request=req)
+            raise HTTPInternalServerError(request=req)
 
     def _activate(self, req, image_id, location):
         """
@@ -541,8 +535,7 @@ class Controller(controller.BaseController):
         except exception.Invalid, e:
             msg = (_("Failed to activate image. Got error: %(e)s")
                    % locals())
-            for line in msg.split('\n'):
-                LOG.error(line)
+            LOG.debug(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
@@ -770,8 +763,7 @@ class Controller(controller.BaseController):
         except exception.Invalid, e:
             msg = (_("Failed to update image metadata. Got error: %(e)s")
                    % locals())
-            for line in msg.split('\n'):
-                LOG.error(line)
+            LOG.debug(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
@@ -879,8 +871,8 @@ class Controller(controller.BaseController):
         try:
             return get_store_from_scheme(request.context, scheme)
         except exception.UnknownScheme:
-            msg = _("Store for scheme %s not found")
-            LOG.error(msg % scheme)
+            msg = _("Store for scheme %s not found") % scheme
+            LOG.debug(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=request,
                                  content_type='text/plain')

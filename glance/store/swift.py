@@ -134,7 +134,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                        ", you need to change it to use the "
                        "swift+http:// scheme, like so: "
                        "swift+http://user:pass@authurl.com/v1/container/obj")
-            LOG.error(_("Invalid store uri %(uri)s: %(reason)s") % locals())
+            LOG.debug(_("Invalid store uri %(uri)s: %(reason)s") % locals())
             raise exception.BadStoreUri(message=reason)
 
         pieces = urlparse.urlparse(uri)
@@ -162,7 +162,7 @@ class StoreLocation(glance.store.location.StoreLocation):
             if len(cred_parts) != 2:
                 reason = (_("Badly formed credentials '%(creds)s' in Swift "
                             "URI") % locals())
-                LOG.error(reason)
+                LOG.debug(reason)
                 raise exception.BadStoreUri()
             user, key = cred_parts
             self.user = urllib.unquote(user)
@@ -180,7 +180,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                 self.auth_or_store_url = '/'.join(path_parts)
         except IndexError:
             reason = _("Badly formed Swift URI: %s") % uri
-            LOG.error(reason)
+            LOG.debug(reason)
             raise exception.BadStoreUri()
 
     @property
@@ -338,7 +338,7 @@ class Store(glance.store.base.Store):
                     storage_url=loc.swift_url, token=self.token)
             else:
                 reason = (_("Location is missing user:password information."))
-                LOG.error(reason)
+                LOG.debug(reason)
                 raise exception.BadStoreUri(message=reason)
 
     def _make_swift_connection(self, auth_url, user, key, region=None,
@@ -368,7 +368,7 @@ class Store(glance.store.base.Store):
             if len(tenant_user) != 2:
                 reason = (_("Badly formed tenant:user '%(tenant_user)s' in "
                             "Swift URI") % locals())
-                LOG.error(reason)
+                LOG.debug(reason)
                 raise exception.BadStoreUri()
             (tenant_name, user) = tenant_user
 
