@@ -94,9 +94,10 @@ class RegistryClient(BaseClient):
                     " request id %(request_id)s")
             LOG.debug(msg % locals())
 
-        except:
-            LOG.exception(_("Registry request %(method)s %(action)s "
-                            "Exception") % locals())
+        except Exception as exc:
+            exc_name = exc.__class__.__name__
+            LOG.info(_("Registry client request %(method)s %(action)s "
+                       "raised %(exc_name)s") % locals())
             raise
         return res
 
