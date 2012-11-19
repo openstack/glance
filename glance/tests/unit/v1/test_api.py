@@ -2332,6 +2332,23 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         """Tests delayed activation of image with missing container format"""
         self._do_test_put_image_content_missing_format('container_format')
 
+    def test_update_deleted_image(self):
+        """Tests that exception raised trying to update a deleted image"""
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        fixture = {'name': 'test_del_img'}
+        req = webob.Request.blank('/images/%s' % UUID2)
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(image=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPForbidden.code)
+        self.assertTrue('Forbidden to update deleted image' in res.body)
+
     def test_register_and_upload(self):
         """
         Test that the process of registering an image with
