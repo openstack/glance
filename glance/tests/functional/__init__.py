@@ -24,7 +24,6 @@ and spinning down the servers.
 """
 
 import datetime
-import functools
 import json
 import os
 import re

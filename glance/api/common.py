@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import errno
-
 from glance.common import exception
 from glance.openstack.common import log as logging
 

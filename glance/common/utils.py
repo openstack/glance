@@ -32,9 +32,7 @@ import os
 import platform
 import subprocess
 import sys
-import uuid
 
-import iso8601
 from webob import exc
 
 from glance.common import exception

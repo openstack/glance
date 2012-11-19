@@ -26,10 +26,6 @@ from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 from glance import registry
 from glance import store
-import glance.store.filesystem
-import glance.store.http
-import glance.store.s3
-import glance.store.swift
 
 LOG = logging.getLogger(__name__)
 

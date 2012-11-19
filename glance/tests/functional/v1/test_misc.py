@@ -19,10 +19,9 @@ import hashlib
 import httplib2
 import json
 import os
-import tempfile
 
 from glance.tests import functional
-from glance.tests.utils import execute, minimal_headers, minimal_add_command
+from glance.tests.utils import execute, minimal_headers
 
 FIVE_KB = 5 * 1024
 FIVE_GB = 5 * 1024 * 1024 * 1024

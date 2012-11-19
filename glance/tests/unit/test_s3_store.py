@@ -24,14 +24,12 @@ import boto.s3.connection
 import stubout
 
 from glance.common import exception
-from glance.openstack.common import cfg
 from glance.openstack.common import uuidutils
 from glance.store.location import get_location_from_uri
 import glance.store.s3
 from glance.store.s3 import Store, get_s3_location
 from glance.store import UnsupportedBackend
 from glance.tests.unit import base
-from glance.tests import utils as test_utils
 
 
 FAKE_UUID = uuidutils.generate_uuid()

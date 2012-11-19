@@ -40,7 +40,6 @@ import webob.dec
 import webob.exc
 
 from glance.common import exception
-from glance.common import utils
 from glance.openstack.common import cfg
 import glance.openstack.common.log as os_logging
 

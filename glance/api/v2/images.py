@@ -22,7 +22,6 @@ import urllib
 import webob.exc
 
 from glance.api import policy
-import glance.api.v2 as v2
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
