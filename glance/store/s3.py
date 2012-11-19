@@ -110,7 +110,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                        "s3+https:// scheme, like so: "
                        "s3+https://accesskey:secretkey@"
                        "s3.amazonaws.com/bucket/key-id")
-            LOG.error(_("Invalid store uri %(uri)s: %(reason)s") % locals())
+            LOG.debug(_("Invalid store uri %(uri)s: %(reason)s") % locals())
             raise exception.BadStoreUri(message=reason)
 
         pieces = urlparse.urlparse(uri)
@@ -137,7 +137,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                 self.secretkey = secret_key
             except IndexError:
                 reason = _("Badly formed S3 credentials %s") % creds
-                LOG.error(reason)
+                LOG.debug(reason)
                 raise exception.BadStoreUri()
         else:
             self.accesskey = None
@@ -153,7 +153,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                 raise exception.BadStoreUri()
         except IndexError:
             reason = _("Badly formed S3 URI: %s") % uri
-            LOG.error(reason)
+            LOG.debug(reason)
             raise exception.BadStoreUri()
 
 
@@ -240,7 +240,7 @@ class Store(glance.store.base.Store):
         if not result:
             reason = _("Could not find %(param)s in configuration "
                        "options.") % locals()
-            LOG.error(reason)
+            LOG.debug(reason)
             raise exception.BadStoreConfiguration(store_name="s3",
                                                   reason=reason)
         return result
@@ -448,7 +448,7 @@ def get_bucket(conn, bucket_id):
     bucket = conn.get_bucket(bucket_id)
     if not bucket:
         msg = _("Could not find bucket with ID %(bucket_id)s") % locals()
-        LOG.error(msg)
+        LOG.debug(msg)
         raise exception.NotFound(msg)
 
     return bucket
@@ -512,7 +512,7 @@ def get_key(bucket, obj):
     key = bucket.get_key(obj)
     if not key or not key.exists():
         msg = _("Could not find key %(obj)s in bucket %(bucket)s") % locals()
-        LOG.error(msg)
+        LOG.debug(msg)
         raise exception.NotFound(msg)
     return key
 

@@ -81,13 +81,13 @@ class StoreLocation(glance.store.location.StoreLocation):
             except ValueError:
                 reason = (_("Credentials '%s' not well-formatted.")
                           % "".join(creds))
-                LOG.error(reason)
+                LOG.debug(reason)
                 raise exception.BadStoreUri()
         else:
             self.user = None
         if netloc == '':
             reason = _("No address specified in HTTP URL")
-            LOG.error(reason)
+            LOG.debug(reason)
             raise exception.BadStoreUri(message=reason)
         self.netloc = netloc
         self.path = path

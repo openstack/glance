@@ -42,7 +42,7 @@ class Store(object):
         except exception.BadStoreConfiguration:
             msg = _("Failed to configure store correctly. "
                     "Disabling add method.")
-            LOG.error(msg)
+            LOG.info(msg)
             self.add = self.add_disabled
 
     def configure(self):
