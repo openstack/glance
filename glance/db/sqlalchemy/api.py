@@ -579,7 +579,7 @@ def _image_update(context, values, image_id, purge_props=False):
             # Perform authorization check
             check_mutate_authorization(context, image_ref)
         else:
-            if 'size' in values:
+            if values.get('size') is not None:
                 values['size'] = int(values['size'])
 
             if 'min_ram' in values:
