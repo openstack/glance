@@ -21,6 +21,7 @@ import time
 
 from glance.common import exception
 from glance.common import utils
+import glance.context
 from glance.openstack.common import cfg
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
@@ -37,6 +38,10 @@ store_opts = [
                     'glance.store.s3.Store',
                     'glance.store.swift.Store',
                 ]),
+    cfg.StrOpt('default_store', default='file',
+               help=_("Default scheme to use to store image data. The "
+                      "scheme must be registered by one of the stores "
+                      "defined by the 'known_stores' config option.")),
     cfg.StrOpt('scrubber_datadir',
                default='/var/lib/glance/scrubber'),
     cfg.BoolOpt('delayed_delete', default=False),
@@ -166,6 +171,16 @@ def create_stores():
             else:
                 LOG.debug("Store %s already registered", store_cls)
     return store_count
+
+
+def verify_default_store():
+    scheme = cfg.CONF.default_store
+    context = glance.context.RequestContext()
+    try:
+        get_store_from_scheme(context, scheme)
+    except exception.UnknownScheme:
+        msg = _("Store for scheme %s not found") % scheme
+        raise RuntimeError(msg)
 
 
 def get_store_from_scheme(context, scheme):

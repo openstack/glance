@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2011 OpenStack LLC.
+# Copyright 2011-2012 OpenStack LLC.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -36,26 +36,31 @@ gettext.install('glance', unicode=1)
 
 from glance.common import config
 from glance.openstack.common import cfg
+import glance.store
 from glance.store import scrubber
 
 CONF = cfg.CONF
 
 
 if __name__ == '__main__':
+    CONF.register_cli_opt(
+        cfg.BoolOpt('daemon',
+                    short='D',
+                    default=False,
+                    help='Run as a long-running process. When not '
+                         'specified (the default) run the scrub operation '
+                         'once and then exits. When specified do not exit '
+                         'and run scrub on wakeup_time interval as '
+                         'specified in the config.'))
+    CONF.register_opt(cfg.IntOpt('wakeup_time', default=300))
+
     try:
-        CONF.register_cli_opt(
-            cfg.BoolOpt('daemon',
-                        short='D',
-                        default=False,
-                        help='Run as a long-running process. When not '
-                             'specified (the default) run the scrub operation '
-                             'once and then exits. When specified do not exit '
-                             'and run scrub on wakeup_time interval as '
-                             'specified in the config.'))
-        CONF.register_opt(cfg.IntOpt('wakeup_time', default=300))
 
         config.parse_args()
         config.setup_logging()
+
+        glance.store.create_stores()
+        glance.store.verify_default_store()
 
         app = scrubber.Scrubber()
 

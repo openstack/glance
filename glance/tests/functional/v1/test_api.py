@@ -1240,7 +1240,7 @@ class TestApi(functional.FunctionalTest):
         # ensure that the API server fails to launch
         self.start_server(self.api_server,
                           expect_launch=False,
-                          expected_exitcode=255,
+                          expected_exitcode=1,
                           **self.__dict__.copy())
 
     def _do_test_post_image_content_bad_format(self, format):
