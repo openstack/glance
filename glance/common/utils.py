@@ -118,8 +118,25 @@ class CooperativeReader(object):
         :param fd: Underlying image file object
         """
         self.fd = fd
+        self.iterator = None
+        # NOTE(markwash): if the underlying supports read(), overwrite the
+        # default iterator-based implementation with cooperative_read which
+        # is more straightforward
         if hasattr(fd, 'read'):
             self.read = cooperative_read(fd)
+
+    def read(self, length=None):
+        """Return the next chunk of the underlying iterator.
+
+        This is replaced with cooperative_read in __init__ if the underlying
+        fd already supports read().
+        """
+        if self.iterator is None:
+            self.iterator = self.__iter__()
+        try:
+            return self.iterator.next()
+        except StopIteration:
+            return ''
 
     def __iter__(self):
         return cooperative_iter(self.fd.__iter__())
