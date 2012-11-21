@@ -488,14 +488,14 @@ def create_bucket_if_missing(bucket, s3_conn):
                 try:
                     s3_conn.create_bucket(bucket, location=location)
                 except S3ResponseError, e:
-                    msg = ("Failed to add bucket to S3.\n"
-                           "Got error from S3: %(e)s" % locals())
+                    msg = (_("Failed to add bucket to S3.\n"
+                             "Got error from S3: %(e)s") % locals())
                     raise glance.store.BackendException(msg)
             else:
-                msg = ("The bucket %(bucket)s does not exist in "
-                       "S3. Please set the "
-                       "s3_store_create_bucket_on_put option "
-                       "to add bucket to S3 automatically."
+                msg = (_("The bucket %(bucket)s does not exist in "
+                         "S3. Please set the "
+                         "s3_store_create_bucket_on_put option "
+                         "to add bucket to S3 automatically.")
                        % locals())
                 raise glance.store.BackendException(msg)
 

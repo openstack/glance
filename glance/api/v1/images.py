@@ -88,10 +88,10 @@ def validate_image_meta(req, values):
         elif container_format is None:
             values['container_format'] = disk_format
         elif container_format != disk_format:
-            msg = ("Invalid mix of disk and container formats. "
-                   "When setting a disk or container format to "
-                   "one of 'aki', 'ari', or 'ami', the container "
-                   "and disk formats must match.")
+            msg = (_("Invalid mix of disk and container formats. "
+                     "When setting a disk or container format to "
+                     "one of 'aki', 'ari', or 'ami', the container "
+                     "and disk formats must match."))
             raise HTTPBadRequest(explanation=msg, request=req)
 
     return values
@@ -756,14 +756,14 @@ class Controller(controller.BaseController):
                                  request=req,
                                  content_type="text/plain")
         except exception.NotFound, e:
-            msg = ("Failed to find image to update: %(e)s" % locals())
+            msg = (_("Failed to find image to update: %(e)s") % locals())
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPNotFound(explanation=msg,
                                request=req,
                                content_type="text/plain")
         except exception.Forbidden, e:
-            msg = ("Forbidden to update image: %(e)s" % locals())
+            msg = (_("Forbidden to update image: %(e)s") % locals())
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPForbidden(explanation=msg,
@@ -830,14 +830,14 @@ class Controller(controller.BaseController):
                     safe_delete_from_backend(image['location'],
                                              req.context, id)
         except exception.NotFound, e:
-            msg = ("Failed to find image to delete: %(e)s" % locals())
+            msg = (_("Failed to find image to delete: %(e)s") % locals())
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPNotFound(explanation=msg,
                                request=req,
                                content_type="text/plain")
         except exception.Forbidden, e:
-            msg = ("Forbidden to delete image: %(e)s" % locals())
+            msg = (_("Forbidden to delete image: %(e)s") % locals())
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPForbidden(explanation=msg,

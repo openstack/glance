@@ -81,11 +81,12 @@ class ImageDataController(object):
                                                    request=req)
 
         except webob.exc.HTTPError, e:
-            LOG.error("Failed to upload image data due to HTTP error")
+            LOG.error(_("Failed to upload image data due to HTTP error"))
             raise
 
         except Exception, e:
-            LOG.exception("Failed to upload image data due to internal error")
+            LOG.exception(_("Failed to upload image data due to "
+                            "internal error"))
             raise
 
         else:

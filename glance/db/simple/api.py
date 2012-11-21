@@ -34,10 +34,14 @@ DATA = {
 def log_call(func):
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
-        LOG.info('Calling %s: args=%s, kwargs=%s' %
-                 (func.__name__, args, kwargs))
+        LOG.info(_('Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s') %
+                 {"funcname": func.__name__,
+                  "args": args,
+                  "kwargs": kwargs})
         output = func(*args, **kwargs)
-        LOG.info('Returning %s: %s' % (func.__name__, output))
+        LOG.info(_('Returning %(funcname)s: %(output)s') %
+                 {"funcname": func.__name__,
+                  "output": output})
         return output
     return wrapped
 
@@ -195,15 +199,15 @@ def _image_get(context, image_id, force_show_deleted=False):
     try:
         image = DATA['images'][image_id]
     except KeyError:
-        LOG.info('Could not find image %s' % image_id)
+        LOG.info(_('Could not find image %s') % image_id)
         raise exception.NotFound()
 
     if image['deleted'] and not (force_show_deleted or context.show_deleted):
-        LOG.info('Unable to get deleted image')
+        LOG.info(_('Unable to get deleted image'))
         raise exception.NotFound()
 
     if not is_image_visible(context, image):
-        LOG.info('Unable to get unowned image')
+        LOG.info(_('Unable to get unowned image'))
         raise exception.Forbidden("Image not visible to you")
 
     return image

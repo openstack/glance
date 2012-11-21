@@ -277,7 +277,7 @@ class ImagesController(object):
                     self.store_api.safe_delete_from_backend(image['location'],
                                                             req.context, id)
         except exception.NotFound:
-            msg = ("Failed to find image %(image_id)s to delete" % locals())
+            msg = (_("Failed to find image %(image_id)s to delete") % locals())
             LOG.info(msg)
             raise webob.exc.HTTPNotFound()
         except exception.Forbidden:

@@ -426,7 +426,7 @@ class Driver(base.Driver):
         """
         for path in self.get_cache_files(self.invalid_dir):
             os.unlink(path)
-            LOG.info("Removed invalid cache file %s", path)
+            LOG.info(_("Removed invalid cache file %s"), path)
 
     def delete_stalled_files(self, older_than):
         """
@@ -438,7 +438,7 @@ class Driver(base.Driver):
         """
         for path in self.get_cache_files(self.incomplete_dir):
             os.unlink(path)
-            LOG.info("Removed stalled cache file %s", path)
+            LOG.info(_("Removed stalled cache file %s"), path)
 
     def get_queued_images(self):
         """

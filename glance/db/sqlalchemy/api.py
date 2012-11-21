@@ -117,7 +117,7 @@ def configure_db():
             sa_logger.setLevel(logging.DEBUG)
 
         if CONF.db_auto_create:
-            LOG.info('auto-creating glance registry DB')
+            LOG.info(_('auto-creating glance registry DB'))
             models.register_models(_ENGINE)
             try:
                 migration.version_control()
@@ -125,7 +125,7 @@ def configure_db():
                 # only arises when the DB exists and is under version control
                 pass
         else:
-            LOG.info('not auto-creating glance registry DB')
+            LOG.info(_('not auto-creating glance registry DB'))
 
 
 def check_mutate_authorization(context, image_ref):
