@@ -9,6 +9,7 @@ function usage {
   echo "  -f, --force              Force a clean re-build of the virtual environment. Useful when dependencies have been added."
   echo "  --unittests-only         Run unit tests only, exclude functional tests."
   echo "  -p, --pep8               Just run pep8"
+  echo "  -P, --no-pep8            Don't run static code checks"
   echo "  -h, --help               Print this usage message"
   echo ""
   echo "Note: with no options specified, the script will try to run the tests in a virtual environment,"
@@ -23,6 +24,7 @@ function process_option {
     -V|--virtual-env) let always_venv=1; let never_venv=0;;
     -N|--no-virtual-env) let always_venv=0; let never_venv=1;;
     -p|--pep8) let just_pep8=1;;
+    -P|--no-pep8) let no_pep8=1;;
     -f|--force) let force=1;;
     --unittests-only) noseopts="$noseopts --exclude-dir=glance/tests/functional";;
     -c|--coverage) noseopts="$noseopts --with-coverage --cover-package=glance";;
@@ -40,6 +42,7 @@ noseopts=
 noseargs=
 wrapper=""
 just_pep8=0
+no_pep8=0
 
 export NOSE_WITH_OPENSTACK=1
 export NOSE_OPENSTACK_COLOR=1
@@ -105,5 +108,7 @@ fi
 run_tests || exit
 
 if [ -z "$noseargs" ]; then
-  run_pep8
+    if [ $no_pep8 -eq 0 ]; then
+        run_pep8
+    fi
 fi
