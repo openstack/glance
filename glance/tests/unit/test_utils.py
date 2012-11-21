@@ -50,6 +50,17 @@ class TestUtils(test_utils.BaseTestCase):
 
         self.assertEquals(bytes_read, BYTES)
 
+    def test_cooperative_reader_of_iterator(self):
+        """Ensure cooperative reader supports iterator backends too"""
+        reader = utils.CooperativeReader([l * 3 for l in 'abcdefgh'])
+        chunks = []
+        while True:
+            chunks.append(reader.read(3))
+            if chunks[-1] == '':
+                break
+        meat = ''.join(chunks)
+        self.assertEqual(meat, 'aaabbbcccdddeeefffggghhh')
+
     def test_limiting_reader(self):
         """Ensure limiting reader class accesses all bytes of file"""
         BYTES = 1024
