@@ -13,10 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import stubout
 import unittest
 import webob
 
 import glance.api.middleware.cache
+from glance import context
+from glance import registry
+from glance.common import exception
 
 
 class TestCacheMiddlewareURLMatching(unittest.TestCase):
@@ -108,3 +112,43 @@ class TestCacheMiddlewareChecksumVerification(unittest.TestCase):
         cache_filter._process_GET_response(resp, None)
 
         self.assertEqual(None, cache_filter.cache.image_checksum)
+
+
+class ProcessRequestTestCacheFilter(glance.api.middleware.cache.CacheFilter):
+    def __init__(self):
+        class DummyCache(object):
+            def get_caching_iter(self, image_id, image_checksum, app_iter):
+                pass
+
+        self.cache = DummyCache()
+
+
+class TestCacheMiddlewareProcessRequest(unittest.TestCase):
+    def setUp(self):
+        super(TestCacheMiddlewareProcessRequest, self).setUp()
+        self.stubs = stubout.StubOutForTesting()
+
+    def tearDown(self):
+        super(TestCacheMiddlewareProcessRequest, self).tearDown()
+        self.stubs.UnsetAll()
+
+    def test_v1_deleted_image_fetch(self):
+        """
+        Test for determining that when an admin tries to download a deleted
+        image it returns 404 Not Found error.
+        """
+        def fake_get_image_metadata(context, image_id):
+            return {'deleted': True}
+
+        def dummy_img_iterator():
+            for i in range(3):
+                yield i
+
+        image_id = 'test1'
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext()
+        cache_filter = ProcessRequestTestCacheFilter()
+        self.stubs.Set(registry, 'get_image_metadata',
+                       fake_get_image_metadata)
+        self.assertRaises(exception.NotFound, cache_filter._process_v1_request,
+                          request, image_id, dummy_img_iterator)
