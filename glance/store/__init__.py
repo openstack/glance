@@ -22,6 +22,7 @@ import time
 from glance.common import exception
 from glance.common import utils
 import glance.context
+import glance.domain
 from glance.openstack.common import cfg
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
@@ -298,3 +299,42 @@ def set_acls(context, location_uri, public=False, read_tenants=[],
                        write_tenants=write_tenants)
     except NotImplementedError:
         LOG.debug(_("Skipping store.set_acls... not implemented."))
+
+
+class ImageRepoProxy(glance.domain.ImageRepoProxy):
+
+    def __init__(self, context, store_api, image_repo):
+        self.context = context
+        self.store_api = store_api
+        self.image_repo = image_repo
+        super(ImageRepoProxy, self).__init__(image_repo)
+
+    def get(self, *args, **kwargs):
+        image = self.image_repo.get(*args, **kwargs)
+        return ImageProxy(image, self.context, self.store_api)
+
+    def list(self, *args, **kwargs):
+        images = self.image_repo.list(*args, **kwargs)
+        return [ImageProxy(i, self.context, self.store_api)
+                for i in images]
+
+
+class ImageProxy(glance.domain.ImageProxy):
+
+    def __init__(self, image, context, store_api):
+        self.image = image
+        self.context = context
+        self.store_api = store_api
+        super(ImageProxy, self).__init__(image)
+
+    def delete(self):
+        self.image.delete()
+        if self.image.location:
+            if CONF.delayed_delete:
+                self.image.status = 'pending_delete'
+                self.store_api.schedule_delayed_delete_from_backend(
+                                self.image.location, self.image.image_id)
+            else:
+                self.store_api.safe_delete_from_backend(self.image.location,
+                                                        self.context,
+                                                        self.image.image_id)
