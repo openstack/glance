@@ -323,7 +323,7 @@ class Store(glance.store.base.Store):
         try:
             resp_headers = swift_conn.head_object(container=loc.container,
                                                   obj=loc.obj)
-            return resp_headers.get('content-length', 0)
+            return int(resp_headers.get('content-length', 0))
         except Exception:
             return 0
 

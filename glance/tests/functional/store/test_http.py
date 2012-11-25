@@ -39,6 +39,12 @@ def get_handler_class(fixture):
             self.wfile.write(fixture)
             return
 
+        def do_HEAD(self):
+            self.send_response(200)
+            self.send_header('Content-Length', str(len(fixture)))
+            self.end_headers()
+            return
+
         def log_message(*args, **kwargs):
             # Override this method to prevent debug output from going
             # to stderr during testing
