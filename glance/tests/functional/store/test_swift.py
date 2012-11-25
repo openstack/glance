@@ -221,7 +221,7 @@ class TestSwiftStore(store_tests.BaseTestCase, unittest.TestCase):
         # Store interface should still be respected even though
         # we are storing images in multiple Swift objects
         (get_iter, get_size) = store.get(location)
-        self.assertEqual('5242880', get_size)
+        self.assertEqual(5242880, get_size)
         self.assertEqual('X' * 5242880, ''.join(get_iter))
 
         # The object should have a manifest pointing to the chunks
@@ -332,7 +332,7 @@ class TestSwiftStore(store_tests.BaseTestCase, unittest.TestCase):
         self.assertEqual('', container.get('x-container-write', ''))
 
         (get_iter, get_size) = store.get(location)
-        self.assertEqual('3', get_size)
+        self.assertEqual(3, get_size)
         self.assertEqual('XXX', ''.join(get_iter))
 
         store.delete(location)
