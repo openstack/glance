@@ -312,7 +312,7 @@ class TestSwiftStore(store_tests.BaseTestCase, unittest.TestCase):
                 uri=uri,
                 image_id=image_id)
 
-        read_tenant = uudiutils.generate_uuid()
+        read_tenant = uuidutils.generate_uuid()
         write_tenant = uuidutils.generate_uuid()
         store.set_acls(location,
                        public=False,
