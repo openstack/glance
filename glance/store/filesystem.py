@@ -137,6 +137,16 @@ class Store(glance.store.base.Store):
                 raise exception.BadStoreConfiguration(store_name="filesystem",
                                                       reason=reason)
 
+    @staticmethod
+    def _resolve_location(location):
+        filepath = location.store_location.path
+
+        if not os.path.exists(filepath):
+            raise exception.NotFound(_("Image file %s not found") % filepath)
+
+        filesize = os.path.getsize(filepath)
+        return filepath, filesize
+
     def get(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates
@@ -147,18 +157,25 @@ class Store(glance.store.base.Store):
                         from glance.store.location.get_location_from_uri()
         :raises `glance.exception.NotFound` if image does not exist
         """
-        loc = location.store_location
-        filepath = loc.path
-        if not os.path.exists(filepath):
-            raise exception.NotFound(_("Image file %s not found") % filepath)
-        else:
-            msg = _("Found image at %s. Returning in ChunkedFile.") % filepath
-            LOG.debug(msg)
-            try:
-                image_size = int(os.path.getsize(filepath))
-            except os.error:
-                image_size = None
-            return (ChunkedFile(filepath), image_size)
+        filepath, filesize = self._resolve_location(location)
+        msg = _("Found image at %s. Returning in ChunkedFile.") % filepath
+        LOG.debug(msg)
+        return (ChunkedFile(filepath), filesize)
+
+    def get_size(self, location):
+        """
+        Takes a `glance.store.location.Location` object that indicates
+        where to find the image file and returns the image size
+
+        :param location `glance.store.location.Location` object, supplied
+                        from glance.store.location.get_location_from_uri()
+        :raises `glance.exception.NotFound` if image does not exist
+        :rtype int
+        """
+        filepath, filesize = self._resolve_location(location)
+        msg = _("Found image at %s.") % filepath
+        LOG.debug(msg)
+        return filesize
 
     def delete(self, location):
         """
