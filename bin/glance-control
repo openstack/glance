@@ -23,6 +23,7 @@ Thanks for some of the code, Swifties ;)
 
 from __future__ import with_statement
 
+import argparse
 import errno
 import fcntl
 import gettext
@@ -51,12 +52,12 @@ CONF = cfg.CONF
 
 ALL_COMMANDS = ['start', 'status', 'stop', 'shutdown', 'restart',
                 'reload', 'force-reload']
-ALL_SERVERS = ['glance-api', 'glance-registry', 'glance-scrubber']
+ALL_SERVERS = ['api', 'registry', 'scrubber']
 GRACEFUL_SHUTDOWN_SERVERS = ['glance-api', 'glance-registry',
                              'glance-scrubber']
 MAX_DESCRIPTORS = 32768
 MAX_MEMORY = (1024 * 1024 * 1024) * 2  # 2 GB
-USAGE = """%prog [options] <SERVER> <COMMAND> [CONFPATH]
+USAGE = """%(prog)s [options] <SERVER> <COMMAND> [CONFPATH]
 
 Where <SERVER> is one of:
 
@@ -205,7 +206,7 @@ def do_check_status(pid_file, server):
         print "No %s running" % server
 
 
-def get_pid_file(pid, pid_file):
+def get_pid_file(server, pid_file):
     pid_file = (os.path.abspath(pid_file) if pid_file else
                 '/var/run/glance/%s.pid' % server)
     dir, file = os.path.split(pid_file)
@@ -259,10 +260,34 @@ def do_stop(server, args, graceful=False):
         print 'No %s running' % server
 
 
+def add_command_parsers(subparsers):
+    cmd_parser = argparse.ArgumentParser(add_help=False)
+    cmd_subparsers = cmd_parser.add_subparsers(dest='command')
+    for cmd in ALL_COMMANDS:
+        parser = cmd_subparsers.add_parser(cmd)
+        parser.add_argument('args', nargs=argparse.REMAINDER)
+
+    for server in ALL_SERVERS:
+        full_name = 'glance-' + server
+
+        parser = subparsers.add_parser(server, parents=[cmd_parser])
+        parser.set_defaults(servers=[full_name])
+
+        parser = subparsers.add_parser(full_name, parents=[cmd_parser])
+        parser.set_defaults(servers=[full_name])
+
+    parser = subparsers.add_parser('all', parents=[cmd_parser])
+    parser.set_defaults(servers=['glance-' + s for s in ALL_SERVERS])
+
+
 if __name__ == '__main__':
     exitcode = 0
 
     opts = [
+            cfg.SubCommandOpt('server',
+                              title='Server types',
+                              help='Available server types',
+                              handler=add_command_parsers),
             cfg.StrOpt('pid-file',
                        metavar='PATH',
                        help='File to use as pid file. Default: '
@@ -283,7 +308,7 @@ if __name__ == '__main__':
     ]
     CONF.register_cli_opts(opts)
 
-    args = config.parse_args(usage=USAGE)
+    config.parse_args(usage=USAGE)
 
     @gated_by(CONF.await_child)
     @gated_by(CONF.respawn)
@@ -292,31 +317,6 @@ if __name__ == '__main__':
         sys.exit(1)
 
     mutually_exclusive()
-
-    if len(args) < 2:
-        CONF.print_usage()
-        sys.exit(1)
-
-    server = args.pop(0).lower()
-    if server == 'all':
-        servers = ALL_SERVERS
-    else:
-        if not server.startswith('glance-'):
-            server = 'glance-%s' % server
-        if server not in ALL_SERVERS:
-            server_list = ", ".join([s.replace('glance-', '')
-                                     for s in ALL_SERVERS])
-            msg = ("Unknown server '%(server)s' specified. Please specify "
-                   "all, or one of the servers: %(server_list)s" % locals())
-            sys.exit(msg)
-        servers = [server]
-
-    command = args.pop(0).lower()
-    if command not in ALL_COMMANDS:
-        command_list = ", ".join(ALL_COMMANDS)
-        msg = ("Unknown command %(command)s specified. Please specify a "
-               "command in this list: %(command_list)s" % locals())
-        sys.exit(msg)
 
     @gated_by(CONF.respawn)
     def anticipate_respawn(children):
@@ -336,40 +336,41 @@ if __name__ == '__main__':
                     rsn = 'bouncing' if bouncing else 'deliberately stopped'
                     print 'Supressed respawn as %s was %s.' % (server, rsn)
 
-    if command == 'start':
-        pid_file = get_pid_file(server, CONF.pid_file)
+    if CONF.server.command == 'start':
         children = {}
-        for server in servers:
-            args = (pid_file, server, args)
+        for server in CONF.server.servers:
+            pid_file = get_pid_file(server, CONF.pid_file)
+            args = (pid_file, server, CONF.server.args)
             pid = do_start('Start', *args)
             children[pid] = args
 
         anticipate_respawn(children)
 
-    if command == 'status':
-        for server in servers:
+    if CONF.server.command == 'status':
+        for server in CONF.server.servers:
             pid_file = get_pid_file(server, CONF.pid_file)
             do_check_status(pid_file, server)
 
-    if command == 'stop':
-        for server in servers:
-            do_stop(server, args)
+    if CONF.server.command == 'stop':
+        for server in CONF.server.servers:
+            do_stop(server, CONF.server.args)
 
-    if command == 'shutdown':
-        for server in servers:
-            do_stop(server, args, graceful=True)
+    if CONF.server.command == 'shutdown':
+        for server in CONF.server.servers:
+            do_stop(server, CONF.server.args, graceful=True)
 
-    if command == 'restart':
-        for server in servers:
-            do_stop(server, args)
-        for server in servers:
+    if CONF.server.command == 'restart':
+        for server in CONF.server.servers:
+            do_stop(server, CONF.server.args)
+        for server in CONF.server.servers:
             pid_file = get_pid_file(server, CONF.pid_file)
-            do_start('Restart', pid_file, server, args)
+            do_start('Restart', pid_file, server, CONF.server.args)
 
-    if command == 'reload' or command == 'force-reload':
-        for server in servers:
-            do_stop(server, args, graceful=True)
+    if (CONF.server.command == 'reload' or
+        CONF.server.command == 'force-reload'):
+        for server in CONF.server.servers:
+            do_stop(server, CONF.server.args, graceful=True)
             pid_file = get_pid_file(server, CONF.pid_file)
-            do_start('Restart', pid_file, server, args)
+            do_start('Restart', pid_file, server, CONF.server.args)
 
     sys.exit(exitcode)

@@ -129,9 +129,9 @@ class Server(object):
 
         self.create_database()
 
-        cmd = ("%(server_control)s %(server_name)s start "
-               "%(conf_file_name)s --pid-file=%(pid_file)s "
-               "%(server_control_options)s"
+        cmd = ("%(server_control)s --pid-file=%(pid_file)s "
+               "%(server_control_options)s "
+               "%(server_name)s start %(conf_file_name)s"
                % self.__dict__)
         return execute(cmd,
                        no_venv=self.no_venv,
@@ -147,9 +147,9 @@ class Server(object):
         Any kwargs passed to this method will override the configuration
         value in the conf file used in starting the servers.
         """
-        cmd = ("%(server_control)s %(server_name)s reload "
-               "%(conf_file_name)s --pid-file=%(pid_file)s "
-               "%(server_control_options)s"
+        cmd = ("%(server_control)s --pid-file=%(pid_file)s "
+               "%(server_control_options)s "
+               "%(server_name)s reload %(conf_file_name)s"
                % self.__dict__)
         return execute(cmd,
                        no_venv=self.no_venv,
@@ -169,7 +169,7 @@ class Server(object):
                 conf_file.write('sql_connection = %s' % self.sql_connection)
                 conf_file.flush()
 
-            cmd = ('bin/glance-manage db_sync --config-file %s'
+            cmd = ('bin/glance-manage --config-file %s db_sync'
                    % conf_filepath)
             execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env,
                     expect_exit=True)
@@ -178,8 +178,8 @@ class Server(object):
         """
         Spin down the server.
         """
-        cmd = ("%(server_control)s %(server_name)s stop "
-               "%(conf_file_name)s --pid-file=%(pid_file)s"
+        cmd = ("%(server_control)s --pid-file=%(pid_file)s "
+               "%(server_name)s stop %(conf_file_name)s"
                % self.__dict__)
         return execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env,
                        expect_exit=True)
