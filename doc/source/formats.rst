@@ -29,7 +29,7 @@ The disk format of a virtual machine image is the format of the underlying
 disk image. Virtual appliance vendors have different formats for laying out
 the information contained in a virtual machine disk image.
 
-You can set your image's container format to one of the following:
+You can set your image's disk format to one of the following:
 
 * **raw**
 
