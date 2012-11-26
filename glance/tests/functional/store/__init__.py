@@ -79,7 +79,7 @@ class BaseTestCase(object):
                 image_id=image_id)
 
         (get_iter, get_size) = store.get(location)
-        self.assertEqual('3', get_size)
+        self.assertEqual(3, get_size)
         self.assertEqual('XXX', ''.join(get_iter))
 
         store.delete(location)
@@ -96,5 +96,5 @@ class BaseTestCase(object):
                 store.get_store_location_class(),
                 uri=image_uri)
         (get_iter, get_size) = store.get(location)
-        self.assertEqual('3', get_size)
+        self.assertEqual(3, get_size)
         self.assertEqual('XXX', ''.join(get_iter))

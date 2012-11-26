@@ -155,7 +155,7 @@ class Store(glance.store.base.Store):
             msg = _("Found image at %s. Returning in ChunkedFile.") % filepath
             LOG.debug(msg)
             try:
-                image_size = str(os.path.getsize(filepath))
+                image_size = int(os.path.getsize(filepath))
             except os.error:
                 image_size = None
             return (ChunkedFile(filepath), image_size)

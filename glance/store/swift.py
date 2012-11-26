@@ -305,7 +305,7 @@ class Store(glance.store.base.Store):
                 except StopIteration:
                     return ''
 
-        length = resp_headers.get('content-length')
+        length = int(resp_headers.get('content-length', 0))
         return (ResponseIndexable(resp_body, length), length)
 
     def get_size(self, location):
