@@ -67,8 +67,10 @@ function run_pep8 {
   echo "Running pep8 ..."
   PEP8_EXCLUDE=".venv,.tox,dist,doc,openstack"
   PEP8_OPTIONS="--exclude=$PEP8_EXCLUDE --repeat"
+  PEP8_IGNORE="--ignore=E125,E126,E711,E712"
   PEP8_INCLUDE=". bin/*"
-  ${wrapper} pep8 $PEP8_OPTIONS $PEP8_INCLUDE
+
+  ${wrapper} pep8 $PEP8_OPTIONS $PEP8_INCLUDE $PEP8_IGNORE
 }
 
 
