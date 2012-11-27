@@ -35,7 +35,7 @@ rabbit_opts = [
     cfg.StrOpt('rabbit_virtual_host', default='/'),
     cfg.StrOpt('rabbit_notification_exchange', default='glance'),
     cfg.StrOpt('rabbit_notification_topic',
-               default='glance_notifications'),
+               default='notifications'),
     cfg.StrOpt('rabbit_max_retries', default=0),
     cfg.StrOpt('rabbit_retry_backoff', default=2),
     cfg.StrOpt('rabbit_retry_max_backoff', default=30),
