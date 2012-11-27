@@ -33,3 +33,4 @@ Paste
 
 passlib
 jsonschema
+python-keystoneclient>=0.2.0
