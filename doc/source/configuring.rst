@@ -782,7 +782,7 @@ Exchange name to use for connection when using ``rabbit`` strategy.
 
 * ``rabbit_notification_topic``
 
-Optional. Default: ``glance_notifications``
+Optional. Default: ``notifications``
 
 Topic to use for connection when using ``rabbit`` strategy.
 
@@ -825,10 +825,10 @@ Optional. Default: ``glanice_notifications``
 
 This is the topic prefix for notifications when using the ``qpid``
 notification strategy. When a notification is sent at the ``info`` priority,
-the topic will be ``glance_notifications.info``. The same idea applies for
+the topic will be ``notifications.info``. The same idea applies for
 the ``error`` and ``warn`` notification priorities. To receive all
 notifications, you would set up a receiver with a topic of
-``glance_notifications.*``.
+``notifications.*``.
 
 * ``qpid_host``
 

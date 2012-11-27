@@ -29,7 +29,7 @@ qpid_opts = [
                default='glance',
                help='Qpid exchange for notifications'),
     cfg.StrOpt('qpid_notification_topic',
-               default='glance_notifications',
+               default='notifications',
                help='Qpid topic for notifications'),
     cfg.StrOpt('qpid_hostname',
                default='localhost',
