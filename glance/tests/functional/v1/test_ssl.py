@@ -1238,9 +1238,6 @@ class TestSSL(functional.FunctionalTest):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
 
-        api_port = self.api_port
-        registry_port = self.registry_port
-
         # 0. GET /images
         # Verify no public images
         path = "https://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
