@@ -60,6 +60,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual(set(['data', 'meta']), set(output.keys()))
         self.assertEqual(4, output['meta']['size'])
         self.assertEqual('YYYY', output['data'])
+        self.assertEqual(output['meta']['status'], 'active')
         output_log = self.notifier.get_log()
         expected_log = {
             'notification_type': "INFO",

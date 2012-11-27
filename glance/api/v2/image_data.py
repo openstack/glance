@@ -91,7 +91,8 @@ class ImageDataController(object):
 
         else:
             v2.update_image_read_acl(req, self.store_api, self.db_api, image)
-            values = {'location': location, 'size': size, 'checksum': checksum}
+            values = {'location': location, 'size': size, 'checksum': checksum,
+                      'status': 'active'}
             self.db_api.image_update(req.context, image_id, values)
             updated_image = self._get_image(req.context, image_id)
             self.notifier.info('image.upload', updated_image)
