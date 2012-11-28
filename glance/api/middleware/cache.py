@@ -130,6 +130,11 @@ class CacheFilter(wsgi.Middleware):
     def _process_v1_request(self, request, image_id, image_iterator):
         image_meta = registry.get_image_metadata(request.context, image_id)
 
+        # NOTE: admins can see image metadata in the v1 API, but shouldn't
+        # be able to download the actual image data.
+        if image_meta['deleted']:
+            raise exception.NotFound()
+
         if not image_meta['size']:
             # override image size metadata with the actual cached
             # file size, see LP Bug #900959
