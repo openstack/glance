@@ -18,6 +18,3 @@ requests
 # Optional packages that should be installed when testing
 xattr>=0.6.0
 pysendfile==2.0.0
-
-# Needed for swift store functional tests
-python-keystoneclient
