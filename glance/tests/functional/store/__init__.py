@@ -82,6 +82,9 @@ class BaseTestCase(object):
         self.assertEqual(3, get_size)
         self.assertEqual('XXX', ''.join(get_iter))
 
+        image_size = store.get_size(location)
+        self.assertEqual(3, image_size)
+
         store.delete(location)
 
         self.assertRaises(exception.NotFound, store.get, location)
@@ -95,6 +98,10 @@ class BaseTestCase(object):
                 self.store_name,
                 store.get_store_location_class(),
                 uri=image_uri)
+
         (get_iter, get_size) = store.get(location)
         self.assertEqual(3, get_size)
         self.assertEqual('XXX', ''.join(get_iter))
+
+        image_size = store.get_size(location)
+        self.assertEqual(3, image_size)
