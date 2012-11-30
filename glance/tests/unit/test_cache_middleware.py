@@ -117,8 +117,17 @@ class TestCacheMiddlewareChecksumVerification(unittest.TestCase):
 class ProcessRequestTestCacheFilter(glance.api.middleware.cache.CacheFilter):
     def __init__(self):
         class DummyCache(object):
+            def __init__(self):
+                self.deleted_images = []
+
+            def is_cached(self, image_id):
+                return True
+
             def get_caching_iter(self, image_id, image_checksum, app_iter):
                 pass
+
+            def delete_cached_image(self, image_id):
+                self.deleted_images.append(image_id)
 
         self.cache = DummyCache()
 
@@ -152,3 +161,20 @@ class TestCacheMiddlewareProcessRequest(unittest.TestCase):
                        fake_get_image_metadata)
         self.assertRaises(exception.NotFound, cache_filter._process_v1_request,
                           request, image_id, dummy_img_iterator)
+
+    def test_process_v1_request_for_deleted_but_cached_image(self):
+        """
+        Test for determining image is deleted from cache when it is not found
+        in Glance Registry.
+        """
+        def fake_process_v1_request(request, image_id, image_iterator):
+            raise exception.NotFound()
+
+        image_id = 'test1'
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+
+        cache_filter = ProcessRequestTestCacheFilter()
+        self.stubs.Set(cache_filter, '_process_v1_request',
+                       fake_process_v1_request)
+        cache_filter.process_request(request)
+        self.assertTrue(image_id in cache_filter.cache.deleted_images)

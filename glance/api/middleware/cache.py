@@ -104,6 +104,7 @@ class CacheFilter(wsgi.Middleware):
                     "however the registry did not contain metadata for "
                     "that image!" % image_id)
             LOG.error(msg)
+            self.cache.delete_cached_image(image_id)
 
     @staticmethod
     def _stash_request_info(request, image_id, method):
