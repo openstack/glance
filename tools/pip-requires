@@ -11,7 +11,7 @@ routes
 webob==1.0.8
 wsgiref
 argparse
-boto==2.1.1
+boto
 sqlalchemy-migrate>=0.7
 httplib2
 kombu
