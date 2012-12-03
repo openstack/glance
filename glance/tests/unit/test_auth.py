@@ -19,9 +19,19 @@ import json
 import stubout
 import webob
 
+from glance.api import authorization
 from glance.common import auth
 from glance.common import exception
+import glance.domain
+from glance.openstack.common import timeutils
 from glance.tests import utils
+
+
+TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
+TENANT2 = '2c014f32-55eb-467d-8fcb-4bd706012f81'
+
+UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
+UUID2 = 'a85abd86-55b3-4d5b-b0b4-5d0a6e6042fc'
 
 
 class FakeResponse(object):
@@ -544,3 +554,215 @@ class TestEndpoints(utils.BaseTestCase):
                           service_type='object-store',
                           endpoint_region='foo',
                           endpoint_type='internalURL')
+
+
+class TestImageMutability(utils.BaseTestCase):
+
+    def setUp(self):
+        super(TestImageMutability, self).setUp()
+        self.image_factory = glance.domain.ImageFactory()
+
+    def _is_mutable(self, tenant, owner, is_admin=False):
+        context = glance.context.RequestContext(tenant=tenant,
+                                                is_admin=is_admin)
+        image = self.image_factory.new_image(owner=owner)
+        return authorization.is_image_mutable(context, image)
+
+    def test_admin_everything_mutable(self):
+        self.assertTrue(self._is_mutable(None, None, is_admin=True))
+        self.assertTrue(self._is_mutable(None, TENANT1, is_admin=True))
+        self.assertTrue(self._is_mutable(TENANT1, None, is_admin=True))
+        self.assertTrue(self._is_mutable(TENANT1, TENANT1, is_admin=True))
+        self.assertTrue(self._is_mutable(TENANT1, TENANT2, is_admin=True))
+
+    def test_no_tenant_nothing_mutable(self):
+        self.assertFalse(self._is_mutable(None, None))
+        self.assertFalse(self._is_mutable(None, TENANT1))
+
+    def test_regular_user(self):
+        self.assertFalse(self._is_mutable(TENANT1, None))
+        self.assertFalse(self._is_mutable(TENANT1, TENANT2))
+        self.assertTrue(self._is_mutable(TENANT1, TENANT1))
+
+
+class TestImmutableImage(utils.BaseTestCase):
+    def setUp(self):
+        super(TestImmutableImage, self).setUp()
+        image_factory = glance.domain.ImageFactory()
+        image = image_factory.new_image(
+                image_id=UUID1,
+                name='Marvin',
+                owner=TENANT1,
+                disk_format='raw',
+                container_format='bare',
+                extra_properties={'foo': 'bar'},
+                tags=['ping', 'pong'],
+        )
+        self.image = authorization.ImmutableImageProxy(image)
+
+    def _test_change(self, attr, value):
+        self.assertRaises(exception.Forbidden,
+                          setattr, self.image, attr, value)
+        self.assertRaises(exception.Forbidden,
+                          delattr, self.image, attr)
+
+    def test_change_id(self):
+        self._test_change('image_id', UUID2)
+
+    def test_change_name(self):
+        self._test_change('name', 'Freddie')
+
+    def test_change_owner(self):
+        self._test_change('owner', TENANT2)
+
+    def test_change_min_disk(self):
+        self._test_change('min_disk', 100)
+
+    def test_change_min_ram(self):
+        self._test_change('min_ram', 1024)
+
+    def test_change_disk_format(self):
+        self._test_change('disk_format', 'vhd')
+
+    def test_change_container_format(self):
+        self._test_change('container_format', 'ova')
+
+    def test_change_visibility(self):
+        self._test_change('visibility', 'public')
+
+    def test_change_status(self):
+        self._test_change('status', 'active')
+
+    def test_change_created_at(self):
+        self._test_change('created_at', timeutils.utcnow())
+
+    def test_change_updated_at(self):
+        self._test_change('updated_at', timeutils.utcnow())
+
+    def test_change_location(self):
+        self._test_change('location', 'http://a/b/c')
+
+    def test_change_size(self):
+        self._test_change('size', 32)
+
+    def test_change_tags(self):
+        self.assertRaises(exception.Forbidden,
+                          delattr, self.image, 'tags')
+        self.assertRaises(exception.Forbidden,
+                          setattr, self.image, 'tags', ['king', 'kong'])
+        self.assertRaises(exception.Forbidden, self.image.tags.pop)
+        self.assertRaises(exception.Forbidden, self.image.tags.clear)
+        self.assertRaises(exception.Forbidden, self.image.tags.add, 'king')
+        self.assertRaises(exception.Forbidden, self.image.tags.remove, 'ping')
+        self.assertRaises(exception.Forbidden,
+                          self.image.tags.update, set(['king', 'kong']))
+        self.assertRaises(exception.Forbidden,
+                          self.image.tags.intersection_update, set([]))
+        self.assertRaises(exception.Forbidden,
+                          self.image.tags.difference_update, set([]))
+        self.assertRaises(exception.Forbidden,
+                          self.image.tags.symmetric_difference_update,
+                          set([]))
+
+    def test_change_properties(self):
+        self.assertRaises(exception.Forbidden,
+                          delattr, self.image, 'extra_properties')
+        self.assertRaises(exception.Forbidden,
+                          setattr, self.image, 'extra_properties', {})
+        self.assertRaises(exception.Forbidden,
+                          self.image.extra_properties.__delitem__, 'foo')
+        self.assertRaises(exception.Forbidden,
+                          self.image.extra_properties.__setitem__, 'foo', 'b')
+        self.assertRaises(exception.Forbidden,
+                          self.image.extra_properties.__setitem__, 'z', 'j')
+        self.assertRaises(exception.Forbidden,
+                          self.image.extra_properties.pop)
+        self.assertRaises(exception.Forbidden,
+                          self.image.extra_properties.popitem)
+        self.assertRaises(exception.Forbidden,
+                          self.image.extra_properties.setdefault, 'p', 'j')
+        self.assertRaises(exception.Forbidden,
+                          self.image.extra_properties.update, {})
+
+
+class TestImageFactoryProxy(utils.BaseTestCase):
+    def setUp(self):
+        super(TestImageFactoryProxy, self).setUp()
+        factory = glance.domain.ImageFactory()
+        self.context = glance.context.RequestContext(tenant=TENANT1)
+        self.image_factory = authorization.ImageFactoryProxy(factory,
+                                                             self.context)
+
+    def test_default_owner_is_set(self):
+        image = self.image_factory.new_image()
+        self.assertEqual(image.owner, TENANT1)
+
+    def test_wrong_owner_cannot_be_set(self):
+        self.assertRaises(exception.Forbidden,
+                          self.image_factory.new_image, owner=TENANT2)
+
+    def test_cannot_set_owner_to_none(self):
+        self.assertRaises(exception.Forbidden,
+                          self.image_factory.new_image, owner=None)
+
+    def test_admin_can_set_any_owner(self):
+        self.context.is_admin = True
+        image = self.image_factory.new_image(owner=TENANT2)
+        self.assertEqual(image.owner, TENANT2)
+
+    def test_admin_can_set_owner_to_none(self):
+        self.context.is_admin = True
+        image = self.image_factory.new_image(owner=None)
+        self.assertEqual(image.owner, None)
+
+    def test_admin_still_gets_default_tenant(self):
+        self.context.is_admin = True
+        image = self.image_factory.new_image()
+        self.assertEqual(image.owner, TENANT1)
+
+
+class TestImageRepoProxy(utils.BaseTestCase):
+
+    class ImageRepoStub(object):
+        def __init__(self, fixtures):
+            self.fixtures = fixtures
+
+        def get(self, image_id):
+            for f in self.fixtures:
+                if f.image_id == image_id:
+                    return f
+            else:
+                raise ValueError(image_id)
+
+        def list(self, *args, **kwargs):
+            return self.fixtures
+
+    def setUp(self):
+        super(TestImageRepoProxy, self).setUp()
+        image_factory = glance.domain.ImageFactory()
+        self.fixtures = [
+            image_factory.new_image(owner=TENANT1),
+            image_factory.new_image(owner=TENANT2, visibility='public'),
+            image_factory.new_image(owner=TENANT2),
+        ]
+        self.context = glance.context.RequestContext(tenant=TENANT1)
+        image_repo = self.ImageRepoStub(self.fixtures)
+        self.image_repo = authorization.ImageRepoProxy(image_repo,
+                                                       self.context)
+
+    def test_get_mutable_image(self):
+        image = self.image_repo.get(self.fixtures[0].image_id)
+        self.assertTrue(image is self.fixtures[0])
+
+    def test_get_immutable_image(self):
+        image = self.image_repo.get(self.fixtures[1].image_id)
+        self.assertRaises(exception.Forbidden,
+                          setattr, image, 'name', 'Vince')
+
+    def test_list(self):
+        images = self.image_repo.list()
+        self.assertTrue(images[0] is self.fixtures[0])
+        self.assertRaises(exception.Forbidden,
+                          setattr, images[1], 'name', 'Wally')
+        self.assertRaises(exception.Forbidden,
+                          setattr, images[2], 'name', 'Calvin')
