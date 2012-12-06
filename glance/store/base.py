@@ -29,7 +29,7 @@ class Store(object):
 
     CHUNKSIZE = (16 * 1024 * 1024)  # 16M
 
-    def __init__(self, context=None):
+    def __init__(self, context=None, location=None):
         """
         Initialize the Store
         """

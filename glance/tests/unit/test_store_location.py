@@ -367,9 +367,9 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         is correct or raises an appropriate error.
         """
         good_results = {
-            'swift': glance.store.swift.Store,
-            'swift+http': glance.store.swift.Store,
-            'swift+https': glance.store.swift.Store,
+            'swift': glance.store.swift.SingleTenantStore,
+            'swift+http': glance.store.swift.SingleTenantStore,
+            'swift+https': glance.store.swift.SingleTenantStore,
             's3': glance.store.s3.Store,
             's3+http': glance.store.s3.Store,
             's3+https': glance.store.s3.Store,

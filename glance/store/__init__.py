@@ -184,7 +184,7 @@ def verify_default_store():
         raise RuntimeError(msg)
 
 
-def get_store_from_scheme(context, scheme):
+def get_store_from_scheme(context, scheme, loc=None):
     """
     Given a scheme, return the appropriate store object
     for handling that scheme.
@@ -192,11 +192,11 @@ def get_store_from_scheme(context, scheme):
     if scheme not in location.SCHEME_TO_CLS_MAP:
         raise exception.UnknownScheme(scheme=scheme)
     scheme_info = location.SCHEME_TO_CLS_MAP[scheme]
-    store = scheme_info['store_class'](context)
+    store = scheme_info['store_class'](context, loc)
     return store
 
 
-def get_store_from_uri(context, uri):
+def get_store_from_uri(context, uri, loc=None):
     """
     Given a URI, return the store object that would handle
     operations on the URI.
@@ -204,15 +204,15 @@ def get_store_from_uri(context, uri):
     :param uri: URI to analyze
     """
     scheme = uri[0:uri.find('/') - 1]
-    store = get_store_from_scheme(context, scheme)
+    store = get_store_from_scheme(context, scheme, loc)
     return store
 
 
 def get_from_backend(context, uri, **kwargs):
     """Yields chunks of data from backend specified by uri"""
 
-    store = get_store_from_uri(context, uri)
     loc = location.get_location_from_uri(uri)
+    store = get_store_from_uri(context, uri, loc)
 
     return store.get(loc)
 
@@ -220,16 +220,16 @@ def get_from_backend(context, uri, **kwargs):
 def get_size_from_backend(context, uri):
     """Retrieves image size from backend specified by uri"""
 
-    store = get_store_from_uri(context, uri)
     loc = location.get_location_from_uri(uri)
+    store = get_store_from_uri(context, uri, loc)
 
     return store.get_size(loc)
 
 
 def delete_from_backend(context, uri, **kwargs):
     """Removes chunks of data from backend specified by uri"""
-    store = get_store_from_uri(context, uri)
     loc = location.get_location_from_uri(uri)
+    store = get_store_from_uri(context, uri, loc)
 
     try:
         return store.delete(loc)
@@ -290,12 +290,11 @@ def add_to_backend(context, scheme, image_id, data, size):
 
 def set_acls(context, location_uri, public=False, read_tenants=[],
              write_tenants=[]):
+    loc = location.get_location_from_uri(location_uri)
     scheme = get_store_from_location(location_uri)
-    store = get_store_from_scheme(context, scheme)
+    store = get_store_from_scheme(context, scheme, loc)
     try:
-        store.set_acls(location.get_location_from_uri(location_uri),
-                       public=public,
-                       read_tenants=read_tenants,
+        store.set_acls(loc, public=public, read_tenants=read_tenants,
                        write_tenants=write_tenants)
     except NotImplementedError:
         LOG.debug(_("Skipping store.set_acls... not implemented."))

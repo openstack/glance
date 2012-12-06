@@ -26,6 +26,7 @@ import urllib
 import stubout
 import swiftclient
 
+import glance.common.auth
 from glance.common import exception
 from glance.openstack.common import cfg
 from glance.openstack.common import uuidutils
@@ -87,6 +88,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
         # Large object manifest...
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS += 1
+        CHUNKSIZE = 64 * 1024
         fixture_key = "%s/%s" % (container, name)
         if not fixture_key in fixture_headers.keys():
             if kwargs.get('headers'):
@@ -96,12 +98,12 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
                 return etag
             if hasattr(contents, 'read'):
                 fixture_object = StringIO.StringIO()
-                chunk = contents.read(Store.CHUNKSIZE)
+                chunk = contents.read(CHUNKSIZE)
                 checksum = hashlib.md5()
                 while chunk:
                     fixture_object.write(chunk)
                     checksum.update(chunk)
-                    chunk = contents.read(Store.CHUNKSIZE)
+                    chunk = contents.read(CHUNKSIZE)
                 etag = checksum.hexdigest()
             else:
                 fixture_object = StringIO.StringIO(contents)
@@ -216,6 +218,16 @@ class SwiftTests(object):
         loc = get_location_from_uri(uri)
         image_size = self.store.get_size(loc)
         self.assertEqual(image_size, 5120)
+
+    def test_get_size_with_multi_tenant_on(self):
+        """Test that single tenant uris work with multi tenant on."""
+        uri = ("swift://%s:key@auth_address/glance/%s" %
+               (self.swift_store_user, FAKE_UUID))
+        self.config(swift_store_multi_tenant=True)
+        #NOTE(markwash): ensure the image is found
+        context = glance.context.RequestContext()
+        size = glance.store.get_size_from_backend(context, uri)
+        self.assertEqual(size, 5120)
 
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
@@ -588,10 +600,11 @@ class SwiftTests(object):
         Test that we can set a public read acl.
         """
         self.config(swift_store_multi_tenant=True)
+        context = glance.context.RequestContext()
+        store = Store(context)
         uri = "swift+http://storeurl/glance/%s" % FAKE_UUID
         loc = get_location_from_uri(uri)
-        self.store.multi_tenant = True
-        self.store.set_acls(loc, public=True)
+        store.set_acls(loc, public=True)
         container_headers = swiftclient.client.head_container('x', 'y',
                                                               'glance')
         self.assertEqual(container_headers['X-Container-Read'], ".r:*")
@@ -601,11 +614,12 @@ class SwiftTests(object):
         Test that we can set read acl for tenants.
         """
         self.config(swift_store_multi_tenant=True)
+        context = glance.context.RequestContext()
+        store = Store(context)
         uri = "swift+http://storeurl/glance/%s" % FAKE_UUID
         loc = get_location_from_uri(uri)
-        self.store.multi_tenant = True
         read_tenants = ['matt', 'mark']
-        self.store.set_acls(loc, read_tenants=read_tenants)
+        store.set_acls(loc, read_tenants=read_tenants)
         container_headers = swiftclient.client.head_container('x', 'y',
                                                               'glance')
         self.assertEqual(container_headers['X-Container-Read'],
@@ -616,11 +630,12 @@ class SwiftTests(object):
         Test that we can set write acl for tenants.
         """
         self.config(swift_store_multi_tenant=True)
+        context = glance.context.RequestContext()
+        store = Store(context)
         uri = "swift+http://storeurl/glance/%s" % FAKE_UUID
         loc = get_location_from_uri(uri)
-        self.store.multi_tenant = True
         read_tenants = ['frank', 'jim']
-        self.store.set_acls(loc, write_tenants=read_tenants)
+        store.set_acls(loc, write_tenants=read_tenants)
         container_headers = swiftclient.client.head_container('x', 'y',
                                                               'glance')
         self.assertEqual(container_headers['X-Container-Write'],
@@ -674,6 +689,183 @@ class TestStoreAuthV2(TestStoreAuthV1):
         uri = "swift://auth_address/glance/%s" % (FAKE_UUID)
         loc = get_location_from_uri(uri)
         self.assertEqual('swift', loc.store_name)
+
+
+class FakeConnection(object):
+    def __init__(self, authurl, user, key, retries=5, preauthurl=None,
+                 preauthtoken=None, snet=False, starting_backoff=1,
+                 tenant_name=None, os_options={}, auth_version="1"):
+        self.authurl = authurl
+        self.user = user
+        self.key = key
+        self.preauthurl = preauthurl
+        self.preauthtoken = preauthtoken
+        self.snet = snet
+        self.tenant_name = tenant_name
+        self.os_options = os_options
+        self.auth_version = auth_version
+
+
+class TestSingleTenantStoreConnections(base.IsolatedUnitTest):
+    def setUp(self):
+        super(TestSingleTenantStoreConnections, self).setUp()
+        self.stubs.Set(swiftclient, 'Connection', FakeConnection)
+        self.store = glance.store.swift.SingleTenantStore()
+        specs = {'scheme': 'swift',
+                 'auth_or_store_url': 'example.com/v2/',
+                 'user': 'tenant:user',
+                 'key': 'abcdefg',
+                 'container': 'cont',
+                 'obj': 'object'}
+        self.location = glance.store.swift.StoreLocation(specs)
+
+    def test_basic_connection(self):
+        self.store.configure()
+        connection = self.store.get_connection(self.location)
+        self.assertEqual(connection.authurl, 'https://example.com/v2/')
+        self.assertEqual(connection.auth_version, '2')
+        self.assertEqual(connection.user, 'user')
+        self.assertEqual(connection.tenant_name, 'tenant')
+        self.assertEqual(connection.key, 'abcdefg')
+        self.assertEqual(connection.snet, False)
+        self.assertEqual(connection.preauthurl, None)
+        self.assertEqual(connection.preauthtoken, None)
+        self.assertEqual(connection.os_options, {})
+
+    def test_connection_with_no_trailing_slash(self):
+        self.store.configure()
+        self.location.auth_or_store_url = 'example.com/v2'
+        connection = self.store.get_connection(self.location)
+        self.assertEqual(connection.authurl, 'https://example.com/v2/')
+
+    def test_connection_with_auth_v1(self):
+        self.config(swift_store_auth_version='1')
+        self.store.configure()
+        self.location.user = 'auth_v1_user'
+        connection = self.store.get_connection(self.location)
+        self.assertEqual(connection.auth_version, '1')
+        self.assertEqual(connection.user, 'auth_v1_user')
+        self.assertEqual(connection.tenant_name, None)
+
+    def test_connection_invalid_user(self):
+        self.store.configure()
+        self.location.user = 'invalid:format:user'
+        self.assertRaises(exception.BadStoreUri,
+                          self.store.get_connection, self.location)
+
+    def test_connection_missing_user(self):
+        self.store.configure()
+        self.location.user = None
+        self.assertRaises(exception.BadStoreUri,
+                          self.store.get_connection, self.location)
+
+    def test_connection_with_region(self):
+        self.config(swift_store_region='Sahara')
+        self.store.configure()
+        connection = self.store.get_connection(self.location)
+        self.assertEquals(connection.os_options,
+                          {'region_name': 'Sahara'})
+
+    def test_connection_with_snet(self):
+        self.config(swift_enable_snet=True)
+        self.store.configure()
+        connection = self.store.get_connection(self.location)
+        self.assertEquals(connection.snet, True)
+
+
+class TestMultiTenantStoreConnections(base.IsolatedUnitTest):
+    def setUp(self):
+        super(TestMultiTenantStoreConnections, self).setUp()
+        self.stubs.Set(swiftclient, 'Connection', FakeConnection)
+        self.context = glance.context.RequestContext(
+                user='user', tenant='tenant', auth_tok='0123')
+        self.store = glance.store.swift.MultiTenantStore(self.context)
+        specs = {'scheme': 'swift',
+                 'auth_or_store_url': 'example.com',
+                 'container': 'cont',
+                 'obj': 'object'}
+        self.location = glance.store.swift.StoreLocation(specs)
+
+    def test_basic_connection(self):
+        self.store.configure()
+        connection = self.store.get_connection(self.location)
+        self.assertEqual(connection.authurl, None)
+        self.assertEqual(connection.auth_version, '2')
+        self.assertEqual(connection.user, 'user')
+        self.assertEqual(connection.tenant_name, 'tenant')
+        self.assertEqual(connection.key, None)
+        self.assertEqual(connection.snet, False)
+        self.assertEqual(connection.preauthurl, 'https://example.com')
+        self.assertEqual(connection.preauthtoken, '0123')
+        self.assertEqual(connection.os_options, {})
+
+    def test_connection_with_snet(self):
+        self.config(swift_enable_snet=True)
+        self.store.configure()
+        connection = self.store.get_connection(self.location)
+        self.assertEquals(connection.snet, True)
+
+
+class FakeGetEndpoint(object):
+    def __init__(self, response):
+        self.response = response
+
+    def __call__(self, service_catalog, service_type=None,
+                 endpoint_region=None, endpoint_type=None):
+        return self.response
+
+
+class TestCreatingLocations(base.IsolatedUnitTest):
+    def test_single_tenant_location(self):
+        self.config(swift_store_auth_address='example.com/v2',
+                    swift_store_container='container',
+                    swift_store_user='tenant:user',
+                    swift_store_key='auth_key')
+        store = glance.store.swift.SingleTenantStore()
+        location = store.create_location('image-id')
+        self.assertEquals(location.scheme, 'swift+https')
+        self.assertEquals(location.swift_url, 'https://example.com/v2')
+        self.assertEquals(location.container, 'container')
+        self.assertEquals(location.obj, 'image-id')
+        self.assertEquals(location.user, 'tenant:user')
+        self.assertEquals(location.key, 'auth_key')
+
+    def test_single_tenant_location_http(self):
+        self.config(swift_store_auth_address='http://example.com/v2',
+                    swift_store_container='container',
+                    swift_store_user='tenant:user',
+                    swift_store_key='auth_key')
+        store = glance.store.swift.SingleTenantStore()
+        location = store.create_location('image-id')
+        self.assertEquals(location.scheme, 'swift+http')
+        self.assertEquals(location.swift_url, 'http://example.com/v2')
+
+    def test_multi_tenant_location(self):
+        self.config(swift_store_container='container')
+        fake_get_endpoint = FakeGetEndpoint('https://some_endpoint')
+        self.stubs.Set(glance.common.auth, 'get_endpoint', fake_get_endpoint)
+        context = glance.context.RequestContext(
+                user='user', tenant='tenant', auth_tok='123',
+                service_catalog={})
+        store = glance.store.swift.MultiTenantStore(context)
+        location = store.create_location('image-id')
+        self.assertEquals(location.scheme, 'swift+https')
+        self.assertEquals(location.swift_url, 'https://some_endpoint')
+        self.assertEquals(location.container, 'container_image-id')
+        self.assertEquals(location.obj, 'image-id')
+        self.assertEquals(location.user, None)
+        self.assertEquals(location.key, None)
+
+    def test_multi_tenant_location_http(self):
+        fake_get_endpoint = FakeGetEndpoint('http://some_endpoint')
+        self.stubs.Set(glance.common.auth, 'get_endpoint', fake_get_endpoint)
+        context = glance.context.RequestContext(
+                user='user', tenant='tenant', auth_tok='123',
+                service_catalog={})
+        store = glance.store.swift.MultiTenantStore(context)
+        location = store.create_location('image-id')
+        self.assertEquals(location.scheme, 'swift+http')
+        self.assertEquals(location.swift_url, 'http://some_endpoint')
 
 
 class TestChunkReader(base.StoreClearingUnitTest):

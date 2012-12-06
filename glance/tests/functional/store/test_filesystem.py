@@ -31,6 +31,7 @@ import glance.tests.utils
 
 class TestFilesystemStore(store_tests.BaseTestCase, unittest.TestCase):
 
+    store_cls_path = 'glance.store.filesystem.Store'
     store_cls = glance.store.filesystem.Store
     store_name = 'filesystem'
 

@@ -55,6 +55,11 @@ class BaseTestCase(object):
         """
         raise NotImplementedError('stash_image must be implemented')
 
+    def test_create_store(self):
+        self.config(known_stores=[self.store_cls_path])
+        count = glance.store.create_stores()
+        self.assertEqual(count, 1)
+
     def test_lifecycle(self):
         """Add, get and delete an image"""
         store = self.get_store()

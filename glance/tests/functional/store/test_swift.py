@@ -144,6 +144,7 @@ def keystone_authenticate(auth_url, auth_version, tenant_name,
 
 class TestSwiftStore(store_tests.BaseTestCase, unittest.TestCase):
 
+    store_cls_path = 'glance.store.swift.Store'
     store_cls = glance.store.swift.Store
     store_name = 'swift'
 
