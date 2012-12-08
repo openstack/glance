@@ -52,6 +52,8 @@ swift_opts = [
     cfg.StrOpt('swift_store_key', secret=True),
     cfg.StrOpt('swift_store_auth_version', default='2'),
     cfg.StrOpt('swift_store_region'),
+    cfg.StrOpt('swift_store_endpoint_type', default='publicURL'),
+    cfg.StrOpt('swift_store_service_type', default='object-store'),
     cfg.StrOpt('swift_store_container',
                default=DEFAULT_CONTAINER),
     cfg.IntOpt('swift_store_large_object_size',
@@ -223,6 +225,8 @@ class BaseStore(glance.store.base.Store):
         self.large_object_chunk_size = _chunk_size * ONE_MB
         self.admin_tenants = CONF.swift_store_admin_tenants
         self.region = CONF.swift_store_region
+        self.service_type = CONF.swift_store_service_type
+        self.endpoint_type = CONF.swift_store_endpoint_type
         self.snet = CONF.swift_enable_snet
 
     def get(self, location, connection=None):
@@ -507,6 +511,8 @@ class SingleTenantStore(BaseStore):
         os_options = {}
         if self.region:
             os_options['region_name'] = self.region
+        os_options['endpoint_type'] = self.endpoint_type
+        os_options['service_type'] = self.service_type
 
         return swiftclient.Connection(
                 auth_url, user, location.key,
@@ -529,7 +535,8 @@ class MultiTenantStore(BaseStore):
             raise exception.BadStoreConfiguration(store_name="swift",
                                                   reason=reason)
         self.storage_url = auth.get_endpoint(
-                self.context.service_catalog, service_type='object-store')
+                self.context.service_catalog, service_type=self.service_type,
+                endpoint_region=self.region, endpoint_type=self.endpoint_type)
         if self.storage_url.startswith('http://'):
             self.scheme = 'swift+http'
         else:
