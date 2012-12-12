@@ -235,6 +235,14 @@ When using SSL in connections to the registry server, do not require
 validation via a certifying authority. This is the registry's equivalent of
 specifying --insecure on the command line using glanceclient for the API
 
+* ``registry_client_timeout=SECONDS``
+
+Optional. Default: ``600``.
+
+The period of time, in seconds, that the API server will wait for a registry
+request to complete. A value of '0' implies no timeout.
+
+
 Configuring Logging in Glance
 -----------------------------
 

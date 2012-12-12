@@ -197,6 +197,9 @@ class BaseClient(object):
         self.host = host
         self.port = port or self.DEFAULT_PORT
         self.timeout = timeout
+        # A value of '0' implies never timeout
+        if timeout == 0:
+            self.timeout = None
         self.use_ssl = use_ssl
         self.auth_tok = auth_tok
         self.creds = creds or {}
