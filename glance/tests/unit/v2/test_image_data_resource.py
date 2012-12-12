@@ -136,7 +136,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         request.headers['Content-Length'] = 3
         output = self.deserializer.upload(request)
         data = output.pop('data')
-        self.assertEqual(data.getvalue(), 'YYY')
+        self.assertEqual(data.read(), 'YYY')
         expected = {'size': 3}
         self.assertEqual(expected, output)
 
@@ -148,7 +148,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         request.body_file = StringIO.StringIO('YYY')
         output = self.deserializer.upload(request)
         data = output.pop('data')
-        self.assertEqual(data.getvalue(), 'YYY')
+        self.assertEqual(data.read(), 'YYY')
         expected = {'size': None}
         self.assertEqual(expected, output)
 
@@ -161,7 +161,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         request.headers['Content-Length'] = 3
         output = self.deserializer.upload(request)
         data = output.pop('data')
-        self.assertEqual(data.getvalue(), 'YYY')
+        self.assertEqual(data.read(), 'YYY')
         expected = {'size': 3}
         self.assertEqual(expected, output)
 
@@ -175,7 +175,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         request.headers['Content-Length'] = 4
         output = self.deserializer.upload(request)
         data = output.pop('data')
-        self.assertEqual(data.getvalue(), 'YYY')
+        self.assertEqual(data.read(), 'YYY')
         expected = {'size': 4}
         self.assertEqual(expected, output)
 
