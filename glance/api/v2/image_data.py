@@ -137,10 +137,13 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         checksum = result['meta']['checksum']
         response.headers['Content-Length'] = size
         response.headers['Content-Type'] = 'application/octet-stream'
-        if checksum:
-            response.headers['Content-MD5'] = checksum
         response.app_iter = common.size_checked_iter(
                 response, result['meta'], size, result['data'], self.notifier)
+        #NOTE(saschpe): "response.app_iter = ..." currently resets Content-MD5
+        # (https://github.com/Pylons/webob/issues/86), so it should be set
+        # afterwards for the time being.
+        if checksum:
+            response.headers['Content-MD5'] = checksum
 
     def upload(self, response, result):
         response.status_int = 201
