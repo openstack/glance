@@ -24,7 +24,7 @@ import glance.db
 class Controller(object):
     def __init__(self, db=None):
         self.db_api = db or glance.db.get_api()
-        self.db_api.configure_db()
+        self.db_api.setup_db_env()
 
     @utils.mutating
     def update(self, req, image_id, tag_value):

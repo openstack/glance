@@ -58,6 +58,8 @@ class TestRegistryDb(test_utils.BaseTestCase):
         super(TestRegistryDb, self).setUp()
         self.stubs = stubout.StubOutForTesting()
         self.orig_engine = db_api._ENGINE
+        self.orig_connection = db_api._CONNECTION
+        self.orig_maker = db_api._MAKER
 
     def test_bad_sql_connection(self):
         """
@@ -70,8 +72,11 @@ class TestRegistryDb(test_utils.BaseTestCase):
         # We set this to None to trigger a reconfigure, otherwise
         # other modules may have already correctly configured the DB
         db_api._ENGINE = None
+        db_api._CONNECTION = None
+        db_api._MAKER = None
+        db_api.setup_db_env()
         self.assertRaises((ImportError, exc.ArgumentError),
-                          db_api.configure_db)
+                          db_api.get_engine)
         exc_raised = False
         self.log_written = False
 
@@ -82,6 +87,9 @@ class TestRegistryDb(test_utils.BaseTestCase):
         self.stubs.Set(db_api.LOG, 'error', fake_log_error)
         try:
             api_obj = rserver.API(routes.Mapper())
+            api = test_utils.FakeAuthMiddleware(api_obj, is_admin=True)
+            req = webob.Request.blank('/images/%s' % _gen_uuid())
+            res = req.get_response(api)
         except exc.ArgumentError:
             exc_raised = True
         except ImportError:
@@ -94,6 +102,8 @@ class TestRegistryDb(test_utils.BaseTestCase):
         """Clear the test environment"""
         super(TestRegistryDb, self).setUp()
         db_api._ENGINE = self.orig_engine
+        db_api._CONNECTION = self.orig_connection
+        db_api._MAKER = self.orig_maker
         self.stubs.UnsetAll()
 
 

@@ -55,6 +55,10 @@ def reset():
     }
 
 
+def setup_db_env(*args, **kwargs):
+    pass
+
+
 def configure_db(*args, **kwargs):
     pass
 

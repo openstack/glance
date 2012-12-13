@@ -35,7 +35,7 @@ class Controller(object):
 
     def __init__(self):
         self.db_api = glance.db.get_api()
-        self.db_api.configure_db()
+        self.db_api.setup_db_env()
 
     def index(self, req, image_id):
         """

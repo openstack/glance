@@ -33,7 +33,7 @@ class ImageDataController(object):
     def __init__(self, db_api=None, store_api=None,
                  policy_enforcer=None, notifier=None):
         self.db_api = db_api or glance.db.get_api()
-        self.db_api.configure_db()
+        self.db_api.setup_db_env()
         self.store_api = store_api or glance.store
         self.policy = policy_enforcer or policy.Enforcer()
         self.notifier = notifier or glance.notifier.Notifier()

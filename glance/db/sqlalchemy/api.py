@@ -81,51 +81,28 @@ def ping_listener(dbapi_conn, connection_rec, connection_proxy):
             raise
 
 
+def setup_db_env():
+    """
+    Setup configuation for database
+    """
+    global sa_logger, _IDLE_TIMEOUT, _MAX_RETRIES, _RETRY_INTERVAL, _CONNECTION
+
+    _IDLE_TIMEOUT = CONF.sql_idle_timeout
+    _MAX_RETRIES = CONF.sql_max_retries
+    _RETRY_INTERVAL = CONF.sql_retry_interval
+    _CONNECTION = CONF.sql_connection
+    sa_logger = logging.getLogger('sqlalchemy.engine')
+    if CONF.debug:
+        sa_logger.setLevel(logging.DEBUG)
+
+
 def configure_db():
     """
     Establish the database, create an engine if needed, and
     register the models.
     """
-    global _ENGINE, sa_logger, _MAX_RETRIES, _RETRY_INTERVAL
-    if not _ENGINE:
-        sql_connection = CONF.sql_connection
-        _MAX_RETRIES = CONF.sql_max_retries
-        _RETRY_INTERVAL = CONF.sql_retry_interval
-        connection_dict = sqlalchemy.engine.url.make_url(sql_connection)
-        engine_args = {'pool_recycle': CONF.sql_idle_timeout,
-                       'echo': False,
-                       'convert_unicode': True
-                       }
-
-        try:
-            _ENGINE = sqlalchemy.create_engine(sql_connection, **engine_args)
-
-            if 'mysql' in connection_dict.drivername:
-                sqlalchemy.event.listen(_ENGINE, 'checkout', ping_listener)
-
-            _ENGINE.connect = wrap_db_error(_ENGINE.connect)
-            _ENGINE.connect()
-        except Exception, err:
-            msg = _("Error configuring registry database with supplied "
-                    "sql_connection '%(sql_connection)s'. "
-                    "Got error:\n%(err)s") % locals()
-            LOG.error(msg)
-            raise
-
-        sa_logger = logging.getLogger('sqlalchemy.engine')
-        if CONF.debug:
-            sa_logger.setLevel(logging.DEBUG)
-
-        if CONF.db_auto_create:
-            LOG.info(_('auto-creating glance registry DB'))
-            models.register_models(_ENGINE)
-            try:
-                migration.version_control()
-            except exception.DatabaseMigrationError:
-                # only arises when the DB exists and is under version control
-                pass
-        else:
-            LOG.info(_('not auto-creating glance registry DB'))
+    setup_db_env()
+    get_engine()
 
 
 def check_mutate_authorization(context, image_ref):
@@ -144,11 +121,73 @@ def get_session(autocommit=True, expire_on_commit=False):
     """Helper method to grab session"""
     global _MAKER
     if not _MAKER:
-        assert _ENGINE
+        get_engine()
+        get_maker(autocommit, expire_on_commit)
+        assert(_MAKER)
+    session = _MAKER()
+    return session
+
+
+def get_engine():
+    """Return a SQLAlchemy engine."""
+    """May assign _ENGINE if not already assigned"""
+    global _ENGINE, sa_logger, _CONNECTION, _IDLE_TIMEOUT, _MAX_RETRIES,\
+        _RETRY_INTERVAL
+
+    if not _ENGINE:
+        tries = _MAX_RETRIES
+        retry_interval = _RETRY_INTERVAL
+
+        connection_dict = sqlalchemy.engine.url.make_url(_CONNECTION)
+
+        engine_args = {
+            'pool_recycle': _IDLE_TIMEOUT,
+            'echo': False,
+            'convert_unicode': True}
+
+        try:
+            _ENGINE = sqlalchemy.create_engine(_CONNECTION, **engine_args)
+
+            if 'mysql' in connection_dict.drivername:
+                sqlalchemy.event.listen(_ENGINE, 'checkout', ping_listener)
+
+            _ENGINE.connect = wrap_db_error(_ENGINE.connect)
+            _ENGINE.connect()
+        except Exception, err:
+            msg = _("Error configuring registry database with supplied "
+                    "sql_connection '%s'. "
+                    "Got error:\n%s") % (_CONNECTION, err)
+            LOG.error(msg)
+            raise
+
+        sa_logger = logging.getLogger('sqlalchemy.engine')
+        if CONF.debug:
+            sa_logger.setLevel(logging.DEBUG)
+
+        if CONF.db_auto_create:
+            LOG.info(_('auto-creating glance registry DB'))
+            models.register_models(_ENGINE)
+            try:
+                migration.version_control()
+            except exception.DatabaseMigrationError:
+                # only arises when the DB exists and is under version control
+                pass
+        else:
+            LOG.info(_('not auto-creating glance registry DB'))
+
+    return _ENGINE
+
+
+def get_maker(autocommit=True, expire_on_commit=False):
+    """Return a SQLAlchemy sessionmaker."""
+    """May assign __MAKER if not already assigned"""
+    global _MAKER, _ENGINE
+    assert _ENGINE
+    if not _MAKER:
         _MAKER = sa_orm.sessionmaker(bind=_ENGINE,
                                      autocommit=autocommit,
                                      expire_on_commit=expire_on_commit)
-    return _MAKER()
+    return _MAKER
 
 
 def is_db_connection_error(args):
