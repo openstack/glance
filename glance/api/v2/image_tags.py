@@ -15,29 +15,53 @@
 
 import webob.exc
 
+from glance.api import policy
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.db
+import glance.domain
+import glance.gateway
+import glance.notifier
+import glance.store
 
 
 class Controller(object):
-    def __init__(self, db=None):
-        self.db_api = db or glance.db.get_api()
+    def __init__(self, db_api=None, policy_enforcer=None, notifier=None,
+                 store_api=None):
+        self.db_api = db_api or glance.db.get_api()
         self.db_api.setup_db_env()
+        self.policy = policy_enforcer or policy.Enforcer()
+        self.notifier = notifier or glance.notifier.Notifier()
+        self.store_api = store_api or glance.store
+        self.gateway = glance.gateway.Gateway(self.db_api, self.store_api,
+                                              self.notifier, self.policy)
 
     @utils.mutating
     def update(self, req, image_id, tag_value):
-        context = req.context
-        if tag_value not in self.db_api.image_tag_get_all(context, image_id):
-            self.db_api.image_tag_create(context, image_id, tag_value)
+        image_repo = self.gateway.get_repo(req.context)
+        try:
+            image = image_repo.get(image_id)
+            image.tags.add(tag_value)
+            image_repo.save(image)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=unicode(e))
 
     @utils.mutating
     def delete(self, req, image_id, tag_value):
+        image_repo = self.gateway.get_repo(req.context)
         try:
-            self.db_api.image_tag_delete(req.context, image_id, tag_value)
-        except exception.NotFound:
-            raise webob.exc.HTTPNotFound()
+            image = image_repo.get(image_id)
+            if not tag_value in image.tags:
+                raise webob.exc.HTTPNotFound()
+            image.tags.remove(tag_value)
+            image_repo.save(image)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=unicode(e))
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
