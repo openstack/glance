@@ -249,3 +249,10 @@ class TestImagePolicy(test_utils.BaseTestCase):
         image_factory = glance.api.policy.ImageFactoryProxy(
                 self.image_factory_stub, {}, self.policy)
         image_factory.new_image(visibility='public')
+
+    def test_image_get_data(self):
+        rules = {'download_image': False}
+        self.policy.set_rules(rules)
+
+        image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
+        self.assertRaises(exception.Forbidden, image.get_data)

@@ -16,12 +16,14 @@
 import webob.exc
 
 from glance.api import common
-from glance.api import policy
+import glance.api.policy
 import glance.api.v2 as v2
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.db
+import glance.domain
+import glance.gateway
 import glance.notifier
 import glance.openstack.common.log as logging
 import glance.store
@@ -31,34 +33,25 @@ LOG = logging.getLogger(__name__)
 
 class ImageDataController(object):
     def __init__(self, db_api=None, store_api=None,
-                 policy_enforcer=None, notifier=None):
-        self.db_api = db_api or glance.db.get_api()
-        self.db_api.setup_db_env()
-        self.store_api = store_api or glance.store
-        self.policy = policy_enforcer or policy.Enforcer()
-        self.notifier = notifier or glance.notifier.Notifier()
-
-    def _get_image(self, context, image_id):
-        try:
-            return self.db_api.image_get(context, image_id)
-        except exception.NotFound:
-            raise webob.exc.HTTPNotFound(_("Image does not exist"))
-
-    def _enforce(self, req, action):
-        """Authorize an action against our policies"""
-        try:
-            self.policy.enforce(req.context, action, {})
-        except exception.Forbidden:
-            raise webob.exc.HTTPForbidden()
+                 policy_enforcer=None, notifier=None,
+                 gateway=None):
+        if gateway is None:
+            db_api = db_api or glance.db.get_api()
+            db_api.setup_db_env()
+            store_api = store_api or glance.store
+            policy = policy_enforcer or glance.api.policy.Enforcer()
+            notifier = notifier or glance.notifier.Notifier()
+            gateway = glance.gateway.Gateway(db_api, store_api,
+                                             notifier, policy)
+        self.gateway = gateway
 
     @utils.mutating
     def upload(self, req, image_id, data, size):
+        image_repo = self.gateway.get_repo(req.context)
         try:
-            image = self._get_image(req.context, image_id)
-            self.notifier.info("image.prepare", image)
-            location, size, checksum = self.store_api.add_to_backend(
-                    req.context, 'file', image_id, data, size)
-
+            image = image_repo.get(image_id)
+            image.set_data(data, size)
+            image_repo.save(image)
         except exception.Duplicate, e:
             msg = _("Unable to upload duplicate image data for image: %s")
             LOG.debug(msg % image_id)
@@ -69,17 +62,18 @@ class ImageDataController(object):
             LOG.debug(msg % image_id)
             raise webob.exc.HTTPForbidden(explanation=msg, request=req)
 
+        except exception.NotFound, e:
+            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+
         except exception.StorageFull, e:
             msg = _("Image storage media is full: %s") % e
             LOG.error(msg)
-            self.notifier.error("image.upload", msg)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
         except exception.StorageWriteDenied, e:
             msg = _("Insufficient permissions on image storage media: %s") % e
             LOG.error(msg)
-            self.notifier.error("image.upload", msg)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
                                                    request=req)
 
@@ -92,32 +86,19 @@ class ImageDataController(object):
                             "internal error"))
             raise
 
-        else:
-            v2.update_image_read_acl(req, self.store_api, self.db_api, image)
-            values = {'location': location, 'size': size, 'checksum': checksum,
-                      'status': 'active'}
-            self.db_api.image_update(req.context, image_id, values)
-            updated_image = self._get_image(req.context, image_id)
-            self.notifier.info('image.upload', updated_image)
-            self.notifier.info('image.activate', updated_image)
-
     def download(self, req, image_id):
-        self._enforce(req, 'download_image')
-        ctx = req.context
-        image = self._get_image(ctx, image_id)
-        location = image['location']
-        if location:
-            image_data, image_size = self.store_api.get_from_backend(ctx,
-                                                                     location)
-            #NOTE(bcwaldon): This is done to match the behavior of the v1 API.
-            # The store should always return a size that matches what we have
-            # in the database. If the store says otherwise, that's a security
-            # risk.
-            if image_size is not None:
-                image['size'] = int(image_size)
-            return {'data': image_data, 'meta': image}
-        else:
-            raise webob.exc.HTTPNotFound(_("No image data could be found"))
+        image_repo = self.gateway.get_repo(req.context)
+        try:
+            image = image_repo.get(image_id)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+
+        if not image.location:
+            reason = _("No image data could be found")
+            raise webob.exc.HTTPNotFound(reason)
+        return image
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
@@ -132,24 +113,20 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
-    def __init__(self, notifier=None):
-        super(ResponseSerializer, self).__init__()
-        self.notifier = notifier or glance.notifier.Notifier()
-
-    def download(self, response, result):
-        size = result['meta']['size']
-        checksum = result['meta']['checksum']
+    def download(self, response, image):
         response.headers['Content-Type'] = 'application/octet-stream'
-        response.app_iter = common.size_checked_iter(
-                response, result['meta'], size, result['data'], self.notifier)
+        # NOTE(markwash): filesystem store (and maybe others?) cause a problem
+        # with the caching middleware if they are not wrapped in an iterator
+        # very strange
+        response.app_iter = iter(image.get_data())
         #NOTE(saschpe): "response.app_iter = ..." currently resets Content-MD5
         # (https://github.com/Pylons/webob/issues/86), so it should be set
         # afterwards for the time being.
-        if checksum:
-            response.headers['Content-MD5'] = checksum
+        if image.checksum:
+            response.headers['Content-MD5'] = image.checksum
         #NOTE(markwash): "response.app_iter = ..." also erroneously resets the
         # content-length
-        response.headers['Content-Length'] = str(size)
+        response.headers['Content-Length'] = str(image.size)
 
     def upload(self, response, result):
         response.status_int = 201

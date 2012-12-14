@@ -21,6 +21,8 @@ from glance.tests import utils
 
 BASE_URI = 'swift+http://storeurl.com/container'
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
+UUID2 = '971ec09a-8067-4bc8-a91f-ae3557f1c4c7'
+USER1 = '54492ba0-f4df-4e4e-be62-27f4d76b29cf'
 
 
 class ImageRepoStub(object):
@@ -65,6 +67,20 @@ class TestStoreImage(utils.BaseTestCase):
         image.delete()
         self.assertEquals(image.status, 'pending_delete')
         self.store_api.get_from_backend({}, image.location)  # no exception
+
+    def test_image_get_data(self):
+        image = glance.store.ImageProxy(self.image_stub, {}, self.store_api)
+        self.assertEquals(image.get_data(), 'XXX')
+
+    def test_image_set_data(self):
+        context = glance.context.RequestContext(user=USER1)
+        image_stub = ImageStub(UUID2, status='queued', location=None)
+        image = glance.store.ImageProxy(image_stub, context, self.store_api)
+        image.set_data('YYYY', 4)
+        self.assertEquals(image.size, 4)
+        #NOTE(markwash): FakeStore returns image_id for location
+        self.assertEquals(image.location, UUID2)
+        self.assertEquals(image.checksum, 'Z')
 
     def test_image_repo_get(self):
         image_repo = glance.store.ImageRepoProxy({}, self.store_api,

@@ -193,6 +193,10 @@ class ImageProxy(glance.domain.ImageProxy):
         self._policy.enforce(self._context, 'delete_image', {})
         return self._image.delete()
 
+    def get_data(self, *args, **kwargs):
+        self._policy.enforce(self._context, 'download_image', {})
+        return self._image.get_data(*args, **kwargs)
+
 
 class ImageFactoryProxy(object):
 

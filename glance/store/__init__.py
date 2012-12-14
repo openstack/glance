@@ -341,3 +341,20 @@ class ImageProxy(glance.domain.ImageProxy):
                 self.store_api.safe_delete_from_backend(self.image.location,
                                                         self.context,
                                                         self.image.image_id)
+
+    def set_data(self, data, size=None):
+        if size is None:
+            size = 0  # NOTE(markwash): zero -> unknown size
+        location, size, checksum = self.store_api.add_to_backend(
+                self.context, CONF.default_store,
+                self.image.image_id, data, size)
+        self.image.location = location
+        self.image.size = size
+        self.image.checksum = checksum
+
+    def get_data(self):
+        if not self.image.location:
+            raise exception.NotFound(_("No image data could be found"))
+        data, size = self.store_api.get_from_backend(self.context,
+                                                     self.image.location)
+        return data

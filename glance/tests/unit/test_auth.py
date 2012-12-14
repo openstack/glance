@@ -684,6 +684,22 @@ class TestImmutableImage(utils.BaseTestCase):
         self.assertRaises(exception.Forbidden,
                           self.image.extra_properties.update, {})
 
+    def test_delete(self):
+        self.assertRaises(exception.Forbidden, self.image.delete)
+
+    def test_set_data(self):
+        self.assertRaises(exception.Forbidden,
+                          self.image.set_data, 'blah', 4)
+
+    def test_get_data(self):
+        class FakeImage(object):
+            def get_data(self):
+                return 'tiddlywinks'
+
+        image = glance.api.authorization.ImmutableImageProxy(
+                FakeImage(), self.context)
+        self.assertEquals(image.get_data(), 'tiddlywinks')
+
 
 class TestImageFactoryProxy(utils.BaseTestCase):
     def setUp(self):

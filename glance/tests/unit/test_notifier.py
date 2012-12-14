@@ -26,6 +26,7 @@ except ImportError:
 import stubout
 
 from glance.common import exception
+import glance.context
 from glance import notifier
 import glance.notifier.notify_kombu
 from glance.openstack.common import importutils
@@ -38,7 +39,18 @@ DATETIME = datetime.datetime(2012, 5, 16, 15, 27, 36, 325355)
 
 
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
+USER1 = '54492ba0-f4df-4e4e-be62-27f4d76b29cf'
 TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
+TENANT2 = '2c014f32-55eb-467d-8fcb-4bd706012f81'
+
+
+class ImageStub(glance.domain.Image):
+    def get_data(self):
+        return ['01234', '56789']
+
+    def set_data(self, data, size=None):
+        for chunk in data:
+            pass
 
 
 class ImageRepoStub(object):
@@ -50,6 +62,12 @@ class ImageRepoStub(object):
 
     def add(self, *args, **kwargs):
         return 'image_from_add'
+
+    def get(self, *args, **kwargs):
+        return 'image_from_get'
+
+    def list(self, *args, **kwargs):
+        return ['images_from_list']
 
 
 class TestNotifier(utils.BaseTestCase):
@@ -425,16 +443,20 @@ class TestImageNotifications(utils.BaseTestCase):
     """Test Image Notifications work"""
 
     def setUp(self):
-        self.image = glance.domain.Image(
+        self.image = ImageStub(
                 image_id=UUID1, name='image-1', status='active', size=1024,
                 created_at=DATETIME, updated_at=DATETIME, owner=TENANT1,
                 visibility='public', container_format='ami',
                 tags=['one', 'two'], disk_format='ami', min_ram=128,
                 min_disk=10, checksum='ca425b88f047ce8ec45ee90e813ada91')
+        self.context = glance.context.RequestContext(tenant=TENANT2,
+                                                     user=USER1)
         self.image_repo_stub = ImageRepoStub()
         self.notifier = unit_test_utils.FakeNotifier()
         self.image_repo_proxy = glance.notifier.ImageRepoProxy(
-                self.image_repo_stub, self.notifier)
+                self.image_repo_stub, self.context, self.notifier)
+        self.image_proxy = glance.notifier.ImageProxy(
+                self.image, self.context, self.notifier)
         super(TestImageNotifications, self).setUp()
 
     def test_image_save_notification(self):
@@ -464,3 +486,110 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertEqual(output_log['event_type'], 'image.delete')
         self.assertEqual(output_log['payload']['id'], self.image.image_id)
         self.assertTrue(output_log['payload']['deleted'])
+
+    def test_image_get(self):
+        image = self.image_repo_proxy.get(UUID1)
+        self.assertTrue(isinstance(image, glance.notifier.ImageProxy))
+        self.assertEqual(image.image, 'image_from_get')
+
+    def test_image_list(self):
+        images = self.image_repo_proxy.list()
+        self.assertTrue(isinstance(images[0], glance.notifier.ImageProxy))
+        self.assertEqual(images[0].image, 'images_from_list')
+
+    def test_image_get_data_notification(self):
+        self.image_proxy.size = 10
+        data = ''.join(self.image_proxy.get_data())
+        self.assertEqual(data, '0123456789')
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'INFO')
+        self.assertEqual(output_log['event_type'], 'image.send')
+        self.assertEqual(output_log['payload']['image_id'],
+                         self.image.image_id)
+        self.assertEqual(output_log['payload']['receiver_tenant_id'], TENANT2)
+        self.assertEqual(output_log['payload']['receiver_user_id'], USER1)
+        self.assertEqual(output_log['payload']['bytes_sent'], 10)
+        self.assertEqual(output_log['payload']['owner_id'], TENANT1)
+
+    def test_image_get_data_size_mismatch(self):
+        self.image_proxy.size = 11
+        list(self.image_proxy.get_data())
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'ERROR')
+        self.assertEqual(output_log['event_type'], 'image.send')
+        self.assertEqual(output_log['payload']['image_id'],
+                         self.image.image_id)
+
+    def test_image_set_data_prepare_notification(self):
+        insurance = {'called': False}
+
+        def data_iterator():
+            output_logs = self.notifier.get_logs()
+            self.assertEqual(len(output_logs), 1)
+            output_log = output_logs[0]
+            self.assertEqual(output_log['notification_type'], 'INFO')
+            self.assertEqual(output_log['event_type'], 'image.prepare')
+            self.assertEqual(output_log['payload']['id'], self.image.image_id)
+            yield 'abcd'
+            yield 'efgh'
+            insurance['called'] = True
+
+        self.image_proxy.set_data(data_iterator(), 8)
+        self.assertTrue(insurance['called'])
+
+    def test_image_set_data_upload_and_activate_notification(self):
+        def data_iterator():
+            self.notifier.log = []
+            yield 'abcde'
+            yield 'fghij'
+
+        self.image_proxy.set_data(data_iterator(), 10)
+
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 2)
+
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'INFO')
+        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertEqual(output_log['payload']['id'], self.image.image_id)
+
+        output_log = output_logs[1]
+        self.assertEqual(output_log['notification_type'], 'INFO')
+        self.assertEqual(output_log['event_type'], 'image.activate')
+        self.assertEqual(output_log['payload']['id'], self.image.image_id)
+
+    def test_image_set_data_storage_full(self):
+        def data_iterator():
+            self.notifier.log = []
+            yield 'abcde'
+            raise exception.StorageFull('Modern Major General')
+
+        self.image_proxy.set_data(data_iterator(), 10)
+
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'ERROR')
+        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertTrue('Modern Major General' in output_log['payload'])
+
+    def test_image_set_data_storage_full(self):
+        def data_iterator():
+            self.notifier.log = []
+            yield 'abcde'
+            raise exception.StorageWriteDenied('The Very Model')
+
+        self.image_proxy.set_data(data_iterator(), 10)
+
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'ERROR')
+        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertTrue('The Very Model' in output_log['payload'])

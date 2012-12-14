@@ -111,6 +111,12 @@ class Image(object):
             raise exception.ProtectedImageDelete(image_id=self.image_id)
         self.status = 'deleted'
 
+    def get_data(self):
+        raise NotImplementedError()
+
+    def set_data(self, data, size=None):
+        raise NotImplementedError()
+
 
 def _proxy(target, attr):
 
@@ -171,6 +177,12 @@ class ImageProxy(object):
 
     def delete(self):
         self.base.delete()
+
+    def set_data(self, data, size=None):
+        self.base.set_data(data, size)
+
+    def get_data(self):
+        return self.base.get_data()
 
     def get_member_repo(self):
         return self.base.get_member_repo()
