@@ -77,6 +77,7 @@ def s3_put_object(s3_client, bucket_name, object_name, contents):
 
 class TestS3Store(store_tests.BaseTestCase, unittest.TestCase):
 
+    store_cls_path = 'glance.store.s3.Store'
     store_cls = glance.store.s3.Store
     store_name = 's3'
 

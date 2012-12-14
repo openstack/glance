@@ -68,6 +68,7 @@ def http_server(image_id, image_data):
 
 class TestHTTPStore(store_tests.BaseTestCase, unittest.TestCase):
 
+    store_cls_path = 'glance.store.http.Store'
     store_cls = glance.store.http.Store
     store_name = 'http'
 
