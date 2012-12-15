@@ -720,7 +720,6 @@ class TestSingleTenantStoreConnections(base.IsolatedUnitTest):
         self.location = glance.store.swift.StoreLocation(specs)
 
     def test_basic_connection(self):
-        self.store.configure()
         connection = self.store.get_connection(self.location)
         self.assertEqual(connection.authurl, 'https://example.com/v2/')
         self.assertEqual(connection.auth_version, '2')
@@ -730,10 +729,11 @@ class TestSingleTenantStoreConnections(base.IsolatedUnitTest):
         self.assertEqual(connection.snet, False)
         self.assertEqual(connection.preauthurl, None)
         self.assertEqual(connection.preauthtoken, None)
-        self.assertEqual(connection.os_options, {})
+        self.assertEqual(connection.os_options,
+                         {'service_type': 'object-store',
+                          'endpoint_type': 'publicURL'})
 
     def test_connection_with_no_trailing_slash(self):
-        self.store.configure()
         self.location.auth_or_store_url = 'example.com/v2'
         connection = self.store.get_connection(self.location)
         self.assertEqual(connection.authurl, 'https://example.com/v2/')
@@ -764,7 +764,25 @@ class TestSingleTenantStoreConnections(base.IsolatedUnitTest):
         self.store.configure()
         connection = self.store.get_connection(self.location)
         self.assertEquals(connection.os_options,
-                          {'region_name': 'Sahara'})
+                          {'region_name': 'Sahara',
+                           'service_type': 'object-store',
+                           'endpoint_type': 'publicURL'})
+
+    def test_connection_with_service_type(self):
+        self.config(swift_store_service_type='shoe-store')
+        self.store.configure()
+        connection = self.store.get_connection(self.location)
+        self.assertEquals(connection.os_options,
+                          {'service_type': 'shoe-store',
+                           'endpoint_type': 'publicURL'})
+
+    def test_connection_with_endpoint_type(self):
+        self.config(swift_store_endpoint_type='internalURL')
+        self.store.configure()
+        connection = self.store.get_connection(self.location)
+        self.assertEquals(connection.os_options,
+                          {'service_type': 'object-store',
+                           'endpoint_type': 'internalURL'})
 
     def test_connection_with_snet(self):
         self.config(swift_enable_snet=True)
@@ -812,6 +830,9 @@ class FakeGetEndpoint(object):
 
     def __call__(self, service_catalog, service_type=None,
                  endpoint_region=None, endpoint_type=None):
+        self.service_type = service_type
+        self.endpoint_region = endpoint_region
+        self.endpoint_type = endpoint_type
         return self.response
 
 
@@ -855,6 +876,7 @@ class TestCreatingLocations(base.IsolatedUnitTest):
         self.assertEquals(location.obj, 'image-id')
         self.assertEquals(location.user, None)
         self.assertEquals(location.key, None)
+        self.assertEquals(fake_get_endpoint.service_type, 'object-store')
 
     def test_multi_tenant_location_http(self):
         fake_get_endpoint = FakeGetEndpoint('http://some_endpoint')
@@ -866,6 +888,36 @@ class TestCreatingLocations(base.IsolatedUnitTest):
         location = store.create_location('image-id')
         self.assertEquals(location.scheme, 'swift+http')
         self.assertEquals(location.swift_url, 'http://some_endpoint')
+
+    def test_multi_tenant_location_with_region(self):
+        self.config(swift_store_region='WestCarolina')
+        fake_get_endpoint = FakeGetEndpoint('https://some_endpoint')
+        self.stubs.Set(glance.common.auth, 'get_endpoint', fake_get_endpoint)
+        context = glance.context.RequestContext(
+                user='user', tenant='tenant', auth_tok='123',
+                service_catalog={})
+        store = glance.store.swift.MultiTenantStore(context)
+        self.assertEquals(fake_get_endpoint.endpoint_region, 'WestCarolina')
+
+    def test_multi_tenant_location_custom_service_type(self):
+        self.config(swift_store_service_type='toy-store')
+        fake_get_endpoint = FakeGetEndpoint('https://some_endpoint')
+        self.stubs.Set(glance.common.auth, 'get_endpoint', fake_get_endpoint)
+        context = glance.context.RequestContext(
+                user='user', tenant='tenant', auth_tok='123',
+                service_catalog={})
+        store = glance.store.swift.MultiTenantStore(context)
+        self.assertEquals(fake_get_endpoint.service_type, 'toy-store')
+
+    def test_multi_tenant_location_custom_service_type(self):
+        self.config(swift_store_endpoint_type='InternalURL')
+        fake_get_endpoint = FakeGetEndpoint('https://some_endpoint')
+        self.stubs.Set(glance.common.auth, 'get_endpoint', fake_get_endpoint)
+        context = glance.context.RequestContext(
+                user='user', tenant='tenant', auth_tok='123',
+                service_catalog={})
+        store = glance.store.swift.MultiTenantStore(context)
+        self.assertEquals(fake_get_endpoint.endpoint_type, 'InternalURL')
 
 
 class TestChunkReader(base.StoreClearingUnitTest):
