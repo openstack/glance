@@ -192,6 +192,8 @@ def load_paste_app(app_name=None):
 
         return app
     except (LookupError, ImportError), e:
-        raise RuntimeError("Unable to load %(app_name)s from "
-                           "configuration file %(conf_file)s."
-                           "\nGot: %(e)r" % locals())
+        msg = _("Unable to load %(app_name)s from "
+                "configuration file %(conf_file)s."
+                "\nGot: %(e)r") % locals()
+        logger.error(msg)
+        raise RuntimeError(msg)
