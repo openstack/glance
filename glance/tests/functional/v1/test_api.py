@@ -1563,3 +1563,22 @@ class TestApi(functional.FunctionalTest):
             self.assertFalse(image['is_public'])
 
         self.stop_servers()
+
+    @skip_if_disabled
+    def test_mismatched_size(self):
+        """
+        Test mismatched size.
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        image_data = "*" * FIVE_KB
+        headers = minimal_headers('Image1')
+        headers['x-image-meta-size'] = str(FIVE_KB + 1)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=image_data)
+        self.assertEqual(response.status, 400)
+
+        self.stop_servers()
