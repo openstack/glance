@@ -90,9 +90,9 @@ class TestRBD(test_api.TestApi):
         self.disabled = False
 
     def setUp(self):
+        super(TestRBD, self).setUp()
         if self.disabled:
             return
-        super(TestRBD, self).setUp()
         import rados
         try:
             self.create_pool()
@@ -102,10 +102,10 @@ class TestRBD(test_api.TestApi):
             return
 
     def tearDown(self):
+        super(TestRBD, self).tearDown()
         if self.disabled:
             return
         self.delete_pool()
-        super(TestRBD, self).tearDown()
 
     def create_pool(self):
         from rados import Rados

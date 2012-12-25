@@ -38,7 +38,6 @@ from glance.tests.utils import (skip_if_disabled,
                                 minimal_headers)
 
 from glance.tests.functional.store_utils import (setup_http,
-                                                 teardown_http,
                                                  get_http_uri)
 
 FIVE_KB = 5 * 1024
@@ -177,7 +176,6 @@ class BaseCacheMiddlewareTest(object):
 
         self.stop_servers()
 
-    @requires(teardown=teardown_http)
     @skip_if_disabled
     def test_cache_remote_image(self):
         """

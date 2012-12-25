@@ -76,7 +76,6 @@ class TestMigrations(utils.BaseTestCase):
             else:
                 self.fail("Failed to find test_migrations.conf config "
                           "file.")
-
         self.engines = {}
         for key, value in TestMigrations.TEST_DATABASES.items():
             self.engines[key] = create_engine(value, poolclass=NullPool)

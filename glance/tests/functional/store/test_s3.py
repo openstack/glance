@@ -25,11 +25,10 @@ S3 backend
 import ConfigParser
 import os
 import os.path
-import unittest
 import urllib
 import urlparse
 
-import nose.plugins.skip
+import testtools
 
 import glance.openstack.common.cfg
 import glance.store.s3
@@ -75,7 +74,7 @@ def s3_put_object(s3_client, bucket_name, object_name, contents):
     key.set_contents_from_string(contents)
 
 
-class TestS3Store(store_tests.BaseTestCase, unittest.TestCase):
+class TestS3Store(store_tests.BaseTestCase, testtools.TestCase):
 
     store_cls_path = 'glance.store.s3.Store'
     store_cls = glance.store.s3.Store
@@ -85,7 +84,7 @@ class TestS3Store(store_tests.BaseTestCase, unittest.TestCase):
         config_path = os.environ.get('GLANCE_TEST_S3_CONF')
         if not config_path:
             msg = "GLANCE_TEST_S3_CONF environ not set."
-            raise nose.SkipTest(msg)
+            self.skipTest(msg)
 
         glance.openstack.common.cfg.CONF(default_config_files=[config_path])
 

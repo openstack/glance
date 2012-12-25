@@ -22,7 +22,7 @@ import BaseHTTPServer
 import os
 import os.path
 import signal
-import unittest
+import testtools
 
 import glance.openstack.common.cfg
 import glance.store.http
@@ -66,15 +66,15 @@ def http_server(image_id, image_data):
         return pid, port
 
 
-class TestHTTPStore(store_tests.BaseTestCase, unittest.TestCase):
+class TestHTTPStore(store_tests.BaseTestCase, testtools.TestCase):
 
     store_cls_path = 'glance.store.http.Store'
     store_cls = glance.store.http.Store
     store_name = 'http'
 
     def setUp(self):
-        self.kill_pid = None
         super(TestHTTPStore, self).setUp()
+        self.kill_pid = None
 
     def tearDown(self):
         if self.kill_pid is not None:
