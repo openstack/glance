@@ -81,6 +81,6 @@ class BaseController(object):
                                    write_tenants=write_tenants)
             except exception.UnknownScheme:
                 msg = _("Store for image_id not found: %s") % image_id
-                raise HTTPBadRequest(explanation=msg,
-                                     request=req,
-                                     content_type='text/plain')
+                raise webob.exc.HTTPBadRequest(explanation=msg,
+                                               request=req,
+                                               content_type='text/plain')
