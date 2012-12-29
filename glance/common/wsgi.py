@@ -40,6 +40,7 @@ import webob.dec
 import webob.exc
 
 from glance.common import exception
+from glance.common import utils
 from glance.openstack.common import cfg
 import glance.openstack.common.log as os_logging
 
@@ -266,6 +267,10 @@ class Server(object):
 
     def run_server(self):
         """Run a WSGI server."""
+        if cfg.CONF.pydev_worker_debug_host:
+            utils.setup_remote_pydev_debug(cfg.CONF.pydev_worker_debug_host,
+                                           cfg.CONF.pydev_worker_debug_port)
+
         eventlet.wsgi.HttpProtocol.default_request_version = "HTTP/1.0"
         try:
             eventlet.hubs.use_hub('poll')
