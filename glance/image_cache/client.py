@@ -16,8 +16,8 @@
 import os
 
 from glance.common import client as base_client
-import glance.openstack.common.jsonutils as json
 from glance.common import exception
+import glance.openstack.common.jsonutils as json
 
 
 class CacheClient(base_client.BaseClient):

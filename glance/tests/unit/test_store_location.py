@@ -15,8 +15,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glance import context
 from glance.common import exception
+from glance import context
 import glance.store
 import glance.store.filesystem
 import glance.store.http

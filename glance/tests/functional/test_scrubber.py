@@ -15,11 +15,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import httplib2
 import json
+import nose
 import os
 import time
-import httplib2
-import nose
 
 from glance.tests import functional
 from glance.tests.functional.store.test_swift import parse_config

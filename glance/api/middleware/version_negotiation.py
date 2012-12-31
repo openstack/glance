@@ -23,8 +23,8 @@ return
 
 from glance.api import versions
 from glance.common import wsgi
-import glance.openstack.common.log as logging
 from glance.openstack.common import cfg
+import glance.openstack.common.log as logging
 
 CONF = cfg.CONF
 

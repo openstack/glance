@@ -26,8 +26,8 @@ import ConfigParser
 import os
 import os.path
 import unittest
-import urlparse
 import urllib
+import urlparse
 
 import nose.plugins.skip
 

@@ -18,9 +18,9 @@ import unittest
 import webob
 
 import glance.api.middleware.cache
+from glance.common import exception
 from glance import context
 from glance import registry
-from glance.common import exception
 
 
 class TestCacheMiddlewareURLMatching(unittest.TestCase):
