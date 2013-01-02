@@ -28,7 +28,7 @@ sql_connection_opt = cfg.StrOpt('sql_connection',
                                 metavar='CONNECTION',
                                 help='A valid SQLAlchemy connection '
                                      'string for the registry database. '
-                                     'Default: %default')
+                                     'Default: %(default)s')
 
 CONF = cfg.CONF
 CONF.register_opt(sql_connection_opt)

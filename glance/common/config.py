@@ -66,16 +66,16 @@ CONF.register_opts(common_opts)
 
 
 def parse_args(args=None, usage=None, default_config_files=None):
-    return CONF(args=args,
-                project='glance',
-                version=version.deferred_version_string(prefix="%prog "),
-                usage=usage,
-                default_config_files=default_config_files)
+    CONF(args=args,
+         project='glance',
+         version=version.deferred_version_string(prefix="%prog "),
+         usage=usage,
+         default_config_files=default_config_files)
 
 
 def parse_cache_args(args=None):
     config_files = cfg.find_config_files(project='glance', prog='glance-cache')
-    return parse_args(args=args, default_config_files=config_files)
+    parse_args(args=args, default_config_files=config_files)
 
 
 def setup_logging():

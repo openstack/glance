@@ -49,58 +49,65 @@ import glance.db.sqlalchemy.migration
 CONF = cfg.CONF
 
 
-def do_db_version(args):
+def do_db_version():
     """Print database's current migration level"""
     print glance.db.sqlalchemy.migration.db_version()
 
 
-def do_upgrade(args):
+def do_upgrade():
     """Upgrade the database's migration level"""
-    version = args.pop(0) if args else None
-    glance.db.sqlalchemy.migration.upgrade(version)
+    glance.db.sqlalchemy.migration.upgrade(CONF.command.version)
 
 
-def do_downgrade(args):
+def do_downgrade():
     """Downgrade the database's migration level"""
-    if not args:
-        raise exception.MissingArgumentError(
-            "downgrade requires a version argument")
-
-    version = args.pop(0)
-    glance.db.sqlalchemy.migration.downgrade(version)
+    glance.db.sqlalchemy.migration.downgrade(CONF.command.version)
 
 
-def do_version_control(args):
+def do_version_control():
     """Place a database under migration control"""
-    version = args.pop(0) if args else None
-    glance.db.sqlalchemy.migration.version_control(version)
+    glance.db.sqlalchemy.migration.version_control(CONF.command.version)
 
 
-def do_db_sync(args):
+def do_db_sync():
     """
     Place a database under migration control and upgrade,
     creating first if necessary.
     """
-    version = args.pop(0) if args else None
-    current_version = args.pop(0) if args else None
-    glance.db.sqlalchemy.migration.db_sync(version, current_version)
+    glance.db.sqlalchemy.migration.db_sync(CONF.command.version,
+                                           CONF.command.current_version)
 
 
-def dispatch_cmd(args):
-    """Search for do_* cmd in this module and then run it"""
-    cmd = args.pop(0)
-    try:
-        cmd_func = globals()['do_%s' % cmd]
-    except KeyError:
-        sys.exit("ERROR: unrecognized command '%s'" % cmd)
+def add_command_parsers(subparsers):
+    parser = subparsers.add_parser('db_version')
+    parser.set_defaults(func=do_db_version)
 
-    try:
-        cmd_func(args)
-    except exception.GlanceException, e:
-        sys.exit("ERROR: %s" % e)
+    parser = subparsers.add_parser('upgrade')
+    parser.set_defaults(func=do_upgrade)
+    parser.add_argument('version', nargs='?')
+
+    parser = subparsers.add_parser('downgrade')
+    parser.set_defaults(func=do_downgrade)
+    parser.add_argument('version')
+
+    parser = subparsers.add_parser('version_control')
+    parser.set_defaults(func=do_version_control)
+    parser.add_argument('version', nargs='?')
+
+    parser = subparsers.add_parser('db_sync')
+    parser.set_defaults(func=do_db_sync)
+    parser.add_argument('version', nargs='?')
+    parser.add_argument('current_version', nargs='?')
+
+
+command_opt = cfg.SubCommandOpt('command',
+                                title='Commands',
+                                help='Available commands',
+                                handler=add_command_parsers)
 
 
 def main():
+    CONF.register_cli_opt(command_opt)
     try:
         # We load the glance-registry config section because
         # sql_connection is only part of the glance registry.
@@ -109,17 +116,16 @@ def main():
         default_cfg_files = cfg.find_config_files(project='glance',
                                                   prog='glance-registry')
 
-        args = config.parse_args(default_config_files=default_cfg_files,
-                                 usage="%prog [options] <cmd>")
+        config.parse_args(default_config_files=default_cfg_files,
+                          usage="%(prog)s [options] <cmd>")
         config.setup_logging()
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
 
-    if not args:
-        CONF.print_usage()
-        sys.exit(1)
-
-    dispatch_cmd(args)
+    try:
+        CONF.command.func()
+    except exception.GlanceException, e:
+        sys.exit("ERROR: %s" % e)
 
 
 if __name__ == '__main__':

@@ -43,7 +43,7 @@ class TestGlanceManage(functional.FunctionalTest):
             conf_file.write(self.connection)
             conf_file.flush()
 
-        cmd = ('bin/glance-manage db_sync --config-file %s' %
+        cmd = ('bin/glance-manage --config-file %s db_sync' %
                self.conf_filepath)
         execute(cmd, raise_error=True)
 
