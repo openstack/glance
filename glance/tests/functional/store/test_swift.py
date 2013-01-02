@@ -28,8 +28,8 @@ import os.path
 import random
 import StringIO
 import unittest
-import urlparse
 import urllib
+import urlparse
 
 import nose.plugins.skip
 

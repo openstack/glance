@@ -18,9 +18,9 @@ import os.path
 import glance.api.policy
 from glance.common import exception
 import glance.context
-from glance.tests import utils as test_utils
 from glance.tests.unit import base
 from glance.tests.unit import utils as unit_test_utils
+from glance.tests import utils as test_utils
 
 
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'

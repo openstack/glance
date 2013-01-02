@@ -30,8 +30,8 @@ from glance import notifier
 import glance.notifier.notify_kombu
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
-from glance.tests import utils
 import glance.tests.unit.utils as unit_test_utils
+from glance.tests import utils
 
 
 DATETIME = datetime.datetime(2012, 5, 16, 15, 27, 36, 325355)

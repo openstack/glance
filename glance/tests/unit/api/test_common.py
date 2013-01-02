@@ -17,8 +17,8 @@ import unittest
 
 import webob
 
-from glance.common import exception
 import glance.api.common
+from glance.common import exception
 
 
 class SimpleIterator(object):

@@ -34,9 +34,9 @@ from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 
 from glance.common import exception
-import glance.db.sqlalchemy.migration as migration_api
 #NOTE(bcwaldon): import this to prevent circular import
 from glance.db.sqlalchemy import api
+import glance.db.sqlalchemy.migration as migration_api
 from glance.db.sqlalchemy import models
 from glance.openstack.common import cfg
 from glance.tests import utils

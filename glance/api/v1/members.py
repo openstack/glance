@@ -17,8 +17,8 @@
 
 import webob.exc
 
-from glance.common import exception
 from glance.api.v1 import controller
+from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.openstack.common.log as logging

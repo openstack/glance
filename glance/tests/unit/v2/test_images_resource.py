@@ -22,10 +22,10 @@ import glance.api.v2.images
 from glance.openstack.common import cfg
 from glance.openstack.common import uuidutils
 import glance.schema
+import glance.store
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
-import glance.store
 
 
 DATETIME = datetime.datetime(2012, 5, 16, 15, 27, 36, 325355)

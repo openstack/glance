@@ -13,8 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import glance.context
 from glance.common import exception
+import glance.context
 import glance.db
 from glance.openstack.common import uuidutils
 import glance.tests.unit.utils as unit_test_utils

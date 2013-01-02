@@ -13,8 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glance import domain
 from glance.common import exception
+from glance import domain
 import glance.tests.utils as test_utils
 
 
