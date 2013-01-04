@@ -36,6 +36,7 @@ import sys
 from webob import exc
 
 from glance.common import exception
+from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 
 
@@ -410,3 +411,23 @@ def mutating(func):
                                     content_type="text/plain")
         return func(self, req, *args, **kwargs)
     return wrapped
+
+
+def setup_remote_pydev_debug(host, port):
+
+        error_msg = ('Error setting up the debug environment.  Verify that the'
+                     ' option pydev_worker_debug_port is pointing to a valid '
+                     'hostname or IP on which a pydev server is listening on'
+                     ' the port indicated by pydev_worker_debug_port.')
+
+        try:
+            from pydev import pydevd
+
+            pydevd.settrace(host,
+                            port=port,
+                            stdoutToServer=True,
+                            stderrToServer=True)
+            return True
+        except:
+            LOG.exception(error_msg)
+            raise
