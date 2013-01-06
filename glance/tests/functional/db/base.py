@@ -61,18 +61,16 @@ def build_image_fixture(**kwargs):
 
 
 class TestDriver(base.IsolatedUnitTest):
+
     def setUp(self):
+        super(TestDriver, self).setUp()
         self.adm_context = context.RequestContext(is_admin=True)
         self.context = context.RequestContext(is_admin=False)
         self.db_api = db_tests.get_db(self.config)
         db_tests.reset_db(self.db_api)
         self.fixtures = self.build_image_fixtures()
         self.create_images(self.fixtures)
-        super(TestDriver, self).setUp()
-
-    def tearDown(self):
-        timeutils.clear_time_override()
-        super(TestDriver, self).tearDown()
+        self.addCleanup(timeutils.clear_time_override)
 
     def build_image_fixtures(self):
         dt1 = timeutils.utcnow()
@@ -102,6 +100,9 @@ class TestDriver(base.IsolatedUnitTest):
     def create_images(self, images):
         for fixture in images:
             self.db_api.image_create(self.adm_context, fixture)
+
+
+class DriverTests(object):
 
     def test_image_create_requires_status(self):
         fixture = {'name': 'mark', 'size': 12}
@@ -629,6 +630,9 @@ class TestVisibility(base.IsolatedUnitTest):
     def create_images(self, images):
         for fixture in images:
             self.db_api.image_create(self.admin_context, fixture)
+
+
+class VisibilityTests(object):
 
     def test_unknown_admin_sees_all(self):
         images = self.db_api.image_get_all(self.admin_none_context)
