@@ -23,6 +23,7 @@ import json
 import tempfile
 
 import httplib2
+import testtools
 
 from glance.openstack.common import timeutils
 from glance.tests import functional
@@ -1320,7 +1321,7 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(response.status, 201)
         data = json.loads(content)
         image_id = data['image']['id']
-        print data
+        self.addDetail('image_data', testtools.content.json_content(data))
 
         # PUT image content images without given format being specified
         path = ("http://%s:%d/v1/images/%s" %
