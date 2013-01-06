@@ -60,6 +60,10 @@ class TestRegistryDb(test_utils.BaseTestCase):
         self.orig_engine = db_api._ENGINE
         self.orig_connection = db_api._CONNECTION
         self.orig_maker = db_api._MAKER
+        self.addCleanup(self.stubs.UnsetAll)
+        self.addCleanup(setattr, db_api, '_ENGINE', self.orig_engine)
+        self.addCleanup(setattr, db_api, '_CONNECTION', self.orig_connection)
+        self.addCleanup(setattr, db_api, '_MAKER', self.orig_maker)
 
     def test_bad_sql_connection(self):
         """
@@ -97,14 +101,6 @@ class TestRegistryDb(test_utils.BaseTestCase):
 
         self.assertTrue(exc_raised)
         self.assertTrue(self.log_written)
-
-    def tearDown(self):
-        """Clear the test environment"""
-        super(TestRegistryDb, self).tearDown()
-        db_api._ENGINE = self.orig_engine
-        db_api._CONNECTION = self.orig_connection
-        db_api._MAKER = self.orig_maker
-        self.stubs.UnsetAll()
 
 
 class TestRegistryAPI(base.IsolatedUnitTest):

@@ -22,6 +22,7 @@ import random
 import shutil
 import StringIO
 
+import fixtures
 import stubout
 
 from glance.common import exception
@@ -418,9 +419,7 @@ class TestImageCacheXattr(test_utils.BaseTestCase,
         if getattr(self, 'disable', False):
             return
 
-        self.cache_dir = os.path.join("/", "tmp", "test.cache.%d" %
-                                      random.randint(0, 1000000))
-        utils.safe_mkdirs(self.cache_dir)
+        self.cache_dir = self.useFixture(fixtures.TempDir()).path
 
         if not getattr(self, 'inited', False):
             try:
@@ -443,11 +442,6 @@ class TestImageCacheXattr(test_utils.BaseTestCase,
             self.disabled = True
             self.disabled_message = ("filesystem does not support xattr")
             return
-
-    def tearDown(self):
-        super(TestImageCacheXattr, self).tearDown()
-        if os.path.exists(self.cache_dir):
-            shutil.rmtree(self.cache_dir)
 
 
 class TestImageCacheSqlite(test_utils.BaseTestCase,
@@ -476,17 +470,11 @@ class TestImageCacheSqlite(test_utils.BaseTestCase,
 
         self.inited = True
         self.disabled = False
-        self.cache_dir = os.path.join("/", "tmp", "test.cache.%d" %
-                                      random.randint(0, 1000000))
+        self.cache_dir = self.useFixture(fixtures.TempDir()).path
         self.config(image_cache_dir=self.cache_dir,
                     image_cache_driver='sqlite',
                     image_cache_max_size=1024 * 5)
         self.cache = image_cache.ImageCache()
-
-    def tearDown(self):
-        super(TestImageCacheSqlite, self).tearDown()
-        if os.path.exists(self.cache_dir):
-            shutil.rmtree(self.cache_dir)
 
 
 class TestImageCacheNoDep(test_utils.BaseTestCase):
@@ -501,10 +489,7 @@ class TestImageCacheNoDep(test_utils.BaseTestCase):
 
         self.stubs = stubout.StubOutForTesting()
         self.stubs.Set(image_cache.ImageCache, 'init_driver', init_driver)
-
-    def tearDown(self):
-        super(TestImageCacheNoDep, self).tearDown()
-        self.stubs.UnsetAll()
+        self.addCleanup(self.stubs.UnsetAll)
 
     def test_get_caching_iter_when_write_fails(self):
 

@@ -36,19 +36,6 @@ from glance.openstack.common import cfg
 CONF = cfg.CONF
 
 
-def get_isolated_test_env():
-    """
-    Returns a tuple of (test_id, test_dir) that is unique
-    for an isolated test environment. Also ensure the test_dir
-    is created.
-    """
-    test_id = random.randint(0, 100000)
-    test_tmp_dir = os.getenv('GLANCE_TEST_TMP_DIR', '/tmp')
-    test_dir = os.path.join(test_tmp_dir, "test.%d" % test_id)
-    utils.safe_mkdirs(test_dir)
-    return test_id, test_dir
-
-
 class BaseTestCase(testtools.TestCase):
 
     def setUp(self):
@@ -58,10 +45,7 @@ class BaseTestCase(testtools.TestCase):
         # command-line options - specifically we need config_dir for
         # the following policy tests
         config.parse_args(args=[])
-
-    def tearDown(self):
-        super(BaseTestCase, self).tearDown()
-        CONF.reset()
+        self.addCleanup(CONF.reset)
 
     def config(self, **kw):
         """
@@ -74,7 +58,7 @@ class BaseTestCase(testtools.TestCase):
         the specified configuration option group.
 
         All overrides are automatically cleared at the end of the current
-        test by the tearDown() method.
+        test by the fixtures cleanup process.
         """
         group = kw.pop('group', None)
         for k, v in kw.iteritems():

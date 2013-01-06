@@ -21,8 +21,9 @@ import os
 import signal
 import socket
 import sys
-import tempfile
 import time
+
+import fixtures
 
 from glance.tests import functional
 from glance.tests.utils import skip_if_disabled
@@ -90,7 +91,7 @@ class TestGlanceControl(functional.FunctionalTest):
         """
         if os.getuid() is 0:
             self.skipTest("User root can always create directories")
-        parent = tempfile.mkdtemp()
+        parent = self.useFixture(fixtures.TempDir()).path
         os.chmod(parent, 0)
         pid_file = os.path.join(parent, 'pids', 'api.pid')
         self._do_test_fallback_pidfile(pid_file)
@@ -103,7 +104,7 @@ class TestGlanceControl(functional.FunctionalTest):
         """
         if os.getuid() is 0:
             self.skipTest("User root can always write inside directories")
-        parent = tempfile.mkdtemp()
+        parent = self.useFixture(fixtures.TempDir()).path
         os.chmod(parent, 0)
         pid_file = os.path.join(parent, 'api.pid')
         self._do_test_fallback_pidfile(pid_file)

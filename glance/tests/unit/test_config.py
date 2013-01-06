@@ -17,8 +17,8 @@
 
 import os.path
 import shutil
-import tempfile
 
+import fixtures
 import stubout
 
 from glance.api.middleware import context
@@ -31,10 +31,7 @@ class TestPasteApp(test_utils.BaseTestCase):
     def setUp(self):
         super(TestPasteApp, self).setUp()
         self.stubs = stubout.StubOutForTesting()
-
-    def tearDown(self):
-        super(TestPasteApp, self).tearDown()
-        self.stubs.UnsetAll()
+        self.addCleanup(self.stubs.UnsetAll)
 
     def _do_test_load_paste_app(self,
                                 expected_app_type,
@@ -58,24 +55,22 @@ class TestPasteApp(test_utils.BaseTestCase):
                     config_file=paste_config_file,
                     group='paste_deploy')
 
-        temp_file = os.path.join(tempfile.mkdtemp(), 'testcfg.conf')
+        temp_dir = self.useFixture(fixtures.TempDir()).path
+        temp_file = os.path.join(temp_dir, 'testcfg.conf')
 
-        try:
-            _writeto(temp_file, '[DEFAULT]\n')
+        _writeto(temp_file, '[DEFAULT]\n')
 
-            config.parse_args(['--config-file', temp_file])
+        config.parse_args(['--config-file', temp_file])
 
-            paste_to = temp_file.replace('.conf', '-paste.ini')
-            if not paste_config_file and make_paste_file:
-                paste_from = os.path.join(os.getcwd(),
-                                          'etc/glance-registry-paste.ini')
-                _appendto(paste_from, paste_to, paste_append)
+        paste_to = temp_file.replace('.conf', '-paste.ini')
+        if not paste_config_file and make_paste_file:
+            paste_from = os.path.join(os.getcwd(),
+                                      'etc/glance-registry-paste.ini')
+            _appendto(paste_from, paste_to, paste_append)
 
-            app = config.load_paste_app('glance-registry')
+        app = config.load_paste_app('glance-registry')
 
-            self.assertEquals(expected_app_type, type(app))
-        finally:
-            shutil.rmtree(os.path.dirname(temp_file))
+        self.assertEquals(expected_app_type, type(app))
 
     def test_load_paste_app(self):
         expected_middleware = context.UnauthenticatedContextMiddleware

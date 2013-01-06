@@ -6,6 +6,7 @@ Babel
 
 # Needed for testing
 coverage
+fixtures>=0.3.12
 mox
 nose
 nose-exclude

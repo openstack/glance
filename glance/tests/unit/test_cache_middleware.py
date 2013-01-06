@@ -137,10 +137,7 @@ class TestCacheMiddlewareProcessRequest(testtools.TestCase):
     def setUp(self):
         super(TestCacheMiddlewareProcessRequest, self).setUp()
         self.stubs = stubout.StubOutForTesting()
-
-    def tearDown(self):
-        super(TestCacheMiddlewareProcessRequest, self).tearDown()
-        self.stubs.UnsetAll()
+        self.addCleanup(self.stubs.UnsetAll)
 
     def test_v1_deleted_image_fetch(self):
         """

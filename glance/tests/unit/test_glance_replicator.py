@@ -18,12 +18,12 @@ import copy
 import imp
 import json
 import os
-import shutil
 import StringIO
 import sys
-import tempfile
 import UserDict
 import uuid
+
+import fixtures
 
 from glance.tests import utils as test_utils
 
@@ -333,7 +333,7 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
         self.assertEqual(output, 'Total size is 400 bytes across 2 images')
 
     def test_replication_dump(self):
-        tempdir = tempfile.mkdtemp()
+        tempdir = self.useFixture(fixtures.TempDir()).path
 
         options = UserDict.UserDict()
         options.chunksize = 4096
@@ -342,39 +342,36 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
         args = ['localhost:9292', tempdir]
 
         orig_img_service = glance_replicator.get_image_service
-        try:
-            glance_replicator.get_image_service = get_image_service
-            glance_replicator.replication_dump(options, args)
+        self.addCleanup(setattr, glance_replicator,
+                        'get_image_service', orig_img_service)
+        glance_replicator.get_image_service = get_image_service
+        glance_replicator.replication_dump(options, args)
 
-            for active in ['5dcddce0-cba5-4f18-9cf4-9853c7b207a6',
-                           '37ff82db-afca-48c7-ae0b-ddc7cf83e3db']:
-                imgfile = os.path.join(tempdir, active)
-                self.assertTrue(os.path.exists(imgfile))
-                self.assertTrue(os.path.exists('%s.img' % imgfile))
+        for active in ['5dcddce0-cba5-4f18-9cf4-9853c7b207a6',
+                       '37ff82db-afca-48c7-ae0b-ddc7cf83e3db']:
+            imgfile = os.path.join(tempdir, active)
+            self.assertTrue(os.path.exists(imgfile))
+            self.assertTrue(os.path.exists('%s.img' % imgfile))
 
-                with open(imgfile) as f:
-                    d = json.loads(f.read())
-                    self.assertTrue('status' in d)
-                    self.assertTrue('id' in d)
-                    self.assertTrue('size' in d)
+            with open(imgfile) as f:
+                d = json.loads(f.read())
+                self.assertTrue('status' in d)
+                self.assertTrue('id' in d)
+                self.assertTrue('size' in d)
 
-            for inactive in ['f4da1d2a-40e8-4710-b3aa-0222a4cc887b']:
-                imgfile = os.path.join(tempdir, inactive)
-                self.assertTrue(os.path.exists(imgfile))
-                self.assertFalse(os.path.exists('%s.img' % imgfile))
+        for inactive in ['f4da1d2a-40e8-4710-b3aa-0222a4cc887b']:
+            imgfile = os.path.join(tempdir, inactive)
+            self.assertTrue(os.path.exists(imgfile))
+            self.assertFalse(os.path.exists('%s.img' % imgfile))
 
-                with open(imgfile) as f:
-                    d = json.loads(f.read())
-                    self.assertTrue('status' in d)
-                    self.assertTrue('id' in d)
-                    self.assertTrue('size' in d)
-
-        finally:
-            glance_replicator.get_image_service = orig_img_service
-            shutil.rmtree(tempdir)
+            with open(imgfile) as f:
+                d = json.loads(f.read())
+                self.assertTrue('status' in d)
+                self.assertTrue('id' in d)
+                self.assertTrue('size' in d)
 
     def test_replication_load(self):
-        tempdir = tempfile.mkdtemp()
+        tempdir = self.useFixture(fixtures.TempDir()).path
 
         def write_image(img, data):
             imgfile = os.path.join(tempdir, img['id'])
@@ -385,56 +382,52 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
                 with open('%s.img' % imgfile, 'w') as f:
                     f.write(data)
 
+        for img in FAKEIMAGES:
+            cimg = copy.copy(img)
+            # We need at least one image where the stashed metadata on disk
+            # is newer than what the fake has
+            if cimg['id'] == '5dcddce0-cba5-4f18-9cf4-9853c7b207a6':
+                cimg['extra'] = 'thisissomeextra'
+
+            # This is an image where the metadata change should be ignored
+            if cimg['id'] == 'f4da1d2a-40e8-4710-b3aa-0222a4cc887b':
+                cimg['dontrepl'] = 'thisisyetmoreextra'
+
+            write_image(cimg, 'kjdhfkjshdfkjhsdkfd')
+
+        # And an image which isn't on the destination at all
+        new_id = str(uuid.uuid4())
+        cimg['id'] = new_id
+        write_image(cimg, 'dskjfhskjhfkfdhksjdhf')
+
+        # And an image which isn't on the destination, but lacks image
+        # data
+        new_id_missing_data = str(uuid.uuid4())
+        cimg['id'] = new_id_missing_data
+        write_image(cimg, None)
+
+        # A file which should be ignored
+        badfile = os.path.join(tempdir, 'kjdfhf')
+        with open(badfile, 'w') as f:
+            f.write(json.dumps([1, 2, 3, 4, 5]))
+
+        # Finally, we're ready to test
+        options = UserDict.UserDict()
+        options.dontreplicate = 'dontrepl dontreplabsent'
+        options.slavetoken = 'slavetoken'
+        args = ['localhost:9292', tempdir]
+
+        orig_img_service = glance_replicator.get_image_service
         try:
-            for img in FAKEIMAGES:
-                cimg = copy.copy(img)
-                # We need at least one image where the stashed metadata on disk
-                # is newer than what the fake has
-                if cimg['id'] == '5dcddce0-cba5-4f18-9cf4-9853c7b207a6':
-                    cimg['extra'] = 'thisissomeextra'
-
-                # This is an image where the metadata change should be ignored
-                if cimg['id'] == 'f4da1d2a-40e8-4710-b3aa-0222a4cc887b':
-                    cimg['dontrepl'] = 'thisisyetmoreextra'
-
-                write_image(cimg, 'kjdhfkjshdfkjhsdkfd')
-
-            # And an image which isn't on the destination at all
-            new_id = str(uuid.uuid4())
-            cimg['id'] = new_id
-            write_image(cimg, 'dskjfhskjhfkfdhksjdhf')
-
-            # And an image which isn't on the destination, but lacks image
-            # data
-            new_id_missing_data = str(uuid.uuid4())
-            cimg['id'] = new_id_missing_data
-            write_image(cimg, None)
-
-            # A file which should be ignored
-            badfile = os.path.join(tempdir, 'kjdfhf')
-            with open(badfile, 'w') as f:
-                f.write(json.dumps([1, 2, 3, 4, 5]))
-
-            # Finally, we're ready to test
-            options = UserDict.UserDict()
-            options.dontreplicate = 'dontrepl dontreplabsent'
-            options.slavetoken = 'slavetoken'
-            args = ['localhost:9292', tempdir]
-
-            orig_img_service = glance_replicator.get_image_service
-            try:
-                glance_replicator.get_image_service = get_image_service
-                updated = glance_replicator.replication_load(options, args)
-            finally:
-                glance_replicator.get_image_service = orig_img_service
-
-            self.assertTrue('5dcddce0-cba5-4f18-9cf4-9853c7b207a6' in updated)
-            self.assertFalse('f4da1d2a-40e8-4710-b3aa-0222a4cc887b' in updated)
-            self.assertTrue(new_id in updated)
-            self.assertFalse(new_id_missing_data in updated)
-
+            glance_replicator.get_image_service = get_image_service
+            updated = glance_replicator.replication_load(options, args)
         finally:
-            shutil.rmtree(tempdir)
+            glance_replicator.get_image_service = orig_img_service
+
+        self.assertTrue('5dcddce0-cba5-4f18-9cf4-9853c7b207a6' in updated)
+        self.assertFalse('f4da1d2a-40e8-4710-b3aa-0222a4cc887b' in updated)
+        self.assertTrue(new_id in updated)
+        self.assertFalse(new_id_missing_data in updated)
 
     def test_replication_livecopy(self):
         options = UserDict.UserDict()

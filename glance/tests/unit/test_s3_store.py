@@ -165,11 +165,7 @@ class TestStore(base.StoreClearingUnitTest):
         self.stubs = stubout.StubOutForTesting()
         stub_out_s3(self.stubs)
         self.store = Store()
-
-    def tearDown(self):
-        """Clear the test environment"""
-        super(TestStore, self).tearDown()
-        self.stubs.UnsetAll()
+        self.addCleanup(self.stubs.UnsetAll)
 
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""

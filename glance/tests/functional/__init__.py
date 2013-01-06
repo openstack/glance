@@ -33,6 +33,7 @@ import socket
 import time
 import urlparse
 
+import fixtures
 from sqlalchemy import create_engine
 
 from glance.common import utils
@@ -457,7 +458,7 @@ class FunctionalTest(test_utils.BaseTestCase):
 
     def setUp(self):
         super(FunctionalTest, self).setUp()
-        self.test_id, self.test_dir = test_utils.get_isolated_test_env()
+        self.test_dir = self.useFixture(fixtures.TempDir()).path
 
         self.api_protocol = 'http'
         self.api_port = get_unused_port()
@@ -775,12 +776,6 @@ class FunctionalTest(test_utils.BaseTestCase):
         self.stop_server(self.api_server, 'API server')
         self.stop_server(self.registry_server, 'Registry server')
         self.stop_server(self.scrubber_daemon, 'Scrubber daemon')
-
-        # If all went well, then just remove the test directory.
-        # We only want to check the logs and stuff if something
-        # went wrong...
-        if os.path.exists(self.test_dir):
-            shutil.rmtree(self.test_dir)
 
         self._reset_database(self.registry_server.sql_connection)
 

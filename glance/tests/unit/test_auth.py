@@ -120,10 +120,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
     def setUp(self):
         super(TestKeystoneAuthPlugin, self).setUp()
         self.stubs = stubout.StubOutForTesting()
-
-    def tearDown(self):
-        super(TestKeystoneAuthPlugin, self).tearDown()
-        self.stubs.UnsetAll()
+        self.addCleanup(self.stubs.UnsetAll)
 
     def test_required_creds(self):
         """

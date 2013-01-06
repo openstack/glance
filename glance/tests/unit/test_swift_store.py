@@ -658,11 +658,7 @@ class TestStoreAuthV1(base.StoreClearingUnitTest, SwiftTests):
         self.stubs = stubout.StubOutForTesting()
         stub_out_swiftclient(self.stubs, conf['swift_store_auth_version'])
         self.store = Store()
-
-    def tearDown(self):
-        """Clear the test environment"""
-        super(TestStoreAuthV1, self).tearDown()
-        self.stubs.UnsetAll()
+        self.addCleanup(self.stubs.UnsetAll)
 
 
 class TestStoreAuthV2(TestStoreAuthV1):

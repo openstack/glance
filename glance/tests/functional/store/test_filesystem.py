@@ -20,7 +20,8 @@ Functional tests for the File store interface
 
 import os
 import os.path
-import shutil
+
+import fixtures
 import testtools
 
 import glance.openstack.common.cfg
@@ -37,7 +38,7 @@ class TestFilesystemStore(store_tests.BaseTestCase, testtools.TestCase):
 
     def setUp(self):
         super(TestFilesystemStore, self).setUp()
-        _, self.tmp_dir = glance.tests.utils.get_isolated_test_env()
+        self.tmp_dir = self.useFixture(fixtures.TempDir()).path
 
         self.store_dir = os.path.join(self.tmp_dir, 'images')
         os.mkdir(self.store_dir)
@@ -49,10 +50,6 @@ class TestFilesystemStore(store_tests.BaseTestCase, testtools.TestCase):
 
         glance.openstack.common.cfg.CONF(default_config_files=[config_file],
                                          args=[])
-
-    def tearDown(self):
-        shutil.rmtree(self.tmp_dir)
-        super(TestFilesystemStore, self).tearDown()
 
     def get_store(self, **kwargs):
         store = glance.store.filesystem.Store(context=kwargs.get('context'))
