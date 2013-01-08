@@ -677,8 +677,7 @@ if __name__ == '__main__':
 %s
 """ % COMMANDS
 
-    oparser = optparse.OptionParser(version='%%prog',
-                                    usage=usage.strip())
+    oparser = optparse.OptionParser(usage=usage.strip())
 
     # Options
     oparser.add_option('-c', '--chunksize', action="store", default=65536,

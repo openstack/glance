@@ -489,8 +489,8 @@ Commands:
                                 from the cache
 """
 
-    deferred_string = version.deferred_version_string(prefix="%prog ")
-    oparser = optparse.OptionParser(version=deferred_string,
+    version_string = version.cached_version_string()
+    oparser = optparse.OptionParser(version=version_string,
                                     usage=usage.strip())
     create_options(oparser)
     (options, command, args) = parse_options(oparser, sys.argv[1:])
