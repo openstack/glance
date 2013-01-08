@@ -291,10 +291,6 @@ class TestBinGlance(functional.FunctionalTest):
         # 3. Verify image is now active and of the correct size
         cmd = "bin/glance --port=%d show %s" % (api_port, image_id)
 
-        exitcode, out, err = execute(cmd)
-
-        self.assertEqual(0, exitcode)
-
         expected_lines = [
             'URI: http://0.0.0.0:%s/v1/images/%s' % (api_port, image_id),
             'Id: %s' % image_id,
@@ -307,7 +303,19 @@ class TestBinGlance(functional.FunctionalTest):
             'Minimum Ram Required (MB): 0',
             'Minimum Disk Required (GB): 0',
         ]
-        lines = out.split("\n")
+
+        for _ in range(0, 9):
+            exitcode, out, err = execute(cmd)
+            self.assertEqual(0, exitcode)
+            lines = out.split("\n")
+
+            if "Status: active" in lines:
+                break
+
+            # Yeah. This totally isn't a race condition. Randomly fails
+            # with 'Status: saving' if we didn't wait long enough
+            time.sleep(0.10)
+
         self.assertTrue(set(lines) >= set(expected_lines))
 
         self.stop_servers()
