@@ -25,7 +25,7 @@ Most configuration is done via configuration files, with the Glance API
 server and Glance Registry server using separate configuration files.
 
 When starting up a Glance server, you can specify the configuration file to
-use (see `the documentation on controller Glance servers <controllingservers>`_).
+use (see :doc:`the documentation on controller Glance servers <controllingservers>`).
 If you do **not** specify a configuration file, Glance will look in the following
 directories for a configuration file, in order:
 
