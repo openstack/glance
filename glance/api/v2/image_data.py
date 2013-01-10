@@ -135,7 +135,6 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
     def download(self, response, result):
         size = result['meta']['size']
         checksum = result['meta']['checksum']
-        response.headers['Content-Length'] = size
         response.headers['Content-Type'] = 'application/octet-stream'
         response.app_iter = common.size_checked_iter(
                 response, result['meta'], size, result['data'], self.notifier)
@@ -144,6 +143,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         # afterwards for the time being.
         if checksum:
             response.headers['Content-MD5'] = checksum
+        #NOTE(markwash): "response.app_iter = ..." also erroneously resets the
+        # content-length
+        response.headers['Content-Length'] = str(size)
 
     def upload(self, response, result):
         response.status_int = 201
