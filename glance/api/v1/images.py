@@ -436,19 +436,23 @@ class Controller(controller.BaseController):
                 utils.CooperativeReader(image_data),
                 image_meta['size'])
 
-            # Verify any supplied checksum value matches checksum
+            def _kill_mismatched(image_meta, attr, actual):
+                supplied = image_meta.get(attr)
+                if supplied and supplied != actual:
+                    msg = _("Supplied %(attr)s (%(supplied)s) and "
+                            "%(attr)s generated from uploaded image "
+                            "(%(actual)s) did not match. Setting image "
+                            "status to 'killed'.") % locals()
+                    LOG.error(msg)
+                    self._safe_kill(req, image_id)
+                    raise HTTPBadRequest(explanation=msg,
+                                         content_type="text/plain",
+                                         request=req)
+
+            # Verify any supplied size/checksum value matches size/checksum
             # returned from store when adding image
-            supplied_checksum = image_meta.get('checksum')
-            if supplied_checksum and supplied_checksum != checksum:
-                msg = _("Supplied checksum (%(supplied_checksum)s) and "
-                       "checksum generated from uploaded image "
-                       "(%(checksum)s) did not match. Setting image "
-                       "status to 'killed'.") % locals()
-                LOG.error(msg)
-                self._safe_kill(req, image_id)
-                raise HTTPBadRequest(explanation=msg,
-                                     content_type="text/plain",
-                                     request=req)
+            _kill_mismatched(image_meta, 'size', size)
+            _kill_mismatched(image_meta, 'checksum', checksum)
 
             # Update the database with the checksum returned
             # from the backend store

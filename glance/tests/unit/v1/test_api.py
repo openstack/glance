@@ -2189,12 +2189,11 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, 200)
         self.assertEqual(len(res.body), 0)
 
-    def test_add_image_checksum_mismatch(self):
+    def _do_test_add_image_attribute_mismatch(self, attributes):
         fixture_headers = {
-            'x-image-meta-checksum': 'asdf',
-            'x-image-meta-size': '4',
             'x-image-meta-name': 'fake image #3',
         }
+        fixture_headers.update(attributes)
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
@@ -2205,6 +2204,25 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.body = "XXXX"
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 400)
+
+    def test_add_image_checksum_mismatch(self):
+        attributes = {
+            'x-image-meta-checksum': 'asdf',
+        }
+        self._do_test_add_image_attribute_mismatch(attributes)
+
+    def test_add_image_size_mismatch(self):
+        attributes = {
+            'x-image-meta-size': str(len("XXXX") + 1),
+        }
+        self._do_test_add_image_attribute_mismatch(attributes)
+
+    def test_add_image_checksum_and_size_mismatch(self):
+        attributes = {
+            'x-image-meta-checksum': 'asdf',
+            'x-image-meta-size': str(len("XXXX") + 1),
+        }
+        self._do_test_add_image_attribute_mismatch(attributes)
 
     def test_add_image_bad_store(self):
         """Tests raises BadRequest for invalid store header"""
