@@ -3022,6 +3022,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'DELETE'
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 200)
+        self.assertEquals(res.body, '')
 
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'GET'
