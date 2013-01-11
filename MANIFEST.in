@@ -8,7 +8,6 @@ include LICENSE
 include ChangeLog
 include babel.cfg tox.ini
 include openstack-common.conf
-include glance/versioninfo
 include glance/openstack/common/README
 include glance/db/sqlalchemy/migrate_repo/README
 include glance/db/sqlalchemy/migrate_repo/migrate.cfg
