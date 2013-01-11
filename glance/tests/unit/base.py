@@ -28,6 +28,7 @@ from glance.tests import stubs
 from glance.tests import utils as test_utils
 
 CONF = cfg.CONF
+CONF.import_opt('filesystem_store_datadir', 'glance.store.filesystem')
 
 
 class StoreClearingUnitTest(test_utils.BaseTestCase):
