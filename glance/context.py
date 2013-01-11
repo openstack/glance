@@ -47,10 +47,17 @@ class RequestContext(object):
         # format string for logging the context in openstack common
         return {
             'request_id': self.request_id,
+
+            #NOTE(bcwaldon): openstack-common logging expects 'user'
+            'user': self.user,
             'user_id': self.user,
+
+            #NOTE(bcwaldon): openstack-common logging expects 'tenant'
+            'tenant': self.tenant,
             'tenant_id': self.tenant,
-            'is_admin': self.is_admin,
             'project_id': self.tenant,
+
+            'is_admin': self.is_admin,
             'read_deleted': self.show_deleted,
             'roles': self.roles,
             'auth_token': self.auth_tok,

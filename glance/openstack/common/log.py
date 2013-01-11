@@ -49,19 +49,20 @@ from glance.openstack.common import notifier
 
 log_opts = [
     cfg.StrOpt('logging_context_format_string',
-               default='%(asctime)s %(levelname)s %(name)s [%(request_id)s '
-                       '%(user_id)s %(project_id)s] %(instance)s'
+               default='%(asctime)s.%(msecs)d %(levelname)s %(name)s '
+                       '[%(request_id)s %(user)s %(tenant)s] %(instance)s'
                        '%(message)s',
                help='format string to use for log messages with context'),
     cfg.StrOpt('logging_default_format_string',
-               default='%(asctime)s %(process)d %(levelname)s %(name)s [-]'
-                       ' %(instance)s%(message)s',
+               default='%(asctime)s.%(msecs)d %(process)d %(levelname)s '
+                       '%(name)s [-] %(instance)s%(message)s',
                help='format string to use for log messages without context'),
     cfg.StrOpt('logging_debug_format_suffix',
                default='%(funcName)s %(pathname)s:%(lineno)d',
                help='data to append to log format when level is DEBUG'),
     cfg.StrOpt('logging_exception_prefix',
-               default='%(asctime)s %(process)d TRACE %(name)s %(instance)s',
+               default='%(asctime)s.%(msecs)d %(process)d TRACE %(name)s '
+               '%(instance)s',
                help='prefix each line of exception output with this format'),
     cfg.ListOpt('default_log_levels',
                 default=[
@@ -76,6 +77,9 @@ log_opts = [
     cfg.BoolOpt('publish_errors',
                 default=False,
                 help='publish error events'),
+    cfg.BoolOpt('fatal_deprecations',
+                default=False,
+                help='make deprecations fatal'),
 
     # NOTE(mikal): there are two options here because sometimes we are handed
     # a full instance (and could include more information), and other times we
@@ -169,6 +173,14 @@ class ContextAdapter(logging.LoggerAdapter):
 
     def audit(self, msg, *args, **kwargs):
         self.log(logging.AUDIT, msg, *args, **kwargs)
+
+    def deprecated(self, msg, *args, **kwargs):
+        stdmsg = _("Deprecated: %s") % msg
+        if CONF.fatal_deprecations:
+            self.critical(stdmsg, *args, **kwargs)
+            raise DeprecatedConfig(msg=stdmsg)
+        else:
+            self.warn(stdmsg, *args, **kwargs)
 
     def process(self, msg, kwargs):
         if 'extra' not in kwargs:
@@ -276,6 +288,12 @@ def setup(product_name):
             raise
     else:
         _setup_logging_from_conf(product_name)
+
+
+def set_defaults(logging_context_format_string):
+    cfg.set_defaults(log_opts,
+                     logging_context_format_string=
+                     logging_context_format_string)
 
 
 def _find_facility_from_conf():
@@ -450,3 +468,10 @@ class ColorHandler(logging.StreamHandler):
     def format(self, record):
         record.color = self.LEVEL_COLORS[record.levelno]
         return logging.StreamHandler.format(self, record)
+
+
+class DeprecatedConfig(Exception):
+    message = _("Fatal call to deprecated config: %(msg)s")
+
+    def __init__(self, msg):
+        super(Exception, self).__init__(self.message % dict(msg=msg))

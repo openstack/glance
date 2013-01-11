@@ -74,7 +74,7 @@ CONF.register_opts(common_opts)
 def parse_args(args=None, usage=None, default_config_files=None):
     CONF(args=args,
          project='glance',
-         version=version.deferred_version_string(prefix="%prog "),
+         version=version.cached_version_string(),
          usage=usage,
          default_config_files=default_config_files)
 
