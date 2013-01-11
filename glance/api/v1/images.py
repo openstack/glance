@@ -962,7 +962,6 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
 
     def show(self, response, result):
         image_meta = result['image_meta']
-        image_id = image_meta['id']
 
         image_iter = result['image_iterator']
         # image_meta['size'] should be an int, but could possibly be a str
