@@ -136,7 +136,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                        ", you need to change it to use the "
                        "swift+http:// scheme, like so: "
                        "swift+http://user:pass@authurl.com/v1/container/obj")
-            LOG.debug(_("Invalid store uri %(uri)s: %(reason)s") % locals())
+            LOG.debug(_("Invalid store URI: %(reason)s") % locals())
             raise exception.BadStoreUri(message=reason)
 
         pieces = urlparse.urlparse(uri)
@@ -162,8 +162,7 @@ class StoreLocation(glance.store.location.StoreLocation):
         if creds:
             cred_parts = creds.split(':')
             if len(cred_parts) != 2:
-                reason = (_("Badly formed credentials '%(creds)s' in Swift "
-                            "URI") % locals())
+                reason = (_("Badly formed credentials in Swift URI."))
                 LOG.debug(reason)
                 raise exception.BadStoreUri()
             user, key = cred_parts
@@ -181,7 +180,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                 path_parts.insert(0, netloc)
                 self.auth_or_store_url = '/'.join(path_parts)
         except IndexError:
-            reason = _("Badly formed Swift URI: %s") % uri
+            reason = _("Badly formed Swift URI.")
             LOG.debug(reason)
             raise exception.BadStoreUri()
 
@@ -241,8 +240,8 @@ class BaseStore(glance.store.base.Store):
         except swiftclient.ClientException, e:
             if e.http_status == httplib.NOT_FOUND:
                 uri = location.get_uri()
-                raise exception.NotFound(_("Swift could not find image at "
-                                           "uri %(uri)s") % locals())
+                msg = _("Swift could not find image at URI.")
+                raise exception.NotFound(msg)
             else:
                 raise
 
@@ -375,8 +374,7 @@ class BaseStore(glance.store.base.Store):
         except swiftclient.ClientException, e:
             if e.http_status == httplib.CONFLICT:
                 raise exception.Duplicate(_("Swift already has an image at "
-                                            "location %s") %
-                                          location.get_uri())
+                                            "this location"))
             msg = (_("Failed to add object to Swift.\n"
                      "Got error from Swift: %(e)s") % locals())
             LOG.error(msg)
@@ -419,8 +417,8 @@ class BaseStore(glance.store.base.Store):
         except swiftclient.ClientException, e:
             if e.http_status == httplib.NOT_FOUND:
                 uri = location.get_uri()
-                raise exception.NotFound(_("Swift could not find image at "
-                                           "uri %(uri)s") % locals())
+                msg = _("Swift could not find image at URI.")
+                raise exception.NotFound(msg)
             else:
                 raise
 
@@ -578,8 +576,8 @@ class MultiTenantStore(BaseStore):
         except swiftclient.ClientException, e:
             if e.http_status == httplib.NOT_FOUND:
                 uri = location.get_uri()
-                raise exception.NotFound(_("Swift could not find image at "
-                                           "uri %(uri)s") % locals())
+                msg = _("Swift could not find image at URI.")
+                raise exception.NotFound(msg)
             else:
                 raise
 
