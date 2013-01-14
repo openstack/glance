@@ -30,6 +30,7 @@ from webob.exc import (HTTPError,
                        HTTPRequestEntityTooLarge,
                        HTTPInternalServerError,
                        HTTPServiceUnavailable)
+from webob import Response
 
 from glance.api import common
 from glance.api import policy
@@ -849,6 +850,7 @@ class Controller(controller.BaseController):
                                 content_type="text/plain")
         else:
             self.notifier.info('image.delete', image)
+            return Response(body='', status=200)
 
     def get_store_or_400(self, request, scheme):
         """
