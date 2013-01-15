@@ -21,7 +21,7 @@ Functional tests for the File store interface
 import os
 import os.path
 import shutil
-import unittest
+import testtools
 
 import glance.openstack.common.cfg
 import glance.store.filesystem
@@ -29,13 +29,14 @@ import glance.tests.functional.store as store_tests
 import glance.tests.utils
 
 
-class TestFilesystemStore(store_tests.BaseTestCase, unittest.TestCase):
+class TestFilesystemStore(store_tests.BaseTestCase, testtools.TestCase):
 
     store_cls_path = 'glance.store.filesystem.Store'
     store_cls = glance.store.filesystem.Store
     store_name = 'filesystem'
 
     def setUp(self):
+        super(TestFilesystemStore, self).setUp()
         _, self.tmp_dir = glance.tests.utils.get_isolated_test_env()
 
         self.store_dir = os.path.join(self.tmp_dir, 'images')
@@ -48,8 +49,6 @@ class TestFilesystemStore(store_tests.BaseTestCase, unittest.TestCase):
 
         glance.openstack.common.cfg.CONF(default_config_files=[config_file],
                                          args=[])
-
-        super(TestFilesystemStore, self).setUp()
 
     def tearDown(self):
         shutil.rmtree(self.tmp_dir)

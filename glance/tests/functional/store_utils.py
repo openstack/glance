@@ -84,11 +84,7 @@ def setup_http(test):
     test.http_server = remote_server
     test.http_ip = remote_ip
     test.http_port = remote_port
-
-
-def teardown_http(test):
-    if test.http_server:
-        test.http_server.shutdown()
+    test.addCleanup(test.http_server.shutdown)
 
 
 def get_http_uri(test, image_id):

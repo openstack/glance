@@ -53,6 +53,8 @@ class TestSSL(functional.FunctionalTest):
     """Functional tests verifying SSL communication"""
 
     def setUp(self):
+        super(TestSSL, self).setUp()
+
         if getattr(self, 'inited', False):
             return
 
@@ -89,12 +91,10 @@ class TestSSL(functional.FunctionalTest):
         self.inited = True
         self.disabled = False
 
-        super(TestSSL, self).setUp()
-
     def tearDown(self):
+        super(TestSSL, self).tearDown()
         if getattr(self, 'inited', False):
             return
-        super(TestSSL, self).tearDown()
 
     @skip_if_disabled
     def test_get_head_simple_post(self):

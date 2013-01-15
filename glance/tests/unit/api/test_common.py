@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
+import testtools
 
 import webob
 
@@ -38,7 +38,7 @@ class SimpleIterator(object):
             raise StopIteration()
 
 
-class TestSizeCheckedIter(unittest.TestCase):
+class TestSizeCheckedIter(testtools.TestCase):
     def _get_image_metadata(self):
         return {'id': 'e31cb99c-fe89-49fb-9cc5-f5104fffa636'}
 

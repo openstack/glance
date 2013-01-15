@@ -161,7 +161,7 @@ class TestScrubber(functional.FunctionalTest):
         config_path = os.environ.get('GLANCE_TEST_SWIFT_CONF')
         if not config_path:
             msg = "GLANCE_TEST_SWIFT_CONF environ not set."
-            raise nose.SkipTest(msg)
+            self.skipTest(msg)
 
         raw_config = read_config(config_path)
         swift_config = parse_config(raw_config)

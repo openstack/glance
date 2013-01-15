@@ -507,6 +507,8 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 class TestEndpoints(utils.BaseTestCase):
 
     def setUp(self):
+        super(TestEndpoints, self).setUp()
+
         self.service_catalog = [
             {
                 'endpoint_links': [],

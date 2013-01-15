@@ -27,11 +27,10 @@ import os
 import os.path
 import random
 import StringIO
-import unittest
 import urllib
 import urlparse
 
-import nose.plugins.skip
+import testtools
 
 import glance.openstack.common.cfg
 from glance.openstack.common import uuidutils
@@ -84,7 +83,7 @@ def swift_connect(auth_url, auth_version, user, key):
                                       retries=1)
     except AttributeError:
         msg = "Could not find swiftclient module"
-        raise nose.SkipTest(msg)
+        self.skipTest(msg)
 
 
 def swift_list_containers(swift_conn):
@@ -142,7 +141,7 @@ def keystone_authenticate(auth_url, auth_version, tenant_name,
     return tenant_id, ksclient.auth_token, service_catalog
 
 
-class TestSwiftStore(store_tests.BaseTestCase, unittest.TestCase):
+class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
 
     store_cls_path = 'glance.store.swift.Store'
     store_cls = glance.store.swift.Store
@@ -152,7 +151,7 @@ class TestSwiftStore(store_tests.BaseTestCase, unittest.TestCase):
         config_path = os.environ.get('GLANCE_TEST_SWIFT_CONF')
         if not config_path:
             msg = "GLANCE_TEST_SWIFT_CONF environ not set."
-            raise nose.SkipTest(msg)
+            self.skipTest(msg)
 
         glance.openstack.common.cfg.CONF(default_config_files=[config_path])
 

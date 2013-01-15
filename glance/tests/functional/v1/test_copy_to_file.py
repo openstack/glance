@@ -54,7 +54,6 @@ from glance.tests.functional.store_utils import (setup_swift,
                                                  teardown_s3,
                                                  get_s3_uri,
                                                  setup_http,
-                                                 teardown_http,
                                                  get_http_uri)
 from glance.tests.utils import skip_if_disabled, requires
 
@@ -175,7 +174,6 @@ class TestCopyToFile(functional.FunctionalTest):
         """
         self._do_test_copy_from('s3', get_s3_uri)
 
-    @requires(teardown=teardown_http)
     @skip_if_disabled
     def _do_test_copy_from_http(self, exists):
         """
@@ -244,12 +242,10 @@ class TestCopyToFile(functional.FunctionalTest):
 
         self.stop_servers()
 
-    @requires(teardown=teardown_http)
     @skip_if_disabled
     def test_copy_from_http_exists(self):
         self._do_test_copy_from_http(True)
 
-    @requires(teardown=teardown_http)
     @skip_if_disabled
     def test_copy_from_http_nonexistent(self):
         self._do_test_copy_from_http(False)

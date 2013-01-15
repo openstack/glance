@@ -100,7 +100,7 @@ class TestRegistryDb(test_utils.BaseTestCase):
 
     def tearDown(self):
         """Clear the test environment"""
-        super(TestRegistryDb, self).setUp()
+        super(TestRegistryDb, self).tearDown()
         db_api._ENGINE = self.orig_engine
         db_api._CONNECTION = self.orig_connection
         db_api._MAKER = self.orig_maker

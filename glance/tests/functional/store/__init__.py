@@ -17,7 +17,7 @@
 
 import StringIO
 
-import nose.plugins.skip
+import testtools
 
 from glance.common import exception
 from glance.openstack.common import cfg
@@ -31,13 +31,14 @@ import glance.api.v1.images
 CONF = cfg.CONF
 
 
-class BaseTestCase(object):
+class BaseTestCase(testtools.TestCase):
 
     def setUp(self):
-        pass
+        super(BaseTestCase, self).setUp()
 
     def tearDown(self):
         CONF.reset()
+        super(BaseTestCase, self).tearDown()
 
     def config(self, **kw):
         for k, v in kw.iteritems():
@@ -71,7 +72,7 @@ class BaseTestCase(object):
             uri, add_size, add_checksum = store.add(image_id, image_data, 3)
         except NotImplementedError:
             msg = 'Configured store can not add images'
-            raise nose.SkipTest(msg)
+            self.skipTest(msg)
 
         self.assertEqual(3, add_size)
         self.assertEqual(image_checksum, add_checksum)

@@ -25,7 +25,7 @@ import tempfile
 import time
 
 from glance.tests import functional
-from glance.tests.utils import skip_if, skip_if_disabled
+from glance.tests.utils import skip_if_disabled
 
 
 class TestGlanceControl(functional.FunctionalTest):
@@ -83,24 +83,26 @@ class TestGlanceControl(functional.FunctionalTest):
         self.stop_server(self.api_server, 'API server')
 
     @skip_if_disabled
-    @skip_if(os.getuid() is 0, "User root can always create directories")
     def test_fallback_pidfile_uncreateable_dir(self):
         """
         We test that glance-control falls back to a temporary pid file
         for non-existent pid file directory that cannot be created.
         """
+        if os.getuid() is 0:
+            self.skipTest("User root can always create directories")
         parent = tempfile.mkdtemp()
         os.chmod(parent, 0)
         pid_file = os.path.join(parent, 'pids', 'api.pid')
         self._do_test_fallback_pidfile(pid_file)
 
     @skip_if_disabled
-    @skip_if(os.getuid() is 0, "User root can always write inside directories")
     def test_fallback_pidfile_unwriteable_dir(self):
         """
         We test that glance-control falls back to a temporary pid file
         for unwriteable pid file directory.
         """
+        if os.getuid() is 0:
+            self.skipTest("User root can always write inside directories")
         parent = tempfile.mkdtemp()
         os.chmod(parent, 0)
         pid_file = os.path.join(parent, 'api.pid')

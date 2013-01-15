@@ -305,7 +305,7 @@ class TestQpidNotifier(utils.BaseTestCase):
         super(TestQpidNotifier, self).setUp()
 
         if not qpid:
-            return
+            self.skipTest("qpid not installed")
 
         self.mocker = mox.Mox()
 
@@ -325,19 +325,15 @@ class TestQpidNotifier(utils.BaseTestCase):
 
         self.notify_qpid = importutils.import_module("glance.notifier."
                                                      "notify_qpid")
+        self.addCleanup(self.reset_qpid)
+        self.addCleanup(self.moker.ResetAll)
 
-    def tearDown(self):
-        super(TestQpidNotifier, self).tearDown()
-
-        if not qpid:
-            return
+    def reset_qpid(self):
 
         qpid.messaging.Connection = self.orig_connection
         qpid.messaging.Session = self.orig_session
         qpid.messaging.Sender = self.orig_sender
         qpid.messaging.Receiver = self.orig_receiver
-
-        self.mocker.ResetAll()
 
     def _test_notify(self, priority):
         test_msg = {'a': 'b'}
@@ -371,15 +367,12 @@ class TestQpidNotifier(utils.BaseTestCase):
 
         self.mocker.VerifyAll()
 
-    @utils.skip_if(qpid is None, "qpid not installed")
     def test_info(self):
         self._test_notify('info')
 
-    @utils.skip_if(qpid is None, "qpid not installed")
     def test_warn(self):
         self._test_notify('warn')
 
-    @utils.skip_if(qpid is None, "qpid not installed")
     def test_error(self):
         self._test_notify('error')
 
