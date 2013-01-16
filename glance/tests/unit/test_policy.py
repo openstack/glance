@@ -15,9 +15,12 @@
 
 import os.path
 
+import stubout
+
 import glance.api.policy
 from glance.common import exception
 import glance.context
+import glance.openstack.common.cfg
 from glance.tests.unit import base
 from glance.tests.unit import utils as unit_test_utils
 from glance.tests import utils as test_utils
@@ -100,7 +103,7 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         self.assertEqual(enforcer.check(context, 'get_image', {}), False)
 
 
-class TestPolicyEnforcerNoFile(test_utils.BaseTestCase):
+class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
     def test_policy_file_specified_but_not_found(self):
         """Missing defined policy file should result in a default ruleset"""
         self.config(policy_file='gobble.gobble')
@@ -116,6 +119,12 @@ class TestPolicyEnforcerNoFile(test_utils.BaseTestCase):
 
     def test_policy_file_default_not_found(self):
         """Missing default policy file should result in a default ruleset"""
+        def fake_find_file(self, name):
+            return None
+
+        self.stubs.Set(glance.openstack.common.cfg.ConfigOpts, 'find_file',
+                       fake_find_file)
+
         enforcer = glance.api.policy.Enforcer()
 
         context = glance.context.RequestContext(roles=[])
