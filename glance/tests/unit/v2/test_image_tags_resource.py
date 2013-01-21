@@ -16,11 +16,12 @@
 import webob
 
 import glance.api.v2.image_tags
+from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 
 
-class TestImageTagsController(test_utils.BaseTestCase):
+class TestImageTagsController(base.IsolatedUnitTest):
 
     def setUp(self):
         super(TestImageTagsController, self).setUp()
