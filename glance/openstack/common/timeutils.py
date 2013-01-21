@@ -84,6 +84,11 @@ def utcnow():
     return datetime.datetime.utcnow()
 
 
+def iso8601_from_timestamp(timestamp):
+    """Returns a iso8601 formated date from timestamp"""
+    return isotime(datetime.datetime.utcfromtimestamp(timestamp))
+
+
 utcnow.override_time = None
 
 
@@ -120,7 +125,36 @@ def marshall_now(now=None):
 
 
 def unmarshall_time(tyme):
-    """Unmarshall a datetime dict."""
-    return datetime.datetime(day=tyme['day'], month=tyme['month'],
-                 year=tyme['year'], hour=tyme['hour'], minute=tyme['minute'],
-                 second=tyme['second'], microsecond=tyme['microsecond'])
+    return datetime.datetime(day=tyme['day'],
+                             month=tyme['month'],
+                             year=tyme['year'],
+                             hour=tyme['hour'],
+                             minute=tyme['minute'],
+                             second=tyme['second'],
+                             microsecond=tyme['microsecond'])
+
+
+def delta_seconds(before, after):
+    """
+    Compute the difference in seconds between two date, time, or
+    datetime objects (as a float, to microsecond resolution).
+    """
+    delta = after - before
+    try:
+        return delta.total_seconds()
+    except AttributeError:
+        return ((delta.days * 24 * 3600) + delta.seconds +
+                float(delta.microseconds) / (10 ** 6))
+
+
+def is_soon(dt, window):
+    """
+    Determines if time is going to happen in the next window seconds.
+
+    :params dt: the time
+    :params window: minimum seconds to remain to consider the time not soon
+
+    :return: True if expiration is within the given duration
+    """
+    soon = (utcnow() + datetime.timedelta(seconds=window))
+    return normalize_time(dt) < soon

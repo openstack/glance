@@ -17,6 +17,7 @@
 
 """Functional test case that utilizes the bin/glance-cache-manage CLI tool"""
 
+import datetime
 import hashlib
 import httplib2
 import json
@@ -76,6 +77,16 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
         return image_id in out
 
+    def iso_date(self, image_id):
+        """
+        Return True if supplied image ID is cached, False otherwise
+        """
+        cmd = "bin/glance-cache-manage --port=%d list-cached" % self.api_port
+
+        exitcode, out, err = execute(cmd)
+
+        return datetime.date.today().isoformat() in out
+
     def test_no_cache_enabled(self):
         """
         Test that cache index command works
@@ -131,6 +142,8 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
 
         self.assertTrue(self.is_image_cached(ids[1]),
                         "%s is not cached." % ids[1])
+
+        self.assertTrue(self.iso_date(ids[1]))
 
         self.stop_servers()
 

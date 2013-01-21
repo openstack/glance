@@ -40,6 +40,7 @@ gettext.install('glance', unicode=1)
 from glance import client as glance_client
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import timeutils
 from glance.version import version_info as version
 
 
@@ -102,10 +103,19 @@ List all images currently cached"""
     print pretty_table.make_header()
 
     for image in images:
+        last_modified = image['last_modified']
+        last_modified = timeutils.iso8601_from_timestamp(last_modified)
+
+        last_accessed = image['last_accessed']
+        if last_accessed == 0:
+            last_accessed = "N/A"
+        else:
+            last_accessed = timeutils.iso8601_from_timestamp(last_accessed)
+
         print pretty_table.make_row(
             image['image_id'],
-            image['last_accessed'],
-            image['last_modified'],
+            last_accessed,
+            last_modified,
             image['size'],
             image['hits'])
 
