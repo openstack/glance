@@ -29,6 +29,7 @@ class VersionInfo(object):
                         python-glanceclient
         """
         self.package = package
+        self.release = None
         self.version = None
         self._cached_version = None
 
@@ -39,18 +40,31 @@ class VersionInfo(object):
         provider = pkg_resources.get_provider(requirement)
         return provider.version
 
-    def version_string(self):
+    def release_string(self):
         """Return the full version of the package including suffixes indicating
         VCS status.
         """
+        if self.release is None:
+            self.release = self._get_version_from_pkg_resources()
+
+        return self.release
+
+    def version_string(self):
+        """Return the short version minus any alpha/beta tags."""
         if self.version is None:
-            self.version = self._get_version_from_pkg_resources()
+            parts = []
+            for part in self.release_string().split('.'):
+                if part[0].isdigit():
+                    parts.append(part)
+                else:
+                    break
+            self.version = ".".join(parts)
 
         return self.version
 
     # Compatibility functions
     canonical_version_string = version_string
-    version_string_with_vcs = version_string
+    version_string_with_vcs = release_string
 
     def cached_version_string(self, prefix=""):
         """Generate an object which will expand in a string context to
