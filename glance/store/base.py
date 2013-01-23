@@ -39,10 +39,10 @@ class Store(object):
 
         try:
             self.configure_add()
-        except exception.BadStoreConfiguration:
-            msg = _("Failed to configure store correctly. "
-                    "Disabling add method.")
-            LOG.info(msg)
+        except exception.BadStoreConfiguration as e:
+            msg = _("Failed to configure store correctly: %s "
+                    "Disabling add method." % e)
+            LOG.warn(msg)
             self.add = self.add_disabled
 
     def configure(self):
