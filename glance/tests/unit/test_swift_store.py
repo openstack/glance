@@ -90,7 +90,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
         SWIFT_PUT_OBJECT_CALLS += 1
         CHUNKSIZE = 64 * 1024
         fixture_key = "%s/%s" % (container, name)
-        if not fixture_key in fixture_headers.keys():
+        if fixture_key not in fixture_headers:
             if kwargs.get('headers'):
                 etag = kwargs['headers']['ETag']
                 fixture_headers[fixture_key] = {'manifest': True,
@@ -161,7 +161,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
     def fake_delete_object(url, token, container, name, **kwargs):
         # DELETE returns nothing
         fixture_key = "%s/%s" % (container, name)
-        if fixture_key not in fixture_headers.keys():
+        if fixture_key not in fixture_headers:
             msg = "Object DELETE failed - Object does not exist"
             raise swiftclient.ClientException(msg,
                                               http_status=httplib.NOT_FOUND)
