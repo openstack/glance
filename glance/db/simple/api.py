@@ -129,7 +129,7 @@ def _filter_images(images, filters, context):
     if 'is_public' in filters and filters['is_public'] is None:
         filters.pop('is_public')
 
-    for i, image in enumerate(images):
+    for image in images:
         has_ownership = context.owner and image['owner'] == context.owner
         can_see = image['is_public'] or has_ownership or context.is_admin
         if not can_see:
