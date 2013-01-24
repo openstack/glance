@@ -58,6 +58,7 @@ db_opts = [
 
 CONF = cfg.CONF
 CONF.register_opts(db_opts)
+CONF.import_opt('debug', 'glance.openstack.common.log')
 
 
 def ping_listener(dbapi_conn, connection_rec, connection_proxy):
