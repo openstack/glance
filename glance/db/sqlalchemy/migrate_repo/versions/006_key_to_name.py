@@ -56,7 +56,7 @@ def get_image_properties_table(meta):
                index=True),
         UniqueConstraint('image_id', 'name'),
         mysql_engine='InnoDB',
-        useexisting=True)
+        extend_existing=True)
 
     return image_properties
 
