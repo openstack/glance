@@ -50,7 +50,7 @@ class RegistryClient(BaseClient):
 
     def decrypt_metadata(self, image_metadata):
         if (self.metadata_encryption_key is not None and
-            'location' in image_metadata.keys() and
+            'location' in image_metadata and
             image_metadata['location'] is not None):
             location = crypt.urlsafe_decrypt(self.metadata_encryption_key,
                                              image_metadata['location'])
@@ -59,7 +59,7 @@ class RegistryClient(BaseClient):
 
     def encrypt_metadata(self, image_metadata):
         if (self.metadata_encryption_key is not None and
-            'location' in image_metadata.keys() and
+            'location' in image_metadata and
             image_metadata['location'] is not None):
             location = crypt.urlsafe_encrypt(self.metadata_encryption_key,
                                              image_metadata['location'], 64)
@@ -132,7 +132,7 @@ class RegistryClient(BaseClient):
             'Content-Type': 'application/json',
         }
 
-        if 'image' not in image_metadata.keys():
+        if 'image' not in image_metadata:
             image_metadata = dict(image=image_metadata)
 
         encrypted_metadata = self.encrypt_metadata(image_metadata['image'])
@@ -149,7 +149,7 @@ class RegistryClient(BaseClient):
         """
         Updates Registry's information about an image
         """
-        if 'image' not in image_metadata.keys():
+        if 'image' not in image_metadata:
             image_metadata = dict(image=image_metadata)
 
         encrypted_metadata = self.encrypt_metadata(image_metadata['image'])
