@@ -209,20 +209,26 @@ class Store(glance.store.base.Store):
                     checksum.update(buf)
                     f.write(buf)
         except IOError as e:
-            if e.errno in [errno.EFBIG, errno.ENOSPC]:
-                try:
-                    os.unlink(filepath)
-                except Exception:
-                    msg = _('Unable to remove partial image data for image %s')
-                    LOG.error(msg % image_id)
-                raise exception.StorageFull()
-            elif e.errno == errno.EACCES:
-                raise exception.StorageWriteDenied()
-            else:
-                raise
+            if e.errno != errno.EACCES:
+                self._delete_partial(filepath, image_id)
+            exceptions = {errno.EFBIG: exception.StorageFull(),
+                          errno.ENOSPC: exception.StorageFull(),
+                          errno.EACCES: exception.StorageWriteDenied()}
+            raise exceptions.get(e.errno, e)
+        except:
+            self._delete_partial(filepath, image_id)
+            raise
 
         checksum_hex = checksum.hexdigest()
 
         LOG.debug(_("Wrote %(bytes_written)d bytes to %(filepath)s with "
                     "checksum %(checksum_hex)s") % locals())
         return ('file://%s' % filepath, bytes_written, checksum_hex)
+
+    @staticmethod
+    def _delete_partial(filepath, id):
+        try:
+            os.unlink(filepath)
+        except Exception as e:
+            msg = _('Unable to remove partial image data for image %s: %s')
+            LOG.error(msg % (id, e))
