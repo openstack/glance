@@ -151,6 +151,7 @@ class ImageMember(BASE, ModelBase):
 
     member = Column(String(255), nullable=False)
     can_share = Column(Boolean, nullable=False, default=False)
+    status = Column(String(20), nullable=False, default="pending")
 
 
 def register_models(engine):
