@@ -153,7 +153,8 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
             msg = "GLANCE_TEST_SWIFT_CONF environ not set."
             self.skipTest(msg)
 
-        glance.openstack.common.cfg.CONF(default_config_files=[config_path])
+        glance.openstack.common.cfg.CONF(args=[],
+                                         default_config_files=[config_path])
 
         raw_config = read_config(config_path)
         config = parse_config(raw_config)
