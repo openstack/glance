@@ -76,9 +76,9 @@ class BaseController(object):
                             write_tenants.append(member['member_id'])
                         else:
                             read_tenants.append(member['member_id'])
-                    store.set_acls(req.context, location_uri, public=public,
-                                   read_tenants=read_tenants,
-                                   write_tenants=write_tenants)
+                store.set_acls(req.context, location_uri, public=public,
+                               read_tenants=read_tenants,
+                               write_tenants=write_tenants)
             except exception.UnknownScheme:
                 msg = _("Store for image_id not found: %s") % image_id
                 raise webob.exc.HTTPBadRequest(explanation=msg,
