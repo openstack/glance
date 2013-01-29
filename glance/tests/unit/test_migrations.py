@@ -662,3 +662,23 @@ class TestMigrations(utils.BaseTestCase):
             locations = dict([(i.id, i.location) for i in records])
             self.assertEqual({'1': 'http://swift.example.com', '2': None},
                              locations)
+
+    def test_migration_20(self):
+        for key, engine in self.engines.items():
+            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
+
+            migration_api.version_control(version=0)
+            migration_api.upgrade(19)
+
+            images_table = Table('images', MetaData(engine), autoload=True)
+            self.assertTrue('location' in images_table.c)
+
+            migration_api.upgrade(20)
+
+            images_table = Table('images', MetaData(engine), autoload=True)
+            self.assertFalse('location' in images_table.c)
+
+            migration_api.downgrade(19)
+
+            images_table = Table('images', MetaData(engine), autoload=True)
+            self.assertTrue('location' in images_table.c)
