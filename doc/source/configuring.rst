@@ -429,10 +429,20 @@ Can only be specified in configuration files.
 
 `This option is specific to the Swift storage backend.`
 
-Optional. Default: ``[]``
+Optional. Default: Not set.
 
-A list of tenants that will be granted read/write access on all Swift containers
-created by Glance in multi tenant mode.
+A list of swift ACL strings that will be applied as both read and
+write ACLs to the containers created by Glance in multi-tenant
+mode. This grants the specified tenants/users read and write access
+to all newly created image objects. The standard swift ACL string
+formats are allowed, including:
+
+<tenant_id>:<username>
+<tenant_name>:<username>
+\*:<username>
+
+Multiple ACLs can be combined using a comma separated list, for
+example: swift_store_admin_tenants = service:glance,*:admin
 
 
 Configuring the S3 Storage Backend
