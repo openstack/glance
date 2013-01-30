@@ -26,8 +26,10 @@ import StringIO
 import subprocess
 
 import testtools
+import stubout
 
 from glance.common import config
+from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 from glance import context
@@ -46,6 +48,13 @@ class BaseTestCase(testtools.TestCase):
         # the following policy tests
         config.parse_args(args=[])
         self.addCleanup(CONF.reset)
+        self.stubs = stubout.StubOutForTesting()
+        self.stubs.Set(exception, '_FATAL_EXCEPTION_FORMAT_ERRORS', True)
+
+    def tearDown(self):
+        self.stubs.UnsetAll()
+        self.stubs.SmartUnsetAll()
+        super(BaseTestCase, self).tearDown()
 
     def config(self, **kw):
         """
