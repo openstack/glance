@@ -435,68 +435,68 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 _BASE_PROPERTIES = {
     'id': {
         'type': 'string',
-        'description': 'An identifier for the image',
+        'description': _('An identifier for the image'),
         'pattern': ('^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}'
                     '-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$'),
     },
     'name': {
         'type': 'string',
-        'description': 'Descriptive name for the image',
+        'description': _('Descriptive name for the image'),
         'maxLength': 255,
     },
     'status': {
         'type': 'string',
-        'description': 'Status of the image',
+        'description': _('Status of the image'),
         'enum': ['queued', 'saving', 'active', 'killed',
                  'deleted', 'pending_delete'],
     },
     'visibility': {
         'type': 'string',
-        'description': 'Scope of image accessibility',
+        'description': _('Scope of image accessibility'),
         'enum': ['public', 'private'],
     },
     'protected': {
         'type': 'boolean',
-        'description': 'If true, image will not be deletable.',
+        'description': _('If true, image will not be deletable.'),
     },
     'checksum': {
         'type': 'string',
-        'description': 'md5 hash of image contents.',
+        'description': _('md5 hash of image contents.'),
         'type': 'string',
         'maxLength': 32,
     },
     'size': {
         'type': 'integer',
-        'description': 'Size of image file in bytes',
+        'description': _('Size of image file in bytes'),
     },
     'container_format': {
         'type': 'string',
-        'description': '',
+        'description': _(''),
         'type': 'string',
         'enum': ['bare', 'ovf', 'ami', 'aki', 'ari'],
     },
     'disk_format': {
         'type': 'string',
-        'description': '',
+        'description': _(''),
         'type': 'string',
         'enum': ['raw', 'vhd', 'vmdk', 'vdi', 'iso', 'qcow2',
                  'aki', 'ari', 'ami'],
     },
     'created_at': {
         'type': 'string',
-        'description': 'Date and time of image registration',
+        'description': _('Date and time of image registration'),
         #TODO(bcwaldon): our jsonschema library doesn't seem to like the
         # format attribute, figure out why!
         #'format': 'date-time',
     },
     'updated_at': {
         'type': 'string',
-        'description': 'Date and time of the last image modification',
+        'description': _('Date and time of the last image modification'),
         #'format': 'date-time',
     },
     'tags': {
         'type': 'array',
-        'description': 'List of strings related to the image',
+        'description': _('List of strings related to the image'),
         'items': {
             'type': 'string',
             'maxLength': 255,
@@ -504,15 +504,17 @@ _BASE_PROPERTIES = {
     },
     'direct_url': {
         'type': 'string',
-        'description': 'URL to access the image file kept in external store',
+        'description': _('URL to access the image file kept in external '
+                         'store'),
     },
     'min_ram': {
         'type': 'integer',
-        'description': 'Amount of ram (in MB) required to boot image.',
+        'description': _('Amount of ram (in MB) required to boot image.'),
     },
     'min_disk': {
         'type': 'integer',
-        'description': 'Amount of disk space (in GB) required to boot image.',
+        'description': _('Amount of disk space (in GB) required to boot '
+                         'image.'),
     },
     'self': {'type': 'string'},
     'file': {'type': 'string'},
