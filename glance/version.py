@@ -17,6 +17,6 @@
 
 from glance.openstack.common import version as common_version
 
-NEXT_VERSION = '2012.2.3'
+NEXT_VERSION = '2012.2.4'
 version_info = common_version.VersionInfo('glance',
                                           pre_version=NEXT_VERSION)
