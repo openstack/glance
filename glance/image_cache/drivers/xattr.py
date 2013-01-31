@@ -110,7 +110,7 @@ class Driver(base.Driver):
                         "user_xattr option to the appropriate line for the "
                         "device housing the cache directory.") % locals()
                 LOG.error(msg)
-                raise exception.BadDriverConfiguration(driver="xattr",
+                raise exception.BadDriverConfiguration(driver_name="xattr",
                                                        reason=msg)
         else:
             # Cleanup after ourselves...
