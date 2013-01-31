@@ -54,7 +54,7 @@ class Controller(object):
         image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
-            if not tag_value in image.tags:
+            if tag_value not in image.tags:
                 raise webob.exc.HTTPNotFound()
             image.tags.remove(tag_value)
             image_repo.save(image)

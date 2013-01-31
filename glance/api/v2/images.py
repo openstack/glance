@@ -187,7 +187,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
     def _get_request_body(self, request):
         output = super(RequestDeserializer, self).default(request)
-        if not 'body' in output:
+        if 'body' not in output:
             msg = _('Body expected in request.')
             raise webob.exc.HTTPBadRequest(explanation=msg)
         return output['body']

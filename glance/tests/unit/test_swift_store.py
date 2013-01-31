@@ -128,7 +128,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
     def fake_get_object(url, token, container, name, **kwargs):
         # GET returns the tuple (list of headers, file object)
         fixture_key = "%s/%s" % (container, name)
-        if not fixture_key in fixture_headers:
+        if fixture_key not in fixture_headers:
             msg = "Object GET failed"
             raise swiftclient.ClientException(msg,
                                               http_status=httplib.NOT_FOUND)

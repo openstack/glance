@@ -690,7 +690,7 @@ def _set_properties_for_image(context, image_ref, properties,
 
     if purge_props:
         for key in orig_properties.keys():
-            if not key in properties:
+            if key not in properties:
                 prop_ref = orig_properties[key]
                 image_property_delete(context, prop_ref, session=session)
 
