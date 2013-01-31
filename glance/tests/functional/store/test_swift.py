@@ -82,8 +82,7 @@ def swift_connect(auth_url, auth_version, user, key):
                                       snet=False,
                                       retries=1)
     except AttributeError:
-        msg = "Could not find swiftclient module"
-        self.skipTest(msg)
+        raise SwiftStoreError("Could not find swiftclient module")
 
 
 def swift_list_containers(swift_conn):
