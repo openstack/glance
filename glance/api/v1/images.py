@@ -68,12 +68,12 @@ def validate_image_meta(req, values):
     container_format = values.get('container_format')
 
     if 'disk_format' in values:
-        if not disk_format in DISK_FORMATS:
+        if disk_format not in DISK_FORMATS:
             msg = "Invalid disk format '%s' for image." % disk_format
             raise HTTPBadRequest(explanation=msg, request=req)
 
     if 'container_format' in values:
-        if not container_format in CONTAINER_FORMATS:
+        if container_format not in CONTAINER_FORMATS:
             msg = "Invalid container format '%s' for image." % container_format
             raise HTTPBadRequest(explanation=msg, request=req)
 
@@ -604,11 +604,11 @@ class Controller(controller.BaseController):
     def _validate_image_for_activation(self, req, id, values):
         """Ensures that all required image metadata values are valid."""
         image = self.get_image_meta_or_404(req, id)
-        if not 'disk_format' in values:
+        if 'disk_format' not in values:
             values['disk_format'] = image['disk_format']
-        if not 'container_format' in values:
+        if 'container_format' not in values:
             values['container_format'] = image['container_format']
-        if not 'name' in values:
+        if 'name' not in values:
             values['name'] = image['name']
 
         values = validate_image_meta(req, values)

@@ -106,7 +106,7 @@ class FakeHTTPConnection(object):
         hkeys.sort()
         hashable = (method, url, body, ' '.join(hkeys))
 
-        if not hashable in self.reqs:
+        if hashable not in self.reqs:
             options = []
             for h in self.reqs:
                 options.append(repr(h))
