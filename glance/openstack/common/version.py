@@ -36,9 +36,16 @@ class VersionInfo(object):
     def _get_version_from_pkg_resources(self):
         """Get the version of the package from the pkg_resources record
         associated with the package."""
-        requirement = pkg_resources.Requirement.parse(self.package)
-        provider = pkg_resources.get_provider(requirement)
-        return provider.version
+        try:
+            requirement = pkg_resources.Requirement.parse(self.package)
+            provider = pkg_resources.get_provider(requirement)
+            return provider.version
+        except pkg_resources.DistributionNotFound:
+            # The most likely cause for this is running tests in a tree with
+            # produced from a tarball where the package itself has not been
+            # installed into anything. Check for a PKG-INFO file.
+            from glance.openstack.common import setup
+            return setup.get_version_from_pkg_info(self.package)
 
     def release_string(self):
         """Return the full version of the package including suffixes indicating
