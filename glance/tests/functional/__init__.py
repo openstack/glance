@@ -416,6 +416,7 @@ class ScrubberDaemon(Server):
         self.server_name = 'scrubber'
         self.daemon = daemon
 
+        self.image_dir = os.path.join(self.test_dir, "images")
         self.scrubber_datadir = os.path.join(self.test_dir,
                                              "scrubber")
         self.pid_file = os.path.join(self.test_dir, "scrubber.pid")
@@ -427,15 +428,18 @@ class ScrubberDaemon(Server):
         self.swift_store_container = kwargs.get("swift_store_container", "")
         self.swift_store_auth_version = kwargs.get("swift_store_auth_version",
                                                    "2")
+        self.metadata_encryption_key = "012345678901234567890123456789ab"
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
+filesystem_store_datadir=%(image_dir)s
 log_file = %(log_file)s
 daemon = %(daemon)s
 wakeup_time = 2
 scrubber_datadir = %(scrubber_datadir)s
 registry_host = 127.0.0.1
 registry_port = %(registry_port)s
+metadata_encryption_key = %(metadata_encryption_key)s
 swift_store_auth_address = %(swift_store_auth_address)s
 swift_store_user = %(swift_store_user)s
 swift_store_key = %(swift_store_key)s
