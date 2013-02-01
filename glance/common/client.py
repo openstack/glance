@@ -379,6 +379,7 @@ class BaseClient(object):
         """
         Create a URL object we can use to pass to _do_request().
         """
+        action = urllib.quote(action)
         path = '/'.join([self.doc_root or '', action.lstrip('/')])
         scheme = "https" if self.use_ssl else "http"
         netloc = "%s:%d" % (self.host, self.port)

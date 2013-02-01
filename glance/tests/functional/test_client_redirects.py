@@ -114,7 +114,8 @@ class TestClientRedirects(functional.FunctionalTest):
         """
         Test GET with one 302 FOUND redirect w/ a query string
         """
-        response = self.client.do_request("GET", "/302?with_qs=yes")
+        response = self.client.do_request("GET", "/302",
+                                          params={'with_qs': 'yes'})
         self.assertEquals(200, response.status)
         self.assertEquals("success_with_qs", response.read())
 
