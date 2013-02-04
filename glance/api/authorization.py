@@ -30,7 +30,7 @@ def is_image_mutable(context, image):
 
 def proxy_image(context, image):
     if is_image_mutable(context, image):
-        return image
+        return ImageProxy(image)
     else:
         return ImmutableImageProxy(image)
 
@@ -67,6 +67,28 @@ class ImageFactoryProxy(object):
                 raise exception.Forbidden(message % owner)
 
         return self.image_factory.new_image(owner=owner, **kwargs)
+
+
+class ImageMemberFactoryProxy(object):
+
+    def __init__(self, image_member_factory, context):
+        self.image_member_factory = image_member_factory
+        self.context = context
+
+    def new_image_member(self, image, member_id):
+        owner = image.owner
+
+        if not self.context.is_admin:
+            if owner is None or owner != self.context.owner:
+                message = _("You are not permitted to create image members "
+                            "for the image.")
+                raise exception.Forbidden(message)
+
+        if image.visibility == 'public':
+            message = _("Public images do not have members.")
+            raise exception.Forbidden(message)
+
+        return self.image_member_factory.new_image_member(image, member_id)
 
 
 def _immutable_attr(target, attr, proxy=None):
@@ -147,3 +169,17 @@ class ImmutableImageProxy(object):
     def get_member_repo(self):
         message = _("You are not permitted to access this image.")
         raise exception.Forbidden(message)
+
+
+class ImageProxy(glance.domain.ImageProxy):
+
+    def __init__(self, image):
+        self.image = image
+        super(ImageProxy, self).__init__(image)
+
+    def get_member_repo(self, **kwargs):
+        if self.image.visibility == 'public':
+            message = _("Public images do not have members.")
+            raise exception.Forbidden(message)
+        else:
+            return self.image.get_member_repo(**kwargs)

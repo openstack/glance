@@ -188,11 +188,11 @@ class ImageMembership(object):
 
 class ImageMemberFactory(object):
 
-    def new_image_member(self, image_id, member_id):
+    def new_image_member(self, image, member_id):
         created_at = timeutils.utcnow()
         updated_at = created_at
 
-        return ImageMembership(image_id=image_id, member_id=member_id,
+        return ImageMembership(image_id=image.image_id, member_id=member_id,
                                created_at=created_at, updated_at=updated_at)
 
 
