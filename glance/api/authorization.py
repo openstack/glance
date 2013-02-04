@@ -143,3 +143,7 @@ class ImmutableImageProxy(object):
     def delete(self):
         message = _("You are not permitted to delete this image.")
         raise exception.Forbidden(message)
+
+    def get_member_repo(self):
+        message = _("You are not permitted to access this image.")
+        raise exception.Forbidden(message)
