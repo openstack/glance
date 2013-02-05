@@ -351,7 +351,7 @@ class BaseStore(glance.store.base.Store):
 
                 # Now we write the object manifest and return the
                 # manifest's etag...
-                manifest = "%s/%s" % (location.container, location.obj)
+                manifest = "%s/%s-" % (location.container, location.obj)
                 headers = {'ETag': hashlib.md5("").hexdigest(),
                            'X-Object-Manifest': manifest}
 
