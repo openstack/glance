@@ -589,7 +589,7 @@ def validate_image(values):
 
 
 def _update_values(image_ref, values):
-    for k in values.keys():
+    for k in values:
         if getattr(image_ref, k) != values[k]:
             setattr(image_ref, k, values[k])
 
