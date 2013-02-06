@@ -24,7 +24,7 @@ migrations must be done separately.
 import migrate
 import sqlalchemy
 
-import glance.common.utils
+from glance.openstack.common import uuidutils
 
 
 meta = sqlalchemy.MetaData()
@@ -60,8 +60,8 @@ def downgrade(migrate_engine):
     t_image_properties = _get_table('image_properties', meta)
 
     if migrate_engine.url.get_dialect().name == "sqlite":
-        _downgrade_sqlite(t_images, t_image_members, t_image_properties)
         _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties)
+        _downgrade_sqlite(t_images, t_image_members, t_image_properties)
     else:
         _downgrade_other(t_images, t_image_members, t_image_properties)
 
@@ -250,7 +250,7 @@ def _update_all_ids_to_uuids(t_images, t_image_members, t_image_properties):
 
     for image in images:
         old_id = image["id"]
-        new_id = glance.common.utils.generate_uuid()
+        new_id = uuidutils.generate_uuid()
 
         t_images.update().\
             where(t_images.c.id == old_id).\
@@ -275,9 +275,9 @@ def _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties):
     """Transition from VARCHAR(36) id to INTEGER id."""
     images = list(t_images.select().execute())
 
+    new_id = 1
     for image in images:
         old_id = image["id"]
-        new_id = 0
 
         t_images.update().\
             where(t_images.c.id == old_id).\
