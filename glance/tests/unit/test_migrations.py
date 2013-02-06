@@ -2,6 +2,7 @@
 
 # Copyright 2010-2011 OpenStack, LLC
 # All Rights Reserved.
+# Copyright 2013 IBM Corp.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -24,6 +25,8 @@ properly both upgrading and downgrading, and that no data loss occurs
 if possible.
 """
 
+import collections
+import commands
 import ConfigParser
 import datetime
 import os
@@ -31,84 +34,141 @@ import urlparse
 
 from migrate.versioning.repository import Repository
 from oslo.config import cfg
-from sqlalchemy import *
-from sqlalchemy.pool import NullPool
+import sqlalchemy
 
 from glance.common import crypt
 from glance.common import exception
-#NOTE(bcwaldon): import this to prevent circular import
+import glance.db.migration as migration
 from glance.db.sqlalchemy import api
-import glance.db.sqlalchemy.migration as migration_api
+import glance.db.sqlalchemy.migrate_repo
+from glance.db.sqlalchemy.migration import versioning_api as migration_api
 from glance.db.sqlalchemy import models
+from glance.openstack.common import log as logging
+from glance.openstack.common import uuidutils
 from glance.tests import utils
 
 
 CONF = cfg.CONF
 CONF.import_opt('metadata_encryption_key', 'glance.registry')
 
+LOG = logging.getLogger(__name__)
+
+
+def _get_connect_string(backend,
+                        user="openstack_citest",
+                        passwd="openstack_citest",
+                        database="openstack_citest"):
+    """
+    Try to get a connection with a very specific set of values, if we get
+    these then we'll run the tests, otherwise they are skipped
+    """
+    if backend == "postgres":
+        backend = "postgresql+psycopg2"
+
+    return ("%(backend)s://%(user)s:%(passwd)s@localhost/%(database)s"
+            % locals())
+
+
+def _is_backend_avail(backend,
+                      user="openstack_citest",
+                      passwd="openstack_citest",
+                      database="openstack_citest"):
+    try:
+        if backend == "mysql":
+            connect_uri = _get_connect_string("mysql", user=user,
+                                              passwd=passwd, database=database)
+        elif backend == "postgres":
+            connect_uri = _get_connect_string("postgres", user=user,
+                                              passwd=passwd, database=database)
+        engine = sqlalchemy.create_engine(connect_uri)
+        connection = engine.connect()
+    except Exception:
+        # intentionally catch all to handle exceptions even if we don't
+        # have any backend code loaded.
+        return False
+    else:
+        connection.close()
+        engine.dispose()
+        return True
+
+
+def _have_mysql():
+    present = os.environ.get('GLANCE_TEST_MYSQL_PRESENT')
+    if present is None:
+        return _is_backend_avail('mysql')
+    return present.lower() in ('', 'true')
+
+
+def get_table(engine, name):
+    """Returns an sqlalchemy table dynamically from db.
+
+    Needed because the models don't work for us in migrations
+    as models will be far out of sync with the current data."""
+    metadata = sqlalchemy.schema.MetaData()
+    metadata.bind = engine
+    return sqlalchemy.Table(name, metadata, autoload=True)
+
 
 class TestMigrations(utils.BaseTestCase):
+    """Test sqlalchemy-migrate migrations."""
 
-    """Test sqlalchemy-migrate migrations"""
-
-    TEST_DATABASES = {}
+    DEFAULT_CONFIG_FILE = os.path.join(os.path.dirname(__file__),
+                                       'test_migrations.conf')
     # Test machines can set the GLANCE_TEST_MIGRATIONS_CONF variable
     # to override the location of the config file for migration testing
     CONFIG_FILE_PATH = os.environ.get('GLANCE_TEST_MIGRATIONS_CONF',
-                                      os.path.join('glance', 'tests', 'unit',
-                                                   'test_migrations.conf'))
-    REPOSITORY_PATH = 'glance/db/sqlalchemy/migrate_repo'
-    REPOSITORY = Repository(REPOSITORY_PATH)
-
-    def __init__(self, *args, **kwargs):
-        super(TestMigrations, self).__init__(*args, **kwargs)
+                                      DEFAULT_CONFIG_FILE)
+    MIGRATE_FILE = glance.db.sqlalchemy.migrate_repo.__file__
+    REPOSITORY = Repository(os.path.abspath(os.path.dirname(MIGRATE_FILE)))
 
     def setUp(self):
         super(TestMigrations, self).setUp()
+
+        self.snake_walk = False
+        self.test_databases = {}
+
         # Load test databases from the config file. Only do this
         # once. No need to re-run this on each test...
-        if not TestMigrations.TEST_DATABASES:
-            if os.path.exists(TestMigrations.CONFIG_FILE_PATH):
-                cp = ConfigParser.RawConfigParser()
-                try:
-                    cp.read(TestMigrations.CONFIG_FILE_PATH)
-                    defaults = cp.defaults()
-                    for key, value in defaults.items():
-                        TestMigrations.TEST_DATABASES[key] = value
-                except ConfigParser.ParsingError, e:
-                    self.fail("Failed to read test_migrations.conf config "
-                              "file. Got error: %s" % e)
-            else:
-                self.fail("Failed to find test_migrations.conf config "
-                          "file.")
+        LOG.debug('config_path is %s' % TestMigrations.CONFIG_FILE_PATH)
+        if os.path.exists(TestMigrations.CONFIG_FILE_PATH):
+            cp = ConfigParser.RawConfigParser()
+            try:
+                cp.read(TestMigrations.CONFIG_FILE_PATH)
+                defaults = cp.defaults()
+                for key, value in defaults.items():
+                    self.test_databases[key] = value
+                self.snake_walk = cp.getboolean('walk_style', 'snake_walk')
+            except ConfigParser.ParsingError, e:
+                self.fail("Failed to read test_migrations.conf config "
+                          "file. Got error: %s" % e)
+        else:
+            self.fail("Failed to find test_migrations.conf config "
+                      "file.")
+
         self.engines = {}
-        for key, value in TestMigrations.TEST_DATABASES.items():
-            self.engines[key] = create_engine(value, poolclass=NullPool)
+        for key, value in self.test_databases.items():
+            self.engines[key] = sqlalchemy.create_engine(value)
 
         # We start each test case with a completely blank slate.
         self._reset_databases()
 
     def tearDown(self):
-        super(TestMigrations, self).tearDown()
         # We destroy the test data store between each test case,
         # and recreate it, which ensures that we have no side-effects
         # from the tests
         self._reset_databases()
+        super(TestMigrations, self).tearDown()
 
     def _reset_databases(self):
-        def _is_sqlite(conn_string):
-            return conn_string.startswith('sqlite')
-
-        def _is_mysql(conn_string):
-            return conn_string.startswith('mysql')
-
-        def _is_postgresql(conn_string):
-            return conn_string.startswith('postgresql')
-
+        def execute_cmd(cmd=None):
+            status, output = commands.getstatusoutput(cmd)
+            LOG.debug(output)
+            self.assertEqual(0, status)
         for key, engine in self.engines.items():
-            conn_string = TestMigrations.TEST_DATABASES[key]
+            conn_string = self.test_databases[key]
             conn_pieces = urlparse.urlparse(conn_string)
-            if _is_sqlite(conn_string):
+            engine.dispose()
+            if conn_string.startswith('sqlite'):
                 # We can just delete the SQLite database, which is
                 # the easiest and cleanest solution
                 db_path = conn_pieces.path.strip('/')
@@ -116,7 +176,7 @@ class TestMigrations(utils.BaseTestCase):
                     os.unlink(db_path)
                 # No need to recreate the SQLite DB. SQLite will
                 # create it for us if it's not there...
-            elif _is_mysql(conn_string) or _is_postgresql(conn_string):
+            elif conn_string.startswith('mysql'):
                 # We can execute the MySQL client to destroy and re-create
                 # the MYSQL database, which is easier and less error-prone
                 # than using SQLAlchemy to do this via MetaData...trust me.
@@ -128,22 +188,38 @@ class TestMigrations(utils.BaseTestCase):
                 password = ""
                 if len(auth_pieces) > 1:
                     if auth_pieces[1].strip():
-                        password = "-p%s" % auth_pieces[1]
-                if _is_mysql(conn_string):
-                    sql = ("drop database if exists %(database)s; "
-                           "create database %(database)s;") % locals()
-                    cmd = ("mysql -u%(user)s %(password)s -h%(host)s "
-                           "-e\"%(sql)s\"") % locals()
-                if _is_postgresql(conn_string):
-                    cmd = ("dropdb %(database)s ; "
-                           "createdb %(database)s -O %(user)s ; "
-                           "echo \"select 'drop table if exists ' "
-                           "|| tablename || ' cascade;' "
-                           "from pg_tables where schemaname = 'public';\" | "
-                           "psql -d %(database)s | grep '^\s*drop' | "
-                           "psql -d %(database)s") % locals()
-                exitcode, out, err = utils.execute(cmd)
-                self.assertEqual(0, exitcode)
+                        password = "-p\"%s\"" % auth_pieces[1]
+                sql = ("drop database if exists %(database)s; "
+                       "create database %(database)s;") % locals()
+                cmd = ("mysql -u \"%(user)s\" %(password)s -h %(host)s "
+                       "-e \"%(sql)s\"") % locals()
+                execute_cmd(cmd)
+            elif conn_string.startswith('postgresql'):
+                database = conn_pieces.path.strip('/')
+                loc_pieces = conn_pieces.netloc.split('@')
+                host = loc_pieces[1]
+
+                auth_pieces = loc_pieces[0].split(':')
+                user = auth_pieces[0]
+                password = ""
+                if len(auth_pieces) > 1:
+                    password = auth_pieces[1].strip()
+                # note(boris-42): This file is used for authentication
+                # without password prompt.
+                createpgpass = ("echo '*:*:*:%(user)s:%(password)s' > "
+                                "~/.pgpass && chmod 0600 ~/.pgpass" % locals())
+                execute_cmd(createpgpass)
+                # note(boris-42): We must create and drop database, we can't
+                # drop database which we have connected to, so for such
+                # operations there is a special database template1.
+                sqlcmd = ("psql -w -U %(user)s -h %(host)s -c"
+                          " '%(sql)s' -d template1")
+                sql = ("drop database if exists %(database)s;") % locals()
+                droptable = sqlcmd % locals()
+                execute_cmd(droptable)
+                sql = ("create database %(database)s;") % locals()
+                createtable = sqlcmd % locals()
+                execute_cmd(createtable)
 
     def test_walk_versions(self):
         """
@@ -151,8 +227,155 @@ class TestMigrations(utils.BaseTestCase):
         that there are no errors in the version scripts for each engine
         """
         for key, engine in self.engines.items():
-            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
-            self._walk_versions()
+            self._walk_versions(engine, self.snake_walk)
+
+    def test_mysql_connect_fail(self):
+        """
+        Test that we can trigger a mysql connection failure and we fail
+        gracefully to ensure we don't break people without mysql
+        """
+        if _is_backend_avail('mysql', user="openstack_cifail"):
+            self.fail("Shouldn't have connected")
+
+    def test_mysql_opportunistically(self):
+        # Test that table creation on mysql only builds InnoDB tables
+        if not _is_backend_avail('mysql'):
+            self.skipTest("mysql not available")
+        # add this to the global lists to make reset work with it, it's removed
+        # automatically in tearDown so no need to clean it up here.
+        connect_string = _get_connect_string("mysql")
+        engine = sqlalchemy.create_engine(connect_string)
+        self.engines["mysqlcitest"] = engine
+        self.test_databases["mysqlcitest"] = connect_string
+
+        # build a fully populated mysql database with all the tables
+        self._reset_databases()
+        self._walk_versions(engine, False, False)
+
+        connection = engine.connect()
+        # sanity check
+        total = connection.execute("SELECT count(*) "
+                                   "from information_schema.TABLES "
+                                   "where TABLE_SCHEMA='openstack_citest'")
+        self.assertTrue(total.scalar() > 0, "No tables found. Wrong schema?")
+
+        noninnodb = connection.execute("SELECT count(*) "
+                                       "from information_schema.TABLES "
+                                       "where TABLE_SCHEMA='openstack_citest' "
+                                       "and ENGINE!='InnoDB' "
+                                       "and TABLE_NAME!='migrate_version'")
+        count = noninnodb.scalar()
+        self.assertEqual(count, 0, "%d non InnoDB tables created" % count)
+        connection.close()
+
+    def _walk_versions(self, engine=None, snake_walk=False, downgrade=True,
+                       initial_version=None):
+        # Determine latest version script from the repo, then
+        # upgrade from 1 through to the latest, with no data
+        # in the databases. This just checks that the schema itself
+        # upgrades successfully.
+
+        # Place the database under version control
+        init_version = migration.INIT_VERSION
+        if initial_version is not None:
+            init_version = initial_version
+        migration_api.version_control(engine, TestMigrations.REPOSITORY,
+                                      init_version)
+        self.assertEqual(init_version,
+                         migration_api.db_version(engine,
+                                                  TestMigrations.REPOSITORY))
+
+        migration_api.upgrade(engine, TestMigrations.REPOSITORY,
+                              init_version + 1)
+
+        LOG.debug('latest version is %s' % TestMigrations.REPOSITORY.latest)
+
+        for version in xrange(init_version + 2,
+                              TestMigrations.REPOSITORY.latest + 1):
+            # upgrade -> downgrade -> upgrade
+            self._migrate_up(engine, version, with_data=True)
+            if snake_walk:
+                self._migrate_down(engine, version)
+                self._migrate_up(engine, version)
+
+        if downgrade:
+            # Now walk it back down to 0 from the latest, testing
+            # the downgrade paths.
+            for version in reversed(
+                xrange(init_version + 2,
+                       TestMigrations.REPOSITORY.latest + 1)):
+                # downgrade -> upgrade -> downgrade
+                self._migrate_down(engine, version)
+                if snake_walk:
+                    self._migrate_up(engine, version)
+                    self._migrate_down(engine, version)
+
+    def _migrate_down(self, engine, version):
+        migration_api.downgrade(engine,
+                                TestMigrations.REPOSITORY,
+                                version)
+        self.assertEqual(version,
+                         migration_api.db_version(engine,
+                                                  TestMigrations.REPOSITORY))
+
+    def _migrate_up(self, engine, version, with_data=False):
+        """migrate up to a new version of the db.
+
+        We allow for data insertion and post checks at every
+        migration version with special _prerun_### and
+        _check_### functions in the main test.
+        """
+        if with_data:
+            data = None
+            prerun = getattr(self, "_prerun_%3.3d" % version, None)
+            if prerun:
+                data = prerun(engine)
+
+        migration_api.upgrade(engine,
+                              TestMigrations.REPOSITORY,
+                              version)
+        self.assertEqual(version,
+                         migration_api.db_version(engine,
+                                                  TestMigrations.REPOSITORY))
+
+        if with_data:
+            check = getattr(self, "_check_%3.3d" % version, None)
+            if check:
+                check(engine, data)
+
+    def _create_unversioned_001_db(self, engine):
+        # Create the initial version of the images table
+        meta = sqlalchemy.schema.MetaData()
+        meta.bind = engine
+        images_001 = sqlalchemy.Table('images', meta,
+                                      sqlalchemy.Column('id', models.Integer,
+                                                        primary_key=True),
+                                      sqlalchemy.Column('name',
+                                                        sqlalchemy.String(255)
+                                                        ),
+                                      sqlalchemy.Column('type',
+                                                        sqlalchemy.String(30)),
+                                      sqlalchemy.Column('size',
+                                                        sqlalchemy.Integer),
+                                      sqlalchemy.Column('status',
+                                                        sqlalchemy.String(30)),
+                                      sqlalchemy.Column('is_public',
+                                                        sqlalchemy.Boolean,
+                                                        default=False),
+                                      sqlalchemy.Column('location',
+                                                        sqlalchemy.Text),
+                                      sqlalchemy.Column('created_at',
+                                                        sqlalchemy.DateTime(),
+                                                        nullable=False),
+                                      sqlalchemy.Column('updated_at',
+                                                        sqlalchemy.DateTime()),
+                                      sqlalchemy.Column('deleted_at',
+                                                        sqlalchemy.DateTime()),
+                                      sqlalchemy.Column('deleted',
+                                                        sqlalchemy.Boolean(),
+                                                        nullable=False,
+                                                        default=False))
+        images_001.create()
 
     def test_version_control_existing_db(self):
         """
@@ -161,463 +384,159 @@ class TestMigrations(utils.BaseTestCase):
         without errors.
         """
         for key, engine in self.engines.items():
-            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
             self._create_unversioned_001_db(engine)
-            self._walk_versions(initial_version=1)
+            self._walk_versions(engine, self.snake_walk, initial_version=1)
 
-    def _create_unversioned_001_db(self, engine):
-        # Create the initial version of the images table
-        meta = MetaData()
-        meta.bind = engine
-        images_001 = Table('images',
-                           meta,
-                           Column('id', models.Integer, primary_key=True),
-                           Column('name', String(255)),
-                           Column('type', String(30)),
-                           Column('size', Integer),
-                           Column('status', String(30)),
-                           Column('is_public', Boolean, default=False),
-                           Column('location', Text),
-                           Column('created_at', DateTime(), nullable=False),
-                           Column('updated_at', DateTime()),
-                           Column('deleted_at', DateTime()),
-                           Column('deleted',
-                                  Boolean(),
-                                  nullable=False,
-                                  default=False))
-        images_001.create()
-
-    def _walk_versions(self, initial_version=0):
-        # Determine latest version script from the repo, then
-        # upgrade from 1 through to the latest, with no data
-        # in the databases. This just checks that the schema itself
-        # upgrades successfully.
-
-        # Assert we are not under version control...
-        self.assertRaises(exception.DatabaseMigrationError,
-                          migration_api.db_version)
-        # Place the database under version control
-        migration_api.version_control(version=initial_version)
-
-        cur_version = migration_api.db_version()
-        self.assertEqual(initial_version, cur_version)
-
-        for version in xrange(initial_version + 1,
-                              TestMigrations.REPOSITORY.latest + 1):
-            migration_api.db_sync(version)
-            cur_version = migration_api.db_version()
-            self.assertEqual(cur_version, version)
-
-        # Now walk it back down to 0 from the latest, testing
-        # the downgrade paths.
-        for version in reversed(xrange(0, TestMigrations.REPOSITORY.latest)):
-            migration_api.downgrade(version)
-            cur_version = migration_api.db_version()
-            self.assertEqual(cur_version, version)
-
-    def test_db_sync(self):
-        initial_version = 0
-        migration_api.db_sync(initial_version)
-        cur_version = migration_api.db_version()
-        self.assertEqual(cur_version, initial_version)
-
-        migration_api.db_sync(TestMigrations.REPOSITORY.latest)
-        cur_version = migration_api.db_version()
-        self.assertEqual(cur_version, TestMigrations.REPOSITORY.latest)
-
-        migration_api.db_sync(initial_version)
-        cur_version = migration_api.db_version()
-        self.assertEqual(cur_version, initial_version)
-
-    def test_no_data_loss_2_to_3_to_2(self):
-        """
-        Here, we test that in the case when we moved a column "type" from the
-        base images table to be records in the image_properties table, that
-        we don't lose any data during the migration. Similarly, we test that
-        on downgrade, we don't lose any data, as the records are moved from
-        the image_properties table back into the base image table.
-        """
-        for key, engine in self.engines.items():
-            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
-            self._no_data_loss_2_to_3_to_2(engine)
-
-    def _no_data_loss_2_to_3_to_2(self, engine):
-        migration_api.version_control(version=0)
-        migration_api.upgrade(2)
-
-        cur_version = migration_api.db_version()
-        self.assertEquals(2, cur_version)
-
-        # We are now on version 2. Check that the images table does
-        # not contain the type column...
-
-        images_table = Table('images', MetaData(), autoload=True,
-                             autoload_with=engine)
-
-        image_properties_table = Table('image_properties', MetaData(),
-                                       autoload=True,
-                                       autoload_with=engine)
-
-        self.assertTrue('type' in images_table.c,
-                        "'type' column found in images table columns! "
-                        "images table columns: %s"
-                        % images_table.c.keys())
-
-        conn = engine.connect()
-        sel = select([func.count("*")], from_obj=[images_table])
-        orig_num_images = conn.execute(sel).scalar()
-        sel = select([func.count("*")], from_obj=[image_properties_table])
-        orig_num_image_properties = conn.execute(sel).scalar()
-
+    def _prerun_003(self, engine):
         now = datetime.datetime.now()
-        inserter = images_table.insert()
-        conn.execute(inserter, [
-                {'deleted': False, 'created_at': now,
-                 'updated_at': now, 'type': 'kernel',
-                 'status': 'active', 'is_public': True},
-                {'deleted': False, 'created_at': now,
-                 'updated_at': now, 'type': 'ramdisk',
-                 'status': 'active', 'is_public': True}])
+        images = get_table(engine, 'images')
+        data = {'deleted': False, 'created_at': now, 'updated_at': now,
+                'type': 'kernel', 'status': 'active', 'is_public': True}
+        images.insert().values(data).execute()
+        return data
 
-        sel = select([func.count("*")], from_obj=[images_table])
-        num_images = conn.execute(sel).scalar()
-        self.assertEqual(orig_num_images + 2, num_images)
-        conn.close()
-
-        # Now let's upgrade to 3. This should move the type column
-        # to the image_properties table as type properties.
-
-        migration_api.upgrade(3)
-
-        cur_version = migration_api.db_version()
-        self.assertEquals(3, cur_version)
-
-        images_table = Table('images', MetaData(), autoload=True,
-                             autoload_with=engine)
-
-        self.assertTrue('type' not in images_table.c,
-                        "'type' column not found in images table columns! "
-                        "images table columns reported by metadata: %s\n"
-                        % images_table.c.keys())
-
-        image_properties_table = Table('image_properties', MetaData(),
-                                       autoload=True,
-                                       autoload_with=engine)
-
-        conn = engine.connect()
-        sel = select([func.count("*")], from_obj=[image_properties_table])
-        num_image_properties = conn.execute(sel).scalar()
-        self.assertEqual(orig_num_image_properties + 2, num_image_properties)
-        conn.close()
-
-        # Downgrade to 2 and check that the type properties were moved
-        # to the main image table
-
-        migration_api.downgrade(2)
-
-        images_table = Table('images', MetaData(), autoload=True,
-                             autoload_with=engine)
-
-        self.assertTrue('type' in images_table.c,
+    def _check_003(self, engine, data):
+        images = get_table(engine, 'images')
+        self.assertTrue('type' not in images.c,
                         "'type' column found in images table columns! "
-                        "images table columns: %s"
-                        % images_table.c.keys())
+                        "images table columns reported by metadata: %s\n"
+                        % images.c.keys())
+        images_prop = get_table(engine, 'image_properties')
 
-        image_properties_table = Table('image_properties', MetaData(),
-                                       autoload=True,
-                                       autoload_with=engine)
-
-        conn = engine.connect()
-        sel = select([func.count("*")], from_obj=[image_properties_table])
-        last_num_image_properties = conn.execute(sel).scalar()
-
-        self.assertEqual(num_image_properties - 2, last_num_image_properties)
-
-    def test_no_data_loss_14_to_15(self):
-        for key, engine in self.engines.items():
-            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
-            self._check_no_data_loss_14_to_15(engine)
-
-    def _check_no_data_loss_14_to_15(self, engine):
-        """
-        Check that migrating swift location credentials to quoted form
-        and back does not result in data loss.
-        """
-        migration_api.version_control(version=0)
-        migration_api.upgrade(14)
-
-        conn = engine.connect()
-        images_table = Table('images', MetaData(), autoload=True,
-                             autoload_with=engine)
-
-        def get_locations():
-            conn = engine.connect()
-            locations = [x[0] for x in
-                         conn.execute(
-                             select(['location'], from_obj=[images_table]))]
-            conn.close()
-            return locations
-
+    def _prerun_015(self, engine):
+        images = get_table(engine, 'images')
         unquoted_locations = [
             'swift://acct:usr:pass@example.com/container/obj-id',
             'file://foo',
         ]
+        now = datetime.datetime.now()
+        temp = dict(deleted=False,
+                    created_at=now,
+                    updated_at=now,
+                    status='active',
+                    is_public=True,
+                    min_disk=0,
+                    min_ram=0)
+        data = []
+        for i, location in enumerate(unquoted_locations):
+            temp.update(location=location, id=uuidutils.generate_uuid())
+            data.append(temp)
+            images.insert().values(temp).execute()
+        return data
+
+    def _check_015(self, engine, data):
+        images = get_table(engine, 'images')
         quoted_locations = [
             'swift://acct%3Ausr:pass@example.com/container/obj-id',
             'file://foo',
         ]
+        result = images.select().execute()
+        locations = map(lambda x: x['location'], result)
+        for loc in quoted_locations:
+            self.assertIn(loc, locations)
 
-        # Insert images with an unquoted image location
+    def _prerun_016(self, engine):
+        images = get_table(engine, 'images')
         now = datetime.datetime.now()
-        kwargs = dict(deleted=False,
-                      created_at=now,
-                      updated_at=now,
-                      status='active',
-                      is_public=True,
-                      min_disk=0,
-                      min_ram=0)
-        for i, location in enumerate(unquoted_locations):
-            kwargs.update(location=location, id=i)
-            conn.execute(images_table.insert(), [kwargs])
-        conn.close()
-
-        migration_api.upgrade(15)
-
-        self.assertEqual(get_locations(), quoted_locations)
-
-        migration_api.downgrade(14)
-
-        self.assertEqual(get_locations(), unquoted_locations)
-
-    def test_no_data_loss_15_to_16_to_15(self):
-        """
-        Here, we test that in the case when we moved a column "type" from the
-        base images table to be records in the image_properties table, that
-        we don't lose any data during the migration. Similarly, we test that
-        on downgrade, we don't lose any data, as the records are moved from
-        the image_properties table back into the base image table.
-        """
-        for key, engine in self.engines.items():
-            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
-            self._no_data_loss_15_to_16_to_15(engine)
-
-    def _no_data_loss_15_to_16_to_15(self, engine):
-        migration_api.version_control(version=0)
-        migration_api.upgrade(15)
-
-        cur_version = migration_api.db_version()
-        self.assertEquals(15, cur_version)
-
-        # We are now on version 15.
-
-        image_members_table = Table('image_members', MetaData(),
-                                    autoload=True, autoload_with=engine)
-
-        self.assertTrue('status' not in image_members_table.c,
-                        "'status' not column found in image_members table "
-                        "columns! image_members table columns: %s"
-                        % image_members_table.c.keys())
-
-        conn = engine.connect()
-        sel = select([func.count("*")], from_obj=[image_members_table])
-        orig_num_image_members = conn.execute(sel).scalar()
-
+        temp = dict(deleted=False,
+                    created_at=now,
+                    updated_at=now,
+                    status='active',
+                    is_public=True,
+                    min_disk=0,
+                    min_ram=0,
+                    id='fake-image-id1')
+        images.insert().values(temp).execute()
+        image_members = get_table(engine, 'image_members')
         now = datetime.datetime.now()
-        inserter = image_members_table.insert()
-        conn.execute(inserter, [
-                {'deleted': False, 'created_at': now, 'member': 'fake-member',
-                 'updated_at': now, 'can_share': False,
-                 'image_id': 'fake-image-id1'}])
+        data = {'deleted': False,
+                'created_at': now,
+                'member': 'fake-member',
+                'updated_at': now,
+                'can_share': False,
+                'image_id': 'fake-image-id1'}
+        image_members.insert().values(data).execute()
+        return data
 
-        sel = select([func.count("*")], from_obj=[image_members_table])
-        num_image_members = conn.execute(sel).scalar()
-        self.assertEqual(orig_num_image_members + 1, num_image_members)
-        conn.close()
-
-        #Upgrade to version 16
-
-        migration_api.upgrade(16)
-
-        cur_version = migration_api.db_version()
-        self.assertEquals(16, cur_version)
-
-        image_members_table = Table('image_members', MetaData(),
-                                    autoload=True, autoload_with=engine)
-
-        self.assertTrue('status' in image_members_table.c,
+    def _check_016(self, engine, data):
+        image_members = get_table(engine, 'image_members')
+        self.assertTrue('status' in image_members.c,
                         "'status' column found in image_members table "
                         "columns! image_members table columns: %s"
-                        % image_members_table.c.keys())
+                        % image_members.c.keys())
 
-        conn = engine.connect()
-        sel = select([func.count("*")], from_obj=[image_members_table])
-        num_image_members = conn.execute(sel).scalar()
-        self.assertEqual(orig_num_image_members + 1, num_image_members)
-
-        now = datetime.datetime.now()
-        inserter = image_members_table.insert()
-        conn.execute(inserter, [
-                {'deleted': False, 'created_at': now, 'member': 'fake-member',
-                 'updated_at': now, 'can_share': False, 'status': 'pending',
-                 'image_id': 'fake-image-id2'}])
-
-        sel = select([func.count("*")], from_obj=[image_members_table])
-        num_image_members = conn.execute(sel).scalar()
-        self.assertEqual(orig_num_image_members + 2, num_image_members)
-        conn.close()
-
-        #Downgrade to version 15
-
-        migration_api.downgrade(15)
-
-        cur_version = migration_api.db_version()
-        self.assertEquals(15, cur_version)
-
-        image_members_table = Table('image_members', MetaData(),
-                                    autoload=True, autoload_with=engine)
-
-        self.assertTrue('status' not in image_members_table.c,
-                        "'status' column not found in image_members table "
-                        "columns! image_members table columns: %s"
-                        % image_members_table.c.keys())
-
-        conn = engine.connect()
-        sel = select([func.count("*")], from_obj=[image_members_table])
-        num_image_members = conn.execute(sel).scalar()
-        self.assertEqual(orig_num_image_members + 2, num_image_members)
-        conn.close()
-
-    def test_quote_encrypted_locations_16_to_17(self):
-        self.metadata_encryption_key = 'a' * 16
-        for key, engine in self.engines.items():
-            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
-            self.config(metadata_encryption_key=self.metadata_encryption_key)
-            self._check_16_to_17(engine)
-
-    def _check_16_to_17(self, engine):
-        """
-        Check that migrating swift location credentials to quoted form
-        and back works.
-        """
-        migration_api.version_control(version=0)
-        migration_api.upgrade(16)
-
-        conn = engine.connect()
-        images_table = Table('images', MetaData(), autoload=True,
-                             autoload_with=engine)
-
-        def get_locations():
-            conn = engine.connect()
-            locations = [x[0] for x in
-                         conn.execute(
-                             select(['location'], from_obj=[images_table]))]
-            conn.close()
-            return locations
-
+    def _prerun_017(self, engine):
+        metadata_encryption_key = 'a' * 16
+        self.config(metadata_encryption_key=metadata_encryption_key)
+        images = get_table(engine, 'images')
         unquoted = 'swift://acct:usr:pass@example.com/container/obj-id'
         encrypted_unquoted = crypt.urlsafe_encrypt(
-                                    self.metadata_encryption_key,
+                                    metadata_encryption_key,
                                     unquoted, 64)
-
-        quoted = 'swift://acct%3Ausr:pass@example.com/container/obj-id'
-
-        # Insert image with an unquoted image location
+        data = []
         now = datetime.datetime.now()
-        kwargs = dict(deleted=False,
-                      created_at=now,
-                      updated_at=now,
-                      status='active',
-                      is_public=True,
-                      min_disk=0,
-                      min_ram=0)
-        kwargs.update(location=encrypted_unquoted, id=1)
-        conn.execute(images_table.insert(), [kwargs])
-        conn.close()
+        temp = dict(deleted=False,
+                    created_at=now,
+                    updated_at=now,
+                    status='active',
+                    is_public=True,
+                    min_disk=0,
+                    min_ram=0,
+                    location=encrypted_unquoted,
+                    id='fakeid1')
+        images.insert().values(temp).execute()
 
-        migration_api.upgrade(17)
+        locations = [
+            'file://ab',
+            'file://abc',
+            'swift://acct3A%foobar:pass@example.com/container/obj-id2'
+        ]
 
-        actual_location = crypt.urlsafe_decrypt(self.metadata_encryption_key,
-                                                get_locations()[0])
-
-        self.assertEqual(actual_location, quoted)
-
-        migration_api.downgrade(16)
-
-        actual_location = crypt.urlsafe_decrypt(self.metadata_encryption_key,
-                                                get_locations()[0])
-
-        self.assertEqual(actual_location, unquoted)
-
-    def test_no_data_loss_16_to_17(self):
-        self.metadata_encryption_key = 'a' * 16
-        for key, engine in self.engines.items():
-            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
-            self.config(metadata_encryption_key=self.metadata_encryption_key)
-            self._check_no_data_loss_16_to_17(engine)
-
-    def _check_no_data_loss_16_to_17(self, engine):
-        """
-        Check that migrating swift location credentials to quoted form
-        and back does not result in data loss.
-        """
-        migration_api.version_control(version=0)
-        migration_api.upgrade(16)
-
-        conn = engine.connect()
-        images_table = Table('images', MetaData(), autoload=True,
-                             autoload_with=engine)
-
-        def get_locations():
-            conn = engine.connect()
-            locations = [x[0] for x in
-                         conn.execute(
-                             select(['location'], from_obj=[images_table]))]
-            conn.close()
-            return locations
-
-        locations = ['file://ab',
-                     'file://abc',
-                     'swift://acct3A%foobar:pass@example.com/container/obj-id']
-
-        # Insert images with an unquoted image location
         now = datetime.datetime.now()
-        kwargs = dict(deleted=False,
-                      created_at=now,
-                      updated_at=now,
-                      status='active',
-                      is_public=True,
-                      min_disk=0,
-                      min_ram=0)
+        temp = dict(deleted=False,
+                    created_at=now,
+                    updated_at=now,
+                    status='active',
+                    is_public=True,
+                    min_disk=0,
+                    min_ram=0)
         for i, location in enumerate(locations):
-            kwargs.update(location=location, id=i)
-            conn.execute(images_table.insert(), [kwargs])
-        conn.close()
+            temp.update(location=location, id=uuidutils.generate_uuid())
+            data.append(temp)
+            images.insert().values(temp).execute()
+        return data
 
-        def assert_locations():
-            actual_locations = get_locations()
-            for location in locations:
-                if not location in actual_locations:
-                    self.fail(_("location: %s data lost") % location)
+    def _check_017(self, engine, data):
+        metadata_encryption_key = 'a' * 16
+        quoted = 'swift://acct%3Ausr:pass@example.com/container/obj-id'
+        images = get_table(engine, 'images')
+        result = images.select().execute()
+        locations = map(lambda x: x['location'], result)
+        actual_location = []
+        for location in locations:
+            if location:
+                try:
+                    temp_loc = crypt.urlsafe_decrypt(metadata_encryption_key,
+                                                     location)
+                    actual_location.append(temp_loc)
+                except TypeError:
+                    actual_location.append(location)
+                except ValueError:
+                    actual_location.append(location)
 
-        migration_api.upgrade(17)
+        self.assertIn(quoted, actual_location)
+        loc_list = ['file://ab',
+                    'file://abc',
+                    'swift://acct3A%foobar:pass@example.com/container/obj-id2']
 
-        assert_locations()
+        for location in loc_list:
+            if not location in actual_location:
+                self.fail(_("location: %s data lost") % location)
 
-        migration_api.downgrade(16)
-
-        assert_locations()
-
-    def test_migration_19(self):
-        for key, engine in self.engines.items():
-            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
-
-            migration_api.version_control(version=0)
-            migration_api.upgrade(18)
-
-            images_table = Table('images', MetaData(engine), autoload=True)
-
-            now = datetime.datetime.now()
-            base_values = {
+    def _prerun_019(self, engine):
+        images = get_table(engine, 'images')
+        now = datetime.datetime.now()
+        base_values = {
                 'deleted': False,
                 'created_at': now,
                 'updated_at': now,
@@ -625,60 +544,25 @@ class TestMigrations(utils.BaseTestCase):
                 'is_public': True,
                 'min_disk': 0,
                 'min_ram': 0,
-            }
-            images = [
-                {'id': 1, 'location': 'http://glance.example.com'},
-                #NOTE(bcwaldon): images with a location of None should
-                # not be migrated
-                {'id': 2, 'location': None},
-            ]
-            map(lambda image: image.update(base_values), images)
-            for image in images:
-                images_table.insert().values(image).execute()
+        }
+        data = [
+            {'id': 'fake-19-1', 'location': 'http://glance.example.com'},
+            #NOTE(bcwaldon): images with a location of None should
+            # not be migrated
+            {'id': 'fake-19-2', 'location': None},
+        ]
+        map(lambda image: image.update(base_values), data)
+        for image in data:
+            images.insert().values(image).execute()
+        return data
 
-            migration_api.upgrade(19)
+    def _check_019(self, engine, data):
+        image_locations = get_table(engine, 'image_locations')
+        records = image_locations.select().execute().fetchall()
+        locations = dict([(il.image_id, il.value) for il in records])
+        self.assertEqual(locations.get('fake-19-1'),
+                         'http://glance.example.com')
 
-            image_locations_table = Table('image_locations', MetaData(engine),
-                                          autoload=True)
-            records = image_locations_table.select().execute().fetchall()
-
-            self.assertEqual(len(records), 1)
-            locations = dict([(il.image_id, il.value) for il in records])
-            self.assertEqual({'1': 'http://glance.example.com'}, locations)
-
-            image_locations_table = Table('image_locations', MetaData(engine),
-                                          autoload=True)
-            image_locations_table.update()\
-                                 .where(image_locations_table.c.image_id == 1)\
-                                 .values(value='http://swift.example.com')\
-                                 .execute()
-
-            migration_api.downgrade(18)
-
-            images_table = Table('images', MetaData(engine), autoload=True)
-            records = images_table.select().execute().fetchall()
-
-            self.assertEqual(len(records), 2)
-            locations = dict([(i.id, i.location) for i in records])
-            self.assertEqual({'1': 'http://swift.example.com', '2': None},
-                             locations)
-
-    def test_migration_20(self):
-        for key, engine in self.engines.items():
-            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
-
-            migration_api.version_control(version=0)
-            migration_api.upgrade(19)
-
-            images_table = Table('images', MetaData(engine), autoload=True)
-            self.assertTrue('location' in images_table.c)
-
-            migration_api.upgrade(20)
-
-            images_table = Table('images', MetaData(engine), autoload=True)
-            self.assertFalse('location' in images_table.c)
-
-            migration_api.downgrade(19)
-
-            images_table = Table('images', MetaData(engine), autoload=True)
-            self.assertTrue('location' in images_table.c)
+    def _check_020(self, engine, data):
+        images = get_table(engine, 'images')
+        self.assertFalse('location' in images.c)
