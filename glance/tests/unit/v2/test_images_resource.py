@@ -383,9 +383,11 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual({}, output.extra_properties)
         self.assertEqual(set([]), output.tags)
         self.assertEqual('private', output.visibility)
-        output_log = self.notifier.get_log()
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.update')
+        self.assertEqual(output_log['event_type'], 'image.create')
         self.assertEqual(output_log['payload']['name'], 'image-1')
 
     def test_create_public_image_as_admin(self):
@@ -394,9 +396,11 @@ class TestImagesController(test_utils.BaseTestCase):
         output = self.controller.create(request, image=image,
                                         extra_properties={}, tags=[])
         self.assertEqual('public', output.visibility)
-        output_log = self.notifier.get_log()
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.update')
+        self.assertEqual(output_log['event_type'], 'image.create')
         self.assertEqual(output_log['payload']['id'], output.image_id)
 
     def test_create_duplicate_tags(self):
@@ -405,9 +409,11 @@ class TestImagesController(test_utils.BaseTestCase):
         output = self.controller.create(request, image={},
                                         extra_properties={}, tags=tags)
         self.assertEqual(set(['ping']), output.tags)
-        output_log = self.notifier.get_log()
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.update')
+        self.assertEqual(output_log['event_type'], 'image.create')
         self.assertEqual(output_log['payload']['id'], output.image_id)
 
     def test_update_no_changes(self):
@@ -416,11 +422,9 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual(output.image_id, UUID1)
         self.assertEqual(output.created_at, output.updated_at)
         self.assertEqual(output.tags, set(['ping', 'pong']))
-        output_log = self.notifier.get_log()
+        output_logs = self.notifier.get_logs()
         #NOTE(markwash): don't send a notification if nothing is updated
-        self.assertEqual(output_log['notification_type'], '')
-        self.assertEqual(output_log['event_type'], '')
-        self.assertEqual(output_log['payload'], '')
+        self.assertTrue(len(output_logs) == 0)
 
     def test_update_image_doesnt_exist(self):
         request = unit_test_utils.get_fake_request()
@@ -582,7 +586,9 @@ class TestImagesController(test_utils.BaseTestCase):
         ]
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(set(['ping']), output.tags)
-        output_log = self.notifier.get_log()
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'INFO')
         self.assertEqual(output_log['event_type'], 'image.update')
         self.assertEqual(output_log['payload']['id'], UUID1)
@@ -592,7 +598,9 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertTrue(filter(lambda k: UUID1 in k, self.store.data))
         try:
             image = self.controller.delete(request, UUID1)
-            output_log = self.notifier.get_log()
+            output_logs = self.notifier.get_logs()
+            self.assertEqual(len(output_logs), 1)
+            output_log = output_logs[0]
             self.assertEqual(output_log['notification_type'], "INFO")
             self.assertEqual(output_log['event_type'], "image.delete")
         except Exception as e:

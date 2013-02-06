@@ -61,13 +61,56 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual(4, output['meta']['size'])
         self.assertEqual('YYYY', output['data'])
         self.assertEqual(output['meta']['status'], 'active')
-        output_log = self.notifier.get_log()
-        expected_log = {
+
+    def test_upload_download_prepare_notification(self):
+        request = unit_test_utils.get_fake_request()
+        self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)
+        output = self.controller.download(request, unit_test_utils.UUID2)
+        output_log = self.notifier.get_logs()
+        prepare_payload = output['meta'].copy()
+        prepare_payload['checksum'] = None
+        prepare_payload['size'] = None
+        prepare_payload['location'] = None
+        prepare_payload['status'] = 'queued'
+        del prepare_payload['updated_at']
+        prepare_log = {
+            'notification_type': "INFO",
+            'event_type': "image.prepare",
+            'payload': prepare_payload,
+        }
+        self.assertEqual(len(output_log), 3)
+        prepare_updated_at = output_log[0]['payload']['updated_at']
+        del output_log[0]['payload']['updated_at']
+        self.assertTrue(prepare_updated_at <= output['meta']['updated_at'])
+        self.assertEqual(output_log[0], prepare_log)
+
+    def test_upload_download_upload_notification(self):
+        request = unit_test_utils.get_fake_request()
+        self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)
+        output = self.controller.download(request, unit_test_utils.UUID2)
+        output_log = self.notifier.get_logs()
+        upload_payload = output['meta'].copy()
+        upload_log = {
             'notification_type': "INFO",
             'event_type': "image.upload",
-            'payload': output['meta'],
+            'payload': upload_payload,
         }
-        self.assertEqual(output_log, expected_log)
+        self.assertEqual(len(output_log), 3)
+        self.assertEqual(output_log[1], upload_log)
+
+    def test_upload_download_activate_notification(self):
+        request = unit_test_utils.get_fake_request()
+        self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)
+        output = self.controller.download(request, unit_test_utils.UUID2)
+        output_log = self.notifier.get_logs()
+        activate_payload = output['meta'].copy()
+        activate_log = {
+            'notification_type': "INFO",
+            'event_type': "image.activate",
+            'payload': activate_payload,
+        }
+        self.assertEqual(len(output_log), 3)
+        self.assertEqual(output_log[2], activate_log)
 
     def test_upload_non_existent_image(self):
         request = unit_test_utils.get_fake_request()

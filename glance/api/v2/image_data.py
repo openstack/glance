@@ -55,6 +55,7 @@ class ImageDataController(object):
     def upload(self, req, image_id, data, size):
         try:
             image = self._get_image(req.context, image_id)
+            self.notifier.info("image.prepare", image)
             location, size, checksum = self.store_api.add_to_backend(
                     req.context, 'file', image_id, data, size)
 
@@ -71,12 +72,14 @@ class ImageDataController(object):
         except exception.StorageFull, e:
             msg = _("Image storage media is full: %s") % e
             LOG.error(msg)
+            self.notifier.error("image.upload", msg)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
         except exception.StorageWriteDenied, e:
             msg = _("Insufficient permissions on image storage media: %s") % e
             LOG.error(msg)
+            self.notifier.error("image.upload", msg)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
                                                    request=req)
 
@@ -96,6 +99,7 @@ class ImageDataController(object):
             self.db_api.image_update(req.context, image_id, values)
             updated_image = self._get_image(req.context, image_id)
             self.notifier.info('image.upload', updated_image)
+            self.notifier.info('image.activate', updated_image)
 
     def download(self, req, image_id):
         self._enforce(req, 'download_image')

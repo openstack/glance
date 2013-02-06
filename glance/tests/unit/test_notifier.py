@@ -439,21 +439,27 @@ class TestImageNotifications(utils.BaseTestCase):
 
     def test_image_save_notification(self):
         self.image_repo_proxy.save(self.image)
-        output_log = self.notifier.get_log()
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'INFO')
         self.assertEqual(output_log['event_type'], 'image.update')
         self.assertEqual(output_log['payload']['id'], self.image.image_id)
 
     def test_image_add_notification(self):
         self.image_repo_proxy.add(self.image)
-        output_log = self.notifier.get_log()
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.update')
+        self.assertEqual(output_log['event_type'], 'image.create')
         self.assertEqual(output_log['payload']['id'], self.image.image_id)
 
     def test_image_delete_notification(self):
         self.image_repo_proxy.remove(self.image)
-        output_log = self.notifier.get_log()
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'INFO')
         self.assertEqual(output_log['event_type'], 'image.delete')
         self.assertEqual(output_log['payload']['id'], self.image.image_id)
