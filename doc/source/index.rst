@@ -49,6 +49,7 @@ Concepts
    identifiers
    statuses
    formats
+   common-image-properties
 
 Installing/Configuring Glance
 =============================
