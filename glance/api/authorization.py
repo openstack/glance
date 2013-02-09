@@ -30,9 +30,27 @@ def is_image_mutable(context, image):
 
 def proxy_image(context, image):
     if is_image_mutable(context, image):
-        return ImageProxy(image)
+        return ImageProxy(image, context)
     else:
-        return ImmutableImageProxy(image)
+        return ImmutableImageProxy(image, context)
+
+
+def is_member_mutable(context, member):
+    """Return True if the image is mutable in this context."""
+    if context.is_admin:
+        return True
+
+    if context.owner is None:
+        return False
+
+    return member.member_id == context.owner
+
+
+def proxy_member(context, member):
+    if is_member_mutable(context, member):
+        return member
+    else:
+        return ImmutableMemberProxy(member)
 
 
 class ImageRepoProxy(glance.domain.ImageRepoProxy):
@@ -49,6 +67,62 @@ class ImageRepoProxy(glance.domain.ImageRepoProxy):
     def list(self, *args, **kwargs):
         images = self.image_repo.list(*args, **kwargs)
         return [proxy_image(self.context, i) for i in images]
+
+
+class ImageMembershipRepoProxy(glance.domain.ImageMembershipRepoProxy):
+
+    def __init__(self, member_repo, context):
+        self.context = context
+        self.member_repo = member_repo
+        super(ImageMembershipRepoProxy, self).__init__(member_repo)
+
+    def get(self, member_id):
+        if (self.context.is_admin or
+            self.context.owner == self.member_repo.image.owner or
+            self.context.owner == member_id):
+            member = self.member_repo.get(member_id)
+            return proxy_member(self.context, member)
+        else:
+            message = _("You cannot get image member for %s")
+            raise exception.Forbidden(message % member_id)
+
+    def list(self, *args, **kwargs):
+        members = self.member_repo.list(*args, **kwargs)
+        if (self.context.is_admin or
+            self.context.owner == self.member_repo.image.owner):
+            return [proxy_member(self.context, m) for m in members]
+        for member in members:
+            if member.member_id == self.context.owner:
+                return [proxy_member(self.context, member)]
+        message = _("You cannot get image member for %s")
+        raise exception.Forbidden(message % self.member_repo.image.image_id)
+
+    def remove(self, image_member):
+        if (self.member_repo.image.owner == self.context.owner or
+            self.context.is_admin):
+            self.member_repo.remove(image_member)
+        else:
+            message = _("You cannot delete image member for %s")
+            raise exception.Forbidden(message
+                                      % self.member_repo.image.image_id)
+
+    def add(self, image_member):
+        if (self.member_repo.image.owner == self.context.owner or
+            self.context.is_admin):
+            return self.member_repo.add(image_member)
+        else:
+            message = _("You cannot add image member for %s")
+            raise exception.Forbidden(message
+                                      % self.member_repo.image.image_id)
+
+    def save(self, image_member):
+        if (self.context.is_admin or
+            self.context.owner == image_member.member_id):
+            updated_member = self.member_repo.save(image_member)
+            return proxy_member(self.context, updated_member)
+        else:
+            message = _("You cannot update image member %s")
+            raise exception.Forbidden(message % image_member.member_id)
 
 
 class ImageFactoryProxy(object):
@@ -139,8 +213,9 @@ class ImmutableTags(set):
 
 
 class ImmutableImageProxy(object):
-    def __init__(self, base):
+    def __init__(self, base, context):
         self.base = base
+        self.context = context
 
     name = _immutable_attr('base', 'name')
     image_id = _immutable_attr('base', 'image_id')
@@ -167,14 +242,27 @@ class ImmutableImageProxy(object):
         raise exception.Forbidden(message)
 
     def get_member_repo(self):
-        message = _("You are not permitted to access this image.")
-        raise exception.Forbidden(message)
+        member_repo = self.base.get_member_repo()
+        return ImageMembershipRepoProxy(member_repo, self.context)
+
+
+class ImmutableMemberProxy(object):
+    def __init__(self, base):
+        self.base = base
+
+    id = _immutable_attr('base', 'id')
+    image_id = _immutable_attr('base', 'image_id')
+    member_id = _immutable_attr('base', 'member_id')
+    status = _immutable_attr('base', 'status')
+    created_at = _immutable_attr('base', 'created_at')
+    updated_at = _immutable_attr('base', 'updated_at')
 
 
 class ImageProxy(glance.domain.ImageProxy):
 
-    def __init__(self, image):
+    def __init__(self, image, context):
         self.image = image
+        self.context = context
         super(ImageProxy, self).__init__(image)
 
     def get_member_repo(self, **kwargs):
@@ -182,4 +270,5 @@ class ImageProxy(glance.domain.ImageProxy):
             message = _("Public images do not have members.")
             raise exception.Forbidden(message)
         else:
-            return self.image.get_member_repo(**kwargs)
+            member_repo = self.image.get_member_repo(**kwargs)
+            return ImageMembershipRepoProxy(member_repo, self.context)

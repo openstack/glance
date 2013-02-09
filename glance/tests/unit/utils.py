@@ -35,19 +35,19 @@ USER3 = '2hss8dkl-d8jh-88yd-uhs9-879sdjsd8skd'
 BASE_URI = 'swift+http://storeurl.com/container'
 
 
-def get_fake_request(path='', method='POST', is_admin=False, user=USER1):
+def get_fake_request(path='', method='POST', is_admin=False, user=USER1,
+                     tenant=TENANT1):
     req = wsgi.Request.blank(path)
     req.method = method
 
     kwargs = {
         'user': user,
-        'tenant': TENANT1,
+        'tenant': tenant,
         'roles': [],
         'is_admin': is_admin,
     }
 
     req.context = glance.context.RequestContext(**kwargs)
-
     return req
 
 

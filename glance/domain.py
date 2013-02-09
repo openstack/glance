@@ -178,12 +178,25 @@ class ImageProxy(object):
 
 class ImageMembership(object):
 
-    def __init__(self, image_id, member_id, created_at, updated_at, id=None):
+    def __init__(self, image_id, member_id, created_at, updated_at,
+                 id=None, status=None):
         self.id = id
         self.image_id = image_id
         self.member_id = member_id
         self.created_at = created_at
         self.updated_at = updated_at
+        self.status = status
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, status):
+        if status not in ('pending', 'accepted', 'rejected'):
+            msg = _('Status must be "pending", "accepted" or "rejected".')
+            raise ValueError(msg)
+        self._status = status
 
 
 class ImageMemberFactory(object):
@@ -193,7 +206,8 @@ class ImageMemberFactory(object):
         updated_at = created_at
 
         return ImageMembership(image_id=image.image_id, member_id=member_id,
-                               created_at=created_at, updated_at=updated_at)
+                               created_at=created_at, updated_at=updated_at,
+                               status='pending')
 
 
 class ImageMembershipRepoProxy(object):
@@ -209,6 +223,9 @@ class ImageMembershipRepoProxy(object):
 
     def add(self, image_member):
         return self.base.add(image_member)
+
+    def save(self, image_member):
+        return self.base.save(image_member)
 
     def remove(self, image_member):
         return self.base.remove(image_member)

@@ -734,6 +734,7 @@ def _image_member_format(member_ref):
         'image_id': member_ref['image_id'],
         'member': member_ref['member'],
         'can_share': member_ref['can_share'],
+        'status': member_ref['status'],
         'created_at': member_ref['created_at'],
         'updated_at': member_ref['updated_at']
     }
@@ -775,18 +776,19 @@ def _image_member_get(context, memb_id, session):
     return query.one()
 
 
-def image_member_find(context, image_id=None, member=None):
+def image_member_find(context, image_id=None, member=None, status=None):
     """Find all members that meet the given criteria
 
     :param image_id: identifier of image entity
     :param member: tenant to which membership has been granted
     """
     session = get_session()
-    members = _image_member_find(context, session, image_id, member)
+    members = _image_member_find(context, session, image_id, member, status)
     return [_image_member_format(m) for m in members]
 
 
-def _image_member_find(context, session, image_id=None, member=None):
+def _image_member_find(context, session, image_id=None,
+                       member=None, status=None):
     # Note lack of permissions check; this function is called from
     # is_image_visible(), so avoid recursive calls
     query = session.query(models.ImageMember)
@@ -796,6 +798,8 @@ def _image_member_find(context, session, image_id=None, member=None):
         query = query.filter_by(image_id=image_id)
     if member is not None:
         query = query.filter_by(member=member)
+    if status is not None:
+        query = query.filter_by(status=status)
 
     return query.all()
 

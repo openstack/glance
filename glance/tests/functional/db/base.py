@@ -518,6 +518,7 @@ class DriverTests(object):
             'member': TENANT1,
             'image_id': UUID1,
             'can_share': False,
+            'status': 'pending',
         }
         self.assertEqual(expected, actual)
 
@@ -532,6 +533,7 @@ class DriverTests(object):
 
         expected = {'member': TENANT1,
                     'image_id': UUID1,
+                    'status': 'pending',
                     'can_share': False}
         self.assertEqual(expected, member)
 
@@ -545,7 +547,46 @@ class DriverTests(object):
         member.pop('updated_at')
         expected = {'member': TENANT1,
                     'image_id': UUID1,
+                    'status': 'pending',
                     'can_share': True}
+        self.assertEqual(expected, member)
+
+        members = self.db_api.image_member_find(self.context,
+                                                member=TENANT1,
+                                                image_id=UUID1)
+        member = members[0]
+        member.pop('id')
+        member.pop('created_at')
+        member.pop('updated_at')
+        self.assertEqual(expected, member)
+
+    def test_image_member_update_status(self):
+        TENANT1 = uuidutils.generate_uuid()
+        member = self.db_api.image_member_create(self.context,
+                                                 {'member': TENANT1,
+                                                  'image_id': UUID1})
+        member_id = member.pop('id')
+        member.pop('created_at')
+        member.pop('updated_at')
+
+        expected = {'member': TENANT1,
+                    'image_id': UUID1,
+                    'status': 'pending',
+                    'can_share': False}
+        self.assertEqual(expected, member)
+
+        member = self.db_api.image_member_update(self.context,
+                                                 member_id,
+                                                 {'status': 'accepted'})
+
+        self.assertNotEqual(member['created_at'], member['updated_at'])
+        member.pop('id')
+        member.pop('created_at')
+        member.pop('updated_at')
+        expected = {'member': TENANT1,
+                    'image_id': UUID1,
+                    'status': 'accepted',
+                    'can_share': False}
         self.assertEqual(expected, member)
 
         members = self.db_api.image_member_find(self.context,
@@ -562,8 +603,8 @@ class DriverTests(object):
         TENANT2 = uuidutils.generate_uuid()
         fixtures = [
             {'member': TENANT1, 'image_id': UUID1},
-            {'member': TENANT1, 'image_id': UUID2},
-            {'member': TENANT2, 'image_id': UUID1},
+            {'member': TENANT1, 'image_id': UUID2, 'status': 'rejected'},
+            {'member': TENANT2, 'image_id': UUID1, 'status': 'accepted'},
         ]
         for f in fixtures:
             self.db_api.image_member_create(self.context, copy.deepcopy(f))
@@ -585,6 +626,23 @@ class DriverTests(object):
                                                member=TENANT2,
                                                image_id=UUID1)
         _assertMemberListMatch([fixtures[2]], output)
+
+        output = self.db_api.image_member_find(self.context,
+                                               status='accepted')
+        _assertMemberListMatch([fixtures[2]], output)
+
+        output = self.db_api.image_member_find(self.context,
+                                               status='rejected')
+        _assertMemberListMatch([fixtures[1]], output)
+
+        output = self.db_api.image_member_find(self.context,
+                                               status='pending')
+        _assertMemberListMatch([fixtures[0]], output)
+
+        output = self.db_api.image_member_find(self.context,
+                                               status='pending',
+                                               image_id=UUID2)
+        _assertMemberListMatch([], output)
 
         image_id = uuidutils.generate_uuid()
         output = self.db_api.image_member_find(self.context,
