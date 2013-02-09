@@ -68,7 +68,8 @@ if __name__ == "__main__":
         cfg.StrOpt('keystone-admin-user',
                    help='Administrative user\'s id'),
         cfg.StrOpt('keystone-admin-password',
-                   help='Administrative user\'s password'),
+                   help='Administrative user\'s password',
+                   secret=True),
     ]
     config.register_cli_opts(extra_cli_opts)
     config(project='glance', prog='glance-registry')
