@@ -22,6 +22,7 @@
 import traceback
 
 import eventlet
+from oslo.config import cfg
 from webob.exc import (HTTPError,
                        HTTPNotFound,
                        HTTPConflict,
@@ -41,7 +42,6 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 from glance import notifier
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 from glance import registry
 from glance.store import (get_from_backend,
@@ -50,7 +50,6 @@ from glance.store import (get_from_backend,
                           schedule_delayed_delete_from_backend,
                           get_store_from_location,
                           get_store_from_scheme)
-
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)

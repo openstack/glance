@@ -25,15 +25,15 @@ import socket
 import StringIO
 import subprocess
 
-import testtools
+from oslo.config import cfg
 import stubout
+import testtools
 
 from glance.common import config
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 from glance import context
-from glance.openstack.common import cfg
 
 CONF = cfg.CONF
 

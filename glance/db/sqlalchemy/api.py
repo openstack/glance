@@ -25,6 +25,7 @@ Defines interface for DB access
 import logging
 import time
 
+from oslo.config import cfg
 import sqlalchemy
 import sqlalchemy.orm as sa_orm
 import sqlalchemy.sql as sa_sql
@@ -32,10 +33,8 @@ import sqlalchemy.sql as sa_sql
 from glance.common import exception
 from glance.db.sqlalchemy import migration
 from glance.db.sqlalchemy import models
-from glance.openstack.common import cfg
 import glance.openstack.common.log as os_logging
 from glance.openstack.common import timeutils
-
 
 _ENGINE = None
 _MAKER = None

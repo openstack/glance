@@ -19,6 +19,7 @@ import json
 import re
 import urllib
 
+from oslo.config import cfg
 import webob.exc
 
 from glance.api import policy
@@ -29,12 +30,10 @@ import glance.db
 import glance.domain
 import glance.gateway
 import glance.notifier
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 import glance.schema
 import glance.store
-
 
 LOG = logging.getLogger(__name__)
 

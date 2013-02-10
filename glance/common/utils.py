@@ -33,10 +33,10 @@ import platform
 import subprocess
 import sys
 
+from oslo.config import cfg
 from webob import exc
 
 from glance.common import exception
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 
 CONF = cfg.CONF

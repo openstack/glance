@@ -15,10 +15,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.config import cfg
 import paste.urlmap
-
-from glance.openstack.common import cfg
-
 
 CONF = cfg.CONF
 

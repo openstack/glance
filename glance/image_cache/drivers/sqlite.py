@@ -26,11 +26,11 @@ import stat
 import time
 
 from eventlet import sleep, timeout
+from oslo.config import cfg
 import sqlite3
 
 from glance.common import exception
 from glance.image_cache.drivers import base
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)

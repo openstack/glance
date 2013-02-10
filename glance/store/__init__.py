@@ -19,12 +19,13 @@ import os
 import sys
 import time
 
+from oslo.config import cfg
+
 from glance.common import crypt
 from glance.common import exception
 from glance.common import utils
 import glance.context
 import glance.domain
-from glance.openstack.common import cfg
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
 from glance.store import location

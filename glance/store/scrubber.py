@@ -20,10 +20,11 @@ import eventlet
 import os
 import time
 
+from oslo.config import cfg
+
 from glance.common import crypt
 from glance.common import utils
 from glance import context
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 from glance import registry
 from glance import store

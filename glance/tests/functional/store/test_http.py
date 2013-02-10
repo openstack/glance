@@ -24,7 +24,6 @@ import os.path
 import signal
 import testtools
 
-import glance.openstack.common.cfg
 import glance.store.http
 import glance.tests.functional.store as store_tests
 import glance.tests.utils

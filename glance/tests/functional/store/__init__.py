@@ -19,14 +19,13 @@ import StringIO
 
 import testtools
 
+from oslo.config import cfg
+
 from glance.common import exception
-from glance.openstack.common import cfg
 from glance.openstack.common import uuidutils
 import glance.store.location
-
 #NOTE(bcwaldon): importing this to get the default_store option
 import glance.api.v1.images
-
 
 CONF = cfg.CONF
 

@@ -21,9 +21,10 @@ LRU Cache for Image Data
 
 import hashlib
 
+from oslo.config import cfg
+
 from glance.common import exception
 from glance.common import utils
-from glance.openstack.common import cfg
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
 

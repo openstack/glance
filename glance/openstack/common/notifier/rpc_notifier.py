@@ -13,8 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.config import cfg
 
-from glance.openstack.common import cfg
 from glance.openstack.common import context as req_context
 from glance.openstack.common.gettextutils import _
 from glance.openstack.common import log as logging

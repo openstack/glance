@@ -20,9 +20,9 @@ import os
 import shutil
 
 import fixtures
+from oslo.config import cfg
 import stubout
 
-from glance.openstack.common import cfg
 from glance import store
 from glance.store import location
 from glance.tests import stubs

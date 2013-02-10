@@ -22,9 +22,9 @@ import os
 import os.path
 
 import fixtures
+import oslo.config.cfg
 import testtools
 
-import glance.openstack.common.cfg
 import glance.store.filesystem
 import glance.tests.functional.store as store_tests
 import glance.tests.utils
@@ -48,8 +48,7 @@ class TestFilesystemStore(store_tests.BaseTestCase, testtools.TestCase):
             fap.write("[DEFAULT]\n")
             fap.write("filesystem_store_datadir=%s" % self.store_dir)
 
-        glance.openstack.common.cfg.CONF(default_config_files=[config_file],
-                                         args=[])
+        oslo.config.cfg.CONF(default_config_files=[config_file], args=[])
 
     def get_store(self, **kwargs):
         store = glance.store.filesystem.Store(context=kwargs.get('context'))

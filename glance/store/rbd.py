@@ -24,8 +24,9 @@ import hashlib
 import math
 import urllib
 
+from oslo.config import cfg
+
 from glance.common import exception
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base

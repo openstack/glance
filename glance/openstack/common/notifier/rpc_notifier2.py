@@ -15,7 +15,8 @@
 
 '''messaging based notification driver, with message envelopes'''
 
-from glance.openstack.common import cfg
+from oslo.config import cfg
+
 from glance.openstack.common import context as req_context
 from glance.openstack.common.gettextutils import _
 from glance.openstack.common import log as logging

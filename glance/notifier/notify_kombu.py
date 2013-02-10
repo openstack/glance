@@ -19,9 +19,9 @@ import time
 
 import kombu.connection
 import kombu.entity
+from oslo.config import cfg
 
 from glance.notifier import strategy
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
