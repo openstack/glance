@@ -430,6 +430,37 @@ class DriverTests(object):
         image = self.db_api.image_get(ctxt2, UUIDX)
         self.assertEquals(UUIDX, image['id'])
 
+        # by default get_all displays only images with status 'accepted'
+        images = self.db_api.image_get_all(ctxt2)
+        self.assertEquals(3, len(images))
+
+        # filter by rejected
+        images = self.db_api.image_get_all(ctxt2, member_status='rejected')
+        self.assertEquals(3, len(images))
+
+        # filter by visibility
+        images = self.db_api.image_get_all(ctxt2,
+                                           filters={'visibility': 'shared'})
+        self.assertEquals(0, len(images))
+
+        # filter by visibility
+        images = self.db_api.image_get_all(ctxt2, member_status='pending',
+                                           filters={'visibility': 'shared'})
+        self.assertEquals(1, len(images))
+
+        # filter by visibility
+        images = self.db_api.image_get_all(ctxt2, member_status='all',
+                                           filters={'visibility': 'shared'})
+        self.assertEquals(1, len(images))
+
+        # filter by status pending
+        images = self.db_api.image_get_all(ctxt2, member_status='pending')
+        self.assertEquals(4, len(images))
+
+        # filter by status all
+        images = self.db_api.image_get_all(ctxt2, member_status='all')
+        self.assertEquals(4, len(images))
+
     def test_is_image_visible(self):
         TENANT1 = uuidutils.generate_uuid()
         TENANT2 = uuidutils.generate_uuid()

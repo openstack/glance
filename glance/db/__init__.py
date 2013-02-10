@@ -79,11 +79,11 @@ class ImageRepo(object):
         return ImageProxy(image, self.context, self.db_api)
 
     def list(self, marker=None, limit=None, sort_key='created_at',
-             sort_dir='desc', filters=None):
-        db_filters = self._translate_filters(filters)
+             sort_dir='desc', filters=None, member_status='accepted'):
         db_api_images = self.db_api.image_get_all(
-                self.context, filters=db_filters, marker=marker, limit=limit,
-                sort_key=sort_key, sort_dir=sort_dir)
+                self.context, filters=filters, marker=marker, limit=limit,
+                sort_key=sort_key, sort_dir=sort_dir,
+                member_status=member_status)
         images = []
         for db_api_image in db_api_images:
             tags = self.db_api.image_tag_get_all(self.context,
@@ -91,17 +91,6 @@ class ImageRepo(object):
             image = self._format_image_from_db(dict(db_api_image), tags)
             images.append(image)
         return images
-
-    def _translate_filters(self, filters):
-        db_filters = {}
-        if filters is None:
-            return None
-        for key, value in filters.iteritems():
-            if key == 'visibility':
-                db_filters['is_public'] = value == 'public'
-            else:
-                db_filters[key] = value
-        return db_filters
 
     def _format_image_from_db(self, db_image, db_tags):
         visibility = 'public' if db_image['is_public'] else 'private'
