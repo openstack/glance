@@ -434,6 +434,7 @@ class Controller(controller.BaseController):
                             "status to 'killed'.") % locals()
                     LOG.error(msg)
                     self._safe_kill(req, image_id)
+                    self._initiate_deletion(req, location, image_id)
                     raise HTTPBadRequest(explanation=msg,
                                          content_type="text/plain",
                                          request=req)
@@ -783,6 +784,13 @@ class Controller(controller.BaseController):
 
         return {'image_meta': image_meta}
 
+    @staticmethod
+    def _initiate_deletion(req, location, id):
+        if CONF.delayed_delete:
+            schedule_delayed_delete_from_backend(location, id)
+        else:
+            safe_delete_from_backend(location, req.context, id)
+
     @utils.mutating
     def delete(self, req, id):
         """
@@ -829,11 +837,7 @@ class Controller(controller.BaseController):
             # to delete the image if the backend doesn't yet store it.
             # See https://bugs.launchpad.net/glance/+bug/747799
             if image['location']:
-                if CONF.delayed_delete:
-                    schedule_delayed_delete_from_backend(image['location'], id)
-                else:
-                    safe_delete_from_backend(image['location'],
-                                             req.context, id)
+                self._initiate_deletion(req, image['location'], id)
         except exception.NotFound, e:
             msg = (_("Failed to find image to delete: %(e)s") % locals())
             for line in msg.split('\n'):
