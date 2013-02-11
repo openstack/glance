@@ -16,6 +16,7 @@
 
 import glance.db.simple.api
 import glance.tests.functional.db as db_tests
+from glance.tests.functional.db import base
 
 
 def get_db(config):
@@ -26,15 +27,17 @@ def reset_db(db_api):
     db_api.reset()
 
 
-def setUpModule():
-    """Stub in get_db and reset_db for testing the simple db api."""
-    db_tests.load(get_db, reset_db)
+class TestSimpleDriver(base.TestDriver, base.DriverTests):
+
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestSimpleDriver, self).setUp()
+        self.addCleanup(db_tests.reset)
 
 
-def tearDownModule():
-    """Reset get_db and reset_db for cleanliness."""
-    db_tests.reset()
+class TestSimpleVisibility(base.TestVisibility, base.VisibilityTests):
 
-
-#NOTE(markwash): Pull in all the base test cases
-from glance.tests.functional.db.base import *
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestSimpleVisibility, self).setUp()
+        self.addCleanup(db_tests.reset)

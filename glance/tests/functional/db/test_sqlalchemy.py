@@ -17,6 +17,7 @@
 import glance.db.sqlalchemy.api
 from glance.db.sqlalchemy import models as db_models
 import glance.tests.functional.db as db_tests
+from glance.tests.functional.db import base
 
 
 def get_db(config):
@@ -31,15 +32,17 @@ def reset_db(db_api):
     db_models.register_models(db_api._ENGINE)
 
 
-def setUpModule():
-    """Stub in get_db and reset_db for testing the sqlalchemy db api."""
-    db_tests.load(get_db, reset_db)
+class TestSqlAlchemyDriver(base.TestDriver, base.DriverTests):
+
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestSqlAlchemyDriver, self).setUp()
+        self.addCleanup(db_tests.reset)
 
 
-def tearDownModule():
-    """Reset get_db and reset_db for cleanliness."""
-    db_tests.reset()
+class TestSqlAlchemyVisibility(base.TestVisibility, base.VisibilityTests):
 
-
-#NOTE(markwash): Pull in all the base test cases
-from glance.tests.functional.db.base import *
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestSqlAlchemyVisibility, self).setUp()
+        self.addCleanup(db_tests.reset)
