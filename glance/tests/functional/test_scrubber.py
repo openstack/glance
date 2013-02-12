@@ -21,6 +21,8 @@ import nose
 import os
 import time
 
+from glance.common import crypt
+from glance.store.swift import StoreLocation
 from glance.tests import functional
 from glance.tests.functional.store.test_swift import parse_config
 from glance.tests.functional.store.test_swift import read_config
@@ -219,6 +221,86 @@ class TestScrubber(functional.FunctionalTest):
             response, content = http.request(path, 'HEAD')
             if (response['x-image-meta-status'] == 'deleted' and
                     response['x-image-meta-deleted'] == 'True'):
+                break
+            else:
+                continue
+        else:
+            self.fail('image was never scrubbed')
+
+        self.stop_servers()
+
+    def test_scrubber_with_metadata_enc(self):
+        """
+        test that files written to scrubber_data_dir use
+        metadata_encryption_key when available to encrypt the location
+        """
+        config_path = os.environ.get('GLANCE_TEST_SWIFT_CONF')
+        if not config_path:
+            msg = "GLANCE_TEST_SWIFT_CONF environ not set."
+            self.skipTest(msg)
+
+        raw_config = read_config(config_path)
+        swift_config = parse_config(raw_config)
+
+        self.cleanup()
+        self.start_servers(delayed_delete=True, daemon=True,
+                           default_store='swift', **swift_config)
+
+        # add an image
+        headers = {
+            'x-image-meta-name': 'test_image',
+            'x-image-meta-is_public': 'true',
+            'x-image-meta-disk_format': 'raw',
+            'x-image-meta-container_format': 'ovf',
+            'content-type': 'application/octet-stream',
+        }
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', body='XXX',
+                                         headers=headers)
+        self.assertEqual(response.status, 201)
+        image = json.loads(content)['image']
+        self.assertEqual('active', image['status'])
+        image_id = image['id']
+
+        # delete the image
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual('pending_delete', response['x-image-meta-status'])
+
+        # ensure the marker file has encrypted the image location by decrypting
+        # it and checking the image_id is intact
+        file_path = os.path.join(self.api_server.scrubber_datadir,
+                                 str(image_id))
+        marker_uri = ''
+        with open(file_path, 'r') as f:
+            marker_uri = f.readline().strip()
+        self.assertTrue(marker_uri is not None)
+
+        decrypted_uri = crypt.urlsafe_decrypt(
+                self.api_server.metadata_encryption_key, marker_uri)
+        loc = StoreLocation({})
+        loc.parse_uri(decrypted_uri)
+
+        self.assertEqual("swift+http", loc.scheme)
+        self.assertEqual(image['id'], loc.obj)
+
+        # NOTE(jkoelker) The build servers sometimes take longer than
+        #                15 seconds to scrub. Give it up to 5 min, checking
+        #                checking every 15 seconds. When/if it flips to
+        #                deleted, bail immediately.
+        for _ in xrange(3):
+            time.sleep(5)
+
+            response, content = http.request(path, 'HEAD')
+            if (response['x-image-meta-status'] == 'deleted' and
+                response['x-image-meta-deleted'] == 'True'):
                 break
             else:
                 continue

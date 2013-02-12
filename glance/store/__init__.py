@@ -19,6 +19,7 @@ import os
 import sys
 import time
 
+from glance.common import crypt
 from glance.common import exception
 from glance.common import utils
 import glance.context
@@ -277,6 +278,8 @@ def schedule_delayed_delete_from_backend(uri, image_id, **kwargs):
                 'image_id': image_id}
         raise exception.Duplicate(msg)
 
+    if CONF.metadata_encryption_key is not None:
+        uri = crypt.urlsafe_encrypt(CONF.metadata_encryption_key, uri, 64)
     with open(file_path, 'w') as f:
         f.write('\n'.join([uri, str(int(delete_time))]))
     os.chmod(file_path, 0600)
