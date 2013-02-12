@@ -326,7 +326,7 @@ class TestQpidNotifier(utils.BaseTestCase):
         self.notify_qpid = importutils.import_module("glance.notifier."
                                                      "notify_qpid")
         self.addCleanup(self.reset_qpid)
-        self.addCleanup(self.moker.ResetAll)
+        self.addCleanup(self.mocker.ResetAll)
 
     def reset_qpid(self):
 
