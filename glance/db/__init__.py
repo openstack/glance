@@ -149,6 +149,9 @@ class ImageRepo(object):
 
     def add(self, image):
         image_values = self._format_image_to_db(image)
+        # the updated_at value is not set in the _format_image_to_db
+        # function since it is specific to image create
+        image_values['updated_at'] = image.updated_at
         new_values = self.db_api.image_create(self.context, image_values)
         self.db_api.image_tag_set_all(self.context,
                                       image.image_id, image.tags)
