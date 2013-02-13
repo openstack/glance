@@ -20,6 +20,8 @@
 
 import urlparse
 
+_FATAL_EXCEPTION_FORMAT_ERRORS = False
+
 
 class RedirectException(Exception):
     def __init__(self, url):
@@ -41,9 +43,13 @@ class GlanceException(Exception):
             message = self.message
         try:
             message = message % kwargs
-        except Exception:
-            # at least get the core message out if something happened
-            pass
+        except Exception as e:
+            if _FATAL_EXCEPTION_FORMAT_ERRORS:
+                raise e
+            else:
+                # at least get the core message out if something happened
+                pass
+
         super(GlanceException, self).__init__(message)
 
 
