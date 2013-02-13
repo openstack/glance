@@ -20,6 +20,7 @@
 import datetime
 import hashlib
 import json
+import os
 import tempfile
 
 import httplib2
@@ -1564,21 +1565,41 @@ class TestApi(functional.FunctionalTest):
 
         self.stop_servers()
 
-    @skip_if_disabled
-    def test_mismatched_size(self):
+    def _do_test_mismatched_attribute(self, attribute, value):
         """
-        Test mismatched size.
+        Test mismatched attribute.
         """
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
 
         image_data = "*" * FIVE_KB
         headers = minimal_headers('Image1')
-        headers['x-image-meta-size'] = str(FIVE_KB + 1)
+        headers[attribute] = value
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
         self.assertEqual(response.status, 400)
 
+        images_dir = os.path.join(self.test_dir, 'images')
+        image_count = len([name for name in os.listdir(images_dir)
+                           if os.path.isfile(name)])
+        self.assertEquals(image_count, 0)
+
         self.stop_servers()
+
+    @skip_if_disabled
+    def test_mismatched_size(self):
+        """
+        Test mismatched size.
+        """
+        self._do_test_mismatched_attribute('x-image-meta-size',
+                                           str(FIVE_KB + 1))
+
+    @skip_if_disabled
+    def test_mismatched_checksum(self):
+        """
+        Test mismatched checksum.
+        """
+        self._do_test_mismatched_attribute('x-image-meta-checksum',
+                                           'foobar')
