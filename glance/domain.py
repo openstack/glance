@@ -172,6 +172,9 @@ class ImageProxy(object):
     def delete(self):
         self.base.delete()
 
+    def get_member_repo(self):
+        return self.base.get_member_repo()
+
 
 class ImageMembership(object):
 

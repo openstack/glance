@@ -57,6 +57,15 @@ def _db_fixture(id, **kwargs):
     return obj
 
 
+def _db_image_member_fixture(image_id, member_id, **kwargs):
+    obj = {
+        'image_id': image_id,
+        'member': member_id,
+    }
+    obj.update(kwargs)
+    return obj
+
+
 class TestImageRepo(test_utils.BaseTestCase):
 
     def setUp(self):
@@ -67,6 +76,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.image_repo = glance.db.ImageRepo(self.context, self.db)
         self.image_factory = glance.domain.ImageFactory()
         self._create_images()
+        self._create_image_members()
         super(TestImageRepo, self).setUp()
 
     def _create_images(self):
@@ -83,6 +93,15 @@ class TestImageRepo(test_utils.BaseTestCase):
         [self.db.image_create(None, image) for image in self.images]
 
         self.db.image_tag_set_all(None, UUID1, ['ping', 'pong'])
+
+    def _create_image_members(self):
+        self.image_members = [
+            _db_image_member_fixture(UUID1, TENANT2),
+            _db_image_member_fixture(UUID1, TENANT3),
+            _db_image_member_fixture(UUID4, TENANT3),
+        ]
+        [self.db.image_member_create(None, image_member)
+            for image_member in self.image_members]
 
     def test_get(self):
         image = self.image_repo.get(UUID1)
@@ -174,3 +193,61 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.image_repo.remove(image)
         self.assertTrue(image.updated_at > previous_update_time)
         self.assertRaises(exception.NotFound, self.image_repo.get, UUID1)
+
+
+class TestImageMemberRepo(test_utils.BaseTestCase):
+
+    def setUp(self):
+        self.db = unit_test_utils.FakeDB()
+        self.db.reset()
+        self.context = glance.context.RequestContext(
+                user=USER1, tenant=TENANT1)
+        self.image_member_repo = glance.db.ImageMemberRepo(self.context,
+                                                           self.db, UUID1)
+        self.image_member_factory = glance.domain.ImageMemberFactory()
+        self._create_image_members()
+        super(TestImageMemberRepo, self).setUp()
+
+    def _create_image_members(self):
+        self.db.reset()
+        self.image_members = [
+            _db_image_member_fixture(UUID1, TENANT2),
+            _db_image_member_fixture(UUID1, TENANT3),
+        ]
+        [self.db.image_member_create(None, image_member)
+            for image_member in self.image_members]
+
+    def test_list(self):
+        image_members = self.image_member_repo.list()
+        image_member_ids = set([i.member_id for i in image_members])
+        self.assertEqual(set([TENANT2, TENANT3]), image_member_ids)
+
+    def test_list_no_members(self):
+        self.image_member_repo_uuid2 = glance.db.ImageMemberRepo(
+                                                self.context, self.db, UUID2)
+        image_members = self.image_member_repo_uuid2.list()
+        image_member_ids = set([i.member_id for i in image_members])
+        self.assertEqual(set([]), image_member_ids)
+
+    def test_add_image_member(self):
+        image_member = self.image_member_factory.new_image_member(UUID1,
+                                                                  TENANT4)
+        self.assertTrue(image_member.id is None)
+        retreived_image_member = self.image_member_repo.add(image_member)
+        self.assertEqual(retreived_image_member.id, image_member.id)
+        self.assertEqual(retreived_image_member.image_id,
+                         image_member.image_id)
+        self.assertEqual(retreived_image_member.member_id,
+                         image_member.member_id)
+
+    def test_remove_image_member(self):
+        image_member = self.image_member_repo.get(TENANT2)
+        self.image_member_repo.remove(image_member)
+        self.assertRaises(exception.NotFound, self.image_member_repo.get,
+                          TENANT2)
+
+    def test_remove_image_member_does_not_exist(self):
+        fake_member = glance.domain.ImageMemberFactory()\
+                                   .new_image_member(UUID2, TENANT4)
+        self.assertRaises(exception.NotFound, self.image_member_repo.remove,
+                          fake_member)
