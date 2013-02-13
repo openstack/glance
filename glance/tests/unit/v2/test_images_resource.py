@@ -16,6 +16,7 @@
 import datetime
 import json
 
+import testtools
 import webob
 
 import glance.api.v2.images
@@ -527,7 +528,9 @@ class TestImagesController(test_utils.BaseTestCase):
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(output.image_id, UUID1)
         self.assertEqual(output.min_ram, 128)
-        print output.extra_properties
+        self.addDetail('extra_properties',
+                       testtools.content.json_content(
+                           json.dumps(output.extra_properties)))
         self.assertEqual(len(output.extra_properties), 2)
         self.assertEqual(output.extra_properties['foo'], 'baz')
         self.assertEqual(output.extra_properties['kb'], 'dvorak')
