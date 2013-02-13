@@ -148,24 +148,28 @@ class FakePolicyEnforcer(object):
 
 class FakeNotifier(object):
     def __init__(self, *_args, **kwargs):
-        self.log = {'notification_type': "",
-                    'event_type': "",
-                    'payload': "", }
+        self.log = []
 
     def warn(self, event_type, payload):
-        self.log['notification_type'] = "WARN"
-        self.log['event_type'] = event_type
-        self.log['payload'] = payload
+        log = {}
+        log['notification_type'] = "WARN"
+        log['event_type'] = event_type
+        log['payload'] = payload
+        self.log.append(log)
 
     def info(self, event_type, payload):
-        self.log['notification_type'] = "INFO"
-        self.log['event_type'] = event_type
-        self.log['payload'] = payload
+        log = {}
+        log['notification_type'] = "INFO"
+        log['event_type'] = event_type
+        log['payload'] = payload
+        self.log.append(log)
 
     def error(self, event_type, payload):
-        self.log['notification_type'] = "ERROR"
-        self.log['event_type'] = event_type
-        self.log['payload'] = payload
+        log = {}
+        log['notification_type'] = "ERROR"
+        log['event_type'] = event_type
+        log['payload'] = payload
+        self.log.append(log)
 
-    def get_log(self):
+    def get_logs(self):
         return self.log

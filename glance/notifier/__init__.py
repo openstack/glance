@@ -129,7 +129,7 @@ class ImageRepoProxy(glance.domain.ImageRepoProxy):
 
     def add(self, image):
         self.image_repo.add(image)
-        self.notifier.info('image.update', format_image_notification(image))
+        self.notifier.info('image.create', format_image_notification(image))
 
     def remove(self, image):
         self.image_repo.remove(image)

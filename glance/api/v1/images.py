@@ -349,6 +349,7 @@ class Controller(controller.BaseController):
 
         try:
             image_meta = registry.add_image_metadata(req.context, image_meta)
+            self.notifier.info("image.create", image_meta)
             return image_meta
         except exception.Duplicate:
             msg = (_("An image with identifier %s already exists") %
@@ -420,6 +421,7 @@ class Controller(controller.BaseController):
                     "to %(scheme)s store"), locals())
 
         try:
+            self.notifier.info("image.prepare", image_meta)
             location, size, checksum = store.add(
                 image_meta['id'],
                 utils.CooperativeReader(image_data),
@@ -524,6 +526,7 @@ class Controller(controller.BaseController):
             image_meta_data = registry.update_image_metadata(req.context,
                                                              image_id,
                                                              image_meta)
+            self.notifier.info("image.activate", image_meta_data)
             self.notifier.info("image.update", image_meta_data)
             return image_meta_data
         except exception.Invalid, e:
