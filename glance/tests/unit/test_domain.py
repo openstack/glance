@@ -149,3 +149,20 @@ class TestImage(test_utils.BaseTestCase):
     def test_delete_protected_image(self):
         self.image.protected = True
         self.assertRaises(exception.ProtectedImageDelete, self.image.delete)
+
+
+class TestImageMemberFactory(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(TestImageMemberFactory, self).setUp()
+        self.image_member_factory = domain.ImageMemberFactory()
+
+    def test_minimal_new_image_member(self):
+        image_id = '1111-2222-3333-4444'
+        member_id = 'fake-member-id'
+        image_member = self.image_member_factory.new_image_member(image_id,
+                                                                  member_id)
+        self.assertEqual(image_member.image_id, image_id)
+        self.assertTrue(image_member.created_at is not None)
+        self.assertEqual(image_member.created_at, image_member.updated_at)
+        self.assertTrue(image_member.member_id is not None)
