@@ -1,6 +1,7 @@
 [run]
 branch = True
-omit = /usr*,setup.py,*egg*,.venv/*,.tox/*,glance/tests/*
+source = glance
+omit = glance/tests/*,glance/openstack/*
 
 [report]
 ignore-errors = True
