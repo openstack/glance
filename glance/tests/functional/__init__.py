@@ -35,6 +35,7 @@ import urlparse
 
 import fixtures
 from sqlalchemy import create_engine
+import testtools
 
 from glance.common import utils
 from glance.tests import utils as test_utils
@@ -711,8 +712,7 @@ class FunctionalTest(test_utils.BaseTestCase):
                 if os.path.exists(trace):
                     msg += ('\nstrace:\n%s\n' % open(trace).read())
 
-        if 'NOSE_GLANCELOGCAPTURE' in os.environ:
-            msg += self.dump_logs(failed)
+        self.add_log_details(failed)
 
         return msg if expect_launch else None
 
@@ -799,15 +799,8 @@ class FunctionalTest(test_utils.BaseTestCase):
         dst_file_name = os.path.join(dst_dir, file_name)
         return dst_file_name
 
-    def dump_logs(self, servers=None):
-        dump = ''
+    def add_log_details(self, servers=None):
         logs = [s.log_file for s in (servers or self.launched_servers)]
         for log in logs:
-            dump += '\nContent of %s:\n\n' % log
             if os.path.exists(log):
-                f = open(log, 'r')
-                for line in f:
-                    dump += line
-            else:
-                dump += '<empty>'
-        return dump
+                testtools.content.attach_file(self, log)
