@@ -7,6 +7,7 @@ function usage {
   echo "  -V, --virtual-env        Always use virtualenv.  Install automatically if not present"
   echo "  -N, --no-virtual-env     Don't use virtualenv.  Run tests in local environment"
   echo "  -f, --force              Force a clean re-build of the virtual environment. Useful when dependencies have been added."
+  echo "  -u, --update             Update the virtual environment with any newer package versions"
   echo "  --unittests-only         Run unit tests only, exclude functional tests."
   echo "  -p, --pep8               Just run pep8"
   echo "  -P, --no-pep8            Don't run static code checks"
@@ -26,6 +27,7 @@ function process_option {
     -p|--pep8) let just_pep8=1;;
     -P|--no-pep8) let no_pep8=1;;
     -f|--force) let force=1;;
+    -u|--update) update=1;;
     --unittests-only) noseopts="$noseopts --exclude-dir=glance/tests/functional";;
     -c|--coverage) noseopts="$noseopts --with-coverage --cover-package=glance";;
     -*) noseopts="$noseopts $1";;
@@ -43,6 +45,7 @@ noseargs=
 wrapper=""
 just_pep8=0
 no_pep8=0
+update=0
 
 export NOSE_WITH_OPENSTACK=1
 export NOSE_OPENSTACK_COLOR=1
@@ -82,6 +85,10 @@ then
   if [ $force -eq 1 ]; then
     echo "Cleaning virtualenv..."
     rm -rf ${venv}
+  fi
+  if [ $update -eq 1 ]; then
+    echo "Updating virtualenv..."
+    python tools/install_venv.py
   fi
   if [ -e ${venv} ]; then
     wrapper="${with_venv}"
