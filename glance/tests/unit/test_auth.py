@@ -751,7 +751,7 @@ class TestImageRepoProxy(utils.BaseTestCase):
 
     def test_get_mutable_image(self):
         image = self.image_repo.get(self.fixtures[0].image_id)
-        self.assertTrue(image is self.fixtures[0])
+        self.assertEqual(image.image_id, self.fixtures[0].image_id)
 
     def test_get_immutable_image(self):
         image = self.image_repo.get(self.fixtures[1].image_id)
@@ -760,7 +760,7 @@ class TestImageRepoProxy(utils.BaseTestCase):
 
     def test_list(self):
         images = self.image_repo.list()
-        self.assertTrue(images[0] is self.fixtures[0])
+        self.assertEqual(images[0].image_id, self.fixtures[0].image_id)
         self.assertRaises(exception.Forbidden,
                           setattr, images[1], 'name', 'Wally')
         self.assertRaises(exception.Forbidden,

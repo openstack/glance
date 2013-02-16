@@ -76,7 +76,6 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.image_repo = glance.db.ImageRepo(self.context, self.db)
         self.image_factory = glance.domain.ImageFactory()
         self._create_images()
-        self._create_image_members()
         super(TestImageRepo, self).setUp()
 
     def _create_images(self):
@@ -93,15 +92,6 @@ class TestImageRepo(test_utils.BaseTestCase):
         [self.db.image_create(None, image) for image in self.images]
 
         self.db.image_tag_set_all(None, UUID1, ['ping', 'pong'])
-
-    def _create_image_members(self):
-        self.image_members = [
-            _db_image_member_fixture(UUID1, TENANT2),
-            _db_image_member_fixture(UUID1, TENANT3),
-            _db_image_member_fixture(UUID4, TENANT3),
-        ]
-        [self.db.image_member_create(None, image_member)
-            for image_member in self.image_members]
 
     def test_get(self):
         image = self.image_repo.get(UUID1)
@@ -201,14 +191,26 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         self.db.reset()
         self.context = glance.context.RequestContext(
                 user=USER1, tenant=TENANT1)
+        self.image_repo = glance.db.ImageRepo(self.context, self.db)
         self.image_member_repo = glance.db.ImageMemberRepo(self.context,
                                                            self.db, UUID1)
         self.image_member_factory = glance.domain.ImageMemberFactory()
+        self._create_images()
         self._create_image_members()
         super(TestImageMemberRepo, self).setUp()
 
+    def _create_images(self):
+        self.images = [
+            _db_fixture(UUID1, owner=TENANT1, name='1', size=256,
+                        status='active'),
+            _db_fixture(UUID2, owner=TENANT1, name='2',
+                        size=512, is_public=False),
+        ]
+        [self.db.image_create(None, image) for image in self.images]
+
+        self.db.image_tag_set_all(None, UUID1, ['ping', 'pong'])
+
     def _create_image_members(self):
-        self.db.reset()
         self.image_members = [
             _db_image_member_fixture(UUID1, TENANT2),
             _db_image_member_fixture(UUID1, TENANT3),
@@ -229,7 +231,8 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         self.assertEqual(set([]), image_member_ids)
 
     def test_add_image_member(self):
-        image_member = self.image_member_factory.new_image_member(UUID1,
+        image = self.image_repo.get(UUID1)
+        image_member = self.image_member_factory.new_image_member(image,
                                                                   TENANT4)
         self.assertTrue(image_member.id is None)
         retreived_image_member = self.image_member_repo.add(image_member)
@@ -246,7 +249,8 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
                           TENANT2)
 
     def test_remove_image_member_does_not_exist(self):
+        image = self.image_repo.get(UUID2)
         fake_member = glance.domain.ImageMemberFactory()\
-                                   .new_image_member(UUID2, TENANT4)
+                                   .new_image_member(image, TENANT4)
         self.assertRaises(exception.NotFound, self.image_member_repo.remove,
                           fake_member)
