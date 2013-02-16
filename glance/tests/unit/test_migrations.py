@@ -383,3 +383,101 @@ class TestMigrations(utils.BaseTestCase):
         migration_api.downgrade(14)
 
         self.assertEqual(get_locations(), unquoted_locations)
+
+    def test_no_data_loss_15_to_16_to_15(self):
+        """
+        Here, we test that in the case when we moved a column "type" from the
+        base images table to be records in the image_properties table, that
+        we don't lose any data during the migration. Similarly, we test that
+        on downgrade, we don't lose any data, as the records are moved from
+        the image_properties table back into the base image table.
+        """
+        for key, engine in self.engines.items():
+            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
+            self._no_data_loss_15_to_16_to_15(engine)
+
+    def _no_data_loss_15_to_16_to_15(self, engine):
+        migration_api.version_control(version=0)
+        migration_api.upgrade(15)
+
+        cur_version = migration_api.db_version()
+        self.assertEquals(15, cur_version)
+
+        # We are now on version 15.
+
+        image_members_table = Table('image_members', MetaData(),
+                                    autoload=True, autoload_with=engine)
+
+        self.assertTrue('status' not in image_members_table.c,
+                        "'status' not column found in image_members table "
+                        "columns! image_members table columns: %s"
+                        % image_members_table.c.keys())
+
+        conn = engine.connect()
+        sel = select([func.count("*")], from_obj=[image_members_table])
+        orig_num_image_members = conn.execute(sel).scalar()
+
+        now = datetime.datetime.now()
+        inserter = image_members_table.insert()
+        conn.execute(inserter, [
+                {'deleted': False, 'created_at': now, 'member': 'fake-member',
+                 'updated_at': now, 'can_share': False,
+                 'image_id': 'fake-image-id1'}])
+
+        sel = select([func.count("*")], from_obj=[image_members_table])
+        num_image_members = conn.execute(sel).scalar()
+        self.assertEqual(orig_num_image_members + 1, num_image_members)
+        conn.close()
+
+        #Upgrade to version 16
+
+        migration_api.upgrade(16)
+
+        cur_version = migration_api.db_version()
+        self.assertEquals(16, cur_version)
+
+        image_members_table = Table('image_members', MetaData(),
+                                    autoload=True, autoload_with=engine)
+
+        self.assertTrue('status' in image_members_table.c,
+                        "'status' column found in image_members table "
+                        "columns! image_members table columns: %s"
+                        % image_members_table.c.keys())
+
+        conn = engine.connect()
+        sel = select([func.count("*")], from_obj=[image_members_table])
+        num_image_members = conn.execute(sel).scalar()
+        self.assertEqual(orig_num_image_members + 1, num_image_members)
+
+        now = datetime.datetime.now()
+        inserter = image_members_table.insert()
+        conn.execute(inserter, [
+                {'deleted': False, 'created_at': now, 'member': 'fake-member',
+                 'updated_at': now, 'can_share': False, 'status': 'pending',
+                 'image_id': 'fake-image-id2'}])
+
+        sel = select([func.count("*")], from_obj=[image_members_table])
+        num_image_members = conn.execute(sel).scalar()
+        self.assertEqual(orig_num_image_members + 2, num_image_members)
+        conn.close()
+
+        #Downgrade to version 15
+
+        migration_api.downgrade(15)
+
+        cur_version = migration_api.db_version()
+        self.assertEquals(15, cur_version)
+
+        image_members_table = Table('image_members', MetaData(),
+                                    autoload=True, autoload_with=engine)
+
+        self.assertTrue('status' not in image_members_table.c,
+                        "'status' column not found in image_members table "
+                        "columns! image_members table columns: %s"
+                        % image_members_table.c.keys())
+
+        conn = engine.connect()
+        sel = select([func.count("*")], from_obj=[image_members_table])
+        num_image_members = conn.execute(sel).scalar()
+        self.assertEqual(orig_num_image_members + 2, num_image_members)
+        conn.close()
