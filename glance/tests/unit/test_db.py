@@ -169,7 +169,6 @@ class TestImageRepo(test_utils.BaseTestCase):
         image = self.image_factory.new_image(name='added image')
         self.assertEqual(image.updated_at, image.created_at)
         self.image_repo.add(image)
-        self.assertTrue(image.updated_at > image.created_at)
         retreived_image = self.image_repo.get(image.image_id)
         self.assertEqual(retreived_image.name, 'added image')
         self.assertEqual(retreived_image.updated_at, image.updated_at)
