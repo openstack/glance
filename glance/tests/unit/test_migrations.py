@@ -33,6 +33,7 @@ from migrate.versioning.repository import Repository
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 
+from glance.common import crypt
 from glance.common import exception
 #NOTE(bcwaldon): import this to prevent circular import
 from glance.db.sqlalchemy import api
@@ -40,6 +41,10 @@ import glance.db.sqlalchemy.migration as migration_api
 from glance.db.sqlalchemy import models
 from glance.openstack.common import cfg
 from glance.tests import utils
+
+
+CONF = cfg.CONF
+CONF.import_opt('metadata_encryption_key', 'glance.registry')
 
 
 class TestMigrations(utils.BaseTestCase):
@@ -481,3 +486,123 @@ class TestMigrations(utils.BaseTestCase):
         num_image_members = conn.execute(sel).scalar()
         self.assertEqual(orig_num_image_members + 2, num_image_members)
         conn.close()
+
+    def test_quote_encrypted_locations_16_to_17(self):
+        self.metadata_encryption_key = 'a' * 16
+        for key, engine in self.engines.items():
+            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
+            self.config(metadata_encryption_key=self.metadata_encryption_key)
+            self._check_16_to_17(engine)
+
+    def _check_16_to_17(self, engine):
+        """
+        Check that migrating swift location credentials to quoted form
+        and back works.
+        """
+        migration_api.version_control(version=0)
+        migration_api.upgrade(16)
+
+        conn = engine.connect()
+        images_table = Table('images', MetaData(), autoload=True,
+                             autoload_with=engine)
+
+        def get_locations():
+            conn = engine.connect()
+            locations = [x[0] for x in
+                         conn.execute(
+                             select(['location'], from_obj=[images_table]))]
+            conn.close()
+            return locations
+
+        unquoted = 'swift://acct:usr:pass@example.com/container/obj-id'
+        encrypted_unquoted = crypt.urlsafe_encrypt(
+                                    self.metadata_encryption_key,
+                                    unquoted, 64)
+
+        quoted = 'swift://acct%3Ausr:pass@example.com/container/obj-id'
+
+        # Insert image with an unquoted image location
+        now = datetime.datetime.now()
+        kwargs = dict(deleted=False,
+                      created_at=now,
+                      updated_at=now,
+                      status='active',
+                      is_public=True,
+                      min_disk=0,
+                      min_ram=0)
+        kwargs.update(location=encrypted_unquoted, id=1)
+        conn.execute(images_table.insert(), [kwargs])
+        conn.close()
+
+        migration_api.upgrade(17)
+
+        actual_location = crypt.urlsafe_decrypt(self.metadata_encryption_key,
+                                                get_locations()[0])
+
+        self.assertEqual(actual_location, quoted)
+
+        migration_api.downgrade(16)
+
+        actual_location = crypt.urlsafe_decrypt(self.metadata_encryption_key,
+                                                get_locations()[0])
+
+        self.assertEqual(actual_location, unquoted)
+
+    def test_no_data_loss_16_to_17(self):
+        self.metadata_encryption_key = 'a' * 16
+        for key, engine in self.engines.items():
+            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
+            self.config(metadata_encryption_key=self.metadata_encryption_key)
+            self._check_no_data_loss_16_to_17(engine)
+
+    def _check_no_data_loss_16_to_17(self, engine):
+        """
+        Check that migrating swift location credentials to quoted form
+        and back does not result in data loss.
+        """
+        migration_api.version_control(version=0)
+        migration_api.upgrade(16)
+
+        conn = engine.connect()
+        images_table = Table('images', MetaData(), autoload=True,
+                             autoload_with=engine)
+
+        def get_locations():
+            conn = engine.connect()
+            locations = [x[0] for x in
+                         conn.execute(
+                             select(['location'], from_obj=[images_table]))]
+            conn.close()
+            return locations
+
+        locations = ['file://ab',
+                     'file://abc',
+                     'swift://acct3A%foobar:pass@example.com/container/obj-id']
+
+        # Insert images with an unquoted image location
+        now = datetime.datetime.now()
+        kwargs = dict(deleted=False,
+                      created_at=now,
+                      updated_at=now,
+                      status='active',
+                      is_public=True,
+                      min_disk=0,
+                      min_ram=0)
+        for i, location in enumerate(locations):
+            kwargs.update(location=location, id=i)
+            conn.execute(images_table.insert(), [kwargs])
+        conn.close()
+
+        def assert_locations():
+            actual_locations = get_locations()
+            for location in locations:
+                if not location in actual_locations:
+                    self.fail(_("location: %s data lost") % location)
+
+        migration_api.upgrade(17)
+
+        assert_locations()
+
+        migration_api.downgrade(16)
+
+        assert_locations()
