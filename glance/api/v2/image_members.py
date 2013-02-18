@@ -63,12 +63,45 @@ class ImageMembersController(object):
             new_member = image_member_factory.new_image_member(image,
                                                                member_id)
             member = member_repo.add(new_member)
+
             self._update_store_acls(req, image)
             return member
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=unicode(e))
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
+
+    @utils.mutating
+    def update(self, req, image_id, member_id, status):
+        """
+        Adds a membership to the image.
+        :param req: the Request object coming from the wsgi layer
+        :param image_id: the image identifier
+        :param member_id: the member identifier
+        :retval The response body is a mapping of the following form::
+
+            {'member_id': <MEMBER>,
+             'image_id': <IMAGE>,
+             'created_at': ..,
+             'updated_at': ..}
+
+        """
+        image_repo = self.gateway.get_repo(req.context)
+        image_member_factory = self.gateway\
+                                   .get_image_member_factory(req.context)
+        try:
+            image = image_repo.get(image_id)
+            member_repo = image.get_member_repo()
+            member = member_repo.get(member_id)
+            member.status = status
+            member = member_repo.save(member)
+            return member
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+        except ValueError as e:
+            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
 
     def index(self, req, image_id):
         """
@@ -140,13 +173,44 @@ class ImageMembersController(object):
                                                content_type='text/plain')
 
 
+class RequestDeserializer(wsgi.JSONRequestDeserializer):
+
+    def __init__(self):
+        super(RequestDeserializer, self).__init__()
+
+    def _get_request_body(self, request):
+        output = super(RequestDeserializer, self).default(request)
+        if 'body' not in output:
+            msg = _('Body expected in request.')
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        return output['body']
+
+    def create(self, request):
+        body = self._get_request_body(request)
+        try:
+            member_id = body['member']
+        except KeyError:
+            msg = _("Member to be added not specified")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        return dict(member_id=member_id)
+
+    def update(self, request):
+        body = self._get_request_body(request)
+        try:
+            status = body['status']
+        except KeyError:
+            msg = _("Status not specified")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        return dict(status=status)
+
+
 class ResponseSerializer(wsgi.JSONResponseSerializer):
     def __init__(self, schema=None):
         super(ResponseSerializer, self).__init__()
 
     def _format_image_member(self, member):
         member_view = {}
-        attributes = ['member_id', 'image_id']
+        attributes = ['member_id', 'image_id', 'status']
         for key in attributes:
             member_view[key] = getattr(member, key)
         member_view['created_at'] = timeutils.isotime(member.created_at)
@@ -154,6 +218,12 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         return member_view
 
     def create(self, response, image_member):
+        image_member_view = self._format_image_member(image_member)
+        body = json.dumps(image_member_view, ensure_ascii=False)
+        response.unicode_body = unicode(body)
+        response.content_type = 'application/json'
+
+    def update(self, response, image_member):
         image_member_view = self._format_image_member(image_member)
         body = json.dumps(image_member_view, ensure_ascii=False)
         response.unicode_body = unicode(body)
@@ -172,7 +242,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
 def create_resource():
     """Image Members resource factory method"""
-    deserializer = wsgi.JSONRequestDeserializer()
+    deserializer = RequestDeserializer()
     serializer = ResponseSerializer()
     controller = ImageMembersController()
     return wsgi.Resource(controller, deserializer, serializer)

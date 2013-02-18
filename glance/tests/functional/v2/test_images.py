@@ -776,7 +776,7 @@ class TestImageMembers(functional.FunctionalTest):
         images = json.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
-        owners = ['tenant1', 'tenant2']
+        owners = ['tenant1', 'tenant2', 'admin']
         visibilities = ['public', 'private']
         image_fixture = []
         for owner in owners:
@@ -799,18 +799,20 @@ class TestImageMembers(functional.FunctionalTest):
         response = requests.get(path, headers=get_header('tenant1'))
         self.assertEqual(200, response.status_code)
         images = json.loads(response.text)['images']
-        self.assertEqual(3, len(images))
+        self.assertEqual(4, len(images))
 
         # Add Image member for tenant1-private image
-        path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
-                                                       TENANT3))
-        response = requests.put(path, headers=get_header('tenant1'))
+        path = self._url('/v2/images/%s/members' % image_fixture[1]['id'])
+        body = json.dumps({'member': TENANT3})
+        response = requests.post(path, headers=get_header('tenant1'),
+                                 data=body)
         self.assertEqual(200, response.status_code)
         image_member = json.loads(response.text)
         self.assertEqual(image_fixture[1]['id'], image_member['image_id'])
         self.assertEqual(TENANT3, image_member['member_id'])
         self.assertTrue('created_at' in image_member)
         self.assertTrue('updated_at' in image_member)
+        self.assertEqual('pending', image_member['status'])
 
         # Image tenant2-private's image members list should contain no members
         path = self._url('/v2/images/%s/members' % image_fixture[3]['id'])
@@ -819,10 +821,58 @@ class TestImageMembers(functional.FunctionalTest):
         body = json.loads(response.text)
         self.assertEqual(0, len(body['members']))
 
+        # Tenant 1, who is the owner cannot change status of image
+        path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
+                                                       TENANT3))
+        body = json.dumps({'status': 'accepted'})
+        response = requests.put(path, headers=get_header('tenant1'), data=body)
+        self.assertEqual(403, response.status_code)
+
+        # Image list should contain 4 images for TENANT3
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=get_header(TENANT3))
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(4, len(images))
+
+        # Tenant 3 can change status of image
+        path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
+                                                       TENANT3))
+        body = json.dumps({'status': 'accepted'})
+        response = requests.put(path, headers=get_header(TENANT3), data=body)
+        self.assertEqual(200, response.status_code)
+        image_member = json.loads(response.text)
+        self.assertEqual(image_fixture[1]['id'], image_member['image_id'])
+        self.assertEqual(TENANT3, image_member['member_id'])
+        self.assertEqual('accepted', image_member['status'])
+
+        # Image list should contain 4 images for TENANT3 because status is
+        # accepted
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=get_header(TENANT3))
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(4, len(images))
+
+        # Tenant 3 invalid status change
+        path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
+                                                       TENANT3))
+        body = json.dumps({'status': 'invalid-status'})
+        response = requests.put(path, headers=get_header(TENANT3), data=body)
+        self.assertEqual(400, response.status_code)
+
+        # Owner cannot change status of image
+        path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
+                                                       TENANT3))
+        body = json.dumps({'status': 'accepted'})
+        response = requests.put(path, headers=get_header('tenant1'), data=body)
+        self.assertEqual(403, response.status_code)
+
         # Add Image member for tenant2-private image
-        path = self._url('/v2/images/%s/members/%s' % (image_fixture[3]['id'],
-                                                       TENANT4))
-        response = requests.put(path, headers=get_header('tenant2'))
+        path = self._url('/v2/images/%s/members' % image_fixture[3]['id'])
+        body = json.dumps({'member': TENANT4})
+        response = requests.post(path, headers=get_header('tenant2'),
+                                 data=body)
         self.assertEqual(200, response.status_code)
         image_member = json.loads(response.text)
         self.assertEqual(image_fixture[3]['id'], image_member['image_id'])
@@ -831,9 +881,10 @@ class TestImageMembers(functional.FunctionalTest):
         self.assertTrue('updated_at' in image_member)
 
         # Add Image member to public image
-        path = self._url('/v2/images/%s/members/%s' % (image_fixture[0]['id'],
-                                                       TENANT2))
-        response = requests.put(path, headers=get_header('tenant1'))
+        path = self._url('/v2/images/%s/members' % image_fixture[0]['id'])
+        body = json.dumps({'member': TENANT2})
+        response = requests.post(path, headers=get_header('tenant1'),
+                                 data=body)
         self.assertEqual(403, response.status_code)
 
         # Image tenant1-private's members list should contain 1 member
@@ -858,6 +909,12 @@ class TestImageMembers(functional.FunctionalTest):
         # Image members forbidden for public image
         path = self._url('/v2/images/%s/members' % image_fixture[0]['id'])
         response = requests.get(path, headers=get_header('tenant1'))
+        self.assertEqual(403, response.status_code)
+
+        # Image Member Cannot delete Image membership
+        path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
+                                                       TENANT3))
+        response = requests.delete(path, headers=get_header(TENANT3))
         self.assertEqual(403, response.status_code)
 
         # Delete Image member

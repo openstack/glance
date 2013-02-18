@@ -192,11 +192,12 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         self.context = glance.context.RequestContext(
                 user=USER1, tenant=TENANT1)
         self.image_repo = glance.db.ImageRepo(self.context, self.db)
-        self.image_member_repo = glance.db.ImageMemberRepo(self.context,
-                                                           self.db, UUID1)
         self.image_member_factory = glance.domain.ImageMemberFactory()
         self._create_images()
         self._create_image_members()
+        image = self.image_repo.get(UUID1)
+        self.image_member_repo = glance.db.ImageMemberRepo(self.context,
+                                                           self.db, image)
         super(TestImageMemberRepo, self).setUp()
 
     def _create_images(self):
@@ -224,11 +225,19 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         self.assertEqual(set([TENANT2, TENANT3]), image_member_ids)
 
     def test_list_no_members(self):
+        image = self.image_repo.get(UUID2)
         self.image_member_repo_uuid2 = glance.db.ImageMemberRepo(
-                                                self.context, self.db, UUID2)
+                                                self.context, self.db, image)
         image_members = self.image_member_repo_uuid2.list()
         image_member_ids = set([i.member_id for i in image_members])
         self.assertEqual(set([]), image_member_ids)
+
+    def test_save_image_member(self):
+        image_member = self.image_member_repo.get(TENANT2)
+        image_member.status = 'accepted'
+        image_member_updated = self.image_member_repo.save(image_member)
+        self.assertTrue(image_member.id, image_member_updated.id)
+        self.assertEqual(image_member_updated.status, 'accepted')
 
     def test_add_image_member(self):
         image = self.image_repo.get(UUID1)
@@ -241,6 +250,8 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
                          image_member.image_id)
         self.assertEqual(retreived_image_member.member_id,
                          image_member.member_id)
+        self.assertEqual(retreived_image_member.status,
+                         'pending')
 
     def test_remove_image_member(self):
         image_member = self.image_member_repo.get(TENANT2)

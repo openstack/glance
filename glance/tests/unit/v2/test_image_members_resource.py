@@ -143,10 +143,22 @@ class TestImageMembersController(test_utils.BaseTestCase):
         self.assertEqual(0, len(output['members']))
         self.assertEqual({'members': []}, output)
 
+    def test_index_member_view(self):
+        # UUID3 is a private image owned by TENANT3
+        # UUID3 has members TENANT2 and TENANT4
+        # When TENANT4 lists members for UUID3, should not see TENANT2
+        request = unit_test_utils.get_fake_request(tenant=TENANT4)
+        output = self.controller.index(request, UUID3)
+        self.assertEqual(1, len(output['members']))
+        actual = set([image_member.member_id
+                      for image_member in output['members']])
+        expected = set([TENANT4])
+        self.assertEqual(actual, expected)
+
     def test_index_private_image(self):
-        request = unit_test_utils.get_fake_request()
-        self.assertRaises(webob.exc.HTTPForbidden, self.controller.index,
-                          request, UUID4)
+        request = unit_test_utils.get_fake_request(tenant=TENANT2)
+        self.assertRaises(webob.exc.HTTPNotFound, self.controller.index,
+                          request, UUID5)
 
     def test_index_public_image(self):
         request = unit_test_utils.get_fake_request()
@@ -170,6 +182,31 @@ class TestImageMembersController(test_utils.BaseTestCase):
                                         member_id=member_id)
         self.assertEqual(UUID2, output.image_id)
         self.assertEqual(TENANT3, output.member_id)
+
+    def test_update_done_by_member(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT4)
+        image_id = UUID2
+        member_id = TENANT4
+        output = self.controller.update(request, image_id=image_id,
+                                        member_id=member_id,
+                                        status='accepted')
+        self.assertEqual(UUID2, output.image_id)
+        self.assertEqual(TENANT4, output.member_id)
+        self.assertEqual('accepted', output.status)
+
+    def test_update_done_by_owner(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT1)
+        image_id = UUID2
+        member_id = TENANT4
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
+                          request, UUID2, TENANT4, status='accepted')
+
+    def test_update_invalid_status(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT4)
+        image_id = UUID2
+        member_id = TENANT4
+        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
+                          request, UUID2, TENANT4, status='accept')
 
     def test_create_private_image(self):
         request = unit_test_utils.get_fake_request()
@@ -196,6 +233,18 @@ class TestImageMembersController(test_utils.BaseTestCase):
         self.assertEqual(res.body, '')
         found_member = self.db.image_member_find(image_id, member_id)
         self.assertEqual(found_member, [])
+
+    def test_delete_by_member(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT4)
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.delete,
+                          request, UUID2, TENANT4)
+        request = unit_test_utils.get_fake_request()
+        output = self.controller.index(request, UUID2)
+        self.assertEqual(1, len(output['members']))
+        actual = set([image_member.member_id
+                      for image_member in output['members']])
+        expected = set([TENANT4])
+        self.assertEqual(actual, expected)
 
     def test_delete_private_image(self):
         request = unit_test_utils.get_fake_request()
@@ -231,8 +280,10 @@ class TestImageMembersSerializer(test_utils.BaseTestCase):
         self.serializer = glance.api.v2.image_members.ResponseSerializer()
         self.fixtures = [
             _domain_fixture(id='1', image_id=UUID2, member_id=TENANT1,
+                            status='accepted',
                             created_at=DATETIME, updated_at=DATETIME),
             _domain_fixture(id='2', image_id=UUID2, member_id=TENANT2,
+                            status='pending',
                             created_at=DATETIME, updated_at=DATETIME),
         ]
 
@@ -242,12 +293,14 @@ class TestImageMembersSerializer(test_utils.BaseTestCase):
                 {
                     'image_id': UUID2,
                     'member_id': TENANT1,
+                    'status': 'accepted',
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                 },
                 {
                     'image_id': UUID2,
                     'member_id': TENANT2,
+                    'status': 'pending',
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                 },
@@ -264,6 +317,7 @@ class TestImageMembersSerializer(test_utils.BaseTestCase):
     def test_create(self):
         expected = {'image_id': UUID2,
                     'member_id': TENANT1,
+                    'status': 'accepted',
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME}
         request = webob.Request.blank('/v2/images/%s/members/%s'
@@ -274,3 +328,67 @@ class TestImageMembersSerializer(test_utils.BaseTestCase):
         actual = json.loads(response.body)
         self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
+
+    def test_update(self):
+        expected = {'image_id': UUID2,
+                    'member_id': TENANT1,
+                    'status': 'accepted',
+                    'created_at': ISOTIME,
+                    'updated_at': ISOTIME}
+        request = webob.Request.blank('/v2/images/%s/members/%s'
+                                      % (UUID2, TENANT1))
+        response = webob.Response(request=request)
+        result = self.fixtures[0]
+        self.serializer.update(response, result)
+        actual = json.loads(response.body)
+        self.assertEqual(expected, actual)
+        self.assertEqual('application/json', response.content_type)
+
+
+class TestImagesDeserializer(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(TestImagesDeserializer, self).setUp()
+        self.deserializer = glance.api.v2.image_members.RequestDeserializer()
+
+    def test_create(self):
+        request = unit_test_utils.get_fake_request()
+        request.body = json.dumps({'member': TENANT1})
+        image_id = UUID1
+        output = self.deserializer.create(request)
+        expected = {'member_id': TENANT1}
+        self.assertEqual(expected, output)
+
+    def test_create_invalid(self):
+        request = unit_test_utils.get_fake_request()
+        image_id = UUID1
+        request.body = json.dumps({'mem': TENANT1})
+        self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
+                          request)
+
+    def test_create_no_body(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
+                          request)
+
+    def test_update(self):
+        request = unit_test_utils.get_fake_request()
+        request.body = json.dumps({'status': 'accepted'})
+        image_id = UUID1
+        member_id = TENANT1
+        output = self.deserializer.update(request)
+        expected = {'status': 'accepted'}
+        self.assertEqual(expected, output)
+
+    def test_update_invalid(self):
+        request = unit_test_utils.get_fake_request()
+        image_id = UUID1
+        member_id = TENANT1
+        request.body = json.dumps({'mem': TENANT1})
+        self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.update,
+                          request)
+
+    def test_update_no_body(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.update,
+                          request)

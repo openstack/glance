@@ -588,6 +588,7 @@ class TestImmutableImage(utils.BaseTestCase):
     def setUp(self):
         super(TestImmutableImage, self).setUp()
         image_factory = glance.domain.ImageFactory()
+        self.context = glance.context.RequestContext(tenant=TENANT1)
         image = image_factory.new_image(
                 image_id=UUID1,
                 name='Marvin',
@@ -597,7 +598,7 @@ class TestImmutableImage(utils.BaseTestCase):
                 extra_properties={'foo': 'bar'},
                 tags=['ping', 'pong'],
         )
-        self.image = authorization.ImmutableImageProxy(image)
+        self.image = authorization.ImmutableImageProxy(image, self.context)
 
     def _test_change(self, attr, value):
         self.assertRaises(exception.Forbidden,

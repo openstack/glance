@@ -77,13 +77,14 @@ def _image_property_format(image_id, name, value):
     }
 
 
-def _image_member_format(image_id, tenant_id, can_share):
+def _image_member_format(image_id, tenant_id, can_share, status='pending'):
     dt = timeutils.utcnow()
     return {
         'id': uuidutils.generate_uuid(),
         'image_id': image_id,
         'member': tenant_id,
         'can_share': can_share,
+        'status': status,
         'created_at': dt,
         'updated_at': dt,
     }
@@ -263,12 +264,14 @@ def image_property_delete(context, prop_ref, session=None):
 
 
 @log_call
-def image_member_find(context, image_id=None, member=None):
+def image_member_find(context, image_id=None, member=None, status=None):
     filters = []
     if image_id is not None:
         filters.append(lambda m: m['image_id'] == image_id)
     if member is not None:
         filters.append(lambda m: m['member'] == member)
+    if status is not None:
+        filters.append(lambda m: m['status'] == status)
 
     members = DATA['members']
     for f in filters:
@@ -280,7 +283,8 @@ def image_member_find(context, image_id=None, member=None):
 def image_member_create(context, values):
     member = _image_member_format(values['image_id'],
                                   values['member'],
-                                  values.get('can_share', False))
+                                  values.get('can_share', False),
+                                  values.get('status', 'pending'))
     global DATA
     DATA['members'].append(member)
     return copy.deepcopy(member)
