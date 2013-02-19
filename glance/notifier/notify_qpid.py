@@ -79,10 +79,10 @@ CONF.register_opts(qpid_opts)
 class QpidStrategy(strategy.Strategy):
     """A notifier that puts a message on a queue when called."""
 
-    def __init__(self):
+    def _get_session(self):
         """Initialize the Qpid notification strategy."""
-        self.broker = CONF.qpid_hostname + ":" + CONF.qpid_port
-        self.connection = qpid.messaging.Connection(self.broker)
+        broker = CONF.qpid_hostname + ":" + CONF.qpid_port
+        self.connection = qpid.messaging.Connection(broker)
         self.connection.username = CONF.qpid_username
         self.connection.password = CONF.qpid_password
         self.connection.sasl_mechanisms = CONF.qpid_sasl_mechanisms
@@ -105,12 +105,10 @@ class QpidStrategy(strategy.Strategy):
         self.connection.protocol = CONF.qpid_protocol
         self.connection.tcp_nodelay = CONF.qpid_tcp_nodelay
         self.connection.open()
-        self.session = self.connection.session()
-        LOG.info(_('Connected to AMQP server on %s') % self.broker)
+        session = self.connection.session()
+        LOG.info(_('Connected to AMQP server on %s') % broker)
 
-        self.sender_info = self._sender("info")
-        self.sender_warn = self._sender("warn")
-        self.sender_error = self._sender("error")
+        return session
 
     def _sender(self, priority):
         addr_opts = {
@@ -128,16 +126,19 @@ class QpidStrategy(strategy.Strategy):
         topic = "%s.%s" % (CONF.qpid_notification_topic, priority)
         address = "%s/%s ; %s" % (CONF.qpid_notification_exchange, topic,
                                   json.dumps(addr_opts))
-        return self.session.sender(address)
+        return self._get_session().sender(address)
 
     def warn(self, msg):
         qpid_msg = qpid.messaging.Message(content=msg)
-        self.sender_warn.send(qpid_msg)
+        self._sender('warn').send(qpid_msg)
+        self.connection.close()
 
     def info(self, msg):
         qpid_msg = qpid.messaging.Message(content=msg)
-        self.sender_info.send(qpid_msg)
+        self._sender('info').send(qpid_msg)
+        self.connection.close()
 
     def error(self, msg):
         qpid_msg = qpid.messaging.Message(content=msg)
-        self.sender_error.send(qpid_msg)
+        self._sender('error').send(qpid_msg)
+        self.connection.close()
