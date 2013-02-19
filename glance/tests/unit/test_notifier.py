@@ -448,7 +448,8 @@ class TestImageNotifications(utils.BaseTestCase):
                 created_at=DATETIME, updated_at=DATETIME, owner=TENANT1,
                 visibility='public', container_format='ami',
                 tags=['one', 'two'], disk_format='ami', min_ram=128,
-                min_disk=10, checksum='ca425b88f047ce8ec45ee90e813ada91')
+                min_disk=10, checksum='ca425b88f047ce8ec45ee90e813ada91',
+                location='http://127.0.0.1')
         self.context = glance.context.RequestContext(tenant=TENANT2,
                                                      user=USER1)
         self.image_repo_stub = ImageRepoStub()
@@ -467,6 +468,8 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertEqual(output_log['notification_type'], 'INFO')
         self.assertEqual(output_log['event_type'], 'image.update')
         self.assertEqual(output_log['payload']['id'], self.image.image_id)
+        if 'location' in output_log['payload']:
+            self.fail('Notification contained location field.')
 
     def test_image_add_notification(self):
         self.image_repo_proxy.add(self.image)
@@ -476,6 +479,8 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertEqual(output_log['notification_type'], 'INFO')
         self.assertEqual(output_log['event_type'], 'image.create')
         self.assertEqual(output_log['payload']['id'], self.image.image_id)
+        if 'location' in output_log['payload']:
+            self.fail('Notification contained location field.')
 
     def test_image_delete_notification(self):
         self.image_repo_proxy.remove(self.image)
@@ -486,6 +491,8 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertEqual(output_log['event_type'], 'image.delete')
         self.assertEqual(output_log['payload']['id'], self.image.image_id)
         self.assertTrue(output_log['payload']['deleted'])
+        if 'location' in output_log['payload']:
+            self.fail('Notification contained location field.')
 
     def test_image_get(self):
         image = self.image_repo_proxy.get(UUID1)

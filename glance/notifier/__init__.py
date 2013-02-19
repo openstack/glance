@@ -92,7 +92,8 @@ class Notifier(object):
 def format_image_notification(image):
     """
     Given a glance.domain.Image object, return a dictionary of relevant
-    notification information.
+    notification information. We purposely do not include 'location'
+    as it may contain credentials.
     """
     return {
         'id': image.image_id,
@@ -103,7 +104,6 @@ def format_image_notification(image):
         'min_disk': image.min_disk,
         'min_ram': image.min_ram,
         'protected': image.protected,
-        'location': image.location,
         'checksum': image.checksum,
         'owner': image.owner,
         'disk_format': image.disk_format,
