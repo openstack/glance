@@ -41,11 +41,12 @@ def upgrade(migrate_engine):
     t_images = _get_table('images', meta)
     t_image_members = _get_table('image_members', meta)
     t_image_properties = _get_table('image_properties', meta)
-    if migrate_engine.url.get_dialect().name == "sqlite":
+    dialect = migrate_engine.url.get_dialect().name
+    if dialect == "sqlite":
         _upgrade_sqlite(t_images, t_image_members, t_image_properties)
         _update_all_ids_to_uuids(t_images, t_image_members, t_image_properties)
     else:
-        _upgrade_other(t_images, t_image_members, t_image_properties)
+        _upgrade_other(t_images, t_image_members, t_image_properties, dialect)
 
 
 def downgrade(migrate_engine):
@@ -57,12 +58,13 @@ def downgrade(migrate_engine):
     t_images = _get_table('images', meta)
     t_image_members = _get_table('image_members', meta)
     t_image_properties = _get_table('image_properties', meta)
-
-    if migrate_engine.url.get_dialect().name == "sqlite":
+    dialect = migrate_engine.url.get_dialect().name
+    if dialect == "sqlite":
         _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties)
         _downgrade_sqlite(t_images, t_image_members, t_image_properties)
     else:
-        _downgrade_other(t_images, t_image_members, t_image_properties)
+        _downgrade_other(t_images, t_image_members, t_image_properties,
+                         dialect)
 
 
 def _upgrade_sqlite(t_images, t_image_members, t_image_properties):
@@ -205,13 +207,13 @@ def _downgrade_sqlite(t_images, t_image_members, t_image_properties):
     _sqlite_table_swap(t_image_members, t_image_properties, t_images)
 
 
-def _upgrade_other(t_images, t_image_members, t_image_properties):
+def _upgrade_other(t_images, t_image_members, t_image_properties, dialect):
     """
     Upgrade 011 -> 012 with logic for non-SQLite databases.
     """
     foreign_keys = _get_foreign_keys(t_images,
                                      t_image_members,
-                                     t_image_properties)
+                                     t_image_properties, dialect)
 
     for fk in foreign_keys:
         fk.drop()
@@ -226,13 +228,13 @@ def _upgrade_other(t_images, t_image_members, t_image_properties):
         fk.create()
 
 
-def _downgrade_other(t_images, t_image_members, t_image_properties):
+def _downgrade_other(t_images, t_image_members, t_image_properties, dialect):
     """
     Downgrade 012 -> 011 with logic for non-SQLite databases.
     """
     foreign_keys = _get_foreign_keys(t_images,
                                      t_image_members,
-                                     t_image_properties)
+                                     t_image_properties, dialect)
 
     for fk in foreign_keys:
         fk.drop()
@@ -265,23 +267,29 @@ def _get_table(table_name, metadata):
     return sqlalchemy.Table(table_name, metadata, autoload=True)
 
 
-def _get_foreign_keys(t_images, t_image_members, t_image_properties):
+def _get_foreign_keys(t_images, t_image_members, t_image_properties, dialect):
     """Retrieve and return foreign keys for members/properties tables."""
     foreign_keys = []
     if t_image_members.foreign_keys:
         img_members_fk_name = list(t_image_members.foreign_keys)[0].name
-
-        fk1 = migrate.ForeignKeyConstraint([t_image_members.c.image_id],
-                                           [t_images.c.id],
-                                           name=img_members_fk_name)
+        if dialect == 'mysql':
+            fk1 = migrate.ForeignKeyConstraint([t_image_members.c.image_id],
+                                               [t_images.c.id],
+                                               name=img_members_fk_name)
+        else:
+            fk1 = migrate.ForeignKeyConstraint([t_image_members.c.image_id],
+                                               [t_images.c.id])
         foreign_keys.append(fk1)
 
     if t_image_properties.foreign_keys:
         img_properties_fk_name = list(t_image_properties.foreign_keys)[0].name
-
-        fk2 = migrate.ForeignKeyConstraint([t_image_properties.c.image_id],
-                                           [t_images.c.id],
-                                           name=img_properties_fk_name)
+        if dialect == 'mysql':
+            fk2 = migrate.ForeignKeyConstraint([t_image_properties.c.image_id],
+                                               [t_images.c.id],
+                                               name=img_properties_fk_name)
+        else:
+            fk2 = migrate.ForeignKeyConstraint([t_image_properties.c.image_id],
+                                               [t_images.c.id])
         foreign_keys.append(fk2)
 
     return foreign_keys
