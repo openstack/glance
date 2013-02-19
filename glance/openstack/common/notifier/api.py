@@ -24,6 +24,7 @@ from glance.openstack.common import jsonutils
 from glance.openstack.common import log as logging
 from glance.openstack.common import timeutils
 
+
 LOG = logging.getLogger(__name__)
 
 notifier_opts = [

@@ -179,4 +179,4 @@ def is_soon(dt, window):
     :return: True if expiration is within the given duration
     """
     soon = (utcnow() + datetime.timedelta(seconds=window))
-    return normalize_time(dt) < soon
+    return normalize_time(dt) <= soon
