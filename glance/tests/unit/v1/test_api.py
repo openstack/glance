@@ -22,6 +22,7 @@ import httplib
 import json
 import StringIO
 
+from oslo.config import cfg
 import routes
 from sqlalchemy import exc
 import stubout
@@ -34,14 +35,12 @@ import glance.common.config
 import glance.context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
-from glance.openstack.common import cfg
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
 from glance.registry.api import v1 as rserver
 import glance.store.filesystem
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
-
 
 CONF = cfg.CONF
 

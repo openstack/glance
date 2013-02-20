@@ -28,12 +28,11 @@ import os.path
 import urllib
 import urlparse
 
+import oslo.config.cfg
 import testtools
 
-import glance.openstack.common.cfg
 import glance.store.s3
 import glance.tests.functional.store as store_tests
-
 
 try:
     from boto.s3.connection import S3Connection
@@ -86,8 +85,7 @@ class TestS3Store(store_tests.BaseTestCase, testtools.TestCase):
             msg = "GLANCE_TEST_S3_CONF environ not set."
             self.skipTest(msg)
 
-        glance.openstack.common.cfg.CONF(args=[],
-                                         default_config_files=[config_path])
+        oslo.config.cfg.CONF(args=[], default_config_files=[config_path])
 
         raw_config = read_config(config_path)
         config = parse_config(raw_config)

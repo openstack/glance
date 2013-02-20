@@ -13,11 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.config import cfg
 
-from glance.openstack.common import cfg
 from glance.openstack.common import jsonutils
 from glance.openstack.common import log as logging
-
 
 CONF = cfg.CONF
 

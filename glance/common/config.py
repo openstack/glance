@@ -26,9 +26,9 @@ import logging.handlers
 import os
 import sys
 
+from oslo.config import cfg
 from paste import deploy
 
-from glance.openstack.common import cfg
 from glance.version import version_info as version
 
 paste_deploy_opts = [

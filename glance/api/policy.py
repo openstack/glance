@@ -20,10 +20,11 @@
 import json
 import os.path
 
+from oslo.config import cfg
+
 from glance.common import exception
 from glance.common import utils
 import glance.domain
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 from glance.openstack.common import policy
 

@@ -16,10 +16,10 @@
 
 import json
 
+from oslo.config import cfg
 import qpid.messaging
 
 from glance.notifier import strategy
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)

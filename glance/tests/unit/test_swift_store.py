@@ -23,12 +23,12 @@ import StringIO
 import tempfile
 import urllib
 
+from oslo.config import cfg
 import stubout
 import swiftclient
 
 import glance.common.auth
 from glance.common import exception
-from glance.openstack.common import cfg
 from glance.openstack.common import uuidutils
 from glance.store import BackendException
 from glance.store.location import get_location_from_uri

@@ -3,13 +3,12 @@
 import sys
 
 import keystoneclient.v2_0.client
+from oslo.config import cfg
 
 import glance.context
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 import glance.registry.context
 import glance.db.sqlalchemy.api as db_api
-
 
 LOG = logging.getLogger(__name__)
 LOG.addHandler(logging.StreamHandler())

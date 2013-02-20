@@ -25,9 +25,10 @@ import math
 import urllib
 import urlparse
 
+from oslo.config import cfg
+
 from glance.common import auth
 from glance.common import exception
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base

@@ -32,11 +32,11 @@ Fixes bug #1081043
 import types
 import urlparse
 
+from oslo.config import cfg
 import sqlalchemy
 
 from glance.common import crypt
 from glance.common import exception
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 import glance.store.swift
 

@@ -25,9 +25,9 @@ try:
 except ImportError:
     from migrate import exceptions as versioning_exceptions
 from migrate.versioning import repository as versioning_repository
+from oslo.config import cfg
 
 from glance.common import exception
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)

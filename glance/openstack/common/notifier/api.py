@@ -15,14 +15,14 @@
 
 import uuid
 
-from glance.openstack.common import cfg
+from oslo.config import cfg
+
 from glance.openstack.common import context
 from glance.openstack.common.gettextutils import _
 from glance.openstack.common import importutils
 from glance.openstack.common import jsonutils
 from glance.openstack.common import log as logging
 from glance.openstack.common import timeutils
-
 
 LOG = logging.getLogger(__name__)
 

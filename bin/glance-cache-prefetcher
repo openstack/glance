@@ -37,9 +37,10 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 gettext.install('glance', unicode=1)
 
+from oslo.config import cfg
+
 from glance.common import config
 from glance.image_cache import prefetcher
-from glance.openstack.common import cfg
 import glance.store
 
 CONF = cfg.CONF

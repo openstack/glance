@@ -15,16 +15,15 @@
 
 import os.path
 
+import oslo.config.cfg
 import stubout
 
 import glance.api.policy
 from glance.common import exception
 import glance.context
-import glance.openstack.common.cfg
 from glance.tests.unit import base
 from glance.tests.unit import utils as unit_test_utils
 from glance.tests import utils as test_utils
-
 
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
 
@@ -122,7 +121,7 @@ class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
         def fake_find_file(self, name):
             return None
 
-        self.stubs.Set(glance.openstack.common.cfg.ConfigOpts, 'find_file',
+        self.stubs.Set(oslo.config.cfg.ConfigOpts, 'find_file',
                        fake_find_file)
 
         enforcer = glance.api.policy.Enforcer()

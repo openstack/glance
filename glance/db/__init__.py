@@ -17,10 +17,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.config import cfg
+
 from glance.api import authorization
 from glance.common import exception
 import glance.domain
-from glance.openstack.common import cfg
 from glance.openstack.common import importutils
 
 sql_connection_opt = cfg.StrOpt('sql_connection',

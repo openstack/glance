@@ -19,9 +19,10 @@
 import socket
 import uuid
 
+from oslo.config import cfg
+
 from glance.common import exception
 import glance.domain
-from glance.openstack.common import cfg
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils

@@ -40,7 +40,8 @@ import stat
 import sys
 import traceback
 
-from glance.openstack.common import cfg
+from oslo.config import cfg
+
 from glance.openstack.common.gettextutils import _
 from glance.openstack.common import jsonutils
 from glance.openstack.common import local

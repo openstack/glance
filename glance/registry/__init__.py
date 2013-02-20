@@ -21,8 +21,9 @@ Registry API
 
 import os
 
+from oslo.config import cfg
+
 from glance.common import exception
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 from glance.registry import client
 

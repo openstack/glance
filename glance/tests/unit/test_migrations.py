@@ -30,6 +30,7 @@ import os
 import urlparse
 
 from migrate.versioning.repository import Repository
+from oslo.config import cfg
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 
@@ -39,7 +40,6 @@ from glance.common import exception
 from glance.db.sqlalchemy import api
 import glance.db.sqlalchemy.migration as migration_api
 from glance.db.sqlalchemy import models
-from glance.openstack.common import cfg
 from glance.tests import utils
 
 

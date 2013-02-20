@@ -18,10 +18,10 @@
 import httplib
 import json
 
+from oslo.config import cfg
 import webob.dec
 
 from glance.common import wsgi
-from glance.openstack.common import cfg
 
 
 CONF = cfg.CONF

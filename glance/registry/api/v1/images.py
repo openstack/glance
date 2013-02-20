@@ -19,13 +19,13 @@
 Reference implementation registry server WSGI controller
 """
 
+from oslo.config import cfg
 from webob import exc
 
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.db
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils

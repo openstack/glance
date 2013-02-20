@@ -17,11 +17,11 @@
 
 import json
 
+from oslo.config import cfg
 import webob.exc
 
 from glance.common import wsgi
 import glance.context
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 
 

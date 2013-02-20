@@ -24,9 +24,10 @@ import hashlib
 import os
 import urlparse
 
+from oslo.config import cfg
+
 from glance.common import exception
 from glance.common import utils
-from glance.openstack.common import cfg
 import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
