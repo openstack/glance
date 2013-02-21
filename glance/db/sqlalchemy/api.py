@@ -33,8 +33,10 @@ import sqlalchemy.sql as sa_sql
 from glance.common import exception
 from glance.db.sqlalchemy import migration
 from glance.db.sqlalchemy import models
+from glance.openstack.common import cfg
 import glance.openstack.common.log as os_logging
 from glance.openstack.common import timeutils
+
 
 _ENGINE = None
 _MAKER = None
@@ -338,7 +340,7 @@ def is_image_sharable(context, image, **kwargs):
     return member['can_share']
 
 
-def is_image_visible(context, image):
+def is_image_visible(context, image, status=None):
     """Return True if the image is visible in this context."""
     # Is admin == image visible
     if context.is_admin:
@@ -360,7 +362,8 @@ def is_image_visible(context, image):
         # Figure out if this image is shared with that tenant
         members = image_member_find(context,
                                     image_id=image['id'],
-                                    member=context.owner)
+                                    member=context.owner,
+                                    status=status)
         if members:
             return True
 
@@ -467,7 +470,8 @@ def paginate_query(query, model, limit, sort_keys, marker=None,
 
 
 def image_get_all(context, filters=None, marker=None, limit=None,
-                  sort_key='created_at', sort_dir='desc'):
+                  sort_key='created_at', sort_dir='desc',
+                  member_status='accepted'):
     """
     Get all images that match zero or more filters.
 
@@ -493,12 +497,36 @@ def image_get_all(context, filters=None, marker=None, limit=None,
         visibility_filters = [models.Image.is_public == True]
 
         if context.owner is not None:
-            visibility_filters.extend([
-                models.Image.owner == context.owner,
-                models.Image.members.any(member=context.owner, deleted=False),
-            ])
+            if member_status == 'all':
+                visibility_filters.extend([
+                    models.Image.owner == context.owner,
+                    models.Image.members.any(member=context.owner,
+                                             deleted=False),
+                ])
+            else:
+                visibility_filters.extend([
+                    models.Image.owner == context.owner,
+                    models.Image.members.any(member=context.owner,
+                                             deleted=False,
+                                             status=member_status),
+                ])
 
         query = query.filter(sa_sql.or_(*visibility_filters))
+
+    if 'visibility' in filters:
+        visibility = filters.pop('visibility')
+        if visibility == 'public':
+            query = query.filter(models.Image.is_public == True)
+            filters['is_public'] = True
+        elif visibility == 'private':
+            filters['is_public'] = False
+            if (not context.is_admin) and context.owner is not None:
+                query = query.filter(
+                            models.Image.owner == context.owner)
+        else:
+            query = query.filter(
+                        models.Image.members.any(member=context.owner,
+                                                 deleted=False))
 
     showing_deleted = False
     if 'changes-since' in filters:

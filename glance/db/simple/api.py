@@ -1,4 +1,4 @@
-# Copyright 2012 OpenStack Foundation
+# Copyright 2012 OpenStack, Foundation
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -124,7 +124,7 @@ def _image_format(image_id, **values):
     return image
 
 
-def _filter_images(images, filters, context):
+def _filter_images(images, filters, context, status='accepted'):
     filtered_images = []
     if 'properties' in filters:
         prop_filter = filters.pop('properties')
@@ -133,12 +133,33 @@ def _filter_images(images, filters, context):
     if 'is_public' in filters and filters['is_public'] is None:
         filters.pop('is_public')
 
+    if status == 'all':
+        status = None
+
+    visibility = filters.pop('visibility', None)
+
     for image in images:
+        member = image_member_find(context, image_id=image['id'],
+                                   member=context.owner, status=status)
+        is_member = len(member) > 0
         has_ownership = context.owner and image['owner'] == context.owner
-        can_see = image['is_public'] or has_ownership or context.is_admin
+        can_see = (image['is_public'] or has_ownership or context.is_admin or
+                   is_member)
         if not can_see:
             continue
 
+        if visibility:
+            if visibility == 'public':
+                filters['is_public'] = True
+                if not image['is_public']:
+                    continue
+            elif visibility == 'private':
+                filters['is_public'] = False
+                if not (has_ownership or context.is_admin):
+                    continue
+            elif visibility == 'shared':
+                if not is_member:
+                    continue
         add = True
         for k, value in filters.iteritems():
             key = k
@@ -172,14 +193,16 @@ def _filter_images(images, filters, context):
     return filtered_images
 
 
-def _do_pagination(context, images, marker, limit, show_deleted):
+def _do_pagination(context, images, marker, limit, show_deleted,
+                   status='accepted'):
     start = 0
     end = -1
     if marker is None:
         start = 0
     else:
         # Check that the image is accessible
-        _image_get(context, marker, force_show_deleted=show_deleted)
+        _image_get(context, marker, force_show_deleted=show_deleted,
+                   status=status)
 
         for i, image in enumerate(images):
             if image['id'] == marker:
@@ -203,7 +226,7 @@ def _sort_images(images, sort_key, sort_dir):
     return images
 
 
-def _image_get(context, image_id, force_show_deleted=False):
+def _image_get(context, image_id, force_show_deleted=False, status=None):
     try:
         image = DATA['images'][image_id]
     except KeyError:
@@ -229,10 +252,11 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
 
 @log_call
 def image_get_all(context, filters=None, marker=None, limit=None,
-                  sort_key='created_at', sort_dir='desc'):
+                  sort_key='created_at', sort_dir='desc',
+                  member_status='accepted'):
     filters = filters or {}
     images = DATA['images'].values()
-    images = _filter_images(images, filters, context)
+    images = _filter_images(images, filters, context, member_status)
     images = _sort_images(images, sort_key, sort_dir)
     images = _do_pagination(context, images, marker, limit,
                             filters.get('deleted'))
@@ -462,7 +486,7 @@ def is_image_sharable(context, image, **kwargs):
     return member['can_share']
 
 
-def is_image_visible(context, image):
+def is_image_visible(context, image, status=None):
     """Return True if the image is visible in this context."""
     # Is admin == image visible
     if context.is_admin:
@@ -482,10 +506,13 @@ def is_image_visible(context, image):
             return True
 
         # Figure out if this image is shared with that tenant
+        if status == 'all':
+            status = None
         members = image_member_find(context,
                                     image_id=image['id'],
-                                    member=context.owner)
-        if members:
+                                    member=context.owner,
+                                    status=status)
+        if len(members) > 0:
             return True
 
     # Private image

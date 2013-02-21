@@ -76,6 +76,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.image_repo = glance.db.ImageRepo(self.context, self.db)
         self.image_factory = glance.domain.ImageFactory()
         self._create_images()
+        self._create_image_members()
         super(TestImageRepo, self).setUp()
 
     def _create_images(self):
@@ -92,6 +93,14 @@ class TestImageRepo(test_utils.BaseTestCase):
         [self.db.image_create(None, image) for image in self.images]
 
         self.db.image_tag_set_all(None, UUID1, ['ping', 'pong'])
+
+    def _create_image_members(self):
+        self.image_members = [
+            _db_image_member_fixture(UUID2, TENANT2),
+            _db_image_member_fixture(UUID2, TENANT3, status='accepted'),
+        ]
+        [self.db.image_member_create(None, image_member)
+            for image_member in self.image_members]
 
     def test_get(self):
         image = self.image_repo.get(UUID1)
@@ -114,6 +123,25 @@ class TestImageRepo(test_utils.BaseTestCase):
         images = self.image_repo.list()
         image_ids = set([i.image_id for i in images])
         self.assertEqual(set([UUID1, UUID2, UUID3]), image_ids)
+
+    def _do_test_list_status(self, status, expected):
+        self.context = glance.context.RequestContext(
+                        user=USER1, tenant=TENANT3)
+        self.image_repo = glance.db.ImageRepo(self.context, self.db)
+        images = self.image_repo.list(member_status=status)
+        self.assertEqual(expected, len(images))
+
+    def test_list_status(self):
+        self._do_test_list_status(None, 3)
+
+    def test_list_status_pending(self):
+        self._do_test_list_status('pending', 2)
+
+    def test_list_status_rejected(self):
+        self._do_test_list_status('rejected', 2)
+
+    def test_list_status_all(self):
+        self._do_test_list_status('all', 3)
 
     def test_list_with_marker(self):
         full_images = self.image_repo.list()
