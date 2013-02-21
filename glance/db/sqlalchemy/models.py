@@ -108,7 +108,6 @@ class Image(BASE, ModelBase):
     size = Column(BigInteger)
     status = Column(String(30), nullable=False)
     is_public = Column(Boolean, nullable=False, default=False)
-    location = Column(Text)
     checksum = Column(String(32))
     min_disk = Column(Integer(), nullable=False, default=0)
     min_ram = Column(Integer(), nullable=False, default=0)
@@ -137,6 +136,16 @@ class ImageTag(BASE, ModelBase):
     id = Column(Integer, primary_key=True, nullable=False)
     image_id = Column(String(36), ForeignKey('images.id'), nullable=False)
     value = Column(String(255), nullable=False)
+
+
+class ImageLocation(BASE, ModelBase):
+    """Represents an image location in the datastore"""
+    __tablename__ = 'image_locations'
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    image_id = Column(String(36), ForeignKey('images.id'), nullable=False)
+    image = relationship(Image, backref=backref('locations'))
+    value = Column(Text(), nullable=False)
 
 
 class ImageMember(BASE, ModelBase):

@@ -606,3 +606,59 @@ class TestMigrations(utils.BaseTestCase):
         migration_api.downgrade(16)
 
         assert_locations()
+
+    def test_migration_19(self):
+        for key, engine in self.engines.items():
+            self.config(sql_connection=TestMigrations.TEST_DATABASES[key])
+
+            migration_api.version_control(version=0)
+            migration_api.upgrade(18)
+
+            images_table = Table('images', MetaData(engine), autoload=True)
+
+            now = datetime.datetime.now()
+            base_values = {
+                'deleted': False,
+                'created_at': now,
+                'updated_at': now,
+                'status': 'active',
+                'is_public': True,
+                'min_disk': 0,
+                'min_ram': 0,
+            }
+            images = [
+                {'id': 1, 'location': 'http://glance.example.com'},
+                #NOTE(bcwaldon): images with a location of None should
+                # not be migrated
+                {'id': 2, 'location': None},
+            ]
+            map(lambda image: image.update(base_values), images)
+            for image in images:
+                images_table.insert().values(image).execute()
+
+            migration_api.upgrade(19)
+
+            image_locations_table = Table('image_locations', MetaData(engine),
+                                          autoload=True)
+            records = image_locations_table.select().execute().fetchall()
+
+            self.assertEqual(len(records), 1)
+            locations = dict([(il.image_id, il.value) for il in records])
+            self.assertEqual({'1': 'http://glance.example.com'}, locations)
+
+            image_locations_table = Table('image_locations', MetaData(engine),
+                                          autoload=True)
+            image_locations_table.update()\
+                                 .where(image_locations_table.c.image_id == 1)\
+                                 .values(value='http://swift.example.com')\
+                                 .execute()
+
+            migration_api.downgrade(18)
+
+            images_table = Table('images', MetaData(engine), autoload=True)
+            records = images_table.select().execute().fetchall()
+
+            self.assertEqual(len(records), 2)
+            locations = dict([(i.id, i.location) for i in records])
+            self.assertEqual({'1': 'http://swift.example.com', '2': None},
+                             locations)
