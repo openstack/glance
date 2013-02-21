@@ -170,6 +170,13 @@ prevent any new processes from being created.
 
 Optional. Default: ``1``
 
+* ``db_auto_create=False``
+
+Whether to automatically create the database tables.  Otherwise you can
+manually run `glance-manage db_sync`.
+
+Optional. Default: ``False``
+
 Configurating SSL Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
