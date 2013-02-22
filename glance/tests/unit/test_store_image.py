@@ -81,6 +81,18 @@ class TestStoreImage(utils.BaseTestCase):
         #NOTE(markwash): FakeStore returns image_id for location
         self.assertEquals(image.location, UUID2)
         self.assertEquals(image.checksum, 'Z')
+        self.assertEquals(image.status, 'active')
+
+    def test_image_set_data_unknown_size(self):
+        context = glance.context.RequestContext(user=USER1)
+        image_stub = ImageStub(UUID2, status='queued', location=None)
+        image = glance.store.ImageProxy(image_stub, context, self.store_api)
+        image.set_data('YYYY', None)
+        self.assertEquals(image.size, 4)
+        #NOTE(markwash): FakeStore returns image_id for location
+        self.assertEquals(image.location, UUID2)
+        self.assertEquals(image.checksum, 'Z')
+        self.assertEquals(image.status, 'active')
 
     def test_image_repo_get(self):
         image_repo = glance.store.ImageRepoProxy({}, self.store_api,

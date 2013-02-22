@@ -122,13 +122,15 @@ class FakeStoreAPI(object):
         for location in self.data.keys():
             if image_id in location:
                 raise exception.Duplicate()
-        if size and (current_store_size + size) > store_max_size:
+        if not size:
+            size = len(data)
+        if (current_store_size + size) > store_max_size:
             raise exception.StorageFull()
         if context.user == USER2:
             raise exception.Forbidden()
         if context.user == USER3:
             raise exception.StorageWriteDenied()
-        self.data[image_id] = (data, size or len(data))
+        self.data[image_id] = (data, size)
         checksum = 'Z'
         return (image_id, size, checksum)
 
