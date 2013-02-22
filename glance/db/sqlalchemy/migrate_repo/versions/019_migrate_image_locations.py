@@ -17,15 +17,6 @@
 
 import sqlalchemy
 
-import logging as base_logging
-import glance.openstack.common.log as logging
-
-
-LOG = logging.getLogger(__name__)
-
-sa_logger = base_logging.getLogger('sqlalchemy.engine')
-sa_logger.setLevel(base_logging.DEBUG)
-
 
 def get_images_table(meta):
     return sqlalchemy.Table('images', meta, autoload=True)
