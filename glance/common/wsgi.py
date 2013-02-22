@@ -174,7 +174,6 @@ class Server(object):
         """
         def kill_children(*args):
             """Kills the entire process group."""
-            self.logger.info(_('SIGTERM or SIGINT received'))
             signal.signal(signal.SIGTERM, signal.SIG_IGN)
             signal.signal(signal.SIGINT, signal.SIG_IGN)
             self.running = False
@@ -184,7 +183,6 @@ class Server(object):
             """
             Shuts down the server, but allows running requests to complete
             """
-            self.logger.info(_('SIGHUP received'))
             signal.signal(signal.SIGHUP, signal.SIG_IGN)
             self.running = False
 
