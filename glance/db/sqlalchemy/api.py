@@ -33,7 +33,6 @@ import sqlalchemy.sql as sa_sql
 from glance.common import exception
 from glance.db.sqlalchemy import migration
 from glance.db.sqlalchemy import models
-from glance.openstack.common import cfg
 import glance.openstack.common.log as os_logging
 from glance.openstack.common import timeutils
 
