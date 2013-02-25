@@ -32,9 +32,7 @@ lxml
 Paste
 
 passlib
-# jsonschema pinned at <1 because of backwards incompatibility which breaks
-# the TestImagesDeserializerWithExtendedSchema unit tests.
-jsonschema<1
+jsonschema
 python-keystoneclient>=0.2.0
 
 http://tarballs.openstack.org/oslo-config/oslo-config-2013.1b4.tar.gz#egg=oslo-config
