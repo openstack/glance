@@ -134,7 +134,8 @@ class TestImage(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImage, self).setUp()
         self.image_factory = domain.ImageFactory()
-        self.image = self.image_factory.new_image()
+        self.image = self.image_factory.new_image(
+                container_format='bear', disk_format='rawr')
 
     def test_visibility_enumerated(self):
         self.image.visibility = 'public'
@@ -149,6 +150,30 @@ class TestImage(test_utils.BaseTestCase):
     def test_delete_protected_image(self):
         self.image.protected = True
         self.assertRaises(exception.ProtectedImageDelete, self.image.delete)
+
+    def test_status_saving(self):
+        self.image.status = 'saving'
+        self.assertEqual(self.image.status, 'saving')
+
+    def test_status_saving_without_disk_format(self):
+        self.image.disk_format = None
+        self.assertRaises(ValueError, setattr,
+                          self.image, 'status', 'saving')
+
+    def test_status_saving_without_container_format(self):
+        self.image.container_format = None
+        self.assertRaises(ValueError, setattr,
+                          self.image, 'status', 'saving')
+
+    def test_status_active_without_disk_format(self):
+        self.image.disk_format = None
+        self.assertRaises(ValueError, setattr,
+                          self.image, 'status', 'active')
+
+    def test_status_active_without_container_format(self):
+        self.image.container_format = None
+        self.assertRaises(ValueError, setattr,
+                          self.image, 'status', 'active')
 
 
 class TestImageMember(test_utils.BaseTestCase):

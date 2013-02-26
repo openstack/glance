@@ -35,19 +35,35 @@ class Raise(object):
 
 class FakeImage(object):
     def __init__(self, image_id=None, data=None, checksum=None, size=0,
-                 locations=None):
+                 locations=None, container_format='bear', disk_format='rawr',
+                 status=None):
         self.image_id = image_id
         self.data = data
         self.checksum = checksum
         self.size = size
         self.locations = locations
+        self.container_format = container_format
+        self.disk_format = disk_format
+        self._status = status
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        if isinstance(self._status, BaseException):
+            raise self._status
+        else:
+            self._status = value
 
     def get_data(self):
         return self.data
 
     def set_data(self, data, size=None):
-        self.data = data
+        self.data = ''.join(data)
         self.size = size
+        self.status = 'modified-by-fake'
 
 
 class FakeImageRepo(object):
@@ -115,6 +131,23 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual(image.data, 'YYYY')
         self.assertEqual(image.size, 4)
 
+    def test_upload_status(self):
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage('abcd')
+        self.image_repo.result = image
+        insurance = {'called': False}
+
+        def read_data():
+            insurance['called'] = True
+            self.assertEqual(self.image_repo.saved_image.status, 'saving')
+            yield 'YYYY'
+
+        self.controller.upload(request, unit_test_utils.UUID2,
+                               read_data(), None)
+        self.assertTrue(insurance['called'])
+        self.assertEqual(self.image_repo.saved_image.status,
+                         'modified-by-fake')
+
     def test_upload_no_size(self):
         request = unit_test_utils.get_fake_request()
         image = FakeImage('abcd')
@@ -122,6 +155,14 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', None)
         self.assertEqual(image.data, 'YYYY')
         self.assertEqual(image.size, None)
+
+    def test_upload_invalid(self):
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage('abcd')
+        image.status = ValueError()
+        self.image_repo.result = image
+        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.upload,
+                          request, unit_test_utils.UUID1, 'YYYY', 4)
 
     def test_upload_non_existent_image(self):
         request = unit_test_utils.get_fake_request()

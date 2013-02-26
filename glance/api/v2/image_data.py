@@ -48,8 +48,13 @@ class ImageDataController(object):
         image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
+            image.status = 'saving'
+            image_repo.save(image)
             image.set_data(data, size)
             image_repo.save(image)
+        except ValueError, e:
+            LOG.debug("Cannot save data for image %s: %s", image_id, e)
+            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
         except exception.Duplicate, e:
             msg = _("Unable to upload duplicate image data for image: %s")
             LOG.debug(msg % image_id)

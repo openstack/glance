@@ -89,6 +89,25 @@ class Image(object):
             raise TypeError(message % kwargs.keys()[0])
 
     @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, status):
+        if (hasattr(self, '_status') and self._status == 'queued' and
+                status in ('saving', 'active')):
+            missing = [k for k in ['disk_format', 'container_format']
+                       if not getattr(self, k)]
+            if len(missing) > 0:
+                if len(missing) == 1:
+                    msg = _('Property %s must be set prior to saving data.')
+                else:
+                    msg = _('Properties %s must be set prior to saving data.')
+                raise ValueError(msg % ', '.join(missing))
+
+        self._status = status
+
+    @property
     def visibility(self):
         return self._visibility
 

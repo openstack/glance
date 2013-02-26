@@ -62,7 +62,8 @@ class TestImages(functional.FunctionalTest):
         # Create an image (with a deployer-defined property)
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json'})
-        data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar'})
+        data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar',
+                           'disk_format': 'aki', 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(201, response.status_code)
         image_location_header = response.headers['Location']
@@ -86,6 +87,8 @@ class TestImages(functional.FunctionalTest):
             u'type',
             u'min_ram',
             u'schema',
+            u'disk_format',
+            u'container_format',
         ])
         self.assertEqual(set(image.keys()), checked_keys)
         expected_image = {
@@ -260,7 +263,8 @@ class TestImages(functional.FunctionalTest):
         # Create an image that belongs to TENANT1
         path = self._url('/v2/images')
         headers = self._headers({'Content-Type': 'application/json'})
-        data = json.dumps({'name': 'image-1'})
+        data = json.dumps({'name': 'image-1', 'disk_format': 'raw',
+                           'container_format': 'bare'})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(201, response.status_code)
         image_id = json.loads(response.text)['id']
@@ -674,7 +678,8 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         # Create an image
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json'})
-        data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar'})
+        data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar',
+                           'disk_format': 'aki', 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(201, response.status_code)
 
@@ -729,7 +734,8 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         # Create an image
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json'})
-        data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar'})
+        data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar',
+                           'disk_format': 'aki', 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(201, response.status_code)
 

@@ -132,6 +132,8 @@ class BaseCacheMiddlewareTest(object):
         image_entity = {
             'name': 'Image1',
             'visibility': 'public',
+            'container_format': 'bare',
+            'disk_format': 'raw',
         }
         response, content = http.request(path, 'POST',
                                          headers=headers,
