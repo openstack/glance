@@ -19,6 +19,7 @@
 /images endpoint for Glance v1 API
 """
 
+import copy
 import traceback
 
 import eventlet
@@ -95,6 +96,19 @@ def validate_image_meta(req, values):
             raise HTTPBadRequest(explanation=msg, request=req)
 
     return values
+
+
+def redact_loc(image_meta):
+    """
+    Create a shallow copy of image meta with 'location' removed
+    for security (as it can contain credentials).
+    """
+    if 'location' in image_meta:
+        tmp_image_meta = copy.copy(image_meta)
+        del tmp_image_meta['location']
+        return tmp_image_meta
+
+    return image_meta
 
 
 class Controller(controller.BaseController):
@@ -348,7 +362,7 @@ class Controller(controller.BaseController):
 
         try:
             image_meta = registry.add_image_metadata(req.context, image_meta)
-            self.notifier.info("image.create", image_meta)
+            self.notifier.info("image.create", redact_loc(image_meta))
             return image_meta
         except exception.Duplicate:
             msg = (_("An image with identifier %s already exists") %
@@ -420,7 +434,7 @@ class Controller(controller.BaseController):
                     "to %(scheme)s store"), locals())
 
         try:
-            self.notifier.info("image.prepare", image_meta)
+            self.notifier.info("image.prepare", redact_loc(image_meta))
             location, size, checksum = store.add(
                 image_meta['id'],
                 utils.CooperativeReader(image_data),
@@ -455,7 +469,7 @@ class Controller(controller.BaseController):
             image_meta = registry.update_image_metadata(req.context,
                                                         image_id,
                                                         update_data)
-            self.notifier.info('image.upload', image_meta)
+            self.notifier.info('image.upload', redact_loc(image_meta))
 
             return location
 
@@ -525,8 +539,8 @@ class Controller(controller.BaseController):
             image_meta_data = registry.update_image_metadata(req.context,
                                                              image_id,
                                                              image_meta)
-            self.notifier.info("image.activate", image_meta_data)
-            self.notifier.info("image.update", image_meta_data)
+            self.notifier.info("image.activate", redact_loc(image_meta_data))
+            self.notifier.info("image.update", redact_loc(image_meta_data))
             return image_meta_data
         except exception.Invalid, e:
             msg = (_("Failed to activate image. Got error: %(e)s")
@@ -778,7 +792,7 @@ class Controller(controller.BaseController):
                                 request=req,
                                 content_type="text/plain")
         else:
-            self.notifier.info('image.update', image_meta)
+            self.notifier.info('image.update', redact_loc(image_meta))
 
         # Prevent client from learning the location, as it
         # could contain security credentials
@@ -855,7 +869,7 @@ class Controller(controller.BaseController):
                                 request=req,
                                 content_type="text/plain")
         else:
-            self.notifier.info('image.delete', image)
+            self.notifier.info('image.delete', redact_loc(image))
             return Response(body='', status=200)
 
     def get_store_or_400(self, request, scheme):

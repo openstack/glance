@@ -16,6 +16,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import datetime
 import hashlib
 import httplib
@@ -3441,3 +3442,24 @@ class TestImageSerializer(base.IsolatedUnitTest):
                                                   self.serializer.notifier)
 
         self.assertTrue(called['notified'])
+
+    def test_redact_location(self):
+        """Ensure location redaction does not change original metadata"""
+        image_meta = {'size': 3, 'id': '123', 'location': 'http://localhost'}
+        redacted_image_meta = {'size': 3, 'id': '123'}
+        copy_image_meta = copy.deepcopy(image_meta)
+        tmp_image_meta = glance.api.v1.images.redact_loc(image_meta)
+
+        self.assertEqual(image_meta, copy_image_meta)
+        self.assertEqual(tmp_image_meta, redacted_image_meta)
+
+    def test_noop_redact_location(self):
+        """Check no-op location redaction does not change original metadata"""
+        image_meta = {'size': 3, 'id': '123'}
+        redacted_image_meta = {'size': 3, 'id': '123'}
+        copy_image_meta = copy.deepcopy(image_meta)
+        tmp_image_meta = glance.api.v1.images.redact_loc(image_meta)
+
+        self.assertEqual(image_meta, copy_image_meta)
+        self.assertEqual(tmp_image_meta, redacted_image_meta)
+        self.assertEqual(image_meta, redacted_image_meta)
