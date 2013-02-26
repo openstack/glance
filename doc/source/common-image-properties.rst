@@ -54,12 +54,6 @@ booting an AMI-style image.
 The common name of the operating system distribution as specified in
 http://docs.openstack.org/trunk/openstack-compute/admin/content/adding-images.html
 
-**os_libosinfo_shortid**
--------------------------
-
-The short identifier ('short-id') used by the libosinfo operating system
-database.  See http://libosinfo.org.
-
 **os_version**
 --------------
 

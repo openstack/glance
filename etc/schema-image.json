@@ -21,10 +21,6 @@
         "description": "Common name of operating system distribution as specified in http://docs.openstack.org/trunk/openstack-compute/admin/content/adding-images.html",
         "type": "string"
     },
-    "os_libosinfo_shortid": {
-        "description": "Short identifier ('short-id') used by libosinfo operating system database, http://libosinfo.org",
-        "type": "string"
-    },
     "os_version": {
         "description": "Operating system version as specified by the distributor",
         "type": "string"
