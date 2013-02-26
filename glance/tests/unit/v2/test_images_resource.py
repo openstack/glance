@@ -1224,7 +1224,6 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
         custom_image_properties = {
             'pants': {
                 'type': 'string',
-                'required': True,
                 'enum': ['on', 'off'],
             },
         }
@@ -1682,7 +1681,6 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
         custom_image_properties = {
             'color': {
                 'type': 'string',
-                'required': True,
                 'enum': ['red', 'green'],
             },
         }
