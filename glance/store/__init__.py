@@ -332,15 +332,16 @@ class ImageProxy(glance.domain.ImageProxy):
 
     def delete(self):
         self.image.delete()
-        if self.image.location:
+        if self.image.locations:
             if CONF.delayed_delete:
                 self.image.status = 'pending_delete'
-                self.store_api.schedule_delayed_delete_from_backend(
-                                self.image.location, self.image.image_id)
+                for location in self.image.locations:
+                    self.store_api.schedule_delayed_delete_from_backend(
+                            location, self.image.image_id)
             else:
-                self.store_api.safe_delete_from_backend(self.image.location,
-                                                        self.context,
-                                                        self.image.image_id)
+                for location in self.image.locations:
+                    self.store_api.safe_delete_from_backend(
+                            location, self.context, self.image.image_id)
 
     def set_data(self, data, size=None):
         if size is None:
@@ -348,14 +349,14 @@ class ImageProxy(glance.domain.ImageProxy):
         location, size, checksum = self.store_api.add_to_backend(
                 self.context, CONF.default_store,
                 self.image.image_id, data, size)
-        self.image.location = location
+        self.image.locations = [location]
         self.image.size = size
         self.image.checksum = checksum
         self.image.status = 'active'
 
     def get_data(self):
-        if not self.image.location:
+        if not self.image.locations:
             raise exception.NotFound(_("No image data could be found"))
         data, size = self.store_api.get_from_backend(self.context,
-                                                     self.image.location)
+                                                     self.image.locations[0])
         return data

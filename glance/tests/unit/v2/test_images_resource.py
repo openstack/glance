@@ -59,7 +59,7 @@ def _db_fixture(id, **kwargs):
         'status': 'queued',
         'tags': [],
         'size': None,
-        'location': None,
+        'locations': [],
         'protected': False,
         'disk_format': None,
         'container_format': None,
@@ -80,7 +80,7 @@ def _domain_fixture(id, **kwargs):
         'owner': None,
         'status': 'queued',
         'size': None,
-        'location': None,
+        'locations': [],
         'protected': False,
         'disk_format': None,
         'container_format': None,
@@ -121,7 +121,8 @@ class TestImagesController(test_utils.BaseTestCase):
         self.db.reset()
         self.images = [
             _db_fixture(UUID1, owner=TENANT1, name='1', size=256,
-                        is_public=True, location='%s/%s' % (BASE_URI, UUID1)),
+                        is_public=True,
+                        locations=['%s/%s' % (BASE_URI, UUID1)]),
             _db_fixture(UUID2, owner=TENANT1, name='2',
                         size=512, is_public=True),
             _db_fixture(UUID3, owner=TENANT3, name='3',
@@ -1046,7 +1047,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         samples = {
             'owner': TENANT1,
             'is_public': True,
-            'location': '/a/b/c/d',
+            'locations': ['/a/b/c/d'],
             'deleted': False,
             'deleted_at': ISOTIME,
         }
@@ -1876,7 +1877,7 @@ class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
         self.active_image = _domain_fixture(
                 UUID1, name='image-1', visibility='public',
                 status='active', size=1024, created_at=DATETIME,
-                updated_at=DATETIME, location='http://some/fake/location')
+                updated_at=DATETIME, locations=['http://some/fake/location'])
 
         self.queued_image = _domain_fixture(
                 UUID2, name='image-2', status='active',

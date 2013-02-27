@@ -173,8 +173,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
     _disallowed_properties = ['direct_url', 'self', 'file', 'schema']
     _readonly_properties = ['created_at', 'updated_at', 'status', 'checksum',
                             'size', 'direct_url', 'self', 'file', 'schema']
-    _reserved_properties = ['owner', 'is_public', 'location', 'deleted',
-                            'deleted_at']
+    _reserved_properties = ['owner', 'is_public', 'location', 'locations',
+                            'deleted', 'deleted_at']
     _base_properties = ['checksum', 'created_at', 'container_format',
                         'disk_format', 'id', 'min_disk', 'min_ram', 'name',
                         'size', 'status', 'tags', 'updated_at', 'visibility',
@@ -431,8 +431,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         image_view['id'] = image.image_id
         image_view['created_at'] = timeutils.isotime(image.created_at)
         image_view['updated_at'] = timeutils.isotime(image.updated_at)
-        if CONF.show_image_direct_url and image.location is not None:  # domain
-            image_view['direct_url'] = image.location
+        if CONF.show_image_direct_url and image.locations:  # domain
+            image_view['direct_url'] = image.locations[0]
         image_view['tags'] = list(image.tags)
         image_view['self'] = self._get_image_href(image)
         image_view['file'] = self._get_image_href(image, 'file')

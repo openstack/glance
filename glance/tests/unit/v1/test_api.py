@@ -125,7 +125,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
              'min_disk': 0,
              'min_ram': 0,
              'size': 13,
-             'location': "file:///%s/%s" % (self.test_dir, UUID1),
+             'locations': ["file:///%s/%s" % (self.test_dir, UUID1)],
              'properties': {'type': 'kernel'}},
             {'id': UUID2,
              'name': 'fake image #2',
@@ -141,7 +141,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
              'min_disk': 5,
              'min_ram': 256,
              'size': 19,
-             'location': "file:///%s/%s" % (self.test_dir, UUID2),
+             'locations': ["file:///%s/%s" % (self.test_dir, UUID2)],
              'properties': {}}]
         self.context = glance.context.RequestContext(is_admin=True)
         db_api.configure_db()
@@ -1943,7 +1943,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
              'deleted': False,
              'checksum': None,
              'size': 13,
-             'location': "file:///%s/%s" % (self.test_dir, UUID1),
+             'locations': ["file:///%s/%s" % (self.test_dir, UUID1)],
              'properties': {'type': 'kernel'}},
             {'id': UUID2,
              'name': 'fake image #2',
@@ -1957,7 +1957,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
              'deleted': False,
              'checksum': None,
              'size': 19,
-             'location': "file:///%s/%s" % (self.test_dir, UUID2),
+             'locations': ["file:///%s/%s" % (self.test_dir, UUID2)],
              'properties': {}}]
         self.context = glance.context.RequestContext(is_admin=True)
         db_api.configure_db()

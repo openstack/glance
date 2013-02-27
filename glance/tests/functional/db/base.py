@@ -53,7 +53,7 @@ def build_image_fixture(**kwargs):
         'min_disk': 5,
         'min_ram': 256,
         'size': 19,
-        'location': "file:///tmp/glance-tests/2",
+        'locations': ["file:///tmp/glance-tests/2"],
         'properties': {},
     }
     image.update(kwargs)
@@ -125,7 +125,7 @@ class DriverTests(object):
         self.assertEqual(None, image['size'])
         self.assertEqual(None, image['checksum'])
         self.assertEqual(None, image['disk_format'])
-        self.assertEqual(None, image['location'])
+        self.assertEqual([], image['locations'])
         self.assertEqual(False, image['protected'])
         self.assertEqual(False, image['deleted'])
         self.assertEqual(None, image['deleted_at'])
@@ -145,6 +145,11 @@ class DriverTests(object):
                           self.db_api.image_create,
                           self.context, {'id': UUID1, 'status': 'queued'})
 
+    def test_image_create_with_locations(self):
+        fixture = {'status': 'queued', 'locations': ['a', 'b']}
+        image = self.db_api.image_create(self.context, fixture)
+        self.assertEqual(['a', 'b'], image['locations'])
+
     def test_image_create_properties(self):
         fixture = {'status': 'queued', 'properties': {'ping': 'pong'}}
         image = self.db_api.image_create(self.context, fixture)
@@ -163,6 +168,11 @@ class DriverTests(object):
         image = self.db_api.image_update(self.adm_context, UUID3, fixture)
         self.assertEqual('queued', image['status'])
         self.assertNotEqual(image['created_at'], image['updated_at'])
+
+    def test_image_update_with_locations(self):
+        fixture = {'locations': ['a', 'b']}
+        image = self.db_api.image_update(self.adm_context, UUID3, fixture)
+        self.assertEqual(['a', 'b'], image['locations'])
 
     def test_image_update(self):
         fixture = {'status': 'queued', 'properties': {'ping': 'pong'}}
@@ -410,6 +420,13 @@ class DriverTests(object):
     def test_image_get_all_limit_marker(self):
         images = self.db_api.image_get_all(self.context, limit=2)
         self.assertEquals(2, len(images))
+
+    def test_image_destroy(self):
+        image = self.db_api.image_destroy(self.adm_context, UUID3)
+        self.assertTrue(image['deleted'])
+        self.assertTrue(image['deleted_at'])
+        self.assertRaises(exception.NotFound, self.db_api.image_get,
+                          self.context, UUID3)
 
     def test_image_get_multiple_members(self):
         TENANT1 = uuidutils.generate_uuid()

@@ -152,10 +152,9 @@ class ImageMembersController(object):
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
 
     def _update_store_acls(self, req, image):
-        location_uri = image.location
         public = image.visibility == 'public'
         member_repo = image.get_member_repo()
-        if location_uri:
+        if image.locations:
             try:
                 read_tenants = []
                 write_tenants = []
@@ -163,9 +162,10 @@ class ImageMembersController(object):
                 if members:
                     for member in members:
                         read_tenants.append(member.member_id)
-                glance.store.set_acls(req.context, location_uri, public=public,
-                                      read_tenants=read_tenants,
-                                      write_tenants=write_tenants)
+                for location in image.locations:
+                    glance.store.set_acls(req.context, location, public=public,
+                                          read_tenants=read_tenants,
+                                          write_tenants=write_tenants)
             except exception.UnknownScheme:
                 msg = _("Store for image not found: %s") % image_id
                 raise webob.exc.HTTPBadRequest(explanation=msg,

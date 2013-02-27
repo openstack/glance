@@ -35,12 +35,12 @@ class Raise(object):
 
 class FakeImage(object):
     def __init__(self, image_id=None, data=None, checksum=None, size=0,
-                 location=None):
+                 locations=None):
         self.image_id = image_id
         self.data = data
         self.checksum = checksum
         self.size = size
-        self.location = location
+        self.locations = locations
 
     def get_data(self):
         return self.data
@@ -84,7 +84,7 @@ class TestImagesController(base.StoreClearingUnitTest):
 
     def test_download(self):
         request = unit_test_utils.get_fake_request()
-        image = FakeImage('abcd', location='http://example.com/image')
+        image = FakeImage('abcd', locations=['http://example.com/image'])
         self.image_repo.result = image
         image = self.controller.download(request, unit_test_utils.UUID1)
         self.assertEqual(image.image_id, 'abcd')

@@ -449,7 +449,7 @@ class TestImageNotifications(utils.BaseTestCase):
                 visibility='public', container_format='ami',
                 tags=['one', 'two'], disk_format='ami', min_ram=128,
                 min_disk=10, checksum='ca425b88f047ce8ec45ee90e813ada91',
-                location='http://127.0.0.1')
+                locations=['http://127.0.0.1'])
         self.context = glance.context.RequestContext(tenant=TENANT2,
                                                      user=USER1)
         self.image_repo_stub = ImageRepoStub()

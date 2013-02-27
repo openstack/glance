@@ -249,10 +249,12 @@ def image_destroy(context, image_id):
     """Destroy the image or raise if it does not exist."""
     session = get_session()
     with session.begin():
-        image_ref = image_get(context, image_id, session=session)
+        image_ref = _image_get(context, image_id, session=session)
 
         # Perform authorization check
         check_mutate_authorization(context, image_ref)
+
+        _image_locations_set(image_ref.id, [], session)
 
         image_ref.delete(session=session)
 
@@ -263,20 +265,23 @@ def image_destroy(context, image_id):
         for memb_ref in members:
             _image_member_delete(context, memb_ref, session)
 
-        return image_ref
+    return _normalize_locations(image_ref)
 
 
-def _limit_image_locations(image):
-    #NOTE(bcwaldon): mock this out until we support multiple images above
-    # the sqlalchemy db layer
-    if len(image.locations) > 0:
-        image.location = image.locations[0].value
-    else:
-        image.location = None
+def _normalize_locations(image):
+    undeleted_locations = filter(lambda x: not x.deleted, image['locations'])
+    image['locations'] = [loc['value'] for loc in undeleted_locations]
     return image
 
 
 def image_get(context, image_id, session=None, force_show_deleted=False):
+    image = _image_get(context, image_id, session=session,
+                       force_show_deleted=force_show_deleted)
+    image = _normalize_locations(image.to_dict())
+    return image
+
+
+def _image_get(context, image_id, session=None, force_show_deleted=False):
     """Get an image or raise if it does not exist."""
     session = session or get_session()
 
@@ -299,11 +304,7 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
     if not is_image_visible(context, image):
         raise exception.Forbidden("Image not visible to you")
 
-    #NOTE(bcwaldon): mock this out until we support multiple images above
-    # the sqlalchemy db layer
-    image.location = _image_location_get(image_id, session)
-
-    return _limit_image_locations(image)
+    return image
 
 
 def is_image_mutable(context, image):
@@ -588,15 +589,15 @@ def image_get_all(context, filters=None, marker=None, limit=None,
 
     marker_image = None
     if marker is not None:
-        marker_image = image_get(context, marker,
-                                 force_show_deleted=showing_deleted)
+        marker_image = _image_get(context, marker,
+                                  force_show_deleted=showing_deleted)
 
     query = paginate_query(query, models.Image, limit,
                            [sort_key, 'created_at', 'id'],
                            marker=marker_image,
                            sort_dir=sort_dir)
 
-    return [_limit_image_locations(image) for image in query.all()]
+    return [_normalize_locations(image.to_dict()) for image in query.all()]
 
 
 def _drop_protected_attrs(model_class, values):
@@ -656,13 +657,13 @@ def _image_update(context, values, image_id, purge_props=False):
         properties = values.pop('properties', {})
 
         try:
-            location = values.pop('location')
-            location_provided = True
+            locations = values.pop('locations')
+            locations_provided = True
         except KeyError:
-            location_provided = False
+            locations_provided = False
 
         if image_id:
-            image_ref = image_get(context, image_id, session=session)
+            image_ref = _image_get(context, image_id, session=session)
 
             # Perform authorization check
             check_mutate_authorization(context, image_ref)
@@ -708,32 +709,21 @@ def _image_update(context, values, image_id, purge_props=False):
         _set_properties_for_image(context, image_ref, properties, purge_props,
                                   session)
 
-    if location_provided:
-        _image_location_set(image_ref.id, location, session)
+    if locations_provided:
+        _image_locations_set(image_ref.id, locations, session)
 
     return image_get(context, image_ref.id)
 
 
-def _image_location_get(image_id, session):
-    location = session.query(models.ImageLocation)\
-                      .filter_by(image_id=image_id)\
-                      .filter_by(deleted=False)\
-                      .first()
-    try:
-        return location['value']
-    except TypeError:
-        return None
-
-
-def _image_location_set(image_id, location, session):
-    locations = session.query(models.ImageLocation)\
-                       .filter_by(image_id=image_id)\
-                       .filter_by(deleted=False)\
-                       .all()
-    for location_ref in locations:
+def _image_locations_set(image_id, locations, session):
+    location_refs = session.query(models.ImageLocation)\
+                           .filter_by(image_id=image_id)\
+                           .filter_by(deleted=False)\
+                           .all()
+    for location_ref in location_refs:
         location_ref.delete(session=session)
 
-    if location is not None:
+    for location in locations:
         location_ref = models.ImageLocation(image_id=image_id, value=location)
         location_ref.save()
 

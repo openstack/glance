@@ -45,7 +45,7 @@ def _db_fixture(id, **kwargs):
         'status': 'queued',
         'tags': [],
         'size': None,
-        'location': None,
+        'locations': [],
         'protected': False,
         'disk_format': None,
         'container_format': None,

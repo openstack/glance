@@ -34,10 +34,10 @@ class ImageRepoStub(object):
 
 
 class ImageStub(object):
-    def __init__(self, image_id, status, location):
+    def __init__(self, image_id, status, locations):
         self.image_id = image_id
         self.status = status
-        self.location = location
+        self.locations = locations
 
     def delete(self):
         self.status = 'deleted'
@@ -45,20 +45,21 @@ class ImageStub(object):
 
 class TestStoreImage(utils.BaseTestCase):
     def setUp(self):
-        location = '%s/%s' % (BASE_URI, UUID1)
-        self.image_stub = ImageStub(UUID1, 'active', location)
+        locations = ['%s/%s' % (BASE_URI, UUID1)]
+        self.image_stub = ImageStub(UUID1, 'active', locations)
         self.image_repo_stub = ImageRepoStub()
         self.store_api = unit_test_utils.FakeStoreAPI()
         super(TestStoreImage, self).setUp()
 
     def test_image_delete(self):
         image = glance.store.ImageProxy(self.image_stub, {}, self.store_api)
+        location = image.locations[0]
         self.assertEquals(image.status, 'active')
-        self.store_api.get_from_backend({}, image.location)  # no exception
+        self.store_api.get_from_backend({}, location)
         image.delete()
         self.assertEquals(image.status, 'deleted')
         self.assertRaises(exception.NotFound,
-                          self.store_api.get_from_backend, {}, image.location)
+                          self.store_api.get_from_backend, {}, location)
 
     def test_image_delayed_delete(self):
         self.config(delayed_delete=True)
@@ -66,7 +67,7 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEquals(image.status, 'active')
         image.delete()
         self.assertEquals(image.status, 'pending_delete')
-        self.store_api.get_from_backend({}, image.location)  # no exception
+        self.store_api.get_from_backend({}, image.locations[0])  # no exception
 
     def test_image_get_data(self):
         image = glance.store.ImageProxy(self.image_stub, {}, self.store_api)
@@ -74,23 +75,23 @@ class TestStoreImage(utils.BaseTestCase):
 
     def test_image_set_data(self):
         context = glance.context.RequestContext(user=USER1)
-        image_stub = ImageStub(UUID2, status='queued', location=None)
+        image_stub = ImageStub(UUID2, status='queued', locations=[])
         image = glance.store.ImageProxy(image_stub, context, self.store_api)
         image.set_data('YYYY', 4)
         self.assertEquals(image.size, 4)
         #NOTE(markwash): FakeStore returns image_id for location
-        self.assertEquals(image.location, UUID2)
+        self.assertEquals(image.locations, [UUID2])
         self.assertEquals(image.checksum, 'Z')
         self.assertEquals(image.status, 'active')
 
     def test_image_set_data_unknown_size(self):
         context = glance.context.RequestContext(user=USER1)
-        image_stub = ImageStub(UUID2, status='queued', location=None)
+        image_stub = ImageStub(UUID2, status='queued', locations=[])
         image = glance.store.ImageProxy(image_stub, context, self.store_api)
         image.set_data('YYYY', None)
         self.assertEquals(image.size, 4)
         #NOTE(markwash): FakeStore returns image_id for location
-        self.assertEquals(image.location, UUID2)
+        self.assertEquals(image.locations, [UUID2])
         self.assertEquals(image.checksum, 'Z')
         self.assertEquals(image.status, 'active')
 

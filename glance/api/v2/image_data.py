@@ -93,7 +93,7 @@ class ImageDataController(object):
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
 
-        if not image.location:
+        if not image.locations:
             reason = _("No image data could be found")
             raise webob.exc.HTTPNotFound(reason)
         return image

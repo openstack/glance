@@ -227,7 +227,7 @@ class ImmutableImageProxy(object):
     min_disk = _immutable_attr('base', 'min_disk')
     min_ram = _immutable_attr('base', 'min_ram')
     protected = _immutable_attr('base', 'protected')
-    location = _immutable_attr('base', 'location')
+    locations = _immutable_attr('base', 'locations')
     checksum = _immutable_attr('base', 'checksum')
     owner = _immutable_attr('base', 'owner')
     disk_format = _immutable_attr('base', 'disk_format')

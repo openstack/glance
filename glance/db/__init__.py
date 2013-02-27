@@ -58,7 +58,7 @@ BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
 IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size',
                                       'disk_format', 'container_format',
                                       'min_disk', 'min_ram', 'is_public',
-                                      'location', 'checksum', 'owner',
+                                      'locations', 'checksum', 'owner',
                                       'protected'])
 
 
@@ -109,7 +109,7 @@ class ImageRepo(object):
             min_disk=db_image['min_disk'],
             min_ram=db_image['min_ram'],
             protected=db_image['protected'],
-            location=db_image['location'],
+            locations=db_image['locations'],
             checksum=db_image['checksum'],
             owner=db_image['owner'],
             disk_format=db_image['disk_format'],
@@ -128,7 +128,7 @@ class ImageRepo(object):
             'min_disk': image.min_disk,
             'min_ram': image.min_ram,
             'protected': image.protected,
-            'location': image.location,
+            'locations': image.locations,
             'checksum': image.checksum,
             'owner': image.owner,
             'disk_format': image.disk_format,

@@ -639,8 +639,8 @@ class TestImmutableImage(utils.BaseTestCase):
     def test_change_updated_at(self):
         self._test_change('updated_at', timeutils.utcnow())
 
-    def test_change_location(self):
-        self._test_change('location', 'http://a/b/c')
+    def test_change_locations(self):
+        self._test_change('locations', ['http://a/b/c'])
 
     def test_change_size(self):
         self._test_change('size', 32)

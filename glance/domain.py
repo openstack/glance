@@ -21,7 +21,7 @@ from glance.openstack.common import uuidutils
 class ImageFactory(object):
     _readonly_properties = ['created_at', 'updated_at', 'status', 'checksum',
                             'size']
-    _reserved_properties = ['owner', 'is_public', 'location',
+    _reserved_properties = ['owner', 'is_public', 'locations',
                             'deleted', 'deleted_at', 'direct_url', 'self',
                             'file', 'schema']
 
@@ -76,7 +76,7 @@ class Image(object):
         self.min_disk = kwargs.pop('min_disk', 0)
         self.min_ram = kwargs.pop('min_ram', 0)
         self.protected = kwargs.pop('protected', False)
-        self.location = kwargs.pop('location', None)
+        self.locations = kwargs.pop('locations', [])
         self.checksum = kwargs.pop('checksum', None)
         self.owner = kwargs.pop('owner', None)
         self.disk_format = kwargs.pop('disk_format', None)
@@ -166,7 +166,7 @@ class ImageProxy(object):
     min_disk = _proxy('base', 'min_disk')
     min_ram = _proxy('base', 'min_ram')
     protected = _proxy('base', 'protected')
-    location = _proxy('base', 'location')
+    locations = _proxy('base', 'locations')
     checksum = _proxy('base', 'checksum')
     owner = _proxy('base', 'owner')
     disk_format = _proxy('base', 'disk_format')
