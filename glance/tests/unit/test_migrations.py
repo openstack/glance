@@ -44,6 +44,7 @@ import glance.db.sqlalchemy.migrate_repo
 from glance.db.sqlalchemy.migration import versioning_api as migration_api
 from glance.db.sqlalchemy import models
 from glance.openstack.common import log as logging
+from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
 from glance.tests import utils
 
@@ -427,6 +428,26 @@ class TestMigrations(utils.BaseTestCase):
                         "images table columns reported by metadata: %s\n"
                         % images.c.keys())
         images_prop = get_table(engine, 'image_properties')
+
+    def _prerun_004(self, engine):
+        """Insert checksum data sample to check if migration goes fine with
+        data"""
+        now = timeutils.utcnow()
+        images = get_table(engine, 'images')
+        data = [
+            {
+                'deleted': False, 'created_at': now, 'updated_at': now,
+                'type': 'kernel', 'status': 'active', 'is_public': True,
+            }
+        ]
+        engine.execute(images.insert(), data)
+        return data
+
+    def _check_004(self, engine, data):
+        """Assure that checksum data is present on table"""
+        images = get_table(engine, 'images')
+        self.assertIn('checksum', images.c)
+        self.assertEquals(images.c['checksum'].type.length, 32)
 
     def _prerun_015(self, engine):
         images = get_table(engine, 'images')
