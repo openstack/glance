@@ -174,64 +174,67 @@ class TestImagePolicy(test_utils.BaseTestCase):
     def test_get_image_not_allowed(self):
         rules = {"get_image": False}
         self.policy.set_rules(rules)
-        image_repo = glance.api.policy.ImageRepoProxy({}, self.policy,
-                                                      self.image_repo_stub)
-        self.assertRaises(exception.Forbidden, image_repo.get)
+        image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
+                                                      {}, self.policy)
+        self.assertRaises(exception.Forbidden, image_repo.get, UUID1)
 
     def test_get_image_allowed(self):
         rules = {"get_image": True}
         self.policy.set_rules(rules)
-        image_repo = glance.api.policy.ImageRepoProxy({}, self.policy,
-                                                      self.image_repo_stub)
-        output = image_repo.get()
+        image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
+                                                      {}, self.policy)
+        output = image_repo.get(UUID1)
         self.assertTrue(isinstance(output, glance.api.policy.ImageProxy))
-        self.assertEqual(output._image, 'image_from_get')
+        self.assertEqual(output.image, 'image_from_get')
 
     def test_get_images_not_allowed(self):
         rules = {"get_images": False}
         self.policy.set_rules(rules)
-        image_repo = glance.api.policy.ImageRepoProxy({}, self.policy,
-                                                      self.image_repo_stub)
+        image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
+                                                      {}, self.policy)
         self.assertRaises(exception.Forbidden, image_repo.list)
 
     def test_get_images_allowed(self):
         rules = {"get_image": True}
         self.policy.set_rules(rules)
-        image_repo = glance.api.policy.ImageRepoProxy({}, self.policy,
-                                                      self.image_repo_stub)
+        image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
+                                                      {}, self.policy)
         images = image_repo.list()
         for i, image in enumerate(images):
             self.assertTrue(isinstance(image, glance.api.policy.ImageProxy))
-            self.assertEqual(image._image, 'image_from_list_%d' % i)
-        output = image_repo.get()
+            self.assertEqual(image.image, 'image_from_list_%d' % i)
 
     def test_modify_image_not_allowed(self):
         rules = {"modify_image": False}
         self.policy.set_rules(rules)
-        image_repo = glance.api.policy.ImageRepoProxy({}, self.policy,
-                                                      self.image_repo_stub)
-        self.assertRaises(exception.Forbidden, image_repo.save)
+        image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
+                                                      {}, self.policy)
+        image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
+        self.assertRaises(exception.Forbidden, image_repo.save, image)
 
     def test_modify_image_allowed(self):
         rules = {"modify_image": True}
         self.policy.set_rules(rules)
-        image_repo = glance.api.policy.ImageRepoProxy({}, self.policy,
-                                                      self.image_repo_stub)
-        image_repo.save()
+        image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
+                                                      {}, self.policy)
+        image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
+        image_repo.save(image)
 
     def test_add_image_not_allowed(self):
         rules = {"add_image": False}
         self.policy.set_rules(rules)
-        image_repo = glance.api.policy.ImageRepoProxy({}, self.policy,
-                                                      self.image_repo_stub)
-        self.assertRaises(exception.Forbidden, image_repo.add)
+        image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
+                                                      {}, self.policy)
+        image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
+        self.assertRaises(exception.Forbidden, image_repo.add, image)
 
     def test_add_image_allowed(self):
         rules = {"add_image": True}
         self.policy.set_rules(rules)
-        image_repo = glance.api.policy.ImageRepoProxy({}, self.policy,
-                                                      self.image_repo_stub)
-        image_repo.add()
+        image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
+                                                      {}, self.policy)
+        image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
+        image_repo.add(image)
 
     def test_new_image_visibility(self):
         rules = {'publicize_image': False}

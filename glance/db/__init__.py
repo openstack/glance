@@ -19,9 +19,9 @@
 
 from oslo.config import cfg
 
-from glance.api import authorization
 from glance.common import exception
 import glance.domain
+import glance.domain.proxy
 from glance.openstack.common import importutils
 
 sql_connection_opt = cfg.StrOpt('sql_connection',
@@ -174,7 +174,7 @@ class ImageRepo(object):
         image.updated_at = new_values['updated_at']
 
 
-class ImageProxy(glance.domain.ImageProxy):
+class ImageProxy(glance.domain.proxy.Image):
 
     def __init__(self, image, context, db_api):
         self.context = context
@@ -230,7 +230,6 @@ class ImageMemberRepo(object):
         return self._format_image_member_from_db(new_values)
 
     def remove(self, image_member):
-        image_member_values = self._format_image_member_to_db(image_member)
         try:
             self.db_api.image_member_delete(self.context, image_member.id)
         except (exception.NotFound, exception.Forbidden):

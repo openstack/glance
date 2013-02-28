@@ -14,7 +14,7 @@
 #    under the License.
 
 from glance.common import exception
-import glance.domain
+import glance.domain.proxy
 
 
 def is_image_mutable(context, image):
@@ -53,15 +53,18 @@ def proxy_member(context, member):
         return ImmutableMemberProxy(member)
 
 
-class ImageRepoProxy(glance.domain.ImageRepoProxy):
+class ImageRepoProxy(glance.domain.proxy.Repo):
 
     def __init__(self, image_repo, context):
         self.context = context
         self.image_repo = image_repo
-        super(ImageRepoProxy, self).__init__(image_repo)
+        proxy_kwargs = {'context': self.context}
+        super(ImageRepoProxy, self).__init__(image_repo,
+                                             item_proxy_class=ImageProxy,
+                                             item_proxy_kwargs=proxy_kwargs)
 
-    def get(self, *args, **kwargs):
-        image = self.image_repo.get(*args, **kwargs)
+    def get(self, image_id):
+        image = self.image_repo.get(image_id)
         return proxy_image(self.context, image)
 
     def list(self, *args, **kwargs):
@@ -69,7 +72,7 @@ class ImageRepoProxy(glance.domain.ImageRepoProxy):
         return [proxy_image(self.context, i) for i in images]
 
 
-class ImageMembershipRepoProxy(glance.domain.ImageMembershipRepoProxy):
+class ImageMembershipRepoProxy(glance.domain.proxy.Repo):
 
     def __init__(self, member_repo, context):
         self.context = context
@@ -125,11 +128,15 @@ class ImageMembershipRepoProxy(glance.domain.ImageMembershipRepoProxy):
             raise exception.Forbidden(message % image_member.member_id)
 
 
-class ImageFactoryProxy(object):
+class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
 
     def __init__(self, image_factory, context):
         self.image_factory = image_factory
         self.context = context
+        kwargs = {'context': self.context}
+        super(ImageFactoryProxy, self).__init__(image_factory,
+                                                proxy_class=ImageProxy,
+                                                proxy_kwargs=kwargs)
 
     def new_image(self, **kwargs):
         owner = kwargs.pop('owner', self.context.owner)
@@ -140,7 +147,7 @@ class ImageFactoryProxy(object):
                             "owned by '%s'.")
                 raise exception.Forbidden(message % owner)
 
-        return self.image_factory.new_image(owner=owner, **kwargs)
+        return super(ImageFactoryProxy, self).new_image(owner=owner, **kwargs)
 
 
 class ImageMemberFactoryProxy(object):
@@ -286,7 +293,7 @@ class ImmutableMemberProxy(object):
     updated_at = _immutable_attr('base', 'updated_at')
 
 
-class ImageProxy(glance.domain.ImageProxy):
+class ImageProxy(glance.domain.proxy.Image):
 
     def __init__(self, image, context):
         self.image = image

@@ -461,7 +461,7 @@ class TestImageNotifications(utils.BaseTestCase):
         super(TestImageNotifications, self).setUp()
 
     def test_image_save_notification(self):
-        self.image_repo_proxy.save(self.image)
+        self.image_repo_proxy.save(self.image_proxy)
         output_logs = self.notifier.get_logs()
         self.assertEqual(len(output_logs), 1)
         output_log = output_logs[0]
@@ -472,7 +472,7 @@ class TestImageNotifications(utils.BaseTestCase):
             self.fail('Notification contained location field.')
 
     def test_image_add_notification(self):
-        self.image_repo_proxy.add(self.image)
+        self.image_repo_proxy.add(self.image_proxy)
         output_logs = self.notifier.get_logs()
         self.assertEqual(len(output_logs), 1)
         output_log = output_logs[0]
@@ -483,7 +483,7 @@ class TestImageNotifications(utils.BaseTestCase):
             self.fail('Notification contained location field.')
 
     def test_image_delete_notification(self):
-        self.image_repo_proxy.remove(self.image)
+        self.image_repo_proxy.remove(self.image_proxy)
         output_logs = self.notifier.get_logs()
         self.assertEqual(len(output_logs), 1)
         output_log = output_logs[0]
@@ -585,7 +585,7 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertEqual(output_log['event_type'], 'image.upload')
         self.assertTrue('Modern Major General' in output_log['payload'])
 
-    def test_image_set_data_storage_full(self):
+    def test_image_set_data_storage_write_denied(self):
         def data_iterator():
             self.notifier.log = []
             yield 'abcde'

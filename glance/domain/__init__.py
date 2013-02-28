@@ -118,76 +118,6 @@ class Image(object):
         raise NotImplementedError()
 
 
-def _proxy(target, attr):
-
-    def get_attr(self):
-        return getattr(getattr(self, target), attr)
-
-    def set_attr(self, value):
-        return setattr(getattr(self, target), attr, value)
-
-    def del_attr(self):
-        return delattr(getattr(self, target), attr)
-
-    return property(get_attr, set_attr, del_attr)
-
-
-class ImageRepoProxy(object):
-    def __init__(self, base):
-        self.base = base
-
-    def get(self, image_id):
-        return self.base.get(image_id)
-
-    def list(self, *args, **kwargs):
-        return self.base.list(*args, **kwargs)
-
-    def add(self, image):
-        return self.base.add(image)
-
-    def save(self, image):
-        return self.base.save(image)
-
-    def remove(self, image):
-        return self.base.remove(image)
-
-
-class ImageProxy(object):
-    def __init__(self, base):
-        self.base = base
-
-    name = _proxy('base', 'name')
-    image_id = _proxy('base', 'image_id')
-    name = _proxy('base', 'name')
-    status = _proxy('base', 'status')
-    created_at = _proxy('base', 'created_at')
-    updated_at = _proxy('base', 'updated_at')
-    visibility = _proxy('base', 'visibility')
-    min_disk = _proxy('base', 'min_disk')
-    min_ram = _proxy('base', 'min_ram')
-    protected = _proxy('base', 'protected')
-    locations = _proxy('base', 'locations')
-    checksum = _proxy('base', 'checksum')
-    owner = _proxy('base', 'owner')
-    disk_format = _proxy('base', 'disk_format')
-    container_format = _proxy('base', 'container_format')
-    size = _proxy('base', 'size')
-    extra_properties = _proxy('base', 'extra_properties')
-    tags = _proxy('base', 'tags')
-
-    def delete(self):
-        self.base.delete()
-
-    def set_data(self, data, size=None):
-        self.base.set_data(data, size)
-
-    def get_data(self):
-        return self.base.get_data()
-
-    def get_member_repo(self):
-        return self.base.get_member_repo()
-
-
 class ImageMembership(object):
 
     def __init__(self, image_id, member_id, created_at, updated_at,
@@ -220,24 +150,3 @@ class ImageMemberFactory(object):
         return ImageMembership(image_id=image.image_id, member_id=member_id,
                                created_at=created_at, updated_at=updated_at,
                                status='pending')
-
-
-class ImageMembershipRepoProxy(object):
-
-    def __init__(self, base):
-        self.base = base
-
-    def get(self, image_id):
-        return self.base.get(image_id)
-
-    def list(self, *args, **kwargs):
-        return self.base.list(*args, **kwargs)
-
-    def add(self, image_member):
-        return self.base.add(image_member)
-
-    def save(self, image_member):
-        return self.base.save(image_member)
-
-    def remove(self, image_member):
-        return self.base.remove(image_member)

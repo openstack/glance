@@ -96,15 +96,15 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEquals(image.status, 'active')
 
     def test_image_repo_get(self):
-        image_repo = glance.store.ImageRepoProxy({}, self.store_api,
-                                                 self.image_repo_stub)
+        image_repo = glance.store.ImageRepoProxy(self.image_repo_stub,
+                                                 {}, self.store_api)
         image = image_repo.get(UUID1)
         self.assertTrue(isinstance(image, glance.store.ImageProxy))
         self.assertEqual(image.image, 'image_from_get')
 
     def test_image_repo_list(self):
-        image_repo = glance.store.ImageRepoProxy({}, self.store_api,
-                                                 self.image_repo_stub)
+        image_repo = glance.store.ImageRepoProxy(self.image_repo_stub,
+                                                 {}, self.store_api)
         images = image_repo.list()
         for i, image in enumerate(images):
             self.assertTrue(isinstance(image, glance.store.ImageProxy))

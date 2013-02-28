@@ -25,7 +25,7 @@ from glance.common import crypt
 from glance.common import exception
 from glance.common import utils
 import glance.context
-import glance.domain
+import glance.domain.proxy
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
 from glance.store import location
@@ -304,25 +304,24 @@ def set_acls(context, location_uri, public=False, read_tenants=[],
         LOG.debug(_("Skipping store.set_acls... not implemented."))
 
 
-class ImageRepoProxy(glance.domain.ImageRepoProxy):
+class ImageRepoProxy(glance.domain.proxy.Repo):
 
-    def __init__(self, context, store_api, image_repo):
-        self.context = context
-        self.store_api = store_api
-        self.image_repo = image_repo
-        super(ImageRepoProxy, self).__init__(image_repo)
-
-    def get(self, *args, **kwargs):
-        image = self.image_repo.get(*args, **kwargs)
-        return ImageProxy(image, self.context, self.store_api)
-
-    def list(self, *args, **kwargs):
-        images = self.image_repo.list(*args, **kwargs)
-        return [ImageProxy(i, self.context, self.store_api)
-                for i in images]
+    def __init__(self, image_repo, context, store_api):
+        proxy_kwargs = {'context': context, 'store_api': store_api}
+        super(ImageRepoProxy, self).__init__(image_repo,
+                                             item_proxy_class=ImageProxy,
+                                             item_proxy_kwargs=proxy_kwargs)
 
 
-class ImageProxy(glance.domain.ImageProxy):
+class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
+    def __init__(self, factory, context, store_api):
+        proxy_kwargs = {'context': context, 'store_api': store_api}
+        super(ImageFactoryProxy, self).__init__(factory,
+                                                proxy_class=ImageProxy,
+                                                proxy_kwargs=proxy_kwargs)
+
+
+class ImageProxy(glance.domain.proxy.Image):
 
     def __init__(self, image, context, store_api):
         self.image = image

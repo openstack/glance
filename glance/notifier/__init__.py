@@ -23,6 +23,7 @@ from oslo.config import cfg
 
 from glance.common import exception
 import glance.domain
+import glance.domain.proxy
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
@@ -117,39 +118,42 @@ def format_image_notification(image):
     }
 
 
-class ImageRepoProxy(glance.domain.ImageRepoProxy):
+class ImageRepoProxy(glance.domain.proxy.Repo):
 
     def __init__(self, image_repo, context, notifier):
         self.image_repo = image_repo
         self.context = context
         self.notifier = notifier
-        super(ImageRepoProxy, self).__init__(image_repo)
+        proxy_kwargs = {'context': self.context, 'notifier': self.notifier}
+        super(ImageRepoProxy, self).__init__(image_repo,
+                                             item_proxy_class=ImageProxy,
+                                             item_proxy_kwargs=proxy_kwargs)
 
     def save(self, image):
-        self.image_repo.save(image)
+        super(ImageRepoProxy, self).save(image)
         self.notifier.info('image.update', format_image_notification(image))
 
     def add(self, image):
-        self.image_repo.add(image)
+        super(ImageRepoProxy, self).add(image)
         self.notifier.info('image.create', format_image_notification(image))
 
     def remove(self, image):
-        self.image_repo.remove(image)
+        super(ImageRepoProxy, self).remove(image)
         payload = format_image_notification(image)
         payload['deleted'] = True
         payload['deleted_at'] = timeutils.isotime()
         self.notifier.info('image.delete', payload)
 
-    def get(self, *args, **kwargs):
-        image = self.image_repo.get(*args, **kwargs)
-        return ImageProxy(image, self.context, self.notifier)
 
-    def list(self, *args, **kwargs):
-        images = self.image_repo.list(*args, **kwargs)
-        return [ImageProxy(i, self.context, self.notifier) for i in images]
+class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
+    def __init__(self, factory, context, notifier):
+        kwargs = {'context': context, 'notifier': notifier}
+        super(ImageFactoryProxy, self).__init__(factory,
+                                                proxy_class=ImageProxy,
+                                                proxy_kwargs=kwargs)
 
 
-class ImageProxy(glance.domain.ImageProxy):
+class ImageProxy(glance.domain.proxy.Image):
 
     def __init__(self, image, context, notifier):
         self.image = image

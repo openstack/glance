@@ -23,7 +23,7 @@ import os.path
 from oslo.config import cfg
 
 from glance.common import exception
-import glance.domain
+import glance.domain.proxy
 import glance.openstack.common.log as logging
 from glance.openstack.common import policy
 
@@ -142,70 +142,73 @@ class Enforcer(object):
         return self._check(context, action, target)
 
 
-class ImageRepoProxy(glance.domain.ImageRepoProxy):
+class ImageRepoProxy(glance.domain.proxy.Repo):
 
-    def __init__(self, context, policy, image_repo):
-        self._context = context
-        self._policy = policy
-        self._image_repo = image_repo
-        super(ImageRepoProxy, self).__init__(image_repo)
+    def __init__(self, image_repo, context, policy):
+        self.context = context
+        self.policy = policy
+        self.image_repo = image_repo
+        proxy_kwargs = {'context': self.context, 'policy': self.policy}
+        super(ImageRepoProxy, self).__init__(image_repo,
+                                             item_proxy_class=ImageProxy,
+                                             item_proxy_kwargs=proxy_kwargs)
 
-    def get(self, *args, **kwargs):
-        self._policy.enforce(self._context, 'get_image', {})
-        image = self._image_repo.get(*args, **kwargs)
-        return ImageProxy(image, self._context, self._policy)
+    def get(self, image_id):
+        self.policy.enforce(self.context, 'get_image', {})
+        return super(ImageRepoProxy, self).get(image_id)
 
     def list(self, *args, **kwargs):
-        self._policy.enforce(self._context, 'get_images', {})
-        images = self._image_repo.list(*args, **kwargs)
-        return [ImageProxy(i, self._context, self._policy)
-                for i in images]
+        self.policy.enforce(self.context, 'get_images', {})
+        return super(ImageRepoProxy, self).list(*args, **kwargs)
 
-    def save(self, *args, **kwargs):
-        self._policy.enforce(self._context, 'modify_image', {})
-        return self._image_repo.save(*args, **kwargs)
+    def save(self, image):
+        self.policy.enforce(self.context, 'modify_image', {})
+        return super(ImageRepoProxy, self).save(image)
 
-    def add(self, *args, **kwargs):
-        self._policy.enforce(self._context, 'add_image', {})
-        return self._image_repo.add(*args, **kwargs)
+    def add(self, image):
+        self.policy.enforce(self.context, 'add_image', {})
+        return super(ImageRepoProxy, self).add(image)
 
 
-class ImageProxy(glance.domain.ImageProxy):
+class ImageProxy(glance.domain.proxy.Image):
 
     def __init__(self, image, context, policy):
-        self._image = image
-        self._context = context
-        self._policy = policy
+        self.image = image
+        self.context = context
+        self.policy = policy
         super(ImageProxy, self).__init__(image)
 
     @property
     def visibility(self):
-        return self._image.visibility
+        return self.image.visibility
 
     @visibility.setter
     def visibility(self, value):
         if value == 'public':
-            self._policy.enforce(self._context, 'publicize_image', {})
-        self._image.visibility = value
+            self.policy.enforce(self.context, 'publicize_image', {})
+        self.image.visibility = value
 
     def delete(self):
-        self._policy.enforce(self._context, 'delete_image', {})
-        return self._image.delete()
+        self.policy.enforce(self.context, 'delete_image', {})
+        return self.image.delete()
 
     def get_data(self, *args, **kwargs):
-        self._policy.enforce(self._context, 'download_image', {})
-        return self._image.get_data(*args, **kwargs)
+        self.policy.enforce(self.context, 'download_image', {})
+        return self.image.get_data(*args, **kwargs)
 
 
-class ImageFactoryProxy(object):
+class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
 
     def __init__(self, image_factory, context, policy):
         self.image_factory = image_factory
         self.context = context
         self.policy = policy
+        proxy_kwargs = {'context': self.context, 'policy': self.policy}
+        super(ImageFactoryProxy, self).__init__(image_factory,
+                                                proxy_class=ImageProxy,
+                                                proxy_kwargs=proxy_kwargs)
 
     def new_image(self, **kwargs):
         if kwargs.get('visibility') == 'public':
             self.policy.enforce(self.context, 'publicize_image', {})
-        image = self.image_factory.new_image(**kwargs)
-        return image
+        return super(ImageFactoryProxy, self).new_image(**kwargs)
