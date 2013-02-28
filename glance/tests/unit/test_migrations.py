@@ -25,7 +25,6 @@ properly both upgrading and downgrading, and that no data loss occurs
 if possible.
 """
 
-import collections
 import commands
 import ConfigParser
 import datetime
@@ -37,9 +36,7 @@ from oslo.config import cfg
 import sqlalchemy
 
 from glance.common import crypt
-from glance.common import exception
 import glance.db.migration as migration
-from glance.db.sqlalchemy import api
 import glance.db.sqlalchemy.migrate_repo
 from glance.db.sqlalchemy.migration import versioning_api as migration_api
 from glance.db.sqlalchemy import models

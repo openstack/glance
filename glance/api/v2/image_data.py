@@ -15,9 +15,7 @@
 
 import webob.exc
 
-from glance.api import common
 import glance.api.policy
-import glance.api.v2 as v2
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi

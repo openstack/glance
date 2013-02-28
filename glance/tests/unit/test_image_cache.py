@@ -18,15 +18,12 @@
 from contextlib import contextmanager
 import hashlib
 import os
-import random
-import shutil
 import StringIO
 
 import fixtures
 import stubout
 
 from glance.common import exception
-from glance.common import utils
 from glance import image_cache
 #NOTE(bcwaldon): This is imported to load the registry config options
 import glance.registry

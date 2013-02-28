@@ -16,7 +16,6 @@
 import os.path
 
 import oslo.config.cfg
-import stubout
 
 import glance.api.policy
 from glance.common import exception

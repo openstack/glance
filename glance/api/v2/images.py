@@ -14,7 +14,6 @@
 #    under the License.
 
 import copy
-import datetime
 import json
 import re
 import urllib

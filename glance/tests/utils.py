@@ -20,7 +20,6 @@
 import errno
 import functools
 import os
-import random
 import socket
 import StringIO
 import subprocess
@@ -31,7 +30,6 @@ import testtools
 
 from glance.common import config
 from glance.common import exception
-from glance.common import utils
 from glance.common import wsgi
 from glance import context
 

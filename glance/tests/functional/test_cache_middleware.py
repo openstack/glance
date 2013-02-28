@@ -32,7 +32,6 @@ import httplib2
 
 from glance.tests import functional
 from glance.tests.utils import (skip_if_disabled,
-                                requires,
                                 execute,
                                 xattr_writes_supported,
                                 minimal_headers)

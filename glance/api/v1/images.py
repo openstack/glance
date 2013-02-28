@@ -20,7 +20,6 @@
 """
 
 import copy
-import traceback
 
 import eventlet
 from oslo.config import cfg

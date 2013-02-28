@@ -20,8 +20,6 @@ from oslo.config import cfg
 import webob
 
 import glance.api.v2.image_members
-from glance.openstack.common import uuidutils
-from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 
