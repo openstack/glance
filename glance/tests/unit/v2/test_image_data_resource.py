@@ -317,5 +317,5 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         response = webob.Response()
         response.request = request
         self.serializer.upload(response, {})
-        self.assertEqual(201, response.status_int)
+        self.assertEqual(204, response.status_int)
         self.assertEqual('0', response.headers['Content-Length'])

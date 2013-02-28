@@ -173,7 +173,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(204, response.status_code)
 
         # Checksum should be populated automatically
         path = self._url('/v2/images/%s' % image_id)
@@ -255,7 +255,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(204, response.status_code)
 
         # TENANT1 should see the image in their list
         path = self._url('/v2/images')
@@ -671,7 +671,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(204, response.status_code)
 
         # Image direct_url should be visible
         path = self._url('/v2/images/%s' % image_id)
@@ -718,7 +718,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(204, response.status_code)
 
         # Image direct_url should not be visible
         path = self._url('/v2/images/%s' % image_id)

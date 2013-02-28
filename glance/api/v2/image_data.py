@@ -129,7 +129,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.headers['Content-Length'] = str(image.size)
 
     def upload(self, response, result):
-        response.status_int = 201
+        response.status_int = 204
 
 
 def create_resource():
