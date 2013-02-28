@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import json
 import webob
 
@@ -25,6 +26,7 @@ import glance.domain
 import glance.gateway
 import glance.notifier
 from glance.openstack.common import timeutils
+import glance.schema
 import glance.store
 
 
@@ -50,6 +52,7 @@ class ImageMembersController(object):
 
             {'member_id': <MEMBER>,
              'image_id': <IMAGE>,
+             'status': <MEMBER_STATUS>
              'created_at': ..,
              'updated_at': ..}
 
@@ -82,6 +85,7 @@ class ImageMembersController(object):
 
             {'member_id': <MEMBER>,
              'image_id': <IMAGE>,
+             'status': <MEMBER_STATUS>
              'created_at': ..,
              'updated_at': ..}
 
@@ -115,6 +119,7 @@ class ImageMembersController(object):
             {'members': [
                 {'member_id': <MEMBER>,
                  'image_id': <IMAGE>,
+                 'status': <MEMBER_STATUS>
                  'created_at': ..,
                  'updated_at': ..}, ..
             ]}
@@ -207,6 +212,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 class ResponseSerializer(wsgi.JSONResponseSerializer):
     def __init__(self, schema=None):
         super(ResponseSerializer, self).__init__()
+        self.schema = schema or get_schema()
 
     def _format_image_member(self, member):
         member_view = {}
@@ -215,6 +221,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             member_view[key] = getattr(member, key)
         member_view['created_at'] = timeutils.isotime(member.created_at)
         member_view['updated_at'] = timeutils.isotime(member.updated_at)
+        member_view['schema'] = '/v2/schemas/member'
+        member_view = self.schema.filter(member_view)
         return member_view
 
     def create(self, response, image_member):
@@ -235,9 +243,58 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         for image_member in image_members:
             image_member_view = self._format_image_member(image_member)
             image_members_view.append(image_member_view)
-        body = json.dumps(dict(members=image_members_view), ensure_ascii=False)
+        totalview = dict(members=image_members_view)
+        totalview['schema'] = '/v2/schemas/members'
+        body = json.dumps(totalview, ensure_ascii=False)
         response.unicode_body = unicode(body)
         response.content_type = 'application/json'
+
+
+_MEMBER_SCHEMA = {
+    'member_id': {
+        'type': 'string',
+        'description': _('An identifier for the image member (tenantId)')
+    },
+    'image_id': {
+        'type': 'string',
+        'description': _('An identifier for the image'),
+        'pattern': ('^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}'
+                    '-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$'),
+    },
+    'created_at': {
+        'type': 'string',
+        'description': _('Date and time of image member creation'),
+        #TODO(brian-rosmaita): our jsonschema library doesn't seem to like the
+        # format attribute, figure out why (and also fix in images.py)
+        #'format': 'date-time',
+    },
+    'updated_at': {
+        'type': 'string',
+        'description': _('Date and time of last modification of image member'),
+        #'format': 'date-time',
+    },
+    'status': {
+        'type': 'string',
+        'description': _('The status of this image member'),
+        'enum': [
+            'pending',
+            'accepted',
+            'rejected'
+        ]
+    },
+    'schema': {'type': 'string'}
+}
+
+
+def get_schema():
+    properties = copy.deepcopy(_MEMBER_SCHEMA)
+    schema = glance.schema.Schema('member', properties)
+    return schema
+
+
+def get_collection_schema():
+    member_schema = get_schema()
+    return glance.schema.CollectionSchema('members', member_schema)
 
 
 def create_resource():
