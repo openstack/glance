@@ -62,8 +62,8 @@ def _get_connect_string(backend,
     Try to get a connection with a very specific set of values, if we get
     these then we'll run the tests, otherwise they are skipped
     """
-    if backend == "postgres":
-        backend = "postgresql+psycopg2"
+    if backend == "mysql":
+        backend = "mysql+mysqldb"
 
     return ("%(backend)s://%(user)s:%(passwd)s@localhost/%(database)s"
             % locals())
