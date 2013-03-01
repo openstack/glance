@@ -72,16 +72,17 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         return [proxy_image(self.context, i) for i in images]
 
 
-class ImageMembershipRepoProxy(glance.domain.proxy.Repo):
+class ImageMemberRepoProxy(glance.domain.proxy.Repo):
 
-    def __init__(self, member_repo, context):
-        self.context = context
+    def __init__(self, member_repo, image, context):
         self.member_repo = member_repo
-        super(ImageMembershipRepoProxy, self).__init__(member_repo)
+        self.image = image
+        self.context = context
+        super(ImageMemberRepoProxy, self).__init__(member_repo)
 
     def get(self, member_id):
         if (self.context.is_admin or
-            self.context.owner == self.member_repo.image.owner or
+            self.context.owner == self.image.owner or
             self.context.owner == member_id):
             member = self.member_repo.get(member_id)
             return proxy_member(self.context, member)
@@ -92,31 +93,31 @@ class ImageMembershipRepoProxy(glance.domain.proxy.Repo):
     def list(self, *args, **kwargs):
         members = self.member_repo.list(*args, **kwargs)
         if (self.context.is_admin or
-            self.context.owner == self.member_repo.image.owner):
+            self.context.owner == self.image.owner):
             return [proxy_member(self.context, m) for m in members]
         for member in members:
             if member.member_id == self.context.owner:
                 return [proxy_member(self.context, member)]
         message = _("You cannot get image member for %s")
-        raise exception.Forbidden(message % self.member_repo.image.image_id)
+        raise exception.Forbidden(message % self.image.image_id)
 
     def remove(self, image_member):
-        if (self.member_repo.image.owner == self.context.owner or
+        if (self.image.owner == self.context.owner or
             self.context.is_admin):
             self.member_repo.remove(image_member)
         else:
             message = _("You cannot delete image member for %s")
             raise exception.Forbidden(message
-                                      % self.member_repo.image.image_id)
+                                      % self.image.image_id)
 
     def add(self, image_member):
-        if (self.member_repo.image.owner == self.context.owner or
+        if (self.image.owner == self.context.owner or
             self.context.is_admin):
             return self.member_repo.add(image_member)
         else:
             message = _("You cannot add image member for %s")
             raise exception.Forbidden(message
-                                      % self.member_repo.image.image_id)
+                                      % self.image.image_id)
 
     def save(self, image_member):
         if (self.context.is_admin or
@@ -271,7 +272,7 @@ class ImmutableImageProxy(object):
 
     def get_member_repo(self):
         member_repo = self.base.get_member_repo()
-        return ImageMembershipRepoProxy(member_repo, self.context)
+        return ImageMemberRepoProxy(member_repo, self, self.context)
 
     def get_data(self):
         return self.base.get_data()
@@ -306,4 +307,4 @@ class ImageProxy(glance.domain.proxy.Image):
             raise exception.Forbidden(message)
         else:
             member_repo = self.image.get_member_repo(**kwargs)
-            return ImageMembershipRepoProxy(member_repo, self.context)
+            return ImageMemberRepoProxy(member_repo, self, self.context)
