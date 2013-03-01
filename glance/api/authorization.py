@@ -180,6 +180,27 @@ def _immutable_attr(target, attr, proxy=None):
     return property(get_attr, forbidden, forbidden)
 
 
+class ImmutableLocations(list):
+    def forbidden(self, *args, **kwargs):
+        message = _("You are not permitted to modify locations "
+                    "for this image.")
+        raise exception.Forbidden(message)
+
+    append = forbidden
+    extend = forbidden
+    insert = forbidden
+    pop = forbidden
+    remove = forbidden
+    reverse = forbidden
+    sort = forbidden
+    __delitem__ = forbidden
+    __delslice__ = forbidden
+    __iadd__ = forbidden
+    __imul__ = forbidden
+    __setitem__ = forbidden
+    __setslice__ = forbidden
+
+
 class ImmutableProperties(dict):
     def forbidden_key(self, key, *args, **kwargs):
         message = _("You are not permitted to modify '%s' on this image.")
@@ -227,7 +248,7 @@ class ImmutableImageProxy(object):
     min_disk = _immutable_attr('base', 'min_disk')
     min_ram = _immutable_attr('base', 'min_ram')
     protected = _immutable_attr('base', 'protected')
-    locations = _immutable_attr('base', 'locations')
+    locations = _immutable_attr('base', 'locations', proxy=ImmutableLocations)
     checksum = _immutable_attr('base', 'checksum')
     owner = _immutable_attr('base', 'owner')
     disk_format = _immutable_attr('base', 'disk_format')
