@@ -446,6 +446,31 @@ class TestMigrations(utils.BaseTestCase):
         self.assertIn('checksum', images.c)
         self.assertEquals(images.c['checksum'].type.length, 32)
 
+    def _prerun_005(self, engine):
+        now = timeutils.utcnow()
+        images = get_table(engine, 'images')
+        data = [
+            {
+                'deleted': False, 'created_at': now, 'updated_at': now,
+                'type': 'kernel', 'status': 'active', 'is_public': True,
+                # Integer type signed size limit
+                'size': 2147483647
+            }
+        ]
+        engine.execute(images.insert(), data)
+        return data
+
+    def _check_005(self, engine, data):
+
+        images = get_table(engine, 'images')
+        select = images.select().execute()
+
+        sizes = [row['size'] for row in select if row['size'] is not None]
+        migrated_data_sizes = [element['size'] for element in data]
+
+        for migrated in migrated_data_sizes:
+            self.assertIn(migrated, sizes)
+
     def _prerun_015(self, engine):
         images = get_table(engine, 'images')
         unquoted_locations = [
