@@ -145,6 +145,9 @@ class Controller(object):
             if value is None:
                 del params[key]
 
+        # Fix for LP Bug #1132294
+        # Ensure all shared images are returned in v1
+        params['member_status'] = 'all'
         return params
 
     def _get_filters(self, req):
