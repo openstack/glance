@@ -85,7 +85,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
 
         exitcode, out, err = execute(cmd)
 
-        return datetime.date.today().isoformat() in out
+        return datetime.datetime.utcnow().strftime("%Y-%m-%d") in out
 
     def test_no_cache_enabled(self):
         """
