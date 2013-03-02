@@ -215,7 +215,14 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
                 pass
         return dict(image=image, extra_properties=properties, tags=tags)
 
-    def _get_change_operation(self, raw_change):
+    def _get_change_operation_d10(self, raw_change):
+        try:
+            return raw_change['op']
+        except KeyError:
+            msg = _("Unable to find '%s' in JSON Schema change") % 'op'
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
+    def _get_change_operation_d4(self, raw_change):
         op = None
         for key in ['replace', 'add', 'remove']:
             if key in raw_change:
@@ -230,15 +237,15 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             raise webob.exc.HTTPBadRequest(explanation=msg)
         return op
 
-    def _get_change_path(self, raw_change, op):
-        key = self._decode_json_pointer(raw_change[op])
-        if key in self._readonly_properties:
-            msg = "Attribute \'%s\' is read-only." % key
-            raise webob.exc.HTTPForbidden(explanation=unicode(msg))
-        if key in self._reserved_properties:
-            msg = "Attribute \'%s\' is reserved." % key
-            raise webob.exc.HTTPForbidden(explanation=unicode(msg))
-        return key
+    def _get_change_path_d10(self, raw_change):
+        try:
+            return raw_change['path']
+        except KeyError:
+            msg = _("Unable to find '%s' in JSON Schema change") % 'path'
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
+    def _get_change_path_d4(self, raw_change, op):
+        return raw_change[op]
 
     def _decode_json_pointer(self, pointer):
         """ Parse a json pointer.
@@ -278,37 +285,71 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         return raw_change['value']
 
     def _validate_change(self, change):
+        path = change['path']
+        if path in self._readonly_properties:
+            msg = "Attribute \'%s\' is read-only." % path
+            raise webob.exc.HTTPForbidden(explanation=unicode(msg))
+        if path in self._reserved_properties:
+            msg = "Attribute \'%s\' is reserved." % path
+            raise webob.exc.HTTPForbidden(explanation=unicode(msg))
+
         if change['op'] == 'delete':
             return
+
         partial_image = {change['path']: change['value']}
         try:
             self.schema.validate(partial_image)
         except exception.InvalidObject as e:
             raise webob.exc.HTTPBadRequest(explanation=unicode(e))
 
+    def _parse_json_schema_change(self, raw_change, draft_version):
+        if draft_version == 10:
+            op = self._get_change_operation_d10(raw_change)
+            path = self._get_change_path_d10(raw_change)
+        elif draft_version == 4:
+            op = self._get_change_operation_d4(raw_change)
+            path = self._get_change_path_d4(raw_change, op)
+        else:
+            msg = _('Unrecognized JSON Schema draft version')
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
+        path = self._decode_json_pointer(path)
+        return op, path
+
     def update(self, request):
         changes = []
-        valid_content_types = [
-            'application/openstack-images-v2.0-json-patch'
-        ]
-        if request.content_type not in valid_content_types:
-            headers = {'Accept-Patch': ','.join(valid_content_types)}
+        content_types = {
+            'application/openstack-images-v2.0-json-patch': 4,
+            'application/openstack-images-v2.1-json-patch': 10,
+        }
+        if request.content_type not in content_types:
+            headers = {'Accept-Patch': ', '.join(content_types.keys())}
             raise webob.exc.HTTPUnsupportedMediaType(headers=headers)
+
+        json_schema_version = content_types[request.content_type]
+
         body = self._get_request_body(request)
+
         if not isinstance(body, list):
             msg = _('Request body must be a JSON array of operation objects.')
             raise webob.exc.HTTPBadRequest(explanation=msg)
+
         for raw_change in body:
             if not isinstance(raw_change, dict):
                 msg = _('Operations must be JSON objects.')
                 raise webob.exc.HTTPBadRequest(explanation=msg)
-            op = self._get_change_operation(raw_change)
-            path = self._get_change_path(raw_change, op)
+
+            (op, path) = self._parse_json_schema_change(raw_change,
+                                                        json_schema_version)
+
             change = {'op': op, 'path': path}
+
             if not op == 'remove':
                 change['value'] = self._get_change_value(raw_change, op)
                 self._validate_change(change)
+
             changes.append(change)
+
         return {'changes': changes}
 
     def _validate_limit(self, limit):
