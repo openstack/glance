@@ -295,6 +295,7 @@ class TestImageMembersSerializer(test_utils.BaseTestCase):
                     'status': 'accepted',
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
+                    'schema': '/v2/schemas/member',
                 },
                 {
                     'image_id': UUID2,
@@ -302,8 +303,10 @@ class TestImageMembersSerializer(test_utils.BaseTestCase):
                     'status': 'pending',
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
+                    'schema': '/v2/schemas/member',
                 },
-            ]
+            ],
+            'schema': '/v2/schemas/members',
         }
         request = webob.Request.blank('/v2/images/%s/members' % UUID2)
         response = webob.Response(request=request)
@@ -317,6 +320,7 @@ class TestImageMembersSerializer(test_utils.BaseTestCase):
         expected = {'image_id': UUID2,
                     'member_id': TENANT1,
                     'status': 'accepted',
+                    'schema': '/v2/schemas/member',
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME}
         request = webob.Request.blank('/v2/images/%s/members/%s'
@@ -332,6 +336,7 @@ class TestImageMembersSerializer(test_utils.BaseTestCase):
         expected = {'image_id': UUID2,
                     'member_id': TENANT1,
                     'status': 'accepted',
+                    'schema': '/v2/schemas/member',
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME}
         request = webob.Request.blank('/v2/images/%s/members/%s'

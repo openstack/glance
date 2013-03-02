@@ -14,6 +14,7 @@
 #    under the License.
 
 from glance.api.v2 import images
+from glance.api.v2 import image_members
 from glance.common import wsgi
 
 
@@ -22,12 +23,20 @@ class Controller(object):
         self.image_schema = images.get_schema(custom_image_properties)
         self.image_collection_schema = images.get_collection_schema(
                 custom_image_properties)
+        self.member_schema = image_members.get_schema()
+        self.member_collection_schema = image_members.get_collection_schema()
 
     def image(self, req):
         return self.image_schema.raw()
 
     def images(self, req):
         return self.image_collection_schema.raw()
+
+    def member(self, req):
+        return self.member_schema.minimal()
+
+    def members(self, req):
+        return self.member_collection_schema.minimal()
 
 
 def create_resource(custom_image_properties=None):

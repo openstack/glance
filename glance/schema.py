@@ -69,6 +69,13 @@ class Schema(object):
             raw['links'] = self.links
         return raw
 
+    def minimal(self):
+        minimal = {
+            'name': self.name,
+            'properties': self.properties
+        }
+        return minimal
+
 
 class PermissiveSchema(Schema):
     @staticmethod
@@ -79,6 +86,10 @@ class PermissiveSchema(Schema):
         raw = super(PermissiveSchema, self).raw()
         raw['additionalProperties'] = {'type': 'string'}
         return raw
+
+    def minimal(self):
+        minimal = super(PermissiveSchema, self).raw()
+        return minimal
 
 
 class CollectionSchema(object):
@@ -102,6 +113,21 @@ class CollectionSchema(object):
             'links': [
                 {'rel': 'first', 'href': '{first}'},
                 {'rel': 'next', 'href': '{next}'},
+                {'rel': 'describedby', 'href': '{schema}'},
+            ],
+        }
+
+    def minimal(self):
+        return {
+            'name': self.name,
+            'properties': {
+                self.name: {
+                    'type': 'array',
+                    'items': self.item_schema.minimal(),
+                },
+                'schema': {'type': 'string'},
+            },
+            'links': [
                 {'rel': 'describedby', 'href': '{schema}'},
             ],
         }
