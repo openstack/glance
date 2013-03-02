@@ -61,6 +61,8 @@ def _get_connect_string(backend,
     """
     if backend == "mysql":
         backend = "mysql+mysqldb"
+    elif backend == "postgres":
+        backend = "postgresql+psycopg2"
 
     return ("%(backend)s://%(user)s:%(passwd)s@localhost/%(database)s"
             % locals())
@@ -264,6 +266,29 @@ class TestMigrations(utils.BaseTestCase):
         count = noninnodb.scalar()
         self.assertEqual(count, 0, "%d non InnoDB tables created" % count)
         connection.close()
+
+    def test_postgresql_connect_fail(self):
+        """
+        Test that we can trigger a postgres connection failure and we fail
+        gracefully to ensure we don't break people without postgres
+        """
+        if _is_backend_avail('postgresql', user="openstack_cifail"):
+            self.fail("Shouldn't have connected")
+
+    def test_postgresql_opportunistically(self):
+        # Test postgresql database migration walk
+        if not _is_backend_avail('postgres'):
+            self.skipTest("postgresql not available")
+        # add this to the global lists to make reset work with it, it's removed
+        # automatically in tearDown so no need to clean it up here.
+        connect_string = _get_connect_string("postgres")
+        engine = sqlalchemy.create_engine(connect_string)
+        self.engines["postgresqlcitest"] = engine
+        self.test_databases["postgresqlcitest"] = connect_string
+
+        # build a fully populated postgresql database with all the tables
+        self._reset_databases()
+        self._walk_versions(engine, False, False)
 
     def _walk_versions(self, engine=None, snake_walk=False, downgrade=True,
                        initial_version=None):

@@ -19,5 +19,6 @@ testtools>=0.9.22
 
 # Optional packages that should be installed when testing
 MySQL-python
+psycopg2
 pysendfile==2.0.0
 xattr>=0.6.0
