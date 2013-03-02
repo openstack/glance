@@ -351,6 +351,7 @@ class ImageProxy(glance.domain.ImageProxy):
         self.image.location = location
         self.image.size = size
         self.image.checksum = checksum
+        self.image.status = 'active'
 
     def get_data(self):
         if not self.image.location:

@@ -187,12 +187,13 @@ class TestImages(functional.FunctionalTest):
         response = requests.put(path, headers=headers, data='ZZZZZ')
         self.assertEqual(204, response.status_code)
 
-        # Checksum should be populated automatically
+        # Checksum should be populated and status should be active
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         image = json.loads(response.text)
         self.assertEqual('8f113e38d28a79a5a451b16048cc2b72', image['checksum'])
+        self.assertEqual('active', image['status'])
 
         # Try to download the data that was just uploaded
         path = self._url('/v2/images/%s/file' % image_id)
