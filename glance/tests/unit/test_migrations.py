@@ -471,6 +471,39 @@ class TestMigrations(utils.BaseTestCase):
         for migrated in migrated_data_sizes:
             self.assertIn(migrated, sizes)
 
+    def _prerun_006(self, engine):
+        now = timeutils.utcnow()
+        images = get_table(engine, 'images')
+        image_data = [
+            {
+                'deleted': False, 'created_at': now, 'updated_at': now,
+                'type': 'kernel', 'status': 'active', 'is_public': True,
+                'id': 9999,
+            }
+        ]
+        engine.execute(images.insert(), image_data)
+
+        images_properties = get_table(engine, 'image_properties')
+        properties_data = [
+            {
+                'id': 10, 'image_id': 9999, 'updated_at': now,
+                'created_at': now, 'deleted': False, 'key': 'image_name'
+            }
+        ]
+        engine.execute(images_properties.insert(), properties_data)
+        return properties_data
+
+    def _check_006(self, engine, data):
+        images_properties = get_table(engine, 'image_properties')
+        select = images_properties.select().execute()
+
+        # load names from name collumn
+        image_names = [row['name'] for row in select]
+
+        # check names from data in image names from name collumn
+        for element in data:
+            self.assertIn(element['key'], image_names)
+
     def _prerun_015(self, engine):
         images = get_table(engine, 'images')
         unquoted_locations = [
