@@ -246,9 +246,15 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
             self.assertTrue(headers.get('content-length'))
 
         # Since we used a 5 MB image with a 2 MB chunk size, we should
-        # expect to see the manifest object and three data objects for
-        # a total of 4
-        self.assertEqual(4, len(segments), 'Got segments %s' % segments)
+        # expect to see three data objects
+        self.assertEqual(3, len(segments), 'Got segments %s' % segments)
+
+        # Add an object that should survive the delete operation
+        non_image_obj = image_id + '0'
+        swift_put_object(self.swift_client,
+                         manifest_container,
+                         non_image_obj,
+                         'XXX')
 
         store.delete(location)
 
@@ -259,6 +265,23 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
                               self.swift_client,
                               manifest_container,
                               segment)
+
+        # Verify the manifest is gone too
+        self.assertRaises(swiftclient.ClientException,
+                          swift_head_object,
+                          self.swift_client,
+                          manifest_container,
+                          swift_location.obj)
+
+        # Verify that the non-image object was not deleted
+        headers = swift_head_object(self.swift_client,
+                                    manifest_container,
+                                    non_image_obj)
+        self.assertTrue(headers.get('content-length'))
+
+        # Clean up
+        self.swift_client.delete_object(manifest_container,
+                                        non_image_obj)
 
     def stash_image(self, image_id, image_data):
         container_name = self.swift_config['swift_store_container']
