@@ -552,3 +552,67 @@ removed, and those which are named have their `can_share` settings changed as
 specified.  (The `can_share` setting may be omitted, which will cause that
 setting to remain unchanged in the existing memberships.)  All new memberships
 will be created, with `can_share` defaulting to `false` if it is not specified.
+
+
+Image Membership Changes in Version 2.0
+---------------------------------------
+
+Version 2.0 of the Images API eliminates the ``can_share`` attribute of image
+membership.  In the version 2.0 model, image sharing is not transitive.
+
+In version 2.0, image members have a ``status`` attribute that reflects how the
+image should be treated with respect to that image member's image list.
+
+* The ``status`` attribute may have one of three values: ``pending``,
+  ``accepted``, or ``rejected``.
+
+* By default, only those shared images with status ``accepted`` are included in
+  an image member's image-list.
+
+* Only an image member may change his/her own membership status.
+
+* Only an image owner may create members on an image.  The status of a newly
+  created image member is ``pending``.  The image owner cannot change the
+  status of a member.
+
+
+Distinctions from Version 1.x API Calls
+***************************************
+
+* The response to a request to list the members of an image has changed.
+
+  call: ``GET`` on ``/v2/images/{imageId}/members``
+
+  response: see the JSON schema at ``/v2/schemas/members``
+
+* The request body in the call to create an image member has changed.
+
+  call: ``POST`` to ``/v2/images/{imageId}/members``
+
+  request body::
+
+  { "member_id": "<MEMBER_ID>" }
+
+  where the {memberId} is the tenant ID of the image member.
+
+  The member status of a newly created image member is ``pending``.
+
+New API Calls
+*************
+
+* Change the status of an image member
+
+  call: ``PUT`` on  ``/v2/images/{imageId}/members/{memberId}``
+
+  request body::
+
+  { "status": "<STATUS_VALUE>" }
+
+  where <STATUS_VALUE> is one of ``pending``, ``accepted``, or ``rejected``.
+  The {memberId} is the tenant ID of the image member.
+
+* Determine the status of an image member
+
+  call: ``GET`` on ``/v2/images/{imageId}/members/{memberId}``
+
+  response: see the JSON schema at ``/v2/schemas/member``
