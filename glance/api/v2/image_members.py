@@ -91,8 +91,6 @@ class ImageMembersController(object):
 
         """
         image_repo = self.gateway.get_repo(req.context)
-        image_member_factory = self.gateway\
-                                   .get_image_member_factory(req.context)
         try:
             image = image_repo.get(image_id)
             member_repo = image.get_member_repo()
