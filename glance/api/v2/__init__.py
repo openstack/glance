@@ -1,3 +1,4 @@
+# Copyright 2013 OpenStack Foundation.
 # Copyright 2012 Red Hat Inc.
 # All Rights Reserved.
 #
@@ -12,33 +13,3 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-import webob.exc
-
-from glance.common import exception
-
-
-def update_image_read_acl(req, store_api, db_api, image):
-    """Helper function to set ACL permissions on images in the image store"""
-    public = image['is_public']
-    image_id = image['id']
-    if image['locations']:
-        try:
-            read_tenants = []
-            write_tenants = []
-            members = db_api.image_member_find(req.context,
-                                               image_id=image_id)
-            for member in members:
-                if member['can_share']:
-                    write_tenants.append(member['member'])
-                else:
-                    read_tenants.append(member['member'])
-            for location in image['locations']:
-                store_api.set_acls(req.context, location, public=public,
-                                   read_tenants=read_tenants,
-                                   write_tenants=write_tenants)
-        except exception.UnknownScheme:
-            msg = _("Store for image_id not found: %s") % image_id
-            raise webob.exc.HTTPBadRequest(explanation=msg,
-                                           request=req,
-                                           content_type='text/plain')

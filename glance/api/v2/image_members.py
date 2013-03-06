@@ -67,7 +67,6 @@ class ImageMembersController(object):
                                                                member_id)
             member = member_repo.add(new_member)
 
-            self._update_store_acls(req, image)
             return member
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=unicode(e))
@@ -149,33 +148,11 @@ class ImageMembersController(object):
             member_repo = image.get_member_repo()
             member = member_repo.get(member_id)
             member_repo.remove(member)
-            self._update_store_acls(req, image)
             return webob.Response(body='', status=200)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=unicode(e))
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
-
-    def _update_store_acls(self, req, image):
-        public = image.visibility == 'public'
-        member_repo = image.get_member_repo()
-        if image.locations:
-            try:
-                read_tenants = []
-                write_tenants = []
-                members = member_repo.list()
-                if members:
-                    for member in members:
-                        read_tenants.append(member.member_id)
-                for location in image.locations:
-                    glance.store.set_acls(req.context, location, public=public,
-                                          read_tenants=read_tenants,
-                                          write_tenants=write_tenants)
-            except exception.UnknownScheme:
-                msg = _("Store for image not found: %s") % image_id
-                raise webob.exc.HTTPBadRequest(explanation=msg,
-                                               request=req,
-                                               content_type='text/plain')
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):

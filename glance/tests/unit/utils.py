@@ -91,12 +91,18 @@ class FakeStoreAPI(object):
         self.data = {
             '%s/%s' % (BASE_URI, UUID1): ('XXX', 3),
         }
+        self.acls = {}
 
     def create_stores(self):
         pass
 
-    def set_acls(*_args, **_kwargs):
-        pass
+    def set_acls(self, context, uri, public=False,
+                 read_tenants=[], write_tenants=[]):
+        self.acls[uri] = {
+            'public': public,
+            'read': read_tenants,
+            'write': write_tenants,
+        }
 
     def get_from_backend(self, context, location):
         try:
