@@ -19,6 +19,7 @@
 
 from oslo.config import cfg
 
+from glance.common import crypt
 from glance.common import exception
 import glance.domain
 import glance.domain.proxy
@@ -34,6 +35,7 @@ sql_connection_opt = cfg.StrOpt('sql_connection',
 
 CONF = cfg.CONF
 CONF.register_opt(sql_connection_opt)
+CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 
 
 def add_cli_options():
@@ -99,6 +101,10 @@ class ImageRepo(object):
             # NOTE(markwash) db api requires us to filter deleted
             if not prop['deleted']:
                 properties[prop['name']] = prop['value']
+        locations = db_image['locations']
+        if CONF.metadata_encryption_key:
+            key = CONF.metadata_encryption_key
+            locations = [crypt.urlsafe_decrypt(key, l) for l in locations]
         return glance.domain.Image(
             image_id=db_image['id'],
             name=db_image['name'],
@@ -109,7 +115,7 @@ class ImageRepo(object):
             min_disk=db_image['min_disk'],
             min_ram=db_image['min_ram'],
             protected=db_image['protected'],
-            locations=db_image['locations'],
+            locations=locations,
             checksum=db_image['checksum'],
             owner=db_image['owner'],
             disk_format=db_image['disk_format'],
@@ -120,6 +126,10 @@ class ImageRepo(object):
         )
 
     def _format_image_to_db(self, image):
+        locations = image.locations
+        if CONF.metadata_encryption_key:
+            key = CONF.metadata_encryption_key
+            locations = [crypt.urlsafe_encrypt(key, l) for l in locations]
         return {
             'id': image.image_id,
             'name': image.name,
@@ -128,7 +138,7 @@ class ImageRepo(object):
             'min_disk': image.min_disk,
             'min_ram': image.min_ram,
             'protected': image.protected,
-            'locations': image.locations,
+            'locations': locations,
             'checksum': image.checksum,
             'owner': image.owner,
             'disk_format': image.disk_format,
