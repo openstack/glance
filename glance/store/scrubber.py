@@ -23,6 +23,7 @@ import time
 from oslo.config import cfg
 
 from glance.common import crypt
+from glance.common import exception
 from glance.common import utils
 from glance import context
 import glance.openstack.common.log as logging
@@ -137,8 +138,12 @@ class Scrubber(object):
                                          tenant=self.admin_tenant)
             store.delete_from_backend(ctx, uri)
         except store.UnsupportedBackend:
-            msg = _("Failed to delete image from store (%(uri)s).")
-            LOG.error(msg % {'uri': uri})
+            msg = _("Failed to delete image from store (%(id)s).")
+            LOG.error(msg % {'id': id})
+            write_queue_file(file_path, uri, now)
+        except exception.NotFound:
+            msg = _("Image not found in store (%(id)s).")
+            LOG.error(msg % {'id': id})
             write_queue_file(file_path, uri, now)
 
         self.registry.update_image(id, {'status': 'deleted'})
