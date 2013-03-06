@@ -28,12 +28,15 @@ import re
 
 import webob
 
+from glance.api.common import size_checked_iter
 from glance.api.v1 import images
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
+import glance.db
 from glance import image_cache
 import glance.openstack.common.log as logging
+from glance import notifier
 from glance import registry
 
 LOG = logging.getLogger(__name__)
@@ -53,6 +56,20 @@ class CacheFilter(wsgi.Middleware):
         self.serializer = images.ImageSerializer()
         LOG.info(_("Initialized image cache middleware"))
         super(CacheFilter, self).__init__(app)
+
+    def _verify_metadata(self, image_meta):
+        """
+        Sanity check the 'deleted' and 'size' metadata values.
+        """
+        # NOTE: admins can see image metadata in the v1 API, but shouldn't
+        # be able to download the actual image data.
+        if image_meta['deleted']:
+            raise exception.NotFound()
+
+        if not image_meta['size']:
+            # override image size metadata with the actual cached
+            # file size, see LP Bug #900959
+            image_meta['size'] = self.cache.get_image_size(image_id)
 
     @staticmethod
     def _match_request(request):
@@ -130,16 +147,7 @@ class CacheFilter(wsgi.Middleware):
 
     def _process_v1_request(self, request, image_id, image_iterator):
         image_meta = registry.get_image_metadata(request.context, image_id)
-
-        # NOTE: admins can see image metadata in the v1 API, but shouldn't
-        # be able to download the actual image data.
-        if image_meta['deleted']:
-            raise exception.NotFound()
-
-        if not image_meta['size']:
-            # override image size metadata with the actual cached
-            # file size, see LP Bug #900959
-            image_meta['size'] = self.cache.get_image_size(image_id)
+        self._verify_metadata(image_meta)
 
         response = webob.Response(request=request)
         raw_response = {
@@ -149,8 +157,21 @@ class CacheFilter(wsgi.Middleware):
         return self.serializer.show(response, raw_response)
 
     def _process_v2_request(self, request, image_id, image_iterator):
+        # We do some contortions to get the image_metadata so
+        # that we can provide it to 'size_checked_iter' which
+        # will generate a notification.
+        # TODO(mclaren): Make notification happen more
+        # naturally once caching is part of the domain model.
+        db_api = glance.db.get_api()
+        image_repo = glance.db.ImageRepo(request.context, db_api)
+        image = image_repo.get(image_id)
+        image_meta = glance.notifier.format_image_notification(image)
+        self._verify_metadata(image_meta)
         response = webob.Response(request=request)
-        response.app_iter = image_iterator
+        response.app_iter = size_checked_iter(response, image_meta,
+                                              image_meta['size'],
+                                              image_iterator,
+                                              notifier.Notifier())
         return response
 
     def process_response(self, resp):
