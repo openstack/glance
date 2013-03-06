@@ -123,7 +123,7 @@ class FakeStoreAPI(object):
             if image_id in location:
                 raise exception.Duplicate()
         if not size:
-            size = len(data)
+            size = len(data.fd)
         if (current_store_size + size) > store_max_size:
             raise exception.StorageFull()
         if context.user == USER2:
