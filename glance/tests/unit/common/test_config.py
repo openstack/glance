@@ -95,3 +95,6 @@ class TestPasteApp(test_utils.BaseTestCase):
         expected_middleware = context.UnauthenticatedContextMiddleware
         self._do_test_load_paste_app(expected_middleware,
                                      paste_config_file=paste_config_file)
+
+    def test_get_path_non_exist(self):
+        self.assertRaises(RuntimeError, config._get_deployment_config_file)
