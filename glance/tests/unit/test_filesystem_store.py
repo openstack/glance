@@ -17,9 +17,13 @@
 
 """Tests the filesystem backend store"""
 
+import __builtin__
 import errno
 import hashlib
+import os
 import StringIO
+
+import mox
 
 from glance.common import exception
 from glance.common import utils
@@ -132,51 +136,82 @@ class TestStore(base.IsolatedUnitTest):
                           self.store.add,
                           image_id, image_file, 0)
 
-    def _do_test_add_failure(self, errno, exception):
+    def _do_test_add_write_failure(self, errno, exception):
         ChunkedFile.CHUNKSIZE = 1024
         image_id = utils.generate_uuid()
         file_size = 1024 * 5  # 5K
         file_contents = "*" * file_size
+        path = os.path.join(self.test_dir, image_id)
         location = "file://%s/%s" % (self.test_dir, image_id)
         image_file = StringIO.StringIO(file_contents)
 
-        def fake_IO_Error(size):
-            e = IOError()
-            e.errno = errno
-            raise e
+        m = mox.Mox()
+        m.StubOutWithMock(__builtin__, 'open')
+        e = IOError()
+        e.errno = errno
+        open(path, 'wb').AndRaise(e)
+        m.ReplayAll()
 
-        self.stubs.Set(image_file, 'read', fake_IO_Error)
-        self.assertRaises(exception,
-                          self.store.add,
-                          image_id, image_file, 0)
+        try:
+            self.assertRaises(exception,
+                              self.store.add,
+                              image_id, image_file, 0)
+            self.assertFalse(os.path.exists(path))
+        finally:
+            m.VerifyAll()
+            m.UnsetStubs()
 
     def test_add_storage_full(self):
         """
         Tests that adding an image without enough space on disk
         raises an appropriate exception
         """
-        self._do_test_add_failure(errno.ENOSPC, exception.StorageFull)
+        self._do_test_add_write_failure(errno.ENOSPC, exception.StorageFull)
 
     def test_add_file_too_big(self):
         """
         Tests that adding an excessively large image file
         raises an appropriate exception
         """
-        self._do_test_add_failure(errno.EFBIG, exception.StorageFull)
+        self._do_test_add_write_failure(errno.EFBIG, exception.StorageFull)
 
     def test_add_storage_write_denied(self):
         """
         Tests that adding an image with insufficient filestore permissions
         raises an appropriate exception
         """
-        self._do_test_add_failure(errno.EACCES, exception.StorageWriteDenied)
+        self._do_test_add_write_failure(errno.EACCES,
+                                        exception.StorageWriteDenied)
 
     def test_add_other_failure(self):
         """
         Tests that a non-space-related IOError does not raise a
         StorageFull exception.
         """
-        self._do_test_add_failure(errno.ENOTDIR, IOError)
+        self._do_test_add_write_failure(errno.ENOTDIR, IOError)
+
+    def test_add_cleanup_on_read_failure(self):
+        """
+        Tests the partial image file is cleaned up after a read
+        failure.
+        """
+        ChunkedFile.CHUNKSIZE = 1024
+        image_id = utils.generate_uuid()
+        file_size = 1024 * 5  # 5K
+        file_contents = "*" * file_size
+        path = os.path.join(self.test_dir, image_id)
+        location = "file://%s/%s" % (self.test_dir, image_id)
+        image_file = StringIO.StringIO(file_contents)
+
+        def fake_Error(size):
+            raise AttributeError()
+
+        self.stubs.Set(image_file, 'read', fake_Error)
+
+        self.assertRaises(AttributeError,
+                          self.store.add,
+                          image_id, image_file, 0)
+        self.assertFalse(os.path.exists(path))
 
     def test_delete(self):
         """
