@@ -230,6 +230,25 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         res = req.get_response(api)
         self.assertEquals(res.status_int, 404)
 
+    def test_show_private_image_with_no_admin_user(self):
+        UUID4 = _gen_uuid()
+        extra_fixture = {'id': UUID4,
+                         'owner': 'test user',
+                         'status': 'active',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+        test_rserv = rserver.API(self.mapper)
+        api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
+        req = webob.Request.blank('/images/%s' % UUID4)
+        res = req.get_response(api)
+        self.assertEquals(res.status_int, 404)
+
     def test_get_root(self):
         """
         Tests that the root registry API returns "index",
@@ -1526,6 +1545,120 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         for image in images:
             self.assertEqual(True, image['is_public'])
 
+    def test_get_details_filter_public_string_format(self):
+        """
+        Tests that the /images/detail registry
+        API returns 400 Bad error for filter is_public with wrong format
+        """
+        extra_fixture = {'id': _gen_uuid(),
+                         'status': 'active',
+                         'is_public': 'true',
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?is_public=public')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_get_details_filter_deleted_false(self):
+        """
+        Test that the /images/detail registry
+        API return list of images with deleted filter = false
+
+        """
+        extra_fixture = {'id': _gen_uuid(),
+                         'status': 'active',
+                         'name': 'test deleted filter 1',
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'size': 18,
+                         'checksum': None,
+                         'deleted': False}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?deleted=False')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+
+        images = res_dict['images']
+
+        for image in images:
+            self.assertEqual(False, image['deleted'])
+
+    def test_get_filter_no_public_with_no_admin(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images if is_public true is passed (same as default)
+        """
+        UUID4 = _gen_uuid()
+        extra_fixture = {'id': UUID4,
+                         'status': 'active',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+        test_rserv = rserver.API(self.mapper)
+        api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
+        req = webob.Request.blank('/images/detail?is_public=False')
+        res = req.get_response(api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+        # Check that for non admin user only is_public = True images returns
+        for image in images:
+            self.assertEqual(True, image['is_public'])
+
+    def test_get_filter_protected_with_None_value(self):
+        """
+        Tests that the /images/detail registry API returns 400 error
+        """
+        extra_fixture = {'id': _gen_uuid(),
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'protected': "False",
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+        req = webob.Request.blank('/images/detail?protected=')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_get_filter_protected_with_True_value(self):
+        """
+        Tests that the /images/detail registry API returns 400 error
+        """
+        extra_fixture = {'id': _gen_uuid(),
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 18,
+                         'protected': "True",
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+        req = webob.Request.blank('/images/detail?protected=True')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
     def test_get_details_sort_name_asc(self):
         """
         Tests that the /images/details registry API returns list of
@@ -1694,7 +1827,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertEquals(res.status_int, 400)
         self.assertTrue('Invalid image status' in res.body)
 
     def test_create_image_with_bad_id(self):
@@ -1712,7 +1845,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertEquals(res.status_int, 400)
 
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
@@ -1753,8 +1886,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int,
-                          webob.exc.HTTPNotFound.code)
+        self.assertEquals(res.status_int, 404)
 
     def test_update_image_with_bad_status(self):
         """Tests that exception raised trying to set a bad status"""
@@ -1767,8 +1899,37 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         req.body = json.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, webob.exc.HTTPBadRequest.code)
+        self.assertEquals(res.status_int, 400)
         self.assertTrue('Invalid image status' in res.body)
+
+    def test_update_private_image_no_admin(self):
+        """
+        Tests proper exception is raised if attempt to update
+        private image with non admin user, that not belongs to it
+        """
+        UUID8 = _gen_uuid()
+        extra_fixture = {'id': UUID8,
+                         'status': 'active',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'test update private image',
+                         'size': 19,
+                         'checksum': None,
+                         'protected': True,
+                         'owner': 'test user'}
+
+        db_api.image_create(self.context, extra_fixture)
+        test_rserv = rserver.API(self.mapper)
+        api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
+        req = webob.Request.blank('/images/%s' % UUID8)
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(image=extra_fixture))
+
+        res = req.get_response(api)
+        # Access denied but should return 404 error code
+        self.assertEquals(res.status_int, 404)
 
     def test_delete_image(self):
         """Tests that the /images DELETE registry API deletes the image"""
@@ -1822,8 +1983,58 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         req.method = 'DELETE'
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int,
-                          webob.exc.HTTPNotFound.code)
+        self.assertEquals(res.status_int, 404)
+
+    def test_delete_public_image_no_admin(self):
+        """
+        Tests proper exception is raised if attempt to delete
+        public image with non admin user
+        """
+        UUID8 = _gen_uuid()
+        extra_fixture = {'id': UUID8,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'test delete public image',
+                         'size': 19,
+                         'checksum': None,
+                         'protected': True,
+                         'owner': 'test user'}
+
+        db_api.image_create(self.context, extra_fixture)
+        test_rserv = rserver.API(self.mapper)
+        api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
+        req = webob.Request.blank('/images/%s' % UUID8)
+        req.method = 'DELETE'
+        res = req.get_response(api)
+        self.assertEquals(res.status_int, 403)
+
+    def test_delete_private_image_no_admin(self):
+        """
+        Tests proper exception is raised if attempt to delete
+        private image with non admin user, that not belongs to it
+        """
+        UUID8 = _gen_uuid()
+        extra_fixture = {'id': UUID8,
+                         'status': 'active',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'test delete private image',
+                         'size': 19,
+                         'checksum': None,
+                         'protected': True,
+                         'owner': 'test user'}
+
+        db_api.image_create(self.context, extra_fixture)
+        test_rserv = rserver.API(self.mapper)
+        api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
+        req = webob.Request.blank('/images/%s' % UUID8)
+        req.method = 'DELETE'
+        res = req.get_response(api)
+        # Access denided but should return 404 error code
+        self.assertEquals(res.status_int, 404)
 
     def test_get_image_members(self):
         """
@@ -1848,8 +2059,34 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         req.method = 'GET'
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int,
-                          webob.exc.HTTPNotFound.code)
+        self.assertEquals(res.status_int, 404)
+
+    def test_get_image_members_forbidden(self):
+        """
+        Tests proper exception is raised if attempt to get members of
+        non-existing image
+
+        """
+        UUID8 = _gen_uuid()
+        extra_fixture = {'id': UUID8,
+                         'status': 'active',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'test delete private image',
+                         'size': 19,
+                         'checksum': None,
+                         'protected': True,
+                         'owner': 'test user'}
+
+        db_api.image_create(self.context, extra_fixture)
+        test_rserv = rserver.API(self.mapper)
+        api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
+        req = webob.Request.blank('/images/%s/members' % UUID8)
+        req.method = 'GET'
+
+        res = req.get_response(api)
+        self.assertEquals(res.status_int, 404)
 
     def test_get_member_images(self):
         """
@@ -1879,7 +2116,186 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         req.body = json.dumps(dict(image_memberships=fixture))
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
+        self.assertEquals(res.status_int, 401)
+
+    def test_update_all_image_members_non_existing_image_id(self):
+        """
+        Test update image members raises right exception
+        """
+        # Update all image members
+        fixture = dict(member_id='test1')
+        req = webob.Request.blank('/images/%s/members' % _gen_uuid())
+        req.method = 'PUT'
+        self.context.tenant = 'test2'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(image_memberships=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 404)
+
+    def test_update_all_image_members_invalid_membership_association(self):
+        """
+        Test update image members raises right exception
+        """
+        UUID8 = _gen_uuid()
+        extra_fixture = {'id': UUID8,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'test delete private image',
+                         'size': 19,
+                         'checksum': None,
+                         'protected': False,
+                         'owner': 'test user'}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        # Add several members to image
+        req = webob.Request.blank('/images/%s/members/test1' % UUID8)
+        req.method = 'PUT'
+        res = req.get_response(self.api)
+        # Get all image members:
+        req = webob.Request.blank('/images/%s/members' % UUID8)
+        req.method = 'GET'
+        res = req.get_response(self.api)
+
+        self.assertEquals(res.status_int, 200)
+
+        memb_list = json.loads(res.body)
+        num_members = len(memb_list['members'])
+        self.assertEquals(num_members, 1)
+
+        fixture = dict(member_id='test1')
+        req = webob.Request.blank('/images/%s/members' % UUID8)
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(image_memberships=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_update_all_image_members_non_shared_image_forbidden(self):
+        """
+        Test update image members raises right exception
+        """
+        test_rserv = rserver.API(self.mapper)
+        api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
+        UUID9 = _gen_uuid()
+        extra_fixture = {'id': UUID9,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'test delete private image',
+                         'size': 19,
+                         'checksum': None,
+                         'protected': False}
+        db_api.image_create(self.context, extra_fixture)
+        fixture = dict(member_id='test1')
+        req = webob.Request.blank('/images/%s/members' % UUID9)
+        req.headers['X-Auth-Token'] = 'test1:test1:'
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(image_memberships=fixture))
+
+        res = req.get_response(api)
+        self.assertEquals(res.status_int, 403)
+
+    def test_update_all_image_members(self):
+        """
+        Test update non existing image members
+        """
+        UUID8 = _gen_uuid()
+        extra_fixture = {'id': UUID8,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'test delete private image',
+                         'size': 19,
+                         'checksum': None,
+                         'protected': False,
+                         'owner': 'test user'}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        # Add several members to image
+        req = webob.Request.blank('/images/%s/members/test1' % UUID8)
+        req.method = 'PUT'
+        res = req.get_response(self.api)
+
+        fixture = [dict(member_id='test2', can_share=True)]
+
+        req = webob.Request.blank('/images/%s/members' % UUID8)
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(memberships=fixture))
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 204)
+
+    def test_update_all_image_members_bad_request(self):
+        """
+        Test that right exception is raises
+        in case if wrong memberships association is supplied
+        """
+        UUID8 = _gen_uuid()
+        extra_fixture = {'id': UUID8,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'test delete private image',
+                         'size': 19,
+                         'checksum': None,
+                         'protected': False,
+                         'owner': 'test user'}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        # Add several members to image
+        req = webob.Request.blank('/images/%s/members/test1' % UUID8)
+        req.method = 'PUT'
+        res = req.get_response(self.api)
+        fixture = dict(member_id='test3')
+        req = webob.Request.blank('/images/%s/members' % UUID8)
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(memberships=fixture))
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_update_all_image_existing_members(self):
+        """
+        Test update existing image members
+        """
+        UUID8 = _gen_uuid()
+        extra_fixture = {'id': UUID8,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'test delete private image',
+                         'size': 19,
+                         'checksum': None,
+                         'protected': False,
+                         'owner': 'test user'}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        # Add several members to image
+        req = webob.Request.blank('/images/%s/members/test1' % UUID8)
+        req.method = 'PUT'
+        res = req.get_response(self.api)
+
+        fixture = [dict(member_id='test1', can_share=False)]
+
+        req = webob.Request.blank('/images/%s/members' % UUID8)
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(memberships=fixture))
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 204)
 
     def test_add_member(self):
         """
@@ -1891,7 +2307,102 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         req.method = 'PUT'
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
+        self.assertEquals(res.status_int, 401)
+
+    def test_add_member_to_image_positive(self):
+        """
+        Test check that member can be successfully added
+        """
+        UUID8 = _gen_uuid()
+        extra_fixture = {'id': UUID8,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'test delete private image',
+                         'size': 19,
+                         'checksum': None,
+                         'protected': False,
+                         'owner': 'test user'}
+        db_api.image_create(self.context, extra_fixture)
+        fixture = dict(can_share=True)
+        test_uri = '/images/%s/members/test_add_member_positive'
+        req = webob.Request.blank(test_uri % UUID8)
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(member=fixture))
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 204)
+
+    def test_add_member_to_non_exist_image(self):
+        """
+        Test check that member can't be added for
+        non exist image
+        """
+        fixture = dict(can_share=True)
+        test_uri = '/images/%s/members/test_add_member_positive'
+        req = webob.Request.blank(test_uri % _gen_uuid())
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(member=fixture))
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 404)
+
+    def test_add_image_member_non_shared_image_forbidden(self):
+        """
+        Test update image members raises right exception
+        """
+        test_rserver_api = rserver.API(self.mapper)
+        api = test_utils.FakeAuthMiddleware(
+            test_rserver_api, is_admin=False)
+        UUID9 = _gen_uuid()
+        extra_fixture = {'id': UUID9,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'test delete private image',
+                         'size': 19,
+                         'checksum': None,
+                         'protected': False}
+        db_api.image_create(self.context, extra_fixture)
+        fixture = dict(can_share=True)
+        test_uri = '/images/%s/members/test_add_member_to_non_share_image'
+        req = webob.Request.blank(test_uri % UUID9)
+        req.headers['X-Auth-Token'] = 'test1:test1:'
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(member=fixture))
+
+        res = req.get_response(api)
+        self.assertEquals(res.status_int, 403)
+
+    def test_add_member_to_image_bad_request(self):
+        """
+        Test check right status code is returned
+        """
+        UUID8 = _gen_uuid()
+        extra_fixture = {'id': UUID8,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'test delete private image',
+                         'size': 19,
+                         'checksum': None,
+                         'protected': False,
+                         'owner': 'test user'}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        fixture = [dict(can_share=True)]
+        test_uri = '/images/%s/members/test_add_member_bad_request'
+        req = webob.Request.blank(test_uri % UUID8)
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(member=fixture))
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
 
     def test_delete_member(self):
         """
@@ -1903,7 +2414,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         req.method = 'DELETE'
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
+        self.assertEquals(res.status_int, 401)
 
     def test_delete_member_invalid(self):
         """
@@ -1915,5 +2426,46 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         req.method = 'DELETE'
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
+        self.assertEquals(res.status_int, 404)
         self.assertTrue('Membership could not be found' in res.body)
+
+    def test_delete_member_from_non_exist_image(self):
+        """
+        Tests deleting image members raises right exception
+        """
+        test_rserver_api = rserver.API(self.mapper)
+        self.api = test_utils.FakeAuthMiddleware(
+            test_rserver_api, is_admin=True)
+        test_uri = '/images/%s/members/pattieblack'
+        req = webob.Request.blank(test_uri % _gen_uuid())
+        req.method = 'DELETE'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 404)
+
+    def test_delete_image_member_non_shared_image_forbidden(self):
+        """
+        Test delete image members raises right exception
+        """
+        test_rserver_api = rserver.API(self.mapper)
+        api = test_utils.FakeAuthMiddleware(
+            test_rserver_api, is_admin=False)
+        UUID9 = _gen_uuid()
+        extra_fixture = {'id': UUID9,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'test delete private image',
+                         'size': 19,
+                         'checksum': None,
+                         'protected': False}
+        db_api.image_create(self.context, extra_fixture)
+        test_uri = '/images/%s/members/test_add_member_to_non_share_image'
+        req = webob.Request.blank(test_uri % UUID9)
+        req.headers['X-Auth-Token'] = 'test1:test1:'
+        req.method = 'DELETE'
+        req.content_type = 'application/json'
+
+        res = req.get_response(api)
+        self.assertEquals(res.status_int, 403)
