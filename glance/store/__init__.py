@@ -376,7 +376,7 @@ class ImageProxy(glance.domain.proxy.Image):
             size = 0  # NOTE(markwash): zero -> unknown size
         location, size, checksum = self.store_api.add_to_backend(
                 self.context, CONF.default_store,
-                self.image.image_id, data, size)
+                self.image.image_id, utils.CooperativeReader(data), size)
         self.image.locations = [location]
         self.image.size = size
         self.image.checksum = checksum
