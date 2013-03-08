@@ -41,3 +41,12 @@ class TestSimpleVisibility(base.TestVisibility, base.VisibilityTests):
         db_tests.load(get_db, reset_db)
         super(TestSimpleVisibility, self).setUp()
         self.addCleanup(db_tests.reset)
+
+
+class TestSimpleMembershipVisibility(base.TestMembershipVisibility,
+                                     base.MembershipVisibilityTests):
+
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestSimpleMembershipVisibility, self).setUp()
+        self.addCleanup(db_tests.reset)

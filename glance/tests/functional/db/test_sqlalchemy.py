@@ -46,3 +46,12 @@ class TestSqlAlchemyVisibility(base.TestVisibility, base.VisibilityTests):
         db_tests.load(get_db, reset_db)
         super(TestSqlAlchemyVisibility, self).setUp()
         self.addCleanup(db_tests.reset)
+
+
+class TestSqlAlchemyMembershipVisibility(base.TestMembershipVisibility,
+                                         base.MembershipVisibilityTests):
+
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestSqlAlchemyMembershipVisibility, self).setUp()
+        self.addCleanup(db_tests.reset)
