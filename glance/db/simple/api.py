@@ -290,6 +290,16 @@ def image_property_delete(context, prop_ref, session=None):
 @log_call
 def image_member_find(context, image_id=None, member=None, status=None):
     filters = []
+    images = DATA['images']
+    members = DATA['members']
+
+    def is_visible(member):
+        return (member['member'] == context.owner or
+                images[member['image_id']]['owner'] == context.owner)
+
+    if not context.is_admin:
+        filters.append(is_visible)
+
     if image_id is not None:
         filters.append(lambda m: m['image_id'] == image_id)
     if member is not None:
@@ -297,7 +307,6 @@ def image_member_find(context, image_id=None, member=None, status=None):
     if status is not None:
         filters.append(lambda m: m['status'] == status)
 
-    members = DATA['members']
     for f in filters:
         members = filter(f, members)
     return [copy.deepcopy(member) for member in members]
