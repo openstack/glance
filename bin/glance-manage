@@ -46,6 +46,7 @@ from glance.common import config
 from glance.common import exception
 import glance.db.sqlalchemy.api
 import glance.db.sqlalchemy.migration
+from glance.openstack.common import log
 
 CONF = cfg.CONF
 
@@ -119,7 +120,7 @@ def main():
 
         config.parse_args(default_config_files=default_cfg_files,
                           usage="%(prog)s [options] <cmd>")
-        config.setup_logging()
+        log.setup('glance')
     except RuntimeError, e:
         sys.exit("ERROR: %s" % e)
 
