@@ -2323,8 +2323,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 403)
 
-    def test_add_public_image_unauthorized(self):
-        rules = {"add_image": '@', "publicize_image": '!'}
+    def test_add_publicize_image_unauthorized(self):
+        rules = {"add_image": '@', "modify_image": '@',
+                 "publicize_image": '!'}
         self.set_policy_rules(rules)
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-is-public': 'true',
@@ -2341,6 +2342,26 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.body = "chunk00000remainder"
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 403)
+
+    def test_add_publicize_image_authorized(self):
+        rules = {"add_image": '@', "modify_image": '@',
+                 "publicize_image": '@'}
+        self.set_policy_rules(rules)
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-is-public': 'true',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.body = "chunk00000remainder"
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.CREATED)
 
     def _do_test_post_image_content_missing_format(self, missing):
         """Tests creation of an image with missing format"""
