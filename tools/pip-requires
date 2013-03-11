@@ -3,7 +3,8 @@
 # package to get the right headers...
 greenlet>=0.3.1
 
-SQLAlchemy>=0.7,<=0.7.9
+# < 0.8.0/0.8 does not work, see https://bugs.launchpad.net/bugs/1153983
+SQLAlchemy>=0.7.8,<=0.7.99
 anyjson
 eventlet>=0.9.12
 PasteDeploy
