@@ -2606,6 +2606,102 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 403)
 
+    def test_create_set_image_location_policy_authorized(self):
+        """Verify create/set_image_location authorized policy behaviour"""
+        rules = {"add_image": '@', "modify_image": '@',
+                 "set_image_location": '@'}
+        self.set_policy_rules(rules)
+
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-is-public': 'false',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3',
+                           'x-image-meta-location': 'http://example.com'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.CREATED)
+
+    def test_create_set_image_location_policy_unauthorized(self):
+        """Verify create/set_image_location unauthorized policy behaviour"""
+        rules = {"add_image": '@', "modify_image": '@',
+                 "set_image_location": '!'}
+        self.set_policy_rules(rules)
+
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-is-public': 'false',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3',
+                           'x-image-meta-location': 'http://example.com'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 403)
+
+    def test_update_set_image_location_policy_authorized(self):
+        """Verify update/set_image_location authorized policy behaviour"""
+        rules = {"add_image": '@', "modify_image": '@',
+                 "set_image_location": '@'}
+        self.set_policy_rules(rules)
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-is-public': 'false',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.CREATED)
+
+        id = json.loads(res.body)['image']['id']
+
+        req = webob.Request.blank("/images/%s" % id)
+        req.method = 'PUT'
+        fixture_headers['x-image-meta-location'] = 'http://example.com'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+    def test_update_set_image_location_policy_unauthorized(self):
+        """Verify update/set_image_location unauthorized policy behaviour"""
+        rules = {"add_image": '@', "modify_image": '@',
+                 "set_image_location": '!'}
+        self.set_policy_rules(rules)
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-is-public': 'false',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, httplib.CREATED)
+
+        id = json.loads(res.body)['image']['id']
+
+        req = webob.Request.blank("/images/%s" % id)
+        req.method = 'PUT'
+        fixture_headers['x-image-meta-location'] = 'http://example.com'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 403)
+
     def test_update_image_size_header_too_big(self):
         """Tests raises BadRequest for supplied image size that is too big"""
         fixture_headers = {'x-image-meta-size': CONF.image_size_cap + 1}

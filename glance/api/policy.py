@@ -170,6 +170,8 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         return super(ImageRepoProxy, self).add(image)
 
 
+# TODO(mclaren): we will need to enforce the 'set_image_location'
+# policy once the relevant functionality has been added to  V2
 class ImageProxy(glance.domain.proxy.Image):
 
     def __init__(self, image, context, policy):
