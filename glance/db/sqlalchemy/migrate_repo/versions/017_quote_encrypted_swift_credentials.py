@@ -43,7 +43,7 @@ import glance.store.swift
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
-CONF.import_opt('metadata_encryption_key', 'glance.registry')
+CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 
 
 def upgrade(migrate_engine):

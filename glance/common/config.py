@@ -64,6 +64,9 @@ common_opts = [
     cfg.IntOpt('pydev_worker_debug_port', default=5678,
                help=_('The port on which a pydev process is listening for '
                       'connections.')),
+    cfg.StrOpt('metadata_encryption_key', secret=True,
+               help=_('Key used for encrypting sensitive metadata while '
+                      'talking to the registry or database.')),
 ]
 
 CONF = cfg.CONF

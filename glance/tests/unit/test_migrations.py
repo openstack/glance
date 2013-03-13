@@ -47,7 +47,7 @@ from glance.tests import utils
 
 
 CONF = cfg.CONF
-CONF.import_opt('metadata_encryption_key', 'glance.registry')
+CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 
 LOG = logging.getLogger(__name__)
 

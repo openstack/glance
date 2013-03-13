@@ -13,6 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.config import cfg
+
+from glance.common import crypt
 from glance.common import exception
 import glance.context
 import glance.db
@@ -20,6 +23,9 @@ from glance.openstack.common import uuidutils
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 
+
+CONF = cfg.CONF
+CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
 UUID2 = 'a85abd86-55b3-4d5b-b0b4-5d0a6e6042fc'
@@ -210,6 +216,60 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.image_repo.remove(image)
         self.assertTrue(image.updated_at > previous_update_time)
         self.assertRaises(exception.NotFound, self.image_repo.get, UUID1)
+
+
+class TestEncryptedLocations(test_utils.BaseTestCase):
+    def setUp(self):
+        super(TestEncryptedLocations, self).setUp()
+        self.db = unit_test_utils.FakeDB()
+        self.db.reset()
+        self.context = glance.context.RequestContext(
+                user=USER1, tenant=TENANT1)
+        self.image_repo = glance.db.ImageRepo(self.context, self.db)
+        self.image_factory = glance.domain.ImageFactory()
+        self.crypt_key = '0123456789abcdef'
+        self.config(metadata_encryption_key=self.crypt_key)
+
+    def test_encrypt_locations_on_add(self):
+        image = self.image_factory.new_image(UUID1)
+        image.locations = ['foo', 'bar']
+        self.image_repo.add(image)
+        db_data = self.db.image_get(self.context, UUID1)
+        self.assertNotEqual(db_data['locations'], ['foo', 'bar'])
+        decrypted_locations = [crypt.urlsafe_decrypt(self.crypt_key, l)
+                               for l in db_data['locations']]
+        self.assertEqual(decrypted_locations, ['foo', 'bar'])
+
+    def test_encrypt_locations_on_save(self):
+        image = self.image_factory.new_image(UUID1)
+        self.image_repo.add(image)
+        image.locations = ['foo', 'bar']
+        self.image_repo.save(image)
+        db_data = self.db.image_get(self.context, UUID1)
+        self.assertNotEqual(db_data['locations'], ['foo', 'bar'])
+        decrypted_locations = [crypt.urlsafe_decrypt(self.crypt_key, l)
+                               for l in db_data['locations']]
+        self.assertEqual(decrypted_locations, ['foo', 'bar'])
+
+    def test_decrypt_locations_on_get(self):
+        encrypted_locations = [crypt.urlsafe_encrypt(self.crypt_key, l)
+                               for l in ['ping', 'pong']]
+        self.assertNotEqual(encrypted_locations, ['ping', 'pong'])
+        db_data = _db_fixture(UUID1, owner=TENANT1,
+                              locations=encrypted_locations)
+        self.db.image_create(None, db_data)
+        image = self.image_repo.get(UUID1)
+        self.assertEqual(image.locations, ['ping', 'pong'])
+
+    def test_decrypt_locations_on_list(self):
+        encrypted_locations = [crypt.urlsafe_encrypt(self.crypt_key, l)
+                               for l in ['ping', 'pong']]
+        self.assertNotEqual(encrypted_locations, ['ping', 'pong'])
+        db_data = _db_fixture(UUID1, owner=TENANT1,
+                              locations=encrypted_locations)
+        self.db.image_create(None, db_data)
+        image = self.image_repo.list()[0]
+        self.assertEqual(image.locations, ['ping', 'pong'])
 
 
 class TestImageMemberRepo(test_utils.BaseTestCase):

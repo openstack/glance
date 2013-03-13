@@ -40,7 +40,6 @@ registry_client_opts = [
     cfg.StrOpt('registry_client_ca_file'),
     cfg.BoolOpt('registry_client_insecure', default=False),
     cfg.IntOpt('registry_client_timeout', default=600),
-    cfg.StrOpt('metadata_encryption_key', secret=True),
 ]
 registry_client_ctx_opts = [
     cfg.StrOpt('admin_user', secret=True),
@@ -55,6 +54,7 @@ CONF = cfg.CONF
 CONF.register_opts(registry_addr_opts)
 CONF.register_opts(registry_client_opts)
 CONF.register_opts(registry_client_ctx_opts)
+CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 
 _CLIENT_CREDS = None
 _CLIENT_HOST = None
