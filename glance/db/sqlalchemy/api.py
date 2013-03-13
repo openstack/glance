@@ -854,17 +854,23 @@ def image_member_find(context, image_id=None, member=None, status=None):
 
 def _image_member_find(context, session, image_id=None,
                        member=None, status=None):
-    # Note lack of permissions check; this function is called from
-    # is_image_visible(), so avoid recursive calls
     query = session.query(models.ImageMember)
     query = query.filter_by(deleted=False)
 
+    if not context.is_admin:
+        query = query.join(models.Image)
+        filters = [
+            models.Image.owner == context.owner,
+            models.ImageMember.member == context.owner,
+        ]
+        query = query.filter(sa_sql.or_(*filters))
+
     if image_id is not None:
-        query = query.filter_by(image_id=image_id)
+        query = query.filter(models.ImageMember.image_id == image_id)
     if member is not None:
-        query = query.filter_by(member=member)
+        query = query.filter(models.ImageMember.member == member)
     if status is not None:
-        query = query.filter_by(status=status)
+        query = query.filter(models.ImageMember.status == status)
 
     return query.all()
 

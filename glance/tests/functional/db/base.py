@@ -910,8 +910,6 @@ class MembershipVisibilityTests(object):
         expected = [
             (self.owner1, 'shared-with-1'),
             (self.owner1, 'shared-with-both'),
-            (self.owner2, 'shared-with-1'),  # FIXME
-            (self.owner2, 'shared-with-both'),  # FIXME
         ]
         self._check_by_member(self.owner1_ctx, self.tenant1, expected)
 
@@ -927,12 +925,7 @@ class MembershipVisibilityTests(object):
 
     def test_user2_finding_user1_memberships(self):
         """ User2 should see no images shared with User1 """
-        expected = [
-            (self.owner1, 'shared-with-1'),  # FIXME
-            (self.owner1, 'shared-with-both'),  # FIXME
-            (self.owner2, 'shared-with-1'),  # FIXME
-            (self.owner2, 'shared-with-both'),  # FIXME
-        ]
+        expected = []
         self._check_by_member(self.user2_ctx, self.tenant1, expected)
 
     def test_admin_finding_user1_memberships(self):
@@ -964,21 +957,18 @@ class MembershipVisibilityTests(object):
 
     def test_user1_finding_owner1s_image_members(self):
         """ User1 should see its own membership of owner1's image """
-        # FIXME: should be [self.tenant1]
-        expected = [self.tenant1, self.tenant2]
+        expected = [self.tenant1]
         image_id = self.image_ids[(self.owner1, 'shared-with-both')]
         self._check_by_image(self.user1_ctx, image_id, expected)
 
     def test_user2_finding_owner1s_image_members(self):
         """ User2 should see its own membership of owner1's image """
-        # FIXME: should be [self.tenant2]
-        expected = [self.tenant1, self.tenant2]
+        expected = [self.tenant2]
         image_id = self.image_ids[(self.owner1, 'shared-with-both')]
         self._check_by_image(self.user2_ctx, image_id, expected)
 
     def test_user3_finding_owner1s_image_members(self):
         """ User3 should see no memberships of owner1's image """
-        # FIXME: should be []
-        expected = [self.tenant1, self.tenant2]
+        expected = []
         image_id = self.image_ids[(self.owner1, 'shared-with-both')]
         self._check_by_image(self.user3_ctx, image_id, expected)
