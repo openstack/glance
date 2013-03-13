@@ -37,6 +37,7 @@ CREATE TABLE image_properties (
 	FOREIGN KEY(image_id) REFERENCES images (id)
 );
 CREATE INDEX ix_image_properties_name ON image_properties (name);
+CREATE INDEX ix_image_properties_deleted ON image_properties (deleted);
 
 INSERT INTO image_properties (id, image_id, name, value, created_at, updated_at, deleted_at, deleted)
 SELECT id, image_id, name, value, created_at, updated_at, deleted_at, deleted
