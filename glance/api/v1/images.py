@@ -507,10 +507,12 @@ class Controller(controller.BaseController):
                                          content_type='text/plain')
 
         except exception.ImageSizeLimitExceeded, e:
-            msg = _("Denying attempt to upload image larger than %d bytes.")
+            msg = _("Denying attempt to upload image larger than %d bytes."
+                    % CONF.image_size_cap)
+            LOG.info(msg)
             self._safe_kill(req, image_id)
-            raise HTTPBadRequest(explanation=msg % CONF.image_size_cap,
-                                 request=req, content_type='text/plain')
+            raise HTTPBadRequest(explanation=msg, request=req,
+                                 content_type='text/plain')
 
         except HTTPError, e:
             self._safe_kill(req, image_id)
