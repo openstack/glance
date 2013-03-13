@@ -17,6 +17,7 @@ httplib2
 kombu
 pycrypto>=2.1.0alpha1
 iso8601>=0.1.4
+oslo.config>=1.1.0
 
 
 # For Swift storage backend.
@@ -34,5 +35,3 @@ Paste
 passlib
 jsonschema
 python-keystoneclient>=0.2.0
-
-http://tarballs.openstack.org/oslo-config/oslo.config-1.1.0b1.tar.gz#egg=oslo.config
