@@ -425,6 +425,12 @@ class TestMigrations(utils.BaseTestCase):
                         "images table columns reported by metadata: %s\n"
                         % images.c.keys())
         images_prop = get_table(engine, 'image_properties')
+        result = images_prop.select().execute()
+        types = []
+        for row in result:
+            if row['key'] == 'type':
+                types.append(row['value'])
+        self.assertIn(data['type'], types)
 
     def _prerun_004(self, engine):
         """Insert checksum data sample to check if migration goes fine with
