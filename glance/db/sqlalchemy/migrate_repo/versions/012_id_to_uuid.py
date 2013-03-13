@@ -260,6 +260,10 @@ def _sqlite_table_swap(t_image_members, t_image_properties, t_images):
                       "RENAME TO image_members")
     meta.bind.execute("ALTER TABLE image_properties_backup "
                       "RENAME TO image_properties")
+    meta.bind.execute("""CREATE INDEX ix_image_properties_deleted
+                          ON image_properties (deleted);""")
+    meta.bind.execute("""CREATE INDEX ix_image_properties_name
+                          ON image_properties (name);""")
 
 
 def _get_table(table_name, metadata):
