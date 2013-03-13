@@ -25,7 +25,7 @@ from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import ForeignKey, DateTime, Boolean, Text
 from sqlalchemy.orm import relationship, backref, object_mapper
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import Index, UniqueConstraint
 
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
@@ -152,7 +152,10 @@ class ImageLocation(BASE, ModelBase):
 class ImageMember(BASE, ModelBase):
     """Represents an image members in the datastore"""
     __tablename__ = 'image_members'
-    __table_args__ = (UniqueConstraint('image_id', 'member'), {})
+    __table_args__ = (Index('ix_image_members_image_id_member',
+                            'image_id',
+                            'member'),
+                      UniqueConstraint('image_id', 'member'), {})
 
     id = Column(Integer, primary_key=True)
     image_id = Column(String(36), ForeignKey('images.id'),
