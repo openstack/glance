@@ -31,7 +31,7 @@ rabbit_opts = [
     cfg.IntOpt('rabbit_port', default=5672),
     cfg.BoolOpt('rabbit_use_ssl', default=False),
     cfg.StrOpt('rabbit_userid', default='guest'),
-    cfg.StrOpt('rabbit_password', default='guest'),
+    cfg.StrOpt('rabbit_password', default='guest', secret=True),
     cfg.StrOpt('rabbit_virtual_host', default='/'),
     cfg.StrOpt('rabbit_notification_exchange', default='glance'),
     cfg.StrOpt('rabbit_notification_topic',
