@@ -22,6 +22,7 @@ from __future__ import absolute_import
 import hashlib
 import httplib
 import math
+import sys
 import urllib
 import urlparse
 
@@ -309,6 +310,7 @@ class BaseStore(glance.store.base.Store):
                     total_chunks = '?'
 
                 checksum = hashlib.md5()
+                written_chunks = []
                 combined_chunks_size = 0
                 while True:
                     chunk_size = self.large_object_chunk_size
@@ -324,9 +326,27 @@ class BaseStore(glance.store.base.Store):
 
                     chunk_name = "%s-%05d" % (location.obj, chunk_id)
                     reader = ChunkReader(image_file, checksum, chunk_size)
-                    chunk_etag = connection.put_object(
-                        location.container, chunk_name, reader,
-                        content_length=content_length)
+                    try:
+                        chunk_etag = connection.put_object(
+                            location.container, chunk_name, reader,
+                            content_length=content_length)
+                        written_chunks.append(chunk_name)
+                    except Exception:
+                        # Save original traceback
+                        exc_type, exc_val, exc_tb = sys.exc_info()
+
+                        # Delete now stale segments from swift backend
+                        for chunk in written_chunks:
+                            LOG.debug(_("Deleting chunk %s" % chunk))
+                            try:
+                                connection.delete_object(location.container,
+                                                         chunk)
+                            except Exception:
+                                msg = _("Failed to delete orphan chunk %s/%s")
+                                LOG.exception(msg, location.container, chunk)
+
+                        # reraise original exception with traceback intact
+                        raise exc_type, exc_val, exc_tb
                     bytes_read = reader.bytes_read
                     msg = _("Wrote chunk %(chunk_name)s (%(chunk_id)d/"
                             "%(total_chunks)s) of length %(bytes_read)d "

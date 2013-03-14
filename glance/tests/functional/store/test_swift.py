@@ -33,6 +33,8 @@ import urlparse
 import oslo.config.cfg
 import testtools
 
+from glance.common import exception
+import glance.common.utils as common_utils
 from glance.openstack.common import uuidutils
 import glance.store.swift
 import glance.tests.functional.store as store_tests
@@ -282,6 +284,23 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
         # Clean up
         self.swift_client.delete_object(manifest_container,
                                         non_image_obj)
+
+        # Simulate exceeding 'image_size_cap' setting
+        image_data = StringIO.StringIO('X' * image_size)
+        image_data = common_utils.LimitingReader(image_data, image_size - 1)
+        image_id = uuidutils.generate_uuid()
+        self.assertRaises(exception.ImageSizeLimitExceeded,
+                          store.add,
+                          image_id,
+                          image_data,
+                          image_size)
+
+        # Verify written segments have been deleted
+        container = swift_get_container(self.swift_client,
+                                        manifest_container,
+                                        prefix=image_id)
+        segments = [segment['name'] for segment in container[1]]
+        self.assertEqual(0, len(segments), 'Got segments %s' % segments)
 
     def stash_image(self, image_id, image_data):
         container_name = self.swift_config['swift_store_container']
