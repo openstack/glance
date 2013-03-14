@@ -147,6 +147,9 @@ class CacheFilter(wsgi.Middleware):
 
     def _process_v1_request(self, request, image_id, image_iterator):
         image_meta = registry.get_image_metadata(request.context, image_id)
+        # Don't display location
+        if 'location' in image_meta:
+            del image_meta['location']
         self._verify_metadata(image_meta)
 
         response = webob.Response(request=request)
