@@ -111,6 +111,9 @@ class CacheFilter(wsgi.Middleware):
 
     def _process_v1_request(self, request, image_id, image_iterator):
         image_meta = registry.get_image_metadata(request.context, image_id)
+        # Don't display location
+        if 'location' in image_meta:
+            del image_meta['location']
 
         if not image_meta['size']:
             # override image size metadata with the actual cached
