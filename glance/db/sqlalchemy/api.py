@@ -84,7 +84,7 @@ def ping_listener(dbapi_conn, connection_rec, connection_proxy):
 
 def setup_db_env():
     """
-    Setup configuation for database
+    Setup configuration for database
     """
     global sa_logger, _IDLE_TIMEOUT, _MAX_RETRIES, _RETRY_INTERVAL, _CONNECTION
 
@@ -156,8 +156,7 @@ def get_engine():
             _ENGINE.connect()
         except Exception, err:
             msg = _("Error configuring registry database with supplied "
-                    "sql_connection '%s'. "
-                    "Got error:\n%s") % (_CONNECTION, err)
+                    "sql_connection. Got error: %s") % err
             LOG.error(msg)
             raise
 
