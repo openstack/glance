@@ -451,6 +451,55 @@ formats are allowed, including:
 Multiple ACLs can be combined using a comma separated list, for
 example: swift_store_admin_tenants = service:glance,*:admin
 
+* ``swift_store_auth_version``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Swift storage backend.`
+
+Optional. Default: ``2``
+
+A string indicating which version of Swift OpenStack authentication
+to use. See the project
+`python-swiftclient <http://docs.openstack.org/developer/python-swiftclient/>`_
+for more details.
+
+* ``swift_store_service_type``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Swift storage backend.`
+
+Optional. Default: ``object-store``
+
+A string giving the service type of the swift service to use. This
+setting is only used if swift_store_auth_version is ``2``.
+
+* ``swift_store_region``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Swift storage backend.`
+
+Optional. Default: Not set.
+
+A string giving the region of the swift service endpoint to use. This
+setting is only used if swift_store_auth_version is ``2``. This
+setting is especially useful for disambiguation if multiple swift
+services might appear in a service catalog during authentication.
+
+* ``swift_store_endpoint_type``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Swift storage backend.`
+
+Optional. Default: ``publicURL``
+
+A string giving the endpoint type of the swift service endpoint to
+use. This setting is only used if swift_store_auth_version is ``2``.
+
+
 
 Configuring the S3 Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
