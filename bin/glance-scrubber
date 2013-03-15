@@ -37,6 +37,7 @@ gettext.install('glance', unicode=1)
 from oslo.config import cfg
 
 from glance.common import config
+from glance.openstack.common import log
 import glance.store
 from glance.store import scrubber
 
@@ -58,7 +59,7 @@ if __name__ == '__main__':
     try:
 
         config.parse_args()
-        config.setup_logging()
+        log.setup('glance')
 
         glance.store.create_stores()
         glance.store.verify_default_store()

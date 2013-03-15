@@ -42,6 +42,7 @@ from oslo.config import cfg
 
 from glance.common import config
 from glance.image_cache import pruner
+from glance.openstack.common import log
 
 CONF = cfg.CONF
 
@@ -49,7 +50,7 @@ CONF = cfg.CONF
 if __name__ == '__main__':
     try:
         config.parse_cache_args()
-        config.setup_logging()
+        log.setup('glance')
 
         app = pruner.Pruner()
         app.run()
