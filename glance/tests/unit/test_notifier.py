@@ -18,11 +18,8 @@
 import datetime
 import kombu.entity
 import mox
-try:
-    import qpid
-    import qpid.messaging
-except ImportError:
-    qpid = None
+import qpid
+import qpid.messaging
 import stubout
 
 from glance.common import exception
@@ -321,9 +318,6 @@ class TestQpidNotifier(utils.BaseTestCase):
 
     def setUp(self):
         super(TestQpidNotifier, self).setUp()
-
-        if not qpid:
-            self.skipTest("qpid not installed")
 
         self.mocker = mox.Mox()
 
