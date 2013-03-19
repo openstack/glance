@@ -24,7 +24,7 @@ project = 'glance'
 
 setuptools.setup(
     name=project,
-    version=setup.get_version(project, '2013.1'),
+    version=setup.get_version(project, '2013.2'),
     description='The Glance project provides services for discovering, '
                 'registering, and retrieving virtual machine images',
     license='Apache License (2.0)',
