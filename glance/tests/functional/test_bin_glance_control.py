@@ -118,6 +118,10 @@ class TestGlanceControl(functional.FunctionalTest):
         self.cleanup()
         self.api_server.server_control_options += ' --respawn'
 
+        # because glance_api_control will be restarting the services
+        # we cannot pass the socket through in fork
+        self.api_server.fork_socket = False
+
         # start API server, allowing glance-control to continue running
         self.start_with_retry(self.api_server,
                               'api_port',

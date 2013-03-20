@@ -26,6 +26,7 @@ try:
     from eventlet import sleep
 except ImportError:
     from time import sleep
+from eventlet.green import socket
 
 import functools
 import os
@@ -46,6 +47,8 @@ CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 FEATURE_BLACKLIST = ['content-length', 'content-type', 'x-image-meta-size']
+
+GLANCE_TEST_SOCKET_FD_STR = 'GLANCE_TEST_SOCKET_FD'
 
 
 def chunkreadable(iter, chunk_size=65536):
@@ -502,3 +505,16 @@ def validate_key_cert(key_file, cert_file):
                              "Please verify that cert %s and key %s "
                              "belong together.  OpenSSL error %s"
                              % (cert_file, key_file, ce)))
+
+
+def get_test_suite_socket():
+    global GLANCE_TEST_SOCKET_FD_STR
+    if GLANCE_TEST_SOCKET_FD_STR in os.environ:
+        fd = int(os.environ[GLANCE_TEST_SOCKET_FD_STR])
+        sock = socket.fromfd(fd, socket.AF_INET, socket.SOCK_STREAM)
+        sock = socket.SocketType(_sock=sock)
+        sock.listen(CONF.backlog)
+        del os.environ[GLANCE_TEST_SOCKET_FD_STR]
+        os.close(fd)
+        return sock
+    return None

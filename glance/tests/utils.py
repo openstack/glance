@@ -230,11 +230,20 @@ def get_unused_port():
     """
     Returns an unused port on localhost.
     """
+    port, s = get_unused_port_and_socket()
+    s.close()
+    return port
+
+
+def get_unused_port_and_socket():
+    """
+    Returns an unused port on localhost and the open socket
+    from which it was created.
+    """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(('localhost', 0))
     addr, port = s.getsockname()
-    s.close()
-    return port
+    return (port, s)
 
 
 def xattr_writes_supported(path):
