@@ -22,7 +22,6 @@ from __future__ import absolute_import
 import hashlib
 import httplib
 import math
-import sys
 import urllib
 import urlparse
 
@@ -278,6 +277,15 @@ class BaseStore(glance.store.base.Store):
                                                   reason=reason)
         return result
 
+    def _delete_stale_chunks(self, connection, container, chunk_list):
+        for chunk in chunk_list:
+            LOG.debug(_("Deleting chunk %s" % chunk))
+            try:
+                connection.delete_object(container, chunk)
+            except Exception:
+                msg = _("Failed to delete orphaned chunk %s/%s")
+                LOG.exception(msg, container, chunk)
+
     def add(self, image_id, image_file, image_size, connection=None):
         location = self.create_location(image_id)
         if not connection:
@@ -332,21 +340,12 @@ class BaseStore(glance.store.base.Store):
                             content_length=content_length)
                         written_chunks.append(chunk_name)
                     except Exception:
-                        # Save original traceback
-                        exc_type, exc_val, exc_tb = sys.exc_info()
+                        # Delete orphaned segments from swift backend
+                        self._delete_stale_chunks(connection,
+                                                  location.container,
+                                                  written_chunks)
+                        raise
 
-                        # Delete now stale segments from swift backend
-                        for chunk in written_chunks:
-                            LOG.debug(_("Deleting chunk %s" % chunk))
-                            try:
-                                connection.delete_object(location.container,
-                                                         chunk)
-                            except Exception:
-                                msg = _("Failed to delete orphan chunk %s/%s")
-                                LOG.exception(msg, location.container, chunk)
-
-                        # reraise original exception with traceback intact
-                        raise exc_type, exc_val, exc_tb
                     bytes_read = reader.bytes_read
                     msg = _("Wrote chunk %(chunk_name)s (%(chunk_id)d/"
                             "%(total_chunks)s) of length %(bytes_read)d "
