@@ -145,7 +145,18 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
                 'username': 'user1',
                 'password': 'pass',
                 'auth_url': 'http://localhost/v2.0/'
-            }  # v2.0: missing tenant
+            },  # v2.0: missing tenant
+            {
+                'username': None,
+                'password': 'pass',
+                'auth_url': 'http://localhost/v2.0/'
+            },  # None parameter
+            {
+                'username': 'user1',
+                'password': 'pass',
+                'auth_url': 'http://localhost/v2.0/',
+                'tenant': None
+            }  # None tenant
         ]
         for creds in bad_creds:
             try:

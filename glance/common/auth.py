@@ -85,14 +85,14 @@ class KeystoneStrategy(BaseStrategy):
         # Ensure that supplied credential parameters are as required
         for required in ('username', 'password', 'auth_url',
                          'strategy'):
-            if required not in self.creds:
+            if self.creds.get(required) is None:
                 raise exception.MissingCredentialError(required=required)
         if self.creds['strategy'] != 'keystone':
             raise exception.BadAuthStrategy(expected='keystone',
                                             received=self.creds['strategy'])
         # For v2.0 also check tenant is present
         if self.creds['auth_url'].rstrip('/').endswith('v2.0'):
-            if 'tenant' not in self.creds:
+            if self.creds.get("tenant") is None:
                 raise exception.MissingCredentialError(required='tenant')
 
     def authenticate(self):
