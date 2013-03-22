@@ -124,14 +124,12 @@ def _image_format(image_id, **values):
     return image
 
 
-def _filter_images(images, filters, context, status='accepted'):
+def _filter_images(images, filters, context,
+                   status='accepted', is_public=None):
     filtered_images = []
     if 'properties' in filters:
         prop_filter = filters.pop('properties')
         filters.update(prop_filter)
-
-    if 'is_public' in filters and filters['is_public'] is None:
-        filters.pop('is_public')
 
     if status == 'all':
         status = None
@@ -150,16 +148,21 @@ def _filter_images(images, filters, context, status='accepted'):
 
         if visibility:
             if visibility == 'public':
-                filters['is_public'] = True
                 if not image['is_public']:
                     continue
             elif visibility == 'private':
-                filters['is_public'] = False
+                if image['is_public']:
+                    continue
                 if not (has_ownership or context.is_admin):
                     continue
             elif visibility == 'shared':
                 if not is_member:
                     continue
+
+        if is_public is not None:
+            if not image['is_public'] == is_public:
+                continue
+
         add = True
         for k, value in filters.iteritems():
             key = k
@@ -175,7 +178,7 @@ def _filter_images(images, filters, context, status='accepted'):
                 add = image.get(key) >= value
             elif k.endswith('_max'):
                 add = image.get(key) <= value
-            elif image.get(k) is not None:
+            elif k != 'is_public' and image.get(k) is not None:
                 add = image.get(key) == value
             else:
                 properties = {}
@@ -253,10 +256,10 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
 @log_call
 def image_get_all(context, filters=None, marker=None, limit=None,
                   sort_key='created_at', sort_dir='desc',
-                  member_status='accepted'):
+                  member_status='accepted', is_public=None):
     filters = filters or {}
     images = DATA['images'].values()
-    images = _filter_images(images, filters, context, member_status)
+    images = _filter_images(images, filters, context, member_status, is_public)
     images = _sort_images(images, sort_key, sort_dir)
     images = _do_pagination(context, images, marker, limit,
                             filters.get('deleted'))
