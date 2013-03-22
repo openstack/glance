@@ -2172,7 +2172,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             req.headers[k] = v
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        self.assertEquals(res.status_int, 413)
 
     def test_add_image_size_data_too_big(self):
         self.config(image_size_cap=512)
@@ -2677,7 +2677,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             req.headers[k] = v
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        self.assertEquals(res.status_int, 413)
 
     def test_get_index_sort_name_asc(self):
         """
