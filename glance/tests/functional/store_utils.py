@@ -25,6 +25,7 @@ import ConfigParser
 import httplib
 import os
 import random
+import swiftclient
 import thread
 
 from glance.store.s3 import get_s3_location, get_calling_format
@@ -125,8 +126,6 @@ def setup_swift(test):
             test.disabled = True
             return
 
-    import swiftclient
-
     try:
         swift_host = test.swift_store_auth_address
         if not swift_host.startswith('http'):
@@ -142,7 +141,8 @@ def setup_swift(test):
         return
 
     swift_conn = swiftclient.Connection(
-        authurl=swift_host, user=user, key=key, snet=False, retries=1)
+        authurl=swift_host, auth_version=test.swift_store_auth_version,
+        user=user, key=key, snet=False, retries=1)
 
     try:
         _resp_headers, containers = swift_conn.get_account()
@@ -174,13 +174,14 @@ def setup_swift(test):
 
 
 def teardown_swift(test):
+    swift_conn = test.swift_conn
+    container_name = test.swift_store_container
     if not test.disabled:
-        import swiftclient
         try:
             _resp_headers, containers = swift_conn.get_account()
             # Delete all containers matching the container name prefix
             for container in containers:
-                if container.find(container_name) == 0:
+                if container == container_name:
                     swift_conn.delete_container(container)
         except swiftclient.ClientException as e:
             if e.http_status == httplib.CONFLICT:
@@ -193,12 +194,15 @@ def teardown_swift(test):
 def get_swift_uri(test, image_id):
     # Apparently we must use HTTPS with Cloud Files now, otherwise
     # we will get a 301 Moved.... :(
-    uri = ('swift+https://%(swift_store_user)s:%(swift_store_key)s' %
-           test.__dict__)
+    user = swiftclient.quote('%(swift_store_user)s' % test.__dict__)
+    creds = (user + ':%(swift_store_key)s' % test.__dict__)
+    uri = 'swift+https://' + creds
     uri += ('@%(swift_store_auth_address)s/%(swift_store_container)s/' %
             test.__dict__)
     uri += image_id
-    return uri.replace('@http://', '@')
+    uri = uri.replace('@http://', '@')
+    uri = uri.replace('@https://', '@')
+    return uri
 
 
 def setup_s3(test):
