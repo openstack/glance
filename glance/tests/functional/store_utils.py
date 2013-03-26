@@ -119,7 +119,7 @@ def setup_swift(test):
                 else:
                     test.__dict__[key] = value
 
-        except ConfigParser.ParsingError, e:
+        except ConfigParser.ParsingError as e:
             test.disabled_message = ("Failed to read test_swift.conf "
                                      "file. Got error: %s" % e)
             test.disabled = True
@@ -134,7 +134,7 @@ def setup_swift(test):
         user = test.swift_store_user
         key = test.swift_store_key
         container_name = test.swift_store_container
-    except AttributeError, e:
+    except AttributeError as e:
         test.disabled_message = ("Failed to find required configuration "
                                  "options for Swift store. "
                                  "Got error: %s" % e)
@@ -146,7 +146,7 @@ def setup_swift(test):
 
     try:
         _resp_headers, containers = swift_conn.get_account()
-    except Exception, e:
+    except Exception as e:
         test.disabled_message = ("Failed to get_account from Swift "
                                  "Got error: %s" % e)
         test.disabled = True
@@ -156,7 +156,7 @@ def setup_swift(test):
         for container in containers:
             if container == container_name:
                 swift_conn.delete_container(container)
-    except swiftclient.ClientException, e:
+    except swiftclient.ClientException as e:
         test.disabled_message = ("Failed to delete container from Swift "
                                  "Got error: %s" % e)
         test.disabled = True
@@ -166,7 +166,7 @@ def setup_swift(test):
 
     try:
         swift_conn.put_container(container_name)
-    except swiftclient.ClientException, e:
+    except swiftclient.ClientException as e:
         test.disabled_message = ("Failed to create container. "
                                  "Got error: %s" % e)
         test.disabled = True
@@ -182,7 +182,7 @@ def teardown_swift(test):
             for container in containers:
                 if container.find(container_name) == 0:
                     swift_conn.delete_container(container)
-        except swiftclient.ClientException, e:
+        except swiftclient.ClientException as e:
             if e.http_status == httplib.CONFLICT:
                 pass
             else:
@@ -219,7 +219,7 @@ def setup_s3(test):
             for key, value in defaults.items():
                 test.__dict__[key] = (_uniq(value)
                                       if key == 's3_store_bucket' else value)
-        except ConfigParser.ParsingError, e:
+        except ConfigParser.ParsingError as e:
             test.disabled_message = ("Failed to read test_s3.conf config "
                                      "file. Got error: %s" % e)
             test.disabled = True
@@ -233,7 +233,7 @@ def setup_s3(test):
         access_key = test.s3_store_access_key
         secret_key = test.s3_store_secret_key
         bucket_name = test.s3_store_bucket
-    except AttributeError, e:
+    except AttributeError as e:
         test.disabled_message = ("Failed to find required configuration "
                                  "options for S3 store. Got error: %s" % e)
         test.disabled = True
@@ -251,13 +251,13 @@ def setup_s3(test):
         for bucket in buckets:
             if bucket.name == bucket_name:
                 test.bucket = bucket
-    except S3ResponseError, e:
+    except S3ResponseError as e:
         test.disabled_message = ("Failed to connect to S3 with "
                                  "credentials, to find bucket. "
                                  "Got error: %s" % e)
         test.disabled = True
         return
-    except TypeError, e:
+    except TypeError as e:
         # This hack is necessary because of a bug in boto 1.9b:
         # http://code.google.com/p/boto/issues/detail?id=540
         test.disabled_message = ("Failed to connect to S3 with "
@@ -272,7 +272,7 @@ def setup_s3(test):
         try:
             test.bucket = s3_conn.create_bucket(bucket_name,
                                                 location=location)
-        except S3ResponseError, e:
+        except S3ResponseError as e:
             test.disabled_message = ("Failed to create bucket. "
                                      "Got error: %s" % e)
             test.disabled = True

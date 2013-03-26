@@ -62,7 +62,7 @@ class SqliteConnection(sqlite3.Connection):
             while True:
                 try:
                     return call()
-                except sqlite3.OperationalError, e:
+                except sqlite3.OperationalError as e:
                     if 'locked' not in str(e):
                         raise
                 sleep(0.05)
@@ -116,7 +116,7 @@ class Driver(base.Driver):
                 );
             """)
             conn.close()
-        except sqlite3.DatabaseError, e:
+        except sqlite3.DatabaseError as e:
             msg = _("Failed to initialize the image cache database. "
                     "Got error: %s") % e
             LOG.error(msg)
@@ -380,7 +380,7 @@ class Driver(base.Driver):
         conn.execute('PRAGMA temp_store = MEMORY')
         try:
             yield conn
-        except sqlite3.DatabaseError, e:
+        except sqlite3.DatabaseError as e:
             msg = _("Error executing SQLite call. Got error: %s") % e
             LOG.error(msg)
             conn.rollback()

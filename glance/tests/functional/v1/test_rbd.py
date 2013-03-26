@@ -67,7 +67,7 @@ class TestRBD(test_api.TestApi):
                 defaults = cp.defaults()
                 for key, value in defaults.items():
                     self.__dict__[key] = value
-            except ConfigParser.ParsingError, e:
+            except ConfigParser.ParsingError as e:
                 self.disabled_message = ("Failed to read test_rbd config "
                                          "file. Got error: %s" % e)
                 return
@@ -81,7 +81,7 @@ class TestRBD(test_api.TestApi):
                               rados_id=self.rbd_store_user)
         try:
             cluster.connect()
-        except rados.Error, e:
+        except rados.Error as e:
             self.disabled_message = ("Failed to connect to RADOS: %s" % e)
             return
         cluster.shutdown()
@@ -96,7 +96,7 @@ class TestRBD(test_api.TestApi):
         import rados
         try:
             self.create_pool()
-        except rados.Error, e:
+        except rados.Error as e:
             self.disabled_message = ("Failed to create pool: %s" % e)
             self.disabled = True
             return

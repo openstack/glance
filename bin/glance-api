@@ -59,7 +59,7 @@ if __name__ == '__main__':
         server = wsgi.Server()
         server.start(config.load_paste_app(), default_port=9292)
         server.wait()
-    except exception.WorkerCreationFailure, e:
+    except exception.WorkerCreationFailure as e:
         fail(2, e)
-    except RuntimeError, e:
+    except RuntimeError as e:
         fail(1, e)

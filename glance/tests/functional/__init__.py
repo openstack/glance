@@ -667,7 +667,7 @@ class FunctionalTest(test_utils.BaseTestCase):
             s.connect(("127.0.0.1", port))
             s.close()
             return True
-        except socket.error, e:
+        except socket.error as e:
             return False
 
     def wait_for_servers(self, servers, expect_launch=True, timeout=10):

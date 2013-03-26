@@ -69,11 +69,11 @@ class Controller(controller.BaseController):
         try:
             registry.delete_member(req.context, image_id, id)
             self._update_store_acls(req, image_id)
-        except exception.NotFound, e:
+        except exception.NotFound as e:
             msg = "%s" % e
             LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
-        except exception.Forbidden, e:
+        except exception.Forbidden as e:
             msg = "%s" % e
             LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
@@ -107,15 +107,15 @@ class Controller(controller.BaseController):
         try:
             registry.add_member(req.context, image_id, id, can_share)
             self._update_store_acls(req, image_id)
-        except exception.Invalid, e:
+        except exception.Invalid as e:
             msg = "%s" % e
             LOG.debug(msg)
             raise webob.exc.HTTPBadRequest(explanation=msg)
-        except exception.NotFound, e:
+        except exception.NotFound as e:
             msg = "%s" % e
             LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
-        except exception.Forbidden, e:
+        except exception.Forbidden as e:
             msg = "%s" % e
             LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
@@ -138,15 +138,15 @@ class Controller(controller.BaseController):
         try:
             registry.replace_members(req.context, image_id, body)
             self._update_store_acls(req, image_id)
-        except exception.Invalid, e:
+        except exception.Invalid as e:
             msg = "%s" % e
             LOG.debug(msg)
             raise webob.exc.HTTPBadRequest(explanation=msg)
-        except exception.NotFound, e:
+        except exception.NotFound as e:
             msg = "%s" % e
             LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
-        except exception.Forbidden, e:
+        except exception.Forbidden as e:
             msg = "%s" % e
             LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
@@ -168,11 +168,11 @@ class Controller(controller.BaseController):
         """
         try:
             members = registry.get_member_images(req.context, id)
-        except exception.NotFound, e:
+        except exception.NotFound as e:
             msg = "%s" % e
             LOG.debug(msg)
             raise webob.exc.HTTPNotFound(msg)
-        except exception.Forbidden, e:
+        except exception.Forbidden as e:
             msg = "%s" % e
             LOG.debug(msg)
             raise webob.exc.HTTPForbidden(msg)

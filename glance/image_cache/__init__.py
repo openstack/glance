@@ -60,7 +60,7 @@ class ImageCache(object):
             self.driver_class = importutils.import_class(driver_module)
             LOG.info(_("Image cache loaded driver '%s'.") %
                      driver_name)
-        except ImportError, import_err:
+        except ImportError as import_err:
             LOG.warn(_("Image cache driver "
                        "'%(driver_name)s' failed to load. "
                        "Got error: '%(import_err)s.") % locals())
@@ -78,7 +78,7 @@ class ImageCache(object):
         try:
             self.driver = self.driver_class()
             self.driver.configure()
-        except exception.BadDriverConfiguration, config_err:
+        except exception.BadDriverConfiguration as config_err:
             driver_module = self.driver_class.__module__
             LOG.warn(_("Image cache driver "
                        "'%(driver_module)s' failed to configure. "

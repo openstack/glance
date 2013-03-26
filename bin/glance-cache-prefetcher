@@ -57,5 +57,5 @@ if __name__ == '__main__':
 
         app = prefetcher.Prefetcher()
         app.run()
-    except RuntimeError, e:
+    except RuntimeError as e:
         sys.exit("ERROR: %s" % e)

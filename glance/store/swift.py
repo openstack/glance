@@ -239,7 +239,7 @@ class BaseStore(glance.store.base.Store):
             resp_headers, resp_body = connection.get_object(
                     container=location.container, obj=location.obj,
                     resp_chunk_size=self.CHUNKSIZE)
-        except swiftclient.ClientException, e:
+        except swiftclient.ClientException as e:
             if e.http_status == httplib.NOT_FOUND:
                 uri = location.get_uri()
                 msg = _("Swift could not find image at URI.")
@@ -392,7 +392,7 @@ class BaseStore(glance.store.base.Store):
             # GET /images/details
 
             return (location.get_uri(), image_size, obj_etag)
-        except swiftclient.ClientException, e:
+        except swiftclient.ClientException as e:
             if e.http_status == httplib.CONFLICT:
                 raise exception.Duplicate(_("Swift already has an image at "
                                             "this location"))
@@ -416,7 +416,7 @@ class BaseStore(glance.store.base.Store):
                 headers = connection.head_object(
                         location.container, location.obj)
                 manifest = headers.get('x-object-manifest')
-            except swiftclient.ClientException, e:
+            except swiftclient.ClientException as e:
                 if e.http_status != httplib.NOT_FOUND:
                     raise
             if manifest:
@@ -435,7 +435,7 @@ class BaseStore(glance.store.base.Store):
             # Delete object (or, in segmented case, the manifest)
             connection.delete_object(location.container, location.obj)
 
-        except swiftclient.ClientException, e:
+        except swiftclient.ClientException as e:
             if e.http_status == httplib.NOT_FOUND:
                 uri = location.get_uri()
                 msg = _("Swift could not find image at URI.")
@@ -453,12 +453,12 @@ class BaseStore(glance.store.base.Store):
         """
         try:
             connection.head_container(container)
-        except swiftclient.ClientException, e:
+        except swiftclient.ClientException as e:
             if e.http_status == httplib.NOT_FOUND:
                 if CONF.swift_store_create_container_on_put:
                     try:
                         connection.put_container(container)
-                    except swiftclient.ClientException, e:
+                    except swiftclient.ClientException as e:
                         msg = _("Failed to add container to Swift.\n"
                                 "Got error from Swift: %(e)s") % locals()
                         raise glance.store.BackendException(msg)
@@ -594,7 +594,7 @@ class MultiTenantStore(BaseStore):
 
         try:
             connection.post_container(location.container, headers=headers)
-        except swiftclient.ClientException, e:
+        except swiftclient.ClientException as e:
             if e.http_status == httplib.NOT_FOUND:
                 uri = location.get_uri()
                 msg = _("Swift could not find image at URI.")

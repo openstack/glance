@@ -482,13 +482,13 @@ def create_bucket_if_missing(bucket, s3_conn):
     from boto.exception import S3ResponseError
     try:
         s3_conn.get_bucket(bucket)
-    except S3ResponseError, e:
+    except S3ResponseError as e:
         if e.status == httplib.NOT_FOUND:
             if CONF.s3_store_create_bucket_on_put:
                 location = get_s3_location(CONF.s3_store_host)
                 try:
                     s3_conn.create_bucket(bucket, location=location)
-                except S3ResponseError, e:
+                except S3ResponseError as e:
                     msg = (_("Failed to add bucket to S3.\n"
                              "Got error from S3: %(e)s") % locals())
                     raise glance.store.BackendException(msg)

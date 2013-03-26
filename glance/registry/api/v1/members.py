@@ -100,7 +100,7 @@ class Controller(object):
         # Get the membership list
         try:
             memb_list = body['memberships']
-        except Exception, e:
+        except Exception as e:
             # Malformed entity...
             msg = _("Invalid membership association specified for "
                     "image %(id)s")
@@ -116,7 +116,7 @@ class Controller(object):
                 datum = dict(image_id=image['id'],
                              member=memb['member_id'],
                              can_share=None)
-            except Exception, e:
+            except Exception as e:
                 # Malformed entity...
                 msg = _("Invalid membership association specified for "
                         "image %(id)s")
@@ -215,7 +215,7 @@ class Controller(object):
         if body:
             try:
                 can_share = bool(body['member']['can_share'])
-            except Exception, e:
+            except Exception as e:
                 # Malformed entity...
                 msg = _("Invalid membership association specified for "
                         "image %(id)s")
@@ -295,7 +295,7 @@ class Controller(object):
         """
         try:
             members = self.db_api.image_member_find(req.context, member=id)
-        except exception.NotFound, e:
+        except exception.NotFound as e:
             msg = _("Member %(id)s not found")
             LOG.info(msg % {'id': id})
             msg = _("Membership could not be found.")

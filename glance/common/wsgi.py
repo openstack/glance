@@ -138,7 +138,7 @@ def get_socket(default_port):
             if use_ssl:
                 sock = wrap_ssl(sock)
 
-        except socket.error, err:
+        except socket.error as err:
             if err.args[0] != errno.EADDRINUSE:
                 raise
             eventlet.sleep(0.1)
@@ -225,7 +225,7 @@ class Server(object):
                             self.running = False
                     else:
                         self.run_child()
-            except OSError, err:
+            except OSError as err:
                 if err.errno not in (errno.EINTR, errno.ECHILD):
                     raise
             except KeyboardInterrupt:
@@ -281,7 +281,7 @@ class Server(object):
                                  self.application,
                                  log=WritableLogger(self.logger),
                                  custom_pool=self.pool)
-        except socket.error, err:
+        except socket.error as err:
             if err[0] != errno.EINVAL:
                 raise
         self.pool.waitall()

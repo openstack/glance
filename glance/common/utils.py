@@ -83,7 +83,7 @@ def cooperative_iter(iter):
         for chunk in iter:
             sleep(0)
             yield chunk
-    except Exception, err:
+    except Exception as err:
         msg = _("Error: cooperative_iter exception %s") % err
         LOG.error(msg)
         raise
@@ -259,7 +259,7 @@ def bool_from_string(subject):
 def safe_mkdirs(path):
     try:
         os.makedirs(path)
-    except OSError, e:
+    except OSError as e:
         if e.errno != errno.EEXIST:
             raise
 
@@ -267,7 +267,7 @@ def safe_mkdirs(path):
 def safe_remove(path):
     try:
         os.remove(path)
-    except OSError, e:
+    except OSError as e:
         if e.errno != errno.ENOENT:
             raise
 

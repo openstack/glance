@@ -45,7 +45,7 @@ def db_version():
     sql_connection = CONF.sql_connection
     try:
         return versioning_api.db_version(sql_connection, repo_path)
-    except versioning_exceptions.DatabaseNotControlledError, e:
+    except versioning_exceptions.DatabaseNotControlledError as e:
         msg = (_("database is not under migration control"))
         raise exception.DatabaseMigrationError(msg)
 
@@ -88,7 +88,7 @@ def version_control(version=None):
     sql_connection = CONF.sql_connection
     try:
         _version_control(version)
-    except versioning_exceptions.DatabaseAlreadyControlledError, e:
+    except versioning_exceptions.DatabaseAlreadyControlledError as e:
         msg = (_("database is already under migration control"))
         raise exception.DatabaseMigrationError(msg)
 
@@ -116,7 +116,7 @@ def db_sync(version=None, current_version=None):
     sql_connection = CONF.sql_connection
     try:
         _version_control(current_version or 0)
-    except versioning_exceptions.DatabaseAlreadyControlledError, e:
+    except versioning_exceptions.DatabaseAlreadyControlledError as e:
         pass
 
     if current_version is None:

@@ -129,9 +129,9 @@ class RabbitStrategy(strategy.Strategy):
             try:
                 self._connect()
                 return
-            except self.connection_errors, e:
+            except self.connection_errors as e:
                 pass
-            except Exception, e:
+            except Exception as e:
                 # NOTE(comstud): Unfortunately it's possible for amqplib
                 # to return an error not covered by its transport
                 # connection_errors in the case of a timeout waiting for
@@ -194,9 +194,9 @@ class RabbitStrategy(strategy.Strategy):
             try:
                 self._send_message(msg, routing_key)
                 return
-            except self.connection_errors, e:
+            except self.connection_errors as e:
                 pass
-            except Exception, e:
+            except Exception as e:
                 # NOTE(comstud): Unfortunately it's possible for amqplib
                 # to return an error not covered by its transport
                 # connection_errors in the case of a timeout waiting for

@@ -52,39 +52,39 @@ class ImageDataController(object):
             image_repo.save(image)
             image.set_data(data, size)
             image_repo.save(image)
-        except ValueError, e:
+        except ValueError as e:
             LOG.debug("Cannot save data for image %s: %s", image_id, e)
             raise webob.exc.HTTPBadRequest(explanation=unicode(e))
-        except exception.Duplicate, e:
+        except exception.Duplicate as e:
             msg = _("Unable to upload duplicate image data for image: %s")
             LOG.debug(msg % image_id)
             raise webob.exc.HTTPConflict(explanation=msg, request=req)
 
-        except exception.Forbidden, e:
+        except exception.Forbidden as e:
             msg = _("Not allowed to upload image data for image %s")
             LOG.debug(msg % image_id)
             raise webob.exc.HTTPForbidden(explanation=msg, request=req)
 
-        except exception.NotFound, e:
+        except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=unicode(e))
 
-        except exception.StorageFull, e:
+        except exception.StorageFull as e:
             msg = _("Image storage media is full: %s") % e
             LOG.error(msg)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
-        except exception.StorageWriteDenied, e:
+        except exception.StorageWriteDenied as e:
             msg = _("Insufficient permissions on image storage media: %s") % e
             LOG.error(msg)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
                                                    request=req)
 
-        except webob.exc.HTTPError, e:
+        except webob.exc.HTTPError as e:
             LOG.error(_("Failed to upload image data due to HTTP error"))
             raise
 
-        except Exception, e:
+        except Exception as e:
             LOG.exception(_("Failed to upload image data due to "
                             "internal error"))
             raise

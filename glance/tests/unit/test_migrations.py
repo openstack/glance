@@ -138,7 +138,7 @@ class TestMigrations(utils.BaseTestCase):
                 for key, value in defaults.items():
                     self.test_databases[key] = value
                 self.snake_walk = cp.getboolean('walk_style', 'snake_walk')
-            except ConfigParser.ParsingError, e:
+            except ConfigParser.ParsingError as e:
                 self.fail("Failed to read test_migrations.conf config "
                           "file. Got error: %s" % e)
         else:
