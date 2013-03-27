@@ -31,7 +31,7 @@ class ImageFactory(object):
                 raise exception.ReadonlyProperty(property=key)
 
     def _check_unexpected(self, kwargs):
-        if len(kwargs) > 0:
+        if kwargs:
             msg = 'new_image() got unexpected keywords %s'
             raise TypeError(msg % kwargs.keys())
 
@@ -84,7 +84,7 @@ class Image(object):
         self.size = kwargs.pop('size', None)
         self.extra_properties = kwargs.pop('extra_properties', None) or {}
         self.tags = kwargs.pop('tags', None) or []
-        if len(kwargs) > 0:
+        if kwargs:
             message = "__init__() got unexpected keyword argument '%s'"
             raise TypeError(message % kwargs.keys()[0])
 

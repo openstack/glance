@@ -934,7 +934,7 @@ class TestChunkReader(base.StoreClearingUnitTest):
             cr = glance.store.swift.ChunkReader(infile, checksum, CHUNKSIZE)
             chunk = cr.read(CHUNKSIZE)
             bytes_read += len(chunk)
-            if len(chunk) == 0:
+            if not chunk:
                 break
         self.assertEqual(1024, bytes_read)
         data_file.close()

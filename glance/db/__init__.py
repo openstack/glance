@@ -262,7 +262,7 @@ class ImageMemberRepo(object):
                                                         self.context,
                                                         self.image.image_id,
                                                         member_id)
-            if len(db_api_image_member) == 0:
+            if not db_api_image_member:
                 raise exception.NotFound()
         except (exception.NotFound, exception.Forbidden):
             raise exception.NotFound()

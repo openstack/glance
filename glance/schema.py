@@ -51,7 +51,7 @@ class Schema(object):
         intersecting_keys = original_keys.intersection(new_keys)
         conflicting_keys = [k for k in intersecting_keys
                             if self.properties[k] != properties[k]]
-        if len(conflicting_keys) > 0:
+        if conflicting_keys:
             props = ', '.join(conflicting_keys)
             reason = _("custom properties (%(props)s) conflict "
                        "with base properties")

@@ -521,7 +521,7 @@ def is_image_visible(context, image, status=None):
                                     image_id=image['id'],
                                     member=context.owner,
                                     status=status)
-        if len(members) > 0:
+        if members:
             return True
 
     # Private image
