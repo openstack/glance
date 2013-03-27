@@ -210,7 +210,7 @@ def load_paste_app(app_name=None):
             CONF.log_opt_values(logger, logging.DEBUG)
 
         return app
-    except (LookupError, ImportError), e:
+    except (LookupError, ImportError) as e:
         msg = _("Unable to load %(app_name)s from "
                 "configuration file %(conf_file)s."
                 "\nGot: %(e)r") % locals()

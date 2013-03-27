@@ -518,7 +518,7 @@ class BaseClient(object):
                 raise exception.UnexpectedStatus(status=status_code,
                                                  body=res.read())
 
-        except (socket.error, IOError), e:
+        except (socket.error, IOError) as e:
             raise exception.ClientConnectionError(e)
 
     def _seekable(self, body):

@@ -70,7 +70,7 @@ class Controller(object):
         try:
             return self.db_api.image_get_all(context, filters=filters,
                                              **params)
-        except exception.NotFound, e:
+        except exception.NotFound as e:
             msg = _("Invalid marker. Image could not be found.")
             raise exc.HTTPBadRequest(explanation=msg)
 
@@ -366,7 +366,7 @@ class Controller(object):
             msg = (_("Image with identifier %s already exists!") % image_id)
             LOG.error(msg)
             return exc.HTTPConflict(msg)
-        except exception.Invalid, e:
+        except exception.Invalid as e:
             msg = (_("Failed to add image metadata. "
                      "Got error: %(e)s") % locals())
             LOG.error(msg)
@@ -405,7 +405,7 @@ class Controller(object):
             msg = _("Updating metadata for image %(id)s")
             LOG.info(msg % {'id': id})
             return dict(image=make_image_dict(updated_image))
-        except exception.Invalid, e:
+        except exception.Invalid as e:
             msg = (_("Failed to update image metadata. "
                      "Got error: %(e)s") % locals())
             LOG.error(msg)

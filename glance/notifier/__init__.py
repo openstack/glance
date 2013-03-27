@@ -183,7 +183,7 @@ class ImageProxy(glance.domain.proxy.Image):
 
         try:
             notify('image.send', self._format_image_send(sent))
-        except Exception, err:
+        except Exception as err:
             msg = _("An error occurred during image.send"
                     " notification: %(err)s") % locals()
             LOG.error(msg)
@@ -193,10 +193,10 @@ class ImageProxy(glance.domain.proxy.Image):
         self.notifier.info('image.prepare', payload)
         try:
             self.image.set_data(data, size)
-        except exception.StorageFull, e:
+        except exception.StorageFull as e:
             msg = _("Image storage media is full: %s") % e
             self.notifier.error('image.upload', msg)
-        except exception.StorageWriteDenied, e:
+        except exception.StorageWriteDenied as e:
             msg = _("Insufficient permissions on image storage media: %s") % e
             self.notifier.error('image.upload', msg)
         else:

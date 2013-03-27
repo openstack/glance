@@ -383,7 +383,7 @@ class SwiftTests(object):
         exception_caught = False
         try:
             self.store.add(uuidutils.generate_uuid(), image_swift, 0)
-        except BackendException, e:
+        except BackendException as e:
             exception_caught = True
             self.assertTrue("container noexist does not exist "
                             "in Swift" in str(e))

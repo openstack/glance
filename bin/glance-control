@@ -172,7 +172,7 @@ def do_start(verb, pid_file, server, args):
             redirect_stdio(server, capture_output)
             try:
                 os.execlp('%s' % server, *args)
-            except OSError, e:
+            except OSError as e:
                 msg = 'unable to launch %s. Got error: %s' % (server, e)
                 sys.exit(msg)
             sys.exit(0)

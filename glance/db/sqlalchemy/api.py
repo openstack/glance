@@ -73,7 +73,7 @@ def ping_listener(dbapi_conn, connection_rec, connection_proxy):
 
     try:
         dbapi_conn.cursor().execute('select 1')
-    except dbapi_conn.OperationalError, ex:
+    except dbapi_conn.OperationalError as ex:
         if ex.args[0] in (2006, 2013, 2014, 2045, 2055):
             msg = 'Got mysql server has gone away: %s' % ex
             LOG.warn(msg)
@@ -154,7 +154,7 @@ def get_engine():
 
             _ENGINE.connect = wrap_db_error(_ENGINE.connect)
             _ENGINE.connect()
-        except Exception, err:
+        except Exception as err:
             msg = _("Error configuring registry database with supplied "
                     "sql_connection. Got error: %s") % err
             LOG.error(msg)
@@ -206,7 +206,7 @@ def wrap_db_error(f):
     def _wrap(*args, **kwargs):
         try:
             return f(*args, **kwargs)
-        except sqlalchemy.exc.OperationalError, e:
+        except sqlalchemy.exc.OperationalError as e:
             if not is_db_connection_error(e.args[0]):
                 raise
 
@@ -218,7 +218,7 @@ def wrap_db_error(f):
                 time.sleep(_RETRY_INTERVAL)
                 try:
                     return f(*args, **kwargs)
-                except sqlalchemy.exc.OperationalError, e:
+                except sqlalchemy.exc.OperationalError as e:
                     if (remaining_attempts == 0 or
                         not is_db_connection_error(e.args[0])):
                         raise

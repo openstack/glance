@@ -101,7 +101,7 @@ class Driver(base.Driver):
             fake_file.flush()
         try:
             set_xattr(fake_image_filepath, 'hits', '1')
-        except IOError, e:
+        except IOError as e:
             if e.errno == errno.EOPNOTSUPP:
                 msg = _("The device housing the image cache directory "
                         "%(image_cache_dir)s does not support xattr. It is "

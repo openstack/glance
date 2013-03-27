@@ -121,12 +121,12 @@ def main():
         config.parse_args(default_config_files=default_cfg_files,
                           usage="%(prog)s [options] <cmd>")
         log.setup('glance')
-    except RuntimeError, e:
+    except RuntimeError as e:
         sys.exit("ERROR: %s" % e)
 
     try:
         CONF.command.func()
-    except exception.GlanceException, e:
+    except exception.GlanceException as e:
         sys.exit("ERROR: %s" % e)
 
 

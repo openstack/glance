@@ -37,7 +37,7 @@ def size_checked_iter(response, image_meta, expected_size, image_iter,
         for chunk in image_iter:
             yield chunk
             bytes_written += len(chunk)
-    except Exception, err:
+    except Exception as err:
         msg = _("An error occurred reading from backend storage "
                 "for image %(image_id)s: %(err)s") % locals()
         LOG.error(msg)
@@ -72,7 +72,7 @@ def image_send_notification(bytes_written, expected_size, image_meta, request,
 
         notify('image.send', payload)
 
-    except Exception, err:
+    except Exception as err:
         msg = _("An error occurred during image.send"
                 " notification: %(err)s") % locals()
         LOG.error(msg)

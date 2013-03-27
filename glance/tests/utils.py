@@ -259,7 +259,7 @@ def xattr_writes_supported(path):
         fake_file.flush()
     try:
         set_xattr(fake_filepath, 'hits', '1')
-    except IOError, e:
+    except IOError as e:
         if e.errno == errno.EOPNOTSUPP:
             result = False
     else:

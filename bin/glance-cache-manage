@@ -64,7 +64,7 @@ def catch_error(action):
             except exception.Forbidden:
                 print "Not authorized to make this request."
                 return FAILURE
-            except Exception, e:
+            except Exception as e:
                 options = args[0]
                 if options.debug:
                     raise
@@ -512,5 +512,5 @@ Commands:
         if options.verbose:
             print "Completed in %-0.4f sec." % (end_time - start_time)
         sys.exit(result)
-    except (RuntimeError, NotImplementedError), e:
+    except (RuntimeError, NotImplementedError) as e:
         print "ERROR: ", e

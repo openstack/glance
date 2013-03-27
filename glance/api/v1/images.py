@@ -169,7 +169,7 @@ class Controller(controller.BaseController):
         params = self._get_query_params(req)
         try:
             images = registry.get_images_list(req.context, **params)
-        except exception.Invalid, e:
+        except exception.Invalid as e:
             raise HTTPBadRequest(explanation="%s" % e)
 
         return dict(images=images)
@@ -209,7 +209,7 @@ class Controller(controller.BaseController):
             # information to the API end user...
             for image in images:
                 del image['location']
-        except exception.Invalid, e:
+        except exception.Invalid as e:
             raise HTTPBadRequest(explanation="%s" % e)
         return dict(images=images)
 
@@ -297,7 +297,7 @@ class Controller(controller.BaseController):
     def _get_from_store(context, where):
         try:
             image_data, image_size = get_from_backend(context, where)
-        except exception.NotFound, e:
+        except exception.NotFound as e:
             raise HTTPNotFound(explanation="%s" % e)
         image_size = int(image_size) if image_size else None
         return image_data, image_size
@@ -374,7 +374,7 @@ class Controller(controller.BaseController):
             raise HTTPConflict(explanation=msg,
                                request=req,
                                content_type="text/plain")
-        except exception.Invalid, e:
+        except exception.Invalid as e:
             msg = (_("Failed to reserve image. Got error: %(e)s") % locals())
             for line in msg.split('\n'):
                 LOG.debug(line)
@@ -476,13 +476,13 @@ class Controller(controller.BaseController):
 
             return location
 
-        except exception.Duplicate, e:
+        except exception.Duplicate as e:
             msg = _("Attempt to upload duplicate image: %s") % e
             LOG.debug(msg)
             self._safe_kill(req, image_id)
             raise HTTPConflict(explanation=msg, request=req)
 
-        except exception.Forbidden, e:
+        except exception.Forbidden as e:
             msg = _("Forbidden upload attempt: %s") % e
             LOG.debug(msg)
             self._safe_kill(req, image_id)
@@ -490,7 +490,7 @@ class Controller(controller.BaseController):
                                 request=req,
                                 content_type="text/plain")
 
-        except exception.StorageFull, e:
+        except exception.StorageFull as e:
             msg = _("Image storage media is full: %s") % e
             LOG.error(msg)
             self._safe_kill(req, image_id)
@@ -498,7 +498,7 @@ class Controller(controller.BaseController):
             raise HTTPRequestEntityTooLarge(explanation=msg, request=req,
                                             content_type='text/plain')
 
-        except exception.StorageWriteDenied, e:
+        except exception.StorageWriteDenied as e:
             msg = _("Insufficient permissions on image storage media: %s") % e
             LOG.error(msg)
             self._safe_kill(req, image_id)
@@ -506,7 +506,7 @@ class Controller(controller.BaseController):
             raise HTTPServiceUnavailable(explanation=msg, request=req,
                                          content_type='text/plain')
 
-        except exception.ImageSizeLimitExceeded, e:
+        except exception.ImageSizeLimitExceeded as e:
             msg = _("Denying attempt to upload image larger than %d bytes."
                     % CONF.image_size_cap)
             LOG.info(msg)
@@ -514,7 +514,7 @@ class Controller(controller.BaseController):
             raise HTTPBadRequest(explanation=msg, request=req,
                                  content_type='text/plain')
 
-        except HTTPError, e:
+        except HTTPError as e:
             self._safe_kill(req, image_id)
             #NOTE(bcwaldon): Ideally, we would just call 'raise' here,
             # but something in the above function calls is affecting the
@@ -522,7 +522,7 @@ class Controller(controller.BaseController):
             # caught exception.
             raise e
 
-        except Exception, e:
+        except Exception as e:
             LOG.exception(_("Failed to upload image"))
             self._safe_kill(req, image_id)
             raise HTTPInternalServerError(request=req)
@@ -547,7 +547,7 @@ class Controller(controller.BaseController):
             self.notifier.info("image.activate", redact_loc(image_meta_data))
             self.notifier.info("image.update", redact_loc(image_meta_data))
             return image_meta_data
-        except exception.Invalid, e:
+        except exception.Invalid as e:
             msg = (_("Failed to activate image. Got error: %(e)s")
                    % locals())
             LOG.debug(msg)
@@ -577,7 +577,7 @@ class Controller(controller.BaseController):
         """
         try:
             self._kill(req, image_id)
-        except Exception, e:
+        except Exception as e:
             LOG.error(_("Unable to kill image %(id)s: "
                         "%(exc)s") % ({'id': image_id,
                                        'exc': repr(e)}))
@@ -775,21 +775,21 @@ class Controller(controller.BaseController):
                 image_meta = self._handle_source(req, id, image_meta,
                                                  image_data)
 
-        except exception.Invalid, e:
+        except exception.Invalid as e:
             msg = (_("Failed to update image metadata. Got error: %(e)s")
                    % locals())
             LOG.debug(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
-        except exception.NotFound, e:
+        except exception.NotFound as e:
             msg = (_("Failed to find image to update: %(e)s") % locals())
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPNotFound(explanation=msg,
                                request=req,
                                content_type="text/plain")
-        except exception.Forbidden, e:
+        except exception.Forbidden as e:
             msg = (_("Forbidden to update image: %(e)s") % locals())
             for line in msg.split('\n'):
                 LOG.info(line)
@@ -859,14 +859,14 @@ class Controller(controller.BaseController):
             # See https://bugs.launchpad.net/glance/+bug/747799
             if image['location']:
                 self._initiate_deletion(req, image['location'], id)
-        except exception.NotFound, e:
+        except exception.NotFound as e:
             msg = (_("Failed to find image to delete: %(e)s") % locals())
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPNotFound(explanation=msg,
                                request=req,
                                content_type="text/plain")
-        except exception.Forbidden, e:
+        except exception.Forbidden as e:
             msg = (_("Forbidden to delete image: %(e)s") % locals())
             for line in msg.split('\n'):
                 LOG.info(line)
