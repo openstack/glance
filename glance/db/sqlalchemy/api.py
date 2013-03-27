@@ -710,11 +710,15 @@ def image_member_delete(context, memb_ref, session=None):
     return memb_ref
 
 
-def image_member_find(context, image_id=None, member=None, session=None):
+def image_member_find(context, image_id=None, member=None, session=None,
+                      show_deleted=True):
     """Find all members that meet the given criteria
 
     :param image_id: identifier of image entity
     :param member: tenant to which membership has been granted
+    :param session: an existing sqlalchemy session to use
+    :param show_deleted: set to False to override use of the context to
+                         determine if deleted memberships are included
     """
     session = session or get_session()
 
@@ -726,7 +730,7 @@ def image_member_find(context, image_id=None, member=None, session=None):
         query = query.filter_by(image_id=image_id)
     if member is not None:
         query = query.filter_by(member=member)
-    if not can_show_deleted(context):
+    if not (show_deleted and can_show_deleted(context)):
         query = query.filter_by(deleted=False)
 
     return query.all()

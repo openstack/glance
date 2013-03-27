@@ -278,7 +278,8 @@ class Controller(object):
         members = self.db_api.image_member_find(req.context,
                                                 image_id=image_id,
                                                 member=id,
-                                                session=session)
+                                                session=session,
+                                                show_deleted=False)
         if members:
             self.db_api.image_member_delete(req.context,
                                             members[0],

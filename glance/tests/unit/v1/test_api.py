@@ -1918,6 +1918,28 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
         self.assertTrue('Membership could not be found' in res.body)
 
+    def test_delete_member_existing(self):
+        """
+        Tests deleting an existing member is handled correctly
+        """
+        member = dict(image_id=UUID2, member='pattieblack', can_share=False)
+        db_api.image_member_create(self.context, member)
+
+        self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
+                                                 is_admin=True)
+        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
+        req.method = 'DELETE'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPNoContent.code)
+
+        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
+        req.method = 'DELETE'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
+        self.assertTrue('Membership could not be found' in res.body)
+
 
 class TestGlanceAPI(base.IsolatedUnitTest):
     def setUp(self):
