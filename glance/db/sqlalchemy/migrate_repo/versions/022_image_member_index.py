@@ -15,12 +15,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import re
+
 from migrate.changeset import UniqueConstraint
 from sqlalchemy import and_, func, orm
 from sqlalchemy import MetaData, Table
+from sqlalchemy.exc import OperationalError, ProgrammingError
 
 
 NEW_KEYNAME = 'image_members_image_id_member_deleted_at_key'
+ORIGINAL_KEYNAME_RE = re.compile('image_members_image_id.*_key')
 
 
 def upgrade(migrate_engine):
@@ -28,9 +32,14 @@ def upgrade(migrate_engine):
 
     if (migrate_engine.name == 'mysql' or
         migrate_engine.name == 'postgresql'):
-        UniqueConstraint('image_id',
-                         name=_get_original_keyname(migrate_engine.name),
-                         table=image_members).drop()
+        try:
+            UniqueConstraint('image_id',
+                             name=_get_original_keyname(migrate_engine.name),
+                             table=image_members).drop()
+        except (OperationalError, ProgrammingError):
+            UniqueConstraint('image_id',
+                             name=_infer_original_keyname(image_members),
+                             table=image_members).drop()
         UniqueConstraint('image_id',
                          'member',
                          'deleted_at',
@@ -62,6 +71,12 @@ def _get_image_members_table(migrate_engine):
 def _get_original_keyname(db):
     return {'mysql': 'image_id',
             'postgresql': 'image_members_image_id_member_key'}[db]
+
+
+def _infer_original_keyname(table):
+    for i in table.indexes:
+        if ORIGINAL_KEYNAME_RE.match(i.name):
+            return i.name
 
 
 def _sanitize(migrate_engine, table):
