@@ -511,8 +511,8 @@ class Controller(controller.BaseController):
                     % CONF.image_size_cap)
             LOG.info(msg)
             self._safe_kill(req, image_id)
-            raise HTTPBadRequest(explanation=msg, request=req,
-                                 content_type='text/plain')
+            raise HTTPRequestEntityTooLarge(explanation=msg, request=req,
+                                            content_type='text/plain')
 
         except HTTPError as e:
             self._safe_kill(req, image_id)
