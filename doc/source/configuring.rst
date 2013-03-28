@@ -316,6 +316,21 @@ Can only be specified in configuration files.
 Sets the storage backend to use by default when storing images in Glance.
 Available options for this option are (``file``, ``swift``, ``s3``, or ``rbd``).
 
+Configuring Glance Image Size Limit
+-----------------------------------
+
+The following configuration option is specified in the
+``glance-api.conf`` config file in the section ``[DEFAULT]``.
+
+* ``image_size_cap=SIZE``
+
+Optional. Default: ``1099511627776`` (1 TB)
+
+Maximum image size, in bytes, which can be uploaded through the Glance API server.
+
+**IMPORTANT NOTE**: this value should only be increased after careful consideration
+and must be set to a value under 8 EB (9223372036854775808).
+
 Configuring the Filesystem Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
