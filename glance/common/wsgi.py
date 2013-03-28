@@ -115,6 +115,8 @@ def get_socket(default_port):
                              "option value in your configuration file"))
 
     def wrap_ssl(sock):
+        utils.validate_key_cert(key_file, cert_file)
+
         ssl_kwargs = {
             'server_side': True,
             'certfile': cert_file,
