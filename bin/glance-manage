@@ -115,10 +115,12 @@ def main():
         # sql_connection is only part of the glance registry.
         glance.db.add_cli_options()
 
-        default_cfg_files = cfg.find_config_files(project='glance',
-                                                  prog='glance-registry')
-
-        config.parse_args(default_config_files=default_cfg_files,
+        cfg_files = cfg.find_config_files(project='glance',
+                                          prog='glance-registry')
+        if not cfg_files:
+            cfg_files = cfg.find_config_files(project='glance',
+                                              prog='glance-api')
+        config.parse_args(default_config_files=cfg_files,
                           usage="%(prog)s [options] <cmd>")
         log.setup('glance')
     except RuntimeError as e:
