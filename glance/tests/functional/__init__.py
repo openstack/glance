@@ -25,6 +25,7 @@ and spinning down the servers.
 
 import datetime
 import json
+import logging
 import os
 import re
 import shutil
@@ -72,6 +73,7 @@ class Server(object):
         self.enable_v2_api = True
         self.server_control_options = ''
         self.needs_database = False
+        self.log_file = None
 
     def write_conf(self, **kwargs):
         """
@@ -185,6 +187,14 @@ class Server(object):
                % self.__dict__)
         return execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env,
                        expect_exit=True)
+
+    def dump_log(self, name):
+        log = logging.getLogger(name)
+        if not self.log_file or not os.path.exists(self.log_file):
+            return
+        fptr = open(self.log_file, 'r')
+        for line in fptr:
+            log.info(line.strip())
 
 
 class ApiServer(Server):
@@ -499,6 +509,10 @@ class FunctionalTest(test_utils.BaseTestCase):
             self._reset_database(self.registry_server.sql_connection)
             self._reset_database(self.api_server.sql_connection)
         super(FunctionalTest, self).tearDown()
+
+        self.api_server.dump_log('api_server')
+        self.registry_server.dump_log('registry_server')
+        self.scrubber_daemon.dump_log('scrubber_daemon')
 
     def set_policy_rules(self, rules):
         fap = open(self.policy_file, 'w')
