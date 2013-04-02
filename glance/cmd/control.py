@@ -70,6 +70,8 @@ And command is one of:
 
 And CONFPATH is the optional configuration file to use."""
 
+exitcode = 0
+
 
 def gated_by(predicate):
     def wrap(f):
@@ -281,8 +283,8 @@ def add_command_parsers(subparsers):
     parser.set_defaults(servers=['glance-' + s for s in ALL_SERVERS])
 
 
-if __name__ == '__main__':
-    exitcode = 0
+def main():
+    global exitcode
 
     opts = [
             cfg.SubCommandOpt('server',

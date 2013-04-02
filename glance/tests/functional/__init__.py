@@ -68,7 +68,7 @@ class Server(object):
         self.conf_file_name = None
         self.conf_base = None
         self.paste_conf_base = None
-        self.server_control = './bin/glance-control'
+        self.server_control = 'glance-control'
         self.exec_env = None
         self.deployment_flavor = ''
         self.show_image_direct_url = False
@@ -205,7 +205,7 @@ class Server(object):
                 os.system('cp %s %s/tests.sqlite'
                           % (db_location, self.test_dir))
             else:
-                cmd = ('bin/glance-manage --config-file %s db_sync'
+                cmd = ('glance-manage --config-file %s db_sync'
                        % conf_filepath)
                 execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env,
                         expect_exit=True)
@@ -696,8 +696,9 @@ class FunctionalTest(test_utils.BaseTestCase):
 
     def start_servers(self, **kwargs):
         """
-        Starts the API and Registry servers (bin/glance-control api start
-        & bin/glance-control registry start) on unused ports.
+        Starts the API and Registry servers (glance-control api start
+        & glance-control registry start) on unused ports.  glance-control
+        should be installed into the python path
 
         Any kwargs passed to this method will override the configuration
         value in the conf file used in starting the servers.

@@ -120,7 +120,7 @@ class TestScrubber(functional.FunctionalTest):
         time.sleep(self.api_server.scrub_time)
 
         # scrub images and make sure they get deleted
-        cmd = ("bin/glance-scrubber --config-file %s" %
+        cmd = ("glance-scrubber --config-file %s" %
                self.scrubber_daemon.conf_file_name)
         exitcode, out, err = execute(cmd, raise_error=False)
         self.assertEqual(0, exitcode)
@@ -180,7 +180,7 @@ class TestScrubber(functional.FunctionalTest):
         time.sleep(self.api_server.scrub_time)
 
         # call the scrubber to scrub images
-        cmd = ("bin/glance-scrubber --config-file %s" %
+        cmd = ("glance-scrubber --config-file %s" %
                self.scrubber_daemon.conf_file_name)
         exitcode, out, err = execute(cmd, raise_error=False)
         self.assertEqual(0, exitcode)
@@ -318,7 +318,7 @@ class TestScrubber(functional.FunctionalTest):
         time.sleep(self.api_server.scrub_time)
 
         # run the scrubber app, and ensure it doesn't fall over
-        cmd = ("bin/glance-scrubber --config-file %s" %
+        cmd = ("glance-scrubber --config-file %s" %
                self.scrubber_daemon.conf_file_name)
         exitcode, out, err = execute(cmd, raise_error=False)
         self.assertEqual(0, exitcode)

@@ -52,7 +52,7 @@ def fail(returncode, e):
     sys.exit(returncode)
 
 
-if __name__ == '__main__':
+def main():
     try:
         config.parse_args()
         log.setup('glance')

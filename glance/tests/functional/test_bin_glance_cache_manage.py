@@ -70,7 +70,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         """
         Return True if supplied image ID is cached, False otherwise
         """
-        cmd = "bin/glance-cache-manage --port=%d list-cached" % self.api_port
+        cmd = "glance-cache-manage --port=%d list-cached" % self.api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -81,7 +81,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         """
         Return True if supplied image ID is cached, False otherwise
         """
-        cmd = "bin/glance-cache-manage --port=%d list-cached" % self.api_port
+        cmd = "glance-cache-manage --port=%d list-cached" % self.api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -99,7 +99,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         registry_port = self.registry_port
 
         # Verify decent error message returned
-        cmd = "bin/glance-cache-manage --port=%d list-cached" % api_port
+        cmd = "glance-cache-manage --port=%d list-cached" % api_port
 
         exitcode, out, err = execute(cmd, raise_error=False)
 
@@ -120,7 +120,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         registry_port = self.registry_port
 
         # Verify no cached images
-        cmd = "bin/glance-cache-manage --port=%d list-cached" % api_port
+        cmd = "glance-cache-manage --port=%d list-cached" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -159,7 +159,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         registry_port = self.registry_port
 
         # Verify no cached images
-        cmd = "bin/glance-cache-manage --port=%d list-cached" % api_port
+        cmd = "glance-cache-manage --port=%d list-cached" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -167,7 +167,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         self.assertTrue('No cached images' in out.strip())
 
         # Verify no queued images
-        cmd = "bin/glance-cache-manage --port=%d list-queued" % api_port
+        cmd = "glance-cache-manage --port=%d list-queued" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -182,7 +182,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
             ids[x] = self.add_image("Image%s" % x)
 
         # Queue second image and then cache it
-        cmd = "bin/glance-cache-manage --port=%d --force queue-image %s" % (
+        cmd = "glance-cache-manage --port=%d --force queue-image %s" % (
                 api_port, ids[1])
 
         exitcode, out, err = execute(cmd)
@@ -190,7 +190,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
 
         # Verify queued second image
-        cmd = "bin/glance-cache-manage --port=%d list-queued" % api_port
+        cmd = "glance-cache-manage --port=%d list-queued" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -219,7 +219,7 @@ metadata_encryption_key = %(metadata_encryption_key)s
 log_file = %(log_file)s
 """ % cache_file_options)
 
-        cmd = ("bin/glance-cache-prefetcher --config-file %s" %
+        cmd = ("glance-cache-prefetcher --config-file %s" %
                cache_config_filepath)
 
         exitcode, out, err = execute(cmd)
@@ -228,7 +228,7 @@ log_file = %(log_file)s
         self.assertEqual('', out.strip(), out)
 
         # Verify no queued images
-        cmd = "bin/glance-cache-manage --port=%d list-queued" % api_port
+        cmd = "glance-cache-manage --port=%d list-queued" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -236,7 +236,7 @@ log_file = %(log_file)s
         self.assertTrue('No queued images' in out.strip())
 
         # Verify second image now cached
-        cmd = "bin/glance-cache-manage --port=%d list-cached" % api_port
+        cmd = "glance-cache-manage --port=%d list-cached" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -244,7 +244,7 @@ log_file = %(log_file)s
         self.assertTrue(ids[1] in out, 'Image %s was not cached!' % ids[1])
 
         # Queue third image and then delete it from queue
-        cmd = "bin/glance-cache-manage --port=%d --force queue-image %s" % (
+        cmd = "glance-cache-manage --port=%d --force queue-image %s" % (
                 api_port, ids[2])
 
         exitcode, out, err = execute(cmd)
@@ -252,7 +252,7 @@ log_file = %(log_file)s
         self.assertEqual(0, exitcode)
 
         # Verify queued third image
-        cmd = "bin/glance-cache-manage --port=%d list-queued" % api_port
+        cmd = "glance-cache-manage --port=%d list-queued" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -260,7 +260,7 @@ log_file = %(log_file)s
         self.assertTrue(ids[2] in out, 'Image %s was not queued!' % ids[2])
 
         # Delete the image from the queue
-        cmd = ("bin/glance-cache-manage --port=%d --force "
+        cmd = ("glance-cache-manage --port=%d --force "
                "delete-queued-image %s") % (api_port, ids[2])
 
         exitcode, out, err = execute(cmd)
@@ -268,7 +268,7 @@ log_file = %(log_file)s
         self.assertEqual(0, exitcode)
 
         # Verify no queued images
-        cmd = "bin/glance-cache-manage --port=%d list-queued" % api_port
+        cmd = "glance-cache-manage --port=%d list-queued" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -277,7 +277,7 @@ log_file = %(log_file)s
 
         # Queue all images
         for x in xrange(0, 4):
-            cmd = ("bin/glance-cache-manage --port=%d --force "
+            cmd = ("glance-cache-manage --port=%d --force "
                    "queue-image %s") % (api_port, ids[x])
 
             exitcode, out, err = execute(cmd)
@@ -285,7 +285,7 @@ log_file = %(log_file)s
             self.assertEqual(0, exitcode)
 
         # Verify queued third image
-        cmd = "bin/glance-cache-manage --port=%d list-queued" % api_port
+        cmd = "glance-cache-manage --port=%d list-queued" % api_port
 
         exitcode, out, err = execute(cmd)
 
@@ -293,7 +293,7 @@ log_file = %(log_file)s
         self.assertTrue('Found 3 queued images' in out)
 
         # Delete the image from the queue
-        cmd = ("bin/glance-cache-manage --port=%d --force "
+        cmd = ("glance-cache-manage --port=%d --force "
                "delete-all-queued-images") % (api_port)
 
         exitcode, out, err = execute(cmd)
@@ -301,7 +301,7 @@ log_file = %(log_file)s
         self.assertEqual(0, exitcode)
 
         # Verify nothing in queue anymore
-        cmd = "bin/glance-cache-manage --port=%d list-queued" % api_port
+        cmd = "glance-cache-manage --port=%d list-queued" % api_port
 
         exitcode, out, err = execute(cmd)
 

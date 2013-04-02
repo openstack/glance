@@ -45,7 +45,7 @@ from glance.common import wsgi
 from glance.openstack.common import log
 
 
-if __name__ == '__main__':
+def main():
     try:
         config.parse_args()
         log.setup('glance')

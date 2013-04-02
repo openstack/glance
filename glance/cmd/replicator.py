@@ -670,7 +670,7 @@ def lookup_command(parser, command_name):
     return command
 
 
-if __name__ == '__main__':
+def main():
     usage = """
 %%prog <command> [options] [args]
 
