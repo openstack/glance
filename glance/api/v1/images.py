@@ -288,9 +288,12 @@ class Controller(controller.BaseController):
     def _copy_from(req):
         return req.headers.get('x-glance-api-copy-from')
 
-    @staticmethod
-    def _external_source(image_meta, req):
-        source = image_meta.get('location', Controller._copy_from(req))
+    def _external_source(self, image_meta, req):
+        source = image_meta.get('location')
+        if source is not None:
+            self._enforce(req, 'set_image_location')
+        else:
+            source = Controller._copy_from(req)
         return Controller._validate_source(source, req)
 
     @staticmethod
