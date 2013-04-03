@@ -1453,6 +1453,35 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         for image in images:
             self.assertEqual('v a', image['properties']['prop_123'])
 
+    def test_get_details_filter_is_public_property(self):
+        """
+        Tests that the /images/detail registry API returns list of
+        public images that have a specific custom property
+        """
+        extra_fixture = {'id': _gen_uuid(),
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'fake image #3',
+                         'size': 19,
+                         'checksum': None,
+                         'properties': {'is_public': 'avalue'}}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        req = webob.Request.blank('/images/detail?property-is_public=avalue')
+        res = req.get_response(self.api)
+        res_dict = json.loads(res.body)
+        self.assertEquals(res.status_int, 200)
+
+        images = res_dict['images']
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEqual('avalue', image['properties']['is_public'])
+            self.assertTrue(image['is_public'])
+
     def test_get_details_filter_public_none(self):
         """
         Tests that the /images/detail registry API returns list of

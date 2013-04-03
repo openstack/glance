@@ -763,21 +763,20 @@ class VisibilityTests(object):
 
     def test_unknown_admin_is_public_true(self):
         images = self.db_api.image_get_all(self.admin_none_context,
-                                           filters={'is_public': True})
+                                           is_public=True)
         self.assertEquals(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
 
     def test_unknown_admin_is_public_false(self):
         images = self.db_api.image_get_all(self.admin_none_context,
-                                           filters={'is_public': False})
+                                           is_public=False)
         self.assertEquals(len(images), 4)
         for i in images:
             self.assertFalse(i['is_public'])
 
     def test_unknown_admin_is_public_none(self):
-        images = self.db_api.image_get_all(self.admin_none_context,
-                                           filters={'is_public': None})
+        images = self.db_api.image_get_all(self.admin_none_context)
         self.assertEquals(len(images), 8)
 
     def test_unknown_admin_visibility_public(self):
@@ -799,22 +798,20 @@ class VisibilityTests(object):
         self.assertEquals(len(images), 8)
 
     def test_known_admin_is_public_true(self):
-        images = self.db_api.image_get_all(self.admin_context,
-                                           filters={'is_public': True})
+        images = self.db_api.image_get_all(self.admin_context, is_public=True)
         self.assertEquals(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
 
     def test_known_admin_is_public_false(self):
         images = self.db_api.image_get_all(self.admin_context,
-                                           filters={'is_public': False})
+                                           is_public=False)
         self.assertEquals(len(images), 4)
         for i in images:
             self.assertFalse(i['is_public'])
 
     def test_known_admin_is_public_none(self):
-        images = self.db_api.image_get_all(self.admin_context,
-                                           filters={'is_public': None})
+        images = self.db_api.image_get_all(self.admin_context)
         self.assertEquals(len(images), 8)
 
     def test_known_admin_visibility_public(self):
@@ -838,20 +835,17 @@ class VisibilityTests(object):
             self.assertTrue(i['is_public'])
 
     def test_unknown_user_is_public_true(self):
-        images = self.db_api.image_get_all(self.none_context,
-                                           filters={'is_public': True})
+        images = self.db_api.image_get_all(self.none_context, is_public=True)
         self.assertEquals(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
 
     def test_unknown_user_is_public_false(self):
-        images = self.db_api.image_get_all(self.none_context,
-                                           filters={'is_public': False})
+        images = self.db_api.image_get_all(self.none_context, is_public=False)
         self.assertEquals(len(images), 0)
 
     def test_unknown_user_is_public_none(self):
-        images = self.db_api.image_get_all(self.none_context,
-                                           filters={'is_public': None})
+        images = self.db_api.image_get_all(self.none_context)
         self.assertEquals(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
@@ -877,21 +871,20 @@ class VisibilityTests(object):
 
     def test_tenant1_is_public_true(self):
         images = self.db_api.image_get_all(self.tenant1_context,
-                                           filters={'is_public': True})
+                                           is_public=True)
         self.assertEquals(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
 
     def test_tenant1_is_public_false(self):
         images = self.db_api.image_get_all(self.tenant1_context,
-                                           filters={'is_public': False})
+                                           is_public=False)
         self.assertEquals(len(images), 1)
         self.assertFalse(images[0]['is_public'])
         self.assertEquals(images[0]['owner'], self.tenant1)
 
     def test_tenant1_is_public_none(self):
-        images = self.db_api.image_get_all(self.tenant1_context,
-                                           filters={'is_public': None})
+        images = self.db_api.image_get_all(self.tenant1_context)
         self.assertEquals(len(images), 5)
         for i in images:
             if not i['is_public']:
@@ -910,6 +903,79 @@ class VisibilityTests(object):
         self.assertEquals(len(images), 1)
         self.assertFalse(images[0]['is_public'])
         self.assertEquals(images[0]['owner'], self.tenant1)
+
+    def _setup_is_public_red_herring(self):
+        values = {
+            'name': 'Red Herring',
+            'owner': self.tenant1,
+            'is_public': False,
+            'properties': {'is_public': 'silly'}
+        }
+        fixture = build_image_fixture(**values)
+        self.db_api.image_create(self.admin_context, fixture)
+
+    def test_is_public_is_a_normal_filter_for_admin(self):
+        self._setup_is_public_red_herring()
+        images = self.db_api.image_get_all(self.admin_context,
+                                           filters={'is_public': 'silly'})
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['name'], 'Red Herring')
+
+    def test_is_public_is_a_normal_filter_for_user(self):
+        self._setup_is_public_red_herring()
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           filters={'is_public': 'silly'})
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['name'], 'Red Herring')
+
+    # NOTE(markwash): the following tests are sanity checks to make sure
+    # visibility filtering and is_public=(True|False) do not interact in
+    # unexpected ways. However, using both of the filtering techniques
+    # simultaneously is not an anticipated use case.
+
+    def test_admin_is_public_true_and_visibility_public(self):
+        images = self.db_api.image_get_all(self.admin_context, is_public=True,
+                                           filters={'visibility': 'public'})
+        self.assertEquals(len(images), 4)
+
+    def test_admin_is_public_false_and_visibility_public(self):
+        images = self.db_api.image_get_all(self.admin_context, is_public=False,
+                                           filters={'visibility': 'public'})
+        self.assertEquals(len(images), 0)
+
+    def test_admin_is_public_true_and_visibility_private(self):
+        images = self.db_api.image_get_all(self.admin_context, is_public=True,
+                                           filters={'visibility': 'private'})
+        self.assertEquals(len(images), 0)
+
+    def test_admin_is_public_false_and_visibility_private(self):
+        images = self.db_api.image_get_all(self.admin_context, is_public=False,
+                                           filters={'visibility': 'private'})
+        self.assertEquals(len(images), 4)
+
+    def test_tenant1_is_public_true_and_visibility_public(self):
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           is_public=True,
+                                           filters={'visibility': 'public'})
+        self.assertEquals(len(images), 4)
+
+    def test_tenant1_is_public_false_and_visibility_public(self):
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           is_public=False,
+                                           filters={'visibility': 'public'})
+        self.assertEquals(len(images), 0)
+
+    def test_tenant1_is_public_true_and_visibility_private(self):
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           is_public=True,
+                                           filters={'visibility': 'private'})
+        self.assertEquals(len(images), 0)
+
+    def test_tenant1_is_public_false_and_visibility_private(self):
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           is_public=False,
+                                           filters={'visibility': 'private'})
+        self.assertEquals(len(images), 1)
 
 
 class TestMembershipVisibility(base.IsolatedUnitTest):

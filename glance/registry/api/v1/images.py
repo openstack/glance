@@ -64,9 +64,9 @@ class Controller(object):
         # NOTE(markwash): for backwards compatibility, is_public=True for
         # admins actually means "treat me as if I'm not an admin and show me
         # all my images"
-        if context.is_admin and filters.get('is_public') is True:
+        if context.is_admin and params.get('is_public') is True:
             context.is_admin = False
-            del filters['is_public']
+            del params['is_public']
         try:
             return self.db_api.image_get_all(context, filters=filters,
                                              **params)
@@ -141,6 +141,10 @@ class Controller(object):
             'marker': self._get_marker(req),
         }
 
+        if req.context.is_admin:
+            # Only admin gets to look for non-public images
+            params['is_public'] = self._get_is_public(req)
+
         for key, value in params.items():
             if value is None:
                 del params[key]
@@ -159,10 +163,6 @@ class Controller(object):
         """
         filters = {}
         properties = {}
-
-        if req.context.is_admin:
-            # Only admin gets to look for non-public images
-            filters['is_public'] = self._get_is_public(req)
 
         for param in req.params:
             if param in SUPPORTED_FILTERS:

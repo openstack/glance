@@ -485,7 +485,7 @@ def paginate_query(query, model, limit, sort_keys, marker=None,
 
 def image_get_all(context, filters=None, marker=None, limit=None,
                   sort_key='created_at', sort_dir='desc',
-                  member_status='accepted'):
+                  member_status='accepted', is_public=None):
     """
     Get all images that match zero or more filters.
 
@@ -496,6 +496,10 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     :param limit: maximum number of images to return
     :param sort_key: image attribute by which results should be sorted
     :param sort_dir: direction in which results should be sorted (asc, desc)
+    :param member_status: only return shared images that have this membership
+                          status
+    :param is_public: If true, return only public images. If false, return
+                      only private and shared images.
     """
     filters = filters or {}
 
@@ -503,10 +507,6 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     query = session.query(models.Image)\
                    .options(sa_orm.joinedload(models.Image.properties))\
                    .options(sa_orm.joinedload(models.Image.locations))
-
-    # NOTE(markwash) treat is_public=None as if it weren't filtered
-    if 'is_public' in filters and filters['is_public'] is None:
-        del filters['is_public']
 
     if not context.is_admin:
         visibility_filters = [models.Image.is_public == True]
@@ -532,9 +532,8 @@ def image_get_all(context, filters=None, marker=None, limit=None,
         visibility = filters.pop('visibility')
         if visibility == 'public':
             query = query.filter(models.Image.is_public == True)
-            filters['is_public'] = True
         elif visibility == 'private':
-            filters['is_public'] = False
+            query = query.filter(models.Image.is_public == False)
             if (not context.is_admin) and context.owner is not None:
                 query = query.filter(
                             models.Image.owner == context.owner)
@@ -542,6 +541,16 @@ def image_get_all(context, filters=None, marker=None, limit=None,
             query = query.filter(
                         models.Image.members.any(member=context.owner,
                                                  deleted=False))
+
+    if is_public is not None:
+        query = query.filter(models.Image.is_public == is_public)
+
+    if 'is_public' in filters:
+        spec = models.Image.properties.any(
+                name='is_public',
+                value=filters.pop('is_public'),
+                deleted=False)
+        query = query.filter(spec)
 
     showing_deleted = False
     if 'changes-since' in filters:

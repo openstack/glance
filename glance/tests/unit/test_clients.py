@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import datetime
 
 from glance.common import config
@@ -818,6 +819,28 @@ class TestRegistryClient(base.IsolatedUnitTest):
 
         for image in images:
             self.assertEquals('v a', image['properties']['p a'])
+
+    def test_get_image_is_public_v1(self):
+        """Tests that a detailed call can be filtered by a property"""
+        extra_fixture = {'id': _gen_uuid(),
+                         'status': 'saving',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #123',
+                         'size': 19,
+                         'checksum': None,
+                         'properties': {'is_public': 'avalue'}}
+
+        context = copy.copy(self.context)
+        db_api.image_create(context, extra_fixture)
+
+        filters = {'property-is_public': 'avalue'}
+        images = self.client.get_images_detailed(filters=filters)
+        self.assertEquals(len(images), 1)
+
+        for image in images:
+            self.assertEquals('avalue', image['properties']['is_public'])
 
     def test_get_image_details_sort_disk_format_asc(self):
         """
