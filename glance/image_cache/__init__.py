@@ -31,10 +31,15 @@ import glance.openstack.common.log as logging
 LOG = logging.getLogger(__name__)
 
 image_cache_opts = [
-    cfg.StrOpt('image_cache_driver', default='sqlite'),
-    cfg.IntOpt('image_cache_max_size', default=10 * (1024 ** 3)),  # 10 GB
-    cfg.IntOpt('image_cache_stall_time', default=86400),  # 24 hours
-    cfg.StrOpt('image_cache_dir'),
+    cfg.StrOpt('image_cache_driver', default='sqlite',
+               help=_('The driver to use for image cache management.')),
+    cfg.IntOpt('image_cache_max_size', default=10 * (1024 ** 3),  # 10 GB
+               help=_('The maximum size in bytes that the cache can use.')),
+    cfg.IntOpt('image_cache_stall_time', default=86400,  # 24 hours
+               help=_('The amount of time to let an image remain in the '
+                      'cache without being accessed')),
+    cfg.StrOpt('image_cache_dir',
+               help=_('Base directory that the Image Cache uses.')),
 ]
 
 CONF = cfg.CONF

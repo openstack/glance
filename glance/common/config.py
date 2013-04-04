@@ -32,8 +32,14 @@ from paste import deploy
 from glance.version import version_info as version
 
 paste_deploy_opts = [
-    cfg.StrOpt('flavor'),
-    cfg.StrOpt('config_file'),
+    cfg.StrOpt('flavor',
+               help=_('Partial name of a pipeline in your paste configuration '
+                      'file with the service name removed. For example, if '
+                      'your paste section name is '
+                      '[pipeline:glance-api-keystone] use the value '
+                      '"keystone"')),
+    cfg.StrOpt('config_file',
+               help=_('Name of the paste configuration file.')),
 ]
 common_opts = [
     cfg.BoolOpt('allow_additional_image_properties', default=True,

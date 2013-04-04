@@ -35,7 +35,9 @@ import glance.store.location
 
 LOG = logging.getLogger(__name__)
 
-datadir_opt = cfg.StrOpt('filesystem_store_datadir')
+datadir_opt = cfg.StrOpt('filesystem_store_datadir',
+                         help=_('Directory to which the Filesystem backend '
+                                'store writes images.'))
 
 CONF = cfg.CONF
 CONF.register_opt(datadir_opt)

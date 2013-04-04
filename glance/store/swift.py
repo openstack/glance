@@ -48,23 +48,58 @@ DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 200  # 200M
 ONE_MB = 1000 * 1024
 
 swift_opts = [
-    cfg.BoolOpt('swift_enable_snet', default=False),
-    cfg.StrOpt('swift_store_auth_address'),
-    cfg.StrOpt('swift_store_user', secret=True),
-    cfg.StrOpt('swift_store_key', secret=True),
-    cfg.StrOpt('swift_store_auth_version', default='2'),
-    cfg.StrOpt('swift_store_region'),
-    cfg.StrOpt('swift_store_endpoint_type', default='publicURL'),
-    cfg.StrOpt('swift_store_service_type', default='object-store'),
+    cfg.BoolOpt('swift_enable_snet', default=False,
+                help=_('Whether to use ServiceNET to communicate with the '
+                       'Swift storage servers.')),
+    cfg.StrOpt('swift_store_auth_address',
+               help=_('The address where the Swift authentication service '
+                      'is listening.')),
+    cfg.StrOpt('swift_store_user', secret=True,
+               help=_('The user to authenticate against the Swift '
+                      'authentication service')),
+    cfg.StrOpt('swift_store_key', secret=True,
+               help=_('Auth key for the user authenticating against the '
+                      'Swift authentication service.')),
+    cfg.StrOpt('swift_store_auth_version', default='2',
+               help=_('Version of the authentication service to use. '
+                      'Valid versions are 2 for keystone and 1 for swauth '
+                      'and rackspace')),
+    cfg.StrOpt('swift_store_region',
+               help=_('The region of the swift endpoint to be used for '
+                      'single tenant. This setting is only necessary if the '
+                      'tenant has multiple swift endpoints.')),
+    cfg.StrOpt('swift_store_endpoint_type', default='publicURL',
+               help=_('A string giving the endpoint type of the swift '
+                      'service to use (publicURL, adminURL or internalURL). '
+                      'This setting is only used if swift_store_auth_version '
+                      'is 2.')),
+    cfg.StrOpt('swift_store_service_type', default='object-store',
+               help=_('A string giving the service type of the swift service '
+                      'to use. This setting is only used if '
+                      'swift_store_auth_version is 2.')),
     cfg.StrOpt('swift_store_container',
-               default=DEFAULT_CONTAINER),
+               default=DEFAULT_CONTAINER,
+               help=_('Container within the account that the account should '
+                      'use for storing images in Swift.')),
     cfg.IntOpt('swift_store_large_object_size',
-               default=DEFAULT_LARGE_OBJECT_SIZE),
+               default=DEFAULT_LARGE_OBJECT_SIZE,
+               help=_('The size, in MB, that Glance will start chunking image '
+                      'files and do a large object manifest in Swift')),
     cfg.IntOpt('swift_store_large_object_chunk_size',
-               default=DEFAULT_LARGE_OBJECT_CHUNK_SIZE),
-    cfg.BoolOpt('swift_store_create_container_on_put', default=False),
-    cfg.BoolOpt('swift_store_multi_tenant', default=False),
-    cfg.ListOpt('swift_store_admin_tenants', default=[]),
+               default=DEFAULT_LARGE_OBJECT_CHUNK_SIZE,
+               help=_('The amount of data written to a temporary disk buffer '
+                      'during the process of chunking the image file.')),
+    cfg.BoolOpt('swift_store_create_container_on_put', default=False,
+                help=_('A boolean value that determines if we create the '
+                       'container if it does not exist.')),
+    cfg.BoolOpt('swift_store_multi_tenant', default=False,
+                help=_('If set to True, enables multi-tenant storage '
+                       'mode which causes Glance images to be stored in '
+                       'tenant specific Swift accounts.')),
+    cfg.ListOpt('swift_store_admin_tenants', default=[],
+                help=_('A list of tenants that will be granted read/write '
+                       'access on all Swift containers created by Glance in '
+                       'multi-tenant mode.')),
 ]
 
 CONF = cfg.CONF
