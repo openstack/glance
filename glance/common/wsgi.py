@@ -206,7 +206,6 @@ class Server(object):
                 self.run_child()
 
     def create_pool(self):
-        eventlet.patcher.monkey_patch(all=False, socket=True, time=True)
         return eventlet.GreenPool(size=self.threads)
 
     def wait_on_children(self):
