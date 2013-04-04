@@ -46,19 +46,32 @@ import glance.openstack.common.log as os_logging
 
 
 bind_opts = [
-    cfg.StrOpt('bind_host', default='0.0.0.0'),
-    cfg.IntOpt('bind_port'),
+    cfg.StrOpt('bind_host', default='0.0.0.0',
+               help=_('Address to bind the server.  Useful when '
+                      'selecting a particular network interface.')),
+    cfg.IntOpt('bind_port',
+               help=_('The port on which the server will listen.')),
 ]
 
 socket_opts = [
-    cfg.IntOpt('backlog', default=4096),
-    cfg.IntOpt('tcp_keepidle', default=600),
-    cfg.StrOpt('ca_file'),
-    cfg.StrOpt('cert_file'),
-    cfg.StrOpt('key_file'),
+    cfg.IntOpt('backlog', default=4096,
+               help=_('The backlog value that will be used when creating the '
+                      'TCP listener socket.')),
+    cfg.IntOpt('tcp_keepidle', default=600,
+               help=_('The value for the socket option TCP_KEEPIDLE.  This is'
+                      'the time in seconds that the connection must be idle '
+                      'before TCP starts sending keepalive probes.')),
+    cfg.StrOpt('ca_file', help=_('CA certificate file to use to verify '
+                                 'connecting clients.')),
+    cfg.StrOpt('cert_file', help=_('Certificate file to use when starting API '
+                                   'server securely.')),
+    cfg.StrOpt('key_file', help=_('Private key file to use when starting API '
+                                  'server securely.')),
 ]
 
-workers_opt = cfg.IntOpt('workers', default=1)
+workers_opt = cfg.IntOpt('workers', default=1,
+                         help=_('The number of child process workers that '
+                                'will be created to service API requests.'))
 
 CONF = cfg.CONF
 CONF.register_opts(bind_opts)

@@ -30,24 +30,46 @@ from glance.registry import client
 LOG = logging.getLogger(__name__)
 
 registry_addr_opts = [
-    cfg.StrOpt('registry_host', default='0.0.0.0'),
-    cfg.IntOpt('registry_port', default=9191),
+    cfg.StrOpt('registry_host', default='0.0.0.0',
+               help=_('Address to find the registry server.')),
+    cfg.IntOpt('registry_port', default=9191,
+               help=_('Port the registry server is listening on.')),
 ]
 registry_client_opts = [
-    cfg.StrOpt('registry_client_protocol', default='http'),
-    cfg.StrOpt('registry_client_key_file'),
-    cfg.StrOpt('registry_client_cert_file'),
-    cfg.StrOpt('registry_client_ca_file'),
-    cfg.BoolOpt('registry_client_insecure', default=False),
-    cfg.IntOpt('registry_client_timeout', default=600),
+    cfg.StrOpt('registry_client_protocol', default='http',
+               help=_('The protocol to use for communication with the '
+                      'registry server.  Either http or https.')),
+    cfg.StrOpt('registry_client_key_file',
+               help=_('The path to the key file to use in SSL connections '
+                      'to the registry server.')),
+    cfg.StrOpt('registry_client_cert_file',
+               help=_('The path to the cert file to use in SSL connections '
+                      'to the registry server.')),
+    cfg.StrOpt('registry_client_ca_file',
+               help=_('The path to the certifying authority cert file to '
+                      'use in SSL connections to the registry server.')),
+    cfg.BoolOpt('registry_client_insecure', default=False,
+                help=_('When using SSL in connections to the registry server, '
+                       'do not require validation via a certifying '
+                       'authority.')),
+    cfg.IntOpt('registry_client_timeout', default=600,
+               help=_('The period of time, in seconds, that the API server '
+                      'will wait for a registry request to complete. A '
+                      'value of 0 implies no timeout.')),
 ]
 registry_client_ctx_opts = [
-    cfg.StrOpt('admin_user', secret=True),
-    cfg.StrOpt('admin_password', secret=True),
-    cfg.StrOpt('admin_tenant_name', secret=True),
-    cfg.StrOpt('auth_url'),
-    cfg.StrOpt('auth_strategy', default='noauth'),
-    cfg.StrOpt('auth_region'),
+    cfg.StrOpt('admin_user', secret=True,
+               help=_('The administrators user name.')),
+    cfg.StrOpt('admin_password', secret=True,
+               help=_('The administrators password.')),
+    cfg.StrOpt('admin_tenant_name', secret=True,
+               help=_('The tenant name of the adminstrative user.')),
+    cfg.StrOpt('auth_url',
+               help=_('The URL to the keystone service.')),
+    cfg.StrOpt('auth_strategy', default='noauth',
+               help=_('The strategy to use for authentication.')),
+    cfg.StrOpt('auth_region',
+               help=_('The region for the authentication service.')),
 ]
 
 CONF = cfg.CONF

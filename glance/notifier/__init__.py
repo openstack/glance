@@ -29,7 +29,13 @@ import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 
 notifier_opts = [
-    cfg.StrOpt('notifier_strategy', default='default')
+    cfg.StrOpt('notifier_strategy', default='default',
+               help=_('Notifications can be sent when images are create, '
+                      'updated or deleted. There are three methods of sending '
+                      'notifications, logging (via the log_file directive), '
+                      'rabbit (via a rabbitmq queue), qpid (via a Qpid '
+                      'message queue), or noop (no notifications sent, the '
+                      'default).'))
 ]
 
 CONF = cfg.CONF

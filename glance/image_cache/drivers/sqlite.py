@@ -36,7 +36,9 @@ import glance.openstack.common.log as logging
 LOG = logging.getLogger(__name__)
 
 sqlite_opts = [
-    cfg.StrOpt('image_cache_sqlite_db', default='cache.db'),
+    cfg.StrOpt('image_cache_sqlite_db', default='cache.db',
+               help=_('The path to the sqlite file database that will be '
+                      'used for image cache management.')),
 ]
 
 CONF = cfg.CONF

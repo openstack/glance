@@ -50,10 +50,18 @@ STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
             'deleted']
 
 db_opts = [
-    cfg.IntOpt('sql_idle_timeout', default=3600),
-    cfg.IntOpt('sql_max_retries', default=60),
-    cfg.IntOpt('sql_retry_interval', default=1),
-    cfg.BoolOpt('db_auto_create', default=False),
+    cfg.IntOpt('sql_idle_timeout', default=3600,
+               help=_('Period in seconds after which SQLAlchemy should '
+                      'reestablish its connection to the database.')),
+    cfg.IntOpt('sql_max_retries', default=60,
+               help=_('The number of times to retry a connection to the SQL'
+                      'server.')),
+    cfg.IntOpt('sql_retry_interval', default=1,
+               help=_('The amount of time to wait (in seconds) before '
+                      'attempting to retry the SQL connection.')),
+    cfg.BoolOpt('db_auto_create', default=False,
+                help=_('A boolean that determines if the database will be '
+                       'automatically created.')),
 ]
 
 CONF = cfg.CONF
