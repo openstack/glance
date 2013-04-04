@@ -190,12 +190,29 @@ class Server(object):
         :param application: The application to be run in the WSGI server
         :param default_port: Port to bind to if none is specified in conf
         """
+        pgid = os.getpid()
+        try:
+            # NOTE(flaper87): Make sure this process
+            # runs in its own process group.
+            os.setpgid(pgid, pgid)
+        except OSError:
+            # NOTE(flaper87): When running glance-control,
+            # (glance's functional tests, for example)
+            # setpgid fails with EPERM as glance-control
+            # creates a fresh session, of which the newly
+            # launched service becomes the leader (session
+            # leaders may not change process groups)
+            #
+            # Running glance-(api|registry) is safe and
+            # shouldn't raise any error here.
+            pgid = 0
+
         def kill_children(*args):
             """Kills the entire process group."""
             signal.signal(signal.SIGTERM, signal.SIG_IGN)
             signal.signal(signal.SIGINT, signal.SIG_IGN)
             self.running = False
-            os.killpg(0, signal.SIGTERM)
+            os.killpg(pgid, signal.SIGTERM)
 
         def hup(*args):
             """
