@@ -27,19 +27,41 @@ import glance.openstack.common.log as logging
 LOG = logging.getLogger(__name__)
 
 rabbit_opts = [
-    cfg.StrOpt('rabbit_host', default='localhost'),
-    cfg.IntOpt('rabbit_port', default=5672),
-    cfg.BoolOpt('rabbit_use_ssl', default=False),
-    cfg.StrOpt('rabbit_userid', default='guest'),
-    cfg.StrOpt('rabbit_password', default='guest', secret=True),
-    cfg.StrOpt('rabbit_virtual_host', default='/'),
-    cfg.StrOpt('rabbit_notification_exchange', default='glance'),
-    cfg.StrOpt('rabbit_notification_topic',
-               default='notifications'),
-    cfg.IntOpt('rabbit_max_retries', default=0),
-    cfg.StrOpt('rabbit_retry_backoff', default=2),
-    cfg.StrOpt('rabbit_retry_max_backoff', default=30),
-    cfg.BoolOpt('rabbit_durable_queues', default=False),
+    cfg.StrOpt('rabbit_host', default='localhost',
+               help=_('The host name of the rabbitmq server')),
+    cfg.IntOpt('rabbit_port', default=5672,
+               help=_('The port on which the rabbitmq server is listening')),
+    cfg.BoolOpt('rabbit_use_ssl', default=False,
+                help=_('A boolean value indicating if the selected rabbitmq '
+                       'server uses SSL.')),
+    cfg.StrOpt('rabbit_userid', default='guest',
+               help=_('The user ID for authentication with rabbitmq.')),
+    cfg.StrOpt('rabbit_password', default='guest', secret=True,
+               help=_('The password that will be used for authentication '
+                      'with the rabbitmq server.')),
+    cfg.StrOpt('rabbit_virtual_host', default='/',
+               help=_('The virtual host used in the rabbitmq connection.')),
+    cfg.StrOpt('rabbit_notification_exchange', default='glance',
+               help=_('Exchange name to use for connection when using rabbit'
+               ' strategy.')),
+    cfg.StrOpt('rabbit_notification_topic', default='notifications',
+               help=_('Topic to use for connection when using rabbit '
+               'strategy.')),
+    cfg.IntOpt('rabbit_max_retries', default=0,
+               help=_('The maximum number of times to attempt to connect to '
+                      'the AMQP server.')),
+    cfg.StrOpt('rabbit_retry_backoff', default=2,
+               help=_('This value multiplied by the number of connection '
+                      'attempts gives the amount of time in seconds to sleep '
+                      'between connection attempts to the AMQP server.')),
+    cfg.StrOpt('rabbit_retry_max_backoff', default=30,
+               help=_('The maximum amount of time to wait between connection '
+                      'attempts.  The delay time will be the smaller of this '
+                      'value and the value of <rabbit_retry_backoff> * '
+                      '<the number of failed connection attempts so far>.')),
+    cfg.BoolOpt('rabbit_durable_queues', default=False,
+                help='A boolean to determine if the queues used for messaging '
+                     'should be retained after a restart.'),
 ]
 
 CONF = cfg.CONF

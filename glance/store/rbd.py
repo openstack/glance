@@ -47,10 +47,17 @@ DEFAULT_SNAPNAME = 'snap'
 LOG = logging.getLogger(__name__)
 
 rbd_opts = [
-    cfg.IntOpt('rbd_store_chunk_size', default=DEFAULT_CHUNKSIZE),
-    cfg.StrOpt('rbd_store_pool', default=DEFAULT_POOL),
-    cfg.StrOpt('rbd_store_user', default=DEFAULT_USER),
-    cfg.StrOpt('rbd_store_ceph_conf', default=DEFAULT_CONFFILE),
+    cfg.IntOpt('rbd_store_chunk_size', default=DEFAULT_CHUNKSIZE,
+               help=_('Images will be chunked into objects of this size '
+                      '(in megabytes). For best performance, this should be '
+                      'a power of two.')),
+    cfg.StrOpt('rbd_store_pool', default=DEFAULT_POOL,
+               help=_('RADOS pool in which images are stored.')),
+    cfg.StrOpt('rbd_store_user', default=DEFAULT_USER,
+               help=_('RADOS user to authenticate as (only applicable if '
+                      'using cephx.)')),
+    cfg.StrOpt('rbd_store_ceph_conf', default=DEFAULT_CONFFILE,
+               help=_('Ceph configuration file path.')),
 ]
 
 CONF = cfg.CONF

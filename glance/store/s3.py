@@ -35,13 +35,24 @@ import glance.store.location
 LOG = logging.getLogger(__name__)
 
 s3_opts = [
-    cfg.StrOpt('s3_store_host'),
-    cfg.StrOpt('s3_store_access_key', secret=True),
-    cfg.StrOpt('s3_store_secret_key', secret=True),
-    cfg.StrOpt('s3_store_bucket'),
-    cfg.StrOpt('s3_store_object_buffer_dir'),
-    cfg.BoolOpt('s3_store_create_bucket_on_put', default=False),
-    cfg.StrOpt('s3_store_bucket_url_format', default='subdomain'),
+    cfg.StrOpt('s3_store_host',
+               help=_('The host where the S3 server is listening.')),
+    cfg.StrOpt('s3_store_access_key', secret=True,
+               help=_('The S3 query token access key.')),
+    cfg.StrOpt('s3_store_secret_key', secret=True,
+               help=_('The S3 query token secret key.')),
+    cfg.StrOpt('s3_store_bucket',
+               help=_('The S3 bucket to be used to store the Glance data.')),
+    cfg.StrOpt('s3_store_object_buffer_dir',
+               help=_('The local directory where uploads will be staged '
+                      'before they are transfered into S3.')),
+    cfg.BoolOpt('s3_store_create_bucket_on_put', default=False,
+                help=_('A boolean to determine if the S3 bucket should be '
+                       'created on upload if it does not exist or if '
+                       'an error should be returned to the user.')),
+    cfg.StrOpt('s3_store_bucket_url_format', default='subdomain',
+               help=_('The S3 calling format used to determine the bucket. '
+                      'Either subdomain or path can be used.')),
 ]
 
 CONF = cfg.CONF
