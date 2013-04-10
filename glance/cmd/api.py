@@ -23,7 +23,6 @@ Glance API Server
 """
 
 import eventlet
-import gettext
 import os
 import sys
 
@@ -37,8 +36,6 @@ possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
                                    os.pardir))
 if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
-
-gettext.install('glance', unicode=1)
 
 from glance.common import config
 from glance.common import wsgi
