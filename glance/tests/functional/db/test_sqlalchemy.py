@@ -23,7 +23,8 @@ from glance.tests.functional.db import base
 def get_db(config):
     config(sql_connection='sqlite://', verbose=False, debug=False)
     db_api = glance.db.sqlalchemy.api
-    db_api.configure_db()
+    db_api.setup_db_env()
+    db_api.get_engine()
     return db_api
 
 

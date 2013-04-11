@@ -144,7 +144,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
              'locations': ["file:///%s/%s" % (self.test_dir, UUID2)],
              'properties': {}}]
         self.context = glance.context.RequestContext(is_admin=True)
-        db_api.configure_db()
+        db_api.setup_db_env()
+        db_api.get_engine()
         self.destroy_fixtures()
         self.create_fixtures()
 
@@ -1989,7 +1990,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
              'locations': ["file:///%s/%s" % (self.test_dir, UUID2)],
              'properties': {}}]
         self.context = glance.context.RequestContext(is_admin=True)
-        db_api.configure_db()
+        db_api.setup_db_env()
+        db_api.get_engine()
         self.destroy_fixtures()
         self.create_fixtures()
 

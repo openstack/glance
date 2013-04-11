@@ -105,15 +105,6 @@ def setup_db_env():
         sa_logger.setLevel(logging.DEBUG)
 
 
-def configure_db():
-    """
-    Establish the database, create an engine if needed, and
-    register the models.
-    """
-    setup_db_env()
-    get_engine()
-
-
 def _check_mutate_authorization(context, image_ref):
     if not is_image_mutable(context, image_ref):
         LOG.info(_("Attempted to modify image user did not own."))
