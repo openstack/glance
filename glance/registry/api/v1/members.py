@@ -75,10 +75,8 @@ class Controller(object):
         self._check_can_access_image_members(req.context)
 
         # Make sure the image exists
-        session = self.db_api.get_session()
         try:
-            image = self.db_api.image_get(req.context, image_id,
-                                          session=session)
+            image = self.db_api.image_get(req.context, image_id)
         except exception.NotFound:
             msg = _("Image %(id)s not found")
             LOG.info(msg % {'id': image_id})
@@ -166,7 +164,7 @@ class Controller(object):
 
         # Now add the non-existent ones
         for memb in add:
-            self.db_api.image_member_create(req.context, memb, session=session)
+            self.db_api.image_member_create(req.context, memb)
 
         # Make an appropriate result
         msg = _("Successfully updated memberships for image %(id)s")
@@ -224,7 +222,6 @@ class Controller(object):
                 raise webob.exc.HTTPBadRequest(explanation=msg)
 
         # Look up an existing membership...
-        session = self.db_api.get_session()
         members = self.db_api.image_member_find(req.context,
                                                 image_id=image_id,
                                                 member=id)
@@ -237,8 +234,7 @@ class Controller(object):
         else:
             values = dict(image_id=image['id'], member=id,
                           can_share=bool(can_share))
-            self.db_api.image_member_create(req.context, values,
-                                            session=session)
+            self.db_api.image_member_create(req.context, values)
 
         msg = _("Successfully updated a membership for image %(id)s")
         LOG.info(msg % {'id': image_id})
