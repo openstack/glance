@@ -55,8 +55,8 @@ class ModelBase(object):
     def save(self, session=None):
         """Save this object"""
         # import api here to prevent circular dependency problem
-        import glance.db.sqlalchemy.api
-        session = session or glance.db.sqlalchemy.api.get_session()
+        import glance.db.sqlalchemy.api as db_api
+        session = session or db_api._get_session()
         session.add(self)
         session.flush()
 

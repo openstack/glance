@@ -63,7 +63,7 @@ def configure_db(*args, **kwargs):
     pass
 
 
-def get_session():
+def _get_session():
     return DATA
 
 
