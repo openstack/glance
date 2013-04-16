@@ -43,7 +43,7 @@ from glance.common import utils
 from glance.common import wsgi
 from glance import notifier
 import glance.openstack.common.log as logging
-from glance import registry
+import glance.registry.client.v1.api as registry
 from glance.store import (get_from_backend,
                           get_size_from_backend,
                           safe_delete_from_backend,

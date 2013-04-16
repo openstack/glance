@@ -19,7 +19,7 @@ import webob.exc
 
 from glance.common import exception
 import glance.openstack.common.log as logging
-from glance import registry
+import glance.registry.client.v1.api as registry
 import glance.store as store
 
 LOG = logging.getLogger(__name__)
