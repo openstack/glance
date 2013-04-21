@@ -2,30 +2,30 @@
 pep8==1.4.5
 pyflakes==0.7.2
 flake8==2.0
-hacking>=0.5.3,<0.6
+hacking>=0.5.6,<0.7
 
 # For translations processing
-Babel
+Babel>=0.9.6
 
 # Needed for testing
-coverage
+coverage>=3.6
 fixtures>=0.3.12
-mox
+mox>=0.5.3
 nose
 nose-exclude
 openstack.nose_plugin>=0.7
 nosehtmloutput>=0.0.3
 sphinx>=1.1.2
-requests
-testtools>=0.9.22
-psutil<1.0
+requests>=1.1
+testtools>=0.9.32
+psutil>=0.6.1,<1.0
 
 # Optional packages that should be installed when testing
 MySQL-python
 psycopg2
 pysendfile==2.0.0
 qpid-python
-xattr>=0.6.0
+xattr>=0.4
 
 # Documentation
 oslo.sphinx

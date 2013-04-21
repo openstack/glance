@@ -15,6 +15,6 @@
 #    under the License.
 
 
-from glance.openstack.common import version as common_version
+import pbr.version
 
-version_info = common_version.VersionInfo('glance')
+version_info = pbr.version.VersionInfo('glance')

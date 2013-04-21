@@ -1,34 +1,36 @@
+pbr>=0.5.21,<1.0
+#
 # The greenlet package must be compiled with gcc and needs
 # the Python.h headers. Make sure you install the python-dev
 # package to get the right headers...
-greenlet>=0.3.1
+greenlet>=0.3.2
 
 # < 0.8.0/0.8 does not work, see https://bugs.launchpad.net/bugs/1153983
 SQLAlchemy>=0.7.8,<=0.7.99
 anyjson>=0.3.3
-eventlet>=0.9.12
-PasteDeploy
-routes
-WebOb>=1.2
-wsgiref
+eventlet>=0.13.0
+PasteDeploy>=1.5.0
+Routes>=1.12.3
+WebOb>=1.2.3,<1.3
+wsgiref>=0.1.2
 argparse
-boto
-sqlalchemy-migrate>=0.7
+boto>=2.4.0
+sqlalchemy-migrate>=0.7.2
 httplib2
-kombu>2.4.7
-pycrypto>=2.1.0alpha1
+kombu>=2.4.8
+pycrypto>=2.6
 iso8601>=0.1.4
 oslo.config>=1.1.0
 
 
 # For Swift storage backend.
-python-swiftclient>=1.2,<2
+python-swiftclient>=1.2
 
 # Note you will need gcc buildtools installed and must
 # have installed libxml headers for lxml to be successfully
 # installed using pip, therefore you will need to install the
 # libxml2-dev and libxslt-dev Ubuntu packages.
-lxml
+lxml>=2.3
 
 # For paste.util.template used in keystone.common.template
 Paste
@@ -36,7 +38,7 @@ Paste
 passlib
 jsonschema>=1.3.0,!=1.4.0
 python-cinderclient>=1.0.4
-python-keystoneclient>=0.2.0
+python-keystoneclient>=0.3.0
 pyOpenSSL
 
 # Required by openstack.common libraries
