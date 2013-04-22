@@ -115,8 +115,15 @@ class TestCacheMiddlewareChecksumVerification(testtools.TestCase):
         self.assertEqual(None, cache_filter.cache.image_checksum)
 
 
+class FakeImageSerializer(object):
+    def show(self, response, raw_response):
+        return True
+
+
 class ProcessRequestTestCacheFilter(glance.api.middleware.cache.CacheFilter):
     def __init__(self):
+        self.serializer = FakeImageSerializer()
+
         class DummyCache(object):
             def __init__(self):
                 self.deleted_images = []
@@ -176,3 +183,63 @@ class TestCacheMiddlewareProcessRequest(testtools.TestCase):
                        fake_process_v1_request)
         cache_filter.process_request(request)
         self.assertTrue(image_id in cache_filter.cache.deleted_images)
+
+    def test_v1_process_request_image_fetch(self):
+
+        def fake_get_image_metadata(context, image_id):
+            return {'is_public': True, 'deleted': False, 'size': '20'}
+
+        def dummy_img_iterator():
+            for i in range(3):
+                yield i
+
+        image_id = 'test1'
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext()
+        cache_filter = ProcessRequestTestCacheFilter()
+        self.stubs.Set(registry, 'get_image_metadata',
+                       fake_get_image_metadata)
+        actual = cache_filter._process_v1_request(
+            request, image_id, dummy_img_iterator)
+        self.assertEqual(True, actual)
+
+
+class TestProcessResponse(testtools.TestCase):
+    def setUp(self):
+        super(TestProcessResponse, self).setUp()
+        self.stubs = stubout.StubOutForTesting()
+
+    def tearDown(self):
+        super(TestProcessResponse, self).tearDown()
+        self.stubs.UnsetAll()
+
+    def test_process_v1_DELETE_response(self):
+        image_id = 'test1'
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext()
+        cache_filter = ProcessRequestTestCacheFilter()
+        headers = {"x-image-meta-deleted": True}
+        resp = webob.Response(headers=headers)
+        actual = cache_filter._process_DELETE_response(resp, image_id)
+        self.assertEqual(actual, resp)
+
+    def test_get_status_code(self):
+        headers = {"x-image-meta-deleted": True}
+        resp = webob.Response(headers=headers)
+        cache_filter = ProcessRequestTestCacheFilter()
+        actual = cache_filter.get_status_code(resp)
+        self.assertEqual(200, actual)
+
+    def test_process_response(self):
+        def fake_fetch_request_info():
+            return ('test1', 'GET')
+
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._fetch_request_info = fake_fetch_request_info
+        image_id = 'test1'
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext()
+        headers = {"x-image-meta-deleted": True}
+        resp1 = webob.Response(headers=headers)
+        actual = cache_filter.process_response(resp1)
+        self.assertEqual(actual, resp1)
