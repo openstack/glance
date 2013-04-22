@@ -363,14 +363,14 @@ class TestQpidNotifier(utils.BaseTestCase):
         self.mock_connection.username = ""
         self.mock_connection.open()
         self.mock_connection.session().AndReturn(self.mock_session)
-        for p in ["info", "warn", "error"]:
-            expected_address = ('glance/notifications.%s ; '
-                                '{"node": {"x-declare": {"auto-delete": true, '
-                                '"durable": false}, "type": "topic"}, '
-                                '"create": "always"}' % p)
-            self.mock_session.sender(expected_address).AndReturn(
-                    self.mock_sender)
+        expected_address = ('glance/notifications.%s ; '
+                            '{"node": {"x-declare": {"auto-delete": true, '
+                            '"durable": false}, "type": "topic"}, '
+                            '"create": "always"}' % priority)
+        self.mock_session.sender(expected_address).AndReturn(
+                self.mock_sender)
         self.mock_sender.send(mox.IgnoreArg())
+        self.mock_connection.close()
 
         self.mocker.ReplayAll()
 
