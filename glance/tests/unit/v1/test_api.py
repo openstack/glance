@@ -2484,11 +2484,59 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 200)
 
+        # Verify the status is deleted
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        self.assertEqual("deleted", res.headers['x-image-meta-status'])
+
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'DELETE'
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPForbidden.code)
         self.assertTrue('Forbidden to delete a deleted image' in res.body)
+
+        # Verify the status is still deleted
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        self.assertEqual("deleted", res.headers['x-image-meta-status'])
+
+    def test_delete_pending_delete_image(self):
+        """
+        Tests that correct response returned when deleting
+        a pending_delete image
+        """
+        # First deletion
+        self.config(delayed_delete=True, scrubber_datadir='/tmp/scrubber')
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        # Verify the status is pending_delete
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        self.assertEqual("pending_delete", res.headers['x-image-meta-status'])
+
+        # Second deletion
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPForbidden.code)
+        self.assertTrue('Forbidden to delete a pending_delete image'
+                        in res.body)
+
+        # Verify the status is still pending_delete
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        self.assertEqual("pending_delete", res.headers['x-image-meta-status'])
 
     def test_register_and_upload(self):
         """
