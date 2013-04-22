@@ -95,7 +95,13 @@ class ModelBase(object):
         return self.__dict__.items()
 
     def to_dict(self):
-        return self.__dict__.copy()
+        d = self.__dict__.copy()
+        # NOTE(flaper87): Remove
+        # private state instance
+        # It is not serializable
+        # and causes CircularReference
+        d.pop("_sa_instance_state")
+        return d
 
 
 class Image(BASE, ModelBase):

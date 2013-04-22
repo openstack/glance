@@ -270,3 +270,7 @@ class InUseByStore(GlanceException):
 
 class ImageSizeLimitExceeded(GlanceException):
     message = _("The provided image is too large.")
+
+
+class RPCError(GlanceException):
+    message = _("%(cls)s exception was raised in the last rpc call: %(val)s")

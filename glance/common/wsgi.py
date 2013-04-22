@@ -536,6 +536,8 @@ class JSONResponseSerializer(object):
         def sanitizer(obj):
             if isinstance(obj, datetime.datetime):
                 return obj.isoformat()
+            if hasattr(obj, "to_dict"):
+                return obj.to_dict()
             return obj
 
         return json.dumps(data, default=sanitizer)
