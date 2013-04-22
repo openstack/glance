@@ -89,29 +89,6 @@ class TestImageFactory(test_utils.BaseTestCase):
         self.assertEqual(image.extra_properties, {'foo': 'bar'})
         self.assertEqual(image.tags, set(['one', 'two']))
 
-    def test_new_image_with_extra_properties_and_tags(self):
-        extra_properties = {'foo': 'bar'}
-        tags = ['one', 'two']
-        image = self.image_factory.new_image(
-                image_id=UUID1, name='image-1',
-                extra_properties=extra_properties, tags=tags)
-
-        self.assertEqual(image.image_id, UUID1)
-        self.assertTrue(image.created_at is not None)
-        self.assertEqual(image.created_at, image.updated_at)
-        self.assertEqual(image.status, 'queued')
-        self.assertEqual(image.visibility, 'private')
-        self.assertEqual(image.owner, None)
-        self.assertEqual(image.name, 'image-1')
-        self.assertEqual(image.size, None)
-        self.assertEqual(image.min_disk, 0)
-        self.assertEqual(image.min_ram, 0)
-        self.assertEqual(image.protected, False)
-        self.assertEqual(image.disk_format, None)
-        self.assertEqual(image.container_format, None)
-        self.assertEqual(image.extra_properties, {'foo': 'bar'})
-        self.assertEqual(image.tags, set(['one', 'two']))
-
     def test_new_image_read_only_property(self):
         self.assertRaises(exception.ReadonlyProperty,
                           self.image_factory.new_image, image_id=UUID1,

@@ -716,7 +716,7 @@ class TestRegistryClient(base.IsolatedUnitTest):
             self.assertTrue(image['size'] >= 20)
 
     def test_get_image_details_with_changes_since(self):
-        """Tests that a detailed call can be filtered by size_min"""
+        """Tests that a detailed call can be filtered by changes-since"""
         dt1 = timeutils.utcnow() - datetime.timedelta(1)
         iso1 = timeutils.isotime(dt1)
 
@@ -740,7 +740,7 @@ class TestRegistryClient(base.IsolatedUnitTest):
                          'checksum': None}
 
         db_api.image_create(self.context, extra_fixture)
-        db_api.image_destroy(self.context, 3)
+        db_api.image_destroy(self.context, UUID3)
 
         UUID4 = _gen_uuid()
         extra_fixture = {'id': UUID4,
@@ -780,8 +780,8 @@ class TestRegistryClient(base.IsolatedUnitTest):
         images = self.client.get_images(filters=filters)
         self.assertEquals(len(images), 0)
 
-    def test_get_image_details_with_changes_since(self):
-        """Tests that a detailed call can be filtered by changes-since"""
+    def test_get_image_details_with_size_min(self):
+        """Tests that a detailed call can be filtered by size_min"""
         extra_fixture = {'id': _gen_uuid(),
                          'status': 'saving',
                          'is_public': True,
