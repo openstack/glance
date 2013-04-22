@@ -249,7 +249,7 @@ class TestScrubber(functional.FunctionalTest):
         loc = StoreLocation({})
         loc.parse_uri(decrypted_uri)
 
-        self.assertEqual("swift+http", loc.scheme)
+        self.assertIn(loc.scheme, ("swift+http", "swift+https"))
         self.assertEqual(image['id'], loc.obj)
 
         self.wait_for_scrub(path)
