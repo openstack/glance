@@ -32,7 +32,9 @@ import os
 import platform
 import subprocess
 import sys
+import uuid
 
+from OpenSSL import crypto
 from oslo.config import cfg
 from webob import exc
 
@@ -467,3 +469,36 @@ class LazyPluggable(object):
     def __getattr__(self, key):
         backend = self.__get_backend()
         return getattr(backend, key)
+
+
+def validate_key_cert(key_file, cert_file):
+    try:
+        error_key_name = "private key"
+        error_filename = key_file
+        key_str = open(key_file, "r").read()
+        key = crypto.load_privatekey(crypto.FILETYPE_PEM, key_str)
+
+        error_key_name = "certficate"
+        error_filename = cert_file
+        cert_str = open(cert_file, "r").read()
+        cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_str)
+    except IOError, ioe:
+        raise RuntimeError(_("There is a problem with your %s "
+                             "%s.  Please verify it.  Error: %s"
+                             % (error_key_name, error_filename, ioe)))
+    except crypto.Error, ce:
+        raise RuntimeError(_("There is a problem with your %s "
+                             "%s.  Please verify it. OpenSSL error: %s"
+                             % (error_key_name, error_filename, ce)))
+
+    try:
+        data = str(uuid.uuid4())
+        digest = "sha1"
+
+        out = crypto.sign(key, data, digest)
+        crypto.verify(cert, out, data, digest)
+    except crypto.Error, ce:
+        raise RuntimeError(_("There is a problem with your key pair.  "
+                             "Please verify that cert %s and key %s "
+                             "belong together.  OpenSSL error %s"
+                             % (cert_file, key_file, ce)))

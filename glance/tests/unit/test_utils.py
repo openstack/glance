@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
 import StringIO
 import tempfile
 
@@ -103,3 +104,32 @@ class TestUtils(test_utils.BaseTestCase):
                 byte = reader.read(1)
 
         self.assertRaises(exception.ImageSizeLimitExceeded, _consume_all_read)
+
+    def test_validate_key_cert_key(self):
+        var_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                               '../', 'var'))
+        keyfile = os.path.join(var_dir, 'privatekey.key')
+        certfile = os.path.join(var_dir, 'certificate.crt')
+        utils.validate_key_cert(keyfile, certfile)
+
+    def test_validate_key_cert_no_private_key(self):
+        with tempfile.NamedTemporaryFile('w+') as tmpf:
+            self.assertRaises(RuntimeError,
+                              utils.validate_key_cert,
+                              "/not/a/file", tmpf.name)
+
+    def test_validate_key_cert_cert_cant_read(self):
+        with tempfile.NamedTemporaryFile('w+') as keyf:
+            with tempfile.NamedTemporaryFile('w+') as certf:
+                os.chmod(certf.name, 0)
+                self.assertRaises(RuntimeError,
+                                  utils.validate_key_cert,
+                                  keyf.name, certf.name)
+
+    def test_validate_key_cert_key_cant_read(self):
+        with tempfile.NamedTemporaryFile('w+') as keyf:
+            with tempfile.NamedTemporaryFile('w+') as keyf:
+                os.chmod(keyf.name, 0)
+                self.assertRaises(RuntimeError,
+                                  utils.validate_key_cert,
+                                  keyf.name, keyf.name)
