@@ -175,7 +175,7 @@ class KeystoneStrategy(BaseStrategy):
             except KeyError:
                 raise exception.AuthorizationFailure()
         elif resp.status == 305:
-            raise exception.AuthorizationRedirect(resp['location'])
+            raise exception.AuthorizationRedirect(uri=resp['location'])
         elif resp.status == 400:
             raise exception.AuthBadRequest(url=token_url)
         elif resp.status == 401:

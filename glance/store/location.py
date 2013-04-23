@@ -69,7 +69,7 @@ def get_location_from_uri(uri):
     """
     pieces = urlparse.urlparse(uri)
     if pieces.scheme not in SCHEME_TO_CLS_MAP.keys():
-        raise exception.UnknownScheme(pieces.scheme)
+        raise exception.UnknownScheme(scheme=pieces.scheme)
     scheme_info = SCHEME_TO_CLS_MAP[pieces.scheme]
     return Location(pieces.scheme, uri=uri,
                     store_location_class=scheme_info['location_class'])

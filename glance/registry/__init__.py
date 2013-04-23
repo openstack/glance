@@ -96,11 +96,11 @@ def configure_registry_client():
     except cfg.ConfigFileValueError:
         msg = _("Configuration option was not valid")
         LOG.error(msg)
-        raise exception.BadRegistryConnectionConfiguration(msg)
+        raise exception.BadRegistryConnectionConfiguration(reason=msg)
     except IndexError:
         msg = _("Could not find required configuration option")
         LOG.error(msg)
-        raise exception.BadRegistryConnectionConfiguration(msg)
+        raise exception.BadRegistryConnectionConfiguration(reason=msg)
 
     _CLIENT_HOST = host
     _CLIENT_PORT = port

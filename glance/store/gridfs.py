@@ -92,7 +92,8 @@ class Store(glance.store.base.Store):
         """
         if pymongo is None:
             msg = _("Missing dependecies: pymongo")
-            raise exception.BadStoreConfiguration(msg)
+            raise exception.BadStoreConfiguration(store_name="gridfs",
+                                                  reason=msg)
 
         self.mongodb_uri = self._option_get('mongodb_store_uri')
 
