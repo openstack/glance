@@ -840,11 +840,16 @@ class Controller(controller.BaseController):
                                 request=req,
                                 content_type="text/plain")
 
-        if image['status'] == 'deleted' or image['status'] == 'pending_delete':
+        if image['status'] == 'pending_delete':
             msg = (_("Forbidden to delete a %s image.") % image['status'])
             LOG.debug(msg)
             raise HTTPForbidden(explanation=msg, request=req,
                                 content_type="text/plain")
+        elif image['status'] == 'deleted':
+            msg = _("Image %s not found." % id)
+            LOG.debug(msg)
+            raise HTTPNotFound(explanation=msg, request=req,
+                               content_type="text/plain")
 
         if image['location'] and CONF.delayed_delete:
             status = 'pending_delete'

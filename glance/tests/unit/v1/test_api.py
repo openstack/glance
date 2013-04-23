@@ -2532,8 +2532,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'DELETE'
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, webob.exc.HTTPForbidden.code)
-        self.assertTrue('Forbidden to delete a deleted image' in res.body)
+        self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
+        msg = "Image %s not found." % UUID2
+        self.assertTrue(msg in res.body)
 
         # Verify the status is still deleted
         req = webob.Request.blank("/images/%s" % UUID2)
