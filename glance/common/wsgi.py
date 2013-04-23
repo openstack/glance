@@ -143,8 +143,11 @@ def get_socket(default_port):
 
         return ssl.wrap_socket(sock, **ssl_kwargs)
 
-    sock = None
+    sock = utils.get_test_suite_socket()
     retry_until = time.time() + 30
+
+    if sock and use_ssl:
+        sock = wrap_ssl(sock)
     while not sock and time.time() < retry_until:
         try:
             sock = eventlet.listen(bind_addr,

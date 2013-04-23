@@ -49,7 +49,7 @@ class Server(object):
     Class used to easily manage starting and stopping
     a server during functional test runs.
     """
-    def __init__(self, test_dir, port):
+    def __init__(self, test_dir, port, sock=None):
         """
         Creates a new Server object.
 
@@ -74,6 +74,8 @@ class Server(object):
         self.server_control_options = ''
         self.needs_database = False
         self.log_file = None
+        self.sock = sock
+        self.fork_socket = True
 
     def write_conf(self, **kwargs):
         """
@@ -137,12 +139,31 @@ class Server(object):
                "%(server_control_options)s "
                "%(server_name)s start %(conf_file_name)s"
                % self.__dict__)
-        return execute(cmd,
-                       no_venv=self.no_venv,
-                       exec_env=self.exec_env,
-                       expect_exit=expect_exit,
-                       expected_exitcode=expected_exitcode,
-                       context=overridden)
+        # close the sock and release the unused port closer to start time
+        if self.exec_env:
+            exec_env = self.exec_env.copy()
+        else:
+            exec_env = {}
+        if self.sock:
+            if not self.fork_socket:
+                self.sock.close()
+                self.sock = None
+            else:
+                fd = os.dup(self.sock.fileno())
+                exec_env[utils.GLANCE_TEST_SOCKET_FD_STR] = str(fd)
+                self.sock.close()
+
+        rc = execute(cmd,
+                     no_venv=self.no_venv,
+                     exec_env=exec_env,
+                     expect_exit=expect_exit,
+                     expected_exitcode=expected_exitcode,
+                     context=overridden)
+        # avoid an FD leak
+        if self.sock:
+            os.close(fd)
+            self.sock = None
+        return rc
 
     def reload(self, expect_exit=True, expected_exitcode=0, **kwargs):
         """
@@ -204,8 +225,8 @@ class ApiServer(Server):
     """
 
     def __init__(self, test_dir, port, policy_file, delayed_delete=False,
-                 pid_file=None, **kwargs):
-        super(ApiServer, self).__init__(test_dir, port)
+                 pid_file=None, sock=None, **kwargs):
+        super(ApiServer, self).__init__(test_dir, port, sock=sock)
         self.server_name = 'api'
         self.default_store = kwargs.get("default_store", "file")
         self.key_file = ""
@@ -366,8 +387,8 @@ class RegistryServer(Server):
     Server object that starts/stops/manages the Registry server
     """
 
-    def __init__(self, test_dir, port):
-        super(RegistryServer, self).__init__(test_dir, port)
+    def __init__(self, test_dir, port, sock=None):
+        super(RegistryServer, self).__init__(test_dir, port, sock=sock)
         self.server_name = 'registry'
 
         self.needs_database = True
@@ -476,8 +497,9 @@ class FunctionalTest(test_utils.BaseTestCase):
         self.test_dir = self.useFixture(fixtures.TempDir()).path
 
         self.api_protocol = 'http'
-        self.api_port = get_unused_port()
-        self.registry_port = get_unused_port()
+        self.api_port, api_sock = test_utils.get_unused_port_and_socket()
+        self.registry_port, registry_sock = \
+            test_utils.get_unused_port_and_socket()
 
         conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(conf_dir)
@@ -487,10 +509,12 @@ class FunctionalTest(test_utils.BaseTestCase):
 
         self.api_server = ApiServer(self.test_dir,
                                     self.api_port,
-                                    self.policy_file)
+                                    self.policy_file,
+                                    sock=api_sock)
 
         self.registry_server = RegistryServer(self.test_dir,
-                                              self.registry_port)
+                                              self.registry_port,
+                                              sock=registry_sock)
 
         self.scrubber_daemon = ScrubberDaemon(self.test_dir)
 
