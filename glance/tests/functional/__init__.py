@@ -23,6 +23,7 @@ and Registry server, grabbing the logs of each, cleaning up pidfiles,
 and spinning down the servers.
 """
 
+import atexit
 import datetime
 import json
 import logging
@@ -31,6 +32,7 @@ import re
 import shutil
 import signal
 import socket
+import tempfile
 import time
 import urlparse
 
@@ -38,6 +40,7 @@ import fixtures
 from sqlalchemy import create_engine
 import testtools
 
+from glance import tests as glance_tests
 from glance.common import utils
 from glance.tests import utils as test_utils
 
@@ -194,10 +197,37 @@ class Server(object):
                 conf_file.write('sql_connection = %s' % self.sql_connection)
                 conf_file.flush()
 
-            cmd = ('bin/glance-manage --config-file %s db_sync'
-                   % conf_filepath)
-            execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env,
-                    expect_exit=True)
+            glance_db_env = 'GLANCE_DB_TEST_SQLITE_FILE'
+            if glance_db_env in os.environ:
+                # use the empty db created and cached as a tempfile
+                # instead of spending the time creating a new one
+                db_location = os.environ[glance_db_env]
+                os.system('cp %s %s/tests.sqlite'
+                          % (db_location, self.test_dir))
+            else:
+                cmd = ('bin/glance-manage --config-file %s db_sync'
+                       % conf_filepath)
+                execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env,
+                        expect_exit=True)
+
+                # copy the clean db to a temp location so that it
+                # can be reused for future tests
+                (osf, db_location) = tempfile.mkstemp()
+                os.close(osf)
+                os.system('cp %s/tests.sqlite %s'
+                          % (self.test_dir, db_location))
+                os.environ[glance_db_env] = db_location
+
+                # cleanup the temp file when the test suite is
+                # complete
+                def _delete_cached_db():
+                    try:
+                        os.remove(os.environ[glance_db_env])
+                    except Exception:
+                        glance_tests.logger.exception(
+                            "Error cleaning up the file %s" %
+                            os.environ[glance_db_env])
+                atexit.register(_delete_cached_db)
 
     def stop(self):
         """
