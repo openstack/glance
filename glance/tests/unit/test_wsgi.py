@@ -247,15 +247,3 @@ class TestHelpers(test_utils.BaseTestCase):
                 self.assertEqual(v, result[k])
             else:
                 self.assertFalse(k in result)
-
-
-class TestMonkeyPatch(test_utils.BaseTestCase):
-
-    def test_time_is_monkey_patched(self):
-        """
-        Test GET with no redirect
-        """
-        server = wsgi.Server()
-        server.create_pool()
-        self.assertTrue(eventlet.patcher.is_monkey_patched(time))
-        self.assertTrue(eventlet.patcher.is_monkey_patched(socket))
