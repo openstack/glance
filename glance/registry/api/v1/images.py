@@ -66,7 +66,7 @@ class Controller(object):
         # admins actually means "treat me as if I'm not an admin and show me
         # all my images"
         if context.is_admin and params.get('is_public') is True:
-            context.is_admin = False
+            params['admin_as_user'] = True
             del params['is_public']
         try:
             return self.db_api.image_get_all(context, filters=filters,

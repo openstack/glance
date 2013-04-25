@@ -940,6 +940,13 @@ class VisibilityTests(object):
         images = self.db_api.image_get_all(self.admin_context)
         self.assertEquals(len(images), 8)
 
+    def test_admin_as_user_true(self):
+        images = self.db_api.image_get_all(self.admin_context,
+                                           admin_as_user=True)
+        self.assertEquals(len(images), 5)
+        for i in images:
+            self.assertTrue(i['is_public'] or i['owner'] == self.admin_tenant)
+
     def test_known_admin_visibility_public(self):
         images = self.db_api.image_get_all(self.admin_context,
                                            filters={'visibility': 'public'})
