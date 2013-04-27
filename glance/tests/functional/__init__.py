@@ -354,24 +354,25 @@ enable_v2_api= %(enable_v2_api)s
 flavor = %(deployment_flavor)s
 """
         self.paste_conf_base = """[pipeline:glance-api]
-pipeline = versionnegotiation unauthenticated-context rootapp
+pipeline = versionnegotiation gzip unauthenticated-context rootapp
 
 [pipeline:glance-api-caching]
-pipeline = versionnegotiation unauthenticated-context cache rootapp
+pipeline = versionnegotiation gzip unauthenticated-context cache rootapp
 
 [pipeline:glance-api-cachemanagement]
 pipeline =
     versionnegotiation
+    gzip
     unauthenticated-context
     cache
     cache_manage
     rootapp
 
 [pipeline:glance-api-fakeauth]
-pipeline = versionnegotiation fakeauth context rootapp
+pipeline = versionnegotiation gzip fakeauth context rootapp
 
 [pipeline:glance-api-noauth]
-pipeline = versionnegotiation context rootapp
+pipeline = versionnegotiation gzip context rootapp
 
 [composite:rootapp]
 paste.composite_factory = glance.api:root_app_factory
@@ -391,6 +392,9 @@ paste.app_factory = glance.api.v2.router:API.factory
 [filter:versionnegotiation]
 paste.filter_factory =
  glance.api.middleware.version_negotiation:VersionNegotiationFilter.factory
+
+[filter:gzip]
+paste.filter_factory = glance.api.middleware.gzip:GzipMiddleware.factory
 
 [filter:cache]
 paste.filter_factory = glance.api.middleware.cache:CacheFilter.factory
