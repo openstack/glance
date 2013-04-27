@@ -15,14 +15,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import types
+import urllib
 import urlparse
 
 import sqlalchemy
 
 from glance.common import exception
 import glance.openstack.common.log as logging
-import glance.store.swift
 
 LOG = logging.getLogger(__name__)
 
@@ -54,16 +53,20 @@ def migrate_location_credentials(migrate_engine, to_quoted):
                                       'swift')).execute())
 
     for image in images:
-        fixed_uri = fix_uri_credentials(image['location'], to_quoted)
+        fixed_uri = legacy_parse_uri(image['location'], to_quoted)
         images_table.update()\
                     .where(images_table.c.id == image['id'])\
                     .values(location=fixed_uri).execute()
 
 
-def fix_uri_credentials(uri, to_quoted):
+def legacy_parse_uri(uri, to_quote):
     """
-    Fix the given uri's embedded credentials by round-tripping with
-    StoreLocation.
+    Parse URLs. This method fixes an issue where credentials specified
+    in the URL are interpreted differently in Python 2.6.1+ than prior
+    versions of Python. It also deals with the peculiarity that new-style
+    Swift URIs have where a username can contain a ':', like so:
+
+        swift://account:user:pass@authurl.com/container/obj
 
     If to_quoted is True, the uri is assumed to have credentials that
     have not been quoted, and the resulting uri will contain quoted
@@ -72,33 +75,6 @@ def fix_uri_credentials(uri, to_quoted):
     If to_quoted is False, the uri is assumed to have credentials that
     have been quoted, and the resulting uri will contain credentials
     that have not been quoted.
-    """
-    location = glance.store.swift.StoreLocation({})
-    if to_quoted:
-        # The legacy parse_uri doesn't unquote credentials
-        location.parse_uri = types.MethodType(legacy_parse_uri, location)
-    else:
-        # The legacy _get_credstring doesn't quote credentials
-        location._get_credstring = types.MethodType(legacy__get_credstring,
-                                                    location)
-    location.parse_uri(uri)
-    return location.get_uri()
-
-
-def legacy__get_credstring(self):
-    if self.user:
-        return '%s:%s@' % (self.user, self.key)
-    return ''
-
-
-def legacy_parse_uri(self, uri):
-    """
-    Parse URLs. This method fixes an issue where credentials specified
-    in the URL are interpreted differently in Python 2.6.1+ than prior
-    versions of Python. It also deals with the peculiarity that new-style
-    Swift URIs have where a username can contain a ':', like so:
-
-        swift://account:user:pass@authurl.com/container/obj
     """
     # Make sure that URIs that contain multiple schemes, such as:
     # swift://user:pass@http://authurl.com/v1/container/obj
@@ -116,7 +92,7 @@ def legacy_parse_uri(self, uri):
 
     pieces = urlparse.urlparse(uri)
     assert pieces.scheme in ('swift', 'swift+http', 'swift+https')
-    self.scheme = pieces.scheme
+    scheme = pieces.scheme
     netloc = pieces.netloc
     path = pieces.path.lstrip('/')
     if netloc != '':
@@ -140,29 +116,61 @@ def legacy_parse_uri(self, uri):
         # User can be account:user, in which case cred_parts[0:2] will be
         # the account and user. Combine them into a single username of
         # account:user
-        if len(cred_parts) == 1:
-            reason = (_("Badly formed credentials '%(creds)s' in Swift "
-                        "URI") % locals())
-            LOG.error(reason)
-            raise exception.BadStoreUri()
-        elif len(cred_parts) == 3:
-            user = ':'.join(cred_parts[0:2])
+        if to_quote:
+            if len(cred_parts) == 1:
+                reason = (_("Badly formed credentials '%(creds)s' in Swift "
+                            "URI") % locals())
+                LOG.error(reason)
+                raise exception.BadStoreUri()
+            elif len(cred_parts) == 3:
+                user = ':'.join(cred_parts[0:2])
+            else:
+                user = cred_parts[0]
+            key = cred_parts[-1]
+            user = user
+            key = key
         else:
-            user = cred_parts[0]
-        key = cred_parts[-1]
-        self.user = user
-        self.key = key
+            if len(cred_parts) != 2:
+                reason = (_("Badly formed credentials in Swift URI."))
+                LOG.debug(reason)
+                raise exception.BadStoreUri()
+            user, key = cred_parts
+            user = urllib.unquote(user)
+            key = urllib.unquote(key)
     else:
-        self.user = None
+        user = None
+        key = None
     path_parts = path.split('/')
     try:
-        self.obj = path_parts.pop()
-        self.container = path_parts.pop()
+        obj = path_parts.pop()
+        container = path_parts.pop()
         if not netloc.startswith('http'):
             # push hostname back into the remaining to build full authurl
             path_parts.insert(0, netloc)
-            self.auth_or_store_url = '/'.join(path_parts)
+            auth_or_store_url = '/'.join(path_parts)
     except IndexError:
         reason = _("Badly formed S3 URI: %s") % uri
         LOG.error(message=reason)
         raise exception.BadStoreUri()
+
+    if auth_or_store_url.startswith('http://'):
+        auth_or_store_url = auth_or_store_url[len('http://'):]
+    elif auth_or_store_url.startswith('https://'):
+        auth_or_store_url = auth_or_store_url[len('https://'):]
+
+    credstring = ''
+    if user and key:
+        if to_quote:
+            quote_user = urllib.quote(user)
+            quote_key = urllib.quote(key)
+        else:
+            quote_user = user
+            quote_key = key
+        credstring = '%s:%s@' % (quote_user, quote_key)
+
+    auth_or_store_url = auth_or_store_url.strip('/')
+    container = container.strip('/')
+    obj = obj.strip('/')
+
+    return '%s://%s%s/%s/%s' % (scheme, credstring, auth_or_store_url,
+                                container, obj)
