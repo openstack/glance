@@ -607,7 +607,8 @@ class SwiftTests(object):
         store.set_acls(loc, public=True)
         container_headers = swiftclient.client.head_container('x', 'y',
                                                               'glance')
-        self.assertEqual(container_headers['X-Container-Read'], ".r:*")
+        self.assertEqual(container_headers['X-Container-Read'],
+                         ".r:*,.rlistings")
 
     def test_read_acl_tenants(self):
         """
