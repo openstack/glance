@@ -204,6 +204,35 @@ submitted bug fix does have a unit test, be sure to add a new one that fails
 without the patch and passes with the patch.
 
 
+Commit Messages
+---------------
+Using a common format for commit messages will help keep our git history
+readable. Follow these guidelines:
+
+  First, provide a brief summary of 50 characters or less.  Summaries
+  of greater then 72 characters will be rejected by the gate.
+
+  The first line of the commit message should provide an accurate
+  description of the change, not just a reference to a bug or
+  blueprint. It must be followed by a single blank line.
+
+  Following your brief summary, provide a more detailed description of
+  the patch, manually wrapping the text at 72 characters. This
+  description should provide enough detail that one does not have to
+  refer to external resources to determine its high-level functionality.
+
+  Once you use 'git review', two lines will be appended to the commit
+  message: a blank line followed by a 'Change-Id'. This is important
+  to correlate this commit with a specific review in Gerrit, and it
+  should not be modified.
+
+For further information on constructing high quality commit messages,
+and how to split up commits into a series of changes, consult the
+project wiki:
+
+   http://wiki.openstack.org/GitCommitMessages
+
+
 openstack-common
 ----------------
 
