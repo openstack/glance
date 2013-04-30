@@ -48,7 +48,8 @@ class TestRegistryClient(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestRegistryClient, self).setUp()
-        db_api.configure_db()
+        db_api.setup_db_env()
+        db_api.get_engine()
         self.context = context.RequestContext(is_admin=True)
         self.FIXTURES = [
             {'id': UUID1,
