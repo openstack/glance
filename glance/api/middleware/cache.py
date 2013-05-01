@@ -37,7 +37,7 @@ import glance.db
 from glance import image_cache
 import glance.openstack.common.log as logging
 from glance import notifier
-from glance import registry
+import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
 

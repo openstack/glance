@@ -27,7 +27,7 @@ from glance.common import exception
 from glance.common import utils
 from glance import context
 import glance.openstack.common.log as logging
-from glance import registry
+import glance.registry.client.v1.api as registry
 from glance import store
 
 LOG = logging.getLogger(__name__)

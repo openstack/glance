@@ -20,7 +20,7 @@ import webob
 import glance.api.middleware.cache
 from glance.common import exception
 from glance import context
-from glance import registry
+import glance.registry.client.v1.api as registry
 
 
 class TestCacheMiddlewareURLMatching(testtools.TestCase):

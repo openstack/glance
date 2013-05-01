@@ -25,7 +25,7 @@ from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
-from glance.registry import client as rclient
+from glance.registry.client.v1.api import client as rclient
 from glance.tests.unit import base
 
 
