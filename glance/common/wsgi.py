@@ -406,6 +406,19 @@ class Debug(Middleware):
         print
 
 
+class APIMapper(routes.Mapper):
+    """
+    Handle route matching when url is '' because routes.Mapper returns
+    an error in this case.
+    """
+
+    def routematch(self, url=None, environ=None):
+        if url is "":
+            result = self._match("", environ)
+            return result[0], result[1]
+        return routes.Mapper.routematch(self, url, environ)
+
+
 class Router(object):
     """
     WSGI middleware that maps incoming requests to WSGI apps.
@@ -435,13 +448,14 @@ class Router(object):
           # section of the URL.
           mapper.connect(None, "/v1.0/{path_info:.*}", controller=BlogApp())
         """
+        mapper.redirect("", "/")
         self.map = mapper
         self._router = routes.middleware.RoutesMiddleware(self._dispatch,
                                                           self.map)
 
     @classmethod
     def factory(cls, global_conf, **local_conf):
-        return cls(routes.Mapper())
+        return cls(APIMapper())
 
     @webob.dec.wsgify
     def __call__(self, req):

@@ -19,6 +19,9 @@ import webob
 
 import glance.api.common
 from glance.common import exception
+from glance.common import wsgi
+from glance.tests import utils as test_utils
+from glance.tests.unit import base
 
 
 class SimpleIterator(object):
@@ -125,3 +128,16 @@ class TestSizeCheckedIter(testtools.TestCase):
         self.assertEqual('CD', checked_image.next())
         self.assertEqual('E', checked_image.next())
         self.assertRaises(exception.GlanceException, checked_image.next)
+
+
+class TestMalformedRequest(base.IsolatedUnitTest):
+    def setUp(self):
+        """Establish a clean test environment"""
+        super(TestMalformedRequest, self).setUp()
+        self.api = test_utils.FakeAuthMiddleware(wsgi.Router.factory(None))
+
+    def test_redirect_incomplete_url(self):
+        """Test Glance redirects an empty url"""
+        req = webob.Request.blank('')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPFound.code)
