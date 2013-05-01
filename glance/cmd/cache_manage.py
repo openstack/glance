@@ -473,7 +473,7 @@ def user_confirm(prompt, default=False):
         return answer.lower() in ("yes", "y")
 
 
-if __name__ == '__main__':
+def main():
     usage = """
 %prog <command> [options] [args]
 

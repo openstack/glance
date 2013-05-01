@@ -19,9 +19,17 @@
 #    under the License.
 
 """
-Glance Image Cache Pruner
+Glance Image Cache Invalid Cache Entry and Stalled Image cleaner
 
-This is meant to be run as a periodic task, perhaps every half-hour.
+This is meant to be run as a periodic task from cron.
+
+If something goes wrong while we're caching an image (for example the fetch
+times out, or an exception is raised), we create an 'invalid' entry. These
+entires are left around for debugging purposes. However, after some period of
+time, we want to clean these up.
+
+Also, if an incomplete image hangs around past the image_cache_stall_time
+period, we automatically sweep it up.
 """
 
 import gettext
@@ -41,18 +49,18 @@ gettext.install('glance', unicode=1)
 from oslo.config import cfg
 
 from glance.common import config
-from glance.image_cache import pruner
+from glance.image_cache import cleaner
 from glance.openstack.common import log
 
 CONF = cfg.CONF
 
 
-if __name__ == '__main__':
+def main():
     try:
         config.parse_cache_args()
         log.setup('glance')
 
-        app = pruner.Pruner()
+        app = cleaner.Cleaner()
         app.run()
     except RuntimeError as e:
         sys.exit("ERROR: %s" % e)

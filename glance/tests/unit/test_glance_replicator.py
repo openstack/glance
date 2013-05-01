@@ -15,7 +15,6 @@
 #    under the License.
 
 import copy
-import imp
 import json
 import os
 import StringIO
@@ -26,19 +25,7 @@ import uuid
 import fixtures
 
 from glance.tests import utils as test_utils
-
-
-TOPDIR = os.path.normpath(os.path.join(
-                            os.path.dirname(os.path.abspath(__file__)),
-                            os.pardir,
-                            os.pardir,
-                            os.pardir))
-GLANCE_REPLICATOR_PATH = os.path.join(TOPDIR, 'bin', 'glance-replicator')
-
-sys.dont_write_bytecode = True
-glance_replicator = imp.load_source('glance_replicator',
-                                    GLANCE_REPLICATOR_PATH)
-sys.dont_write_bytecode = False
+from glance.cmd import replicator as glance_replicator
 
 
 IMG_RESPONSE_ACTIVE = {

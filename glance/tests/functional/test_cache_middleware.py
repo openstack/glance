@@ -535,7 +535,7 @@ log_file = %(log_file)s
 
         self.verify_no_cached_images()
 
-        cmd = ("bin/glance-cache-prefetcher --config-file %s" %
+        cmd = ("glance-cache-prefetcher --config-file %s" %
                cache_config_filepath)
 
         exitcode, out, err = execute(cmd)
