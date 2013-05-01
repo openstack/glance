@@ -21,6 +21,7 @@ import glance.api.middleware.cache
 from glance.common import exception
 from glance import context
 import glance.registry.client.v1.api as registry
+from glance.tests import utils
 
 
 class TestCacheMiddlewareURLMatching(testtools.TestCase):
@@ -140,7 +141,7 @@ class ProcessRequestTestCacheFilter(glance.api.middleware.cache.CacheFilter):
         self.cache = DummyCache()
 
 
-class TestCacheMiddlewareProcessRequest(testtools.TestCase):
+class TestCacheMiddlewareProcessRequest(utils.BaseTestCase):
     def setUp(self):
         super(TestCacheMiddlewareProcessRequest, self).setUp()
         self.stubs = stubout.StubOutForTesting()
@@ -204,7 +205,7 @@ class TestCacheMiddlewareProcessRequest(testtools.TestCase):
         self.assertEqual(True, actual)
 
 
-class TestProcessResponse(testtools.TestCase):
+class TestProcessResponse(utils.BaseTestCase):
     def setUp(self):
         super(TestProcessResponse, self).setUp()
         self.stubs = stubout.StubOutForTesting()

@@ -75,6 +75,7 @@ def _db_image_member_fixture(image_id, member_id, **kwargs):
 class TestImageRepo(test_utils.BaseTestCase):
 
     def setUp(self):
+        super(TestImageRepo, self).setUp()
         self.db = unit_test_utils.FakeDB()
         self.db.reset()
         self.context = glance.context.RequestContext(
@@ -83,7 +84,6 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.image_factory = glance.domain.ImageFactory()
         self._create_images()
         self._create_image_members()
-        super(TestImageRepo, self).setUp()
 
     def _create_images(self):
         self.db.reset()
@@ -275,6 +275,7 @@ class TestEncryptedLocations(test_utils.BaseTestCase):
 class TestImageMemberRepo(test_utils.BaseTestCase):
 
     def setUp(self):
+        super(TestImageMemberRepo, self).setUp()
         self.db = unit_test_utils.FakeDB()
         self.db.reset()
         self.context = glance.context.RequestContext(
@@ -286,7 +287,6 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         image = self.image_repo.get(UUID1)
         self.image_member_repo = glance.db.ImageMemberRepo(self.context,
                                                            self.db, image)
-        super(TestImageMemberRepo, self).setUp()
 
     def _create_images(self):
         self.images = [

@@ -20,6 +20,7 @@ import json
 from oslo.config import cfg
 import webob.exc
 
+from glance.api import policy
 from glance.common import wsgi
 import glance.context
 import glance.openstack.common.log as logging
@@ -58,6 +59,10 @@ class BaseContextMiddleware(wsgi.Middleware):
 
 
 class ContextMiddleware(BaseContextMiddleware):
+    def __init__(self, app):
+        self.policy_enforcer = policy.Enforcer()
+        super(ContextMiddleware, self).__init__(app)
+
     def process_request(self, req):
         """Convert authentication information into a request context
 
@@ -84,6 +89,7 @@ class ContextMiddleware(BaseContextMiddleware):
             'roles': [],
             'is_admin': False,
             'read_only': True,
+            'policy_enforcer': self.policy_enforcer,
         }
         return glance.context.RequestContext(**kwargs)
 
@@ -113,6 +119,7 @@ class ContextMiddleware(BaseContextMiddleware):
             'auth_tok': req.headers.get('X-Auth-Token', deprecated_token),
             'owner_is_tenant': CONF.owner_is_tenant,
             'service_catalog': service_catalog,
+            'policy_enforcer': self.policy_enforcer,
         }
 
         return glance.context.RequestContext(**kwargs)

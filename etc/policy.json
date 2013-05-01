@@ -1,4 +1,5 @@
 {
+    "context_is_admin":  "role:admin",
     "default": "",
     "manage_image_cache": "role:admin"
 }

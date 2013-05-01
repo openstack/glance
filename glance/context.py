@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from glance.api import policy
 from glance.openstack.common import local
 from glance.openstack.common import uuidutils
 
@@ -27,17 +28,22 @@ class RequestContext(object):
 
     def __init__(self, auth_tok=None, user=None, tenant=None, roles=None,
                  is_admin=False, read_only=False, show_deleted=False,
-                 owner_is_tenant=True, service_catalog=None):
+                 owner_is_tenant=True, service_catalog=None,
+                 policy_enforcer=None):
         self.auth_tok = auth_tok
         self.user = user
         self.tenant = tenant
         self.roles = roles or []
-        self.is_admin = is_admin
         self.read_only = read_only
         self._show_deleted = show_deleted
         self.owner_is_tenant = owner_is_tenant
         self.request_id = uuidutils.generate_uuid()
         self.service_catalog = service_catalog
+        self.policy_enforcer = policy_enforcer or policy.Enforcer()
+        self.is_admin = is_admin
+        if not self.is_admin:
+            self.is_admin = \
+                self.policy_enforcer.check_is_admin(self)
 
         if not hasattr(local.store, 'context'):
             self.update_store()

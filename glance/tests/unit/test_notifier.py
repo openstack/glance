@@ -464,6 +464,7 @@ class TestImageNotifications(utils.BaseTestCase):
     """Test Image Notifications work"""
 
     def setUp(self):
+        super(TestImageNotifications, self).setUp()
         self.image = ImageStub(
                 image_id=UUID1, name='image-1', status='active', size=1024,
                 created_at=DATETIME, updated_at=DATETIME, owner=TENANT1,
@@ -479,7 +480,6 @@ class TestImageNotifications(utils.BaseTestCase):
                 self.image_repo_stub, self.context, self.notifier)
         self.image_proxy = glance.notifier.ImageProxy(
                 self.image, self.context, self.notifier)
-        super(TestImageNotifications, self).setUp()
 
     def test_image_save_notification(self):
         self.image_repo_proxy.save(self.image_proxy)
