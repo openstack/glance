@@ -116,6 +116,19 @@ class TestCopyToFile(functional.FunctionalTest):
         # GET image and make sure image content is as expected
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               copy_image_id)
+
+        def _await_status(expected_status):
+            for i in xrange(100):
+                time.sleep(0.01)
+                http = httplib2.Http()
+                response, content = http.request(path, 'HEAD')
+                self.assertEqual(response.status, 200)
+                if response['x-image-meta-status'] == expected_status:
+                    return
+            self.fail('unexpected image status %s' %
+                      response['x-image-meta-status'])
+        _await_status('active')
+
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
