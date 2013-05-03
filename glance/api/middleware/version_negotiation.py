@@ -58,7 +58,7 @@ class VersionNegotiationFilter(wsgi.Middleware):
         else:
             LOG.debug(_("Using url versioning"))
             # Remove version in url so it doesn't conflict later
-            req_version = req.path_info_pop()
+            req_version = self._pop_path_info(req)
 
         try:
             version = self._match_version_string(req_version)
@@ -89,3 +89,20 @@ class VersionNegotiationFilter(wsgi.Middleware):
             raise ValueError()
 
         return major_version
+
+    def _pop_path_info(self, req):
+        """
+        'Pops' off the next segment of PATH_INFO, returns the popped
+        segment. Do NOT push it onto SCRIPT_NAME.
+        """
+        path = req.path_info
+        if not path:
+            return None
+        while path.startswith('/'):
+            path = path[1:]
+        idx = path.find('/')
+        if idx == -1:
+            idx = len(path)
+        r = path[:idx]
+        req.path_info = path[idx:]
+        return r
