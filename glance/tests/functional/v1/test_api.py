@@ -1584,7 +1584,7 @@ class TestApi(functional.FunctionalTest):
 
         images_dir = os.path.join(self.test_dir, 'images')
         image_count = len([name for name in os.listdir(images_dir)
-                           if os.path.isfile(name)])
+                           if os.path.isfile(os.path.join(images_dir, name))])
         self.assertEquals(image_count, 0)
 
         self.stop_servers()
