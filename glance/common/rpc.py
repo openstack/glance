@@ -18,12 +18,15 @@
 """
 RPC Controller
 """
+import json
 import traceback
 
 from oslo.config import cfg
 from webob import exc
 
+from glance.common import client
 from glance.common import exception
+import glance.openstack.common.importutils as imp
 import glance.openstack.common.log as logging
 
 
@@ -166,3 +169,72 @@ class Controller(object):
                 result = {"_error": {"cls": cls_path, "val": val}}
             results.append(result)
         return results
+
+
+class RPCClient(client.BaseClient):
+
+    def __init__(self, *args, **kwargs):
+        self.raise_exc = kwargs.pop("raise_exc", True)
+        self.base_path = kwargs.pop("base_path", '/rpc')
+        super(RPCClient, self).__init__(*args, **kwargs)
+
+    @client.handle_unauthenticated
+    def bulk_request(self, commands):
+        """
+        Execute multiple commands in a single request.
+
+        :params commands: List of commands to send. Commands
+        must respect the following form:
+
+            {
+                'command': 'method_name',
+                'kwargs': method_kwargs
+            }
+        """
+        body = json.dumps(commands)
+        response = super(RPCClient, self).do_request('POST',
+                                                     self.base_path,
+                                                     body)
+        return json.loads(response.read())
+
+    def do_request(self, method, **kwargs):
+        """
+        Simple do_request override. This method serializes
+        the outgoing body and builds the command that will
+        be sent.
+
+        :params method: The remote python method to call
+        :params kwargs: Dynamic parameters that will be
+            passed to the remote method.
+        """
+        content = self.bulk_request([{'command': method,
+                                      'kwargs': kwargs}])
+
+        # NOTE(flaper87): Return the first result if
+        # a single command was executed.
+        content = content[0]
+        if self.raise_exc and (content and '_error' in content):
+            error = content['_error']
+            try:
+                exc_cls = imp.import_class(error['cls'])
+                raise exc_cls(error['val'])
+            except ImportError:
+                # NOTE(flaper87): The exception
+                # class couldn't be imported, using
+                # a generic exception.
+                raise exception.RPCError(**error)
+        return content
+
+    def __getattr__(self, item):
+        """
+        This method returns a method_proxy that
+        will execute the rpc call in the registry
+        service.
+        """
+        if item.startswith('_'):
+            raise AttributeError(item)
+
+        def method_proxy(**kw):
+            return self.do_request(item, **kw)
+
+        return method_proxy

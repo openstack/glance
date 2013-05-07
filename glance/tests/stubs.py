@@ -41,8 +41,13 @@ DEBUG = False
 
 class FakeRegistryConnection(object):
 
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, registry=None):
+        self.registry = registry or rserver
+
+    def __call__(self, *args, **kwargs):
+        # NOTE(flaper87): This method takes
+        # __init__'s place in the chain.
+        return self
 
     def connect(self):
         return True
@@ -60,7 +65,7 @@ class FakeRegistryConnection(object):
 
     def getresponse(self):
         mapper = routes.Mapper()
-        server = rserver.API(mapper)
+        server = self.registry.API(mapper)
         # NOTE(markwash): we need to pass through context auth information if
         # we have it.
         if 'X-Auth-Token' in self.req.headers:
@@ -74,7 +79,7 @@ class FakeRegistryConnection(object):
                                       data=webob_res.body)
 
 
-def stub_out_registry_and_store_server(stubs, base_dir):
+def stub_out_registry_and_store_server(stubs, base_dir, **kwargs):
     """
     Mocks calls to 127.0.0.1 on 9191 and 9292 for testing so
     that a real Glance server does not need to be up and
@@ -171,7 +176,8 @@ def stub_out_registry_and_store_server(stubs, base_dir):
             return FakeGlanceConnection
         elif (client.port == DEFAULT_REGISTRY_PORT and
               client.host == '0.0.0.0'):
-            return FakeRegistryConnection
+            rserver = kwargs.get("registry", None)
+            return FakeRegistryConnection(registry=rserver)
 
     def fake_image_iter(self):
         for i in self.source.app_iter:
@@ -208,7 +214,8 @@ def stub_out_registry_server(stubs, **kwargs):
 
         if (client.port == DEFAULT_REGISTRY_PORT and
             client.host == '0.0.0.0'):
-            return FakeRegistryConnection
+            rserver = kwargs.pop("registry", None)
+            return FakeRegistryConnection(registry=rserver)
 
     def fake_image_iter(self):
         for i in self.response.app_iter:

@@ -48,6 +48,7 @@ class IsolatedUnitTest(StoreClearingUnitTest):
     Unit test case that establishes a mock environment within
     a testing directory (in isolation)
     """
+    registry = None
 
     def setUp(self):
         super(IsolatedUnitTest, self).setUp()
@@ -60,7 +61,9 @@ class IsolatedUnitTest(StoreClearingUnitTest):
                     default_store='filesystem',
                     filesystem_store_datadir=os.path.join(self.test_dir),
                     policy_file=policy_file)
-        stubs.stub_out_registry_and_store_server(self.stubs, self.test_dir)
+        stubs.stub_out_registry_and_store_server(self.stubs,
+                                                 self.test_dir,
+                                                 registry=self.registry)
         self.addCleanup(self.stubs.UnsetAll)
 
     def _copy_data_file(self, file_name, dst_dir):
