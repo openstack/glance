@@ -103,10 +103,10 @@ JSON-encoded mapping in the following format::
   The `is_public` field is a boolean indicating whether the image is
   publically available
 
-  The 'min_ram' field is an integer specifying the minimum amount of
+  The `min_ram` field is an integer specifying the minimum amount of
   ram needed to run this image on an instance, in megabytes
 
-  The 'min_disk' field is an integer specifying the minimum amount of
+  The `min_disk` field is an integer specifying the minimum amount of
   disk space needed to run this image on an instance, in gigabytes
 
   The `owner` field is a string which may either be null or which will
@@ -149,7 +149,7 @@ list details these query parameters.
 
   Filters images having a ``size`` attribute less than or equal to ``BYTES``
 
-These two resources also accept sort parameters:
+These two resources also accept additional query parameters:
 
 * ``sort_key=KEY``
 
@@ -161,6 +161,41 @@ These two resources also accept sort parameters:
 
   Results will be sorted in the direction ``DIR``. Accepted values are ``asc``
   for ascending or ``desc`` (default) for descending.
+
+* ``marker=ID``
+
+  An image identifier marker may be specified. When present only images which
+  occur after the identifier ``ID`` will be listed, ie the images which have
+  a `sort_key` later than that of the marker ``ID`` in the `sort_dir` direction.
+
+* ``limit=LIMIT``
+
+  When present the maximum number of results returned will not exceed ``LIMIT``.
+
+.. note::
+
+  If the specified ``LIMIT`` exceeds the operator defined limit (api_limit_max)
+  then the number of results returned may be less than ``LIMIT``.
+
+* ``is_public=PUBLIC``
+
+  An admin user may use the `is_public` parameter to control which results are
+  returned.
+
+  When the `is_public` parameter is absent or set to `True` the following images
+  will be listed: Images whose `is_public` field is `True`, owned images and
+  shared images.
+
+  When the `is_public` parameter is set to `False` the following images will be
+  listed: Images (owned, shared, or non-owned) whose `is_public` field is `False`.
+
+  When the `is_public` parameter is set to `None` all images will be listed
+  irrespective of owner, shared status or the `is_public` field.
+
+.. note::
+
+  Use of the `is_public` parameter is restricted to admin users. For all other
+  users it will be ignored.
 
 Retrieve Image Metadata
 ***********************
