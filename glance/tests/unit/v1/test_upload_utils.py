@@ -291,3 +291,38 @@ class TestUploadUtils(base.StoreClearingUnitTest):
         self._test_upload_data_to_store_exception(
                                         Exception,
                                         webob.exc.HTTPInternalServerError)
+
+    def test_upload_data_to_store_not_found_after_upload(self):
+        req = unit_test_utils.get_fake_request()
+
+        location = "file://foo/bar"
+        size = 10
+        checksum = "checksum"
+
+        image_meta = {'id': unit_test_utils.UUID1,
+                      'size': size}
+        image_data = "blah"
+
+        notifier = self.mox.CreateMockAnything()
+        store = self.mox.CreateMockAnything()
+        store.add(
+            image_meta['id'],
+            mox.IgnoreArg(),
+            image_meta['size']).AndReturn((location, size, checksum))
+
+        self.mox.StubOutWithMock(registry, "update_image_metadata")
+        update_data = {'checksum': checksum,
+                       'size': size}
+        registry.update_image_metadata(req.context,
+                                       image_meta['id'],
+                                       update_data
+                                       ).AndRaise(exception.NotFound)
+        self.mox.StubOutWithMock(upload_utils, "safe_kill")
+        upload_utils.safe_kill(req, image_meta['id'])
+        self.mox.ReplayAll()
+
+        self.assertRaises(webob.exc.HTTPPreconditionFailed,
+                          upload_utils.upload_data_to_store,
+                          req, image_meta, image_data, store, notifier)
+
+        self.mox.VerifyAll()
