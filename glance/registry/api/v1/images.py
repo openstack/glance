@@ -70,7 +70,7 @@ class Controller(object):
         try:
             return self.db_api.image_get_all(context, filters=filters,
                                              **params)
-        except exception.NotFound as e:
+        except (exception.NotFound, exception.Forbidden) as e:
             msg = _("Invalid marker. Image could not be found.")
             raise exc.HTTPBadRequest(explanation=msg)
 

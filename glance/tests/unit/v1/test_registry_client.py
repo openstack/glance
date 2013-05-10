@@ -439,6 +439,25 @@ class TestRegistryV1Client(base.IsolatedUnitTest):
                           self.client.get_images,
                           marker=_gen_uuid())
 
+    def test_get_image_index_forbidden_marker(self):
+        """Test exception is raised when marker is forbidden"""
+        UUID5 = _gen_uuid()
+        extra_fixture = {'id': UUID5,
+                         'status': 'saving',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #125',
+                         'size': 19,
+                         'owner': '0123',
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+        self.context = context.RequestContext(is_admin=False)
+        self.assertRaises(exception.Invalid,
+                          self.client.get_images,
+                          marker=UUID5)
+
     def test_get_image_index_limit(self):
         """Test correct number of images returned with limit param."""
         extra_fixture = {'id': _gen_uuid(),
@@ -598,6 +617,25 @@ class TestRegistryV1Client(base.IsolatedUnitTest):
         self.assertRaises(exception.Invalid,
                           self.client.get_images_detailed,
                           marker=_gen_uuid())
+
+    def test_get_image_details_forbidden_marker(self):
+        """Test exception is raised when marker is forbidden"""
+        UUID5 = _gen_uuid()
+        extra_fixture = {'id': UUID5,
+                         'status': 'saving',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #125',
+                         'size': 19,
+                         'owner': '0123',
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+        self.context = context.RequestContext(is_admin=False)
+        self.assertRaises(exception.Invalid,
+                          self.client.get_images_detailed,
+                          marker=UUID5)
 
     def test_get_image_details_by_name(self):
         """Tests that a detailed call can be filtered by name"""
