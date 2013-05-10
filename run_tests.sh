@@ -9,8 +9,8 @@ function usage {
   echo "  -f, --force              Force a clean re-build of the virtual environment. Useful when dependencies have been added."
   echo "  -u, --update             Update the virtual environment with any newer package versions"
   echo "  --unittests-only         Run unit tests only, exclude functional tests."
-  echo "  -p, --pep8               Just run pep8"
-  echo "  -P, --no-pep8            Don't run static code checks"
+  echo "  -p, --flake8               Just run flake8"
+  echo "  -P, --no-flake8            Don't run static code checks"
   echo "  -h, --help               Print this usage message"
   echo ""
   echo "Note: with no options specified, the script will try to run the tests in a virtual environment,"
@@ -24,8 +24,8 @@ function process_option {
     -h|--help) usage;;
     -V|--virtual-env) let always_venv=1; let never_venv=0;;
     -N|--no-virtual-env) let always_venv=0; let never_venv=1;;
-    -p|--pep8) let just_pep8=1;;
-    -P|--no-pep8) let no_pep8=1;;
+    -p|--flake8) let just_flake8=1;;
+    -P|--no-flake8) let no_flake8=1;;
     -f|--force) let force=1;;
     -u|--update) update=1;;
     --unittests-only) noseopts="$noseopts --exclude-dir=glance/tests/functional";;
@@ -43,8 +43,8 @@ force=0
 noseopts=
 noseargs=
 wrapper=""
-just_pep8=0
-no_pep8=0
+just_flake8=0
+no_flake8=0
 update=0
 
 export NOSE_WITH_OPENSTACK=1
@@ -66,14 +66,14 @@ function run_tests {
   ${wrapper} $NOSETESTS
 }
 
-function run_pep8 {
-  echo "Running pep8 ..."
-  PEP8_EXCLUDE=".venv,.tox,dist,doc,openstack"
-  PEP8_OPTIONS="--exclude=$PEP8_EXCLUDE --repeat"
-  PEP8_IGNORE="--ignore=E125,E126,E711,E712"
-  PEP8_INCLUDE="."
+function run_flake8 {
+  echo "Running flake8 ..."
+  FLAKE8_EXCLUDE=".venv,.git,.tox,dist,doc,etc,*glance/locale*,*openstack/common*,*lib/python*,*egg,build"
+  FLAKE8_OPTIONS="--exclude=$FLAKE8_EXCLUDE"
+  FLAKE8_IGNORE="--ignore=E125,E126,E711,E712,F,H"
+  FLAKE8_INCLUDE="."
 
-  ${wrapper} pep8 $PEP8_OPTIONS $PEP8_INCLUDE $PEP8_IGNORE
+  ${wrapper} flake8 $FLAKE8_OPTIONS $FLAKE8_INCLUDE $FLAKE8_IGNORE
 }
 
 
@@ -109,15 +109,15 @@ then
   fi
 fi
 
-if [ $just_pep8 -eq 1 ]; then
-    run_pep8
+if [ $just_flake8 -eq 1 ]; then
+    run_flake8
     exit
 fi
 
 run_tests || exit
 
 if [ -z "$noseargs" ]; then
-    if [ $no_pep8 -eq 0 ]; then
-        run_pep8
+    if [ $no_flake8 -eq 0 ]; then
+        run_flake8
     fi
 fi
