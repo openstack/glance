@@ -275,7 +275,7 @@ class Controller(controller.BaseController):
         If the above constraint is violated, we reject with 400 "Bad Request".
         """
         if source:
-            for scheme in ['s3', 'swift', 'http']:
+            for scheme in ['s3', 'swift', 'http', 'rbd']:
                 if source.lower().startswith(scheme):
                     return source
             msg = _("External sourcing not supported for store %s") % source
