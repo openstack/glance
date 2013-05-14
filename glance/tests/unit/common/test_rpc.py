@@ -24,6 +24,7 @@ import webob
 
 from glance.common import rpc
 from glance.common import wsgi
+from glance.common import exception
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
@@ -197,3 +198,49 @@ class TestRPCController(base.IsolatedUnitTest):
         returned = json.loads(res.body)[0]
         self.assertEquals(returned['_error']['cls'],
                           'glance.common.exception.RPCError')
+
+
+class TestRPCClient(base.IsolatedUnitTest):
+
+    def setUp(self):
+        super(TestRPCClient, self).setUp()
+        self.api = create_api()
+        self.client = rpc.RPCClient(host="http://127.0.0.1:9191")
+        self.client._do_request = self.fake_request
+
+    def fake_request(self, method, url, body, headers):
+        req = webob.Request.blank(url.path)
+        req.body = body
+        req.method = method
+
+        webob_res = req.get_response(self.api)
+        return test_utils.FakeHTTPResponse(status=webob_res.status_int,
+                                           headers=webob_res.headers,
+                                           data=webob_res.body)
+
+    def test_method_proxy(self):
+        proxy = self.client.some_method
+        self.assertIn("method_proxy", str(proxy))
+
+    def test_bulk_request(self):
+        commands = [{"command": "get_images", 'kwargs': {'keyword': True}},
+                    {"command": "get_all_images"}]
+
+        res = self.client.bulk_request(commands)
+        self.assertEquals(len(res), 2)
+        self.assertTrue(res[0])
+        self.assertFalse(res[1])
+
+    def test_exception_raise(self):
+        try:
+            self.client.raise_value_error()
+            self.fail("Exception not raised")
+        except ValueError as exc:
+            self.assertEquals(str(exc), "Yep, Just like that!")
+
+    def test_rpc_exception(self):
+        try:
+            self.client.raise_weird_error()
+            self.fail("Exception not raised")
+        except exception.RPCError:
+            pass
