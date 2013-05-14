@@ -180,16 +180,6 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
         store.configure_add()
         return store
 
-    def get_default_store_specs(self, image_id):
-        return {
-            'scheme': 'swift+http',
-            'auth_or_store_url': self.swift_config['swift_store_auth_address'],
-            'user': self.swift_config['swift_store_user'],
-            'key': self.swift_config['swift_store_key'],
-            'container': self.swift_config['swift_store_container'],
-            'obj': image_id,
-        }
-
     def test_object_chunking(self):
         """Upload an image that is split into multiple swift objects.
 

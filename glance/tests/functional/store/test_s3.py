@@ -112,16 +112,6 @@ class TestS3Store(store_tests.BaseTestCase, testtools.TestCase):
         store.configure_add()
         return store
 
-    def get_default_store_specs(self, image_id):
-        return {
-            'scheme': 's3',
-            's3serviceurl': self.s3_config['s3_store_host'],
-            'accesskey': self.s3_config['s3_store_access_key'],
-            'secretkey': self.s3_config['s3_store_secret_key'],
-            'bucket': self.s3_config['s3_store_bucket'],
-            'key': image_id,
-        }
-
     def stash_image(self, image_id, image_data):
         bucket_name = self.s3_config['s3_store_bucket']
         s3_put_object(self.s3_client, bucket_name, image_id, 'XXX')
