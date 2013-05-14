@@ -24,10 +24,13 @@ RBD backend. This backend must be running Ceph Bobtail (0.56) or later.
 
 import ConfigParser
 import os
+import StringIO
 
 import oslo.config.cfg
 import testtools
 
+from glance.common import exception
+from glance.openstack.common import uuidutils
 import glance.store.rbd
 import glance.tests.functional.store as store_tests
 
@@ -113,6 +116,8 @@ class TestRBDStore(store_tests.BaseTestCase, testtools.TestCase):
         fsid = self.rados_client.get_fsid()
         pool = self.rbd_config['rbd_store_pool']
         librbd = rbd.RBD()
+        # image_id must not be unicode since librbd doesn't handle it
+        image_id = str(image_id)
         snap_name = 'snap'
         with self.rados_client.open_ioctx(pool) as ioctx:
             librbd.create(ioctx, image_id, len(image_data), old_format=False,
@@ -122,3 +127,39 @@ class TestRBDStore(store_tests.BaseTestCase, testtools.TestCase):
                 image.create_snap(snap_name)
 
         return 'rbd://%s/%s/%s/%s' % (fsid, pool, image_id, snap_name)
+
+    def test_unicode(self):
+        # librbd does not handle unicode, so make sure
+        # all paths through the rbd store convert a unicode image id
+        # and uri to ascii before passing it to librbd.
+        store = self.get_store()
+
+        image_id = unicode(uuidutils.generate_uuid())
+        image_size = 300
+        image_data = StringIO.StringIO('X' * image_size)
+        image_checksum = '41757066eaff7c4c6c965556b4d3c6c5'
+
+        uri, add_size, add_checksum = store.add(image_id,
+                                                image_data,
+                                                image_size)
+        uri = unicode(uri)
+
+        self.assertEqual(image_size, add_size)
+        self.assertEqual(image_checksum, add_checksum)
+
+        location = glance.store.location.Location(
+                self.store_name,
+                store.get_store_location_class(),
+                uri=uri,
+                image_id=image_id)
+
+        self.assertEqual(image_size, store.get_size(location))
+
+        get_iter, get_size = store.get(location)
+
+        self.assertEqual(image_size, get_size)
+        self.assertEqual('X' * image_size, ''.join(get_iter))
+
+        store.delete(location)
+
+        self.assertRaises(exception.NotFound, store.get, location)

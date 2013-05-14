@@ -198,7 +198,7 @@ class Store(glance.store.base.Store):
         :raises `glance.exception.NotFound` if image does not exist
         """
         loc = location.store_location
-        return (ImageIterator(str(loc.image), self), self.get_size(location))
+        return (ImageIterator(loc.image, self), self.get_size(location))
 
     def get_size(self, location):
         """
@@ -314,7 +314,7 @@ class Store(glance.store.base.Store):
                             raise exception.InUseByStore()
                         image.remove_snap(loc.snapshot)
                 try:
-                    rbd.RBD().remove(ioctx, str(loc.image))
+                    rbd.RBD().remove(ioctx, loc.image)
                 except rbd.ImageNotFound:
                     raise exception.NotFound(
                         _('RBD image %s does not exist') % loc.image)
