@@ -190,15 +190,38 @@ class Store(glance.store.base.Store):
     def get(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates
-        where to find the image file, and returns a generator for reading
-        the image file
+        where to find the image file, and returns a tuple of generator
+        (for reading the image file) and image_size
 
         :param location `glance.store.location.Location` object, supplied
                         from glance.store.location.get_location_from_uri()
         :raises `glance.exception.NotFound` if image does not exist
         """
         loc = location.store_location
-        return (ImageIterator(str(loc.image), self), None)
+        return (ImageIterator(str(loc.image), self), self.get_size(location))
+
+    def get_size(self, location):
+        """
+        Takes a `glance.store.location.Location` object that indicates
+        where to find the image file, and returns the size
+
+        :param location `glance.store.location.Location` object, supplied
+                        from glance.store.location.get_location_from_uri()
+        :raises `glance.exception.NotFound` if image does not exist
+        """
+        loc = location.store_location
+        with rados.Rados(conffile=self.conf_file,
+                         rados_id=self.user) as conn:
+            with conn.open_ioctx(self.pool) as ioctx:
+                try:
+                    with rbd.Image(ioctx, loc.image,
+                                   snapshot=loc.snapshot) as image:
+                        img_info = image.stat()
+                        return img_info['size']
+                except rbd.ImageNotFound:
+                    msg = _('RBD image %s does not exist') % loc.get_uri()
+                    LOG.debug(msg)
+                    raise exception.NotFound(msg)
 
     def _create_image(self, fsid, ioctx, name, size, order):
         """
