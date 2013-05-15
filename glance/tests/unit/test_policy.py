@@ -60,6 +60,23 @@ class ImageFactoryStub(object):
         return 'new_image'
 
 
+class MemberRepoStub(object):
+    def add(self, *args, **kwargs):
+        return 'member_repo_add'
+
+    def get(self, *args, **kwargs):
+        return 'member_repo_get'
+
+    def save(self, *args, **kwargs):
+        return 'member_repo_save'
+
+    def list(self, *args, **kwargs):
+        return 'member_repo_list'
+
+    def remove(self, *args, **kwargs):
+        return 'member_repo_remove'
+
+
 class TestPolicyEnforcer(base.IsolatedUnitTest):
     def test_policy_file_default_rules_default_location(self):
         enforcer = glance.api.policy.Enforcer()
@@ -258,6 +275,69 @@ class TestImagePolicy(test_utils.BaseTestCase):
 
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
         self.assertRaises(exception.Forbidden, image.get_data)
+
+
+class TestMemberPolicy(test_utils.BaseTestCase):
+    def setUp(self):
+        self.policy = unit_test_utils.FakePolicyEnforcer()
+        self.member_repo = glance.api.policy.ImageMemberRepoProxy(
+            MemberRepoStub(), {}, self.policy)
+        super(TestMemberPolicy, self).setUp()
+
+    def test_add_member_not_allowed(self):
+        rules = {'add_member': False}
+        self.policy.set_rules(rules)
+        self.assertRaises(exception.Forbidden, self.member_repo.add, '')
+
+    def test_add_member_allowed(self):
+        rules = {'add_member': True}
+        self.policy.set_rules(rules)
+        output = self.member_repo.add('')
+        self.assertEqual(output, 'member_repo_add')
+
+    def test_get_member_not_allowed(self):
+        rules = {'get_member': False}
+        self.policy.set_rules(rules)
+        self.assertRaises(exception.Forbidden, self.member_repo.get, '')
+
+    def test_get_member_allowed(self):
+        rules = {'get_member': True}
+        self.policy.set_rules(rules)
+        output = self.member_repo.get('')
+        self.assertEqual(output, 'member_repo_get')
+
+    def test_modify_member_not_allowed(self):
+        rules = {'modify_member': False}
+        self.policy.set_rules(rules)
+        self.assertRaises(exception.Forbidden, self.member_repo.save, '')
+
+    def test_modify_member_allowed(self):
+        rules = {'modify_member': True}
+        self.policy.set_rules(rules)
+        output = self.member_repo.save('')
+        self.assertEqual(output, 'member_repo_save')
+
+    def test_get_members_not_allowed(self):
+        rules = {'get_members': False}
+        self.policy.set_rules(rules)
+        self.assertRaises(exception.Forbidden, self.member_repo.list, '')
+
+    def test_get_members_allowed(self):
+        rules = {'get_members': True}
+        self.policy.set_rules(rules)
+        output = self.member_repo.list('')
+        self.assertEqual(output, 'member_repo_list')
+
+    def test_delete_member_not_allowed(self):
+        rules = {'delete_member': False}
+        self.policy.set_rules(rules)
+        self.assertRaises(exception.Forbidden, self.member_repo.remove, '')
+
+    def test_delete_member_allowed(self):
+        rules = {'delete_member': True}
+        self.policy.set_rules(rules)
+        output = self.member_repo.remove('')
+        self.assertEqual(output, 'member_repo_remove')
 
 
 class TestContextPolicyEnforcer(base.IsolatedUnitTest):

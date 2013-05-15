@@ -211,6 +211,10 @@ class ImageProxy(glance.domain.proxy.Image):
         self.policy.enforce(self.context, 'download_image', {})
         return self.image.get_data(*args, **kwargs)
 
+    def get_member_repo(self, **kwargs):
+        member_repo = self.image.get_member_repo(**kwargs)
+        return ImageMemberRepoProxy(member_repo, self.context, self.policy)
+
 
 class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
 
@@ -227,3 +231,40 @@ class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
         if kwargs.get('visibility') == 'public':
             self.policy.enforce(self.context, 'publicize_image', {})
         return super(ImageFactoryProxy, self).new_image(**kwargs)
+
+
+class ImageMemberFactoryProxy(glance.domain.proxy.ImageMembershipFactory):
+
+    def __init__(self, member_factory, context, policy):
+        super(ImageMemberFactoryProxy, self).__init__(
+            member_factory,
+            image_proxy_class=ImageProxy,
+            image_proxy_kwargs={'context': context, 'policy': policy})
+
+
+class ImageMemberRepoProxy(glance.domain.proxy.Repo):
+
+    def __init__(self, member_repo, context, policy):
+        self.member_repo = member_repo
+        self.context = context
+        self.policy = policy
+
+    def add(self, member):
+        self.policy.enforce(self.context, 'add_member', {})
+        return self.member_repo.add(member)
+
+    def get(self, member_id):
+        self.policy.enforce(self.context, 'get_member', {})
+        return self.member_repo.get(member_id)
+
+    def save(self, member):
+        self.policy.enforce(self.context, 'modify_member', {})
+        return self.member_repo.save(member)
+
+    def list(self, *args, **kwargs):
+        self.policy.enforce(self.context, 'get_members', {})
+        return self.member_repo.list(*args, **kwargs)
+
+    def remove(self, member):
+        self.policy.enforce(self.context, 'delete_member', {})
+        return self.member_repo.remove(member)

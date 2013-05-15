@@ -17,6 +17,7 @@
 
 import webob.exc
 
+from glance.api import policy
 from glance.api.v1 import controller
 from glance.common import exception
 from glance.common import utils
@@ -29,9 +30,19 @@ LOG = logging.getLogger(__name__)
 
 class Controller(controller.BaseController):
 
+    def __init__(self):
+        self.policy = policy.Enforcer()
+
     def _check_can_access_image_members(self, context):
         if context.owner is None and not context.is_admin:
             raise webob.exc.HTTPUnauthorized(_("No authenticated user"))
+
+    def _enforce(self, req, action):
+        """Authorize an action against our policies"""
+        try:
+            self.policy.enforce(req.context, action, {})
+        except exception.Forbidden:
+            raise webob.exc.HTTPForbidden()
 
     def index(self, req, image_id):
         """
@@ -47,6 +58,8 @@ class Controller(controller.BaseController):
                  'can_share': <SHARE_PERMISSION>, ...}, ...
             ]}
         """
+        self._enforce(req, 'get_members')
+
         try:
             members = registry.get_image_members(req.context, image_id)
         except exception.NotFound:
@@ -65,6 +78,7 @@ class Controller(controller.BaseController):
         Removes a membership from the image.
         """
         self._check_can_access_image_members(req.context)
+        self._enforce(req, 'delete_member')
 
         try:
             registry.delete_member(req.context, image_id, id)
@@ -99,6 +113,7 @@ class Controller(controller.BaseController):
         remain unchanged and new memberships default to False.
         """
         self._check_can_access_image_members(req.context)
+        self._enforce(req, 'modify_member')
 
         # Figure out can_share
         can_share = None
@@ -134,6 +149,7 @@ class Controller(controller.BaseController):
             ]}
         """
         self._check_can_access_image_members(req.context)
+        self._enforce(req, 'modify_member')
 
         try:
             registry.replace_members(req.context, image_id, body)

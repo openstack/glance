@@ -1419,6 +1419,30 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         num_members = len(memb_list['members'])
         self.assertEquals(num_members, 0)
 
+    def test_get_image_members_allowed_by_policy(self):
+        rules = {"get_members": '@'}
+        self.set_policy_rules(rules)
+
+        req = webob.Request.blank('/images/%s/members' % UUID2)
+        req.method = 'GET'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        memb_list = json.loads(res.body)
+        num_members = len(memb_list['members'])
+        self.assertEquals(num_members, 0)
+
+    def test_get_image_members_forbidden_by_policy(self):
+        rules = {"get_members": '!'}
+        self.set_policy_rules(rules)
+
+        req = webob.Request.blank('/images/%s/members' % UUID2)
+        req.method = 'GET'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPForbidden.code)
+
     def test_get_image_members_not_existing(self):
         """
         Tests proper exception is raised if attempt to get members of
@@ -1461,6 +1485,36 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
 
+    def test_replace_members_forbidden_by_policy(self):
+        rules = {"modify_member": '!'}
+        self.set_policy_rules(rules)
+        self.api = test_utils.FakeAuthMiddleware(router.API(self.mapper),
+                                                 is_admin=True)
+        fixture = [{'member_id': 'pattieblack', 'can_share': 'false'}]
+
+        req = webob.Request.blank('/images/%s/members' % UUID1)
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(memberships=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPForbidden.code)
+
+    def test_replace_members_allowed_by_policy(self):
+        rules = {"modify_member": '@'}
+        self.set_policy_rules(rules)
+        self.api = test_utils.FakeAuthMiddleware(router.API(self.mapper),
+                                                 is_admin=True)
+        fixture = [{'member_id': 'pattieblack', 'can_share': 'false'}]
+
+        req = webob.Request.blank('/images/%s/members' % UUID1)
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(memberships=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPNoContent.code)
+
     def test_add_member(self):
         """
         Tests adding image members raises right exception
@@ -1473,6 +1527,28 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
 
+    def test_add_member_forbidden_by_policy(self):
+        rules = {"modify_member": '!'}
+        self.set_policy_rules(rules)
+        self.api = test_utils.FakeAuthMiddleware(router.API(self.mapper),
+                                                 is_admin=True)
+        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID1)
+        req.method = 'PUT'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPForbidden.code)
+
+    def test_add_member_allowed_by_policy(self):
+        rules = {"modify_member": '@'}
+        self.set_policy_rules(rules)
+        self.api = test_utils.FakeAuthMiddleware(router.API(self.mapper),
+                                                 is_admin=True)
+        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID1)
+        req.method = 'PUT'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPNoContent.code)
+
     def test_delete_member(self):
         """
         Tests deleting image members raises right exception
@@ -1484,6 +1560,32 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPUnauthorized.code)
+
+    def test_delete_member_allowed_by_policy(self):
+        rules = {"delete_member": '@', "modify_member": '@'}
+        self.set_policy_rules(rules)
+        self.api = test_utils.FakeAuthMiddleware(router.API(self.mapper),
+                                                 is_admin=True)
+        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
+        req.method = 'PUT'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPNoContent.code)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPNoContent.code)
+
+    def test_delete_member_forbidden_by_policy(self):
+        rules = {"delete_member": '!', "modify_member": '@'}
+        self.set_policy_rules(rules)
+        self.api = test_utils.FakeAuthMiddleware(router.API(self.mapper),
+                                                 is_admin=True)
+        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
+        req.method = 'PUT'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPNoContent.code)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPForbidden.code)
 
 
 class TestImageSerializer(base.IsolatedUnitTest):
