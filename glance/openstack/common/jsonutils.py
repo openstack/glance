@@ -38,13 +38,21 @@ import functools
 import inspect
 import itertools
 import json
-import logging
+import types
 import xmlrpclib
 
-from glance.openstack.common.gettextutils import _
+import six
+
 from glance.openstack.common import timeutils
 
-LOG = logging.getLogger(__name__)
+
+_nasty_type_tests = [inspect.ismodule, inspect.isclass, inspect.ismethod,
+                     inspect.isfunction, inspect.isgeneratorfunction,
+                     inspect.isgenerator, inspect.istraceback, inspect.isframe,
+                     inspect.iscode, inspect.isbuiltin, inspect.isroutine,
+                     inspect.isabstract]
+
+_simple_types = (types.NoneType, int, basestring, bool, float, long)
 
 
 def to_primitive(value, convert_instances=False, convert_datetime=True,
@@ -62,19 +70,32 @@ def to_primitive(value, convert_instances=False, convert_datetime=True,
     Therefore, convert_instances=True is lossy ... be aware.
 
     """
-    nasty = [inspect.ismodule, inspect.isclass, inspect.ismethod,
-             inspect.isfunction, inspect.isgeneratorfunction,
-             inspect.isgenerator, inspect.istraceback, inspect.isframe,
-             inspect.iscode, inspect.isbuiltin, inspect.isroutine,
-             inspect.isabstract]
-    for test in nasty:
-        if test(value):
-            return unicode(value)
+    # handle obvious types first - order of basic types determined by running
+    # full tests on nova project, resulting in the following counts:
+    # 572754 <type 'NoneType'>
+    # 460353 <type 'int'>
+    # 379632 <type 'unicode'>
+    # 274610 <type 'str'>
+    # 199918 <type 'dict'>
+    # 114200 <type 'datetime.datetime'>
+    #  51817 <type 'bool'>
+    #  26164 <type 'list'>
+    #   6491 <type 'float'>
+    #    283 <type 'tuple'>
+    #     19 <type 'long'>
+    if isinstance(value, _simple_types):
+        return value
 
-    # value of itertools.count doesn't get caught by inspects
-    # above and results in infinite loop when list(value) is called.
+    if isinstance(value, datetime.datetime):
+        if convert_datetime:
+            return timeutils.strtime(value)
+        else:
+            return value
+
+    # value of itertools.count doesn't get caught by nasty_type_tests
+    # and results in infinite loop when list(value) is called.
     if type(value) == itertools.count:
-        return unicode(value)
+        return six.text_type(value)
 
     # FIXME(vish): Workaround for LP bug 852095. Without this workaround,
     #              tests that raise an exception in a mocked method that
@@ -85,8 +106,6 @@ def to_primitive(value, convert_instances=False, convert_datetime=True,
         return 'mock'
 
     if level > max_depth:
-        LOG.error(_('Max serialization depth exceeded on object: %d %s'),
-                  level, value)
         return '?'
 
     # The try block may not be necessary after the class check above,
@@ -97,17 +116,18 @@ def to_primitive(value, convert_instances=False, convert_datetime=True,
                                       convert_datetime=convert_datetime,
                                       level=level,
                                       max_depth=max_depth)
+        if isinstance(value, dict):
+            return dict((k, recursive(v)) for k, v in value.iteritems())
+        elif isinstance(value, (list, tuple)):
+            return [recursive(lv) for lv in value]
+
         # It's not clear why xmlrpclib created their own DateTime type, but
         # for our purposes, make it a datetime type which is explicitly
         # handled
         if isinstance(value, xmlrpclib.DateTime):
             value = datetime.datetime(*tuple(value.timetuple())[:6])
 
-        if isinstance(value, (list, tuple)):
-            return [recursive(v) for v in value]
-        elif isinstance(value, dict):
-            return dict((k, recursive(v)) for k, v in value.iteritems())
-        elif convert_datetime and isinstance(value, datetime.datetime):
+        if convert_datetime and isinstance(value, datetime.datetime):
             return timeutils.strtime(value)
         elif hasattr(value, 'iteritems'):
             return recursive(dict(value.iteritems()), level=level + 1)
@@ -118,11 +138,13 @@ def to_primitive(value, convert_instances=False, convert_datetime=True,
             # Ignore class member vars.
             return recursive(value.__dict__, level=level + 1)
         else:
+            if any(test(value) for test in _nasty_type_tests):
+                return six.text_type(value)
             return value
     except TypeError:
         # Class objects are tricky since they may define something like
         # __iter__ defined but it isn't callable as list().
-        return unicode(value)
+        return six.text_type(value)
 
 
 def dumps(value, default=to_primitive, **kwargs):

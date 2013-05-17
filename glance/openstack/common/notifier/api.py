@@ -1,4 +1,4 @@
-# Copyright 2011 OpenStack LLC.
+# Copyright 2011 OpenStack Foundation.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -30,7 +30,6 @@ LOG = logging.getLogger(__name__)
 notifier_opts = [
     cfg.MultiStrOpt('notification_driver',
                     default=[],
-                    deprecated_name='list_notifier_drivers',
                     help='Driver or drivers to handle sending notifications'),
     cfg.StrOpt('default_notification_level',
                default='INFO',

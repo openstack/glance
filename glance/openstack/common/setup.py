@@ -20,6 +20,8 @@
 Utilities with minimum-depends for use in setup.py
 """
 
+from __future__ import print_function
+
 import email
 import os
 import re
@@ -125,11 +127,9 @@ def _run_shell_command(cmd, throw_on_error=False):
     out = output.communicate()
     if output.returncode and throw_on_error:
         raise Exception("%s returned %d" % cmd, output.returncode)
-    if len(out) == 0:
+    if not out:
         return None
-    if len(out[0].strip()) == 0:
-        return None
-    return out[0].strip()
+    return out[0].strip() or None
 
 
 def _get_git_directory():
@@ -232,7 +232,7 @@ def get_cmdclass():
             builders = ['html', 'man']
 
             def generate_autoindex(self):
-                print "**Autodocumenting from %s" % os.path.abspath(os.curdir)
+                print("**Autodocumenting from %s" % os.path.abspath(os.curdir))
                 modules = {}
                 option_dict = self.distribution.get_option_dict('build_sphinx')
                 source_dir = os.path.join(option_dict['source_dir'][1], 'api')
@@ -257,7 +257,7 @@ def get_cmdclass():
                         values = dict(module=module, heading=heading,
                                       underline=underline)
 
-                        print "Generating %s" % output_filename
+                        print("Generating %s" % output_filename)
                         with open(output_filename, 'w') as output_file:
                             output_file.write(_rst_template % values)
                         autoindex.write("   %s.rst\n" % module)
