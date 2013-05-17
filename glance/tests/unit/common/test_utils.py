@@ -118,13 +118,6 @@ class TestUtils(test_utils.BaseTestCase):
 
         self.assertRaises(exception.ImageSizeLimitExceeded, _consume_all_read)
 
-    def test_bool_from_string(self):
-        actual = utils.bool_from_string('true')
-        self.assertEqual(True, actual)
-
-        actual = utils.bool_from_string(1)
-        self.assertEqual(True, actual)
-
     def test_get_meta_from_headers(self):
         resp = webob.Response()
         resp.headers = {"x-image-meta-*": 'test'}

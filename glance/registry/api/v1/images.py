@@ -27,6 +27,7 @@ from glance.common import utils
 from glance.common import wsgi
 import glance.db
 import glance.openstack.common.log as logging
+from glance.openstack.common import strutils
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
 
@@ -273,7 +274,7 @@ class Controller(object):
         deleted = req.params.get('deleted')
         if deleted is None:
             return None
-        return utils.bool_from_string(deleted)
+        return strutils.bool_from_string(deleted)
 
     def show(self, req, id):
         """Return data about the given image id."""

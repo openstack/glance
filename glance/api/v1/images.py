@@ -44,6 +44,7 @@ from glance.common import utils
 from glance.common import wsgi
 from glance import notifier
 import glance.openstack.common.log as logging
+from glance.openstack.common import strutils
 import glance.registry.client.v1.api as registry
 from glance.store import (get_from_backend,
                           get_size_from_backend,
@@ -634,7 +635,7 @@ class Controller(controller.BaseController):
         # properties NOT to be purged. However we also disable purging of
         # properties if an image file is being uploaded...
         purge_props = req.headers.get('x-glance-registry-purge-props', True)
-        purge_props = (utils.bool_from_string(purge_props) and
+        purge_props = (strutils.bool_from_string(purge_props) and
                        image_data is None)
 
         if image_data is not None and orig_status != 'queued':
