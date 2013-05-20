@@ -16,6 +16,7 @@
 #    under the License.
 
 import json
+
 import stubout
 import webob
 
@@ -131,19 +132,28 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
             {},  # missing everything
             {
                 'username': 'user1',
+                'strategy': 'keystone',
                 'password': 'pass'
             },  # missing auth_url
             {
                 'password': 'pass',
+                'strategy': 'keystone',
                 'auth_url': 'http://localhost/v1'
             },  # missing username
             {
                 'username': 'user1',
+                'strategy': 'keystone',
                 'auth_url': 'http://localhost/v1'
             },  # missing password
             {
                 'username': 'user1',
                 'password': 'pass',
+                'auth_url': 'http://localhost/v1'
+            },  # missing strategy
+            {
+                'username': 'user1',
+                'password': 'pass',
+                'strategy': 'keystone',
                 'auth_url': 'http://localhost/v2.0/'
             },  # v2.0: missing tenant
             {
@@ -169,7 +179,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
     def test_invalid_auth_url_v1(self):
         """
-        Test that a 400 during authenticate raises exception.AuthBadRequst
+        Test that a 400 during authenticate raises exception.AuthBadRequest
         """
         def fake_do_request(*args, **kwargs):
             resp = webob.Response()
@@ -191,7 +201,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
     def test_invalid_auth_url_v2(self):
         """
-        Test that a 400 during authenticate raises exception.AuthBadRequst
+        Test that a 400 during authenticate raises exception.AuthBadRequest
         """
         def fake_do_request(*args, **kwargs):
             resp = webob.Response()
