@@ -52,6 +52,7 @@ class TestStoreLocation(base.StoreClearingUnitTest):
             'rbd://imagename',
             'rbd://fsid/pool/image/snap',
             'rbd://%2F/%2F/%2F/%2F',
+            'sheepdog://imagename',
         ]
 
         for uri in good_store_uris:
@@ -361,6 +362,21 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         bad_uri = 'rbd://' + unichr(300)
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
 
+    def test_sheepdog_store_location(self):
+        """
+        Test the specific StoreLocation for the Sheepdog store
+        """
+        uri = 'sheepdog://imagename'
+        loc = glance.store.sheepdog.StoreLocation({})
+        loc.parse_uri(uri)
+        self.assertEqual('imagename', loc.image)
+
+        bad_uri = 'sheepdog:/image'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = 'http://image'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
     def test_get_store_from_scheme(self):
         """
         Test that the backend returned by glance.store.get_backend_class
@@ -377,7 +393,8 @@ class TestStoreLocation(base.StoreClearingUnitTest):
             'filesystem': glance.store.filesystem.Store,
             'http': glance.store.http.Store,
             'https': glance.store.http.Store,
-            'rbd': glance.store.rbd.Store}
+            'rbd': glance.store.rbd.Store,
+            'sheepdog': glance.store.sheepdog.Store}
 
         ctx = context.RequestContext()
         for scheme, store in good_results.items():

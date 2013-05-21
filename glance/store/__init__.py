@@ -40,6 +40,7 @@ store_opts = [
                     'glance.store.rbd.Store',
                     'glance.store.s3.Store',
                     'glance.store.swift.Store',
+                    'glance.store.sheepdog.Store',
                 ],
                 help=_('List of which store classes and store class locations '
                        'are currently known to glance at startup.')),
