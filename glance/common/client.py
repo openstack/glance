@@ -20,6 +20,7 @@
 #   577548-https-httplib-client-connection-with-certificate-v/
 
 import collections
+import copy
 import errno
 import functools
 import httplib
@@ -372,8 +373,12 @@ class BaseClient(object):
             self._authenticate()
 
         url = self._construct_url(action, params)
-        return self._do_request(method=method, url=url, body=body,
-                                headers=headers)
+        # NOTE(ameade): We need to copy these kwargs since they can be altered
+        # in _do_request but we need the originals if handle_unauthenticated
+        # calls this function again.
+        return self._do_request(method=method, url=url,
+                                body=copy.deepcopy(body),
+                                headers=copy.deepcopy(headers))
 
     def _construct_url(self, action, params=None):
         """
