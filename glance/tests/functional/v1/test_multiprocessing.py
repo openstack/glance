@@ -43,7 +43,7 @@ class TestMultiprocessing(functional.FunctionalTest):
         self.stop_servers()
 
     def _get_children(self):
-        api_pid = open(self.api_server.pid_file).read().strip()
+        api_pid = self.api_server.process_pid
         cmd = ("ps --no-headers --ppid %s -o pid,cmd | "
                "grep python | "  # NOTE(markwash): ignore non-python procs
                "awk '{print $1; print >> \"/dev/stderr\"}'" % api_pid)

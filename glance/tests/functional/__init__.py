@@ -68,17 +68,18 @@ class Server(object):
         self.conf_file_name = None
         self.conf_base = None
         self.paste_conf_base = None
-        self.server_control = 'glance-control'
         self.exec_env = None
         self.deployment_flavor = ''
         self.show_image_direct_url = False
         self.enable_v1_api = True
         self.enable_v2_api = True
-        self.server_control_options = ''
         self.needs_database = False
         self.log_file = None
         self.sock = sock
         self.fork_socket = True
+        self.process_pid = None
+        self.server_program = None
+        self.stop_kill = False
 
     def write_conf(self, **kwargs):
         """
@@ -138,9 +139,7 @@ class Server(object):
 
         self.create_database()
 
-        cmd = ("%(server_control)s --pid-file=%(pid_file)s "
-               "%(server_control_options)s "
-               "%(server_name)s start %(conf_file_name)s"
+        cmd = ("%(server_program)s --config-file %(conf_file_name)s"
                % self.__dict__)
         # close the sock and release the unused port closer to start time
         if self.exec_env:
@@ -156,34 +155,41 @@ class Server(object):
                 exec_env[utils.GLANCE_TEST_SOCKET_FD_STR] = str(fd)
                 self.sock.close()
 
-        rc = execute(cmd,
-                     no_venv=self.no_venv,
-                     exec_env=exec_env,
-                     expect_exit=expect_exit,
-                     expected_exitcode=expected_exitcode,
-                     context=overridden)
+        self.process_pid = test_utils.fork_exec(cmd,
+                                                logfile=os.devnull,
+                                                exec_env=exec_env)
+
+        self.stop_kill = not expect_exit
+        if self.pid_file:
+            pf = open(self.pid_file, 'w')
+            pf.write('%d\n' % self.process_pid)
+            pf.close()
+        if not expect_exit:
+            rc = 0
+            try:
+                os.kill(self.process_pid, 0)
+            except OSError:
+                raise RuntimeError("The process did not start")
+        else:
+            rc = test_utils.wait_for_fork(
+                self.process_pid,
+                expected_exitcode=expected_exitcode)
         # avoid an FD leak
         if self.sock:
             os.close(fd)
             self.sock = None
-        return rc
+        return (rc, '', '')
 
     def reload(self, expect_exit=True, expected_exitcode=0, **kwargs):
         """
-        Call glane-control reload for a specific server.
+        Start and stop the service to reload
 
         Any kwargs passed to this method will override the configuration
         value in the conf file used in starting the servers.
         """
-        cmd = ("%(server_control)s --pid-file=%(pid_file)s "
-               "%(server_control_options)s "
-               "%(server_name)s reload %(conf_file_name)s"
-               % self.__dict__)
-        return execute(cmd,
-                       no_venv=self.no_venv,
-                       exec_env=self.exec_env,
-                       expect_exit=expect_exit,
-                       expected_exitcode=expected_exitcode)
+        self.stop()
+        return self.start(expect_exit=expect_exit,
+                          expected_exitcode=expected_exitcode, **kwargs)
 
     def create_database(self):
         """Create database if required for this server"""
@@ -233,11 +239,13 @@ class Server(object):
         """
         Spin down the server.
         """
-        cmd = ("%(server_control)s --pid-file=%(pid_file)s "
-               "%(server_name)s stop %(conf_file_name)s"
-               % self.__dict__)
-        return execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env,
-                       expect_exit=True)
+        if not self.process_pid:
+            raise Exception('why is this being called? %s' % self.server_name)
+
+        if self.stop_kill:
+            os.kill(self.process_pid, signal.SIGTERM)
+        rc = test_utils.wait_for_fork(self.process_pid, raise_error=False)
+        return (rc, '', '')
 
     def dump_log(self, name):
         log = logging.getLogger(name)
@@ -258,6 +266,7 @@ class ApiServer(Server):
                  pid_file=None, sock=None, **kwargs):
         super(ApiServer, self).__init__(test_dir, port, sock=sock)
         self.server_name = 'api'
+        self.server_program = 'glance-%s' % self.server_name
         self.default_store = kwargs.get("default_store", "file")
         self.key_file = ""
         self.cert_file = ""
@@ -297,7 +306,6 @@ class ApiServer(Server):
         self.image_cache_driver = 'sqlite'
         self.policy_file = policy_file
         self.policy_default_rule = 'default'
-        self.server_control_options = '--capture-output'
 
         self.needs_database = True
         default_sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
@@ -424,6 +432,7 @@ class RegistryServer(Server):
     def __init__(self, test_dir, port, sock=None):
         super(RegistryServer, self).__init__(test_dir, port, sock=sock)
         self.server_name = 'registry'
+        self.server_program = 'glance-%s' % self.server_name
 
         self.needs_database = True
         default_sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
@@ -433,7 +442,6 @@ class RegistryServer(Server):
         self.pid_file = os.path.join(self.test_dir, "registry.pid")
         self.log_file = os.path.join(self.test_dir, "registry.log")
         self.owner_is_tenant = True
-        self.server_control_options = '--capture-output'
         self.workers = 0
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
@@ -481,6 +489,7 @@ class ScrubberDaemon(Server):
         # NOTE(jkoelker): Set the port to 0 since we actually don't listen
         super(ScrubberDaemon, self).__init__(test_dir, 0)
         self.server_name = 'scrubber'
+        self.server_program = 'glance-%s' % self.server_name
         self.daemon = daemon
 
         self.image_dir = os.path.join(self.test_dir, "images")
@@ -513,6 +522,14 @@ swift_store_key = %(swift_store_key)s
 swift_store_container = %(swift_store_container)s
 swift_store_auth_version = %(swift_store_auth_version)s
 """
+
+    def start(self, expect_exit=True, expected_exitcode=0, **kwargs):
+        if 'daemon' in kwargs:
+            expect_exit = False
+        return super(ScrubberDaemon, self).start(
+            expect_exit=expect_exit,
+            expected_exitcode=expected_exitcode,
+            **kwargs)
 
 
 class FunctionalTest(test_utils.BaseTestCase):
@@ -611,14 +628,19 @@ class FunctionalTest(test_utils.BaseTestCase):
         tests are destroyed or spun down
         """
 
-        for pid_file in self.pid_files:
-            if os.path.exists(pid_file):
-                pid = int(open(pid_file).read().strip())
-                try:
-                    os.killpg(pid, signal.SIGTERM)
-                except:
-                    pass  # Ignore if the process group is dead
-                os.unlink(pid_file)
+        # NOTE(jbresnah) call stop on each of the servers instead of
+        # checking the pid file.  stop() will wait until the child
+        # server is dead.  This eliminates the possibility of a race
+        # between a child process listening on a port actually dying
+        # and a new process being started
+        servers = [self.api_server,
+                   self.registry_server,
+                   self.scrubber_daemon]
+        for s in servers:
+            try:
+                s.stop()
+            except Exception:
+                pass
 
         for f in self.files_to_destroy:
             if os.path.exists(f):
@@ -654,16 +676,14 @@ class FunctionalTest(test_utils.BaseTestCase):
                              "Failed to spin up the requested server. "
                              "Got: %s" % err)
 
-            self.assertTrue(re.search("Starting glance-[a-z]+ with", out))
-
         self.launched_servers.append(server)
 
         launch_msg = self.wait_for_servers([server], expect_launch)
         self.assertTrue(launch_msg is None, launch_msg)
 
     def start_with_retry(self, server, port_name, max_retries,
-                         expect_launch=True, expect_exit=True,
-                         expect_confirmation=True, **kwargs):
+                         expect_launch=True,
+                         **kwargs):
         """
         Starts a server, with retries if the server launches but
         fails to start listening on the expected port.
@@ -675,19 +695,15 @@ class FunctionalTest(test_utils.BaseTestCase):
                               successfully start
         :param expect_exit: true iff the launched process is expected
                             to exit in a timely fashion
-        :param expect_confirmation: true iff launch confirmation msg
-                                    expected on stdout
         """
         launch_msg = None
         for i in range(0, max_retries):
-            exitcode, out, err = server.start(expect_exit=expect_exit,
+            exitcode, out, err = server.start(expect_exit=not expect_launch,
                                               **kwargs)
             name = server.server_name
             self.assertEqual(0, exitcode,
                              "Failed to spin up the %s server. "
                              "Got: %s" % (name, err))
-            if expect_confirmation:
-                self.assertTrue(("Starting glance-%s with" % name) in out)
             launch_msg = self.wait_for_servers([server], expect_launch)
             if launch_msg:
                 server.stop()
@@ -725,7 +741,6 @@ class FunctionalTest(test_utils.BaseTestCase):
         self.assertEqual(0, exitcode,
                          "Failed to spin up the Scrubber daemon. "
                          "Got: %s" % err)
-        self.assertTrue("Starting glance-scrubber with" in out)
 
     def ping_server(self, port):
         """
@@ -777,7 +792,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         for f in failed:
             msg += ('%s, ' % f.server_name)
             if os.path.exists(f.pid_file):
-                pid = int(open(f.pid_file).read().strip())
+                pid = f.process_pid
                 trace = f.pid_file.replace('.pid', '.trace')
                 cmd = 'strace -p %d -o %s' % (pid, trace)
                 execute(cmd, raise_error=False, expect_exit=False)
@@ -834,10 +849,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         :param server: the server to stop
         """
         # Spin down the requested server
-        exitcode, out, err = server.stop()
-        self.assertEqual(0, exitcode,
-                         "Failed to spin down the %s server. Got: %s" %
-                         (err, name))
+        server.stop()
 
     def stop_servers(self):
         """

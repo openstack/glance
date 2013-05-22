@@ -20,9 +20,11 @@
 import errno
 import functools
 import os
+import shlex
 import socket
 import StringIO
 import subprocess
+import sys
 
 from oslo.config import cfg
 import stubout
@@ -120,6 +122,76 @@ def skip_if_disabled(func):
             test_obj.skipTest(message)
         func(*a, **kwargs)
     return wrapped
+
+
+def fork_exec(cmd,
+              exec_env=None,
+              logfile=None):
+    """
+    Execute a command using fork/exec.
+
+    This is needed for programs system executions that need path
+    searching but cannot have a shell as their parent process, for
+    example: glance-api.  When glance-api starts it sets itself as
+    the parent process for its own process group.  Thus the pid that
+    a Popen process would have is not the right pid to use for killing
+    the process group.  This patch gives the test env direct access
+    to the actual pid.
+
+    :param cmd: Command to execute as an array of arguments.
+    :param exec_env: A dictionary representing the environment with
+                     which to run the command.
+    :param logile: A path to a file which will hold the stdout/err of
+                   the child process.
+    """
+    env = os.environ.copy()
+    if exec_env is not None:
+        for env_name, env_val in exec_env.items():
+            if callable(env_val):
+                env[env_name] = env_val(env.get(env_name))
+            else:
+                env[env_name] = env_val
+
+    pid = os.fork()
+    if pid == 0:
+        if logfile:
+            fds = [1, 2]
+            with open(logfile, 'r+b') as fptr:
+                for desc in fds:  # close fds
+                    try:
+                        os.dup2(fptr.fileno(), desc)
+                    except OSError:
+                        pass
+
+        args = shlex.split(cmd)
+        os.execvpe(args[0], args, env)
+    else:
+        return pid
+
+
+def wait_for_fork(pid,
+                  raise_error=True,
+                  expected_exitcode=0):
+    """
+    Wait for a process to complete
+
+    This function will wait for the given pid to complete.  If the
+    exit code does not match that of the expected_exitcode an error
+    is raised.
+    """
+
+    rc = 0
+    try:
+        (pid, rc) = os.waitpid(pid, 0)
+        rc = os.WEXITSTATUS(rc)
+        if rc != expected_exitcode:
+            raise RuntimeError('The exit code %d is not %d'
+                               % (rc, expected_exitcode))
+    except Exception:
+        if raise_error:
+            raise
+
+    return rc
 
 
 def execute(cmd,
