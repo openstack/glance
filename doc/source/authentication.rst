@@ -23,16 +23,8 @@ necessary middleware. Once you have installed Keystone
 and edited your configuration files, newly created images will have
 their `owner` attribute set to the tenant of the authenticated users,
 and the `is_public` attribute will cause access to those images for
-which it is `false` to be restricted to only the owner.
-
-.. note::
-
-  The exception is those images for which `owner` is set to `null`,
-  which may only be done by those users having the ``Admin`` role.
-  These images may still be accessed by the public, but will not
-  appear in the list of public images.  This allows the Glance
-  Registry owner to publish images for beta testing without allowing
-  those images to show up in lists, potentially confusing users.
+which it is `false` to be restricted to only the owner, users with
+admin context, or tenants/users with whom the image has been shared.
 
 
 Configuring the Glance servers to use Keystone
@@ -40,7 +32,7 @@ Configuring the Glance servers to use Keystone
 
 Keystone is integrated with Glance through the use of middleware. The
 default configuration files for both the Glance API and the Glance
-Registry use a single piece of middleware called ``unauthenticated-context``, 
+Registry use a single piece of middleware called ``unauthenticated-context``,
 which generates a request context containing blank authentication
 information. In order to configure Glance to use Keystone, the
 ``authtoken`` and ``context`` middlewares must be deployed in place of the
