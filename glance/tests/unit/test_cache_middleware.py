@@ -138,6 +138,9 @@ class ProcessRequestTestCacheFilter(glance.api.middleware.cache.CacheFilter):
             def delete_cached_image(self, image_id):
                 self.deleted_images.append(image_id)
 
+            def get_image_size(self, image_id):
+                pass
+
         self.cache = DummyCache()
 
 
@@ -203,6 +206,33 @@ class TestCacheMiddlewareProcessRequest(utils.BaseTestCase):
         actual = cache_filter._process_v1_request(
             request, image_id, dummy_img_iterator)
         self.assertEqual(True, actual)
+
+    def test_verify_metadata_deleted_image(self):
+        """
+        Test verify_metadata raises exception.NotFound for a deleted image
+        """
+        image_meta = {'is_public': True, 'deleted': True}
+        cache_filter = ProcessRequestTestCacheFilter()
+        self.assertRaises(exception.NotFound,
+                          cache_filter._verify_metadata, image_meta)
+
+    def test_verify_metadata_zero_size(self):
+        """
+        Test verify_metadata updates metadata with cached image size for images
+        with 0 size
+        """
+        image_size = 1
+
+        def fake_get_image_size(image_id):
+            return image_size
+
+        image_id = 'test1'
+        image_meta = {'size': 0, 'deleted': False, 'id': image_id}
+        cache_filter = ProcessRequestTestCacheFilter()
+        self.stubs.Set(cache_filter.cache, 'get_image_size',
+                       fake_get_image_size)
+        cache_filter._verify_metadata(image_meta)
+        self.assertTrue(image_meta['size'] == image_size)
 
 
 class TestProcessResponse(utils.BaseTestCase):
