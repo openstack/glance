@@ -219,6 +219,14 @@ class StoreDeleteNotSupported(GlanceException):
     message = _("Deleting images from this store is not supported.")
 
 
+class StoreGetNotSupported(GlanceException):
+    message = _("Getting images from this store is not supported.")
+
+
+class StoreAddNotSupported(GlanceException):
+    message = _("Adding images to this store is not supported.")
+
+
 class StoreAddDisabled(GlanceException):
     message = _("Configuration for store failed. Adding images to this "
                 "store is disabled.")

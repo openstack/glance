@@ -35,6 +35,7 @@ Paste
 
 passlib
 jsonschema
+python-cinderclient>=1.0.4
 python-keystoneclient>=0.2.0
 pyOpenSSL
 

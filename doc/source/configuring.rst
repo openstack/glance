@@ -314,7 +314,7 @@ Optional. Default: ``file``
 Can only be specified in configuration files.
 
 Sets the storage backend to use by default when storing images in Glance.
-Available options for this option are (``file``, ``swift``, ``s3``, ``rbd``, or ``sheepdog``).
+Available options for this option are (``file``, ``swift``, ``s3``, ``rbd``, or ``sheepdog``, or ``cinder``).
 
 Configuring Glance Image Size Limit
 -----------------------------------
@@ -701,6 +701,66 @@ Can only be specified in configuration files.
 
 Images will be chunked into objects of this size (in megabytes).
 For best performance, this should be a power of two.
+
+Configuring the Cinder Storage Backend
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Note**: Currently Cinder store is a partial implementation.
+After Cinder expose 'brick' library, and 'Readonly-volume-attaching',
+'volume-multiple-attaching' enhancement ready, the store will support
+'Upload' and 'Download' interface finally.
+
+* ``cinder_catalog_info=<service_type>:<service_name>:<endpoint_type>``
+
+Optional. Default: ``volume:cinder:publicURL``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Cinder storage backend.`
+
+Sets the info to match when looking for cinder in the service catalog.
+Format is : separated values of the form: <service_type>:<service_name>:<endpoint_type>
+
+* ``cinder_endpoint_template=http://ADDR:PORT/VERSION/%(project_id)s``
+
+Optional. Default: ``None``
+
+Can only be specified in configuration files.
+
+Override service catalog lookup with template for cinder endpoint.
+e.g. http://localhost:8776/v1/%(project_id)s
+
+* ``os_region_name=REGION_NAME``
+
+Optional. Default: ``None``
+
+Can only be specified in configuration files.
+
+Region name of this node.
+
+* ``cinder_ca_certificates_file=CA_FILE_PATH``
+
+Optional. Default: ``None``
+
+Can only be specified in configuration files.
+
+Location of ca certicates file to use for cinder client requests.
+
+* ``cinder_http_retries=TIMES``
+
+Optional. Default: ``3``
+
+Can only be specified in configuration files.
+
+Number of cinderclient retries on failed http calls.
+
+* ``cinder_api_insecure=ON_OFF``
+
+Optional. Default: ``False``
+
+Can only be specified in configuration files.
+
+Allow to perform insecure SSL requests to cinder.
 
 Configuring the Image Cache
 ---------------------------

@@ -42,6 +42,7 @@ store_opts = [
                     'glance.store.s3.Store',
                     'glance.store.swift.Store',
                     'glance.store.sheepdog.Store',
+                    'glance.store.cinder.Store',
                 ],
                 help=_('List of which store classes and store class locations '
                        'are currently known to glance at startup.')),
@@ -226,7 +227,10 @@ def get_from_backend(context, uri, **kwargs):
     loc = location.get_location_from_uri(uri)
     store = get_store_from_uri(context, uri, loc)
 
-    return store.get(loc)
+    try:
+        return store.get(loc)
+    except NotImplementedError:
+        raise exception.StoreGetNotSupported
 
 
 def get_size_from_backend(context, uri):
@@ -355,7 +359,10 @@ def store_add_to_backend(image_id, data, size, store):
 
 def add_to_backend(context, scheme, image_id, data, size):
     store = get_store_from_scheme(context, scheme)
-    return store_add_to_backend(image_id, data, size, store)
+    try:
+        return store_add_to_backend(image_id, data, size, store)
+    except NotImplementedError:
+        raise exception.StoreAddNotSupported
 
 
 def set_acls(context, location_uri, public=False, read_tenants=[],
