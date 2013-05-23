@@ -19,6 +19,8 @@ import os
 import StringIO
 import tempfile
 
+import webob
+
 from glance.common import exception
 from glance.common import utils
 from glance.tests import utils as test_utils
@@ -61,6 +63,17 @@ class TestUtils(test_utils.BaseTestCase):
                 break
         meat = ''.join(chunks)
         self.assertEqual(meat, 'aaabbbcccdddeeefffggghhh')
+
+    def test_cooperative_reader_of_iterator_stop_iteration_err(self):
+        """Ensure cooperative reader supports iterator backends too"""
+        reader = utils.CooperativeReader([l * 3 for l in ''])
+        chunks = []
+        while True:
+            chunks.append(reader.read(3))
+            if chunks[-1] == '':
+                break
+        meat = ''.join(chunks)
+        self.assertEqual(meat, '')
 
     def test_limiting_reader(self):
         """Ensure limiting reader class accesses all bytes of file"""
@@ -105,9 +118,75 @@ class TestUtils(test_utils.BaseTestCase):
 
         self.assertRaises(exception.ImageSizeLimitExceeded, _consume_all_read)
 
+    def test_bool_from_string(self):
+        actual = utils.bool_from_string('true')
+        self.assertEqual(True, actual)
+
+        actual = utils.bool_from_string(1)
+        self.assertEqual(True, actual)
+
+    def test_get_meta_from_headers(self):
+        resp = webob.Response()
+        resp.headers = {"x-image-meta-*": 'test'}
+        result = utils.get_image_meta_from_headers(resp)
+        self.assertEqual({'*': 'test', 'properties': {}}, result)
+
+    def test_add_features_to_http_headers(self):
+        features_test1 = {'x-image-meta-size': 'test'}
+        url = ("http://glance.example.com/v1/"
+               "images/71c675ab-d94f-49cd-a114-e12490b328d9")
+        headers = {"x-image-meta-uri": url}
+        self.assertRaises(exception.UnsupportedHeaderFeature,
+                          utils.add_features_to_http_headers,
+                          features_test1, headers)
+
+    def test_image_meta(self):
+        image_meta = {'x-image-meta-size': 'test'}
+        image_meta_properties = {'properties': {'test': "test"}}
+        actual = utils.image_meta_to_http_headers(image_meta)
+        actual_test2 = utils.image_meta_to_http_headers(
+            image_meta_properties)
+        self.assertEqual({'x-image-meta-x-image-meta-size': u'test'}, actual)
+        self.assertEqual({'x-image-meta-property-test': u'test'},
+                         actual_test2)
+
+    def test_create_pretty_table(self):
+        class MyPrettyTable(utils.PrettyTable):
+            def __init__(self):
+                self.columns = []
+
+        # Test add column
+        my_pretty_table = MyPrettyTable()
+        my_pretty_table.add_column(1, label='test')
+        # Test make header
+        test_res = my_pretty_table.make_header()
+        self.assertEqual('t\n-', test_res)
+        # Test make row
+        result = my_pretty_table.make_row('t')
+        self.assertEqual("t", result)
+        result = my_pretty_table._clip_and_justify(
+            data='test', width=4, just=1)
+        self.assertEqual("test", result)
+
+    def test_mutating(self):
+        class FakeContext():
+            def __init__(self):
+                self.read_only = False
+
+        class Fake():
+            def __init__(self):
+                self.context = FakeContext()
+
+        def fake_function(req, context):
+            return 'test passed'
+
+        req = webob.Request.blank('/some_request')
+        result = utils.mutating(fake_function)
+        self.assertEqual("test passed", result(req, Fake()))
+
     def test_validate_key_cert_key(self):
         var_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                               '../', 'var'))
+                                               '../../', 'var'))
         keyfile = os.path.join(var_dir, 'privatekey.key')
         certfile = os.path.join(var_dir, 'certificate.crt')
         utils.validate_key_cert(keyfile, certfile)

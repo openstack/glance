@@ -18,6 +18,7 @@
 import socket
 import time
 
+import datetime
 import eventlet.patcher
 import webob
 
@@ -98,6 +99,28 @@ class ResourceTest(test_utils.BaseTestCase):
 
         self.assertEqual(actual, expected)
 
+    def test_get_action_args_invalid_index(self):
+        env = {'wsgiorg.routing_args': []}
+        expected = {}
+        actual = wsgi.Resource(None, None, None).get_action_args(env)
+        self.assertEqual(actual, expected)
+
+    def test_get_action_args_del_controller_error(self):
+        actions = {'format': None,
+                   'action': 'update',
+                   'id': 12}
+        env = {'wsgiorg.routing_args': [None, actions]}
+        expected = {'action': 'update', 'id': 12}
+        actual = wsgi.Resource(None, None, None).get_action_args(env)
+        self.assertEqual(actual, expected)
+
+    def test_get_action_args_del_format_error(self):
+        actions = {'action': 'update', 'id': 12}
+        env = {'wsgiorg.routing_args': [None, actions]}
+        expected = {'action': 'update', 'id': 12}
+        actual = wsgi.Resource(None, None, None).get_action_args(env)
+        self.assertEqual(actual, expected)
+
     def test_dispatch(self):
         class Controller(object):
             def index(self, shirt, pants=None):
@@ -133,6 +156,18 @@ class JSONResponseSerializerTest(test_utils.BaseTestCase):
     def test_to_json(self):
         fixture = {"key": "value"}
         expected = '{"key": "value"}'
+        actual = wsgi.JSONResponseSerializer().to_json(fixture)
+        self.assertEqual(actual, expected)
+
+    def test_to_json_with_date_format_value(self):
+        fixture = {"date": datetime.datetime(1, 3, 8, 2)}
+        expected = '{"date": "0001-03-08T02:00:00"}'
+        actual = wsgi.JSONResponseSerializer().to_json(fixture)
+        self.assertEqual(actual, expected)
+
+    def test_to_json_with_more_deep_format(self):
+        fixture = {"is_public": True, "name": [{"name1": "test"}]}
+        expected = '{"is_public": true, "name": [{"name1": "test"}]}'
         actual = wsgi.JSONResponseSerializer().to_json(fixture)
         self.assertEqual(actual, expected)
 
@@ -199,6 +234,26 @@ class JSONRequestDeserializerTest(test_utils.BaseTestCase):
         actual = wsgi.JSONRequestDeserializer().default(request)
         expected = {"body": {"key": "value"}}
         self.assertEqual(actual, expected)
+
+    def test_has_body_has_transfer_encoding(self):
+        request = wsgi.Request.blank('/')
+        request.method = 'POST'
+        request.body = 'fake_body'
+        request.headers['transfer-encoding'] = 0
+        self.assertTrue('transfer-encoding' in request.headers)
+        self.assertTrue(wsgi.JSONRequestDeserializer().has_body(request))
+
+    def test_get_bind_addr_default_value(self):
+        expected = ('0.0.0.0', '123456')
+        actual = wsgi.get_bind_addr(default_port="123456")
+        self.assertEqual(expected, actual)
+
+
+class ServerTest(test_utils.BaseTestCase):
+    def test_create_pool(self):
+        actual = wsgi.Server(threads=1).create_pool()
+        self.assertTrue(True, isinstance(actual,
+                                         eventlet.greenpool.GreenPool))
 
 
 class TestHelpers(test_utils.BaseTestCase):

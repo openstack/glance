@@ -18,8 +18,11 @@
 import copy
 import datetime
 
+import testtools
+
 from glance.common import config
 from glance.common import exception
+from glance.common import client as test_client
 from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
@@ -1061,3 +1064,27 @@ class TestRegistryV1Client(base.IsolatedUnitTest):
         """Tests deleting image members"""
         self.client.add_member(UUID2, 'pattieblack')
         self.assertTrue(self.client.delete_member(UUID2, 'pattieblack'))
+
+
+class TestBaseClient(testtools.TestCase):
+    """
+    Test proper actions made for both valid and invalid requests
+    against a Registry service
+    """
+    def test_connect_kwargs_default_values(self):
+        actual = test_client.BaseClient('127.0.0.1').get_connect_kwargs()
+        self.assertEqual({'timeout': None}, actual)
+
+    def test_connect_kwargs(self):
+        base_client = test_client.BaseClient(
+            host='127.0.0.1', port=80, timeout=1, use_ssl=True)
+        actual = base_client.get_connect_kwargs()
+        expected = {'insecure': False,
+                    'key_file': None,
+                    'ca_file': '/etc/ssl/certs/ca-certificates.crt',
+                    'cert_file': None,
+                    'timeout': 1}
+        self.assertEqual(expected['insecure'], actual['insecure'])
+        self.assertEqual(expected['key_file'], actual['key_file'])
+        self.assertEqual(expected['cert_file'], actual['cert_file'])
+        self.assertEqual(expected['timeout'], actual['timeout'])
