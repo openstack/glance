@@ -296,11 +296,15 @@ def _image_get(context, image_id, session=None, force_show_deleted=False):
         image = query.one()
 
     except sa_orm.exc.NoResultFound:
-        raise exception.NotFound("No image found with ID %s" % image_id)
+        msg = (_("No image found with ID %s") % image_id)
+        LOG.debug(msg)
+        raise exception.NotFound(msg)
 
     # Make sure they can look at it
     if not is_image_visible(context, image):
-        raise exception.Forbidden("Image not visible to you")
+        msg = (_("Forbidding request, image %s not visible") % image_id)
+        LOG.debug(msg)
+        raise exception.Forbidden(msg)
 
     return image
 

@@ -119,6 +119,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
              'min_disk': 0,
              'min_ram': 0,
              'size': 13,
+             'owner': '123',
              'locations': ["file:///%s/%s" % (self.test_dir, UUID1)],
              'properties': {'type': 'kernel'}},
             {'id': UUID2,
@@ -367,6 +368,16 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 400)
         self.assertTrue('marker' in res.body)
+
+    def test_get_index_forbidden_marker(self):
+        """
+        Tests that the /images registry API returns a 400
+        when a forbidden marker is provided
+        """
+        self.context = glance.context.RequestContext(is_admin=False)
+        req = webob.Request.blank('/images?marker=%s' % UUID1)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
 
     def test_get_index_limit(self):
         """
@@ -956,6 +967,26 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         """
         req = webob.Request.blank('/images/detail?marker=%s'
                                   % _gen_uuid())
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_get_details_malformed_marker(self):
+        """
+        Tests that the /images/detail registry API returns a 400
+        when a malformed marker is provided
+        """
+        req = webob.Request.blank('/images/detail?marker=4')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+        self.assertTrue('marker' in res.body)
+
+    def test_get_details_forbidden_marker(self):
+        """
+        Tests that the /images/detail registry API returns a 400
+        when a forbidden marker is provided
+        """
+        self.context = glance.context.RequestContext(is_admin=False)
+        req = webob.Request.blank('/images/detail?marker=%s' % UUID1)
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 400)
 
