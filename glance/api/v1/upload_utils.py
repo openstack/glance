@@ -110,9 +110,18 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                   "to %(size)d"), locals())
         update_data = {'checksum': checksum,
                        'size': size}
-        image_meta = registry.update_image_metadata(req.context,
-                                                    image_id,
-                                                    update_data)
+        try:
+            image_meta = registry.update_image_metadata(req.context,
+                                                        image_id,
+                                                        update_data)
+
+        except exception.NotFound as e:
+            msg = _("Image %s could not be found after upload. The image may "
+                    "have been deleted during the upload.") % image_id
+            LOG.info(msg)
+            raise webob.exc.HTTPPreconditionFailed(explanation=msg,
+                                                   request=req,
+                                                   content_type='text/plain')
 
     except exception.Duplicate as e:
         msg = _("Attempt to upload duplicate image: %s") % e
