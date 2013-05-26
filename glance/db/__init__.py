@@ -25,27 +25,9 @@ import glance.domain
 import glance.domain.proxy
 from glance.openstack.common import importutils
 
-sql_connection_opt = cfg.StrOpt('sql_connection',
-                                default='sqlite:///glance.sqlite',
-                                secret=True,
-                                metavar='CONNECTION',
-                                help='A valid SQLAlchemy connection '
-                                     'string for the registry database. '
-                                     'Default: %(default)s')
 
 CONF = cfg.CONF
-CONF.register_opt(sql_connection_opt)
 CONF.import_opt('metadata_encryption_key', 'glance.common.config')
-
-
-def add_cli_options():
-    """
-    Adds any configuration options that the db layer might have.
-
-    :retval None
-    """
-    CONF.unregister_opt(sql_connection_opt)
-    CONF.register_cli_opt(sql_connection_opt)
 
 
 def get_api():

@@ -110,7 +110,7 @@ def main():
     try:
         # We load the glance-registry config section because
         # sql_connection is only part of the glance registry.
-        glance.db.add_cli_options()
+        glance.db.sqlalchemy.api.add_cli_options()
 
         cfg_files = cfg.find_config_files(project='glance',
                                           prog='glance-registry')

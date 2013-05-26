@@ -49,6 +49,14 @@ LOG = os_logging.getLogger(__name__)
 STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
             'deleted']
 
+sql_connection_opt = cfg.StrOpt('sql_connection',
+                                default='sqlite:///glance.sqlite',
+                                secret=True,
+                                metavar='CONNECTION',
+                                help=_('A valid SQLAlchemy connection '
+                                       'string for the registry database. '
+                                       'Default: %(default)s'))
+
 db_opts = [
     cfg.IntOpt('sql_idle_timeout', default=3600,
                help=_('Period in seconds after which SQLAlchemy should '
@@ -65,8 +73,17 @@ db_opts = [
 ]
 
 CONF = cfg.CONF
+CONF.register_opt(sql_connection_opt)
 CONF.register_opts(db_opts)
 CONF.import_opt('debug', 'glance.openstack.common.log')
+
+
+def add_cli_options():
+    """Allows passing sql_connection as a CLI argument."""
+
+    # NOTE(flaper87): Find a better place / way for this.
+    CONF.unregister_opt(sql_connection_opt)
+    CONF.register_cli_opt(sql_connection_opt)
 
 
 def _ping_listener(dbapi_conn, connection_rec, connection_proxy):
