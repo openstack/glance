@@ -27,6 +27,7 @@ import urllib
 from oslo.config import cfg
 
 from glance.common import exception
+from glance.common import utils
 import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
@@ -276,13 +277,11 @@ class Store(glance.store.base.Store):
                     raise exception.Duplicate(
                         _('RBD image %s already exists') % image_id)
                 with rbd.Image(ioctx, image_name) as image:
-                    bytes_left = image_size
-                    while bytes_left > 0:
-                        length = min(self.chunk_size, bytes_left)
-                        data = image_file.read(length)
-                        image.write(data, image_size - bytes_left)
-                        bytes_left -= length
-                        checksum.update(data)
+                    offset = 0
+                    chunks = utils.chunkreadable(image_file, self.chunk_size)
+                    for chunk in chunks:
+                        offset += image.write(chunk, offset)
+                        checksum.update(chunk)
                     if location.snapshot:
                         image.create_snap(location.snapshot)
                         image.protect_snap(location.snapshot)
