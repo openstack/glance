@@ -350,6 +350,28 @@ of the HTTP request to the Glance API will be the MIME-encoded disk
 image data.
 
 
+Reserve a New Image
+*******************
+
+We can also perform the activities described in `Add a New Image`_ using two
+separate calls to the Image API; the first to register the image metadata, and
+the second to add the image disk data.  This is known as "reserving" an image.
+
+The first call should be a ``POST`` to ``http://glance.example.com/v1/images``,
+which will result in a new image id being registered with a status of
+``queued``::
+
+  {"image":
+   {"status": "queued",
+    "id": "71c675ab-d94f-49cd-a114-e12490b328d9",
+    ...}
+   ...}
+
+The image data can then be added using a ``PUT`` to
+``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9``.
+The image status will then be set to ``active`` by Glance.
+
+
 **Image Metadata in HTTP Headers**
 
 Glance will view as image metadata any HTTP header that it receives in a
@@ -360,7 +382,8 @@ The list of metadata headers that Glance accepts are listed below.
 
 * ``x-image-meta-name``
 
-  This header is required. Its value should be the name of the image.
+  This header is required, unless reserving an image. Its value should be the
+  name of the image.
 
   Note that the name of an image *is not unique to a Glance node*. It
   would be an unrealistic expectation of users to know all the unique
@@ -394,15 +417,16 @@ The list of metadata headers that Glance accepts are listed below.
 
 * ``x-image-meta-disk_format``
 
-  This header is optional. Valid values are one of ``aki``, ``ari``, ``ami``,
-  ``raw``, ``iso``, ``vhd``, ``vdi``, ``qcow2``, or ``vmdk``.
+  This header is required, unless reserving an image. Valid values are one of
+  ``aki``, ``ari``, ``ami``, ``raw``, ``iso``, ``vhd``, ``vdi``, ``qcow2``, or
+  ``vmdk``.
 
   For more information, see :doc:`About Disk and Container Formats <formats>`
 
 * ``x-image-meta-container_format``
 
-  This header is optional. Valid values are one of ``aki``, ``ari``, ``ami``,
-  ``bare``, or ``ovf``.
+  This header is required, unless reserving an image. Valid values are one of
+  ``aki``, ``ari``, ``ami``, ``bare``, or ``ovf``.
 
   For more information, see :doc:`About Disk and Container Formats <formats>`
 
