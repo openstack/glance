@@ -37,3 +37,6 @@ passlib
 jsonschema
 python-keystoneclient>=0.2.0
 pyOpenSSL
+
+# Required by openstack.common libraries
+six

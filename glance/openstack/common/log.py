@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2011 OpenStack LLC.
+# Copyright 2011 OpenStack Foundation.
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
@@ -29,6 +29,7 @@ It also allows setting of formatting information through conf.
 
 """
 
+import ConfigParser
 import cStringIO
 import inspect
 import itertools
@@ -36,7 +37,6 @@ import logging
 import logging.config
 import logging.handlers
 import os
-import stat
 import sys
 import traceback
 
@@ -48,7 +48,6 @@ from glance.openstack.common import local
 from glance.openstack.common import notifier
 
 
-_DEFAULT_LOG_FORMAT = "%(asctime)s %(levelname)8s [%(name)s] %(message)s"
 _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 common_cli_opts = [
@@ -73,11 +72,13 @@ logging_cli_opts = [
                     'documentation for details on logging configuration '
                     'files.'),
     cfg.StrOpt('log-format',
-               default=_DEFAULT_LOG_FORMAT,
+               default=None,
                metavar='FORMAT',
                help='A logging.Formatter log message format string which may '
                     'use any of the available logging.LogRecord attributes. '
-                    'Default: %(default)s'),
+                    'This option is deprecated.  Please use '
+                    'logging_context_format_string and '
+                    'logging_default_format_string instead.'),
     cfg.StrOpt('log-date-format',
                default=_DEFAULT_LOG_DATE_FORMAT,
                metavar='DATE_FORMAT',
@@ -87,11 +88,11 @@ logging_cli_opts = [
                metavar='PATH',
                deprecated_name='logfile',
                help='(Optional) Name of log file to output to. '
-                    'If not set, logging will go to stdout.'),
+                    'If no default is set, logging will go to stdout.'),
     cfg.StrOpt('log-dir',
                deprecated_name='logdir',
-               help='(Optional) The directory to keep log files in '
-                    '(will be prepended to --log-file)'),
+               help='(Optional) The base directory used for relative '
+                    '--log-file paths'),
     cfg.BoolOpt('use-syslog',
                 default=False,
                 help='Use syslog for logging.'),
@@ -103,17 +104,14 @@ logging_cli_opts = [
 generic_log_opts = [
     cfg.BoolOpt('use_stderr',
                 default=True,
-                help='Log output to standard error'),
-    cfg.StrOpt('logfile_mode',
-               default='0644',
-               help='Default file mode used when creating log files'),
+                help='Log output to standard error')
 ]
 
 log_opts = [
     cfg.StrOpt('logging_context_format_string',
-               default='%(asctime)s.%(msecs)03d %(levelname)s %(name)s '
-                       '[%(request_id)s %(user)s %(tenant)s] %(instance)s'
-                       '%(message)s',
+               default='%(asctime)s.%(msecs)03d %(process)d %(levelname)s '
+                       '%(name)s [%(request_id)s %(user)s %(tenant)s] '
+                       '%(instance)s%(message)s',
                help='format string to use for log messages with context'),
     cfg.StrOpt('logging_default_format_string',
                default='%(asctime)s.%(msecs)03d %(process)d %(levelname)s '
@@ -210,7 +208,27 @@ def _get_log_file_path(binary=None):
         return '%s.log' % (os.path.join(logdir, binary),)
 
 
-class ContextAdapter(logging.LoggerAdapter):
+class BaseLoggerAdapter(logging.LoggerAdapter):
+
+    def audit(self, msg, *args, **kwargs):
+        self.log(logging.AUDIT, msg, *args, **kwargs)
+
+
+class LazyAdapter(BaseLoggerAdapter):
+    def __init__(self, name='unknown', version='unknown'):
+        self._logger = None
+        self.extra = {}
+        self.name = name
+        self.version = version
+
+    @property
+    def logger(self):
+        if not self._logger:
+            self._logger = getLogger(self.name, self.version)
+        return self._logger
+
+
+class ContextAdapter(BaseLoggerAdapter):
     warn = logging.LoggerAdapter.warning
 
     def __init__(self, logger, project_name, version_string):
@@ -218,8 +236,9 @@ class ContextAdapter(logging.LoggerAdapter):
         self.project = project_name
         self.version = version_string
 
-    def audit(self, msg, *args, **kwargs):
-        self.log(logging.AUDIT, msg, *args, **kwargs)
+    @property
+    def handlers(self):
+        return self.logger.handlers
 
     def deprecated(self, msg, *args, **kwargs):
         stdmsg = _("Deprecated: %s") % msg
@@ -323,12 +342,32 @@ def _create_logging_excepthook(product_name):
     return logging_excepthook
 
 
+class LogConfigError(Exception):
+
+    message = _('Error loading logging config %(log_config)s: %(err_msg)s')
+
+    def __init__(self, log_config, err_msg):
+        self.log_config = log_config
+        self.err_msg = err_msg
+
+    def __str__(self):
+        return self.message % dict(log_config=self.log_config,
+                                   err_msg=self.err_msg)
+
+
+def _load_log_config(log_config):
+    try:
+        logging.config.fileConfig(log_config)
+    except ConfigParser.Error as exc:
+        raise LogConfigError(log_config, str(exc))
+
+
 def setup(product_name):
     """Setup logging."""
     if CONF.log_config:
-        logging.config.fileConfig(CONF.log_config)
+        _load_log_config(CONF.log_config)
     else:
-        _setup_logging_from_conf(product_name)
+        _setup_logging_from_conf()
     sys.excepthook = _create_logging_excepthook(product_name)
 
 
@@ -362,8 +401,8 @@ def _find_facility_from_conf():
     return facility
 
 
-def _setup_logging_from_conf(product_name):
-    log_root = getLogger(product_name).logger
+def _setup_logging_from_conf():
+    log_root = getLogger(None).logger
     for handler in log_root.handlers:
         log_root.removeHandler(handler)
 
@@ -378,11 +417,6 @@ def _setup_logging_from_conf(product_name):
         filelog = logging.handlers.WatchedFileHandler(logpath)
         log_root.addHandler(filelog)
 
-        mode = int(CONF.logfile_mode, 8)
-        st = os.stat(logpath)
-        if st.st_mode != (stat.S_IFREG | mode):
-            os.chmod(logpath, mode)
-
     if CONF.use_stderr:
         streamlog = ColorHandler()
         log_root.addHandler(streamlog)
@@ -396,12 +430,17 @@ def _setup_logging_from_conf(product_name):
     if CONF.publish_errors:
         log_root.addHandler(PublishErrorsHandler(logging.ERROR))
 
+    datefmt = CONF.log_date_format
     for handler in log_root.handlers:
-        datefmt = CONF.log_date_format
+        # NOTE(alaski): CONF.log_format overrides everything currently.  This
+        # should be deprecated in favor of context aware formatting.
         if CONF.log_format:
             handler.setFormatter(logging.Formatter(fmt=CONF.log_format,
                                                    datefmt=datefmt))
-        handler.setFormatter(LegacyFormatter(datefmt=datefmt))
+            log_root.info('Deprecated: log_format is now deprecated and will '
+                          'be removed in the next release')
+        else:
+            handler.setFormatter(ContextFormatter(datefmt=datefmt))
 
     if CONF.debug:
         log_root.setLevel(logging.DEBUG)
@@ -410,14 +449,11 @@ def _setup_logging_from_conf(product_name):
     else:
         log_root.setLevel(logging.WARNING)
 
-    level = logging.NOTSET
     for pair in CONF.default_log_levels:
         mod, _sep, level_name = pair.partition('=')
         level = logging.getLevelName(level_name)
         logger = logging.getLogger(mod)
         logger.setLevel(level)
-        for handler in log_root.handlers:
-            logger.addHandler(handler)
 
 _loggers = {}
 
@@ -428,6 +464,15 @@ def getLogger(name='unknown', version='unknown'):
                                         name,
                                         version)
     return _loggers[name]
+
+
+def getLazyLogger(name='unknown', version='unknown'):
+    """
+    create a pass-through logger that does not create the real logger
+    until it is really needed and delegates all calls to the real logger
+    once it is created
+    """
+    return LazyAdapter(name, version)
 
 
 class WritableLogger(object):
@@ -441,7 +486,7 @@ class WritableLogger(object):
         self.logger.log(self.level, msg)
 
 
-class LegacyFormatter(logging.Formatter):
+class ContextFormatter(logging.Formatter):
     """A context.RequestContext aware formatter configured through flags.
 
     The flags used to set format strings are: logging_context_format_string
