@@ -30,8 +30,10 @@ from glance.openstack.common import policy
 LOG = logging.getLogger(__name__)
 
 policy_opts = [
-    cfg.StrOpt('policy_file', default='policy.json'),
-    cfg.StrOpt('policy_default_rule', default='default'),
+    cfg.StrOpt('policy_file', default='policy.json',
+               help=_('The location of the policy file.')),
+    cfg.StrOpt('policy_default_rule', default='default',
+               help=_('The default policy to use.')),
 ]
 
 CONF = cfg.CONF

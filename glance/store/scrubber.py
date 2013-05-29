@@ -33,8 +33,14 @@ from glance import store
 LOG = logging.getLogger(__name__)
 
 scrubber_opts = [
-    cfg.BoolOpt('cleanup_scrubber', default=False),
-    cfg.IntOpt('cleanup_scrubber_time', default=86400)
+    cfg.BoolOpt('cleanup_scrubber', default=False,
+                help=_('A boolean that determines if the scrubber should '
+                       'clean up the files it uses for taking data. Only '
+                       'one server in your deployment should be designated '
+                       'the cleanup host.')),
+    cfg.IntOpt('cleanup_scrubber_time', default=86400,
+               help=_('Items must have a modified time that is older than '
+                      'this value in order to be candidates for cleanup.'))
 ]
 
 CONF = cfg.CONF

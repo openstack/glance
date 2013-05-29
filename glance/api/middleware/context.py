@@ -26,9 +26,18 @@ import glance.openstack.common.log as logging
 
 
 context_opts = [
-    cfg.BoolOpt('owner_is_tenant', default=True),
-    cfg.StrOpt('admin_role', default='admin'),
-    cfg.BoolOpt('allow_anonymous_access', default=False),
+    cfg.BoolOpt('owner_is_tenant', default=True,
+                help=_('When true, this option sets the owner of an image '
+                       'to be the tenant. Otherwise, the owner of the '
+                       ' image will be the authenticated user issuing the '
+                       'request.')),
+    cfg.StrOpt('admin_role', default='admin',
+               help=_('Role used to identify an authenticated user as '
+                      'administrator.')),
+    cfg.BoolOpt('allow_anonymous_access', default=False,
+                help=_('Allow unauthenticated users to access the API with '
+                       'read-only privileges. This only applies when using '
+                       'ContextMiddleware.')),
 ]
 
 CONF = cfg.CONF

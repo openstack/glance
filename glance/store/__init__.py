@@ -40,15 +40,23 @@ store_opts = [
                     'glance.store.rbd.Store',
                     'glance.store.s3.Store',
                     'glance.store.swift.Store',
-                ]),
+                ],
+                help=_('List of which store classes and store class locations '
+                       'are currently known to glance at startup.')),
     cfg.StrOpt('default_store', default='file',
                help=_("Default scheme to use to store image data. The "
                       "scheme must be registered by one of the stores "
                       "defined by the 'known_stores' config option.")),
     cfg.StrOpt('scrubber_datadir',
-               default='/var/lib/glance/scrubber'),
-    cfg.BoolOpt('delayed_delete', default=False),
-    cfg.IntOpt('scrub_time', default=0),
+               default='/var/lib/glance/scrubber',
+               help=_('Directory that the scrubber will use to track '
+                      'information about what to delete.  Make sure this is '
+                      'also set in glance-api.conf')),
+    cfg.BoolOpt('delayed_delete', default=False,
+                help=_('Turn on/off delayed delete.')),
+    cfg.IntOpt('scrub_time', default=0,
+               help=_('The amount of time in seconds to delay before '
+                      'performing a delete.')),
 ]
 
 CONF = cfg.CONF
