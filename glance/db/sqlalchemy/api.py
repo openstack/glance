@@ -446,11 +446,15 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
             raise exception.InvalidSortKey()
         query = query.order_by(sort_dir_func(sort_key_attr))
 
+    default = ''  # Default to an empty string if NULL
+
     # Add pagination
     if marker is not None:
         marker_values = []
         for sort_key in sort_keys:
             v = getattr(marker, sort_key)
+            if v is None:
+                v = default
             marker_values.append(v)
 
         # Build up an array of sort criteria as in the docstring
@@ -459,13 +463,19 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
             crit_attrs = []
             for j in xrange(0, i):
                 model_attr = getattr(model, sort_keys[j])
-                crit_attrs.append((model_attr == marker_values[j]))
+                attr = sa_sql.expression.case([(model_attr != None,
+                                              model_attr), ],
+                                              else_=default)
+                crit_attrs.append((attr == marker_values[j]))
 
             model_attr = getattr(model, sort_keys[i])
+            attr = sa_sql.expression.case([(model_attr != None,
+                                          model_attr), ],
+                                          else_=default)
             if sort_dirs[i] == 'desc':
-                crit_attrs.append((model_attr < marker_values[i]))
+                crit_attrs.append((attr < marker_values[i]))
             elif sort_dirs[i] == 'asc':
-                crit_attrs.append((model_attr > marker_values[i]))
+                crit_attrs.append((attr > marker_values[i]))
             else:
                 raise ValueError(_("Unknown sort direction, "
                                    "must be 'desc' or 'asc'"))

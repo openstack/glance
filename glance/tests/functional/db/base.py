@@ -362,6 +362,132 @@ class DriverTests(object):
                                            filters=filters)
         self.assertEquals(1, len(images))
 
+    def test_image_get_all_marker_null_name_desc(self):
+        """Check an image with name null is handled
+
+        Check an image with name null is handled
+        marker is specified and order is descending
+        """
+        TENANT1 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        UUIDX = uuidutils.generate_uuid()
+        self.db_api.image_create(ctxt1, {'id': UUIDX,
+                                         'status': 'queued',
+                                         'name': None,
+                                         'owner': TENANT1})
+
+        images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
+                                           sort_key='name',
+                                           sort_dir='desc')
+        image_ids = [image['id'] for image in images]
+        expected = []
+        self.assertEqual(sorted(expected), sorted(image_ids))
+
+    def test_image_get_all_marker_null_disk_format_desc(self):
+        """Check an image with disk_format null is handled
+
+        Check an image with disk_format null is handled when
+        marker is specified and order is descending
+        """
+        TENANT1 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        UUIDX = uuidutils.generate_uuid()
+        self.db_api.image_create(ctxt1, {'id': UUIDX,
+                                         'status': 'queued',
+                                         'disk_format': None,
+                                         'owner': TENANT1})
+
+        images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
+                                           sort_key='disk_format',
+                                           sort_dir='desc')
+        image_ids = [image['id'] for image in images]
+        expected = []
+        self.assertEqual(sorted(expected), sorted(image_ids))
+
+    def test_image_get_all_marker_null_container_format_desc(self):
+        """Check an image with container_format null is handled
+
+        Check an image with container_format null is handled when
+        marker is specified and order is descending
+        """
+        TENANT1 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        UUIDX = uuidutils.generate_uuid()
+        self.db_api.image_create(ctxt1, {'id': UUIDX,
+                                         'status': 'queued',
+                                         'container_format': None,
+                                         'owner': TENANT1})
+
+        images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
+                                           sort_key='container_format',
+                                           sort_dir='desc')
+        image_ids = [image['id'] for image in images]
+        expected = []
+        self.assertEqual(sorted(expected), sorted(image_ids))
+
+    def test_image_get_all_marker_null_name_asc(self):
+        """Check an image with name null is handled
+
+        Check an image with name null is handled when
+        marker is specified and order is ascending
+        """
+        TENANT1 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        UUIDX = uuidutils.generate_uuid()
+        self.db_api.image_create(ctxt1, {'id': UUIDX,
+                                         'status': 'queued',
+                                         'name': None,
+                                         'owner': TENANT1})
+
+        images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
+                                           sort_key='name',
+                                           sort_dir='asc')
+        image_ids = [image['id'] for image in images]
+        expected = [UUID3, UUID2, UUID1]
+        self.assertEqual(sorted(expected), sorted(image_ids))
+
+    def test_image_get_all_marker_null_disk_format_asc(self):
+        """Check an image with disk_format null is handled
+
+        Check an image with disk_format null is handled when
+        marker is specified and order is ascending
+        """
+        TENANT1 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        UUIDX = uuidutils.generate_uuid()
+        self.db_api.image_create(ctxt1, {'id': UUIDX,
+                                         'status': 'queued',
+                                         'disk_format': None,
+                                         'owner': TENANT1})
+
+        images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
+                                           sort_key='disk_format',
+                                           sort_dir='asc')
+        image_ids = [image['id'] for image in images]
+        expected = [UUID3, UUID2, UUID1]
+        self.assertEqual(sorted(expected), sorted(image_ids))
+
+    def test_image_get_all_marker_null_container_format_asc(self):
+        """Check an image with container_format null is handled
+
+        Check an image with container_format null is handled when
+        marker is specified and order is ascending
+        """
+        TENANT1 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        UUIDX = uuidutils.generate_uuid()
+        self.db_api.image_create(ctxt1, {'id': UUIDX,
+                                         'status': 'queued',
+                                         'container_format': None,
+                                         'owner': TENANT1})
+
+        images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
+                                           sort_key='container_format',
+                                           sort_dir='asc')
+        image_ids = [image['id'] for image in images]
+        expected = [UUID3, UUID2, UUID1]
+        self.assertEqual(sorted(expected), sorted(image_ids))
+
     def test_image_get_all_limit(self):
         images = self.db_api.image_get_all(self.context, limit=2)
         self.assertEquals(2, len(images))

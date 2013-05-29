@@ -216,9 +216,10 @@ def _do_pagination(context, images, marker, limit, show_deleted,
 
 def _sort_images(images, sort_key, sort_dir):
     reverse = False
-    if images and not images[0].get(sort_key):
+    if images and not (sort_key in images[0]):
         raise exception.InvalidSortKey()
-    keyfn = lambda x: (x[sort_key], x['created_at'], x['id'])
+    keyfn = lambda x: (x[sort_key] if x[sort_key] is not None else '',
+                       x['created_at'], x['id'])
     reverse = sort_dir == 'desc'
     images.sort(key=keyfn, reverse=reverse)
 

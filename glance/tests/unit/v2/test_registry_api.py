@@ -245,6 +245,204 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEquals(images[0]['id'], UUID5)
         self.assertEquals(images[1]['id'], UUID2)
 
+    def test_get_index_marker_and_name_asc(self):
+        """Test marker and null name ascending
+
+        Tests that the registry API returns 200
+        when a marker and a null name are combined
+        ascending order
+        """
+        UUID3 = _gen_uuid()
+        extra_fixture = {'id': UUID3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': None,
+                         'size': 19,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        req = webob.Request.blank('/rpc')
+        req.method = "POST"
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'marker': UUID3, 'sort_key': 'name',
+                       'sort_dir': 'asc'},
+        }]
+        req.body = json.dumps(cmd)
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        images = json.loads(res.body)[0]
+        self.assertEquals(len(images), 2)
+
+    def test_get_index_marker_and_name_desc(self):
+        """Test marker and null name descending
+
+        Tests that the registry API returns 200
+        when a marker and a null name are combined
+        descending order
+        """
+        UUID3 = _gen_uuid()
+        extra_fixture = {'id': UUID3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': None,
+                         'size': 19,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        req = webob.Request.blank('/rpc')
+        req.method = "POST"
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'marker': UUID3, 'sort_key': 'name',
+                       'sort_dir': 'desc'},
+        }]
+        req.body = json.dumps(cmd)
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        images = json.loads(res.body)[0]
+        self.assertEquals(len(images), 0)
+
+    def test_get_index_marker_and_disk_format_asc(self):
+        """Test marker and null disk format ascending
+
+        Tests that the registry API returns 200
+        when a marker and a null disk_format are combined
+        ascending order
+        """
+        UUID3 = _gen_uuid()
+        extra_fixture = {'id': UUID3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': None,
+                         'container_format': 'ovf',
+                         'name': 'Fake image',
+                         'size': 19,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        req = webob.Request.blank('/rpc')
+        req.method = "POST"
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'marker': UUID3, 'sort_key': 'disk_format',
+                       'sort_dir': 'asc'},
+        }]
+        req.body = json.dumps(cmd)
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        images = json.loads(res.body)[0]
+        self.assertEquals(len(images), 2)
+
+    def test_get_index_marker_and_disk_format_desc(self):
+        """Test marker and null disk format descending
+
+        Tests that the registry API returns 200
+        when a marker and a null disk_format are combined
+        descending order
+        """
+        UUID3 = _gen_uuid()
+        extra_fixture = {'id': UUID3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': None,
+                         'container_format': 'ovf',
+                         'name': 'Fake image',
+                         'size': 19,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        req = webob.Request.blank('/rpc')
+        req.method = "POST"
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'marker': UUID3, 'sort_key': 'disk_format',
+                       'sort_dir': 'desc'},
+        }]
+        req.body = json.dumps(cmd)
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        images = json.loads(res.body)[0]
+        self.assertEquals(len(images), 0)
+
+    def test_get_index_marker_and_container_format_asc(self):
+        """Test marker and null container format ascending
+
+        Tests that the registry API returns 200
+        when a marker and a null container_format are combined
+        ascending order
+        """
+        UUID3 = _gen_uuid()
+        extra_fixture = {'id': UUID3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': None,
+                         'name': 'Fake image',
+                         'size': 19,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        req = webob.Request.blank('/rpc')
+        req.method = "POST"
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'marker': UUID3, 'sort_key': 'container_format',
+                       'sort_dir': 'asc'},
+        }]
+        req.body = json.dumps(cmd)
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        images = json.loads(res.body)[0]
+        self.assertEquals(len(images), 2)
+
+    def test_get_index_marker_and_container_format_desc(self):
+        """Test marker and null container format descending
+
+        Tests that the registry API returns 200
+        when a marker and a null container_format are combined
+        descending order
+        """
+        UUID3 = _gen_uuid()
+        extra_fixture = {'id': UUID3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': None,
+                         'name': 'Fake image',
+                         'size': 19,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        req = webob.Request.blank('/rpc')
+        req.method = "POST"
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'marker': UUID3, 'sort_key': 'container_format',
+                       'sort_dir': 'desc'},
+        }]
+        req.body = json.dumps(cmd)
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        images = json.loads(res.body)[0]
+        self.assertEquals(len(images), 0)
+
     def test_get_index_unknown_marker(self):
         """
         Tests that the registry API returns a NotFound
@@ -502,6 +700,17 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'checksum': None}
 
         db_api.image_create(self.context, extra_fixture)
+        UUID5 = _gen_uuid()
+        extra_fixture = {'id': UUID5,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': None,
+                         'size': 20,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
 
         req = webob.Request.blank('/rpc')
         req.method = "POST"
@@ -515,11 +724,12 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         res_dict = json.loads(res.body)[0]
 
         images = res_dict
-        self.assertEquals(len(images), 4)
-        self.assertEquals(images[0]['id'], UUID3)
-        self.assertEquals(images[1]['id'], UUID1)
-        self.assertEquals(images[2]['id'], UUID2)
-        self.assertEquals(images[3]['id'], UUID4)
+        self.assertEquals(len(images), 5)
+        self.assertEquals(images[0]['id'], UUID5)
+        self.assertEquals(images[1]['id'], UUID3)
+        self.assertEquals(images[2]['id'], UUID1)
+        self.assertEquals(images[3]['id'], UUID2)
+        self.assertEquals(images[4]['id'], UUID4)
 
     def test_get_index_sort_status_desc(self):
         """
