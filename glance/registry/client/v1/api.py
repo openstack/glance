@@ -52,6 +52,9 @@ registry_client_opts = [
                       'value of 0 implies no timeout.')),
 ]
 registry_client_ctx_opts = [
+    cfg.BoolOpt('use_user_token', default=True,
+                help=_('Whether to pass through the user token when '
+                       'making requests to the registry.')),
     cfg.StrOpt('admin_user', secret=True,
                help=_('The administrators user name.')),
     cfg.StrOpt('admin_password', secret=True,
@@ -107,6 +110,9 @@ def configure_registry_client():
         'timeout': CONF.registry_client_timeout,
     }
 
+    if not CONF.use_user_token:
+        configure_registry_admin_creds()
+
 
 def configure_registry_admin_creds():
     global _CLIENT_CREDS
@@ -131,7 +137,8 @@ def get_registry_client(cxt):
     global _CLIENT_CREDS, _CLIENT_KWARGS, _CLIENT_HOST, _CLIENT_PORT
     global _METADATA_ENCRYPTION_KEY
     kwargs = _CLIENT_KWARGS.copy()
-    kwargs['auth_tok'] = cxt.auth_tok
+    if CONF.use_user_token:
+        kwargs['auth_tok'] = cxt.auth_tok
     if _CLIENT_CREDS:
         kwargs['creds'] = _CLIENT_CREDS
     return client.RegistryClient(_CLIENT_HOST, _CLIENT_PORT,

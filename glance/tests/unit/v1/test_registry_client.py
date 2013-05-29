@@ -17,6 +17,9 @@
 
 import copy
 import datetime
+import os
+
+import mox
 
 import testtools
 
@@ -28,6 +31,7 @@ from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
+import glance.registry.client.v1.api as rapi
 from glance.registry.client.v1.api import client as rclient
 from glance.tests.unit import base
 
@@ -1105,6 +1109,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest):
 
 
 class TestBaseClient(testtools.TestCase):
+
     """
     Test proper actions made for both valid and invalid requests
     against a Registry service
@@ -1126,3 +1131,69 @@ class TestBaseClient(testtools.TestCase):
         self.assertEqual(expected['key_file'], actual['key_file'])
         self.assertEqual(expected['cert_file'], actual['cert_file'])
         self.assertEqual(expected['timeout'], actual['timeout'])
+
+
+class TestRegistryV1ClientApi(base.IsolatedUnitTest):
+
+    def setUp(self):
+        """Establish a clean test environment"""
+        super(TestRegistryV1ClientApi, self).setUp()
+        self.mox = mox.Mox()
+        reload(rapi)
+
+    def tearDown(self):
+        """Clear the test environment"""
+        super(TestRegistryV1ClientApi, self).tearDown()
+        self.mox.UnsetStubs()
+
+    def test_configure_registry_client_not_using_use_user_token(self):
+        self.config(use_user_token=False)
+        self.mox.StubOutWithMock(rapi, 'configure_registry_admin_creds')
+        rapi.configure_registry_admin_creds()
+
+        self.mox.ReplayAll()
+
+        rapi.configure_registry_client()
+        self.mox.VerifyAll()
+
+    def test_configure_registry_admin_creds(self):
+        expected = {
+            'user': 'user',
+            'password': 'password',
+            'username': 'user',
+            'tenant': 'tenant',
+            'auth_url': None,
+            'strategy': 'configured_strategy',
+            'region': 'region',
+        }
+        self.config(admin_user=expected['user'])
+        self.config(admin_password=expected['password'])
+        self.config(admin_tenant_name=expected['tenant'])
+        self.config(auth_strategy=expected['strategy'])
+        self.config(auth_region=expected['region'])
+        self.stubs.Set(os, 'getenv', lambda x: None)
+
+        self.assertEquals(rapi._CLIENT_CREDS, None)
+        rapi.configure_registry_admin_creds()
+        self.assertEquals(rapi._CLIENT_CREDS, expected)
+
+    def test_configure_registry_admin_creds_with_auth_url(self):
+        expected = {
+            'user': 'user',
+            'password': 'password',
+            'username': 'user',
+            'tenant': 'tenant',
+            'auth_url': 'auth_url',
+            'strategy': 'keystone',
+            'region': 'region',
+        }
+        self.config(admin_user=expected['user'])
+        self.config(admin_password=expected['password'])
+        self.config(admin_tenant_name=expected['tenant'])
+        self.config(auth_url=expected['auth_url'])
+        self.config(auth_strategy='test_strategy')
+        self.config(auth_region=expected['region'])
+
+        self.assertEquals(rapi._CLIENT_CREDS, None)
+        rapi.configure_registry_admin_creds()
+        self.assertEquals(rapi._CLIENT_CREDS, expected)
