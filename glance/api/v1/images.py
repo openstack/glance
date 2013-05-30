@@ -506,17 +506,25 @@ class Controller(controller.BaseController):
                                                                   location)
 
     def _handle_source(self, req, image_id, image_meta, image_data):
+        copy_from = self._copy_from(req)
+        location = image_meta.get('location')
+        sources = filter(lambda x: x, (copy_from, location, image_data))
+        if len(sources) >= 2:
+            msg = _("It's invalid to provide multiple image sources.")
+            LOG.debug(msg)
+            raise HTTPBadRequest(explanation=msg,
+                                 request=req,
+                                 content_type="text/plain")
         if image_data:
             image_meta = self._validate_image_for_activation(req,
                                                              image_id,
                                                              image_meta)
             image_meta = self._upload_and_activate(req, image_meta)
-        elif self._copy_from(req):
+        elif copy_from:
             msg = _('Triggering asynchronous copy from external source')
             LOG.info(msg)
             self.pool.spawn_n(self._upload_and_activate, req, image_meta)
         else:
-            location = image_meta.get('location')
             if location:
                 self._validate_image_for_activation(req, image_id, image_meta)
                 image_meta = self._activate(req, image_id, location)
