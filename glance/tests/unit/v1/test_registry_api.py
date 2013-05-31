@@ -2500,3 +2500,25 @@ class TestRegistryAPI(base.IsolatedUnitTest):
 
         res = req.get_response(api)
         self.assertEquals(res.status_int, 403)
+
+    def test_get_images_bad_urls(self):
+        """Check that routes collections are not on (LP bug 1185828)"""
+        req = webob.Request.blank('/images/detail.xxx')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 404)
+
+        req = webob.Request.blank('/images.xxx')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 404)
+
+        req = webob.Request.blank('/images/new')
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 404)
+
+        req = webob.Request.blank("/images/%s/members" % UUID1)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        req = webob.Request.blank("/images/%s/members.xxx" % UUID1)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 404)
