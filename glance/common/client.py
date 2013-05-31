@@ -44,6 +44,7 @@ except ImportError:
 from glance.common import auth
 from glance.common import exception, utils
 import glance.openstack.common.log as logging
+from glance.openstack.common import strutils
 
 LOG = logging.getLogger(__name__)
 
@@ -393,6 +394,10 @@ class BaseClient(object):
             for (key, value) in params.items():
                 if value is None:
                     del params[key]
+                    continue
+                if not isinstance(value, basestring):
+                    value = str(value)
+                params[key] = strutils.safe_encode(value)
             query = urllib.urlencode(params)
         else:
             query = None
@@ -401,6 +406,20 @@ class BaseClient(object):
         log_msg = _("Constructed URL: %s")
         LOG.debug(log_msg, url.geturl())
         return url
+
+    def _encode_headers(self, headers):
+        """
+        Encodes headers.
+
+        Note: This should be used right before
+        sending anything out.
+
+        :param headers: Headers to encode
+        :returns: Dictionary with encoded headers'
+                  names and values
+        """
+        to_str = strutils.safe_encode
+        return dict([(to_str(h), to_str(v)) for h, v in headers.iteritems()])
 
     @handle_redirects
     def _do_request(self, method, url, body, headers):
@@ -432,7 +451,7 @@ class BaseClient(object):
 
         try:
             connection_type = self.get_connection_type()
-            headers = headers or {}
+            headers = self._encode_headers(headers or {})
 
             if 'x-auth-token' not in headers and self.auth_tok:
                 headers['x-auth-token'] = self.auth_tok
