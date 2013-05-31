@@ -25,7 +25,7 @@ from glance import context
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
 import glance.tests.functional.db as db_tests
-from glance.tests.unit import base
+from glance.tests import utils as test_utils
 
 
 # The default sort order of results is whatever sort key is specified,
@@ -60,7 +60,7 @@ def build_image_fixture(**kwargs):
     return image
 
 
-class TestDriver(base.IsolatedUnitTest):
+class TestDriver(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestDriver, self).setUp()
@@ -707,7 +707,7 @@ class DriverTests(object):
         self.assertEqual(0, len(self.db_api.image_member_find(self.context)))
 
 
-class TestVisibility(base.IsolatedUnitTest):
+class TestVisibility(test_utils.BaseTestCase):
     def setUp(self):
         super(TestVisibility, self).setUp()
         self.db_api = db_tests.get_db(self.config)
@@ -978,7 +978,7 @@ class VisibilityTests(object):
         self.assertEquals(len(images), 1)
 
 
-class TestMembershipVisibility(base.IsolatedUnitTest):
+class TestMembershipVisibility(test_utils.BaseTestCase):
     def setUp(self):
         super(TestMembershipVisibility, self).setUp()
         self.db_api = db_tests.get_db(self.config)
