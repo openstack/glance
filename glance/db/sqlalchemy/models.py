@@ -23,7 +23,7 @@ SQLAlchemy models for glance data
 from sqlalchemy import Column, Integer, String, BigInteger
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import ForeignKey, DateTime, Boolean, Text
+from sqlalchemy import ForeignKey, DateTime, Boolean, Text, PickleType
 from sqlalchemy.orm import relationship, backref, object_mapper
 from sqlalchemy import Index, UniqueConstraint
 
@@ -153,6 +153,7 @@ class ImageLocation(BASE, ModelBase):
     image_id = Column(String(36), ForeignKey('images.id'), nullable=False)
     image = relationship(Image, backref=backref('locations'))
     value = Column(Text(), nullable=False)
+    meta_data = Column(PickleType(), default={})
 
 
 class ImageMember(BASE, ModelBase):
