@@ -127,7 +127,9 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
         msg = _("Attempt to upload duplicate image: %s") % e
         LOG.debug(msg)
         safe_kill(req, image_id)
-        raise webob.exc.HTTPConflict(explanation=msg, request=req)
+        raise webob.exc.HTTPConflict(explanation=msg,
+                                     request=req,
+                                     content_type="text/plain")
 
     except exception.Forbidden as e:
         msg = _("Forbidden upload attempt: %s") % e
@@ -174,8 +176,11 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
         raise e
 
     except Exception as e:
-        LOG.exception(_("Failed to upload image"))
+        msg = _("Failed to upload image")
+        LOG.exception(msg)
         safe_kill(req, image_id)
-        raise webob.exc.HTTPInternalServerError(request=req)
+        raise webob.exc.HTTPInternalServerError(explanation=msg,
+                                                request=req,
+                                                content_type='text/plain')
 
     return image_meta, location
