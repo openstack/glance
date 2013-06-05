@@ -360,11 +360,6 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         public images that have a specific name. This is really a sanity
         check, filtering is tested more in-depth using /images/detail
         """
-        fixture = {'id': UUID2,
-                   'name': 'fake image #2',
-                   'size': 19,
-                   'checksum': None}
-
         extra_fixture = {'id': _gen_uuid(),
                          'status': 'active',
                          'is_public': True,
