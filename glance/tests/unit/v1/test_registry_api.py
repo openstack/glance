@@ -592,6 +592,71 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(400, res.status_int)
 
+    def test_get_index_null_name(self):
+        """Check 200 is returned when sort_key is null name
+
+        Check 200 is returned when sort_key is name and name is null
+        for specified marker
+        """
+        UUID6 = _gen_uuid()
+        extra_fixture = {'id': UUID6,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'size': 20,
+                         'name': None,
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+        req = webob.Request.blank('/images?sort_key=name&marker=%s' % UUID6)
+        res = req.get_response(self.api)
+        self.assertEqual(200, res.status_int)
+
+    def test_get_index_null_disk_format(self):
+        """Check 200 is returned when sort_key is null disk_format
+
+        Check 200 is returned when sort_key is disk_format and
+        disk_format is null for specified marker
+        """
+        UUID6 = _gen_uuid()
+        extra_fixture = {'id': UUID6,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': None,
+                         'container_format': 'ovf',
+                         'size': 20,
+                         'name': 'Fake image',
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+        req = webob.Request.blank('/images?sort_key=disk_format&marker=%s'
+                                  % UUID6)
+        res = req.get_response(self.api)
+        self.assertEqual(200, res.status_int)
+
+    def test_get_index_null_container_format(self):
+        """Check 200 is returned when sort_key is null container_format
+
+        Check 200 is returned when sort_key is container_format and
+        container_format is null for specified marker
+        """
+        UUID6 = _gen_uuid()
+        extra_fixture = {'id': UUID6,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': None,
+                         'size': 20,
+                         'name': 'Fake image',
+                         'checksum': None}
+
+        db_api.image_create(self.context, extra_fixture)
+        req = webob.Request.blank('/images?sort_key=container_format&marker=%s'
+                                  % UUID6)
+        res = req.get_response(self.api)
+        self.assertEqual(200, res.status_int)
+
     def test_get_index_sort_name_asc(self):
         """
         Tests that the /images registry API returns list of
