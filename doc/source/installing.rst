@@ -38,7 +38,7 @@ Debian, Ubuntu
 Red Hat, Fedora
 ###############
 
-Only RHEL 6, Fedora 15, and newer releases have the necessary
+Only RHEL 6, Fedora 18, and newer releases have the necessary
 components packaged.
 On RHEL 6, enable the EPEL repository.
 
