@@ -291,7 +291,7 @@ def schedule_delayed_delete_from_backend(uri, image_id, **kwargs):
         uri = crypt.urlsafe_encrypt(CONF.metadata_encryption_key, uri, 64)
     with open(file_path, 'w') as f:
         f.write('\n'.join([uri, str(int(delete_time))]))
-    os.chmod(file_path, 0600)
+    os.chmod(file_path, 0o600)
     os.utime(file_path, (delete_time, delete_time))
 
 
