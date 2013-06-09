@@ -107,7 +107,8 @@ def get_table(engine, name):
     """Returns an sqlalchemy table dynamically from db.
 
     Needed because the models don't work for us in migrations
-    as models will be far out of sync with the current data."""
+    as models will be far out of sync with the current data.
+    """
     metadata = sqlalchemy.schema.MetaData()
     metadata.bind = engine
     return sqlalchemy.Table(name, metadata, autoload=True)
@@ -452,7 +453,8 @@ class TestMigrations(utils.BaseTestCase):
 
     def _pre_upgrade_004(self, engine):
         """Insert checksum data sample to check if migration goes fine with
-        data"""
+        data.
+        """
         now = timeutils.utcnow()
         images = get_table(engine, 'images')
         data = [
@@ -530,7 +532,8 @@ class TestMigrations(utils.BaseTestCase):
 
     def _pre_upgrade_010(self, engine):
         """Test rows in images with NULL updated_at get updated to equal
-        created_at"""
+        created_at.
+        """
 
         initial_values = [
             (datetime.datetime(1999, 1, 2, 4, 10, 20),
@@ -573,7 +576,8 @@ class TestMigrations(utils.BaseTestCase):
     def _pre_upgrade_012(self, engine):
         """Test rows in images have id changes from int to varchar(32) and
         value changed from int to UUID. Also test image_members and
-        image_properties gets updated to point to new UUID keys"""
+        image_properties gets updated to point to new UUID keys.
+        """
 
         images = get_table(engine, 'images')
         image_members = get_table(engine, 'image_members')
@@ -825,7 +829,7 @@ class TestMigrations(utils.BaseTestCase):
                     'swift://acct3A%foobar:pass@example.com/container/obj-id2']
 
         for location in loc_list:
-            if not location in actual_location:
+            if location not in actual_location:
                 self.fail(_("location: %s data lost") % location)
 
     def _pre_upgrade_019(self, engine):

@@ -779,31 +779,31 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         self.assertEquals(new_num_images, orig_num_images - 1)
 
     def test_delete_image_not_existing(self):
-        """Tests cannot delete non-existing image"""
+        """Check that one cannot delete non-existing image."""
         self.assertRaises(exception.NotFound,
                           self.client.delete_image,
                           _gen_uuid())
 
     def test_get_image_members(self):
-        """Tests getting image members"""
+        """Test getting image members."""
         memb_list = self.client.get_image_members(UUID2)
         num_members = len(memb_list)
         self.assertEquals(num_members, 0)
 
     def test_get_image_members_not_existing(self):
-        """Tests getting non-existent image members"""
+        """Test getting non-existent image members."""
         self.assertRaises(exception.NotFound,
                           self.client.get_image_members,
                           _gen_uuid())
 
     def test_get_member_images(self):
-        """Tests getting member images"""
+        """Test getting member images."""
         memb_list = self.client.get_member_images('pattieblack')
         num_members = len(memb_list)
         self.assertEquals(num_members, 0)
 
     def test_add_replace_members(self):
-        """Tests replacing image members"""
+        """Test replacing image members."""
         self.assertTrue(self.client.add_member(UUID2, 'pattieblack'))
         self.assertTrue(self.client.replace_members(UUID2,
                                                     dict(member_id='pattie'
@@ -840,14 +840,14 @@ class TestBaseClient(testtools.TestCase):
 class TestRegistryV1ClientApi(base.IsolatedUnitTest):
 
     def setUp(self):
-        """Establish a clean test environment"""
+        """Establish a clean test environment."""
         super(TestRegistryV1ClientApi, self).setUp()
         self.mox = mox.Mox()
         self.context = context.RequestContext()
         reload(rapi)
 
     def tearDown(self):
-        """Clear the test environment"""
+        """Clear the test environment."""
         super(TestRegistryV1ClientApi, self).tearDown()
         self.mox.UnsetStubs()
 

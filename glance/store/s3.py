@@ -195,7 +195,7 @@ class ChunkedFile(object):
             self.close()
 
     def getvalue(self):
-        """Return entire string value... used in testing"""
+        """Return entire string value... used in testing."""
         data = ""
         self.len = 0
         for chunk in self:
@@ -205,7 +205,7 @@ class ChunkedFile(object):
         return data
 
     def close(self):
-        """Close the internal file pointer"""
+        """Close the internal file pointer."""
         if self.fp:
             self.fp.close()
             self.fp = None

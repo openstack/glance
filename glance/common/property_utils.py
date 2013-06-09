@@ -128,7 +128,8 @@ class PropertyRules(object):
             raise exception.InvalidPropertyProtectionConfiguration()
 
     def _add_policy_rules(self, property_exp, action, rule):
-        """ Add policy rules to the policy enforcer.
+        """Add policy rules to the policy enforcer.
+
         For example, if the file listed as property_protection_file has:
         [prop_a]
         create = glance_creator

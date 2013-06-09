@@ -274,7 +274,7 @@ class JSONRequestDeserializerTest(test_utils.BaseTestCase):
 
 class ServerTest(test_utils.BaseTestCase):
     def test_create_pool(self):
-        """ Ensure the wsgi thread pool is an eventlet.greenpool.GreenPool. """
+        """Ensure the wsgi thread pool is an eventlet.greenpool.GreenPool."""
         actual = wsgi.Server(threads=1).create_pool()
         self.assertTrue(isinstance(actual, eventlet.greenpool.GreenPool))
 

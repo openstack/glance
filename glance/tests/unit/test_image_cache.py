@@ -52,16 +52,14 @@ class ImageCacheTestCase(object):
 
     @skip_if_disabled
     def test_is_cached(self):
-        """
-        Verify is_cached(1) returns 0, then add something to the cache
+        """Verify is_cached(1) returns 0, then add something to the cache
         and verify is_cached(1) returns 1.
         """
         self._setup_fixture_file()
 
     @skip_if_disabled
     def test_read(self):
-        """
-        Verify is_cached(1) returns 0, then add something to the cache
+        """Verify is_cached(1) returns 0, then add something to the cache
         and verify after a subsequent read from the cache that
         is_cached(1) returns 1.
         """
@@ -76,8 +74,7 @@ class ImageCacheTestCase(object):
 
     @skip_if_disabled
     def test_open_for_read(self):
-        """
-        Test convenience wrapper for opening a cache file via
+        """Test convenience wrapper for opening a cache file via
         its image identifier.
         """
         self._setup_fixture_file()
@@ -91,8 +88,7 @@ class ImageCacheTestCase(object):
 
     @skip_if_disabled
     def test_get_image_size(self):
-        """
-        Test convenience wrapper for querying cache file size via
+        """Test convenience wrapper for querying cache file size via
         its image identifier.
         """
         self._setup_fixture_file()
@@ -103,9 +99,7 @@ class ImageCacheTestCase(object):
 
     @skip_if_disabled
     def test_delete(self):
-        """
-        Test delete method that removes an image from the cache
-        """
+        """Test delete method that removes an image from the cache."""
         self._setup_fixture_file()
 
         self.cache.delete_cached_image(1)
@@ -114,9 +108,7 @@ class ImageCacheTestCase(object):
 
     @skip_if_disabled
     def test_delete_all(self):
-        """
-        Test delete method that removes an image from the cache
-        """
+        """Test delete method that removes an image from the cache."""
         for image_id in (1, 2):
             self.assertFalse(self.cache.is_cached(image_id))
 
@@ -135,9 +127,7 @@ class ImageCacheTestCase(object):
 
     @skip_if_disabled
     def test_clean_stalled(self):
-        """
-        Test the clean method removes expected images
-        """
+        """Test the clean method removes expected images."""
         incomplete_file_path = os.path.join(self.cache_dir, 'incomplete', '1')
         incomplete_file = open(incomplete_file_path, 'w')
         incomplete_file.write(FIXTURE_DATA)

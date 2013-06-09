@@ -19,9 +19,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""
-Defines interface for DB access
-"""
+
+"""Defines interface for DB access."""
 
 import logging
 import time
@@ -91,9 +90,7 @@ def add_cli_options():
 
 
 def _ping_listener(dbapi_conn, connection_rec, connection_proxy):
-
-    """
-    Ensures that MySQL connections checked out of the
+    """Ensures that MySQL connections checked out of the
     pool are alive.
 
     Borrowed from:
@@ -112,9 +109,7 @@ def _ping_listener(dbapi_conn, connection_rec, connection_proxy):
 
 
 def setup_db_env():
-    """
-    Setup global configuration for database.
-    """
+    """Setup global configuration for database."""
     global sa_logger, _IDLE_TIMEOUT, _MAX_RETRIES, _RETRY_INTERVAL, _CONNECTION
 
     _IDLE_TIMEOUT = CONF.sql_idle_timeout
@@ -150,7 +145,7 @@ def _check_mutate_authorization(context, image_ref):
 
 
 def _get_session(autocommit=True, expire_on_commit=False):
-    """Helper method to grab session"""
+    """Helper method to grab session."""
     global _MAKER
     if not _MAKER:
         get_engine()
@@ -946,7 +941,7 @@ def _image_child_entry_delete_all(child_model_cls, image_id, delete_time=None,
 
 
 def image_property_create(context, values, session=None):
-    """Create an ImageProperty object"""
+    """Create an ImageProperty object."""
     prop_ref = models.ImageProperty()
     prop = _image_property_update(context, prop_ref, values, session=session)
     return prop.to_dict()
@@ -954,7 +949,7 @@ def image_property_create(context, values, session=None):
 
 def _image_property_update(context, prop_ref, values, session=None):
     """
-    Used internally by image_property_create and image_property_update
+    Used internally by image_property_create and image_property_update.
     """
     _drop_protected_attrs(models.ImageProperty, values)
     values["deleted"] = False
@@ -965,7 +960,7 @@ def _image_property_update(context, prop_ref, values, session=None):
 
 def image_property_delete(context, prop_ref, image_ref, session=None):
     """
-    Used internally by image_property_create and image_property_update
+    Used internally by image_property_create and image_property_update.
     """
     session = session or _get_session()
     prop = session.query(models.ImageProperty).filter_by(image_id=image_ref,
@@ -985,14 +980,14 @@ def _image_property_delete_all(context, image_id, delete_time=None,
 
 
 def image_member_create(context, values, session=None):
-    """Create an ImageMember object"""
+    """Create an ImageMember object."""
     memb_ref = models.ImageMember()
     _image_member_update(context, memb_ref, values, session=session)
     return _image_member_format(memb_ref)
 
 
 def _image_member_format(member_ref):
-    """Format a member ref for consumption outside of this module"""
+    """Format a member ref for consumption outside of this module."""
     return {
         'id': member_ref['id'],
         'image_id': member_ref['image_id'],
@@ -1005,7 +1000,7 @@ def _image_member_format(member_ref):
 
 
 def image_member_update(context, memb_id, values):
-    """Update an ImageMember object"""
+    """Update an ImageMember object."""
     session = _get_session()
     memb_ref = _image_member_get(context, memb_id, session)
     _image_member_update(context, memb_ref, values, session)
@@ -1023,7 +1018,7 @@ def _image_member_update(context, memb_ref, values, session=None):
 
 
 def image_member_delete(context, memb_id, session=None):
-    """Delete an ImageMember object"""
+    """Delete an ImageMember object."""
     session = session or _get_session()
     member_ref = _image_member_get(context, memb_id, session)
     _image_member_delete(context, member_ref, session)
@@ -1044,7 +1039,7 @@ def _image_member_delete_all(context, image_id, delete_time=None,
 
 
 def _image_member_get(context, memb_id, session):
-    """Fetch an ImageMember entity by id"""
+    """Fetch an ImageMember entity by id."""
     query = session.query(models.ImageMember)
     query = query.filter_by(id=memb_id)
     return query.one()

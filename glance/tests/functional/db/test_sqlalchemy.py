@@ -61,7 +61,8 @@ class TestSqlAlchemyMembershipVisibility(base.TestMembershipVisibility,
 
 
 class TestSqlAlchemyDBDataIntegrity(base.TestDriver):
-    """ Test class for checking the data integrity in the database.
+    """Test class for checking the data integrity in the database.
+
     Helpful in testing scenarios specific to the sqlalchemy api.
     """
 

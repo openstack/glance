@@ -460,7 +460,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('2', output.name)
 
     def test_show_deleted_properties(self):
-        """ Ensure that the api filters out deleted image properties. """
+        """Ensure that the api filters out deleted image properties."""
 
         # get the image properties into the odd state
         image = {

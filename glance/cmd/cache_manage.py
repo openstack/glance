@@ -35,9 +35,9 @@ possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
 if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
-import glance.image_cache.client
 from glance.common import exception
 from glance.common import utils
+import glance.image_cache.client
 from glance.openstack.common import timeutils
 from glance.version import version_info as version
 
@@ -78,10 +78,10 @@ def catch_error(action):
 
 @catch_error('show cached images')
 def list_cached(options, args):
-    """
-%(prog)s list-cached [options]
+    """%(prog)s list-cached [options]
 
-List all images currently cached"""
+List all images currently cached.
+    """
     client = get_client(options)
     images = client.get_cached_images()
     if not images:
@@ -120,10 +120,10 @@ List all images currently cached"""
 
 @catch_error('show queued images')
 def list_queued(options, args):
-    """
-%(prog)s list-queued [options]
+    """%(prog)s list-queued [options]
 
-List all images currently queued for caching"""
+List all images currently queued for caching.
+    """
     client = get_client(options)
     images = client.get_queued_images()
     if not images:
@@ -143,10 +143,10 @@ List all images currently queued for caching"""
 
 @catch_error('queue the specified image for caching')
 def queue_image(options, args):
-    """
-%(prog)s queue-image <IMAGE_ID> [options]
+    """%(prog)s queue-image <IMAGE_ID> [options]
 
-Queues an image for caching"""
+Queues an image for caching
+"""
     if len(args) == 1:
         image_id = args.pop()
     else:
@@ -173,7 +173,8 @@ def delete_cached_image(options, args):
     """
 %(prog)s delete-cached-image <IMAGE_ID> [options]
 
-Deletes an image from the cache"""
+Deletes an image from the cache
+    """
     if len(args) == 1:
         image_id = args.pop()
     else:
@@ -197,10 +198,10 @@ Deletes an image from the cache"""
 
 @catch_error('Delete all cached images')
 def delete_all_cached_images(options, args):
-    """
-%(prog)s delete-all-cached-images [options]
+    """%(prog)s delete-all-cached-images [options]
 
-Removes all images from the cache"""
+Remove all images from the cache.
+    """
     if (not options.force and
         not user_confirm("Delete all cached images?", default=False)):
         return SUCCESS
@@ -219,7 +220,8 @@ def delete_queued_image(options, args):
     """
 %(prog)s delete-queued-image <IMAGE_ID> [options]
 
-Deletes an image from the cache"""
+Deletes an image from the cache
+    """
     if len(args) == 1:
         image_id = args.pop()
     else:
@@ -243,10 +245,10 @@ Deletes an image from the cache"""
 
 @catch_error('Delete all queued images')
 def delete_all_queued_images(options, args):
-    """
-%(prog)s delete-all-queued-images [options]
+    """%(prog)s delete-all-queued-images [options]
 
-Removes all images from the cache queue"""
+Remove all images from the cache queue.
+    """
     if (not options.force and
         not user_confirm("Delete all queued images?", default=False)):
         return SUCCESS
@@ -261,8 +263,8 @@ Removes all images from the cache queue"""
 
 
 def get_client(options):
-    """
-    Returns a new client object to a Glance server
+    """Return a new client object to a Glance server.
+
     specified by the --host and --port options
     supplied to the CLI
     """
@@ -280,7 +282,7 @@ def get_client(options):
 
 
 def env(*vars, **kwargs):
-    """Search for the first defined of possibly many env vars
+    """Search for the first defined of possibly many env vars.
 
     Returns the first environment variable defined in vars, or
     returns the default defined in kwargs.
@@ -293,8 +295,7 @@ def env(*vars, **kwargs):
 
 
 def create_options(parser):
-    """
-    Sets up the CLI and config-file options that may be
+    """Set up the CLI and config-file options that may be
     parsed and program commands.
 
     :param parser: The option parser
@@ -450,8 +451,7 @@ def lookup_command(parser, command_name):
 
 
 def user_confirm(prompt, default=False):
-    """
-    Yes/No question dialog with user.
+    """Yes/No question dialog with user.
 
     :param prompt: question/statement to present to user (string)
     :param default: boolean value to return if empty string

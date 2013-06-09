@@ -57,7 +57,9 @@ class JSONEncodedDict(TypeDecorator):
 
 
 class ModelBase(object):
-    """Base class for Nova and Glance Models"""
+
+    """Base class for Nova and Glance Models."""
+
     __table_args__ = {'mysql_engine': 'InnoDB'}
     __table_initialized__ = False
     __protected_attributes__ = set([
@@ -71,7 +73,7 @@ class ModelBase(object):
     deleted = Column(Boolean, nullable=False, default=False)
 
     def save(self, session=None):
-        """Save this object"""
+        """Save this object."""
         # import api here to prevent circular dependency problem
         import glance.db.sqlalchemy.api as db_api
         session = session or db_api._get_session()
@@ -79,7 +81,7 @@ class ModelBase(object):
         session.flush()
 
     def delete(self, session=None):
-        """Delete this object"""
+        """Delete this object."""
         self.deleted = True
         self.deleted_at = timeutils.utcnow()
         self.save(session=session)
@@ -123,7 +125,7 @@ class ModelBase(object):
 
 
 class Image(BASE, ModelBase):
-    """Represents an image in the datastore"""
+    """Represents an image in the datastore."""
     __tablename__ = 'images'
     __table_args__ = (Index('checksum_image_idx', 'checksum'),
                       Index('ix_images_is_public', 'is_public'),
@@ -145,7 +147,7 @@ class Image(BASE, ModelBase):
 
 
 class ImageProperty(BASE, ModelBase):
-    """Represents an image properties in the datastore"""
+    """Represents an image properties in the datastore."""
     __tablename__ = 'image_properties'
     __table_args__ = (Index('ix_image_properties_image_id', 'image_id'),
                       Index('ix_image_properties_deleted', 'deleted'),
@@ -164,7 +166,7 @@ class ImageProperty(BASE, ModelBase):
 
 
 class ImageTag(BASE, ModelBase):
-    """Represents an image tag in the datastore"""
+    """Represents an image tag in the datastore."""
     __tablename__ = 'image_tags'
     __table_args__ = (Index('ix_image_tags_image_id', 'image_id'),
                       Index('ix_image_tags_image_id_tag_value',
@@ -178,7 +180,7 @@ class ImageTag(BASE, ModelBase):
 
 
 class ImageLocation(BASE, ModelBase):
-    """Represents an image location in the datastore"""
+    """Represents an image location in the datastore."""
     __tablename__ = 'image_locations'
     __table_args__ = (Index('ix_image_locations_image_id', 'image_id'),
                       Index('ix_image_locations_deleted', 'deleted'),)
@@ -191,7 +193,7 @@ class ImageLocation(BASE, ModelBase):
 
 
 class ImageMember(BASE, ModelBase):
-    """Represents an image members in the datastore"""
+    """Represents an image members in the datastore."""
     __tablename__ = 'image_members'
     unique_constraint_key_name = 'image_members_image_id_member_deleted_at_key'
     __table_args__ = (Index('ix_image_members_deleted', 'deleted'),
@@ -234,18 +236,14 @@ class Task(BASE, ModelBase):
 
 
 def register_models(engine):
-    """
-    Creates database tables for all models with the given engine
-    """
+    """Create database tables for all models with the given engine."""
     models = (Image, ImageProperty, ImageMember)
     for model in models:
         model.metadata.create_all(engine)
 
 
 def unregister_models(engine):
-    """
-    Drops database tables for all models with the given engine
-    """
+    """Drop database tables for all models with the given engine."""
     models = (Image, ImageProperty)
     for model in models:
         model.metadata.drop_all(engine)

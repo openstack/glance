@@ -491,11 +491,11 @@ def validate_key_cert(key_file, cert_file):
         error_filename = cert_file
         cert_str = open(cert_file, "r").read()
         cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_str)
-    except IOError, ioe:
+    except IOError as ioe:
         raise RuntimeError(_("There is a problem with your %s "
                              "%s.  Please verify it.  Error: %s")
                            % (error_key_name, error_filename, ioe))
-    except crypto.Error, ce:
+    except crypto.Error as ce:
         raise RuntimeError(_("There is a problem with your %s "
                              "%s.  Please verify it. OpenSSL error: %s")
                            % (error_key_name, error_filename, ce))
@@ -506,7 +506,7 @@ def validate_key_cert(key_file, cert_file):
 
         out = crypto.sign(key, data, digest)
         crypto.verify(cert, out, data, digest)
-    except crypto.Error, ce:
+    except crypto.Error as ce:
         raise RuntimeError(_("There is a problem with your key pair.  "
                              "Please verify that cert %s and key %s "
                              "belong together.  OpenSSL error %s")

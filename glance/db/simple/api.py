@@ -390,7 +390,7 @@ def image_member_find(context, image_id=None, member=None, status=None):
 
     for f in filters:
         members = filter(f, members)
-    return [copy.deepcopy(member) for member in members]
+    return [copy.deepcopy(m) for m in members]
 
 
 @log_call

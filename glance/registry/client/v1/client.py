@@ -32,7 +32,7 @@ LOG = logging.getLogger(__name__)
 
 class RegistryClient(BaseClient):
 
-    """A client for the Registry image metadata service"""
+    """A client for the Registry image metadata service."""
 
     DEFAULT_PORT = 9191
 
@@ -139,7 +139,7 @@ class RegistryClient(BaseClient):
         return image_list
 
     def get_image(self, image_id):
-        """Returns a mapping of image metadata from Registry"""
+        """Returns a mapping of image metadata from Registry."""
         res = self.do_request("GET", "/images/%s" % image_id)
         data = json.loads(res.read())['image']
         return self.decrypt_metadata(data)
@@ -199,19 +199,19 @@ class RegistryClient(BaseClient):
         return image
 
     def get_image_members(self, image_id):
-        """Returns a list of membership associations from Registry"""
+        """Return a list of membership associations from Registry."""
         res = self.do_request("GET", "/images/%s/members" % image_id)
         data = json.loads(res.read())['members']
         return data
 
     def get_member_images(self, member_id):
-        """Returns a list of membership associations from Registry"""
+        """Return a list of membership associations from Registry."""
         res = self.do_request("GET", "/shared-images/%s" % member_id)
         data = json.loads(res.read())['shared_images']
         return data
 
     def replace_members(self, image_id, member_data):
-        """Replaces Registry's information about image membership"""
+        """Replace registry's information about image membership."""
         if isinstance(member_data, (list, tuple)):
             member_data = dict(memberships=list(member_data))
         elif (isinstance(member_data, dict) and
@@ -227,7 +227,7 @@ class RegistryClient(BaseClient):
         return self.get_status_code(res) == 204
 
     def add_member(self, image_id, member_id, can_share=None):
-        """Adds to Registry's information about image membership"""
+        """Add to registry's information about image membership."""
         body = None
         headers = {}
         # Build up a body if can_share is specified
@@ -241,7 +241,7 @@ class RegistryClient(BaseClient):
         return self.get_status_code(res) == 204
 
     def delete_member(self, image_id, member_id):
-        """Deletes Registry's information about image membership"""
+        """Delete registry's information about image membership."""
         res = self.do_request("DELETE", "/images/%s/members/%s" %
                               (image_id, member_id))
         return self.get_status_code(res) == 204

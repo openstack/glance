@@ -334,7 +334,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         return raw_change[op]
 
     def _decode_json_pointer(self, pointer):
-        """ Parse a json pointer.
+        """Parse a json pointer.
 
         Json Pointers are defined in
         http://tools.ietf.org/html/draft-pbryan-zyp-json-pointer .
@@ -350,7 +350,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         return ret
 
     def _validate_json_pointer(self, pointer):
-        """ Validate a json pointer.
+        """Validate a json pointer.
 
         We only accept a limited form of json pointers.
         """

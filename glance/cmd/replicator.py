@@ -78,7 +78,7 @@ class UploadException(Exception):
 
 class ImageService(object):
     def __init__(self, conn, auth_token):
-        """ Initialize the ImageService.
+        """Initialize the ImageService.
 
         conn: a httplib.HTTPConnection to the glance server
         auth_token: authentication token to pass in the x-auth-token header
@@ -723,6 +723,8 @@ def logging_excepthook(type, value, tb):
 
 
 def main():
+    """The main function."""
+
     usage = """
 %%prog <command> [options] [args]
 

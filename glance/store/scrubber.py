@@ -409,7 +409,7 @@ class Scrubber(object):
 
         delete_jobs = {}
         for image_id, image_uri in image_id_uri_list:
-            if not image_id in delete_jobs:
+            if image_id not in delete_jobs:
                 delete_jobs[image_id] = []
             delete_jobs[image_id].append((image_id, image_uri))
         return delete_jobs

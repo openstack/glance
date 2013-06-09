@@ -746,7 +746,7 @@ class DriverTests(object):
         self.assertEquals([], tags)
 
     def test_image_destroy_with_delete_all(self):
-        """ Check the image child element's _image_delete_all methods
+        """Check the image child element's _image_delete_all methods.
 
         checks if all the image_delete_all methods deletes only the child
         elements of the image to be deleted.
@@ -1702,7 +1702,7 @@ class MembershipVisibilityTests(object):
         self.assertEqual(set(expected), set(facets))
 
     def test_owner1_finding_user1_memberships(self):
-        """ Owner1 should see images it owns that are shared with User1 """
+        """Owner1 should see images it owns that are shared with User1."""
         expected = [
             (self.owner1, 'shared-with-1'),
             (self.owner1, 'shared-with-both'),
@@ -1710,7 +1710,7 @@ class MembershipVisibilityTests(object):
         self._check_by_member(self.owner1_ctx, self.tenant1, expected)
 
     def test_user1_finding_user1_memberships(self):
-        """ User1 should see all images shared with User1 """
+        """User1 should see all images shared with User1 """
         expected = [
             (self.owner1, 'shared-with-1'),
             (self.owner1, 'shared-with-both'),
@@ -1720,12 +1720,12 @@ class MembershipVisibilityTests(object):
         self._check_by_member(self.user1_ctx, self.tenant1, expected)
 
     def test_user2_finding_user1_memberships(self):
-        """ User2 should see no images shared with User1 """
+        """User2 should see no images shared with User1 """
         expected = []
         self._check_by_member(self.user2_ctx, self.tenant1, expected)
 
     def test_admin_finding_user1_memberships(self):
-        """ Admin should see all images shared with User1 """
+        """Admin should see all images shared with User1 """
         expected = [
             (self.owner1, 'shared-with-1'),
             (self.owner1, 'shared-with-both'),
@@ -1740,31 +1740,31 @@ class MembershipVisibilityTests(object):
         self.assertEqual(set(expected), set(member_ids))
 
     def test_owner1_finding_owner1s_image_members(self):
-        """ Owner1 should see all memberships of its image """
+        """Owner1 should see all memberships of its image """
         expected = [self.tenant1, self.tenant2]
         image_id = self.image_ids[(self.owner1, 'shared-with-both')]
         self._check_by_image(self.owner1_ctx, image_id, expected)
 
     def test_admin_finding_owner1s_image_members(self):
-        """ Admin should see all memberships of owner1's image """
+        """Admin should see all memberships of owner1's image """
         expected = [self.tenant1, self.tenant2]
         image_id = self.image_ids[(self.owner1, 'shared-with-both')]
         self._check_by_image(self.admin_ctx, image_id, expected)
 
     def test_user1_finding_owner1s_image_members(self):
-        """ User1 should see its own membership of owner1's image """
+        """User1 should see its own membership of owner1's image """
         expected = [self.tenant1]
         image_id = self.image_ids[(self.owner1, 'shared-with-both')]
         self._check_by_image(self.user1_ctx, image_id, expected)
 
     def test_user2_finding_owner1s_image_members(self):
-        """ User2 should see its own membership of owner1's image """
+        """User2 should see its own membership of owner1's image """
         expected = [self.tenant2]
         image_id = self.image_ids[(self.owner1, 'shared-with-both')]
         self._check_by_image(self.user2_ctx, image_id, expected)
 
     def test_user3_finding_owner1s_image_members(self):
-        """ User3 should see no memberships of owner1's image """
+        """User3 should see no memberships of owner1's image """
         expected = []
         image_id = self.image_ids[(self.owner1, 'shared-with-both')]
         self._check_by_image(self.user3_ctx, image_id, expected)

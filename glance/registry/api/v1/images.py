@@ -95,9 +95,7 @@ class Controller(object):
         self.db_api.setup_db_env()
 
     def _get_images(self, context, filters, **params):
-        """
-        Get images, wrapping in exception if necessary.
-        """
+        """Get images, wrapping in exception if necessary."""
         # NOTE(markwash): for backwards compatibility, is_public=True for
         # admins actually means "treat me as if I'm not an admin and show me
         # all my images"
@@ -112,8 +110,7 @@ class Controller(object):
             raise exc.HTTPBadRequest(explanation=msg)
 
     def index(self, req):
-        """
-        Return a basic filtered list of public, non-deleted images
+        """Return a basic filtered list of public, non-deleted images
 
         :param req: the Request object coming from the wsgi layer
         :retval a mapping of the following form::
@@ -145,8 +142,7 @@ class Controller(object):
         return dict(images=results)
 
     def detail(self, req):
-        """
-        Return a filtered list of public, non-deleted images in detail
+        """Return a filtered list of public, non-deleted images in detail
 
         :param req: the Request object coming from the wsgi layer
         :retval a mapping of the following form::
@@ -164,8 +160,7 @@ class Controller(object):
         return dict(images=image_dicts)
 
     def _get_query_params(self, req):
-        """
-        Extract necessary query parameters from http request.
+        """Extract necessary query parameters from http request.
 
         :param req: the Request object coming from the wsgi layer
         :retval dictionary of filters to apply to list of images
@@ -192,8 +187,7 @@ class Controller(object):
         return params
 
     def _get_filters(self, req):
-        """
-        Return a dictionary of query param filters from the request
+        """Return a dictionary of query param filters from the request
 
         :param req: the Request object coming from the wsgi layer
         :retval a dict of key/value filters
@@ -333,8 +327,7 @@ class Controller(object):
 
     @utils.mutating
     def delete(self, req, id):
-        """
-        Deletes an existing image with the registry.
+        """Deletes an existing image with the registry.
 
         :param req: wsgi Request object
         :param id:  The opaque internal identifier for the image
@@ -364,8 +357,7 @@ class Controller(object):
 
     @utils.mutating
     def create(self, req, body):
-        """
-        Registers a new image with the registry.
+        """Registers a new image with the registry.
 
         :param req: wsgi Request object
         :param body: Dictionary of information about the image
@@ -412,8 +404,7 @@ class Controller(object):
 
     @utils.mutating
     def update(self, req, id, body):
-        """
-        Updates an existing image with the registry.
+        """Updates an existing image with the registry.
 
         :param req: wsgi Request object
         :param body: Dictionary of information about the image
@@ -479,8 +470,7 @@ def _limit_locations(image):
 
 
 def make_image_dict(image):
-    """
-    Create a dict representation of an image which we can use to
+    """Create a dict representation of an image which we can use to
     serialize the image.
     """
 
