@@ -19,6 +19,7 @@ import StringIO
 import mox
 import testtools
 
+from glance.common import auth
 from glance.common import client
 from glance.tests import utils
 
@@ -38,6 +39,21 @@ class TestClient(testtools.TestCase):
     def tearDown(self):
         super(TestClient, self).tearDown()
         self.mock.UnsetStubs()
+
+    def test_make_auth_plugin(self):
+        creds = {'strategy': 'keystone'}
+        insecure = False
+        configure_via_auth = True
+
+        self.mock.StubOutWithMock(auth, 'get_plugin_from_strategy')
+        auth.get_plugin_from_strategy('keystone', creds, insecure,
+                                      configure_via_auth)
+
+        self.mock.ReplayAll()
+
+        self.client.make_auth_plugin(creds, insecure)
+
+        self.mock.VerifyAll()
 
     def test_http_encoding_headers(self):
         httplib.HTTPConnection.request(

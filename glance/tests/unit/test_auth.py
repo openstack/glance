@@ -123,6 +123,17 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
         self.stubs = stubout.StubOutForTesting()
         self.addCleanup(self.stubs.UnsetAll)
 
+    def test_get_plugin_from_strategy_keystone(self):
+        strategy = auth.get_plugin_from_strategy('keystone')
+        self.assertTrue(isinstance(strategy, auth.KeystoneStrategy))
+        self.assertTrue(strategy.configure_via_auth)
+
+    def test_get_plugin_from_strategy_keystone_configure_via_auth_false(self):
+        strategy = auth.get_plugin_from_strategy('keystone',
+                                                 configure_via_auth=False)
+        self.assertTrue(isinstance(strategy, auth.KeystoneStrategy))
+        self.assertFalse(strategy.configure_via_auth)
+
     def test_required_creds(self):
         """
         Test that plugin created without required
@@ -236,6 +247,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
                 resp.status = 401
             else:
                 resp.status = 200
+                resp.headers.update({"x-image-management-url": "example.com"})
 
             return FakeResponse(resp), ""
 
@@ -295,6 +307,13 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
         for creds in good_creds:
             plugin = auth.KeystoneStrategy(creds)
             self.assertTrue(plugin.authenticate() is None)
+            self.assertEqual(plugin.management_url, "example.com")
+
+        # Assert it does not update management_url via auth response
+        for creds in good_creds:
+            plugin = auth.KeystoneStrategy(creds, configure_via_auth=False)
+            self.assertTrue(plugin.authenticate() is None)
+            self.assertTrue(plugin.management_url is None)
 
     def test_v2_auth(self):
         """Test v2 auth code paths"""
@@ -520,6 +539,14 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
                       "type encountered")
         except exception.NoServiceEndpoint:
             pass
+
+        try:
+            plugin = auth.KeystoneStrategy(good_creds,
+                                           configure_via_auth=False)
+            plugin.authenticate()
+        except exception.NoServiceEndpoint:
+            self.fail("NoServiceEndpoint was raised when authenticate "
+                      "should not check for endpoint.")
 
 
 class TestEndpoints(utils.BaseTestCase):

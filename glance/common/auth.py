@@ -76,9 +76,10 @@ class NoAuthStrategy(BaseStrategy):
 class KeystoneStrategy(BaseStrategy):
     MAX_REDIRECTS = 10
 
-    def __init__(self, creds, insecure=False):
+    def __init__(self, creds, insecure=False, configure_via_auth=True):
         self.creds = creds
         self.insecure = insecure
+        self.configure_via_auth = configure_via_auth
         super(KeystoneStrategy, self).__init__()
 
     def check_auth_params(self):
@@ -170,7 +171,8 @@ class KeystoneStrategy(BaseStrategy):
 
         if resp.status in (200, 204):
             try:
-                self.management_url = _management_url(self, resp)
+                if self.configure_via_auth:
+                    self.management_url = _management_url(self, resp)
                 self.auth_token = resp['x-auth-token']
             except KeyError:
                 raise exception.AuthorizationFailure()
@@ -209,8 +211,10 @@ class KeystoneStrategy(BaseStrategy):
         if resp.status == 200:
             resp_auth = json.loads(resp_body)['access']
             creds_region = self.creds.get('region')
-            self.management_url = get_endpoint(resp_auth['serviceCatalog'],
-                                               endpoint_region=creds_region)
+            if self.configure_via_auth:
+                endpoint = get_endpoint(resp_auth['serviceCatalog'],
+                                        endpoint_region=creds_region)
+                self.management_url = endpoint
             self.auth_token = resp_auth['token']['id']
         elif resp.status == 305:
             raise exception.RedirectException(resp['location'])
@@ -241,11 +245,13 @@ class KeystoneStrategy(BaseStrategy):
         return resp, resp_body
 
 
-def get_plugin_from_strategy(strategy, creds=None, insecure=False):
+def get_plugin_from_strategy(strategy, creds=None, insecure=False,
+                             configure_via_auth=True):
     if strategy == 'noauth':
         return NoAuthStrategy()
     elif strategy == 'keystone':
-        return KeystoneStrategy(creds, insecure)
+        return KeystoneStrategy(creds, insecure,
+                                configure_via_auth=configure_via_auth)
     else:
         raise Exception(_("Unknown auth strategy '%s'") % strategy)
 
