@@ -534,29 +534,30 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     filters = filters or {}
 
     session = _get_session()
-    query = session.query(models.Image)\
-                   .options(sa_orm.joinedload(models.Image.properties))\
-                   .options(sa_orm.joinedload(models.Image.locations))
+    query_image = session.query(models.Image)
+    query_member = session.query(models.Image).join(models.Image.members)
 
     if not context.is_admin:
         visibility_filters = [models.Image.is_public == True]
+        member_filters = [models.ImageMember.deleted == False]
 
         if context.owner is not None:
             if member_status == 'all':
                 visibility_filters.extend([
-                    models.Image.owner == context.owner,
-                    models.Image.members.any(member=context.owner,
-                                             deleted=False),
-                ])
+                    models.Image.owner == context.owner])
+                member_filters.extend([
+                    models.ImageMember.member == context.owner])
             else:
                 visibility_filters.extend([
-                    models.Image.owner == context.owner,
-                    models.Image.members.any(member=context.owner,
-                                             deleted=False,
-                                             status=member_status),
-                ])
+                    models.Image.owner == context.owner])
+                member_filters.extend([
+                    models.ImageMember.member == context.owner,
+                    models.ImageMember.status == member_status])
 
-        query = query.filter(sa_sql.or_(*visibility_filters))
+        query_image = query_image.filter(sa_sql.or_(*visibility_filters))
+        query_member = query_member.filter(sa_sql.and_(*member_filters))
+
+    query = query_image.union(query_member)
 
     if 'visibility' in filters:
         visibility = filters.pop('visibility')
@@ -568,9 +569,10 @@ def image_get_all(context, filters=None, marker=None, limit=None,
                 query = query.filter(
                     models.Image.owner == context.owner)
         else:
-            query = query.filter(
-                models.Image.members.any(member=context.owner,
-                                         deleted=False))
+            query_member = query_member.filter(
+                models.ImageMember.member == context.owner,
+                models.ImageMember.deleted == False)
+            query = query_member
 
     if is_public is not None:
         query = query.filter(models.Image.is_public == is_public)
@@ -633,6 +635,9 @@ def image_get_all(context, filters=None, marker=None, limit=None,
                             [sort_key, 'created_at', 'id'],
                             marker=marker_image,
                             sort_dir=sort_dir)
+
+    query = query.options(sa_orm.joinedload(models.Image.properties))\
+                 .options(sa_orm.joinedload(models.Image.locations))
 
     return [_normalize_locations(image.to_dict()) for image in query.all()]
 
