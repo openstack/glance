@@ -374,9 +374,10 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images registry API returns a 400
         when a forbidden marker is provided
         """
-        self.context = glance.context.RequestContext(is_admin=False)
+        test_rserv = rserver.API(self.mapper)
+        api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
         req = webob.Request.blank('/images?marker=%s' % UUID1)
-        res = req.get_response(self.api)
+        res = req.get_response(api)
         self.assertEquals(res.status_int, 400)
 
     def test_get_index_limit(self):
@@ -1050,9 +1051,10 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry API returns a 400
         when a forbidden marker is provided
         """
-        self.context = glance.context.RequestContext(is_admin=False)
+        test_rserv = rserver.API(self.mapper)
+        api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
         req = webob.Request.blank('/images/detail?marker=%s' % UUID1)
-        res = req.get_response(self.api)
+        res = req.get_response(api)
         self.assertEquals(res.status_int, 400)
 
     def test_get_details_filter_name(self):

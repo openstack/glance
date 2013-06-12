@@ -18,6 +18,7 @@
 import copy
 import datetime
 import os
+import stubout
 
 import mox
 
@@ -32,6 +33,7 @@ from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
 import glance.registry.client.v1.api as rapi
+from glance.registry.api.v1.images import Controller as rcontroller
 from glance.registry.client.v1.api import client as rclient
 from glance.tests.unit import base
 
@@ -90,6 +92,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest):
         self.destroy_fixtures()
         self.create_fixtures()
         self.client = rclient.RegistryClient("0.0.0.0")
+        self.stubs = stubout.StubOutForTesting()
 
     def tearDown(self):
         """Clear the test environment"""
@@ -460,10 +463,37 @@ class TestRegistryV1Client(base.IsolatedUnitTest):
                          'checksum': None}
 
         db_api.image_create(self.context, extra_fixture)
-        self.context = context.RequestContext(is_admin=False)
+
+        def non_admin_get_images(self, context, *args, **kwargs):
+            """Convert to non-admin context"""
+            context.is_admin = False
+            rcontroller.__get_images(self, context, *args, **kwargs)
+
+        rcontroller.__get_images = rcontroller._get_images
+        self.stubs.Set(rcontroller, '_get_images', non_admin_get_images)
         self.assertRaises(exception.Invalid,
                           self.client.get_images,
                           marker=UUID5)
+
+    def test_get_image_index_private_marker(self):
+        """Test exception is not raised if private non-owned marker is used"""
+        UUID4 = _gen_uuid()
+        extra_fixture = {'id': UUID4,
+                         'status': 'saving',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #125',
+                         'size': 19,
+                         'checksum': None,
+                         'owner': '1234'}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        try:
+            self.client.get_images(marker=UUID4)
+        except Exception as e:
+            self.fail("Unexpected exception '%s'" % e)
 
     def test_get_image_index_limit(self):
         """Test correct number of images returned with limit param."""
@@ -639,10 +669,37 @@ class TestRegistryV1Client(base.IsolatedUnitTest):
                          'checksum': None}
 
         db_api.image_create(self.context, extra_fixture)
-        self.context = context.RequestContext(is_admin=False)
+
+        def non_admin_get_images(self, context, *args, **kwargs):
+            """Convert to non-admin context"""
+            context.is_admin = False
+            rcontroller.__get_images(self, context, *args, **kwargs)
+
+        rcontroller.__get_images = rcontroller._get_images
+        self.stubs.Set(rcontroller, '_get_images', non_admin_get_images)
         self.assertRaises(exception.Invalid,
                           self.client.get_images_detailed,
                           marker=UUID5)
+
+    def test_get_image_details_private_marker(self):
+        """Test exception is not raised if private non-owned marker is used"""
+        UUID4 = _gen_uuid()
+        extra_fixture = {'id': UUID4,
+                         'status': 'saving',
+                         'is_public': False,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'new name! #125',
+                         'size': 19,
+                         'checksum': None,
+                         'owner': '1234'}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        try:
+            self.client.get_images_detailed(marker=UUID4)
+        except Exception as e:
+            self.fail("Unexpected exception '%s'" % e)
 
     def test_get_image_details_by_name(self):
         """Tests that a detailed call can be filtered by name"""

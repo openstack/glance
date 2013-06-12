@@ -515,7 +515,8 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
 
 def image_get_all(context, filters=None, marker=None, limit=None,
                   sort_key='created_at', sort_dir='desc',
-                  member_status='accepted', is_public=None):
+                  member_status='accepted', is_public=None,
+                  admin_as_user=False):
     """
     Get all images that match zero or more filters.
 
@@ -530,6 +531,9 @@ def image_get_all(context, filters=None, marker=None, limit=None,
                           status
     :param is_public: If true, return only public images. If false, return
                       only private and shared images.
+    :param admin_as_user: For backwards compatibility. If true, then return to
+                      an admin the equivalent set of images which it would see
+                      if it were a regular user
     """
     filters = filters or {}
 
@@ -537,7 +541,7 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     query_image = session.query(models.Image)
     query_member = session.query(models.Image).join(models.Image.members)
 
-    if not context.is_admin:
+    if (not context.is_admin) or admin_as_user == True:
         visibility_filters = [models.Image.is_public == True]
         member_filters = [models.ImageMember.deleted == False]
 
@@ -565,7 +569,8 @@ def image_get_all(context, filters=None, marker=None, limit=None,
             query = query.filter(models.Image.is_public == True)
         elif visibility == 'private':
             query = query.filter(models.Image.is_public == False)
-            if (not context.is_admin) and context.owner is not None:
+            if context.owner is not None and ((not context.is_admin)
+                                              or admin_as_user == True):
                 query = query.filter(
                     models.Image.owner == context.owner)
         else:
