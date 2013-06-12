@@ -28,23 +28,66 @@ class API(wsgi.Router):
     def __init__(self, mapper):
         images_resource = images.create_resource()
 
-        mapper.resource("image", "images", controller=images_resource,
-                        collection={'detail': 'GET'})
-        mapper.connect("/", controller=images_resource, action="index")
-        mapper.connect("/images/{id}", controller=images_resource,
-                       action="meta", conditions=dict(method=["HEAD"]))
+        mapper.connect("/",
+                       controller=images_resource,
+                       action="index")
+        mapper.connect("/images",
+                       controller=images_resource,
+                       action='index',
+                       conditions={'method': ['GET']})
+        mapper.connect("/images",
+                       controller=images_resource,
+                       action='create',
+                       conditions={'method': ['POST']})
+        mapper.connect("/images/detail",
+                       controller=images_resource,
+                       action='detail',
+                       conditions={'method': ['GET']})
+        mapper.connect("/images/{id}",
+                       controller=images_resource,
+                       action="meta",
+                       conditions=dict(method=["HEAD"]))
+        mapper.connect("/images/{id}",
+                       controller=images_resource,
+                       action="show",
+                       conditions=dict(method=["GET"]))
+        mapper.connect("/images/{id}",
+                       controller=images_resource,
+                       action="update",
+                       conditions=dict(method=["PUT"]))
+        mapper.connect("/images/{id}",
+                       controller=images_resource,
+                       action="delete",
+                       conditions=dict(method=["DELETE"]))
 
         members_resource = members.create_resource()
 
-        mapper.resource("member", "members", controller=members_resource,
-                        parent_resource=dict(member_name='image',
-                                             collection_name='images'))
-        mapper.connect("/shared-images/{id}",
+        mapper.connect("/images/{image_id}/members",
                        controller=members_resource,
-                       action="index_shared_images")
+                       action="index",
+                       conditions={'method': ['GET']})
+        mapper.connect("/images/{image_id}/members",
+                       controller=members_resource,
+                       action="create",
+                       conditions={'method': ['POST']})
         mapper.connect("/images/{image_id}/members",
                        controller=members_resource,
                        action="update_all",
                        conditions=dict(method=["PUT"]))
+        mapper.connect("/images/{image_id}/members/{id}",
+                       controller=members_resource,
+                       action="show",
+                       conditions={'method': ['GET']})
+        mapper.connect("/images/{image_id}/members/{id}",
+                       controller=members_resource,
+                       action="update",
+                       conditions={'method': ['PUT']})
+        mapper.connect("/images/{image_id}/members/{id}",
+                       controller=members_resource,
+                       action="delete",
+                       conditions={'method': ['DELETE']})
+        mapper.connect("/shared-images/{id}",
+                       controller=members_resource,
+                       action="index_shared_images")
 
         super(API, self).__init__(mapper)
