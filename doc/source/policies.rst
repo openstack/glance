@@ -17,41 +17,41 @@
 Policies
 ========
 
-Glance's public API calls may be restricted to certain sets of users using a 
+Glance's public API calls may be restricted to certain sets of users using a
 policy configuration file. This document explains exactly how policies are
-configured and what they apply to. 
+configured and what they apply to.
 
-A policy is composed of a set of rules that are used by the policy "Brain" in 
+A policy is composed of a set of rules that are used by the policy "Brain" in
 determining if a particular action may be performed by the authorized tenant.
 
 Constructing a Policy Configuration File
 ----------------------------------------
 
-A policy configuration file is a simply JSON object that contain sets of 
+A policy configuration file is a simply JSON object that contain sets of
 rules. Each top-level key is the name of a rule. Each rule
 is a string that describes an action that may be performed in the Glance API.
 
 The actions that may have a rule enforced on them are:
 
 * ``get_images`` - List available image entities
-  
+
   * ``GET /v1/images``
   * ``GET /v1/images/detail``
   * ``GET /v2/images``
 
 * ``get_image`` - Retrieve a specific image entity
-  
+
   * ``HEAD /v1/images/<IMAGE_ID>``
   * ``GET /v1/images/<IMAGE_ID>``
   * ``GET /v2/images/<IMAGE_ID>``
 
 * ``download_image`` - Download binary image data
-  
+
   * ``GET /v1/images/<IMAGE_ID>``
   * ``GET /v2/images/<IMAGE_ID>/file``
 
 * ``add_image`` - Create an image entity
-  
+
   * ``POST /v1/images``
   * ``POST /v2/images``
 
@@ -71,6 +71,27 @@ The actions that may have a rule enforced on them are:
 
   * ``DELETE /v1/images/<IMAGE_ID>``
   * ``DELETE /v2/images/<IMAGE_ID>``
+
+* ``add_member`` - Add a membership to the member repo of an image
+
+  * ``POST /v2/images/<IMAGE_ID>/members``
+
+* ``get_members`` - List the members of an image
+
+  * ``GET /v1/images/<IMAGE_ID>/members``
+  * ``GET /v2/images/<IMAGE_ID>/members``
+
+* ``delete_member`` - Delete a membership of an image
+
+  * ``DELETE /v1/images/<IMAGE_ID>/members/<MEMBER_ID>``
+  * ``DELETE /v2/images/<IMAGE_ID>/members/<MEMBER_ID>``
+
+* ``modify_member`` - Create or update the membership of an image
+
+  * ``PUT /v1/images/<IMAGE_ID>/members/<MEMBER_ID>``
+  * ``PUT /v1/images/<IMAGE_ID>/members``
+  * ``POST /v2/images/<IMAGE_ID>/members``
+  * ``PUT /v2/images/<IMAGE_ID>/members/<MEMBER_ID>``
 
 * ``manage_image_cache`` - Allowed to use the image cache management API
 
