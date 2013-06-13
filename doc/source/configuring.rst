@@ -527,6 +527,19 @@ Optional. Default: ``publicURL``
 A string giving the endpoint type of the swift service endpoint to
 use. This setting is only used if swift_store_auth_version is ``2``.
 
+* ``swift_store_ssl_compression``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Swift storage backend.`
+
+Optional. Default: True.
+
+If set to False, disables SSL layer compression of https swift
+requests. Setting to 'False' may improve performance for images which
+are already in a compressed format, eg qcow2. If set to True then
+compression will be enabled (provided it is supported by the swift
+proxy).
 
 
 Configuring the S3 Storage Backend
