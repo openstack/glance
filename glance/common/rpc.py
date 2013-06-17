@@ -19,6 +19,7 @@
 RPC Controller
 """
 import json
+import datetime
 import traceback
 
 from oslo.config import cfg
@@ -26,9 +27,10 @@ from webob import exc
 
 from glance.common import client
 from glance.common import exception
+from glance.common import wsgi
 import glance.openstack.common.importutils as imp
 import glance.openstack.common.log as logging
-
+from glance.openstack.common import timeutils
 
 LOG = logging.getLogger(__name__)
 
@@ -47,6 +49,31 @@ rpc_opts = [
 
 CONF = cfg.CONF
 CONF.register_opts(rpc_opts)
+
+
+class RPCJSONSerializer(wsgi.JSONResponseSerializer):
+
+    def _sanitizer(self, obj):
+        def to_primitive(_type, _value):
+            return {"_type": _type, "_value": _value}
+
+        if isinstance(obj, datetime.datetime):
+            return to_primitive("datetime", timeutils.strtime(obj))
+
+        return super(RPCJSONSerializer, self)._sanitizer(obj)
+
+
+class RPCJSONDeserializer(wsgi.JSONRequestDeserializer):
+
+    def _to_datetime(self, obj):
+        return timeutils.parse_strtime(obj)
+
+    def _sanitizer(self, obj):
+        try:
+            _type, _value = obj["_type"], obj["_value"]
+            return getattr(self, "_to_" + _type)(_value)
+        except (KeyError, AttributeError):
+            return obj
 
 
 class Controller(object):
@@ -174,6 +201,9 @@ class Controller(object):
 class RPCClient(client.BaseClient):
 
     def __init__(self, *args, **kwargs):
+        self._serializer = RPCJSONSerializer()
+        self._deserializer = RPCJSONDeserializer()
+
         self.raise_exc = kwargs.pop("raise_exc", True)
         self.base_path = kwargs.pop("base_path", '/rpc')
         super(RPCClient, self).__init__(*args, **kwargs)
@@ -191,11 +221,11 @@ class RPCClient(client.BaseClient):
                 'kwargs': method_kwargs
             }
         """
-        body = json.dumps(commands)
+        body = self._serializer.to_json(commands)
         response = super(RPCClient, self).do_request('POST',
                                                      self.base_path,
                                                      body)
-        return json.loads(response.read())
+        return self._deserializer.from_json(response.read())
 
     def do_request(self, method, **kwargs):
         """
