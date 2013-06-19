@@ -30,6 +30,7 @@ from glance.tests import utils as test_utils
 
 CONF = cfg.CONF
 CONF.import_opt('filesystem_store_datadir', 'glance.store.filesystem')
+CONF.import_opt('sql_connection', 'glance.db.sqlalchemy.api')
 
 
 class StoreClearingUnitTest(test_utils.BaseTestCase):
