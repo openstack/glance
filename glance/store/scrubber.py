@@ -146,11 +146,9 @@ class Scrubber(object):
         except store.UnsupportedBackend:
             msg = _("Failed to delete image from store (%(id)s).")
             LOG.error(msg % {'id': id})
-            write_queue_file(file_path, uri, now)
         except exception.NotFound:
             msg = _("Image not found in store (%(id)s).")
             LOG.error(msg % {'id': id})
-            write_queue_file(file_path, uri, now)
 
         self.registry.update_image(id, {'status': 'deleted'})
         utils.safe_remove(file_path)
