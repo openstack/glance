@@ -518,13 +518,13 @@ _BASE_PROPERTIES = {
     },
     'container_format': {
         'type': 'string',
-        'description': _(''),
+        'description': _('Format of the container'),
         'type': 'string',
         'enum': ['bare', 'ovf', 'ami', 'aki', 'ari'],
     },
     'disk_format': {
         'type': 'string',
-        'description': _(''),
+        'description': _('Format of the disk'),
         'type': 'string',
         'enum': ['raw', 'vhd', 'vmdk', 'vdi', 'iso', 'qcow2',
                  'aki', 'ari', 'ami'],
