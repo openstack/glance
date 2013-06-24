@@ -5,7 +5,7 @@ greenlet>=0.3.1
 
 # < 0.8.0/0.8 does not work, see https://bugs.launchpad.net/bugs/1153983
 SQLAlchemy>=0.7.8,<=0.7.99
-anyjson
+anyjson>=0.3.3
 eventlet>=0.9.12
 PasteDeploy
 routes
@@ -15,7 +15,7 @@ argparse
 boto
 sqlalchemy-migrate>=0.7
 httplib2
-kombu
+kombu>2.4.7
 pycrypto>=2.1.0alpha1
 iso8601>=0.1.4
 oslo.config>=1.1.0
