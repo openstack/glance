@@ -259,9 +259,10 @@ class ImageCache(object):
                                 "image '%s' into cache: %s. Continuing "
                                 "with response.") % (image_id, e))
 
-            # NOTE(markwash): continue responding even if caching failed
-            for chunk in image_iter:
-                yield chunk
+                # If no checksum provided continue responding even if
+                # caching failed.
+                for chunk in image_iter:
+                    yield chunk
 
         return tee_iter(image_id)
 

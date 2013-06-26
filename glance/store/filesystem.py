@@ -94,12 +94,13 @@ class ChunkedFile(object):
     def __iter__(self):
         """Return an iterator over the image file"""
         try:
-            while True:
-                chunk = self.fp.read(ChunkedFile.CHUNKSIZE)
-                if chunk:
-                    yield chunk
-                else:
-                    break
+            if self.fp:
+                while True:
+                    chunk = self.fp.read(ChunkedFile.CHUNKSIZE)
+                    if chunk:
+                        yield chunk
+                    else:
+                        break
         finally:
             self.close()
 
