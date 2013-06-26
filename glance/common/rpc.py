@@ -151,7 +151,7 @@ class Controller(object):
                 result = method(req.context, **kwargs)
             except Exception as e:
                 if self.raise_exc:
-                    raise e
+                    raise
 
                 cls, val = e.__class__, str(e)
                 msg = (_("RPC Call Error: %(val)s\n%(tb)s") %

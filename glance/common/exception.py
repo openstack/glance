@@ -43,9 +43,9 @@ class GlanceException(Exception):
             message = self.message
         try:
             message = message % kwargs
-        except Exception as e:
+        except Exception:
             if _FATAL_EXCEPTION_FORMAT_ERRORS:
-                raise e
+                raise
             else:
                 # at least get the core message out if something happened
                 pass

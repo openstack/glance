@@ -19,6 +19,7 @@ from oslo.config import cfg
 import webob.exc
 
 from glance.common import exception
+from glance.openstack.common import excutils
 from glance.common import utils
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
@@ -166,14 +167,14 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                                   request=req,
                                                   content_type='text/plain')
 
-    except webob.exc.HTTPError as e:
-        LOG.exception(_("Received HTTP error while uploading image."))
-        safe_kill(req, image_id)
+    except webob.exc.HTTPError:
         #NOTE(bcwaldon): Ideally, we would just call 'raise' here,
         # but something in the above function calls is affecting the
         # exception context and we must explicitly re-raise the
         # caught exception.
-        raise e
+        with excutils.save_and_reraise_exception():
+            LOG.exception(_("Received HTTP error while uploading image."))
+            safe_kill(req, image_id)
 
     except Exception as e:
         msg = _("Failed to upload image")
