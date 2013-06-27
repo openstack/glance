@@ -17,8 +17,6 @@
 
 import StringIO
 
-import testtools
-
 from oslo.config import cfg
 
 from glance.common import exception
@@ -30,7 +28,21 @@ import glance.api.v1.images
 CONF = cfg.CONF
 
 
-class BaseTestCase(testtools.TestCase):
+class BaseTestCase(object):
+    """
+    Basic test cases for glance image stores.
+
+    To run these tests on a new store X, create a test case like
+
+    class TestXStore(BaseTestCase, testtools.TestCase):
+           (MULTIPLE INHERITANCE REQUIRED)
+
+        def get_store(...):
+            (STORE SPECIFIC)
+
+        def stash_image(...):
+            (STORE SPECIFIC)
+    """
 
     def setUp(self):
         super(BaseTestCase, self).setUp()
