@@ -230,58 +230,58 @@ class ImageCache(object):
 
         LOG.debug(_("Tee'ing image '%s' into cache"), image_id)
 
-        def tee_iter(image_id):
-            try:
-                current_checksum = hashlib.md5()
+        return self.cache_tee_iter(image_id, image_iter, image_checksum)
 
-                with self.driver.open_for_write(image_id) as cache_file:
-                    for chunk in image_iter:
-                        try:
-                            cache_file.write(chunk)
-                        finally:
-                            current_checksum.update(chunk)
-                            yield chunk
-                    cache_file.flush()
+    def cache_tee_iter(self, image_id, image_iter, image_checksum):
+        try:
+            current_checksum = hashlib.md5()
 
-                    if (image_checksum and
-                            image_checksum != current_checksum.hexdigest()):
-                        msg = _("Checksum verification failed. Aborted "
-                                "caching of image '%s'.") % image_id
-                        raise exception.GlanceException(msg)
-
-            except exception.GlanceException as e:
-                # image_iter has given us bad, (size_checked_iter has found a
-                # bad length), or corrupt data (checksum is wrong).
-                LOG.exception(e)
-                raise
-            except Exception as e:
-                LOG.exception(_("Exception encountered while tee'ing "
-                                "image '%s' into cache: %s. Continuing "
-                                "with response.") % (image_id, e))
-
-                # If no checksum provided continue responding even if
-                # caching failed.
+            with self.driver.open_for_write(image_id) as cache_file:
                 for chunk in image_iter:
-                    yield chunk
+                    try:
+                        cache_file.write(chunk)
+                    finally:
+                        current_checksum.update(chunk)
+                        yield chunk
+                cache_file.flush()
 
-        return tee_iter(image_id)
+                if (image_checksum and
+                        image_checksum != current_checksum.hexdigest()):
+                    msg = _("Checksum verification failed. Aborted "
+                            "caching of image '%s'." % image_id)
+                    raise exception.GlanceException(msg)
 
-    def cache_image_iter(self, image_id, image_iter):
+        except exception.GlanceException as e:
+            # image_iter has given us bad, (size_checked_iter has found a
+            # bad length), or corrupt data (checksum is wrong).
+            LOG.exception(e)
+            raise
+        except Exception as e:
+            LOG.exception(_("Exception encountered while tee'ing "
+                            "image '%s' into cache: %s. Continuing "
+                            "with response.") % (image_id, e))
+
+            # If no checksum provided continue responding even if
+            # caching failed.
+            for chunk in image_iter:
+                yield chunk
+
+    def cache_image_iter(self, image_id, image_iter, image_checksum=None):
         """
         Cache an image with supplied iterator.
 
         :param image_id: Image ID
         :param image_file: Iterator retrieving image chunks
+        :param image_checksum: Checksum of image
 
         :retval True if image file was cached, False otherwise
         """
         if not self.driver.is_cacheable(image_id):
             return False
 
-        with self.driver.open_for_write(image_id) as cache_file:
-            for chunk in image_iter:
-                cache_file.write(chunk)
-            cache_file.flush()
+        for chunk in self.get_caching_iter(image_id, image_checksum,
+                                           image_iter):
+            pass
         return True
 
     def cache_image_file(self, image_id, image_file):

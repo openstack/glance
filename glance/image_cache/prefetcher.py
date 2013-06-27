@@ -56,7 +56,11 @@ class Prefetcher(base.CacheApp):
         location = image_meta['location']
         image_data, image_size = glance.store.get_from_backend(ctx, location)
         LOG.debug(_("Caching image '%s'"), image_id)
-        self.cache.cache_image_iter(image_id, image_data)
+        cache_tee_iter = self.cache.cache_tee_iter(image_id, image_data,
+                                                   image_meta['checksum'])
+        # Image is tee'd into cache and checksum verified
+        # as we iterate
+        list(cache_tee_iter)
         return True
 
     def run(self):
