@@ -327,6 +327,73 @@ class TestScrubber(functional.FunctionalTest):
 
         self.stop_servers()
 
+    def test_scrubber_delete_handles_exception(self):
+        """
+        Test that the scrubber handles the case where an
+        exception occurs when _delete() is called. The scrubber
+        should not write out queue files in this case.
+        """
+
+        # Start servers.
+        self.cleanup()
+        self.start_servers(delayed_delete=True, daemon=False,
+                           default_store='file')
+
+        # Check that we are using a file backend.
+        self.assertEqual(self.api_server.default_store, 'file')
+
+        # add an image
+        headers = {
+            'x-image-meta-name': 'test_image',
+            'x-image-meta-is_public': 'true',
+            'x-image-meta-disk_format': 'raw',
+            'x-image-meta-container_format': 'ovf',
+            'content-type': 'application/octet-stream',
+        }
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', body='XXX',
+                                         headers=headers)
+        self.assertEqual(response.status, 201)
+        image = json.loads(content)['image']
+        self.assertEqual('active', image['status'])
+        image_id = image['id']
+
+        # delete the image
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
+        # ensure the image is marked pending delete
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual('pending_delete', response['x-image-meta-status'])
+
+        # Remove the file from the backend.
+        file_path = os.path.join(self.api_server.image_dir,
+                                 str(image_id))
+        os.remove(file_path)
+
+        # Wait for the scrub time on the image to pass
+        time.sleep(self.api_server.scrub_time)
+
+        # run the scrubber app, and ensure it doesn't fall over
+        cmd = ("glance-scrubber --config-file %s" %
+               self.scrubber_daemon.conf_file_name)
+        exitcode, out, err = execute(cmd, raise_error=False)
+        self.assertEqual(0, exitcode)
+
+        self.wait_for_scrub(path)
+
+        # Make sure there are no queue files associated with image.
+        queue_file_path = os.path.join(self.api_server.scrubber_datadir,
+                                       str(image_id))
+        self.assertFalse(os.path.exists(queue_file_path))
+
+        self.stop_servers()
+
     def wait_for_scrub(self, path):
         """
         NOTE(jkoelker) The build servers sometimes take longer than 15 seconds
