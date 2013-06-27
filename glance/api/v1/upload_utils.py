@@ -177,6 +177,14 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
             LOG.exception(msg)
             safe_kill(req, image_id)
 
+    except (ValueError, IOError) as e:
+        msg = _("Client disconnected before sending all data to backend")
+        LOG.debug(msg)
+        safe_kill(req, image_id)
+        raise webob.exc.HTTPBadRequest(explanation=msg,
+                                       content_type="text/plain",
+                                       request=req)
+
     except Exception as e:
         msg = _("Failed to upload image %s" % image_id)
         LOG.exception(msg)
