@@ -275,7 +275,6 @@ class BaseStore(glance.store.base.Store):
                     resp_chunk_size=self.CHUNKSIZE)
         except swiftclient.ClientException as e:
             if e.http_status == httplib.NOT_FOUND:
-                uri = location.get_uri()
                 msg = _("Swift could not find image at URI.")
                 raise exception.NotFound(msg)
             else:
@@ -471,7 +470,6 @@ class BaseStore(glance.store.base.Store):
 
         except swiftclient.ClientException as e:
             if e.http_status == httplib.NOT_FOUND:
-                uri = location.get_uri()
                 msg = _("Swift could not find image at URI.")
                 raise exception.NotFound(msg)
             else:
@@ -630,7 +628,6 @@ class MultiTenantStore(BaseStore):
             connection.post_container(location.container, headers=headers)
         except swiftclient.ClientException as e:
             if e.http_status == httplib.NOT_FOUND:
-                uri = location.get_uri()
                 msg = _("Swift could not find image at URI.")
                 raise exception.NotFound(msg)
             else:
