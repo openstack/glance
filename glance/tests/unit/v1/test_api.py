@@ -544,9 +544,58 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
-        req.body = "chunk00000remainder"
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 201)
+
+    def test_add_copy_from_with_nonempty_body(self):
+        """Tests creates an image from copy-from and nonempty body"""
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-glance-api-copy-from': 'http://a/b/c.ovf',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #F'}
+
+        req = webob.Request.blank("/images")
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.method = 'POST'
+        req.body = "chunk00000remainder"
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_add_location_with_nonempty_body(self):
+        """Tests creates an image from location and nonempty body"""
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-location': 'http://a/b/c.tar.gz',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #F'}
+
+        req = webob.Request.blank("/images")
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.method = 'POST'
+        req.body = "chunk00000remainder"
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
+    def test_add_copy_from_with_location(self):
+        """Tests creates an image from copy-from and location"""
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-glance-api-copy-from': 'http://a/b/c.ovf',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #F',
+                           'x-image-meta-location': 'http://a/b/c.tar.gz'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
 
     def _do_test_post_image_content_missing_format(self, missing):
         """Tests creation of an image with missing format"""
