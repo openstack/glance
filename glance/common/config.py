@@ -148,12 +148,16 @@ def setup_logging():
     root_logger.addHandler(handler)
 
 
-def _get_deployment_flavor():
+def _get_deployment_flavor(flavor=None):
     """
     Retrieve the paste_deploy.flavor config item, formatted appropriately
     for appending to the application name.
+
+    :param flavor: if specified, use this setting rather than the
+                   paste_deploy.flavor configuration setting
     """
-    flavor = CONF.paste_deploy.flavor
+    if not flavor:
+        flavor = CONF.paste_deploy.flavor
     return '' if not flavor else ('-' + flavor)
 
 
@@ -183,14 +187,16 @@ def _get_deployment_config_file():
     return os.path.abspath(path)
 
 
-def load_paste_app(app_name=None):
+def load_paste_app(app_name=None, flavor=None, conf_file=None):
     """
     Builds and returns a WSGI app from a paste config file.
 
     We assume the last config file specified in the supplied ConfigOpts
-    object is the paste config file.
+    object is the paste config file, if conf_file is None.
 
     :param app_name: name of the application to load
+    :param flavor: name of the variant of the application to load
+    :param conf_file: path to the paste config file
 
     :raises RuntimeError when config file cannot be located or application
             cannot be loaded from config file
@@ -200,9 +206,10 @@ def load_paste_app(app_name=None):
 
     # append the deployment flavor to the application name,
     # in order to identify the appropriate paste pipeline
-    app_name += _get_deployment_flavor()
+    app_name += _get_deployment_flavor(flavor)
 
-    conf_file = _get_deployment_config_file()
+    if not conf_file:
+        conf_file = _get_deployment_config_file()
 
     try:
         logger = logging.getLogger(__name__)

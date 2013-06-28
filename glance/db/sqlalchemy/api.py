@@ -109,7 +109,7 @@ def _ping_listener(dbapi_conn, connection_rec, connection_proxy):
 
 def setup_db_env():
     """
-    Setup configuration for database
+    Setup global configuration for database.
     """
     global sa_logger, _IDLE_TIMEOUT, _MAX_RETRIES, _RETRY_INTERVAL, _CONNECTION
 
@@ -120,6 +120,17 @@ def setup_db_env():
     sa_logger = logging.getLogger('sqlalchemy.engine')
     if CONF.debug:
         sa_logger.setLevel(logging.DEBUG)
+
+
+def clear_db_env():
+    """
+    Unset global configuration variables for database.
+    """
+    global _ENGINE, _MAKER, _MAX_RETRIES, _RETRY_INTERVAL, _CONNECTION
+    _ENGINE = None
+    _MAKER = None
+    _MAX_RETRIES = None
+    _RETRY_INTERVAL = None
 
 
 def _check_mutate_authorization(context, image_ref):

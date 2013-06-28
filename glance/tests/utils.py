@@ -29,6 +29,7 @@ import sys
 from oslo.config import cfg
 import stubout
 import testtools
+import webob
 
 from glance.common import config
 from glance.common import exception
@@ -417,3 +418,44 @@ class FakeHTTPResponse(object):
 
     def read(self, amt):
         self.data.read(amt)
+
+
+class Httplib2WsgiAdapter(object):
+    def __init__(self, app):
+        self.app = app
+
+    def request(self, uri, method="GET", body=None, headers=None):
+        req = webob.Request.blank(uri, method=method, headers=headers)
+        req.body = body
+        resp = req.get_response(self.app)
+        return Httplib2WebobResponse(resp), resp.body
+
+
+class Httplib2WebobResponse(object):
+    def __init__(self, webob_resp):
+        self.webob_resp = webob_resp
+
+    @property
+    def status(self):
+        return self.webob_resp.status_code
+
+    def __getitem__(self, key):
+        return self.webob_resp.headers[key]
+
+    def get(self, key):
+        return self.webob_resp.headers[key]
+
+
+class HttplibWsgiAdapter(object):
+    def __init__(self, app):
+        self.app = app
+        self.req = None
+
+    def request(self, method, url, body=None, headers={}):
+        self.req = webob.Request.blank(url, method=method, headers=headers)
+        self.req.body = body
+
+    def getresponse(self):
+        response = self.req.get_response(self.app)
+        return FakeHTTPResponse(response.status_code, response.headers,
+                                response.body)
