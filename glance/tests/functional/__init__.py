@@ -32,6 +32,7 @@ import re
 import shutil
 import signal
 import socket
+import sys
 import tempfile
 import time
 import urlparse
@@ -211,8 +212,8 @@ class Server(object):
                 os.system('cp %s %s/tests.sqlite'
                           % (db_location, self.test_dir))
             else:
-                cmd = ('glance-manage --config-file %s db_sync'
-                       % conf_filepath)
+                cmd = ('%s -m glance.cmd.manage --config-file %s db_sync' %
+                       (sys.executable, conf_filepath))
                 execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env,
                         expect_exit=True)
 

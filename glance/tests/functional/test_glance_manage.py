@@ -18,6 +18,7 @@
 """Functional test cases for glance-manage"""
 
 import os
+import sys
 
 from glance.common import utils
 from glance.tests import functional
@@ -43,8 +44,8 @@ class TestGlanceManage(functional.FunctionalTest):
             conf_file.write(self.connection)
             conf_file.flush()
 
-        cmd = ('glance-manage --config-file %s db_sync' %
-               self.conf_filepath)
+        cmd = ('%s -m glance.cmd.manage --config-file %s db_sync' %
+               (sys.executable, self.conf_filepath))
         execute(cmd, raise_error=True)
 
     def _assert_tables(self):
