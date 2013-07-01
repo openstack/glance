@@ -76,8 +76,11 @@ def get_image_members_table(meta):
                           mysql_engine='InnoDB',
                           extend_existing=True)
 
-    Index('ix_image_members_image_id_member', image_members.c.image_id,
-          image_members.c.member)
+    # DB2: an index has already been created for the UniqueConstraint option
+    # specified on the Table() statement above.
+    if meta.bind.name != "ibm_db_sa":
+        Index('ix_image_members_image_id_member', image_members.c.image_id,
+              image_members.c.member)
 
     return image_members
 

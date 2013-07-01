@@ -79,13 +79,26 @@ def upgrade(migrate_engine):
         '004_add_checksum', ['get_image_properties_table'])
     image_properties = get_image_properties_table(meta)
 
-    index = Index('ix_image_properties_image_id_key',
-                  image_properties.c.image_id,
-                  image_properties.c.key)
-    index.rename('ix_image_properties_image_id_name')
+    if migrate_engine.name == "ibm_db_sa":
+        # NOTE(dperaza) ibm db2 does not allow ALTER INDEX so we will drop
+        # the index, rename the column, then re-create the index
+        sql_commands = [
+            """ALTER TABLE image_properties DROP UNIQUE
+                ix_image_properties_image_id_key;""",
+            """ALTER TABLE image_properties RENAME COLUMN \"key\" to name;""",
+            """ALTER TABLE image_properties ADD CONSTRAINT
+                ix_image_properties_image_id_name UNIQUE(image_id, name);""",
+        ]
+        for command in sql_commands:
+            meta.bind.execute(command)
+    else:
+        index = Index('ix_image_properties_image_id_key',
+                      image_properties.c.image_id,
+                      image_properties.c.key)
+        index.rename('ix_image_properties_image_id_name')
 
-    image_properties = get_image_properties_table(meta)
-    image_properties.columns['key'].alter(name="name")
+        image_properties = get_image_properties_table(meta)
+        image_properties.columns['key'].alter(name="name")
 
 
 def downgrade(migrate_engine):
@@ -94,9 +107,22 @@ def downgrade(migrate_engine):
 
     image_properties = get_image_properties_table(meta)
 
-    index = Index('ix_image_properties_image_id_name',
-                  image_properties.c.image_id,
-                  image_properties.c.name)
-    index.rename('ix_image_properties_image_id_key')
+    if migrate_engine.name == "ibm_db_sa":
+        # NOTE(dperaza) ibm db2 does not allow ALTER INDEX so we will drop
+        # the index, rename the column, then re-create the index
+        sql_commands = [
+            """ALTER TABLE image_properties DROP UNIQUE
+                ix_image_properties_image_id_name;""",
+            """ALTER TABLE image_properties RENAME COLUMN name to \"key\";""",
+            """ALTER TABLE image_properties ADD CONSTRAINT
+                ix_image_properties_image_id_key UNIQUE(image_id, \"key\");""",
+        ]
+        for command in sql_commands:
+            meta.bind.execute(command)
+    else:
+        index = Index('ix_image_properties_image_id_name',
+                      image_properties.c.image_id,
+                      image_properties.c.name)
+        index.rename('ix_image_properties_image_id_key')
 
-    image_properties.columns['name'].alter(name="key")
+        image_properties.columns['name'].alter(name="key")
