@@ -94,6 +94,7 @@ class FakeStoreAPI(object):
     def __init__(self, store_metadata=None):
         self.data = {
             '%s/%s' % (BASE_URI, UUID1): ('XXX', 3),
+            '%s/fake_location' % (BASE_URI): ('YYY', 3)
         }
         self.acls = {}
         if store_metadata is None:

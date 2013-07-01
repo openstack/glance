@@ -505,7 +505,7 @@ class StoreLocations(collections.MutableSequence):
 
     def __setitem__(self, i, location):
         _check_location_uri(self.image_proxy.context,
-                            self.image_proxy.store_api, location)
+                            self.image_proxy.store_api, location['url'])
         self.value.__setitem__(i, location)
 
     def __delitem__(self, i):
@@ -587,15 +587,16 @@ def _locations_proxy(target, attr):
                 raise exception.Invalid(_('Original locations is not empty: '
                                           '%s') % ori_value)
             # NOTE(zhiyan): Check locations are all valid.
-            for uri in value:
-                _check_location_uri(self.context, self.store_api, uri)
+            for location in value:
+                _check_location_uri(self.context, self.store_api,
+                                    location['url'])
             return setattr(getattr(self, target), attr, list(value))
 
     def del_attr(self):
         value = getattr(getattr(self, target), attr)
         while len(value):
             delete_image_from_backend(self.context, self.store_api,
-                                      self.image.image_id, value[0])
+                                      self.image.image_id, value[0]['url'])
             del value[0]
             setattr(getattr(self, target), attr, value)
         return delattr(getattr(self, target), attr)
