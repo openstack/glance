@@ -675,8 +675,6 @@ def _validate_image(values):
 
     :param values: Mapping of image metadata to check
     """
-    status = values.get('status')
-
     status = values.get('status', None)
     if not status:
         msg = "Image status is required."
