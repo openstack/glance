@@ -107,6 +107,7 @@ class ModelBase(object):
 class Image(BASE, ModelBase):
     """Represents an image in the datastore"""
     __tablename__ = 'images'
+    __table_args__ = (Index('checksum_image_idx', 'checksum'),)
 
     id = Column(String(36), primary_key=True, default=uuidutils.generate_uuid)
     name = Column(String(255))
@@ -115,7 +116,7 @@ class Image(BASE, ModelBase):
     size = Column(BigInteger)
     status = Column(String(30), nullable=False)
     is_public = Column(Boolean, nullable=False, default=False)
-    checksum = Column(String(32))
+    checksum = Column(String(32), index=True)
     min_disk = Column(Integer(), nullable=False, default=0)
     min_ram = Column(Integer(), nullable=False, default=0)
     owner = Column(String(255))

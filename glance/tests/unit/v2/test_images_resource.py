@@ -47,6 +47,9 @@ TENANT2 = '2c014f32-55eb-467d-8fcb-4bd706012f81'
 TENANT3 = '5a3e60e8-cfa9-4a9e-a90a-62b42cea92b8'
 TENANT4 = 'c6c87f25-8a94-47ed-8c83-053c25f42df4'
 
+CHKSUM = '93264c3edf5972c9f1cb309543d38a5c'
+CHKSUM1 = '43254c3edf6972c9f1cb309543d38a8c'
+
 
 def _db_fixture(id, **kwargs):
     obj = {
@@ -120,21 +123,22 @@ class TestImagesController(test_utils.BaseTestCase):
     def _create_images(self):
         self.db.reset()
         self.images = [
-            _db_fixture(UUID1, owner=TENANT1, name='1', size=256,
+            _db_fixture(UUID1, owner=TENANT1, checksum=CHKSUM,
+                        name='1', size=256,
                         is_public=True,
                         locations=[{'url': '%s/%s' % (BASE_URI, UUID1),
                                     'metadata': {}}],
                         disk_format='raw',
                         container_format='bare',
                         status='active'),
-            _db_fixture(UUID2, owner=TENANT1, name='2',
-                        size=512,
+            _db_fixture(UUID2, owner=TENANT1, checksum=CHKSUM1,
+                        name='2', size=512,
                         is_public=True,
                         disk_format='raw',
                         container_format='bare',
                         status='active'),
-            _db_fixture(UUID3, owner=TENANT3, name='3',
-                        size=512, is_public=True),
+            _db_fixture(UUID3, owner=TENANT3, checksum=CHKSUM1,
+                        name='3', size=512, is_public=True),
             _db_fixture(UUID4, owner=TENANT4, name='4', size=1024),
         ]
         [self.db.image_create(None, image) for image in self.images]
@@ -228,6 +232,27 @@ class TestImagesController(test_utils.BaseTestCase):
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID1])
         self.assertEqual(actual, expected)
+
+    def test_index_with_checksum_filter_single_image(self):
+        req = unit_test_utils.get_fake_request('/images?checksum=%s' % CHKSUM)
+        output = self.controller.index(req, filters={'checksum': CHKSUM})
+        self.assertEqual(1, len(output['images']))
+        actual = list([image.image_id for image in output['images']])
+        expected = [UUID1]
+        self.assertEqual(actual, expected)
+
+    def test_index_with_checksum_filter_multiple_images(self):
+        req = unit_test_utils.get_fake_request('/images?checksum=%s' % CHKSUM1)
+        output = self.controller.index(req, filters={'checksum': CHKSUM1})
+        self.assertEqual(2, len(output['images']))
+        actual = list([image.image_id for image in output['images']])
+        expected = [UUID3, UUID2]
+        self.assertEqual(actual, expected)
+
+    def test_index_with_non_existent_checksum(self):
+        req = unit_test_utils.get_fake_request('/images?checksum=236231827')
+        output = self.controller.index(req, filters={'checksum': '236231827'})
+        self.assertEqual(0, len(output['images']))
 
     def test_index_size_max_filter(self):
         request = unit_test_utils.get_fake_request('/images?size_max=512')

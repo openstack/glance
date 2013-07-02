@@ -43,6 +43,9 @@ UUID1_LOCATION = 'file:///path/to/image'
 UUID1_LOCATION_METADATA = {'key': 'value'}
 UUID3_LOCATION = 'http://somehost.com/place'
 
+CHECKSUM = '93264c3edf5972c9f1cb309543d38a5c'
+CHCKSUM1 = '43264c3edf4972c9f1cb309543d38a55'
+
 
 def _db_fixture(id, **kwargs):
     obj = {
@@ -92,16 +95,17 @@ class TestImageRepo(test_utils.BaseTestCase):
     def _create_images(self):
         self.db.reset()
         self.images = [
-            _db_fixture(UUID1, owner=TENANT1, name='1', size=256,
+            _db_fixture(UUID1, owner=TENANT1, checksum=CHECKSUM,
+                        name='1', size=256,
                         is_public=True, status='active',
                         locations=[{'url': UUID1_LOCATION,
                         'metadata': UUID1_LOCATION_METADATA}]),
-            _db_fixture(UUID2, owner=TENANT1, name='2',
-                        size=512, is_public=False),
-            _db_fixture(UUID3, owner=TENANT3, name='3',
-                        size=1024, is_public=True,
+            _db_fixture(UUID2, owner=TENANT1, checksum=CHCKSUM1,
+                        name='2', size=512, is_public=False),
+            _db_fixture(UUID3, owner=TENANT3, checksum=CHCKSUM1,
+                        name='3', size=1024, is_public=True,
                         locations=[{'url': UUID3_LOCATION,
-                                    'metadata': {}}]),
+                        'metadata': {}}]),
             _db_fixture(UUID4, owner=TENANT4, name='4', size=2048),
         ]
         [self.db.image_create(None, image) for image in self.images]
@@ -199,6 +203,26 @@ class TestImageRepo(test_utils.BaseTestCase):
         images = self.image_repo.list(filters=filters)
         image_ids = set([i.image_id for i in images])
         self.assertEqual(set([UUID2]), image_ids)
+
+    def test_list_with_checksum_filter_single_image(self):
+        filters = {'checksum': CHECKSUM}
+        images = self.image_repo.list(filters=filters)
+        image_ids = list([i.image_id for i in images])
+        self.assertEquals(1, len(image_ids))
+        self.assertEqual([UUID1], image_ids)
+
+    def test_list_with_checksum_filter_multiple_images(self):
+        filters = {'checksum': CHCKSUM1}
+        images = self.image_repo.list(filters=filters)
+        image_ids = list([i.image_id for i in images])
+        self.assertEquals(2, len(image_ids))
+        self.assertEqual([UUID3, UUID2], image_ids)
+
+    def test_list_with_wrong_checksum(self):
+        WRONG_CHKSUM = 'd2fd42f979e1ed1aafadc7eb9354bff839c858cd'
+        filters = {'checksum': WRONG_CHKSUM}
+        images = self.image_repo.list(filters=filters)
+        self.assertEquals(0, len(images))
 
     def test_list_public_images(self):
         filters = {'visibility': 'public'}

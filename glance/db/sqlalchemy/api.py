@@ -607,6 +607,11 @@ def image_get_all(context, filters=None, marker=None, limit=None,
         query = query.filter(spec)
 
     showing_deleted = False
+
+    if 'checksum' in filters:
+        checksum = filters.get('checksum')
+        query = query.filter_by(checksum=checksum)
+
     if 'changes-since' in filters:
         # normalize timestamp to UTC, as sqlalchemy doesn't appear to
         # respect timezone offsets

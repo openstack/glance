@@ -712,3 +712,18 @@ class TestMigrations(utils.BaseTestCase):
         self.assertTrue('meta_data' in r[0])
         x = pickle.loads(r[0]['meta_data'])
         self.assertEqual(x, {})
+
+    def _check_027(self, engine, data):
+        table = "images"
+        index = "checksum_image_idx"
+        columns = ["checksum"]
+
+        meta = sqlalchemy.MetaData()
+        meta.bind = engine
+
+        new_table = sqlalchemy.Table(table, meta, autoload=True)
+
+        index_data = [(idx.name, idx.columns.keys())
+                      for idx in new_table.indexes]
+
+        self.assertIn((index, columns), index_data)
