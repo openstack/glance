@@ -1,5 +1,5 @@
 ..
-      Copyright 2011 OpenStack Foundation
+      Copyright 2011-2013 OpenStack Foundation
       All Rights Reserved.
 
       Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -17,8 +17,8 @@
 Notifications
 =============
 
-Notifications can be generated for each send, upload, update or delete image
-event. These can be used for auditing, troubleshooting, etc.
+Notifications can be generated for several events in the image lifecycle.
+These can be used for auditing, troubleshooting, etc.
 
 Strategies
 ----------
@@ -42,6 +42,40 @@ Strategies
 * noop
 
   This strategy produces no notifications. It is the default strategy.
+
+Notification Types
+------------------
+
+* ``image.create``
+
+  Emitted when an image record is created in Glance.  Image record creation is
+  independent of image data upload.
+
+* ``image.prepare``
+
+  Emitted when Glance begins uploading image data to its store.
+
+* ``image.upload``
+
+  Emitted when Glance has completed the upload of image data to its store.
+
+* ``image.activate``
+
+  Emitted when an image goes to `active` status.  This occurs when Glance
+  knows where the image data is located.
+
+* ``image.send``
+
+  Emitted upon completion of an image being sent to a consumer.
+
+* ``image.update``
+
+  Emitted when an image record is updated in Glance.
+
+* ``image.delete``
+
+  Emitted when an image deleted from Glance.
+
 
 Content
 -------
@@ -86,7 +120,22 @@ Payload
   destination_ip
   bytes_sent - The number of bytes actually sent
 
+* image.create
+
+  For INFO events, it is the image metadata.
+  WARN and ERROR events contain a text message in the payload.
+
+* image.prepare
+
+  For INFO events, it is the image metadata.
+  WARN and ERROR events contain a text message in the payload.
+
 * image.upload
+
+  For INFO events, it is the image metadata.
+  WARN and ERROR events contain a text message in the payload.
+
+* image.activate
 
   For INFO events, it is the image metadata.
   WARN and ERROR events contain a text message in the payload.
