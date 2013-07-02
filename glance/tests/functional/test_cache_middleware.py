@@ -370,6 +370,17 @@ class BaseCacheManageMiddlewareTest(object):
         data = json.loads(content)
         self.assertTrue('cached_images' in data)
 
+        # Verify the last_modified/last_accessed values are valid floats
+        for cached_image in data['cached_images']:
+            for time_key in ('last_modified', 'last_accessed'):
+                time_val = cached_image[time_key]
+                try:
+                    time_val_f = float(time_val)
+                except ValueError as e:
+                    self.fail('%s time %s for cached image %s not a valid '
+                              'float' % (time_key, time_val,
+                                         cached_image['image_id']))
+
         cached_images = data['cached_images']
         self.assertEqual(1, len(cached_images))
         self.assertEqual(image_id, cached_images[0]['image_id'])
