@@ -304,11 +304,11 @@ def create_options(parser):
                       help="Print debugging output")
     parser.add_option('-H', '--host', metavar="ADDRESS", default="0.0.0.0",
                       help="Address of Glance API host. "
-                           "Default: %(default)s")
+                           "Default: %default")
     parser.add_option('-p', '--port', dest="port", metavar="PORT",
                       type=int, default=9292,
                       help="Port the Glance API host listens on. "
-                           "Default: %(default)s")
+                           "Default: %default")
     parser.add_option('-k', '--insecure', dest="insecure",
                       default=False, action="store_true",
                       help="Explicitly allow glance to perform \"insecure\" "
