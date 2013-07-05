@@ -107,6 +107,31 @@ class TestStoreImage(utils.BaseTestCase):
         image = glance.store.ImageProxy(self.image_stub, {}, self.store_api)
         self.assertEquals(image.get_data(), 'XXX')
 
+    def test_image_get_data_from_second_location(self):
+        def fake_get_from_backend(self, context, location):
+            if UUID1 in location:
+                raise Exception('not allow download from %s' % location)
+            else:
+                return self.data[location]
+
+        image1 = glance.store.ImageProxy(self.image_stub, {}, self.store_api)
+        self.assertEquals(image1.get_data(), 'XXX')
+        # Multiple location support
+        context = glance.context.RequestContext(user=USER1)
+        (image2, image_stub2) = self._add_image(context, UUID2, 'ZZZ', 3)
+        location_data = image2.locations[0]
+        image1.locations.append(location_data)
+        self.assertEquals(len(image1.locations), 2)
+        self.assertEquals(location_data['url'], UUID2)
+
+        self.stubs.Set(unit_test_utils.FakeStoreAPI, 'get_from_backend',
+                       fake_get_from_backend)
+
+        self.assertEquals(image1.get_data().fd, 'ZZZ')
+        image1.locations.pop(0)
+        self.assertEquals(len(image1.locations), 1)
+        image2.delete()
+
     def test_image_set_data(self):
         context = glance.context.RequestContext(user=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])

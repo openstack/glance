@@ -645,9 +645,22 @@ class ImageProxy(glance.domain.proxy.Image):
     def get_data(self):
         if not self.image.locations:
             raise exception.NotFound(_("No image data could be found"))
-        data, size = self.store_api.get_from_backend(
-            self.context, self.image.locations[0]['url'])
-        return data
+        err = None
+        for loc in self.image.locations:
+            try:
+                data, size = self.store_api.get_from_backend(self.context,
+                                                             loc['url'])
+
+                return data
+            except Exception as e:
+                LOG.warn(_('Get image %(id)s data from %(loc)s '
+                           'failed: %(err)s.') % {'id': self.image.image_id,
+                                                  'loc': loc, 'err': e})
+                err = e
+        # tried all locations
+        LOG.error(_('Glance tried all locations to get data for image %s '
+                    'but all have failed.') % self.image.image_id)
+        raise err
 
 
 class ImageMemberRepoProxy(glance.domain.proxy.Repo):
