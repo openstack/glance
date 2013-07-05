@@ -968,6 +968,45 @@ class TestImagesControllerPolicies(base.IsolatedUnitTest):
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(output.visibility, 'private')
 
+    def test_update_get_image_location_unauthorized(self):
+        rules = {"get_image_location": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
+                          request, UUID1, changes)
+
+    def test_update_set_image_location_unauthorized(self):
+        def fake_delete_image_from_backend(self, *args, **kwargs):
+            pass
+
+        rules = {"set_image_location": False}
+        self.policy.set_rules(rules)
+        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': new_location}]
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
+                          request, UUID1, changes)
+
+        self.stubs.Set(glance.store, 'delete_image_from_backend',
+                       fake_delete_image_from_backend)
+
+        changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
+        self.controller.update(request, UUID1, changes)
+        changes = [{'op': 'replace', 'path': ['locations'],
+                    'value': [new_location]}]
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
+                          request, UUID1, changes)
+
+    def test_update_delete_image_location_unauthorized(self):
+        rules = {"delete_image_location": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
+                          request, UUID1, changes)
+
     def test_delete_unauthorized(self):
         rules = {"delete_image": False}
         self.policy.set_rules(rules)

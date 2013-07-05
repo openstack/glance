@@ -183,8 +183,6 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         return super(ImageRepoProxy, self).add(image)
 
 
-# TODO(mclaren): we will need to enforce the 'set_image_location'
-# policy once the relevant functionality has been added to  V2
 class ImageProxy(glance.domain.proxy.Image):
 
     def __init__(self, image, context, policy):
@@ -202,6 +200,22 @@ class ImageProxy(glance.domain.proxy.Image):
         if value == 'public':
             self.policy.enforce(self.context, 'publicize_image', {})
         self.image.visibility = value
+
+    @property
+    def locations(self):
+        return ImageLocationsProxy(self.image.locations,
+                                   self.context, self.policy)
+
+    @locations.setter
+    def locations(self, value):
+        if not isinstance(value, (list, ImageLocationsProxy)):
+            raise exception.Invalid(_('Invalid locations: %s') % value)
+        self.policy.enforce(self.context, 'set_image_location', {})
+        new_locations = list(value)
+        if (set([loc['url'] for loc in self.image.locations]) -
+                set([loc['url'] for loc in new_locations])):
+            self.policy.enforce(self.context, 'delete_image_location', {})
+        self.image.locations = new_locations
 
     def delete(self):
         self.policy.enforce(self.context, 'delete_image', {})
@@ -268,3 +282,62 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
     def remove(self, member):
         self.policy.enforce(self.context, 'delete_member', {})
         return self.member_repo.remove(member)
+
+
+class ImageLocationsProxy(object):
+
+    __hash__ = None
+
+    def __init__(self, locations, context, policy):
+        self.locations = locations
+        self.context = context
+        self.policy = policy
+
+    def __contains__(self, uri):
+        return uri in self.locations
+
+    def __len__(self):
+        return len(self.locations)
+
+    def __cast(self, other):
+        if isinstance(other, ImageLocationsProxy):
+            return other.locations
+        else:
+            return other
+
+    def __cmp__(self, other):
+        return cmp(self.locations, self.__cast(other))
+
+    def __iter__(self):
+        return iter(self.locations)
+
+    def _get_checker(action, func_name):
+        def _checker(self, *args, **kwargs):
+            self.policy.enforce(self.context, action, {})
+            assert hasattr(self.locations, func_name)
+            method = getattr(self.locations, func_name)
+            return method(*args, **kwargs)
+        return _checker
+
+    count = _get_checker('get_image_location', 'count')
+    index = _get_checker('get_image_location', 'index')
+    __getitem__ = _get_checker('get_image_location', '__getitem__')
+    __contains__ = _get_checker('get_image_location', '__contains__')
+    __len__ = _get_checker('get_image_location', '__len__')
+    __cast = _get_checker('get_image_location', '__cast')
+    __cmp__ = _get_checker('get_image_location', '__cmp__')
+    __iter__ = _get_checker('get_image_location', '__iter__')
+
+    append = _get_checker('set_image_location', 'append')
+    extend = _get_checker('set_image_location', 'extend')
+    insert = _get_checker('set_image_location', 'insert')
+    reverse = _get_checker('set_image_location', 'reverse')
+    __iadd__ = _get_checker('set_image_location', '__iadd__')
+    __setitem__ = _get_checker('set_image_location', '__setitem__')
+
+    pop = _get_checker('delete_image_location', 'pop')
+    remove = _get_checker('delete_image_location', 'remove')
+    __delitem__ = _get_checker('delete_image_location', '__delitem__')
+    __delslice__ = _get_checker('delete_image_location', '__delslice__')
+
+    del _get_checker
