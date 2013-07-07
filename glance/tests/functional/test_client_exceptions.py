@@ -19,6 +19,7 @@
 """Functional test asserting strongly typed exceptions from glance client"""
 
 import eventlet.patcher
+import httplib2
 import webob.dec
 import webob.exc
 
@@ -61,6 +62,9 @@ class ExceptionTestApp(object):
 
         elif path == "/server-error":
             request.response = webob.exc.HTTPServerError()
+
+        elif path == "/server-traceback":
+            raise exception.ServerError()
 
 
 class TestClientExceptions(functional.FunctionalTest):
@@ -121,3 +125,15 @@ class TestClientExceptions(functional.FunctionalTest):
         """
         self._do_test_exception('/server-error',
                                 exception.ServerError)
+
+    def test_server_traceback(self):
+        """
+        Verify that the wsgi server does not return tracebacks to the client on
+        500 errors (bug 1192132)
+        """
+        http = httplib2.Http()
+        path = ('http://%s:%d/server-traceback' %
+                ('127.0.0.1', self.port))
+        response, content = http.request(path, 'GET')
+        self.assertTrue('ServerError' not in content)
+        self.assertEqual(response.status, 500)
