@@ -430,7 +430,6 @@ def image_destroy(context, image_id):
 
 @log_call
 def image_tag_get_all(context, image_id):
-    _image_get(context, image_id)
     return DATA['tags'].get(image_id, [])
 
 

@@ -664,6 +664,11 @@ class DriverTests(object):
         actual = self.db_api.image_tag_get_all(self.context, UUID1)
         self.assertEqual([], actual)
 
+    def test_image_tag_get_all_non_existant_image(self):
+        bad_image_id = uuidutils.generate_uuid()
+        actual = self.db_api.image_tag_get_all(self.context, bad_image_id)
+        self.assertEqual([], actual)
+
     def test_image_tag_delete(self):
         self.db_api.image_tag_create(self.context, UUID1, 'snap')
         self.db_api.image_tag_delete(self.context, UUID1, 'snap')
