@@ -314,7 +314,7 @@ Optional. Default: ``file``
 Can only be specified in configuration files.
 
 Sets the storage backend to use by default when storing images in Glance.
-Available options for this option are (``file``, ``swift``, ``s3``, or ``rbd``).
+Available options for this option are (``file``, ``swift``, ``s3``, ``rbd``, or ``sheepdog``).
 
 Configuring Glance Image Size Limit
 -----------------------------------
@@ -667,6 +667,40 @@ To set up a user named ``glance`` with minimal permissions, using a pool called
   ceph-authtool --create-keyring /etc/glance/rbd.keyring
   ceph-authtool --gen-key --name client.glance --cap mon 'allow r' --cap osd 'allow rwx pool=images' /etc/glance/rbd.keyring
   ceph auth add client.glance -i /etc/glance/rbd.keyring
+
+Configuring the Sheepdog Storage Backend
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``sheepdog_store_address=ADDR``
+
+Optional. Default: ``localhost``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Sheepdog storage backend.`
+
+Sets the IP address of the sheep daemon
+
+* ``sheepdog_store_port=PORT``
+
+Optional. Default: ``7000``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Sheepdog storage backend.`
+
+Sets the IP port of the sheep daemon
+
+* ``sheepdog_store_chunk_size=SIZE_IN_MB``
+
+Optional. Default: ``64``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Sheepdog storage backend.`
+
+Images will be chunked into objects of this size (in megabytes).
+For best performance, this should be a power of two.
 
 Configuring the Image Cache
 ---------------------------
