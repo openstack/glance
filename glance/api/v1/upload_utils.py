@@ -120,6 +120,14 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
             msg = _("Image %s could not be found after upload. The image may "
                     "have been deleted during the upload.") % image_id
             LOG.info(msg)
+
+            # NOTE(jculp): we need to clean up the datastore if an image
+            # resource is deleted while the image data is being uploaded
+            #
+            # We get "location" from above call to store.add(), any
+            # exceptions that occur there handle this same issue internally,
+            # Since this is store-agnostic, should apply to all stores.
+            initiate_deletion(req, location, image_id, CONF.delayed_delete)
             raise webob.exc.HTTPPreconditionFailed(explanation=msg,
                                                    request=req,
                                                    content_type='text/plain')
