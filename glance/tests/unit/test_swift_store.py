@@ -624,9 +624,9 @@ class SwiftTests(object):
         container_headers = swiftclient.client.head_container('x', 'y',
                                                               'glance')
         self.assertEqual(container_headers['X-Container-Read'],
-                         ','.join(read_tenants))
+                         'matt:*,mark:*')
 
-    def test_read_write_public(self):
+    def test_write_acls(self):
         """
         Test that we can set write acl for tenants.
         """
@@ -640,7 +640,7 @@ class SwiftTests(object):
         container_headers = swiftclient.client.head_container('x', 'y',
                                                               'glance')
         self.assertEqual(container_headers['X-Container-Write'],
-                         ','.join(read_tenants))
+                         'frank:*,jim:*')
 
 
 class TestStoreAuthV1(base.StoreClearingUnitTest, SwiftTests):
