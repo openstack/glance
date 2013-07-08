@@ -256,23 +256,6 @@ class ServerTest(test_utils.BaseTestCase):
         actual = wsgi.Server(threads=1).create_pool()
         self.assertTrue(isinstance(actual, eventlet.greenpool.GreenPool))
 
-    def test_no_client_tracebacks(self):
-        """
-        Verify that the wsgi server does not return tracebacks to the client on
-        500 errors (bug 1192132)
-        """
-        def internal_error(env, start_response):
-            raise exception.ServerError()
-
-        api_port = test_utils.get_unused_port()
-        server = wsgi.Server()
-        server.start(internal_error, api_port)
-        path = 'http://%s:%d' % ('127.0.0.1', api_port)
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET')
-        self.assertTrue('ServerError' not in content)
-        self.assertEqual(response.status, 500)
-
 
 class TestHelpers(test_utils.BaseTestCase):
 
