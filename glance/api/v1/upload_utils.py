@@ -173,11 +173,12 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
         # exception context and we must explicitly re-raise the
         # caught exception.
         with excutils.save_and_reraise_exception():
-            LOG.exception(_("Received HTTP error while uploading image."))
+            msg = _("Received HTTP error while uploading image %s" % image_id)
+            LOG.exception(msg)
             safe_kill(req, image_id)
 
     except Exception as e:
-        msg = _("Failed to upload image")
+        msg = _("Failed to upload image %s" % image_id)
         LOG.exception(msg)
         safe_kill(req, image_id)
         raise webob.exc.HTTPInternalServerError(explanation=msg,
