@@ -29,6 +29,7 @@ import commands
 import ConfigParser
 import datetime
 import os
+import pickle
 import urlparse
 
 from migrate.versioning.repository import Repository
@@ -673,3 +674,41 @@ class TestMigrations(utils.BaseTestCase):
     def _check_020(self, engine, data):
         images = get_table(engine, 'images')
         self.assertFalse('location' in images.c)
+
+    def _prerun_026(self, engine):
+        image_locations = get_table(engine, 'image_locations')
+
+        now = datetime.datetime.now()
+        image_id = 'fake_id'
+        url = 'file:///some/place/onthe/fs'
+
+        images = get_table(engine, 'images')
+        temp = dict(deleted=False,
+                    created_at=now,
+                    updated_at=now,
+                    status='active',
+                    is_public=True,
+                    min_disk=0,
+                    min_ram=0,
+                    id=image_id)
+        images.insert().values(temp).execute()
+
+        temp = dict(deleted=False,
+                    created_at=now,
+                    updated_at=now,
+                    image_id=image_id,
+                    value=url)
+        image_locations.insert().values(temp).execute()
+        return image_id
+
+    def _check_026(self, engine, data):
+        image_locations = get_table(engine, 'image_locations')
+        results = image_locations.select()\
+            .where(image_locations.c.image_id == data).execute()
+
+        r = list(results)
+        self.assertEquals(len(r), 1)
+        self.assertEquals(r[0]['value'], 'file:///some/place/onthe/fs')
+        self.assertTrue('meta_data' in r[0])
+        x = pickle.loads(r[0]['meta_data'])
+        self.assertEqual(x, {})
