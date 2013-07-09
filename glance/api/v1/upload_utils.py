@@ -128,6 +128,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
         msg = _("Attempt to upload duplicate image: %s") % e
         LOG.debug(msg)
         safe_kill(req, image_id)
+        notifier.error('image.upload', msg)
         raise webob.exc.HTTPConflict(explanation=msg,
                                      request=req,
                                      content_type="text/plain")
@@ -136,6 +137,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
         msg = _("Forbidden upload attempt: %s") % e
         LOG.debug(msg)
         safe_kill(req, image_id)
+        notifier.error('image.upload', msg)
         raise webob.exc.HTTPForbidden(explanation=msg,
                                       request=req,
                                       content_type="text/plain")
@@ -163,6 +165,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                 % CONF.image_size_cap)
         LOG.info(msg)
         safe_kill(req, image_id)
+        notifier.error('image.upload', msg)
         raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                   request=req,
                                                   content_type='text/plain')
@@ -172,8 +175,9 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
         # but something in the above function calls is affecting the
         # exception context and we must explicitly re-raise the
         # caught exception.
+        msg = _("Received HTTP error while uploading image %s" % image_id)
+        notifier.error('image.upload', msg)
         with excutils.save_and_reraise_exception():
-            msg = _("Received HTTP error while uploading image %s" % image_id)
             LOG.exception(msg)
             safe_kill(req, image_id)
 
@@ -181,6 +185,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
         msg = _("Failed to upload image %s" % image_id)
         LOG.exception(msg)
         safe_kill(req, image_id)
+        notifier.error('image.upload', msg)
         raise webob.exc.HTTPInternalServerError(explanation=msg,
                                                 request=req,
                                                 content_type='text/plain')
