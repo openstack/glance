@@ -285,7 +285,8 @@ def image_destroy(context, image_id):
         image_ref.delete(session=session)
 
         for prop_ref in image_ref.properties:
-            image_property_delete(context, prop_ref, session=session)
+            image_property_delete(context, prop_ref.name,
+                                  image_id, session=session)
 
         members = _image_member_find(context, session, image_id=image_id)
         for memb_ref in members:
@@ -819,13 +820,15 @@ def _set_properties_for_image(context, image_ref, properties,
         for key in orig_properties.keys():
             if key not in properties:
                 prop_ref = orig_properties[key]
-                image_property_delete(context, prop_ref, session=session)
+                image_property_delete(context, prop_ref.name,
+                                      image_ref.id, session=session)
 
 
 def image_property_create(context, values, session=None):
     """Create an ImageProperty object"""
     prop_ref = models.ImageProperty()
-    return _image_property_update(context, prop_ref, values, session=session)
+    prop = _image_property_update(context, prop_ref, values, session=session)
+    return prop.to_dict()
 
 
 def _image_property_update(context, prop_ref, values, session=None):
@@ -839,12 +842,15 @@ def _image_property_update(context, prop_ref, values, session=None):
     return prop_ref
 
 
-def image_property_delete(context, prop_ref, session=None):
+def image_property_delete(context, prop_ref, image_ref, session=None):
     """
     Used internally by image_property_create and image_property_update
     """
-    prop_ref.delete(session=session)
-    return prop_ref
+    session = session or _get_session()
+    prop = session.query(models.ImageProperty).filter_by(image_id=image_ref,
+                                                         name=prop_ref).one()
+    prop.delete(session=session)
+    return prop
 
 
 def image_member_create(context, values, session=None):

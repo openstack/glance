@@ -213,7 +213,8 @@ class DriverTests(object):
         fixture = {'name': 'ping', 'value': 'pong', 'image_id': UUID1}
         prop = self.db_api.image_property_create(self.context, fixture)
         timeutils.set_time_override()
-        prop = self.db_api.image_property_delete(self.context, prop)
+        prop = self.db_api.image_property_delete(self.context,
+                                                 prop['name'], UUID1)
         self.assertEqual(prop['deleted_at'], timeutils.utcnow())
         self.assertTrue(prop['deleted'])
 
@@ -276,12 +277,14 @@ class DriverTests(object):
         fixture = {'name': 'poo', 'value': 'bear', 'image_id': UUID1}
         prop = self.db_api.image_property_create(self.context,
                                                  fixture)
+
         images = self.db_api.image_get_all(self.context,
                                            filters={
                                                'properties': {'poo': 'bear'},
                                            })
         self.assertEquals(len(images), 1)
-        self.db_api.image_property_delete(self.context, prop)
+        self.db_api.image_property_delete(self.context,
+                                          prop['name'], images[0]['id'])
         images = self.db_api.image_get_all(self.context,
                                            filters={
                                                'properties': {'poo': 'bear'},

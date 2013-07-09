@@ -293,11 +293,10 @@ def image_property_create(context, values):
 
 
 @log_call
-def image_property_delete(context, prop_ref, session=None):
-    image_id = prop_ref['image_id']
+def image_property_delete(context, prop_ref, image_ref, session=None):
     prop = None
-    for p in DATA['images'][image_id]['properties']:
-        if p['name'] == prop_ref['name']:
+    for p in DATA['images'][image_ref]['properties']:
+        if p['name'] == prop_ref:
             prop = p
     if not prop:
         raise exception.NotFound()
@@ -427,7 +426,7 @@ def image_destroy(context, image_id):
         DATA['images'][image_id]['deleted_at'] = timeutils.utcnow()
 
         for prop in DATA['images'][image_id]['properties']:
-            image_property_delete(context, prop)
+            image_property_delete(context, prop['name'], image_id)
 
         members = image_member_find(context, image_id=image_id)
         for member in members:
