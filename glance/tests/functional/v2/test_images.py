@@ -719,6 +719,51 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
 
         self.stop_servers()
 
+    def test_image_multiple_location_url_visible(self):
+        self.api_server.show_multiple_locations = True
+        self.start_servers(**self.__dict__.copy())
+
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar',
+                           'disk_format': 'aki', 'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+
+        # Get the image id
+        image = json.loads(response.text)
+        image_id = image['id']
+
+        # Image locations should not be visible before location is set
+        path = self._url('/v2/images/%s' % image_id)
+        headers = self._headers({'Content-Type': 'application/json'})
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)
+        self.assertFalse('locations' in image)
+
+        # Upload some image data, setting the image location
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(path, headers=headers, data='ZZZZZ')
+        self.assertEqual(204, response.status_code)
+
+        # Image locations should be visible
+        path = self._url('/v2/images/%s' % image_id)
+        headers = self._headers({'Content-Type': 'application/json'})
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)
+        self.assertTrue('locations' in image)
+        loc = image['locations']
+        self.assertTrue(len(loc) > 0)
+        loc = loc[0]
+        self.assertTrue('url' in loc)
+        self.assertTrue('metadata' in loc)
+
+        self.stop_servers()
+
     def test_image_direct_url_not_visible(self):
 
         self.api_server.show_image_direct_url = False

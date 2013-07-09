@@ -72,6 +72,7 @@ class Server(object):
         self.exec_env = None
         self.deployment_flavor = ''
         self.show_image_direct_url = False
+        self.show_multiple_locations = False
         self.enable_v1_api = True
         self.enable_v2_api = True
         self.needs_database = False
@@ -357,6 +358,7 @@ policy_default_rule = %(policy_default_rule)s
 db_auto_create = False
 sql_connection = %(sql_connection)s
 show_image_direct_url = %(show_image_direct_url)s
+show_multiple_locations = %(show_multiple_locations)s
 enable_v1_api = %(enable_v1_api)s
 enable_v2_api= %(enable_v2_api)s
 [paste_deploy]

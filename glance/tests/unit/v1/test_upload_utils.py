@@ -108,7 +108,7 @@ class TestUploadUtils(base.StoreClearingUnitTest):
         store.add(
             image_meta['id'],
             mox.IgnoreArg(),
-            image_meta['size']).AndReturn((location, size, checksum))
+            image_meta['size']).AndReturn((location, size, checksum, {}))
 
         self.mox.StubOutWithMock(registry, "update_image_metadata")
         update_data = {'checksum': checksum,
@@ -120,11 +120,8 @@ class TestUploadUtils(base.StoreClearingUnitTest):
                                            image_meta.update(update_data))
         self.mox.ReplayAll()
 
-        actual_meta, actual_loc = upload_utils.upload_data_to_store(req,
-                                                                    image_meta,
-                                                                    image_data,
-                                                                    store,
-                                                                    notifier)
+        actual_meta, actual_loc, loc_meta = upload_utils.upload_data_to_store(
+            req, image_meta, image_data, store, notifier)
 
         self.mox.VerifyAll()
 
@@ -148,7 +145,7 @@ class TestUploadUtils(base.StoreClearingUnitTest):
         store.add(
             image_meta['id'],
             mox.IgnoreArg(),
-            image_meta['size']).AndReturn((location, size, checksum))
+            image_meta['size']).AndReturn((location, size, checksum, {}))
 
         self.mox.StubOutWithMock(registry, "update_image_metadata")
         update_data = {'checksum': checksum}
@@ -182,7 +179,10 @@ class TestUploadUtils(base.StoreClearingUnitTest):
         store.add(
             image_meta['id'],
             mox.IgnoreArg(),
-            image_meta['size']).AndReturn((location, size, checksum + "NOT"))
+            image_meta['size']).AndReturn((location,
+                                           size,
+                                           checksum + "NOT",
+                                           {}))
 
         self.mox.StubOutWithMock(registry, "update_image_metadata")
         update_data = {'checksum': checksum}
@@ -308,7 +308,7 @@ class TestUploadUtils(base.StoreClearingUnitTest):
         store.add(
             image_meta['id'],
             mox.IgnoreArg(),
-            image_meta['size']).AndReturn((location, size, checksum))
+            image_meta['size']).AndReturn((location, size, checksum, {}))
 
         self.mox.StubOutWithMock(registry, "update_image_metadata")
         update_data = {'checksum': checksum,

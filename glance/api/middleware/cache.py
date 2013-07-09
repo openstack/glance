@@ -150,6 +150,7 @@ class CacheFilter(wsgi.Middleware):
         # Don't display location
         if 'location' in image_meta:
             del image_meta['location']
+        image_meta.pop('location_data', None)
         self._verify_metadata(image_meta)
 
         response = webob.Response(request=request)

@@ -86,7 +86,11 @@ class ImageRepo(object):
         locations = db_image['locations']
         if CONF.metadata_encryption_key:
             key = CONF.metadata_encryption_key
-            locations = [crypt.urlsafe_decrypt(key, l) for l in locations]
+            ld = []
+            for l in locations:
+                url = crypt.urlsafe_decrypt(key, l['url'])
+                ld.append({'url': url, 'metadata': l['metadata']})
+            locations = ld
         return glance.domain.Image(
             image_id=db_image['id'],
             name=db_image['name'],
@@ -111,7 +115,11 @@ class ImageRepo(object):
         locations = image.locations
         if CONF.metadata_encryption_key:
             key = CONF.metadata_encryption_key
-            locations = [crypt.urlsafe_encrypt(key, l) for l in locations]
+            ld = []
+            for l in locations:
+                url = crypt.urlsafe_encrypt(key, l['url'])
+                ld.append({'url': url, 'metadata': l['metadata']})
+            locations = ld
         return {
             'id': image.image_id,
             'name': image.name,

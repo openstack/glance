@@ -381,8 +381,10 @@ def image_create(context, image_values):
                         'created_at', 'updated_at', 'deleted_at', 'deleted',
                         'properties', 'tags'])
 
-    if set(image_values.keys()) - allowed_keys:
-        raise exception.Invalid()
+    incorrect_keys = set(image_values.keys()) - allowed_keys
+    if incorrect_keys:
+        raise exception.Invalid(
+            'The keys %s are not valid' % str(incorrect_keys))
 
     image = _image_format(image_id, **image_values)
     DATA['images'][image_id] = image

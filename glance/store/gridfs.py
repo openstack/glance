@@ -166,7 +166,8 @@ class Store(glance.store.base.Store):
         :param image_file: The image data to write, as a file-like object
         :param image_size: The size of the image data to write, in bytes
 
-        :retval tuple of URL in backing store, bytes written, and checksum
+        :retval tuple of URL in backing store, bytes written, checksum
+                and a dictionary with storage system specific information
         :raises `glance.common.exception.Duplicate` if the image already
                 existed
         """
@@ -185,7 +186,7 @@ class Store(glance.store.base.Store):
         LOG.debug(_("Uploaded image %s, md5 %s, length %s to GridFS") %
                  (image._id, image.md5, image.length))
 
-        return (loc.get_uri(), image.length, image.md5)
+        return (loc.get_uri(), image.length, image.md5, {})
 
     def delete(self, location):
         """

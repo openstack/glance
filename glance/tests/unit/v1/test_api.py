@@ -68,7 +68,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
              'deleted': False,
              'checksum': None,
              'size': 13,
-             'locations': ["file:///%s/%s" % (self.test_dir, UUID1)],
+             'locations': [{'url': "file:///%s/%s" % (self.test_dir, UUID1),
+                            'metadata': {}}],
              'properties': {'type': 'kernel'}},
             {'id': UUID2,
              'name': 'fake image #2',
@@ -82,7 +83,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
              'deleted': False,
              'checksum': None,
              'size': 19,
-             'locations': ["file:///%s/%s" % (self.test_dir, UUID2)],
+             'locations': [{'url': "file:///%s/%s" % (self.test_dir, UUID2),
+                            'metadata': {}}],
              'properties': {}}]
         self.context = glance.context.RequestContext(is_admin=True)
         db_api.setup_db_env()
@@ -339,6 +341,47 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 400)
+
+    def _add_check_no_url_info(self):
+
+        fixture_headers = {'x-image-meta-disk-format': 'ami',
+                           'x-image-meta-container-format': 'ami',
+                           'x-image-meta-size': '0',
+                           'x-image-meta-name': 'empty image'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        res_body = json.loads(res.body)['image']
+        self.assertFalse('locations' in res_body)
+        self.assertFalse('direct_url' in res_body)
+        image_id = res_body['id']
+
+        # HEAD empty image
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        self.assertFalse('x-image-meta-locations' in res.headers)
+        self.assertFalse('x-image-meta-direct_url' in res.headers)
+
+    def test_add_check_no_url_info_ml(self):
+        self.config(show_multiple_locations=True)
+        self._add_check_no_url_info()
+
+    def test_add_check_no_url_info_direct_url(self):
+        self.config(show_image_direct_url=True)
+        self._add_check_no_url_info()
+
+    def test_add_check_no_url_info_both_on(self):
+        self.config(show_image_direct_url=True)
+        self.config(show_multiple_locations=True)
+        self._add_check_no_url_info()
+
+    def test_add_check_no_url_info_both_off(self):
+        self._add_check_no_url_info()
 
     def test_add_image_zero_size(self):
         """Tests creating an active image with explicitly zero size"""

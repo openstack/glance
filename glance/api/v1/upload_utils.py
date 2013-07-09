@@ -80,10 +80,14 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
     """
     image_id = image_meta['id']
     try:
-        location, size, checksum = store.add(
-            image_meta['id'],
-            utils.CooperativeReader(image_data),
-            image_meta['size'])
+        (location,
+         size,
+         checksum,
+         locations_metadata) = glance.store.store_add_to_backend(
+             image_meta['id'],
+             utils.CooperativeReader(image_data),
+             image_meta['size'],
+             store)
 
         def _kill_mismatched(image_meta, attr, actual):
             supplied = image_meta.get(attr)
@@ -185,4 +189,4 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                                 request=req,
                                                 content_type='text/plain')
 
-    return image_meta, location
+    return image_meta, location, locations_metadata

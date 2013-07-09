@@ -325,7 +325,8 @@ class Store(glance.store.base.Store):
         :param image_file: The image data to write, as a file-like object
         :param image_size: The size of the image data to write, in bytes
 
-        :retval tuple of URL in backing store, bytes written, and checksum
+        :retval tuple of URL in backing store, bytes written, checksum
+                and a dictionary with storage system specific information
         :raises `glance.common.exception.Duplicate` if the image already
                 existed
 
@@ -414,7 +415,7 @@ class Store(glance.store.base.Store):
         LOG.debug(_("Wrote %(size)d bytes to S3 key named %(obj_name)s "
                     "with checksum %(checksum_hex)s") % locals())
 
-        return (loc.get_uri(), size, checksum_hex)
+        return (loc.get_uri(), size, checksum_hex, {})
 
     def delete(self, location):
         """

@@ -1050,6 +1050,25 @@ class TestRegistryV1Client(base.IsolatedUnitTest):
         self.assertTrue('status' in new_image.keys())
         self.assertEquals('active', new_image['status'])
 
+    def test_add_image_with_location_data(self):
+        """Tests that we can add image metadata with properties"""
+        location = "file:///tmp/glance-tests/2"
+        loc_meta = {'key': 'value'}
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'disk_format': 'vmdk',
+                   'container_format': 'ovf',
+                   'size': 19,
+                   'location_data': [{'url': location,
+                                      'metadata': loc_meta}],
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'}}
+
+        new_image = self.client.add_image(fixture)
+
+        self.assertEquals(new_image['location'], location)
+        self.assertEquals(new_image['location_data'][0]['url'], location)
+        self.assertEquals(new_image['location_data'][0]['metadata'], loc_meta)
+
     def test_add_image_already_exists(self):
         """Tests proper exception is raised if image with ID already exists"""
         fixture = {

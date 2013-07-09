@@ -51,6 +51,7 @@ class TestSchemas(functional.FunctionalTest):
             'status',
             'schema',
             'direct_url',
+            'locations',
             'min_ram',
             'min_disk',
             'protected',

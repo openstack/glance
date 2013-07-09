@@ -279,7 +279,7 @@ class Store(glance.store.base.Store):
             left -= length
             checksum.update(data)
 
-        return (location.get_uri(), image_size, checksum.hexdigest())
+        return (location.get_uri(), image_size, checksum.hexdigest(), {})
 
     def delete(self, location):
         """
