@@ -16,6 +16,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import json
+import datetime
 
 import mox
 from oslo.config import cfg
@@ -53,8 +54,8 @@ class FakeResource(object):
 
 
 def create_api():
-    deserializer = wsgi.JSONRequestDeserializer()
-    serializer = wsgi.JSONResponseSerializer()
+    deserializer = rpc.RPCJSONDeserializer()
+    serializer = rpc.RPCJSONSerializer()
     controller = rpc.Controller()
     controller.register(FakeResource())
     res = wsgi.Resource(controller, deserializer, serializer)
@@ -244,3 +245,104 @@ class TestRPCClient(base.IsolatedUnitTest):
             self.fail("Exception not raised")
         except exception.RPCError:
             pass
+
+
+class TestRPCJSONSerializer(test_utils.BaseTestCase):
+
+    def test_to_json(self):
+        fixture = {"key": "value"}
+        expected = '{"key": "value"}'
+        actual = rpc.RPCJSONSerializer().to_json(fixture)
+        self.assertEqual(actual, expected)
+
+    def test_to_json_with_date_format_value(self):
+        fixture = {"date": datetime.datetime(1900, 3, 8, 2)}
+        expected = ('{"date": {"_value": "1900-03-08T02:00:00.000000", '
+                    '"_type": "datetime"}}')
+        actual = rpc.RPCJSONSerializer().to_json(fixture)
+        self.assertEqual(actual, expected)
+
+    def test_to_json_with_more_deep_format(self):
+        fixture = {"is_public": True, "name": [{"name1": "test"}]}
+        expected = '{"is_public": true, "name": [{"name1": "test"}]}'
+        actual = rpc.RPCJSONSerializer().to_json(fixture)
+        self.assertEqual(actual, expected)
+
+    def test_default(self):
+        fixture = {"key": "value"}
+        response = webob.Response()
+        rpc.RPCJSONSerializer().default(response, fixture)
+        self.assertEqual(response.status_int, 200)
+        content_types = filter(lambda h: h[0] == 'Content-Type',
+                               response.headerlist)
+        self.assertEqual(len(content_types), 1)
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.body, '{"key": "value"}')
+
+
+class TestRPCJSONDeserializer(test_utils.BaseTestCase):
+
+    def test_has_body_no_content_length(self):
+        request = wsgi.Request.blank('/')
+        request.method = 'POST'
+        request.body = 'asdf'
+        request.headers.pop('Content-Length')
+        self.assertFalse(rpc.RPCJSONDeserializer().has_body(request))
+
+    def test_has_body_zero_content_length(self):
+        request = wsgi.Request.blank('/')
+        request.method = 'POST'
+        request.body = 'asdf'
+        request.headers['Content-Length'] = 0
+        self.assertFalse(rpc.RPCJSONDeserializer().has_body(request))
+
+    def test_has_body_has_content_length(self):
+        request = wsgi.Request.blank('/')
+        request.method = 'POST'
+        request.body = 'asdf'
+        self.assertTrue('Content-Length' in request.headers)
+        self.assertTrue(rpc.RPCJSONDeserializer().has_body(request))
+
+    def test_no_body_no_content_length(self):
+        request = wsgi.Request.blank('/')
+        self.assertFalse(rpc.RPCJSONDeserializer().has_body(request))
+
+    def test_from_json(self):
+        fixture = '{"key": "value"}'
+        expected = {"key": "value"}
+        actual = rpc.RPCJSONDeserializer().from_json(fixture)
+        self.assertEqual(actual, expected)
+
+    def test_from_json_malformed(self):
+        fixture = 'kjasdklfjsklajf'
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          rpc.RPCJSONDeserializer().from_json, fixture)
+
+    def test_default_no_body(self):
+        request = wsgi.Request.blank('/')
+        actual = rpc.RPCJSONDeserializer().default(request)
+        expected = {}
+        self.assertEqual(actual, expected)
+
+    def test_default_with_body(self):
+        request = wsgi.Request.blank('/')
+        request.method = 'POST'
+        request.body = '{"key": "value"}'
+        actual = rpc.RPCJSONDeserializer().default(request)
+        expected = {"body": {"key": "value"}}
+        self.assertEqual(actual, expected)
+
+    def test_has_body_has_transfer_encoding(self):
+        request = wsgi.Request.blank('/')
+        request.method = 'POST'
+        request.body = 'fake_body'
+        request.headers['transfer-encoding'] = 0
+        self.assertTrue('transfer-encoding' in request.headers)
+        self.assertTrue(rpc.RPCJSONDeserializer().has_body(request))
+
+    def test_to_json_with_date_format_value(self):
+        fixture = ('{"date": {"_value": "1900-03-08T02:00:00.000000",'
+                   '"_type": "datetime"}}')
+        expected = {"date": datetime.datetime(1900, 3, 8, 2)}
+        actual = rpc.RPCJSONDeserializer().from_json(fixture)
+        self.assertEqual(actual, expected)

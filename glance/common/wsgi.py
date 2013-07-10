@@ -517,9 +517,13 @@ class JSONRequestDeserializer(object):
 
         return False
 
+    def _sanitizer(self, obj):
+        """Sanitizer method that will be passed to json.loads."""
+        return obj
+
     def from_json(self, datastring):
         try:
-            return json.loads(datastring)
+            return json.loads(datastring, object_hook=self._sanitizer)
         except ValueError:
             msg = _('Malformed JSON in request body.')
             raise webob.exc.HTTPBadRequest(explanation=msg)
@@ -533,15 +537,16 @@ class JSONRequestDeserializer(object):
 
 class JSONResponseSerializer(object):
 
-    def to_json(self, data):
-        def sanitizer(obj):
-            if isinstance(obj, datetime.datetime):
-                return obj.isoformat()
-            if hasattr(obj, "to_dict"):
-                return obj.to_dict()
-            return obj
+    def _sanitizer(self, obj):
+        """Sanitizer method that will be passed to json.dumps."""
+        if isinstance(obj, datetime.datetime):
+            return obj.isoformat()
+        if hasattr(obj, "to_dict"):
+            return obj.to_dict()
+        return obj
 
-        return json.dumps(data, default=sanitizer)
+    def to_json(self, data):
+        return json.dumps(data, default=self._sanitizer)
 
     def default(self, response, result):
         response.content_type = 'application/json'
