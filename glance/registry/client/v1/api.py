@@ -19,6 +19,7 @@
 Registry's Client API
 """
 
+import json
 import os
 
 from oslo.config import cfg
@@ -55,6 +56,16 @@ registry_client_ctx_opts = [
     cfg.BoolOpt('use_user_token', default=True,
                 help=_('Whether to pass through the user token when '
                        'making requests to the registry.')),
+    cfg.BoolOpt('send_identity_headers', default=False,
+                help=_('Whether to pass through headers containing user '
+                       'and tenant information when making requests to '
+                       'the registry. This allows the registry to use the '
+                       'context middleware without the keystoneclients\' '
+                       'auth_token middleware, removing calls to the keystone '
+                       'auth service. It is recommended that when using this '
+                       'option, secure communication between glance api and '
+                       'glance registry is ensured by means other than '
+                       'auth_token middleware.')),
     cfg.StrOpt('admin_user', secret=True,
                help=_('The administrators user name.')),
     cfg.StrOpt('admin_password', secret=True,
@@ -141,6 +152,16 @@ def get_registry_client(cxt):
         kwargs['auth_tok'] = cxt.auth_tok
     if _CLIENT_CREDS:
         kwargs['creds'] = _CLIENT_CREDS
+
+    if CONF.send_identity_headers:
+        identity_headers = {
+            'X-User-Id': cxt.user,
+            'X-Tenant-Id': cxt.tenant,
+            'X-Roles': ','.join(cxt.roles),
+            'X-Identity-Status': 'Confirmed',
+            'X-Service-Catalog': json.dumps(cxt.service_catalog),
+        }
+        kwargs['identity_headers'] = identity_headers
     return client.RegistryClient(_CLIENT_HOST, _CLIENT_PORT,
                                  _METADATA_ENCRYPTION_KEY, **kwargs)
 
