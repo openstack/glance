@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.config import cfg
+
 from glance.common import exception
 from glance.common import wsgi
 import glance.context
@@ -20,6 +22,7 @@ import glance.db.simple.api as simple_db
 import glance.openstack.common.log as logging
 
 
+CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
@@ -106,6 +109,9 @@ class FakeStoreAPI(object):
 
     def get_from_backend(self, context, location):
         try:
+            scheme = location[:location.find('/') - 1]
+            if scheme == 'unknown':
+                raise exception.UnknownScheme(scheme=scheme)
             return self.data[location]
         except KeyError:
             raise exception.NotFound()
@@ -118,6 +124,12 @@ class FakeStoreAPI(object):
 
     def schedule_delayed_delete_from_backend(self, uri, id, **kwargs):
         pass
+
+    def delete_image_from_backend(self, context, store_api, image_id, uri):
+        if CONF.delayed_delete:
+            self.schedule_delayed_delete_from_backend(uri, image_id)
+        else:
+            self.safe_delete_from_backend(uri, context, image_id)
 
     def get_size_from_backend(self, context, location):
         return self.get_from_backend(context, location)[1]
