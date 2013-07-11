@@ -46,7 +46,7 @@ class Controller(object):
         except exception.NotFound:
             msg = _("Image %(id)s not found")
             LOG.info(msg % {'id': image_id})
-            raise webob.exc.HTTPNotFound()
+            raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
@@ -80,7 +80,7 @@ class Controller(object):
         except exception.NotFound:
             msg = _("Image %(id)s not found")
             LOG.info(msg % {'id': image_id})
-            raise webob.exc.HTTPNotFound()
+            raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
@@ -193,7 +193,7 @@ class Controller(object):
         except exception.NotFound:
             msg = _("Image %(id)s not found")
             LOG.info(msg % {'id': image_id})
-            raise webob.exc.HTTPNotFound()
+            raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
@@ -253,7 +253,7 @@ class Controller(object):
         except exception.NotFound:
             msg = _("Image %(id)s not found")
             LOG.info(msg % {'id': image_id})
-            raise webob.exc.HTTPNotFound()
+            raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists

@@ -165,7 +165,7 @@ class ImagesController(object):
         except exception.NotFound as e:
             msg = ("Failed to find image %(image_id)s to delete" % locals())
             LOG.info(msg)
-            raise webob.exc.HTTPNotFound()
+            raise webob.exc.HTTPNotFound(explanation=msg)
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
