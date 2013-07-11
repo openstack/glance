@@ -20,6 +20,7 @@ import webob
 import glance.api.middleware.cache
 from glance.common import exception
 from glance import context
+import glance.db.sqlalchemy.api as db
 import glance.registry.client.v1.api as registry
 from glance.tests import utils
 
@@ -233,6 +234,52 @@ class TestCacheMiddlewareProcessRequest(utils.BaseTestCase):
                        fake_get_image_size)
         cache_filter._verify_metadata(image_meta)
         self.assertTrue(image_meta['size'] == image_size)
+
+    def test_v2_process_request_response_headers(self):
+        def dummy_img_iterator():
+            for i in range(3):
+                yield i
+
+        def fake_image_get(self, image_id):
+            return {
+                    'id': 'test1',
+                    'name': 'fake_image',
+                    'status': 'Active',
+                    'created_at': '',
+                    'min_disk': '10G',
+                    'min_ram': '1024M',
+                    'protected': False,
+                    'locations': '',
+                    'checksum': 'c352f4e7121c6eae958bc1570324f17e',
+                    'owner': '',
+                    'disk_format': 'raw',
+                    'container_format': 'bare',
+                    'size': '123456789',
+                    'is_public': 'public',
+                    'deleted': False,
+                    'updated_at': '',
+                    'properties': {},
+            }
+
+        def fake_image_tag_get_all(context, image_id, session=None):
+            return None
+
+        image_id = 'test1'
+        request = webob.Request.blank('/v2/images/test1/file')
+        request.context = context.RequestContext()
+
+        self.stubs.Set(db, 'image_get', fake_image_get)
+        self.stubs.Set(db, 'image_tag_get_all', fake_image_tag_get_all)
+
+        cache_filter = ProcessRequestTestCacheFilter()
+        response = cache_filter._process_v2_request(
+            request, image_id, dummy_img_iterator)
+        self.assertEqual(response.headers['Content-Type'],
+                         'application/octet-stream')
+        self.assertEqual(response.headers['Content-MD5'],
+                         'c352f4e7121c6eae958bc1570324f17e')
+        self.assertEqual(response.headers['Content-Length'],
+                         '123456789')
 
 
 class TestProcessResponse(utils.BaseTestCase):

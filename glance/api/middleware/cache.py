@@ -175,6 +175,18 @@ class CacheFilter(wsgi.Middleware):
                                               image_meta['size'],
                                               image_iterator,
                                               notifier.Notifier())
+        # NOTE (flwang): Set the content-type, content-md5 and content-length
+        # explicitly to be consistent with the non-cache scenario.
+        # Besides, it's not worth the candle to invoke the "download" method
+        # of ResponseSerializer under image_data. Because method "download"
+        # will reset the app_iter. Then we have to call method
+        # "size_checked_iter" to avoid missing any notification. But after
+        # call "size_checked_iter", we will lose the content-md5 and
+        # content-length got by the method "download" because of this issue:
+        # https://github.com/Pylons/webob/issues/86
+        response.headers['Content-Type'] = 'application/octet-stream'
+        response.headers['Content-MD5'] = image.checksum
+        response.headers['Content-Length'] = str(image.size)
         return response
 
     def process_response(self, resp):
