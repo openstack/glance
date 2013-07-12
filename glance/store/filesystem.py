@@ -21,6 +21,7 @@ A simple filesystem-backed store
 
 import errno
 import hashlib
+import json
 import os
 import urlparse
 
@@ -35,12 +36,18 @@ import glance.store.location
 
 LOG = logging.getLogger(__name__)
 
-datadir_opt = cfg.StrOpt('filesystem_store_datadir',
-                         help=_('Directory to which the Filesystem backend '
-                                'store writes images.'))
+filesystem_opts = [
+    cfg.StrOpt('filesystem_store_datadir',
+               help=_('Directory to which the Filesystem backend '
+                      'store writes images.')),
+    cfg.StrOpt('filesystem_store_metadata_file',
+               help=_("The path to a file which contains the "
+                      "metadata to be returned with any location "
+                      "associated with this store.  The file must "
+                      "contain a valid JSON dict."))]
 
 CONF = cfg.CONF
-CONF.register_opt(datadir_opt)
+CONF.register_opts(filesystem_opts)
 
 
 class StoreLocation(glance.store.location.StoreLocation):
@@ -150,6 +157,33 @@ class Store(glance.store.base.Store):
         filesize = os.path.getsize(filepath)
         return filepath, filesize
 
+    def _get_metadata(self):
+        if CONF.filesystem_store_metadata_file is None:
+            return {}
+
+        try:
+            with open(CONF.filesystem_store_metadata_file, 'r') as fptr:
+                metadata = json.load(fptr)
+            glance.store._check_meta_data(metadata)
+            return metadata
+        except glance.store.BackendException as bee:
+            LOG.error(_('The JSON in the metadata file %s could not be used: '
+                        '%s  An empty dictionary will be returned '
+                        'to the client.'
+                        % (CONF.filesystem_store_metadata_file, str(bee))))
+            return {}
+        except IOError as ioe:
+            LOG.error(_('The path for the metadata file %s could not be '
+                        'opened: %s  An empty dictionary will be returned '
+                        'to the client.'
+                        % (CONF.filesystem_store_metadata_file, ioe.message)))
+            return {}
+        except Exception as ex:
+            LOG.exception(_('An error occured processing the storage systems '
+                            'meta data file: %s.  An empty dictionary will be '
+                            'returned to the client.' % (str(ex))))
+            return {}
+
     def get(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates
@@ -250,10 +284,11 @@ class Store(glance.store.base.Store):
             raise
 
         checksum_hex = checksum.hexdigest()
+        metadata = self._get_metadata()
 
         LOG.debug(_("Wrote %(bytes_written)d bytes to %(filepath)s with "
                     "checksum %(checksum_hex)s") % locals())
-        return ('file://%s' % filepath, bytes_written, checksum_hex, {})
+        return ('file://%s' % filepath, bytes_written, checksum_hex, metadata)
 
     @staticmethod
     def _delete_partial(filepath, id):
