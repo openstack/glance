@@ -64,8 +64,11 @@ class TestDriver(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestDriver, self).setUp()
-        self.adm_context = context.RequestContext(is_admin=True)
-        self.context = context.RequestContext(is_admin=False)
+        context_cls = context.RequestContext
+        self.adm_context = context_cls(is_admin=True,
+                                       auth_tok='user:user:admin')
+        self.context = context_cls(is_admin=False,
+                                   auth_tok='user:user:user')
         self.db_api = db_tests.get_db(self.config)
         db_tests.reset_db(self.db_api)
         self.fixtures = self.build_image_fixtures()
@@ -113,8 +116,11 @@ class DriverTests(object):
 
     def test_image_create_defaults(self):
         timeutils.set_time_override()
-        image = self.db_api.image_create(self.context, {'status': 'queued'})
         create_time = timeutils.utcnow()
+        values = {'status': 'queued',
+                  'created_at': create_time,
+                  'updated_at': create_time}
+        image = self.db_api.image_create(self.context, values)
 
         self.assertEqual(None, image['name'])
         self.assertEqual(None, image['container_format'])
@@ -212,10 +218,9 @@ class DriverTests(object):
     def test_image_property_delete(self):
         fixture = {'name': 'ping', 'value': 'pong', 'image_id': UUID1}
         prop = self.db_api.image_property_create(self.context, fixture)
-        timeutils.set_time_override()
         prop = self.db_api.image_property_delete(self.context,
                                                  prop['name'], UUID1)
-        self.assertEqual(prop['deleted_at'], timeutils.utcnow())
+        self.assertNotEqual(prop['deleted_at'], None)
         self.assertTrue(prop['deleted'])
 
     def test_image_get(self):
@@ -228,11 +233,10 @@ class DriverTests(object):
                           self.context, UUID1)
 
     def test_image_get_allow_deleted(self):
-        timeutils.set_time_override()
         self.db_api.image_destroy(self.adm_context, UUID1)
         image = self.db_api.image_get(self.adm_context, UUID1)
         self.assertEquals(image['id'], self.fixtures[0]['id'])
-        self.assertEquals(image['deleted_at'], timeutils.utcnow())
+        self.assertTrue(image['deleted'])
 
     def test_image_get_force_allow_deleted(self):
         self.db_api.image_destroy(self.adm_context, UUID1)
@@ -243,8 +247,10 @@ class DriverTests(object):
     def test_image_get_not_owned(self):
         TENANT1 = uuidutils.generate_uuid()
         TENANT2 = uuidutils.generate_uuid()
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
-        ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2)
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1)
+        ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2,
+                                       auth_tok='user:%s:user' % TENANT2)
         image = self.db_api.image_create(
                 ctxt1, {'status': 'queued', 'owner': TENANT1})
         self.assertRaises(exception.Forbidden,
@@ -372,7 +378,8 @@ class DriverTests(object):
         marker is specified and order is descending
         """
         TENANT1 = uuidutils.generate_uuid()
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1)
         UUIDX = uuidutils.generate_uuid()
         self.db_api.image_create(ctxt1, {'id': UUIDX,
                                          'status': 'queued',
@@ -393,7 +400,8 @@ class DriverTests(object):
         marker is specified and order is descending
         """
         TENANT1 = uuidutils.generate_uuid()
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1)
         UUIDX = uuidutils.generate_uuid()
         self.db_api.image_create(ctxt1, {'id': UUIDX,
                                          'status': 'queued',
@@ -414,7 +422,8 @@ class DriverTests(object):
         marker is specified and order is descending
         """
         TENANT1 = uuidutils.generate_uuid()
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1)
         UUIDX = uuidutils.generate_uuid()
         self.db_api.image_create(ctxt1, {'id': UUIDX,
                                          'status': 'queued',
@@ -435,7 +444,8 @@ class DriverTests(object):
         marker is specified and order is ascending
         """
         TENANT1 = uuidutils.generate_uuid()
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1)
         UUIDX = uuidutils.generate_uuid()
         self.db_api.image_create(ctxt1, {'id': UUIDX,
                                          'status': 'queued',
@@ -456,7 +466,8 @@ class DriverTests(object):
         marker is specified and order is ascending
         """
         TENANT1 = uuidutils.generate_uuid()
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1)
         UUIDX = uuidutils.generate_uuid()
         self.db_api.image_create(ctxt1, {'id': UUIDX,
                                          'status': 'queued',
@@ -477,7 +488,8 @@ class DriverTests(object):
         marker is specified and order is ascending
         """
         TENANT1 = uuidutils.generate_uuid()
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1)
         UUIDX = uuidutils.generate_uuid()
         self.db_api.image_create(ctxt1, {'id': UUIDX,
                                          'status': 'queued',
@@ -505,14 +517,16 @@ class DriverTests(object):
 
     def test_image_get_all_owned(self):
         TENANT1 = uuidutils.generate_uuid()
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1)
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1)
         UUIDX = uuidutils.generate_uuid()
         self.db_api.image_create(ctxt1, {'id': UUIDX,
                                          'status': 'queued',
                                          'owner': TENANT1})
 
         TENANT2 = uuidutils.generate_uuid()
-        ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2)
+        ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2,
+                                       auth_tok='user:%s:user' % TENANT2)
         UUIDY = uuidutils.generate_uuid()
         self.db_api.image_create(ctxt2, {'id': UUIDY,
                                          'status': 'queued',
@@ -585,8 +599,10 @@ class DriverTests(object):
         TENANT1 = uuidutils.generate_uuid()
         TENANT2 = uuidutils.generate_uuid()
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
+                                       auth_tok='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
         UUIDX = uuidutils.generate_uuid()
         #we need private image and context.owner should not match image owner
@@ -635,8 +651,10 @@ class DriverTests(object):
         TENANT1 = uuidutils.generate_uuid()
         TENANT2 = uuidutils.generate_uuid()
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
+                                       auth_tok='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
         UUIDX = uuidutils.generate_uuid()
         #we need private image and context.owner should not match image owner
@@ -709,14 +727,17 @@ class DriverTests(object):
 
         create_time = timeutils.utcnow()
         TENANT1 = uuidutils.generate_uuid()
+        # NOTE(flaper87): Update auth token, otherwise
+        # non visible members won't be returned.
+        self.context.auth_tok = 'user:%s:user' % TENANT1
         self.db_api.image_member_create(self.context,
                                         {'member': TENANT1, 'image_id': UUID1})
 
         memberships = self.db_api.image_member_find(self.context)
         self.assertEqual(1, len(memberships))
         actual = memberships[0]
-        self.assertEqual(actual['created_at'], create_time)
-        self.assertEqual(actual['updated_at'], create_time)
+        self.assertNotEqual(actual['created_at'], None)
+        self.assertNotEqual(actual['updated_at'], None)
         actual.pop('id')
         actual.pop('created_at')
         actual.pop('updated_at')
@@ -730,6 +751,10 @@ class DriverTests(object):
 
     def test_image_member_update(self):
         TENANT1 = uuidutils.generate_uuid()
+
+        # NOTE(flaper87): Update auth token, otherwise
+        # non visible members won't be returned.
+        self.context.auth_tok = 'user:%s:user' % TENANT1
         member = self.db_api.image_member_create(self.context,
                                                  {'member': TENANT1,
                                                   'image_id': UUID1})
@@ -768,6 +793,9 @@ class DriverTests(object):
 
     def test_image_member_update_status(self):
         TENANT1 = uuidutils.generate_uuid()
+        # NOTE(flaper87): Update auth token, otherwise
+        # non visible members won't be returned.
+        self.context.auth_tok = 'user:%s:user' % TENANT1
         member = self.db_api.image_member_create(self.context,
                                                  {'member': TENANT1,
                                                   'image_id': UUID1})
@@ -822,12 +850,19 @@ class DriverTests(object):
             _simple = lambda x: set([(o['member'], o['image_id']) for o in x])
             self.assertEqual(_simple(list1), _simple(list2))
 
+        # NOTE(flaper87): Update auth token, otherwise
+        # non visible members won't be returned.
+        self.context.auth_tok = 'user:%s:user' % TENANT1
         output = self.db_api.image_member_find(self.context, member=TENANT1)
         _assertMemberListMatch([fixtures[0], fixtures[1]], output)
 
-        output = self.db_api.image_member_find(self.context, image_id=UUID1)
+        output = self.db_api.image_member_find(self.adm_context,
+                                               image_id=UUID1)
         _assertMemberListMatch([fixtures[0], fixtures[2]], output)
 
+        # NOTE(flaper87): Update auth token, otherwise
+        # non visible members won't be returned.
+        self.context.auth_tok = 'user:%s:user' % TENANT2
         output = self.db_api.image_member_find(self.context,
                                                member=TENANT2,
                                                image_id=UUID1)
@@ -837,6 +872,9 @@ class DriverTests(object):
                                                status='accepted')
         _assertMemberListMatch([fixtures[2]], output)
 
+        # NOTE(flaper87): Update auth token, otherwise
+        # non visible members won't be returned.
+        self.context.auth_tok = 'user:%s:user' % TENANT1
         output = self.db_api.image_member_find(self.context,
                                                status='rejected')
         _assertMemberListMatch([fixtures[1]], output)
@@ -858,6 +896,9 @@ class DriverTests(object):
 
     def test_image_member_delete(self):
         TENANT1 = uuidutils.generate_uuid()
+        # NOTE(flaper87): Update auth token, otherwise
+        # non visible members won't be returned.
+        self.context.auth_tok = 'user:%s:user' % TENANT1
         fixture = {'member': TENANT1, 'image_id': UUID1, 'can_share': True}
         member = self.db_api.image_member_create(self.context, fixture)
         self.assertEqual(1, len(self.db_api.image_member_find(self.context)))
