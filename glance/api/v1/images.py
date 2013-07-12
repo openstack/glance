@@ -99,17 +99,18 @@ def validate_image_meta(req, values):
     return values
 
 
-def redact_loc(image_meta):
+def redact_loc(image_meta, copy_dict=True):
     """
     Create a shallow copy of image meta with 'location' removed
     for security (as it can contain credentials).
     """
-    if 'location' in image_meta:
-        tmp_image_meta = copy.copy(image_meta)
-        del tmp_image_meta['location']
-        return tmp_image_meta
-
-    return image_meta
+    if copy_dict:
+        new_image_meta = copy.copy(image_meta)
+    else:
+        new_image_meta = image_meta
+    new_image_meta.pop('location', None)
+    new_image_meta.pop('location_data', None)
+    return new_image_meta
 
 
 class Controller(controller.BaseController):
@@ -210,7 +211,7 @@ class Controller(controller.BaseController):
             # to it, however we do not return this potential security
             # information to the API end user...
             for image in images:
-                del image['location']
+                redact_loc(image, copy_dict=False)
         except exception.Invalid as e:
             raise HTTPBadRequest(explanation="%s" % e)
         return dict(images=images)
@@ -263,7 +264,7 @@ class Controller(controller.BaseController):
         """
         self._enforce(req, 'get_image')
         image_meta = self.get_image_meta_or_404(req, id)
-        del image_meta['location']
+        image_meta = redact_loc(image_meta)
         return {
             'image_meta': image_meta
         }
@@ -329,7 +330,7 @@ class Controller(controller.BaseController):
             image_iterator = utils.cooperative_iter(image_iterator)
             image_meta['size'] = size or image_meta['size']
 
-        del image_meta['location']
+        image_meta = redact_loc(image_meta)
         return {
             'image_iterator': image_iterator,
             'image_meta': image_meta,
@@ -443,17 +444,14 @@ class Controller(controller.BaseController):
 
         self.notifier.info("image.prepare", redact_loc(image_meta))
 
-        image_meta, location = upload_utils.upload_data_to_store(req,
-                                                                 image_meta,
-                                                                 image_data,
-                                                                 store,
-                                                                 self.notifier)
+        image_meta, location, loc_meta = upload_utils.upload_data_to_store(
+            req, image_meta, image_data, store, self.notifier)
 
         self.notifier.info('image.upload', redact_loc(image_meta))
 
-        return location
+        return location, loc_meta
 
-    def _activate(self, req, image_id, location):
+    def _activate(self, req, image_id, location, location_metadata=None):
         """
         Sets the image status to `active` and the image's location
         attribute.
@@ -461,10 +459,14 @@ class Controller(controller.BaseController):
         :param req: The WSGI/Webob Request object
         :param image_id: Opaque image identifier
         :param location: Location of where Glance stored this image
+        :param location_metadata: a dictionary of storage specfic information
         """
         image_meta = {}
         image_meta['location'] = location
         image_meta['status'] = 'active'
+        if location_metadata:
+            image_meta['location_data'] = [{'url': location,
+                                            'metadata': location_metadata}]
 
         try:
             image_meta_data = registry.update_image_metadata(req.context,
@@ -497,8 +499,11 @@ class Controller(controller.BaseController):
         # See: https://bitbucket.org/ianb/webob/
         # issue/12/fix-for-issue-6-broke-chunked-transfer
         req.is_body_readable = True
-        location = self._upload(req, image_meta)
-        return self._activate(req, image_id, location) if location else None
+        location, location_metadata = self._upload(req, image_meta)
+        return self._activate(req,
+                              image_id,
+                              location,
+                              location_metadata) if location else None
 
     def _get_size(self, context, image_meta, location):
         # retrieve the image size from remote store (if not provided)
@@ -604,7 +609,7 @@ class Controller(controller.BaseController):
 
         # Prevent client from learning the location, as it
         # could contain security credentials
-        image_meta.pop('location', None)
+        image_meta = redact_loc(image_meta)
 
         return {'image_meta': image_meta}
 
@@ -710,7 +715,7 @@ class Controller(controller.BaseController):
 
         # Prevent client from learning the location, as it
         # could contain security credentials
-        image_meta.pop('location', None)
+        image_meta = redact_loc(image_meta)
 
         return {'image_meta': image_meta}
 

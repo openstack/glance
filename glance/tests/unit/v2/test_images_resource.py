@@ -122,7 +122,8 @@ class TestImagesController(test_utils.BaseTestCase):
         self.images = [
             _db_fixture(UUID1, owner=TENANT1, name='1', size=256,
                         is_public=True,
-                        locations=['%s/%s' % (BASE_URI, UUID1)]),
+                        locations=[{'url': '%s/%s' % (BASE_URI, UUID1),
+                                    'metadata': {}}]),
             _db_fixture(UUID2, owner=TENANT1, name='2',
                         size=512, is_public=True),
             _db_fixture(UUID3, owner=TENANT3, name='3',
@@ -1047,7 +1048,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         samples = {
             'owner': TENANT1,
             'is_public': True,
-            'locations': ['/a/b/c/d'],
+            'locations': [{'url': '/a/b/c/d', 'metadata': {}}],
             'deleted': False,
             'deleted_at': ISOTIME,
         }
@@ -1877,12 +1878,22 @@ class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
         self.active_image = _domain_fixture(
                 UUID1, name='image-1', visibility='public',
                 status='active', size=1024, created_at=DATETIME,
-                updated_at=DATETIME, locations=['http://some/fake/location'])
+                updated_at=DATETIME,
+                locations=[{'url': 'http://some/fake/location',
+                            'metadata': {}}])
 
         self.queued_image = _domain_fixture(
                 UUID2, name='image-2', status='active',
                 created_at=DATETIME, updated_at=DATETIME,
                 checksum='ca425b88f047ce8ec45ee90e813ada91')
+
+        self.location_data_image_url = 'http://abc.com/somewhere'
+        self.location_data_image_meta = {'key': 98231}
+        self.location_data_image = _domain_fixture(
+                UUID2, name='image-2', status='active',
+                created_at=DATETIME, updated_at=DATETIME,
+                locations=[{'url': self.location_data_image_url,
+                            'metadata': self.location_data_image_meta}])
 
     def _do_index(self):
         request = webob.Request.blank('/v2/images')
@@ -1908,6 +1919,17 @@ class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
 
         self.assertEqual(images[0]['direct_url'], 'http://some/fake/location')
         self.assertFalse('direct_url' in images[1])
+
+    def test_index_store_multiple_location_enabled(self):
+        self.config(show_multiple_locations=True)
+        request = webob.Request.blank('/v2/images')
+        response = webob.Response(request=request)
+        self.serializer.index(response,
+                              {'images': [self.location_data_image]}),
+        images = json.loads(response.body)['images']
+        location = images[0]['locations'][0]
+        self.assertEqual(location['url'], self.location_data_image_url)
+        self.assertEqual(location['metadata'], self.location_data_image_meta)
 
     def test_index_store_location_explicitly_disabled(self):
         self.config(show_image_direct_url=False)

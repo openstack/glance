@@ -288,9 +288,9 @@ class SwiftTests(object):
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS = 0
 
-        location, size, checksum = self.store.add(expected_image_id,
-                                                  image_swift,
-                                                  expected_swift_size)
+        location, size, checksum, _ = self.store.add(expected_image_id,
+                                                     image_swift,
+                                                     expected_swift_size)
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_swift_size, size)
@@ -347,8 +347,8 @@ class SwiftTests(object):
 
             self.config(swift_store_auth_address=variation)
             self.store = Store()
-            location, size, checksum = self.store.add(image_id, image_swift,
-                                                      expected_swift_size)
+            location, size, checksum, _ = self.store.add(image_id, image_swift,
+                                                         expected_swift_size)
 
             self.assertEquals(expected_location, location)
             self.assertEquals(expected_swift_size, size)
@@ -410,9 +410,9 @@ class SwiftTests(object):
         self.config(swift_store_create_container_on_put=True,
                     swift_store_container='noexist')
         self.store = Store()
-        location, size, checksum = self.store.add(expected_image_id,
-                                                  image_swift,
-                                                  expected_swift_size)
+        location, size, checksum, _ = self.store.add(expected_image_id,
+                                                     image_swift,
+                                                     expected_swift_size)
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_swift_size, size)
@@ -453,9 +453,9 @@ class SwiftTests(object):
         try:
             self.store.large_object_size = 1024
             self.store.large_object_chunk_size = 1024
-            location, size, checksum = self.store.add(expected_image_id,
-                                                      image_swift,
-                                                      expected_swift_size)
+            location, size, checksum, _ = self.store.add(expected_image_id,
+                                                         image_swift,
+                                                         expected_swift_size)
         finally:
             self.store.large_object_chunk_size = orig_temp_size
             self.store.large_object_size = orig_max_size
@@ -511,8 +511,8 @@ class SwiftTests(object):
             MAX_SWIFT_OBJECT_SIZE = 1024
             self.store.large_object_size = 1024
             self.store.large_object_chunk_size = 1024
-            location, size, checksum = self.store.add(expected_image_id,
-                                                      image_swift, 0)
+            location, size, checksum, _ = self.store.add(expected_image_id,
+                                                         image_swift, 0)
         finally:
             self.store.large_object_chunk_size = orig_temp_size
             self.store.large_object_size = orig_max_size

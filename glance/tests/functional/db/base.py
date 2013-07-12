@@ -53,7 +53,7 @@ def build_image_fixture(**kwargs):
         'min_disk': 5,
         'min_ram': 256,
         'size': 19,
-        'locations': ["file:///tmp/glance-tests/2"],
+        'locations': [{'url': "file:///tmp/glance-tests/2", 'metadata': {}}],
         'properties': {},
     }
     image.update(kwargs)
@@ -146,9 +146,20 @@ class DriverTests(object):
                           self.context, {'id': UUID1, 'status': 'queued'})
 
     def test_image_create_with_locations(self):
-        fixture = {'status': 'queued', 'locations': ['a', 'b']}
+        locations = [{'url': 'a', 'metadata': {}},
+                     {'url': 'b', 'metadata': {}}]
+
+        fixture = {'status': 'queued',
+                   'locations': locations}
         image = self.db_api.image_create(self.context, fixture)
-        self.assertEqual(['a', 'b'], image['locations'])
+        self.assertEqual(locations, image['locations'])
+
+    def test_image_create_with_location_data(self):
+        location_data = [{'url': 'a', 'metadata': {'key': 'value'}},
+                         {'url': 'b', 'metadata': {}}]
+        fixture = {'status': 'queued', 'locations': location_data}
+        image = self.db_api.image_create(self.context, fixture)
+        self.assertEqual(location_data, image['locations'])
 
     def test_image_create_properties(self):
         fixture = {'status': 'queued', 'properties': {'ping': 'pong'}}
@@ -170,9 +181,18 @@ class DriverTests(object):
         self.assertNotEqual(image['created_at'], image['updated_at'])
 
     def test_image_update_with_locations(self):
-        fixture = {'locations': ['a', 'b']}
+        locations = [{'url': 'a', 'metadata': {}},
+                     {'url': 'b', 'metadata': {}}]
+        fixture = {'locations': locations}
         image = self.db_api.image_update(self.adm_context, UUID3, fixture)
-        self.assertEqual(['a', 'b'], image['locations'])
+        self.assertEqual(locations, image['locations'])
+
+    def test_image_update_with_location_data(self):
+        location_data = [{'url': 'a', 'metadata': {'key': 'value'}},
+                         {'url': 'b', 'metadata': {}}]
+        fixture = {'locations': location_data}
+        image = self.db_api.image_update(self.adm_context, UUID3, fixture)
+        self.assertEqual(location_data, image['locations'])
 
     def test_image_update(self):
         fixture = {'status': 'queued', 'properties': {'ping': 'pong'}}

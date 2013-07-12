@@ -52,6 +52,42 @@ SUPPORTED_SORT_DIRS = ('asc', 'desc')
 SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
 
 
+def _normalize_image_location_for_db(image_data):
+    """
+    This function takes the legacy locations field and the newly added
+    location_data field from the image_data values dictionary which flows
+    over the wire between the registry and API servers and converts it
+    into the location_data format only which is then consumable by the
+    Image object.
+
+    :param image_data: a dict of values representing information in the image
+    :return: a new image data dict
+    """
+    if 'locations' not in image_data and 'location_data' not in image_data:
+        image_data['locations'] = None
+        return image_data
+
+    locations = image_data.pop('locations', [])
+    location_data = image_data.pop('location_data', [])
+
+    location_data_dict = {}
+    for l in locations:
+        location_data_dict[l] = {}
+    for l in location_data:
+        location_data_dict[l['url']] = l['metadata']
+
+    # NOTE(jbresnah) preserve original order.  tests assume original order,
+    # should that be defined functionality
+    ordered_keys = locations[:]
+    for ld in location_data:
+        if ld['url'] not in ordered_keys:
+            ordered_keys.append(ld['url'])
+    location_data = [{'url': l, 'metadata': location_data_dict[l]}
+                     for l in ordered_keys]
+    image_data['locations'] = location_data
+    return image_data
+
+
 class Controller(object):
 
     def __init__(self):
@@ -359,6 +395,7 @@ class Controller(object):
             image_data['locations'] = [image_data.pop('location')]
 
         try:
+            image_data = _normalize_image_location_for_db(image_data)
             image_data = self.db_api.image_create(req.context, image_data)
             msg = _("Successfully created image %(id)s")
             LOG.info(msg % {'id': image_id})
@@ -397,6 +434,7 @@ class Controller(object):
         try:
             LOG.debug(_("Updating image %(id)s with metadata: "
                         "%(image_data)r") % locals())
+            image_data = _normalize_image_location_for_db(image_data)
             if purge_props == "true":
                 updated_image = self.db_api.image_update(req.context, id,
                                                          image_data, True)
@@ -434,9 +472,10 @@ class Controller(object):
 def _limit_locations(image):
     locations = image.pop('locations', [])
     try:
-        image['location'] = locations[0]
+        image['location'] = locations[0]['url']
     except IndexError:
         image['location'] = None
+    image['location_data'] = locations
 
 
 def make_image_dict(image):

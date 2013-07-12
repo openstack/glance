@@ -431,8 +431,11 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         image_view['id'] = image.image_id
         image_view['created_at'] = timeutils.isotime(image.created_at)
         image_view['updated_at'] = timeutils.isotime(image.updated_at)
-        if CONF.show_image_direct_url and image.locations:  # domain
-            image_view['direct_url'] = image.locations[0]
+        if image.locations:
+            if CONF.show_multiple_locations:
+                image_view['locations'] = list(image.locations)
+            if CONF.show_image_direct_url:
+                image_view['direct_url'] = image.locations[0]['url']
         image_view['tags'] = list(image.tags)
         image_view['self'] = self._get_image_href(image)
         image_view['file'] = self._get_image_href(image, 'file')
@@ -566,6 +569,19 @@ _BASE_PROPERTIES = {
     'self': {'type': 'string'},
     'file': {'type': 'string'},
     'schema': {'type': 'string'},
+    'locations': {
+        'type': 'array',
+        'items': {
+            'url': {
+                'type': 'string',
+                'maxLength': 255,
+            },
+            'metadata': {},
+        },
+        'description': _('A set of URLs to access the image file kept in '
+                         'external store'),
+    },
+
 }
 
 _BASE_LINKS = [

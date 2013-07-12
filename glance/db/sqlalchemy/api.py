@@ -300,7 +300,9 @@ def image_destroy(context, image_id):
 
 def _normalize_locations(image):
     undeleted_locations = filter(lambda x: not x.deleted, image['locations'])
-    image['locations'] = [loc['value'] for loc in undeleted_locations]
+    image['locations'] = [{'url': loc['value'],
+                           'metadata': loc['meta_data']}
+                          for loc in undeleted_locations]
     return image
 
 
@@ -707,6 +709,10 @@ def _image_update(context, values, image_id, purge_props=False):
     :param values: A dict of attributes to set
     :param image_id: If None, create the image, otherwise, find and update it
     """
+
+    #NOTE(jbresnah) values is altered in this so a copy is needed
+    values = values.copy()
+
     session = _get_session()
     with session.begin():
 
@@ -718,11 +724,7 @@ def _image_update(context, values, image_id, purge_props=False):
         # not a dict.
         properties = values.pop('properties', {})
 
-        try:
-            locations = values.pop('locations')
-            locations_provided = True
-        except KeyError:
-            locations_provided = False
+        location_data = values.pop('locations', None)
 
         if image_id:
             image_ref = _image_get(context, image_id, session=session)
@@ -771,8 +773,8 @@ def _image_update(context, values, image_id, purge_props=False):
         _set_properties_for_image(context, image_ref, properties, purge_props,
                                   session)
 
-    if locations_provided:
-        _image_locations_set(image_ref.id, locations, session)
+    if location_data is not None:
+        _image_locations_set(image_ref.id, location_data, session)
 
     return image_get(context, image_ref.id)
 
@@ -786,7 +788,9 @@ def _image_locations_set(image_id, locations, session):
         location_ref.delete(session=session)
 
     for location in locations:
-        location_ref = models.ImageLocation(image_id=image_id, value=location)
+        location_ref = models.ImageLocation(image_id=image_id,
+                                            value=location['url'],
+                                            meta_data=location['metadata'])
         location_ref.save()
 
 

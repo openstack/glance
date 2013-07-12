@@ -53,9 +53,9 @@ class TestStore(base.IsolatedUnitTest):
         file_contents = "chunk00000remainder"
         image_file = StringIO.StringIO(file_contents)
 
-        location, size, checksum = self.store.add(image_id,
-                                                  image_file,
-                                                  len(file_contents))
+        location, size, checksum, _ = self.store.add(image_id,
+                                                     image_file,
+                                                     len(file_contents))
 
         # Now read it back...
         uri = "file:///%s/%s" % (self.test_dir, image_id)
@@ -94,9 +94,9 @@ class TestStore(base.IsolatedUnitTest):
                                               expected_image_id)
         image_file = StringIO.StringIO(expected_file_contents)
 
-        location, size, checksum = self.store.add(expected_image_id,
-                                                  image_file,
-                                                  expected_file_size)
+        location, size, checksum, _ = self.store.add(expected_image_id,
+                                                     image_file,
+                                                     expected_file_size)
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_file_size, size)
@@ -126,9 +126,9 @@ class TestStore(base.IsolatedUnitTest):
         file_contents = "*" * file_size
         image_file = StringIO.StringIO(file_contents)
 
-        location, size, checksum = self.store.add(image_id,
-                                                  image_file,
-                                                  file_size)
+        location, size, checksum, _ = self.store.add(image_id,
+                                                     image_file,
+                                                     file_size)
         image_file = StringIO.StringIO("nevergonnamakeit")
         self.assertRaises(exception.Duplicate,
                           self.store.add,
@@ -219,9 +219,9 @@ class TestStore(base.IsolatedUnitTest):
         file_contents = "*" * file_size
         image_file = StringIO.StringIO(file_contents)
 
-        location, size, checksum = self.store.add(image_id,
-                                                  image_file,
-                                                  file_size)
+        location, size, checksum, _ = self.store.add(image_id,
+                                                     image_file,
+                                                     file_size)
 
         # Now check that we can delete it
         uri = "file:///%s/%s" % (self.test_dir, image_id)

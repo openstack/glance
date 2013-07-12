@@ -120,7 +120,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
              'min_ram': 0,
              'size': 13,
              'owner': '123',
-             'locations': ["file:///%s/%s" % (self.test_dir, UUID1)],
+             'locations': [{'url': "file:///%s/%s" % (self.test_dir, UUID1),
+                            'metadata': {}}],
              'properties': {'type': 'kernel'}},
             {'id': UUID2,
              'name': 'fake image #2',
@@ -136,7 +137,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
              'min_disk': 5,
              'min_ram': 256,
              'size': 19,
-             'locations': ["file:///%s/%s" % (self.test_dir, UUID2)],
+             'locations': [{'url': "file:///%s/%s" % (self.test_dir, UUID2),
+                            'metadata': {}}],
              'properties': {}}]
         self.context = glance.context.RequestContext(is_admin=True)
         db_api.setup_db_env()
@@ -2589,3 +2591,98 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images/%s/members.xxx" % UUID1)
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 404)
+
+
+class TestRegistryAPILocations(base.IsolatedUnitTest):
+    def setUp(self):
+        """Establish a clean test environment"""
+        super(TestRegistryAPILocations, self).setUp()
+        self.mapper = routes.Mapper()
+        self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
+                                                 is_admin=True)
+        self.FIXTURES = [
+            {'id': UUID1,
+             'name': 'fake image #1',
+             'status': 'active',
+             'disk_format': 'ami',
+             'container_format': 'ami',
+             'is_public': False,
+             'created_at': timeutils.utcnow(),
+             'updated_at': timeutils.utcnow(),
+             'deleted_at': None,
+             'deleted': False,
+             'checksum': None,
+             'min_disk': 0,
+             'min_ram': 0,
+             'size': 13,
+             'owner': '123',
+             'locations': [
+                 {'url': "file:///%s/%s" % (self.test_dir, UUID1),
+                  'metadata': {}}],
+             'properties': {'type': 'kernel'}},
+            {'id': UUID2,
+             'name': 'fake image #2',
+             'status': 'active',
+             'disk_format': 'vhd',
+             'container_format': 'ovf',
+             'is_public': True,
+             'created_at': timeutils.utcnow(),
+             'updated_at': timeutils.utcnow(),
+             'deleted_at': None,
+             'deleted': False,
+             'checksum': None,
+             'min_disk': 5,
+             'min_ram': 256,
+             'size': 19,
+             'locations': [
+                 {'url': "file:///%s/%s" % (self.test_dir, UUID2),
+                  'metadata': {'key': 'value'}}],
+             'properties': {}}]
+        self.context = glance.context.RequestContext(is_admin=True)
+        db_api.setup_db_env()
+        db_api.get_engine()
+        self.destroy_fixtures()
+        self.create_fixtures()
+
+    def tearDown(self):
+        """Clear the test environment"""
+        super(TestRegistryAPILocations, self).tearDown()
+        self.destroy_fixtures()
+
+    def create_fixtures(self):
+        for fixture in self.FIXTURES:
+            db_api.image_create(self.context, fixture)
+            # We write a fake image file to the filesystem
+            with open("%s/%s" % (self.test_dir, fixture['id']), 'wb') as image:
+                image.write("chunk00000remainder")
+                image.flush()
+
+    def destroy_fixtures(self):
+        # Easiest to just drop the models and re-create them...
+        db_models.unregister_models(db_api._ENGINE)
+        db_models.register_models(db_api._ENGINE)
+
+    def test_show_from_locations(self):
+        req = webob.Request.blank('/images/%s' % UUID1)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        image = res_dict['image']
+        self.assertEqual(self.FIXTURES[0]['locations'][0],
+                         image['location_data'][0])
+        self.assertEqual(self.FIXTURES[0]['locations'][0]['url'],
+                         image['location_data'][0]['url'])
+        self.assertEqual(image['location_data'][0]['metadata'], {})
+
+    def test_show_from_location_data(self):
+        req = webob.Request.blank('/images/%s' % UUID2)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        image = res_dict['image']
+        self.assertEqual(self.FIXTURES[1]['locations'][0],
+                         image['location_data'][0])
+        self.assertEqual(self.FIXTURES[1]['locations'][0]['url'],
+                         image['location_data'][0]['url'])
+        self.assertEqual(self.FIXTURES[1]['locations'][0]['metadata'],
+                         image['location_data'][0]['metadata'])

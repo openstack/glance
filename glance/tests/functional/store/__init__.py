@@ -80,7 +80,7 @@ class BaseTestCase(object):
         image_data = StringIO.StringIO('XXX')
         image_checksum = 'bc9189406be84ec297464a514221406d'
         try:
-            uri, add_size, add_checksum = store.add(image_id, image_data, 3)
+            uri, add_size, add_checksum, _ = store.add(image_id, image_data, 3)
         except NotImplementedError:
             msg = 'Configured store can not add images'
             self.skipTest(msg)

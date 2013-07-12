@@ -424,7 +424,7 @@ class BaseStore(glance.store.base.Store):
             # the location attribute from GET /images/<ID> and
             # GET /images/details
 
-            return (location.get_uri(), image_size, obj_etag)
+            return (location.get_uri(), image_size, obj_etag, {})
         except swiftclient.ClientException as e:
             if e.http_status == httplib.CONFLICT:
                 raise exception.Duplicate(_("Swift already has an image at "

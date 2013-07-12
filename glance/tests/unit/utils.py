@@ -64,7 +64,8 @@ class FakeDB(object):
     def init_db():
         images = [
             {'id': UUID1, 'owner': TENANT1, 'status': 'queued',
-             'locations': ['%s/%s' % (BASE_URI, UUID1)]},
+             'locations': [{'url': '%s/%s' % (BASE_URI, UUID1),
+                            'metadata': {}}]},
             {'id': UUID2, 'owner': TENANT1, 'status': 'queued'},
         ]
         [simple_db.image_create(None, image) for image in images]
@@ -90,11 +91,15 @@ class FakeDB(object):
 
 
 class FakeStoreAPI(object):
-    def __init__(self):
+    def __init__(self, store_metadata=None):
         self.data = {
             '%s/%s' % (BASE_URI, UUID1): ('XXX', 3),
         }
         self.acls = {}
+        if store_metadata is None:
+            self.store_metadata = {}
+        else:
+            self.store_metadata = store_metadata
 
     def create_stores(self):
         pass
@@ -150,7 +155,7 @@ class FakeStoreAPI(object):
             raise exception.StorageWriteDenied()
         self.data[image_id] = (data, size)
         checksum = 'Z'
-        return (image_id, size, checksum)
+        return (image_id, size, checksum, self.store_metadata)
 
 
 class FakePolicyEnforcer(object):

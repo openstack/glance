@@ -240,9 +240,9 @@ class TestStore(base.StoreClearingUnitTest):
             expected_image_id)
         image_s3 = StringIO.StringIO(expected_s3_contents)
 
-        location, size, checksum = self.store.add(expected_image_id,
-                                                  image_s3,
-                                                  expected_s3_size)
+        location, size, checksum, _ = self.store.add(expected_image_id,
+                                                     image_s3,
+                                                     expected_s3_size)
 
         self.assertEquals(expected_location, location)
         self.assertEquals(expected_s3_size, size)
@@ -290,9 +290,9 @@ class TestStore(base.StoreClearingUnitTest):
 
             self.config(**new_conf)
             self.store = Store()
-            location, size, checksum = self.store.add(expected_image_id,
-                                                      image_s3,
-                                                      expected_s3_size)
+            location, size, checksum, _ = self.store.add(expected_image_id,
+                                                         image_s3,
+                                                         expected_s3_size)
 
             self.assertEquals(expected_location, location)
             self.assertEquals(expected_s3_size, size)

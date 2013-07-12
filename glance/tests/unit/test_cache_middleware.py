@@ -208,6 +208,32 @@ class TestCacheMiddlewareProcessRequest(utils.BaseTestCase):
             request, image_id, dummy_img_iterator)
         self.assertEqual(True, actual)
 
+    def test_v1_remove_location_image_fetch(self):
+
+        class CheckNoLocationDataSerializer(object):
+            def show(self, response, raw_response):
+                return 'location_data' in raw_response['image_meta']
+
+        def fake_get_image_metadata(context, image_id):
+            return {'location_data': {'url': "file:///some/path",
+                                      'metadata': {}},
+                    'is_public': True, 'deleted': False, 'size': '20'}
+
+        def dummy_img_iterator():
+            for i in range(3):
+                yield i
+
+        image_id = 'test1'
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext()
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter.serializer = CheckNoLocationDataSerializer()
+        self.stubs.Set(registry, 'get_image_metadata',
+                       fake_get_image_metadata)
+        actual = cache_filter._process_v1_request(
+            request, image_id, dummy_img_iterator)
+        self.assertFalse(actual)
+
     def test_verify_metadata_deleted_image(self):
         """
         Test verify_metadata raises exception.NotFound for a deleted image

@@ -212,7 +212,8 @@ class Store(glance.store.base.Store):
         :param image_file: The image data to write, as a file-like object
         :param image_size: The size of the image data to write, in bytes
 
-        :retval tuple of URL in backing store, bytes written, and checksum
+        :retval tuple of URL in backing store, bytes written, checksum
+                and a dictionary with storage system specific information
         :raises `glance.common.exception.Duplicate` if the image already
                 existed
 
@@ -252,7 +253,7 @@ class Store(glance.store.base.Store):
 
         LOG.debug(_("Wrote %(bytes_written)d bytes to %(filepath)s with "
                     "checksum %(checksum_hex)s") % locals())
-        return ('file://%s' % filepath, bytes_written, checksum_hex)
+        return ('file://%s' % filepath, bytes_written, checksum_hex, {})
 
     @staticmethod
     def _delete_partial(filepath, id):
