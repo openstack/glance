@@ -548,11 +548,35 @@ class DriverTests(object):
         self.assertEquals(2, len(images))
 
     def test_image_destroy(self):
+        fixture = {'name': 'ping', 'value': 'pong', 'image_id': UUID3}
+        prop = self.db_api.image_property_create(self.context, fixture)
+        TENANT2 = uuidutils.generate_uuid()
+        fixture = {'image_id': UUID3, 'member': TENANT2, 'can_share': False}
+        member = self.db_api.image_member_create(self.context, fixture)
+        self.db_api.image_tag_create(self.context, UUID3, 'snarf')
+
+        self.assertEquals(('ping', 'pong', UUID3, False),
+                          (prop['name'], prop['value'],
+                           prop['image_id'], prop['deleted']))
+        self.assertEquals((TENANT2, UUID3, False),
+                          (member['member'], member['image_id'],
+                           member['can_share']))
+        self.assertEqual(['snarf'],
+                         self.db_api.image_tag_get_all(self.context, UUID3))
+
         image = self.db_api.image_destroy(self.adm_context, UUID3)
         self.assertTrue(image['deleted'])
         self.assertTrue(image['deleted_at'])
         self.assertRaises(exception.NotFound, self.db_api.image_get,
                           self.context, UUID3)
+
+        prop = image['properties'][0]
+        self.assertEquals(('ping', UUID3, True),
+                          (prop['name'], prop['image_id'], prop['deleted']))
+        members = self.db_api.image_member_find(self.context, UUID3)
+        self.assertEquals([], members)
+        tags = self.db_api.image_tag_get_all(self.context, UUID3)
+        self.assertEquals([], tags)
 
     def test_image_get_multiple_members(self):
         TENANT1 = uuidutils.generate_uuid()

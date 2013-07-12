@@ -291,6 +291,10 @@ def image_destroy(context, image_id):
         for memb_ref in members:
             _image_member_delete(context, memb_ref, session)
 
+        tag_values = image_tag_get_all(context, image_id, session=session)
+        for tag_value in tag_values:
+            image_tag_delete(context, image_id, tag_value, session=session)
+
     return _normalize_locations(image_ref)
 
 

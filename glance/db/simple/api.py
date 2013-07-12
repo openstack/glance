@@ -127,6 +127,7 @@ def _image_format(image_id, **values):
     properties = values.pop('properties', {})
     properties = [{'name': k,
                    'value': v,
+                   'image_id': image_id,
                    'deleted': False} for k, v in properties.items()]
     image['properties'] = properties
 
@@ -408,7 +409,8 @@ def image_update(context, image_id, image_values, purge_props=False):
             prop['deleted'] = True
 
     # add in any completly new properties
-    image['properties'].extend([{'name': k, 'value': v, 'deleted': False}
+    image['properties'].extend([{'name': k, 'value': v,
+                                 'image_id': image_id, 'deleted': False}
                                 for k, v in new_properties.items()])
 
     image['updated_at'] = timeutils.utcnow()
@@ -423,6 +425,18 @@ def image_destroy(context, image_id):
     try:
         DATA['images'][image_id]['deleted'] = True
         DATA['images'][image_id]['deleted_at'] = timeutils.utcnow()
+
+        for prop in DATA['images'][image_id]['properties']:
+            image_property_delete(context, prop)
+
+        members = image_member_find(context, image_id=image_id)
+        for member in members:
+            image_member_delete(context, member['id'])
+
+        tags = image_tag_get_all(context, image_id)
+        for tag in tags:
+            image_tag_delete(context, image_id, tag)
+
         return copy.deepcopy(DATA['images'][image_id])
     except KeyError:
         raise exception.NotFound()
