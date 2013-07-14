@@ -192,7 +192,7 @@ class TestStoreImage(utils.BaseTestCase):
         return (image, image_stub)
 
     def test_image_change_append_invalid_location(self):
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
 
         context = glance.context.RequestContext(user=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
@@ -203,12 +203,12 @@ class TestStoreImage(utils.BaseTestCase):
 
         image1.delete()
 
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
         self.assertFalse(UUID2 in self.store_api.data.keys())
 
     def test_image_change_append_locations(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
 
         context = glance.context.RequestContext(user=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
@@ -224,7 +224,7 @@ class TestStoreImage(utils.BaseTestCase):
 
         image1.delete()
 
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
         self.assertFalse(UUID2 in self.store_api.data.keys())
         self.assertFalse(UUID3 in self.store_api.data.keys())
 
@@ -232,7 +232,7 @@ class TestStoreImage(utils.BaseTestCase):
 
     def test_image_change_pop_location(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
 
         context = glance.context.RequestContext(user=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
@@ -253,7 +253,7 @@ class TestStoreImage(utils.BaseTestCase):
 
         image1.delete()
 
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
         self.assertFalse(UUID2 in self.store_api.data.keys())
         self.assertFalse(UUID3 in self.store_api.data.keys())
 
@@ -261,7 +261,7 @@ class TestStoreImage(utils.BaseTestCase):
 
     def test_image_change_extend_locations(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
 
         context = glance.context.RequestContext(user=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
@@ -280,7 +280,7 @@ class TestStoreImage(utils.BaseTestCase):
 
         image1.delete()
 
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
         self.assertFalse(UUID2 in self.store_api.data.keys())
         self.assertFalse(UUID3 in self.store_api.data.keys())
 
@@ -288,7 +288,7 @@ class TestStoreImage(utils.BaseTestCase):
 
     def test_image_change_remove_location(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
 
         context = glance.context.RequestContext(user=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
@@ -309,12 +309,12 @@ class TestStoreImage(utils.BaseTestCase):
         image1.delete()
         image2.delete()
 
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
         self.assertFalse(UUID2 in self.store_api.data.keys())
         self.assertFalse(UUID3 in self.store_api.data.keys())
 
     def test_image_change_delete_location(self):
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
 
         context = glance.context.RequestContext(user=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
@@ -324,14 +324,14 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEquals(image_stub1.locations, [])
         self.assertEqual(len(image1.locations), 0)
 
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
         self.assertFalse(UUID2 in self.store_api.data.keys())
 
         image1.delete()
 
     def test_image_change_insert_location(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
 
         context = glance.context.RequestContext(user=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
@@ -350,7 +350,7 @@ class TestStoreImage(utils.BaseTestCase):
 
         image1.delete()
 
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
         self.assertFalse(UUID2 in self.store_api.data.keys())
         self.assertFalse(UUID3 in self.store_api.data.keys())
 
@@ -358,7 +358,7 @@ class TestStoreImage(utils.BaseTestCase):
 
     def test_image_change_delete_locations(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
 
         context = glance.context.RequestContext(user=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
@@ -380,13 +380,13 @@ class TestStoreImage(utils.BaseTestCase):
         image1.delete()
         image2.delete()
 
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
         self.assertFalse(UUID2 in self.store_api.data.keys())
         self.assertFalse(UUID3 in self.store_api.data.keys())
 
     def test_image_change_adding_locations(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
 
         context = glance.context.RequestContext(user=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
@@ -411,7 +411,7 @@ class TestStoreImage(utils.BaseTestCase):
 
         image3.delete()
 
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
         self.assertFalse(UUID2 in self.store_api.data.keys())
         self.assertFalse(UUID3 in self.store_api.data.keys())
 
@@ -420,7 +420,7 @@ class TestStoreImage(utils.BaseTestCase):
 
     def test_image_get_location_index(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
 
         context = glance.context.RequestContext(user=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
@@ -437,7 +437,7 @@ class TestStoreImage(utils.BaseTestCase):
 
         image3.delete()
 
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
         self.assertFalse(UUID2 in self.store_api.data.keys())
         self.assertFalse(UUID3 in self.store_api.data.keys())
 
@@ -446,7 +446,7 @@ class TestStoreImage(utils.BaseTestCase):
 
     def test_image_get_location_by_index(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
 
         context = glance.context.RequestContext(user=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
@@ -464,7 +464,7 @@ class TestStoreImage(utils.BaseTestCase):
 
         image3.delete()
 
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
         self.assertFalse(UUID2 in self.store_api.data.keys())
         self.assertFalse(UUID3 in self.store_api.data.keys())
 
@@ -473,7 +473,7 @@ class TestStoreImage(utils.BaseTestCase):
 
     def test_image_checking_location_exists(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
 
         context = glance.context.RequestContext(user=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
@@ -493,7 +493,7 @@ class TestStoreImage(utils.BaseTestCase):
 
         image3.delete()
 
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
         self.assertFalse(UUID2 in self.store_api.data.keys())
         self.assertFalse(UUID3 in self.store_api.data.keys())
 
@@ -502,7 +502,7 @@ class TestStoreImage(utils.BaseTestCase):
 
     def test_image_reverse_locations_order(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
 
         context = glance.context.RequestContext(user=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
@@ -522,7 +522,7 @@ class TestStoreImage(utils.BaseTestCase):
 
         image3.delete()
 
-        self.assertEqual(len(self.store_api.data.keys()), 1)
+        self.assertEqual(len(self.store_api.data.keys()), 2)
         self.assertFalse(UUID2 in self.store_api.data.keys())
         self.assertFalse(UUID3 in self.store_api.data.keys())
 

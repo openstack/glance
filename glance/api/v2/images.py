@@ -125,33 +125,46 @@ class ImagesController(object):
 
     def _do_replace(self, req, image, change):
         path = change['path']
+        path_root = path[0]
         value = change['value']
-        if hasattr(image, path):
-            setattr(image, path, value)
-        elif path in image.extra_properties:
-            image.extra_properties[path] = change['value']
+        if path_root == 'locations':
+            self._do_replace_locations(image, value)
         else:
-            msg = _("Property %s does not exist.")
-            raise webob.exc.HTTPConflict(msg % path)
+            if hasattr(image, path_root):
+                setattr(image, path_root, value)
+            elif path_root in image.extra_properties:
+                image.extra_properties[path_root] = value
+            else:
+                msg = _("Property %s does not exist.")
+                raise webob.exc.HTTPConflict(msg % path_root)
 
     def _do_add(self, req, image, change):
         path = change['path']
+        path_root = path[0]
         value = change['value']
-        if hasattr(image, path) or path in image.extra_properties:
-            msg = _("Property %s already present.")
-            raise webob.exc.HTTPConflict(msg % path)
-        image.extra_properties[path] = value
+        if path_root == 'locations':
+            self._do_add_locations(image, path[1], value)
+        else:
+            if (hasattr(image, path_root) or
+                    path_root in image.extra_properties):
+                msg = _("Property %s already present.")
+                raise webob.exc.HTTPConflict(msg % path_root)
+            image.extra_properties[path_root] = value
 
     def _do_remove(self, req, image, change):
         path = change['path']
-        if hasattr(image, path):
-            msg = _("Property %s may not be removed.")
-            raise webob.exc.HTTPForbidden(msg % path)
-        elif path in image.extra_properties:
-            del image.extra_properties[path]
+        path_root = path[0]
+        if path_root == 'locations':
+            self._do_remove_locations(image, path[1])
         else:
-            msg = _("Property %s does not exist.")
-            raise webob.exc.HTTPConflict(msg % path)
+            if hasattr(image, path_root):
+                msg = _("Property %s may not be removed.")
+                raise webob.exc.HTTPForbidden(msg % path_root)
+            elif path_root in image.extra_properties:
+                del image.extra_properties[path_root]
+            else:
+                msg = _("Property %s does not exist.")
+                raise webob.exc.HTTPConflict(msg % path_root)
 
     @utils.mutating
     def delete(self, req, image_id):
@@ -167,18 +180,83 @@ class ImagesController(object):
             LOG.info(msg)
             raise webob.exc.HTTPNotFound()
 
+    def _get_locations_op_pos(self, path_pos, max_pos, allow_max):
+        if path_pos is None or max_pos is None:
+            return None
+        pos = max_pos if allow_max else max_pos - 1
+        if path_pos.isdigit():
+            # NOTE(zhiyan): locations index from '1' by client perspective
+            pos = int(path_pos) - 1
+        elif path_pos != '-':
+            return None
+        if (not allow_max) and (pos not in range(max_pos)):
+            return None
+        return pos
+
+    def _do_replace_locations(self, image, value):
+        if len(image.locations) > 0 and len(value) > 0:
+            msg = _("Cannot replace locations from a non-empty "
+                    "list to a non-empty list.")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        if len(value) == 0:
+            # NOTE(zhiyan): this actually deletes the location
+            # from the backend store.
+            del image.locations[:]
+            if image.status == 'active':
+                image.status = 'queued'
+        else:   # NOTE(zhiyan): len(image.locations) == 0
+            try:
+                image.locations = value
+                if image.status == 'queued':
+                    image.status = 'active'
+            except exception.BadStoreUri as bse:
+                raise webob.exc.HTTPBadRequest(explanation=unicode(bse))
+            except ValueError as ve:    # update image status failed.
+                raise webob.exc.HTTPBadRequest(explanation=unicode(ve))
+
+    def _do_add_locations(self, image, path_pos, value):
+        pos = self._get_locations_op_pos(path_pos,
+                                         len(image.locations), True)
+        if pos is None:
+            msg = _("Invalid position for adding a location.")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        try:
+            image.locations.insert(pos, value)
+            if image.status == 'queued':
+                image.status = 'active'
+        except exception.BadStoreUri as bse:
+            raise webob.exc.HTTPBadRequest(explanation=unicode(bse))
+        except ValueError as ve:    # update image status failed.
+            raise webob.exc.HTTPBadRequest(explanation=unicode(ve))
+
+    def _do_remove_locations(self, image, path_pos):
+        pos = self._get_locations_op_pos(path_pos,
+                                         len(image.locations), False)
+        if pos is None:
+            msg = _("Invalid position for removing a location.")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        try:
+            # NOTE(zhiyan): this actually deletes the location
+            # from the backend store.
+            image.locations.pop(pos)
+        except Exception as e:
+            raise webob.exc.HTTPInternalServerError(explanation=unicode(e))
+        if (len(image.locations) == 0) and (image.status == 'active'):
+            image.status = 'queued'
+
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
     _disallowed_properties = ['direct_url', 'self', 'file', 'schema']
     _readonly_properties = ['created_at', 'updated_at', 'status', 'checksum',
                             'size', 'direct_url', 'self', 'file', 'schema']
-    _reserved_properties = ['owner', 'is_public', 'location', 'locations',
-                            'deleted', 'deleted_at']
+    _reserved_properties = ['owner', 'is_public', 'location', 'deleted',
+                            'deleted_at']
     _base_properties = ['checksum', 'created_at', 'container_format',
                         'disk_format', 'id', 'min_disk', 'min_ram', 'name',
                         'size', 'status', 'tags', 'updated_at', 'visibility',
                         'protected']
+    _path_depth_limits = {'locations': {'add': 2, 'remove': 2, 'replace': 1}}
 
     def __init__(self, schema=None):
         super(RequestDeserializer, self).__init__()
@@ -258,22 +336,29 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         as "~0".
         """
         self._validate_json_pointer(pointer)
-        return pointer.lstrip('/').replace('~1', '/').replace('~0', '~')
+        ret = []
+        for part in pointer.lstrip('/').split('/'):
+            ret.append(part.replace('~1', '/').replace('~0', '~').strip())
+        return ret
 
     def _validate_json_pointer(self, pointer):
         """ Validate a json pointer.
 
-        We only accept a limited form of json pointers. Specifically, we do
-        not allow multiple levels of indirection, so there can only be one '/'
-        in the pointer, located at the start of the string.
+        We only accept a limited form of json pointers.
         """
         if not pointer.startswith('/'):
             msg = _('Pointer `%s` does not start with "/".' % pointer)
             raise webob.exc.HTTPBadRequest(explanation=msg)
-        if '/' in pointer[1:]:
-            msg = _('Pointer `%s` contains more than one "/".' % pointer)
+        if re.search('/\s*?/', pointer[1:]):
+            msg = _('Pointer `%s` contains adjacent "/".' % pointer)
             raise webob.exc.HTTPBadRequest(explanation=msg)
-        if re.match('~[^01]', pointer):
+        if len(pointer) > 1 and pointer.endswith('/'):
+            msg = _('Pointer `%s` end with "/".' % pointer)
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        if pointer[1:].strip() == '/':
+            msg = _('Pointer `%s` does not contains valid token.' % pointer)
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        if re.search('~[^01]', pointer) or pointer.endswith('~'):
             msg = _('Pointer `%s` contains "~" not part of'
                     ' a recognized escape sequence.' % pointer)
             raise webob.exc.HTTPBadRequest(explanation=msg)
@@ -285,22 +370,44 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         return raw_change['value']
 
     def _validate_change(self, change):
-        path = change['path']
-        if path in self._readonly_properties:
-            msg = "Attribute \'%s\' is read-only." % path
+        path_root = change['path'][0]
+        if path_root in self._readonly_properties:
+            msg = "Attribute \'%s\' is read-only." % path_root
             raise webob.exc.HTTPForbidden(explanation=unicode(msg))
-        if path in self._reserved_properties:
-            msg = "Attribute \'%s\' is reserved." % path
+        if path_root in self._reserved_properties:
+            msg = "Attribute \'%s\' is reserved." % path_root
             raise webob.exc.HTTPForbidden(explanation=unicode(msg))
 
         if change['op'] == 'delete':
             return
 
-        partial_image = {change['path']: change['value']}
-        try:
-            self.schema.validate(partial_image)
-        except exception.InvalidObject as e:
-            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+        partial_image = None
+        if len(change['path']) == 1:
+            partial_image = {path_root: change['value']}
+        elif ((path_root in _BASE_PROPERTIES.keys()) and
+              (_BASE_PROPERTIES[path_root].get('type', '') == 'array')):
+            # NOTE(zhiyan): cient can use PATCH API to adding element to
+            # the image's existing set property directly.
+            # Such as: 1. using '/locations/N' path to adding a location
+            #             to the image's 'locations' list at N position.
+            #             (implemented)
+            #          2. using '/tags/-' path to appending a tag to the
+            #             image's 'tags' list at last. (Not implemented)
+            partial_image = {path_root: [change['value']]}
+
+        if partial_image:
+            try:
+                self.schema.validate(partial_image)
+            except exception.InvalidObject as e:
+                raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+
+    def _validate_path(self, op, path):
+        path_root = path[0]
+        limits = self._path_depth_limits.get(path_root, {})
+        if len(path) != limits.get(op, 1):
+            msg = _("Invalid JSON pointer for this resource: "
+                    "\'/%s\'") % '/'.join(path)
+            raise webob.exc.HTTPBadRequest(explanation=unicode(msg))
 
     def _parse_json_schema_change(self, raw_change, draft_version):
         if draft_version == 10:
@@ -313,8 +420,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             msg = _('Unrecognized JSON Schema draft version')
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
-        path = self._decode_json_pointer(path)
-        return op, path
+        path_list = self._decode_json_pointer(path)
+        return op, path_list
 
     def update(self, request):
         changes = []
@@ -342,6 +449,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             (op, path) = self._parse_json_schema_change(raw_change,
                                                         json_schema_version)
 
+            # NOTE(zhiyan): the 'path' is a list.
+            self._validate_path(op, path)
             change = {'op': op, 'path': path}
 
             if not op == 'remove':
@@ -572,16 +681,21 @@ _BASE_PROPERTIES = {
     'locations': {
         'type': 'array',
         'items': {
-            'url': {
-                'type': 'string',
-                'maxLength': 255,
+            'type': 'object',
+            'properties': {
+                'url': {
+                    'type': 'string',
+                    'maxLength': 255,
+                },
+                'metadata': {
+                    'type': 'object',
+                },
             },
-            'metadata': {},
+            'required': ['url', 'metadata'],
         },
         'description': _('A set of URLs to access the image file kept in '
                          'external store'),
     },
-
 }
 
 _BASE_LINKS = [
