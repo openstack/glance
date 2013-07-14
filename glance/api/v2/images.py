@@ -178,7 +178,7 @@ class ImagesController(object):
         except exception.NotFound as e:
             msg = ("Failed to find image %(image_id)s to delete" % locals())
             LOG.info(msg)
-            raise webob.exc.HTTPNotFound()
+            raise webob.exc.HTTPNotFound(explanation=msg)
 
     def _get_locations_op_pos(self, path_pos, max_pos, allow_max):
         if path_pos is None or max_pos is None:
