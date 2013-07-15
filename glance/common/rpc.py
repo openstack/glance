@@ -18,7 +18,6 @@
 """
 RPC Controller
 """
-import json
 import datetime
 import traceback
 

@@ -446,6 +446,7 @@ class RegistryServer(Server):
         self.log_file = os.path.join(self.test_dir, "registry.log")
         self.owner_is_tenant = True
         self.workers = 0
+        self.api_version = 1
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
@@ -469,7 +470,7 @@ pipeline = unauthenticated-context registryapp
 pipeline = fakeauth context registryapp
 
 [app:registryapp]
-paste.app_factory = glance.registry.api.v1:API.factory
+paste.app_factory = glance.registry.api.v%(api_version)s:API.factory
 
 [filter:context]
 paste.filter_factory = glance.api.middleware.context:ContextMiddleware.factory
