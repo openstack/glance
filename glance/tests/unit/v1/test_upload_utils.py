@@ -317,6 +317,9 @@ class TestUploadUtils(base.StoreClearingUnitTest):
                                        image_meta['id'],
                                        update_data
                                        ).AndRaise(exception.NotFound)
+        self.mox.StubOutWithMock(upload_utils, "initiate_deletion")
+        upload_utils.initiate_deletion(req, location, image_meta['id'],
+                                       mox.IsA(bool))
         self.mox.StubOutWithMock(upload_utils, "safe_kill")
         upload_utils.safe_kill(req, image_meta['id'])
         self.mox.ReplayAll()
