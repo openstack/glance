@@ -50,11 +50,11 @@ rabbit_opts = [
     cfg.IntOpt('rabbit_max_retries', default=0,
                help=_('The maximum number of times to attempt to connect to '
                       'the AMQP server.')),
-    cfg.StrOpt('rabbit_retry_backoff', default=2,
+    cfg.IntOpt('rabbit_retry_backoff', default=2,
                help=_('This value multiplied by the number of connection '
                       'attempts gives the amount of time in seconds to sleep '
                       'between connection attempts to the AMQP server.')),
-    cfg.StrOpt('rabbit_retry_max_backoff', default=30,
+    cfg.IntOpt('rabbit_retry_max_backoff', default=30,
                help=_('The maximum amount of time to wait between connection '
                       'attempts.  The delay time will be the smaller of this '
                       'value and the value of <rabbit_retry_backoff> * '
@@ -81,8 +81,8 @@ class RabbitStrategy(strategy.Strategy):
         self.max_retries = CONF.rabbit_max_retries
         # NOTE(comstud): When reading the config file, these values end
         # up being strings, and we need them as ints.
-        self.retry_backoff = int(CONF.rabbit_retry_backoff)
-        self.retry_max_backoff = int(CONF.rabbit_retry_max_backoff)
+        self.retry_backoff = CONF.rabbit_retry_backoff
+        self.retry_max_backoff = CONF.rabbit_retry_max_backoff
 
         self.connection = None
         self.retry_attempts = 0
