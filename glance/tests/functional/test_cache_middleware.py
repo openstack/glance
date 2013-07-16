@@ -407,7 +407,6 @@ class BaseCacheManageMiddlewareTest(object):
         self.start_servers(**self.__dict__.copy())
 
         api_port = self.api_port
-        registry_port = self.registry_port
 
         self.verify_no_images()
 
