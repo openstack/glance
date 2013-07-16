@@ -283,21 +283,17 @@ def image_destroy(context, image_id):
         # Perform authorization check
         _check_mutate_authorization(context, image_ref)
 
-        _image_locations_set(image_ref.id, [], session)
-
         image_ref.delete(session=session)
+        delete_time = image_ref.deleted_at
 
-        for prop_ref in image_ref.properties:
-            image_property_delete(context, prop_ref.name,
-                                  image_id, session=session)
+        _image_locations_delete_all(context, image_ref.id, delete_time,
+                                    session)
 
-        members = _image_member_find(context, session, image_id=image_id)
-        for memb_ref in members:
-            _image_member_delete(context, memb_ref, session)
+        _image_property_delete_all(context, image_id, delete_time, session)
 
-        tag_values = image_tag_get_all(context, image_id, session=session)
-        for tag_value in tag_values:
-            image_tag_delete(context, image_id, tag_value, session=session)
+        _image_member_delete_all(context, image_id, delete_time, session)
+
+        _image_tag_delete_all(context, image_id, delete_time, session)
 
     return _normalize_locations(image_ref)
 
@@ -803,6 +799,16 @@ def _image_locations_set(image_id, locations, session):
         location_ref.save()
 
 
+def _image_locations_delete_all(context, image_id, delete_time=None,
+                                session=None):
+    """Delete all image locations for given image"""
+    locs_updated_count = _image_child_entry_delete_all(models.ImageLocation,
+                                                       image_id,
+                                                       delete_time,
+                                                       session)
+    return locs_updated_count
+
+
 def _set_properties_for_image(context, image_ref, properties,
                               purge_props=False, session=None):
     """
@@ -836,6 +842,38 @@ def _set_properties_for_image(context, image_ref, properties,
                                       image_ref.id, session=session)
 
 
+def _image_child_entry_delete_all(child_model_cls, image_id, delete_time=None,
+                                  session=None):
+    """Deletes all the child entries for the given image id.
+
+    Deletes all the child entries of the given child entry ORM model class
+    using the parent image's id.
+
+    The child entry ORM model class can be one of the following:
+    model.ImageLocation, model.ImageProperty, model.ImageMember and
+    model.ImageTag.
+
+    :param child_model_cls: the ORM model class.
+    :param image_id: id of the image whose child entries are to be deleted.
+    :param delete_time: datetime of deletion to be set.
+                        If None, uses current datetime.
+    :param session: A SQLAlchemy session to use (if present)
+
+    :rtype: int
+    :return: The number of child entries got soft-deleted.
+    """
+    session = session or _get_session()
+
+    query = session.query(child_model_cls) \
+        .filter_by(image_id=image_id) \
+        .filter_by(deleted=False)
+
+    delete_time = delete_time or timeutils.utcnow()
+
+    count = query.update({"deleted": True, "deleted_at": delete_time})
+    return count
+
+
 def image_property_create(context, values, session=None):
     """Create an ImageProperty object"""
     prop_ref = models.ImageProperty()
@@ -863,6 +901,16 @@ def image_property_delete(context, prop_ref, image_ref, session=None):
                                                          name=prop_ref).one()
     prop.delete(session=session)
     return prop
+
+
+def _image_property_delete_all(context, image_id, delete_time=None,
+                               session=None):
+    """Delete all image properties for given image"""
+    props_updated_count = _image_child_entry_delete_all(models.ImageProperty,
+                                                        image_id,
+                                                        delete_time,
+                                                        session)
+    return props_updated_count
 
 
 def image_member_create(context, values, session=None):
@@ -912,6 +960,16 @@ def image_member_delete(context, memb_id, session=None):
 
 def _image_member_delete(context, memb_ref, session):
     memb_ref.delete(session=session)
+
+
+def _image_member_delete_all(context, image_id, delete_time=None,
+                             session=None):
+    """Delete all image members for given image"""
+    members_updated_count = _image_child_entry_delete_all(models.ImageMember,
+                                                          image_id,
+                                                          delete_time,
+                                                          session)
+    return members_updated_count
 
 
 def _image_member_get(context, memb_id, session):
@@ -1006,6 +1064,15 @@ def image_tag_delete(context, image_id, value, session=None):
         raise exception.NotFound()
 
     tag_ref.delete(session=session)
+
+
+def _image_tag_delete_all(context, image_id, delete_time=None, session=None):
+    """Delete all image tags for given image"""
+    tags_updated_count = _image_child_entry_delete_all(models.ImageTag,
+                                                       image_id,
+                                                       delete_time,
+                                                       session)
+    return tags_updated_count
 
 
 def image_tag_get_all(context, image_id, session=None):
