@@ -151,10 +151,8 @@ class Driver(base.Driver):
             entry['image_id'] = image_id
 
             file_info = os.stat(path)
-            entry['last_modified'] = iso8601_from_timestamp(
-                file_info[stat.ST_MTIME])
-            entry['last_accessed'] = iso8601_from_timestamp(
-                file_info[stat.ST_ATIME])
+            entry['last_modified'] = file_info[stat.ST_MTIME]
+            entry['last_accessed'] = file_info[stat.ST_ATIME]
             entry['size'] = file_info[stat.ST_SIZE]
             entry['hits'] = self.get_hit_count(image_id)
 
@@ -501,7 +499,3 @@ def inc_xattr(path, key, n=1):
     count = int(get_xattr(path, key))
     count += n
     set_xattr(path, key, str(count))
-
-
-def iso8601_from_timestamp(timestamp):
-    return datetime.datetime.utcfromtimestamp(timestamp).isoformat()
