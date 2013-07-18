@@ -20,6 +20,7 @@
 import __builtin__
 import errno
 import hashlib
+import json
 import os
 import StringIO
 
@@ -114,6 +115,60 @@ class TestStore(base.IsolatedUnitTest):
 
         self.assertEquals(expected_file_contents, new_image_contents)
         self.assertEquals(expected_file_size, new_image_file_size)
+
+    def test_add_check_metadata_success(self):
+        expected_image_id = uuidutils.generate_uuid()
+        in_metadata = {'akey': u'some value', 'list': [u'1', u'2', u'3']}
+        jsonfilename = os.path.join(self.test_dir,
+                                    "storage_metadata.%s" % expected_image_id)
+
+        self.config(filesystem_store_metadata_file=jsonfilename)
+        with open(jsonfilename, 'w') as fptr:
+            json.dump(in_metadata, fptr)
+        expected_file_size = 10
+        expected_file_contents = "*" * expected_file_size
+        image_file = StringIO.StringIO(expected_file_contents)
+
+        location, size, checksum, metadata = self.store.add(expected_image_id,
+                                                            image_file,
+                                                            expected_file_size)
+
+        self.assertEquals(metadata, in_metadata)
+
+    def test_add_check_metadata_bad_data(self):
+        expected_image_id = uuidutils.generate_uuid()
+        in_metadata = {'akey': 10}  # only unicode is allowed
+        jsonfilename = os.path.join(self.test_dir,
+                                    "storage_metadata.%s" % expected_image_id)
+
+        self.config(filesystem_store_metadata_file=jsonfilename)
+        with open(jsonfilename, 'w') as fptr:
+            json.dump(in_metadata, fptr)
+        expected_file_size = 10
+        expected_file_contents = "*" * expected_file_size
+        image_file = StringIO.StringIO(expected_file_contents)
+
+        location, size, checksum, metadata = self.store.add(expected_image_id,
+                                                            image_file,
+                                                            expected_file_size)
+
+        self.assertEquals(metadata, {})
+
+    def test_add_check_metadata_bad_nosuch_file(self):
+        expected_image_id = uuidutils.generate_uuid()
+        jsonfilename = os.path.join(self.test_dir,
+                                    "storage_metadata.%s" % expected_image_id)
+
+        self.config(filesystem_store_metadata_file=jsonfilename)
+        expected_file_size = 10
+        expected_file_contents = "*" * expected_file_size
+        image_file = StringIO.StringIO(expected_file_contents)
+
+        location, size, checksum, metadata = self.store.add(expected_image_id,
+                                                            image_file,
+                                                            expected_file_size)
+
+        self.assertEquals(metadata, {})
 
     def test_add_already_existing(self):
         """
