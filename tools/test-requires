@@ -18,6 +18,7 @@ nosehtmloutput>=0.0.3
 sphinx>=1.1.2
 requests
 testtools>=0.9.22
+psutil<1.0
 
 # Optional packages that should be installed when testing
 MySQL-python
