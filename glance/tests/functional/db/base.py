@@ -158,14 +158,18 @@ class DriverTests(object):
         fixture = {'status': 'queued',
                    'locations': locations}
         image = self.db_api.image_create(self.context, fixture)
-        self.assertEqual(locations, image['locations'])
+        actual = [{'url': l['url'], 'metadata': l['metadata']}
+                  for l in image['locations']]
+        self.assertEqual(locations, actual)
 
     def test_image_create_with_location_data(self):
         location_data = [{'url': 'a', 'metadata': {'key': 'value'}},
                          {'url': 'b', 'metadata': {}}]
         fixture = {'status': 'queued', 'locations': location_data}
         image = self.db_api.image_create(self.context, fixture)
-        self.assertEqual(location_data, image['locations'])
+        actual = [{'url': l['url'], 'metadata': l['metadata']}
+                  for l in image['locations']]
+        self.assertEqual(location_data, actual)
 
     def test_image_create_properties(self):
         fixture = {'status': 'queued', 'properties': {'ping': 'pong'}}
