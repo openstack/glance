@@ -23,6 +23,7 @@ import logging.config
 import logging.handlers
 import optparse
 import os
+import re
 import sys
 import urllib
 import uuid
@@ -53,6 +54,8 @@ IMAGE_ALREADY_PRESENT_MESSAGE = _('The image %s is already present on '
                                   'not find it. This indicates that we '
                                   'do not have permissions to see all '
                                   'the images on the slave server.')
+
+SERVER_PORT_REGEX = '\w+:\w+'
 
 
 class AuthenticationException(Exception):
@@ -268,7 +271,15 @@ def replication_size(options, args):
     server:port: the location of the glance instance.
     """
 
+    # Make sure server info is provided
+    if len(args) < 1:
+        raise TypeError(_("Too few arguments."))
+
     server_port = args.pop()
+
+    if not re.match(SERVER_PORT_REGEX, server_port):
+        raise ValueError(_("Bad format of the given arguments."))
+
     server, port = server_port.split(':')
 
     total_size = 0
@@ -295,8 +306,16 @@ def replication_dump(options, args):
     path:        a directory on disk to contain the data.
     """
 
+    # Make sure server and path are provided
+    if len(args) < 2:
+        raise TypeError(_("Too few arguments."))
+
     path = args.pop()
     server_port = args.pop()
+
+    if not re.match(SERVER_PORT_REGEX, server_port):
+        raise ValueError(_("Bad format of the given arguments."))
+
     server, port = server_port.split(':')
 
     imageservice = get_image_service()
@@ -372,8 +391,16 @@ def replication_load(options, args):
     path:        a directory on disk containing the data.
     """
 
+    # Make sure server and path are provided
+    if len(args) < 2:
+        raise TypeError(_("Too few arguments."))
+
     path = args.pop()
     server_port = args.pop()
+
+    if not re.match(SERVER_PORT_REGEX, server_port):
+        raise ValueError(_("Bad format of the given arguments."))
+
     server, port = server_port.split(':')
 
     imageservice = get_image_service()
@@ -443,14 +470,23 @@ def replication_livecopy(options, args):
     toserver:port:   the location of the slave glance instance.
     """
 
-    imageservice = get_image_service()
+    # Make sure from-server and to-server are provided
+    if len(args) < 2:
+        raise TypeError(_("Too few arguments."))
 
     slave_server_port = args.pop()
+    master_server_port = args.pop()
+
+    if not re.match(SERVER_PORT_REGEX, slave_server_port) or \
+            not re.match(SERVER_PORT_REGEX, master_server_port):
+        raise ValueError(_("Bad format of the given arguments."))
+
+    imageservice = get_image_service()
+
     slave_server, slave_port = slave_server_port.split(':')
     slave_conn = httplib.HTTPConnection(slave_server, slave_port)
     slave_client = imageservice(slave_conn, options.slavetoken)
 
-    master_server_port = args.pop()
     master_server, master_port = master_server_port.split(':')
     master_conn = httplib.HTTPConnection(master_server, master_port)
     master_client = imageservice(master_conn, options.mastertoken)
@@ -511,14 +547,23 @@ def replication_compare(options, args):
     toserver:port:   the location of the slave glance instance.
     """
 
-    imageservice = get_image_service()
+    # Make sure from-server and to-server are provided
+    if len(args) < 2:
+        raise TypeError(_("Too few arguments."))
 
     slave_server_port = args.pop()
+    master_server_port = args.pop()
+
+    if not re.match(SERVER_PORT_REGEX, slave_server_port) or \
+            not re.match(SERVER_PORT_REGEX, master_server_port):
+        raise ValueError(_("Bad format of the given arguments."))
+
+    imageservice = get_image_service()
+
     slave_server, slave_port = slave_server_port.split(':')
     slave_conn = httplib.HTTPConnection(slave_server, slave_port)
     slave_client = imageservice(slave_conn, options.slavetoken)
 
-    master_server_port = args.pop()
     master_server, master_port = master_server_port.split(':')
     master_conn = httplib.HTTPConnection(master_server, master_port)
     master_client = imageservice(master_conn, options.mastertoken)
@@ -730,4 +775,13 @@ def main():
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)
 
-    command(options, args)
+    try:
+        command(options, args)
+    except TypeError as e:
+        logging.error(command.__doc__ % {'prog': command.__name__})
+        sys.exit("ERROR: %s" % e)
+    except ValueError as e:
+        logging.error(command.__doc__ % {'prog': command.__name__})
+        sys.exit("ERROR: %s" % e)
+    except Exception as e:
+        raise
