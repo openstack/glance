@@ -46,14 +46,12 @@ extensions = ['sphinx.ext.coverage',
               'sphinx.ext.ifconfig',
               'sphinx.ext.intersphinx',
               'sphinx.ext.pngmath',
-              'sphinx.ext.graphviz']
+              'sphinx.ext.graphviz',
+              'oslo.sphinx',
+              ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = []
-if os.getenv('HUDSON_PUBLISH_DOCS'):
-    templates_path = ['_ga', '_templates']
-else:
-    templates_path = ['_templates']
+# templates_path = []
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -149,8 +147,8 @@ man_pages = [
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme_path = ["."]
-html_theme = '_theme'
+# html_theme_path = ["."]
+# html_theme = '_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
