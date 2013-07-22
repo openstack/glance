@@ -12,6 +12,7 @@ glance.sqlite
 AUTHORS
 ChangeLog
 build
+doc/source/api
 dist
 *.egg
 glance.egg-info
