@@ -26,7 +26,7 @@ The common image properties are also described in a JSON schema, found in
 etc/schema-image.json in the Glance source code.
 
 **architecture**
------------
+----------------
 
 Operating system architecture as specified in
 http://docs.openstack.org/trunk/openstack-compute/admin/content/adding-images.html
