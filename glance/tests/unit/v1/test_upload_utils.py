@@ -289,6 +289,16 @@ class TestUploadUtils(base.StoreClearingUnitTest):
                                         webob.exc.HTTPError,
                                         webob.exc.HTTPError)
 
+    def test_upload_data_to_store_client_disconnect(self):
+        self._test_upload_data_to_store_exception(
+                                        ValueError,
+                                        webob.exc.HTTPBadRequest)
+
+    def test_upload_data_to_store_client_disconnect_ioerror(self):
+        self._test_upload_data_to_store_exception(
+                                        IOError,
+                                        webob.exc.HTTPBadRequest)
+
     def test_upload_data_to_store_exception(self):
         self._test_upload_data_to_store_exception_with_notify(
                                         Exception,
