@@ -111,14 +111,19 @@ Payload
 
 * image.send
 
-  The payload for INFO, WARN, and ERROR events contain the following::
+  The payload for INFO, WARN, and ERROR events contain the following:
 
-  image_id - ID of the image (UUID)
-  owner_id - Tenant or User ID that owns this image (string)
-  receiver_tenant_id - Tenant ID of the account receiving the image (string)
-  receiver_user_id - User ID of the account receiving the image (string)
-  destination_ip
-  bytes_sent - The number of bytes actually sent
+  image_id
+    ID of the image (UUID)
+  owner_id
+    Tenant or User ID that owns this image (string)
+  receiver_tenant_id
+    Tenant ID of the account receiving the image (string)
+  receiver_user_id
+    User ID of the account receiving the image (string)
+    destination_ip
+  bytes_sent
+    The number of bytes actually sent
 
 * image.create
 
