@@ -45,9 +45,6 @@ COMMANDS
   **delete-all-queued-images**
         Deletes all images from the cache queue
 
-  **clean**
-        Removes any stale or invalid image files from the cache
-
 OPTIONS
 =======
 
