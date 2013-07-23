@@ -375,6 +375,8 @@ class BaseStore(glance.store.base.Store):
                         written_chunks.append(chunk_name)
                     except Exception:
                         # Delete orphaned segments from swift backend
+                        LOG.exception(_("Error during chunked upload to "
+                                        "backend, deleting stale chunks"))
                         self._delete_stale_chunks(connection,
                                                   location.container,
                                                   written_chunks)
