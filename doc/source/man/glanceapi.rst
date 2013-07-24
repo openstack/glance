@@ -40,7 +40,7 @@ OPTIONS
   **--default_store=STORE**
         The default backend store that Glance should use when storing virtual
         machine images. The default value is `filesystem`. Choices are any of
-        `filesystem`, `swift`, or `s3`
+        `filesystem`, `swift`, `rbd`, `cinder`, `gridfs`, `sheepdog` or `s3`
 
   **--filesystem_store_datadir=DIR**
         The directory that the `filesystem` backend store should use to write
