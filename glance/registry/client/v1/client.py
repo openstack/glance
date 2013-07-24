@@ -37,7 +37,7 @@ class RegistryClient(BaseClient):
     DEFAULT_PORT = 9191
 
     def __init__(self, host=None, port=None, metadata_encryption_key=None,
-                 **kwargs):
+                 identity_headers=None, **kwargs):
         """
         :param metadata_encryption_key: Key used to encrypt 'location' metadata
         """
@@ -45,6 +45,7 @@ class RegistryClient(BaseClient):
         # NOTE (dprince): by default base client overwrites host and port
         # settings when using keystone. configure_via_auth=False disables
         # this behaviour to ensure we still send requests to the Registry API
+        self.identity_headers = identity_headers
         BaseClient.__init__(self, host, port, configure_via_auth=False,
                             **kwargs)
 
@@ -85,6 +86,8 @@ class RegistryClient(BaseClient):
 
     def do_request(self, method, action, **kwargs):
         try:
+            kwargs['headers'] = kwargs.get('headers', {})
+            kwargs['headers'].update(self.identity_headers or {})
             res = super(RegistryClient, self).do_request(method,
                                                          action,
                                                          **kwargs)
