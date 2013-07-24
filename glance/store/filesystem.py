@@ -175,8 +175,8 @@ class Store(glance.store.base.Store):
         except IOError as ioe:
             LOG.error(_('The path for the metadata file %s could not be '
                         'opened: %s  An empty dictionary will be returned '
-                        'to the client.'
-                        % (CONF.filesystem_store_metadata_file, ioe.message)))
+                        'to the client.')
+                      % (CONF.filesystem_store_metadata_file, ioe))
             return {}
         except Exception as ex:
             LOG.exception(_('An error occured processing the storage systems '
