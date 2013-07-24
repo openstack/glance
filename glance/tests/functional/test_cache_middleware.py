@@ -495,6 +495,53 @@ class BaseCacheManageMiddlewareTest(object):
         self.stop_servers()
 
     @skip_if_disabled
+    def test_cache_manage_delete_queued_images(self):
+        """
+        Tests that all queued images may be deleted at once
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        api_port = self.api_port
+        registry_port = self.registry_port
+
+        self.verify_no_images()
+
+        ids = {}
+        NUM_IMAGES = 4
+
+        # Add and then queue some images
+        for x in xrange(0, NUM_IMAGES):
+            ids[x] = self.add_image("Image%s" % str(x))
+            path = "http://%s:%d/v1/queued_images/%s" % ("127.0.0.1",
+                                                         self.api_port, ids[x])
+            http = httplib2.Http()
+            response, content = http.request(path, 'PUT')
+            self.assertEqual(response.status, 200)
+
+        # Delete all queued images
+        path = "http://%s:%d/v1/queued_images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
+        data = json.loads(content)
+        num_deleted = data['num_deleted']
+        self.assertEqual(NUM_IMAGES, num_deleted)
+
+        # Verify a second delete now returns num_deleted=0
+        path = "http://%s:%d/v1/queued_images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
+        data = json.loads(content)
+        num_deleted = data['num_deleted']
+        self.assertEqual(0, num_deleted)
+
+        self.stop_servers()
+
+    @skip_if_disabled
     def test_queue_and_prefetch(self):
         """
         Tests that images may be queued and prefetched

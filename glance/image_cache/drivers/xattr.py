@@ -220,7 +220,7 @@ class Driver(base.Driver):
         """
         Removes all queued image files and any attributes about the images
         """
-        files = [f for f in self.get_cache_files(self.queue_dir)]
+        files = [f for f in get_all_regular_files(self.queue_dir)]
         for file in files:
             os.unlink(file)
         return len(files)
