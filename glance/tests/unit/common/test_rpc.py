@@ -41,6 +41,9 @@ class FakeResource(object):
     def get_images(self, context, keyword=None):
         return keyword
 
+    def count_images(self, context, images):
+        return len(images)
+
     def get_all_images(self, context):
         return False
 
@@ -245,6 +248,11 @@ class TestRPCClient(base.IsolatedUnitTest):
             self.fail("Exception not raised")
         except exception.RPCError:
             pass
+
+    def test_non_str_or_dict_response(self):
+        rst = self.client.count_images(images=[1, 2, 3, 4])
+        self.assertEquals(rst, 4)
+        self.assertTrue(isinstance(rst, int))
 
 
 class TestRPCJSONSerializer(test_utils.BaseTestCase):
