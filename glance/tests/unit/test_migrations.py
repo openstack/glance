@@ -299,18 +299,20 @@ class TestMigrations(utils.BaseTestCase):
         # in the databases. This just checks that the schema itself
         # upgrades successfully.
 
+        def db_version():
+            return migration_api.db_version(engine, TestMigrations.REPOSITORY)
+
         # Place the database under version control
         init_version = migration.INIT_VERSION
         if initial_version is not None:
             init_version = initial_version
         migration_api.version_control(engine, TestMigrations.REPOSITORY,
                                       init_version)
-        self.assertEqual(init_version,
-                         migration_api.db_version(engine,
-                                                  TestMigrations.REPOSITORY))
+        self.assertEqual(init_version, db_version())
 
         migration_api.upgrade(engine, TestMigrations.REPOSITORY,
                               init_version + 1)
+        self.assertEqual(init_version + 1, db_version())
 
         LOG.debug('latest version is %s' % TestMigrations.REPOSITORY.latest)
 
@@ -319,7 +321,7 @@ class TestMigrations(utils.BaseTestCase):
             # upgrade -> downgrade -> upgrade
             self._migrate_up(engine, version, with_data=True)
             if snake_walk:
-                self._migrate_down(engine, version)
+                self._migrate_down(engine, version - 1)
                 self._migrate_up(engine, version)
 
         if downgrade:
@@ -329,10 +331,13 @@ class TestMigrations(utils.BaseTestCase):
                 xrange(init_version + 2,
                        TestMigrations.REPOSITORY.latest + 1)):
                 # downgrade -> upgrade -> downgrade
-                self._migrate_down(engine, version)
+                self._migrate_down(engine, version - 1)
                 if snake_walk:
                     self._migrate_up(engine, version)
-                    self._migrate_down(engine, version)
+                    self._migrate_down(engine, version - 1)
+
+            # Ensure we made it all the way back to the first migration
+            self.assertEqual(init_version + 1, db_version())
 
     def _migrate_down(self, engine, version):
         migration_api.downgrade(engine,
