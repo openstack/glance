@@ -242,7 +242,14 @@ class RPCClient(client.BaseClient):
         # NOTE(flaper87): Return the first result if
         # a single command was executed.
         content = content[0]
-        if self.raise_exc and (content and '_error' in content):
+
+        # NOTE(flaper87): Check if content is an error
+        # and re-raise it if raise_exc is True. Before
+        # checking if content contains the '_error' key,
+        # verify if it is an instance of dict - since the
+        # RPC call may have returned something different.
+        if self.raise_exc and (isinstance(content, dict)
+                               and '_error' in content):
             error = content['_error']
             try:
                 exc_cls = imp.import_class(error['cls'])
