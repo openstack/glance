@@ -107,7 +107,8 @@ class TestImageMembersController(test_utils.BaseTestCase):
         self.images = [
             _db_fixture(UUID1, owner=TENANT1, name='1', size=256,
                         is_public=True,
-                        locations=['%s/%s' % (BASE_URI, UUID1)]),
+                        locations=[{'url': '%s/%s' % (BASE_URI, UUID1),
+                                    'metadata': {}}]),
             _db_fixture(UUID2, owner=TENANT1, name='2', size=512),
             _db_fixture(UUID3, owner=TENANT3, name='3', size=512),
             _db_fixture(UUID4, owner=TENANT4, name='4', size=1024),

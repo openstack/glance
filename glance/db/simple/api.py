@@ -28,6 +28,7 @@ DATA = {
     'images': {},
     'members': {},
     'tags': {},
+    'locations': [],
 }
 
 
@@ -52,6 +53,7 @@ def reset():
         'images': {},
         'members': [],
         'tags': {},
+        'locations': [],
     }
 
 
@@ -75,6 +77,20 @@ def clear_db_env(*args, **kwargs):
 
 def _get_session():
     return DATA
+
+
+def _image_locations_format(image_id, value, meta_data):
+    dt = timeutils.utcnow()
+    return {
+        'id': uuidutils.generate_uuid(),
+        'image_id': image_id,
+        'created_at': dt,
+        'updated_at': dt,
+        'deleted_at': None,
+        'deleted': False,
+        'url': value,
+        'metadata': meta_data,
+    }
 
 
 def _image_property_format(image_id, name, value):
@@ -122,6 +138,15 @@ def _image_format(image_id, **values):
         'deleted_at': None,
         'deleted': False,
     }
+
+    locations = values.pop('locations', None)
+    if locations is not None:
+        locations = [
+            _image_locations_format(image_id, location['url'],
+                                    location['metadata'])
+            for location in locations
+        ]
+        image['locations'] = locations
 
     #NOTE(bcwaldon): store properties as a list to match sqlalchemy driver
     properties = values.pop('properties', {})
@@ -246,6 +271,8 @@ def _sort_images(images, sort_key, sort_dir):
 def _image_get(context, image_id, force_show_deleted=False, status=None):
     try:
         image = DATA['images'][image_id]
+        image['locations'] = _image_location_get_all(image_id)
+
     except KeyError:
         LOG.info(_('Could not find image %s') % image_id)
         raise exception.NotFound()
@@ -264,6 +291,7 @@ def _image_get(context, image_id, force_show_deleted=False, status=None):
 @log_call
 def image_get(context, image_id, session=None, force_show_deleted=False):
     image = _image_get(context, image_id, force_show_deleted)
+    image = _normalize_locations(image)
     return copy.deepcopy(image)
 
 
@@ -279,6 +307,11 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     images = _sort_images(images, sort_key, sort_dir)
     images = _do_pagination(context, images, marker, limit,
                             filters.get('deleted'))
+
+    for image in images:
+        image['locations'] = _image_location_get_all(image['id'])
+        _normalize_locations(image)
+
     return images
 
 
@@ -364,6 +397,42 @@ def image_member_delete(context, member_id):
         raise exception.NotFound()
 
 
+def _image_locations_set(image_id, locations):
+    global DATA
+    image = DATA['images'][image_id]
+    for location in image['locations']:
+        location['deleted'] = True
+        location['deleted_at'] = timeutils.utcnow()
+
+    for i, location in enumerate(DATA['locations']):
+        if image_id == location['image_id'] and location['deleted'] is False:
+            del DATA['locations'][i]
+
+    for location in locations:
+        location_ref = _image_locations_format(image_id, value=location['url'],
+                                               meta_data=location['metadata'])
+        DATA['locations'].append(location_ref)
+
+        image['locations'].append(location_ref)
+
+
+def _normalize_locations(image):
+    undeleted_locations = filter(lambda x: not x['deleted'],
+                                 image['locations'])
+    image['locations'] = [{'url': loc['url'],
+                           'metadata': loc['metadata']}
+                          for loc in undeleted_locations]
+    return image
+
+
+def _image_location_get_all(image_id):
+    location_data = []
+    for location in DATA['locations']:
+        if image_id == location['image_id']:
+            location_data.append(location)
+    return location_data
+
+
 @log_call
 def image_create(context, image_values):
     global DATA
@@ -388,8 +457,14 @@ def image_create(context, image_values):
 
     image = _image_format(image_id, **image_values)
     DATA['images'][image_id] = image
+
+    location_data = image_values.get('locations', None)
+    if location_data is not None:
+        _image_locations_set(image_id, location_data)
+
     DATA['tags'][image_id] = image.pop('tags', [])
-    return image
+
+    return _normalize_locations(copy.deepcopy(image))
 
 
 @log_call
@@ -399,6 +474,10 @@ def image_update(context, image_id, image_values, purge_props=False):
         image = DATA['images'][image_id]
     except KeyError:
         raise exception.NotFound(image_id=image_id)
+
+    location_data = image_values.pop('locations', None)
+    if location_data is not None:
+        _image_locations_set(image_id, location_data)
 
     # replace values for properties that already exist
     new_properties = image_values.pop('properties', {})
@@ -417,7 +496,7 @@ def image_update(context, image_id, image_values, purge_props=False):
     image['updated_at'] = timeutils.utcnow()
     image.update(image_values)
     DATA['images'][image_id] = image
-    return image
+    return _normalize_locations(image)
 
 
 @log_call
@@ -426,6 +505,8 @@ def image_destroy(context, image_id):
     try:
         DATA['images'][image_id]['deleted'] = True
         DATA['images'][image_id]['deleted_at'] = timeutils.utcnow()
+
+        _image_locations_set(image_id, [])
 
         for prop in DATA['images'][image_id]['properties']:
             image_property_delete(context, prop['name'], image_id)
@@ -437,6 +518,8 @@ def image_destroy(context, image_id):
         tags = image_tag_get_all(context, image_id)
         for tag in tags:
             image_tag_delete(context, image_id, tag)
+
+        _normalize_locations(DATA['images'][image_id])
 
         return copy.deepcopy(DATA['images'][image_id])
     except KeyError:
