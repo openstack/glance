@@ -17,13 +17,8 @@
 
 import os
 
+from migrate import exceptions as versioning_exceptions
 from migrate.versioning import api as versioning_api
-# See LP bug #719834. sqlalchemy-migrate changed location of
-# exceptions.py after 0.6.0.
-try:
-    from migrate.versioning import exceptions as versioning_exceptions
-except ImportError:
-    from migrate import exceptions as versioning_exceptions
 from migrate.versioning import repository as versioning_repository
 from oslo.config import cfg
 
