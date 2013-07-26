@@ -541,25 +541,75 @@ class DriverTests(object):
 
     def test_image_get_all_owned(self):
         TENANT1 = uuidutils.generate_uuid()
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+        ctxt1 = context.RequestContext(is_admin=False,
+                                       tenant=TENANT1,
                                        auth_tok='user:%s:user' % TENANT1)
         UUIDX = uuidutils.generate_uuid()
-        self.db_api.image_create(ctxt1, {'id': UUIDX,
-                                         'status': 'queued',
-                                         'owner': TENANT1})
+        image_meta_data = {'id': UUIDX, 'status': 'queued', 'owner': TENANT1}
+        self.db_api.image_create(ctxt1, image_meta_data)
 
         TENANT2 = uuidutils.generate_uuid()
-        ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2,
+        ctxt2 = context.RequestContext(is_admin=False,
+                                       tenant=TENANT2,
                                        auth_tok='user:%s:user' % TENANT2)
         UUIDY = uuidutils.generate_uuid()
-        self.db_api.image_create(ctxt2, {'id': UUIDY,
-                                         'status': 'queued',
-                                         'owner': TENANT2})
+        image_meta_data = {'id': UUIDY, 'status': 'queued', 'owner': TENANT2}
+        self.db_api.image_create(ctxt2, image_meta_data)
 
         images = self.db_api.image_get_all(ctxt1)
+
         image_ids = [image['id'] for image in images]
         expected = [UUIDX, UUID3, UUID2, UUID1]
         self.assertEqual(sorted(expected), sorted(image_ids))
+
+    def test_image_get_all_owned_checksum(self):
+        TENANT1 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False,
+                                       tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1)
+        UUIDX = uuidutils.generate_uuid()
+        CHECKSUM1 = '91264c3edf5972c9f1cb309543d38a5c'
+        image_meta_data = {
+            'id': UUIDX,
+            'status': 'queued',
+            'checksum': CHECKSUM1,
+            'owner': TENANT1
+        }
+        self.db_api.image_create(ctxt1, image_meta_data)
+        image_member_data = {
+            'image_id': UUIDX,
+            'member': TENANT1,
+            'can_share': False,
+            "status": "accepted",
+        }
+        self.db_api.image_member_create(ctxt1, image_member_data)
+
+        TENANT2 = uuidutils.generate_uuid()
+        ctxt2 = context.RequestContext(is_admin=False,
+                                       tenant=TENANT2,
+                                       auth_tok='user:%s:user' % TENANT2)
+        UUIDY = uuidutils.generate_uuid()
+        CHECKSUM2 = '92264c3edf5972c9f1cb309543d38a5c'
+        image_meta_data = {
+            'id': UUIDY,
+            'status': 'queued',
+            'checksum': CHECKSUM2,
+            'owner': TENANT2
+        }
+        self.db_api.image_create(ctxt2, image_meta_data)
+        image_member_data = {
+            'image_id': UUIDY,
+            'member': TENANT2,
+            'can_share': False,
+            "status": "accepted",
+        }
+        self.db_api.image_member_create(ctxt2, image_member_data)
+
+        filters = {'visibility': 'shared', 'checksum': CHECKSUM2}
+        images = self.db_api.image_get_all(ctxt2, filters)
+
+        self.assertEquals(1, len(images))
+        self.assertEqual(UUIDY, images[0]['id'])
 
     def test_image_paginate(self):
         """Paginate through a list of images using limit and marker"""
