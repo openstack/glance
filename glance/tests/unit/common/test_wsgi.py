@@ -270,7 +270,6 @@ class TestHelpers(test_utils.BaseTestCase):
         """
         fixture = {'name': 'fake public image',
                    'is_public': True,
-                   'type': 'kernel',
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}}
@@ -285,7 +284,6 @@ class TestHelpers(test_utils.BaseTestCase):
         fixture = {'name': 'fake public image',
                    'is_public': True,
                    'deleted': False,
-                   'type': 'kernel',
                    'name': None,
                    'size': 19,
                    'location': "file:///tmp/glance-tests/2",
