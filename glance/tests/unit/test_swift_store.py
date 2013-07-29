@@ -691,7 +691,8 @@ class TestStoreAuthV2(TestStoreAuthV1):
 class FakeConnection(object):
     def __init__(self, authurl, user, key, retries=5, preauthurl=None,
                  preauthtoken=None, snet=False, starting_backoff=1,
-                 tenant_name=None, os_options={}, auth_version="1"):
+                 tenant_name=None, os_options={}, auth_version="1",
+                 insecure=False):
         self.authurl = authurl
         self.user = user
         self.key = key
@@ -701,6 +702,7 @@ class FakeConnection(object):
         self.tenant_name = tenant_name
         self.os_options = os_options
         self.auth_version = auth_version
+        self.insecure = insecure
 
 
 class TestSingleTenantStoreConnections(base.IsolatedUnitTest):
@@ -726,6 +728,7 @@ class TestSingleTenantStoreConnections(base.IsolatedUnitTest):
         self.assertEqual(connection.snet, False)
         self.assertEqual(connection.preauthurl, None)
         self.assertEqual(connection.preauthtoken, None)
+        self.assertEqual(connection.insecure, False)
         self.assertEqual(connection.os_options,
                          {'service_type': 'object-store',
                           'endpoint_type': 'publicURL'})
@@ -734,6 +737,12 @@ class TestSingleTenantStoreConnections(base.IsolatedUnitTest):
         self.location.auth_or_store_url = 'example.com/v2'
         connection = self.store.get_connection(self.location)
         self.assertEqual(connection.authurl, 'https://example.com/v2/')
+
+    def test_connection_insecure(self):
+        self.config(swift_store_auth_insecure=True)
+        self.store.configure()
+        connection = self.store.get_connection(self.location)
+        self.assertEqual(connection.insecure, True)
 
     def test_connection_with_auth_v1(self):
         self.config(swift_store_auth_version='1')

@@ -63,6 +63,9 @@ swift_opts = [
                help=_('Version of the authentication service to use. '
                       'Valid versions are 2 for keystone and 1 for swauth '
                       'and rackspace')),
+    cfg.BoolOpt('swift_store_auth_insecure', default=False,
+                help=_('If True, swiftclient won\'t check for a valid SSL '
+                       'certificate when authenticating.')),
     cfg.StrOpt('swift_store_region',
                help=_('The region of the swift endpoint to be used for '
                       'single tenant. This setting is only necessary if the '
@@ -263,6 +266,7 @@ class BaseStore(glance.store.base.Store):
         self.service_type = CONF.swift_store_service_type
         self.endpoint_type = CONF.swift_store_endpoint_type
         self.snet = CONF.swift_enable_snet
+        self.insecure = CONF.swift_store_auth_insecure
 
     def get(self, location, connection=None):
         location = location.store_location
@@ -568,7 +572,7 @@ class SingleTenantStore(BaseStore):
         os_options['service_type'] = self.service_type
 
         return swiftclient.Connection(
-                auth_url, user, location.key,
+                auth_url, user, location.key, insecure=self.insecure,
                 tenant_name=tenant_name, snet=self.snet,
                 auth_version=self.auth_version, os_options=os_options)
 
@@ -650,7 +654,7 @@ class MultiTenantStore(BaseStore):
                 preauthurl=location.swift_url,
                 preauthtoken=self.context.auth_tok,
                 tenant_name=self.context.tenant,
-                auth_version='2', snet=self.snet)
+                auth_version='2', snet=self.snet, insecure=self.insecure)
 
 
 class ChunkReader(object):
