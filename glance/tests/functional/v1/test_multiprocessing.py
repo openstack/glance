@@ -18,6 +18,7 @@
 import time
 
 import httplib2
+import psutil
 
 from glance.tests import functional
 from glance.tests.utils import execute
@@ -44,11 +45,11 @@ class TestMultiprocessing(functional.FunctionalTest):
 
     def _get_children(self):
         api_pid = self.api_server.process_pid
-        cmd = ("ps --no-headers --ppid %s -o pid,cmd | "
-               "grep python | "  # NOTE(markwash): ignore non-python procs
-               "awk '{print $1; print >> \"/dev/stderr\"}'" % api_pid)
-        _, out, err = execute(cmd, raise_error=True)
-        return out.strip().split('\n')
+        process = psutil.Process(api_pid)
+
+        children = process.get_children()
+        pids = [str(child.pid) for child in children]
+        return pids
 
     def test_interrupt_avoids_respawn_storm(self):
         """
