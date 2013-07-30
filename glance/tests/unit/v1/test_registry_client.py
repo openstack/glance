@@ -92,7 +92,6 @@ class TestRegistryV1Client(base.IsolatedUnitTest):
         self.destroy_fixtures()
         self.create_fixtures()
         self.client = rclient.RegistryClient("0.0.0.0")
-        self.stubs = stubout.StubOutForTesting()
 
     def tearDown(self):
         """Clear the test environment"""

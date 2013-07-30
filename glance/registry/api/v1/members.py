@@ -44,8 +44,8 @@ class Controller(object):
         try:
             self.db_api.image_get(req.context, image_id)
         except exception.NotFound:
-            msg = _("Image %(id)s not found")
-            LOG.info(msg % {'id': image_id})
+            msg = _("Image %(id)s not found") % {'id': image_id}
+            LOG.info(msg)
             raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
@@ -78,8 +78,8 @@ class Controller(object):
         try:
             image = self.db_api.image_get(req.context, image_id)
         except exception.NotFound:
-            msg = _("Image %(id)s not found")
-            LOG.info(msg % {'id': image_id})
+            msg = _("Image %(id)s not found") % {'id': image_id}
+            LOG.info(msg)
             raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
@@ -191,8 +191,8 @@ class Controller(object):
         try:
             image = self.db_api.image_get(req.context, image_id)
         except exception.NotFound:
-            msg = _("Image %(id)s not found")
-            LOG.info(msg % {'id': image_id})
+            msg = _("Image %(id)s not found") % {'id': image_id}
+            LOG.info(msg)
             raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
@@ -251,8 +251,8 @@ class Controller(object):
         try:
             image = self.db_api.image_get(req.context, image_id)
         except exception.NotFound:
-            msg = _("Image %(id)s not found")
-            LOG.info(msg % {'id': image_id})
+            msg = _("Image %(id)s not found") % {'id': image_id}
+            LOG.info(msg)
             raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
