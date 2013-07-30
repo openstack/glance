@@ -511,6 +511,48 @@ class TestMigrations(utils.BaseTestCase):
         for element in data:
             self.assertIn(element['key'], image_names)
 
+    def _prerun_010(self, engine):
+        """Test rows in images with NULL updated_at get updated to equal
+        created_at"""
+
+        initial_values = [
+            (datetime.datetime(1999, 1, 2, 4, 10, 20),
+             datetime.datetime(1999, 1, 2, 4, 10, 30)),
+            (datetime.datetime(1999, 2, 4, 6, 15, 25),
+             datetime.datetime(1999, 2, 4, 6, 15, 35)),
+            (datetime.datetime(1999, 3, 6, 8, 20, 30),
+             None),
+            (datetime.datetime(1999, 4, 8, 10, 25, 35),
+             None),
+        ]
+
+        images = get_table(engine, 'images')
+        for created_at, updated_at in initial_values:
+            row = dict(deleted=False,
+                       created_at=created_at,
+                       updated_at=updated_at,
+                       status='active',
+                       is_public=True,
+                       min_disk=0,
+                       min_ram=0)
+            images.insert().values(row).execute()
+
+        return initial_values
+
+    def _check_010(self, engine, data):
+        values = dict((c, u) for c, u in data)
+
+        images = get_table(engine, 'images')
+        for row in images.select().execute():
+            if row['created_at'] in values:
+                # updated_at should be unchanged if not previous NULL, or
+                # set to created_at if previously NULL
+                updated_at = values.pop(row['created_at']) or row['created_at']
+                self.assertEqual(row['updated_at'], updated_at)
+
+        # No initial values should be remaining
+        self.assertEqual(len(values), 0)
+
     def _prerun_015(self, engine):
         images = get_table(engine, 'images')
         unquoted_locations = [
