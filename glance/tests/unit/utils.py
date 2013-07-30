@@ -124,18 +124,20 @@ class FakeStoreAPI(object):
         except KeyError:
             raise exception.NotFound()
 
-    def safe_delete_from_backend(self, uri, context, id, **kwargs):
+    def safe_delete_from_backend(self, context, uri, id, **kwargs):
         try:
             del self.data[uri]
         except KeyError:
             pass
 
-    def schedule_delayed_delete_from_backend(self, uri, id, **kwargs):
+    def schedule_delayed_delete_from_backend(self, context, uri, id, **kwargs):
         pass
 
     def delete_image_from_backend(self, context, store_api, image_id, uri):
-        glance.store.delete_image_from_backend(context,
-                                               store_api, image_id, uri)
+        if CONF.delayed_delete:
+            self.schedule_delayed_delete_from_backend(context, uri, image_id)
+        else:
+            self.safe_delete_from_backend(context, uri, image_id)
 
     def get_size_from_backend(self, context, location):
         return self.get_from_backend(context, location)[1]

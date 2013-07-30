@@ -48,8 +48,6 @@ from glance.openstack.common import strutils
 import glance.registry.client.v1.api as registry
 from glance.store import (get_from_backend,
                           get_size_from_backend,
-                          safe_delete_from_backend,
-                          schedule_delayed_delete_from_backend,
                           get_store_from_location,
                           get_store_from_scheme)
 

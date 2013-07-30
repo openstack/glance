@@ -43,7 +43,7 @@ class TestUploadUtils(base.StoreClearingUnitTest):
         id = unit_test_utils.UUID1
 
         self.mox.StubOutWithMock(glance.store, "safe_delete_from_backend")
-        glance.store.safe_delete_from_backend(location, req.context, id)
+        glance.store.safe_delete_from_backend(req.context, location, id)
         self.mox.ReplayAll()
 
         upload_utils.initiate_deletion(req, location, id)
@@ -57,7 +57,8 @@ class TestUploadUtils(base.StoreClearingUnitTest):
 
         self.mox.StubOutWithMock(glance.store,
                                  "schedule_delayed_delete_from_backend")
-        glance.store.schedule_delayed_delete_from_backend(location,
+        glance.store.schedule_delayed_delete_from_backend(req.context,
+                                                          location,
                                                           id)
         self.mox.ReplayAll()
 

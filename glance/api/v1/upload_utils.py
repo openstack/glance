@@ -41,9 +41,10 @@ def initiate_deletion(req, location, id, delayed_delete=False):
     :param delayed_delete: whether data deletion will be delayed
     """
     if delayed_delete:
-        glance.store.schedule_delayed_delete_from_backend(location, id)
+        glance.store.schedule_delayed_delete_from_backend(req.context,
+                                                          location, id)
     else:
-        glance.store.safe_delete_from_backend(location, req.context, id)
+        glance.store.safe_delete_from_backend(req.context, location, id)
 
 
 def _kill(req, image_id):

@@ -184,6 +184,6 @@ class TestHttpStore(base.StoreClearingUnitTest):
         ctx = context.RequestContext()
         stub_out_registry_image_update(self.stubs)
         try:
-            safe_delete_from_backend(uri, ctx, 'image_id')
+            safe_delete_from_backend(ctx, uri, 'image_id')
         except exception.StoreDeleteNotSupported:
             self.fail('StoreDeleteNotSupported should be swallowed')

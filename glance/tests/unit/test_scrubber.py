@@ -20,6 +20,7 @@ import shutil
 import time
 import tempfile
 
+import eventlet
 import mox
 
 from glance.common import exception
@@ -50,17 +51,17 @@ class TestScrubber(test_utils.BaseTestCase):
         uri = 'file://some/path/%s' % (fname)
         id = 'helloworldid'
         now = time.time()
-        scrub = glance.store.scrubber.Scrubber()
+        scrub = glance.store.scrubber.Scrubber(glance.store)
         scrub.registry = self.mox.CreateMockAnything()
-        self.mox.StubOutWithMock(glance.store, "delete_from_backend")
-
+        scrub.registry.get_image(id).AndReturn({'status': 'pending_delete'})
         scrub.registry.update_image(id, {'status': 'deleted'})
+        self.mox.StubOutWithMock(glance.store, "delete_from_backend")
         glance.store.delete_from_backend(
             mox.IgnoreArg(),
             uri).AndRaise(ex)
-
         self.mox.ReplayAll()
-        scrub._delete(id, uri, now)
+        scrub._scrub_image(eventlet.greenpool.GreenPool(1),
+                           id, [(id, uri)])
         self.mox.VerifyAll()
 
         q_path = os.path.join(self.data_dir, id)

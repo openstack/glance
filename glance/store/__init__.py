@@ -30,6 +30,7 @@ import glance.domain.proxy
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
 from glance.store import location
+from glance.store import scrubber
 
 LOG = logging.getLogger(__name__)
 
@@ -53,8 +54,9 @@ store_opts = [
     cfg.StrOpt('scrubber_datadir',
                default='/var/lib/glance/scrubber',
                help=_('Directory that the scrubber will use to track '
-                      'information about what to delete.  Make sure this is '
-                      'also set in glance-api.conf')),
+                      'information about what to delete. '
+                      'Make sure this is set in glance-api.conf and '
+                      'glance-scrubber.conf')),
     cfg.BoolOpt('delayed_delete', default=False,
                 help=_('Turn on/off delayed delete.')),
     cfg.IntOpt('scrub_time', default=0,
@@ -265,7 +267,7 @@ def get_store_from_location(uri):
     return loc.store_name
 
 
-def safe_delete_from_backend(uri, context, image_id, **kwargs):
+def safe_delete_from_backend(context, uri, image_id, **kwargs):
     """Given a uri, delete an image from the store."""
     try:
         return delete_from_backend(context, uri, **kwargs)
@@ -281,31 +283,21 @@ def safe_delete_from_backend(uri, context, image_id, **kwargs):
         LOG.error(msg)
 
 
-def schedule_delayed_delete_from_backend(uri, image_id, **kwargs):
-    """Given a uri, schedule the deletion of an image."""
-    datadir = CONF.scrubber_datadir
-    delete_time = time.time() + CONF.scrub_time
-    file_path = os.path.join(datadir, str(image_id))
-    utils.safe_mkdirs(datadir)
-
-    if os.path.exists(file_path):
-        msg = _("Image id %(image_id)s already queued for delete") % {
-                'image_id': image_id}
-        raise exception.Duplicate(msg)
-
-    if CONF.metadata_encryption_key is not None:
-        uri = crypt.urlsafe_encrypt(CONF.metadata_encryption_key, uri, 64)
-    with open(file_path, 'w') as f:
-        f.write('\n'.join([uri, str(int(delete_time))]))
-    os.chmod(file_path, 0o600)
-    os.utime(file_path, (delete_time, delete_time))
+def schedule_delayed_delete_from_backend(context, uri, image_id, **kwargs):
+    """Given a uri, schedule the deletion of an image location."""
+    (file_queue, _db_queue) = scrubber.get_scrub_queues()
+    # NOTE(zhiyan): Defautly ask glance-api store using file based queue.
+    # In future we can change it using DB based queued instead,
+    # such as using image location's status to saving pending delete flag
+    # when that property be added.
+    file_queue.add_location(image_id, uri)
 
 
 def delete_image_from_backend(context, store_api, image_id, uri):
     if CONF.delayed_delete:
-        store_api.schedule_delayed_delete_from_backend(uri, image_id)
+        store_api.schedule_delayed_delete_from_backend(context, uri, image_id)
     else:
-        store_api.safe_delete_from_backend(uri, context, image_id)
+        store_api.safe_delete_from_backend(context, uri, image_id)
 
 
 def check_location_metadata(val, key=''):

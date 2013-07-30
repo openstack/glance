@@ -315,6 +315,7 @@ class ApiServer(Server):
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
                                              default_sql_connection)
         self.user_storage_quota = 0
+        self.lock_path = self.test_dir
 
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
@@ -363,7 +364,8 @@ show_image_direct_url = %(show_image_direct_url)s
 show_multiple_locations = %(show_multiple_locations)s
 user_storage_quota = %(user_storage_quota)s
 enable_v1_api = %(enable_v1_api)s
-enable_v2_api= %(enable_v2_api)s
+enable_v2_api = %(enable_v2_api)s
+lock_path = %(lock_path)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
 """
@@ -515,6 +517,7 @@ class ScrubberDaemon(Server):
         self.swift_store_auth_version = kwargs.get("swift_store_auth_version",
                                                    "2")
         self.metadata_encryption_key = "012345678901234567890123456789ab"
+        self.lock_path = self.test_dir
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
@@ -531,6 +534,7 @@ swift_store_user = %(swift_store_user)s
 swift_store_key = %(swift_store_key)s
 swift_store_container = %(swift_store_container)s
 swift_store_auth_version = %(swift_store_auth_version)s
+lock_path = %(lock_path)s
 """
 
     def start(self, expect_exit=True, expected_exitcode=0, **kwargs):
