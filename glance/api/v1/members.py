@@ -1,6 +1,7 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
 # Copyright 2012 OpenStack Foundation.
+# Copyright 2013 NTT corp.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -44,6 +45,12 @@ class Controller(controller.BaseController):
         except exception.Forbidden:
             raise webob.exc.HTTPForbidden()
 
+    def _raise_404_if_image_deleted(self, req, image_id):
+        image = self.get_image_meta_or_404(req, image_id)
+        if image['status'] == 'deleted':
+            msg = _("Image with identifier %s has been deleted.") % image_id
+            raise webob.exc.HTTPNotFound(msg)
+
     def index(self, req, image_id):
         """
         Return a list of dictionaries indicating the members of the
@@ -59,6 +66,7 @@ class Controller(controller.BaseController):
             ]}
         """
         self._enforce(req, 'get_members')
+        self._raise_404_if_image_deleted(req, image_id)
 
         try:
             members = registry.get_image_members(req.context, image_id)
@@ -79,6 +87,7 @@ class Controller(controller.BaseController):
         """
         self._check_can_access_image_members(req.context)
         self._enforce(req, 'delete_member')
+        self._raise_404_if_image_deleted(req, image_id)
 
         try:
             registry.delete_member(req.context, image_id, id)
@@ -114,6 +123,7 @@ class Controller(controller.BaseController):
         """
         self._check_can_access_image_members(req.context)
         self._enforce(req, 'modify_member')
+        self._raise_404_if_image_deleted(req, image_id)
 
         # Figure out can_share
         can_share = None
@@ -150,6 +160,7 @@ class Controller(controller.BaseController):
         """
         self._check_can_access_image_members(req.context)
         self._enforce(req, 'modify_member')
+        self._raise_404_if_image_deleted(req, image_id)
 
         try:
             registry.replace_members(req.context, image_id, body)

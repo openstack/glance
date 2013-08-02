@@ -61,6 +61,24 @@ class TestApi(functional.FunctionalTest):
         - Remove a previously existing property.
         10. PUT image
         - Add a previously deleted property.
+        11. PUT image/members/member1
+        - Add member1 to image
+        12. PUT image/members/member2
+        - Add member2 to image
+        13. GET image/members
+        - List image members
+        14. DELETE image/members/member1
+        - Delete image member1
+        15. DELETE image
+        - Delete image
+        16. GET image/members
+        -  List deleted image members
+        17. PUT image/members/member2
+        - Update existing member2 of deleted image
+        18. PUT image/members/member3
+        - Add member3 to deleted image
+        19. DELETE image/members/member2
+        - Delete member2 from deleted image
         """
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
@@ -265,11 +283,73 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(data['properties']['distro'], "Ubuntu")
         self.assertNotEqual(data['created_at'], data['updated_at'])
 
-        # DELETE image
+        # 11. Add member to image
+        path = ("http://%s:%d/v1/images/%s/members/pattieblack" %
+                ("127.0.0.1", self.api_port, image_id))
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT')
+        self.assertEqual(response.status, 204)
+
+        # 12. Add member to image
+        path = ("http://%s:%d/v1/images/%s/members/pattiewhite" %
+                ("127.0.0.1", self.api_port, image_id))
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT')
+        self.assertEqual(response.status, 204)
+
+        # 13. List image members
+        path = ("http://%s:%d/v1/images/%s/members" %
+                ("127.0.0.1", self.api_port, image_id))
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+        data = json.loads(content)
+        self.assertEqual(len(data['members']), 2)
+        self.assertEqual(data['members'][0]['member_id'], 'pattieblack')
+        self.assertEqual(data['members'][1]['member_id'], 'pattiewhite')
+
+        # 14. Delete image member
+        path = ("http://%s:%d/v1/images/%s/members/pattieblack" %
+                ("127.0.0.1", self.api_port, image_id))
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 204)
+
+        # 15. DELETE image
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 200)
+
+        # 16. Try to list members of deleted image
+        path = ("http://%s:%d/v1/images/%s/members" %
+                ("127.0.0.1", self.api_port, image_id))
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 404)
+
+        # 17. Try to update member of deleted image
+        path = ("http://%s:%d/v1/images/%s/members" %
+                ("127.0.0.1", self.api_port, image_id))
+        http = httplib2.Http()
+        fixture = [{'member_id': 'pattieblack', 'can_share': 'false'}]
+        body = json.dumps(dict(memberships=fixture))
+        response, content = http.request(path, 'PUT', body=body)
+        self.assertEqual(response.status, 404)
+
+        # 18. Try to add member to deleted image
+        path = ("http://%s:%d/v1/images/%s/members/chickenpattie" %
+                ("127.0.0.1", self.api_port, image_id))
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT')
+        self.assertEqual(response.status, 404)
+
+        # 19. Try to delete member of deleted image
+        path = ("http://%s:%d/v1/images/%s/members/pattieblack" %
+                ("127.0.0.1", self.api_port, image_id))
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 404)
 
         self.stop_servers()
