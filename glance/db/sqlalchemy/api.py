@@ -70,6 +70,9 @@ db_opts = [
     cfg.BoolOpt('db_auto_create', default=False,
                 help=_('A boolean that determines if the database will be '
                        'automatically created.')),
+    cfg.BoolOpt('sqlalchemy_debug', default=False,
+                help=_('Enable debug logging in sqlalchemy which prints '
+                       'every query and result'))
 ]
 
 CONF = cfg.CONF
@@ -118,7 +121,7 @@ def setup_db_env():
     _RETRY_INTERVAL = CONF.sql_retry_interval
     _CONNECTION = CONF.sql_connection
     sa_logger = logging.getLogger('sqlalchemy.engine')
-    if CONF.debug:
+    if CONF.sqlalchemy_debug:
         sa_logger.setLevel(logging.DEBUG)
 
 
@@ -188,7 +191,7 @@ def get_engine():
             raise
 
         sa_logger = logging.getLogger('sqlalchemy.engine')
-        if CONF.debug:
+        if CONF.sqlalchemy_debug:
             sa_logger.setLevel(logging.DEBUG)
 
         if CONF.db_auto_create:
