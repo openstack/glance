@@ -195,12 +195,15 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
     def test_rest_dict_to_headers(self):
         i = {'banana': 42,
              'gerkin': 12,
-             'properties': {'frog': 1}
+             'properties': {'frog': 1,
+                            'kernel_id': None}
              }
         o = glance_replicator.ImageService._dict_to_headers(i)
         self.assertTrue('x-image-meta-banana' in o)
         self.assertTrue('x-image-meta-gerkin' in o)
         self.assertTrue('x-image-meta-property-frog' in o)
+        self.assertTrue('x-image-meta-property-kernel_id' in o)
+        self.assertEqual(o['x-image-meta-property-kernel_id'], '')
         self.assertFalse('properties' in o)
 
     def test_rest_add_image(self):
