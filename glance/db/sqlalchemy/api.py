@@ -612,8 +612,8 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     showing_deleted = False
 
     if 'checksum' in filters:
-        checksum = filters.get('checksum')
-        query = query.filter_by(checksum=checksum)
+        checksum = filters.pop('checksum')
+        query = query.filter(models.Image.checksum == checksum)
 
     if 'changes-since' in filters:
         # normalize timestamp to UTC, as sqlalchemy doesn't appear to
