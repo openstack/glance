@@ -136,9 +136,12 @@ class TestImagesController(test_utils.BaseTestCase):
                         is_public=True,
                         disk_format='raw',
                         container_format='bare',
-                        status='active'),
+                        status='active',
+                        tags=['redhat', '64bit', 'power'],
+                        properties={'hypervisor_type': 'kvm'}),
             _db_fixture(UUID3, owner=TENANT3, checksum=CHKSUM1,
-                        name='3', size=512, is_public=True),
+                        name='3', size=512, is_public=True,
+                        tags=['windows', '64bit', 'x86']),
             _db_fixture(UUID4, owner=TENANT4, name='4', size=1024),
         ]
         [self.db.image_create(None, image) for image in self.images]
@@ -401,6 +404,53 @@ class TestImagesController(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request()
         output = self.controller.index(request)
         self.assertEqual([], output['images'])
+
+    def test_index_with_tags(self):
+        path = '/images?tag=64bit'
+        request = unit_test_utils.get_fake_request(path)
+        output = self.controller.index(request, filters={'tags': ['64bit']})
+        actual = [image.tags for image in output['images']]
+        self.assertEquals(2, len(actual))
+        self.assertEqual(True, '64bit' in actual[0])
+        self.assertEqual(True, '64bit' in actual[1])
+
+    def test_index_with_multi_tags(self):
+        path = '/images?tag=power&tag=64bit'
+        request = unit_test_utils.get_fake_request(path)
+        output = self.controller.index(request,
+                                       filters={'tags': ['power', '64bit']})
+        actual = [image.tags for image in output['images']]
+        self.assertEquals(1, len(actual))
+        self.assertEqual(True, '64bit' in actual[0])
+        self.assertEqual(True, 'power' in actual[0])
+
+    def test_index_with_multi_tags_and_nonexistent(self):
+        path = '/images?tag=power&tag=fake'
+        request = unit_test_utils.get_fake_request(path)
+        output = self.controller.index(request,
+                                       filters={'tags': ['power', 'fake']})
+        actual = [image.tags for image in output['images']]
+        self.assertEquals(0, len(actual))
+
+    def test_index_with_tags_and_properties(self):
+        path = '/images?tag=64bit&hypervisor_type=kvm'
+        request = unit_test_utils.get_fake_request(path)
+        output = self.controller.index(request,
+                                       filters={'tags': ['64bit'],
+                                                'hypervisor_type': 'kvm'})
+        tags = [image.tags for image in output['images']]
+        properties = [image.extra_properties for image in output['images']]
+        self.assertEquals(True, len(tags) == len(properties))
+        self.assertEqual(True, '64bit' in tags[0])
+        self.assertEqual('kvm', properties[0]['hypervisor_type'])
+
+    def test_index_with_non_existent_tags(self):
+        path = '/images?tag=fake'
+        request = unit_test_utils.get_fake_request(path)
+        output = self.controller.index(request,
+                                       filters={'tags': ['fake']})
+        actual = [image.tags for image in output['images']]
+        self.assertEquals(0, len(actual))
 
     def test_show(self):
         request = unit_test_utils.get_fake_request()
@@ -1553,6 +1603,13 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request('/images?sort_dir=blah')
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.index, request)
+
+    def test_index_with_tag(self):
+        path = '/images?tag=%s&tag=%s' % ('x86', '64bit')
+        request = unit_test_utils.get_fake_request(path)
+        output = self.deserializer.index(request)
+        self.assertEqual(sorted(output['filters']['tags']),
+                         sorted(['x86', '64bit']))
 
 
 class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):

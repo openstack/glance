@@ -143,6 +143,7 @@ class ImageTag(BASE, ModelBase):
 
     id = Column(Integer, primary_key=True, nullable=False)
     image_id = Column(String(36), ForeignKey('images.id'), nullable=False)
+    image = relationship(Image, backref=backref('tags'))
     value = Column(String(255), nullable=False)
 
 

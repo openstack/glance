@@ -224,6 +224,31 @@ class TestImageRepo(test_utils.BaseTestCase):
         images = self.image_repo.list(filters=filters)
         self.assertEquals(0, len(images))
 
+    def test_list_with_tags_filter_single_tag(self):
+        filters = {'tags': ['ping']}
+        images = self.image_repo.list(filters=filters)
+        image_ids = list([i.image_id for i in images])
+        self.assertEquals(1, len(image_ids))
+        self.assertEqual([UUID1], image_ids)
+
+    def test_list_with_tags_filter_multiple_tags(self):
+        filters = {'tags': ['ping', 'pong']}
+        images = self.image_repo.list(filters=filters)
+        image_ids = list([i.image_id for i in images])
+        self.assertEquals(1, len(image_ids))
+        self.assertEqual([UUID1], image_ids)
+
+    def test_list_with_tags_filter_multiple_tags_and_nonexistent(self):
+        filters = {'tags': ['ping', 'fake']}
+        images = self.image_repo.list(filters=filters)
+        image_ids = list([i.image_id for i in images])
+        self.assertEquals(0, len(image_ids))
+
+    def test_list_with_wrong_tags(self):
+        filters = {'tags': ['fake']}
+        images = self.image_repo.list(filters=filters)
+        self.assertEquals(0, len(images))
+
     def test_list_public_images(self):
         filters = {'visibility': 'public'}
         images = self.image_repo.list(filters=filters)

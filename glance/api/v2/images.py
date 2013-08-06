@@ -505,6 +505,14 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         marker = params.pop('marker', None)
         sort_dir = params.pop('sort_dir', 'desc')
         member_status = params.pop('member_status', 'accepted')
+
+        # NOTE (flwang) To avoid using comma or any predefined chars to split
+        # multiple tags, now we allow user specify multiple 'tag' parameters
+        # in URL, such as v2/images?tag=x86&tag=64bit.
+        tags = []
+        while 'tag' in params:
+            tags.append(params.pop('tag').strip())
+
         query_params = {
             'sort_key': params.pop('sort_key', 'created_at'),
             'sort_dir': self._validate_sort_dir(sort_dir),
@@ -517,6 +525,9 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
         if limit is not None:
             query_params['limit'] = self._validate_limit(limit)
+
+        if tags:
+            query_params['filters']['tags'] = tags
 
         return query_params
 
