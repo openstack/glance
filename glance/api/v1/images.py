@@ -56,6 +56,7 @@ from glance.store import (get_from_backend,
 LOG = logging.getLogger(__name__)
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
 SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
+ACTIVE_IMMUTABLE = glance.api.v1.ACTIVE_IMMUTABLE
 
 CONF = cfg.CONF
 CONF.import_opt('disk_formats', 'glance.domain')
@@ -638,6 +639,17 @@ class Controller(controller.BaseController):
             raise HTTPForbidden(explanation=msg,
                                 request=req,
                                 content_type="text/plain")
+
+        if req.context.is_admin is False:
+            # Once an image is 'active' only an admin can
+            # modify certain core metadata keys
+            for key in ACTIVE_IMMUTABLE:
+                if (orig_status == 'active' and image_meta.get(key) is not None
+                    and image_meta.get(key) != orig_image_meta.get(key)):
+                    msg = _("Forbidden to modify '%s' of active image.") % key
+                    raise HTTPForbidden(explanation=msg,
+                                        request=req,
+                                        content_type="text/plain")
 
         # The default behaviour for a PUT /images/<IMAGE_ID> is to
         # override any properties that were previously set. This, however,
