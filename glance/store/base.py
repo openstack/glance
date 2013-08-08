@@ -19,10 +19,24 @@
 """Base class for all storage backends"""
 
 from glance.common import exception
+from glance.common import utils
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
+from glance.openstack.common import strutils
 
 LOG = logging.getLogger(__name__)
+
+
+def _exception_to_str(exc):
+    try:
+        error = unicode(exc)
+    except UnicodeError:
+        try:
+            error = str(exc)
+        except UnicodeError:
+            error = (_("Caught '%(exception)s' exception.") %
+                     {"exception": exc.__class__.__name__})
+    return strutils.safe_encode(error, errors='ignore')
 
 
 class Store(object):
@@ -40,10 +54,10 @@ class Store(object):
         try:
             self.configure_add()
         except exception.BadStoreConfiguration as e:
-            msg = _("Failed to configure store correctly: %s "
-                    "Disabling add method." % e)
-            LOG.warn(msg)
             self.add = self.add_disabled
+            msg = (_("Failed to configure store correctly: %s "
+                     "Disabling add method.") % _exception_to_str(e))
+            LOG.warn(msg)
 
     def configure(self):
         """
