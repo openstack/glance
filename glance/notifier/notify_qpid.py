@@ -135,7 +135,7 @@ class QpidStrategy(strategy.Strategy):
         except Exception:
             details = dict(priority=priority, msg=msg)
             LOG.exception(_('Notification error.  Priority: %(priority)s '
-                            'Message: %(msg)s' % details))
+                            'Message: %(msg)s') % details)
             raise
         finally:
             if self.connection and self.connection.opened():

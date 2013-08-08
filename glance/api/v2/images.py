@@ -115,7 +115,7 @@ class ImagesController(object):
                     image_repo.save(image)
 
         except exception.NotFound:
-            msg = _("Failed to find image %(image_id)s to update" % locals())
+            msg = _("Failed to find image %(image_id)s to update") % locals()
             LOG.info(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.Forbidden as e:
@@ -347,20 +347,20 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         We only accept a limited form of json pointers.
         """
         if not pointer.startswith('/'):
-            msg = _('Pointer `%s` does not start with "/".' % pointer)
+            msg = _('Pointer `%s` does not start with "/".') % pointer
             raise webob.exc.HTTPBadRequest(explanation=msg)
         if re.search('/\s*?/', pointer[1:]):
-            msg = _('Pointer `%s` contains adjacent "/".' % pointer)
+            msg = _('Pointer `%s` contains adjacent "/".') % pointer
             raise webob.exc.HTTPBadRequest(explanation=msg)
         if len(pointer) > 1 and pointer.endswith('/'):
-            msg = _('Pointer `%s` end with "/".' % pointer)
+            msg = _('Pointer `%s` end with "/".') % pointer
             raise webob.exc.HTTPBadRequest(explanation=msg)
         if pointer[1:].strip() == '/':
-            msg = _('Pointer `%s` does not contains valid token.' % pointer)
+            msg = _('Pointer `%s` does not contains valid token.') % pointer
             raise webob.exc.HTTPBadRequest(explanation=msg)
         if re.search('~[^01]', pointer) or pointer.endswith('~'):
             msg = _('Pointer `%s` contains "~" not part of'
-                    ' a recognized escape sequence.' % pointer)
+                    ' a recognized escape sequence.') % pointer
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
     def _get_change_value(self, raw_change, op):
@@ -476,14 +476,14 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
     def _validate_sort_dir(self, sort_dir):
         if sort_dir not in ['asc', 'desc']:
-            msg = _('Invalid sort direction: %s' % sort_dir)
+            msg = _('Invalid sort direction: %s') % sort_dir
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
         return sort_dir
 
     def _validate_member_status(self, member_status):
         if member_status not in ['pending', 'accepted', 'rejected', 'all']:
-            msg = _('Invalid status: %s' % member_status)
+            msg = _('Invalid status: %s') % member_status
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
         return member_status

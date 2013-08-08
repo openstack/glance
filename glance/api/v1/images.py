@@ -748,7 +748,7 @@ class Controller(controller.BaseController):
             raise HTTPForbidden(explanation=msg, request=req,
                                 content_type="text/plain")
         elif image['status'] == 'deleted':
-            msg = _("Image %s not found." % id)
+            msg = _("Image %s not found.") % id
             LOG.debug(msg)
             raise HTTPNotFound(explanation=msg, request=req,
                                content_type="text/plain")
