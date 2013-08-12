@@ -325,7 +325,7 @@ def replication_dump(options, args):
     client = imageservice(httplib.HTTPConnection(server, port),
                           options.mastertoken)
     for image in client.get_images():
-        logging.info(_('Considering: %s' % image['id']))
+        logging.info(_('Considering: %s') % image['id'])
 
         data_path = os.path.join(path, image['id'])
         if not os.path.exists(data_path):

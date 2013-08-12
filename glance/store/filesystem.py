@@ -169,8 +169,8 @@ class Store(glance.store.base.Store):
         except glance.store.BackendException as bee:
             LOG.error(_('The JSON in the metadata file %s could not be used: '
                         '%s  An empty dictionary will be returned '
-                        'to the client.'
-                        % (CONF.filesystem_store_metadata_file, str(bee))))
+                        'to the client.')
+                      % (CONF.filesystem_store_metadata_file, str(bee)))
             return {}
         except IOError as ioe:
             LOG.error(_('The path for the metadata file %s could not be '
@@ -181,7 +181,7 @@ class Store(glance.store.base.Store):
         except Exception as ex:
             LOG.exception(_('An error occured processing the storage systems '
                             'meta data file: %s.  An empty dictionary will be '
-                            'returned to the client.' % (str(ex))))
+                            'returned to the client.') % str(ex))
             return {}
 
     def get(self, location):

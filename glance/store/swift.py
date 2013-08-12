@@ -317,7 +317,7 @@ class BaseStore(glance.store.base.Store):
 
     def _delete_stale_chunks(self, connection, container, chunk_list):
         for chunk in chunk_list:
-            LOG.debug(_("Deleting chunk %s" % chunk))
+            LOG.debug(_("Deleting chunk %s") % chunk)
             try:
                 connection.delete_object(container, chunk)
             except Exception:

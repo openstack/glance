@@ -321,7 +321,7 @@ def _check_meta_data(val, key=''):
     elif t != unicode:
         raise BackendException(_("The image metadata key %s has an invalid "
                                  "type of %s.  Only dict, list, and unicode "
-                                 "are supported." % (key, str(t))))
+                                 "are supported.") % (key, str(t)))
 
 
 def store_add_to_backend(image_id, data, size, store):
@@ -341,17 +341,17 @@ def store_add_to_backend(image_id, data, size, store):
     (location, size, checksum, metadata) = store.add(image_id, data, size)
     if metadata is not None:
         if type(metadata) != dict:
-            msg = _("The storage driver %s returned invalid metadata %s"
-                    "This must be a dictionary type" %
-                    (str(store), str(metadata)))
+            msg = (_("The storage driver %s returned invalid metadata %s"
+                     "This must be a dictionary type") %
+                   (str(store), str(metadata)))
             LOG.error(msg)
             raise BackendException(msg)
         try:
             _check_meta_data(metadata)
         except BackendException as e:
-            e_msg = _("A bad metadata structure was returned from the "
-                      "%s storage driver: %s.  %s." %
-                      (str(store), str(metadata), str(e)))
+            e_msg = (_("A bad metadata structure was returned from the "
+                       "%s storage driver: %s.  %s.") %
+                     (str(store), str(metadata), str(e)))
             LOG.error(e_msg)
             raise BackendException(e_msg)
     return (location, size, checksum, metadata)
