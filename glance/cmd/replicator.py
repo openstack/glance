@@ -208,7 +208,10 @@ class ImageService(object):
         for key in d:
             if key == 'properties':
                 for subkey in d[key]:
-                    h['x-image-meta-property-%s' % subkey] = d[key][subkey]
+                    if d[key][subkey] is None:
+                        h['x-image-meta-property-%s' % subkey] = ''
+                    else:
+                        h['x-image-meta-property-%s' % subkey] = d[key][subkey]
 
             else:
                 h['x-image-meta-%s' % key] = d[key]
