@@ -20,8 +20,9 @@ httplib2
 kombu>=2.4.8
 pycrypto>=2.6
 iso8601>=0.1.4
-oslo.config>=1.1.0
 
+-f http://tarballs.openstack.org/oslo.config/oslo.config-1.2.0a3.tar.gz#egg=oslo.config-1.2.0a3
+oslo.config>=1.2.0a3
 
 # For Swift storage backend.
 python-swiftclient>=1.2
