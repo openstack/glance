@@ -120,8 +120,6 @@ modindex_common_prefix = ['glance.']
 # List of tuples 'sourcefile', 'target', u'title', u'Authors name', 'manual'
 
 man_pages = [
-    ('man/glance', 'glance', u'Glance CLI',
-     [u'OpenStack'], 1),
     ('man/glanceapi', 'glance-api', u'Glance API Server',
      [u'OpenStack'], 1),
     ('man/glancecachecleaner', 'glance-cache-cleaner', u'Glance Cache Cleaner',
