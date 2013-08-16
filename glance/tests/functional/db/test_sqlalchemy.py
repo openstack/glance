@@ -56,3 +56,42 @@ class TestSqlAlchemyMembershipVisibility(base.TestMembershipVisibility,
         db_tests.load(get_db, reset_db)
         super(TestSqlAlchemyMembershipVisibility, self).setUp()
         self.addCleanup(db_tests.reset)
+
+
+class TestSqlAlchemyDBDataIntegrity(base.TestDriver):
+    """ Test class for checking the data integrity in the database.
+    Helpful in testing scenarios specific to the sqlalchemy api.
+    """
+
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestSqlAlchemyDBDataIntegrity, self).setUp()
+        self.addCleanup(db_tests.reset)
+
+    def test_paginate_redundant_sort_keys(self):
+        original_method = self.db_api._paginate_query
+
+        def fake_paginate_query(query, model, limit,
+                                sort_keys, marker, sort_dir):
+            self.assertEquals(sort_keys, ['created_at', 'id'])
+            return original_method(query, model, limit,
+                                   sort_keys, marker, sort_dir)
+
+        self.stubs.Set(self.db_api, '_paginate_query',
+                       fake_paginate_query)
+        images = self.db_api.image_get_all(self.context,
+                                           sort_key='created_at')
+
+    def test_paginate_non_redundant_sort_keys(self):
+        original_method = self.db_api._paginate_query
+
+        def fake_paginate_query(query, model, limit,
+                                sort_keys, marker, sort_dir):
+            self.assertEquals(sort_keys, ['name', 'created_at', 'id'])
+            return original_method(query, model, limit,
+                                   sort_keys, marker, sort_dir)
+
+        self.stubs.Set(self.db_api, '_paginate_query',
+                       fake_paginate_query)
+        images = self.db_api.image_get_all(self.context,
+                                           sort_key='name')
