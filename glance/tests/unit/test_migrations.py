@@ -321,7 +321,7 @@ class TestMigrations(utils.BaseTestCase):
             # upgrade -> downgrade -> upgrade
             self._migrate_up(engine, version, with_data=True)
             if snake_walk:
-                self._migrate_down(engine, version - 1)
+                self._migrate_down(engine, version - 1, with_data=True)
                 self._migrate_up(engine, version)
 
         if downgrade:
@@ -339,13 +339,22 @@ class TestMigrations(utils.BaseTestCase):
             # Ensure we made it all the way back to the first migration
             self.assertEqual(init_version + 1, db_version())
 
-    def _migrate_down(self, engine, version):
+    def _migrate_down(self, engine, version, with_data=False):
         migration_api.downgrade(engine,
                                 TestMigrations.REPOSITORY,
                                 version)
         self.assertEqual(version,
                          migration_api.db_version(engine,
                                                   TestMigrations.REPOSITORY))
+
+        # NOTE(sirp): `version` is what we're downgrading to (i.e. the 'target'
+        # version). So if we have any downgrade checks, they need to be run for
+        # the previous (higher numbered) migration.
+        if with_data:
+            post_downgrade = getattr(self, "_post_downgrade_%03d" %
+                                           (version + 1), None)
+            if post_downgrade:
+                post_downgrade(engine)
 
     def _migrate_up(self, engine, version, with_data=False):
         """migrate up to a new version of the db.
