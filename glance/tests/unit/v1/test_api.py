@@ -150,6 +150,80 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEquals(res.status_int, 400)
         self.assertTrue('Invalid disk format' in res.body, res.body)
 
+    def test_configured_disk_format_good(self):
+        self.config(disk_formats=['foo'])
+        fixture_headers = {
+            'x-image-meta-store': 'bad',
+            'x-image-meta-name': 'bogus',
+            'x-image-meta-location': 'http://localhost:0/image.tar.gz',
+            'x-image-meta-disk-format': 'foo',
+            'x-image-meta-container-format': 'bare',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 201)
+
+    def test_configured_disk_format_bad(self):
+        self.config(disk_formats=['foo'])
+        fixture_headers = {
+            'x-image-meta-store': 'bad',
+            'x-image-meta-name': 'bogus',
+            'x-image-meta-location': 'http://localhost:0/image.tar.gz',
+            'x-image-meta-disk-format': 'bar',
+            'x-image-meta-container-format': 'bare',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+        self.assertTrue('Invalid disk format' in res.body, res.body)
+
+    def test_configured_container_format_good(self):
+        self.config(container_formats=['foo'])
+        fixture_headers = {
+            'x-image-meta-store': 'bad',
+            'x-image-meta-name': 'bogus',
+            'x-image-meta-location': 'http://localhost:0/image.tar.gz',
+            'x-image-meta-disk-format': 'raw',
+            'x-image-meta-container-format': 'foo',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 201)
+
+    def test_configured_container_format_bad(self):
+        self.config(container_formats=['foo'])
+        fixture_headers = {
+            'x-image-meta-store': 'bad',
+            'x-image-meta-name': 'bogus',
+            'x-image-meta-location': 'http://localhost:0/image.tar.gz',
+            'x-image-meta-disk-format': 'raw',
+            'x-image-meta-container-format': 'bar',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+        self.assertTrue('Invalid container format' in res.body, res.body)
+
     def test_container_and_disk_amazon_format_differs(self):
         fixture_headers = {
             'x-image-meta-store': 'bad',

@@ -13,9 +13,28 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.config import cfg
+
 from glance.common import exception
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
+
+
+image_format_opts = [
+    cfg.ListOpt('container_formats',
+                default=['ami', 'ari', 'aki', 'bare', 'ovf'],
+                help=_("Supported values for the 'container_format' "
+                       "image attribute")),
+    cfg.ListOpt('disk_formats',
+                default=['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2',
+                         'vdi', 'iso'],
+                help=_("Supported values for the 'disk_format' "
+                       "image attribute")),
+]
+
+
+CONF = cfg.CONF
+CONF.register_opts(image_format_opts)
 
 
 class ImageFactory(object):
