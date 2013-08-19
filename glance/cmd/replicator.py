@@ -714,6 +714,12 @@ def lookup_command(parser, command_name):
     return command
 
 
+def logging_excepthook(type, value, tb):
+    extra = {}
+    extra['exc_info'] = (type, value, tb)
+    logging.critical(str(value), **extra)
+
+
 def main():
     usage = """
 %%prog <command> [options] [args]
@@ -770,6 +776,8 @@ def main():
         handler = logging.handlers.WatchedFileHandler(options.logfile)
     else:
         handler = logging.StreamHandler(sys.stdout)
+
+    sys.excepthook = logging_excepthook
 
     if options.token:
         options.slavetoken = options.token
