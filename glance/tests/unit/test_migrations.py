@@ -351,14 +351,14 @@ class TestMigrations(utils.BaseTestCase):
         """migrate up to a new version of the db.
 
         We allow for data insertion and post checks at every
-        migration version with special _prerun_### and
+        migration version with special _pre_upgrade_### and
         _check_### functions in the main test.
         """
         if with_data:
             data = None
-            prerun = getattr(self, "_prerun_%3.3d" % version, None)
-            if prerun:
-                data = prerun(engine)
+            pre_upgrade = getattr(self, "_pre_upgrade_%3.3d" % version, None)
+            if pre_upgrade:
+                data = pre_upgrade(engine)
 
         migration_api.upgrade(engine,
                               TestMigrations.REPOSITORY,
@@ -416,7 +416,7 @@ class TestMigrations(utils.BaseTestCase):
             self._create_unversioned_001_db(engine)
             self._walk_versions(engine, self.snake_walk, initial_version=1)
 
-    def _prerun_003(self, engine):
+    def _pre_upgrade_003(self, engine):
         now = datetime.datetime.now()
         images = get_table(engine, 'images')
         data = {'deleted': False, 'created_at': now, 'updated_at': now,
@@ -438,7 +438,7 @@ class TestMigrations(utils.BaseTestCase):
                 types.append(row['value'])
         self.assertIn(data['type'], types)
 
-    def _prerun_004(self, engine):
+    def _pre_upgrade_004(self, engine):
         """Insert checksum data sample to check if migration goes fine with
         data"""
         now = timeutils.utcnow()
@@ -458,7 +458,7 @@ class TestMigrations(utils.BaseTestCase):
         self.assertIn('checksum', images.c)
         self.assertEquals(images.c['checksum'].type.length, 32)
 
-    def _prerun_005(self, engine):
+    def _pre_upgrade_005(self, engine):
         now = timeutils.utcnow()
         images = get_table(engine, 'images')
         data = [
@@ -483,7 +483,7 @@ class TestMigrations(utils.BaseTestCase):
         for migrated in migrated_data_sizes:
             self.assertIn(migrated, sizes)
 
-    def _prerun_006(self, engine):
+    def _pre_upgrade_006(self, engine):
         now = timeutils.utcnow()
         images = get_table(engine, 'images')
         image_data = [
@@ -516,7 +516,7 @@ class TestMigrations(utils.BaseTestCase):
         for element in data:
             self.assertIn(element['key'], image_names)
 
-    def _prerun_010(self, engine):
+    def _pre_upgrade_010(self, engine):
         """Test rows in images with NULL updated_at get updated to equal
         created_at"""
 
@@ -558,7 +558,7 @@ class TestMigrations(utils.BaseTestCase):
         # No initial values should be remaining
         self.assertEqual(len(values), 0)
 
-    def _prerun_015(self, engine):
+    def _pre_upgrade_015(self, engine):
         images = get_table(engine, 'images')
         unquoted_locations = [
             'swift://acct:usr:pass@example.com/container/obj-id',
@@ -590,7 +590,7 @@ class TestMigrations(utils.BaseTestCase):
         for loc in quoted_locations:
             self.assertIn(loc, locations)
 
-    def _prerun_016(self, engine):
+    def _pre_upgrade_016(self, engine):
         images = get_table(engine, 'images')
         now = datetime.datetime.now()
         temp = dict(deleted=False,
@@ -620,7 +620,7 @@ class TestMigrations(utils.BaseTestCase):
                         "columns! image_members table columns: %s"
                         % image_members.c.keys())
 
-    def _prerun_017(self, engine):
+    def _pre_upgrade_017(self, engine):
         metadata_encryption_key = 'a' * 16
         self.config(metadata_encryption_key=metadata_encryption_key)
         images = get_table(engine, 'images')
@@ -688,7 +688,7 @@ class TestMigrations(utils.BaseTestCase):
             if not location in actual_location:
                 self.fail(_("location: %s data lost") % location)
 
-    def _prerun_019(self, engine):
+    def _pre_upgrade_019(self, engine):
         images = get_table(engine, 'images')
         now = datetime.datetime.now()
         base_values = {
@@ -722,7 +722,7 @@ class TestMigrations(utils.BaseTestCase):
         images = get_table(engine, 'images')
         self.assertFalse('location' in images.c)
 
-    def _prerun_026(self, engine):
+    def _pre_upgrade_026(self, engine):
         image_locations = get_table(engine, 'image_locations')
 
         now = datetime.datetime.now()
