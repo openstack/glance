@@ -191,7 +191,7 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual(image.status, 'active')
         return (image, image_stub)
 
-    def test_image_change_append_invalid_location(self):
+    def test_image_change_append_invalid_location_uri(self):
         self.assertEqual(len(self.store_api.data.keys()), 2)
 
         context = glance.context.RequestContext(user=USER1)
@@ -205,6 +205,31 @@ class TestStoreImage(utils.BaseTestCase):
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
         self.assertFalse(UUID2 in self.store_api.data.keys())
+
+    def test_image_change_append_invalid_location_metatdata(self):
+        UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
+        self.assertEqual(len(self.store_api.data.keys()), 2)
+
+        context = glance.context.RequestContext(user=USER1)
+        (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
+        (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
+
+        # Using only one test rule here is enough to make sure
+        # 'store.check_location_metadata()' can be triggered
+        # in Location proxy layer. Complete test rule for
+        # 'store.check_location_metadata()' testing please
+        # check below cases within 'TestStoreMetaDataChecker'.
+        location_bad = {'url': UUID3, 'metadata': "a invalid metadata"}
+
+        self.assertRaises(glance.store.BackendException,
+                          image1.locations.append, location_bad)
+
+        image1.delete()
+        image2.delete()
+
+        self.assertEqual(len(self.store_api.data.keys()), 2)
+        self.assertFalse(UUID2 in self.store_api.data.keys())
+        self.assertFalse(UUID3 in self.store_api.data.keys())
 
     def test_image_change_append_locations(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
@@ -259,6 +284,42 @@ class TestStoreImage(utils.BaseTestCase):
 
         image2.delete()
 
+    def test_image_change_extend_invalid_locations_uri(self):
+        self.assertEqual(len(self.store_api.data.keys()), 2)
+
+        context = glance.context.RequestContext(user=USER1)
+        (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
+
+        location_bad = {'url': 'unknown://location', 'metadata': {}}
+
+        self.assertRaises(exception.BadStoreUri,
+                          image1.locations.extend, [location_bad])
+
+        image1.delete()
+
+        self.assertEqual(len(self.store_api.data.keys()), 2)
+        self.assertFalse(UUID2 in self.store_api.data.keys())
+
+    def test_image_change_extend_invalid_locations_metadata(self):
+        UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
+        self.assertEqual(len(self.store_api.data.keys()), 2)
+
+        context = glance.context.RequestContext(user=USER1)
+        (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
+        (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
+
+        location_bad = {'url': UUID3, 'metadata': "a invalid metadata"}
+
+        self.assertRaises(glance.store.BackendException,
+                          image1.locations.extend, [location_bad])
+
+        image1.delete()
+        image2.delete()
+
+        self.assertEqual(len(self.store_api.data.keys()), 2)
+        self.assertFalse(UUID2 in self.store_api.data.keys())
+        self.assertFalse(UUID3 in self.store_api.data.keys())
+
     def test_image_change_extend_locations(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(len(self.store_api.data.keys()), 2)
@@ -269,14 +330,11 @@ class TestStoreImage(utils.BaseTestCase):
 
         location2 = {'url': UUID2, 'metadata': {}}
         location3 = {'url': UUID3, 'metadata': {}}
-        location_bad = {'url': 'unknown://location', 'metadata': {}}
 
         image1.locations.extend([location3])
 
         self.assertEquals(image_stub1.locations, [location2, location3])
         self.assertEquals(image1.locations, [location2, location3])
-        self.assertRaises(exception.BadStoreUri,
-                          image1.locations.extend, [location_bad])
 
         image1.delete()
 
@@ -329,6 +387,41 @@ class TestStoreImage(utils.BaseTestCase):
 
         image1.delete()
 
+    def test_image_change_insert_invalid_location_uri(self):
+        self.assertEqual(len(self.store_api.data.keys()), 2)
+
+        context = glance.context.RequestContext(user=USER1)
+        (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
+
+        location_bad = {'url': 'unknown://location', 'metadata': {}}
+        self.assertRaises(exception.BadStoreUri,
+                          image1.locations.insert, 0, location_bad)
+
+        image1.delete()
+
+        self.assertEqual(len(self.store_api.data.keys()), 2)
+        self.assertFalse(UUID2 in self.store_api.data.keys())
+
+    def test_image_change_insert_invalid_location_metadata(self):
+        UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
+        self.assertEqual(len(self.store_api.data.keys()), 2)
+
+        context = glance.context.RequestContext(user=USER1)
+        (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
+        (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
+
+        location_bad = {'url': UUID3, 'metadata': "a invalid metadata"}
+
+        self.assertRaises(glance.store.BackendException,
+                          image1.locations.insert, 0, location_bad)
+
+        image1.delete()
+        image2.delete()
+
+        self.assertEqual(len(self.store_api.data.keys()), 2)
+        self.assertFalse(UUID2 in self.store_api.data.keys())
+        self.assertFalse(UUID3 in self.store_api.data.keys())
+
     def test_image_change_insert_location(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(len(self.store_api.data.keys()), 2)
@@ -339,14 +432,11 @@ class TestStoreImage(utils.BaseTestCase):
 
         location2 = {'url': UUID2, 'metadata': {}}
         location3 = {'url': UUID3, 'metadata': {}}
-        location_bad = {'url': 'unknown://location', 'metadata': {}}
 
         image1.locations.insert(0, location3)
 
         self.assertEquals(image_stub1.locations, [location3, location2])
         self.assertEquals(image1.locations, [location3, location2])
-        self.assertRaises(exception.BadStoreUri,
-                          image1.locations.insert, 0, location_bad)
 
         image1.delete()
 
@@ -384,6 +474,47 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertFalse(UUID2 in self.store_api.data.keys())
         self.assertFalse(UUID3 in self.store_api.data.keys())
 
+    def test_image_change_adding_invalid_location_uri(self):
+        self.assertEqual(len(self.store_api.data.keys()), 2)
+
+        context = glance.context.RequestContext(user=USER1)
+        image_stub1 = ImageStub('fake_image_id', status='queued', locations=[])
+        image1 = glance.store.ImageProxy(image_stub1, context, self.store_api)
+
+        location_bad = {'url': 'unknown://location', 'metadata': {}}
+
+        self.assertRaises(exception.BadStoreUri,
+                          image1.locations.__iadd__, [location_bad])
+        self.assertEquals(image_stub1.locations, [])
+        self.assertEquals(image1.locations, [])
+
+        image1.delete()
+
+        self.assertEqual(len(self.store_api.data.keys()), 2)
+        self.assertFalse(UUID2 in self.store_api.data.keys())
+
+    def test_image_change_adding_invalid_location_metadata(self):
+        self.assertEqual(len(self.store_api.data.keys()), 2)
+
+        context = glance.context.RequestContext(user=USER1)
+        (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
+
+        image_stub2 = ImageStub('fake_image_id', status='queued', locations=[])
+        image2 = glance.store.ImageProxy(image_stub2, context, self.store_api)
+
+        location_bad = {'url': UUID2, 'metadata': "a invalid metadata"}
+
+        self.assertRaises(glance.store.BackendException,
+                          image2.locations.__iadd__, [location_bad])
+        self.assertEquals(image_stub2.locations, [])
+        self.assertEquals(image2.locations, [])
+
+        image1.delete()
+        image2.delete()
+
+        self.assertEqual(len(self.store_api.data.keys()), 2)
+        self.assertFalse(UUID2 in self.store_api.data.keys())
+
     def test_image_change_adding_locations(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(len(self.store_api.data.keys()), 2)
@@ -397,15 +528,9 @@ class TestStoreImage(utils.BaseTestCase):
 
         location2 = {'url': UUID2, 'metadata': {}}
         location3 = {'url': UUID3, 'metadata': {}}
-        location_bad = {'url': 'unknown://location', 'metadata': {}}
 
         image3.locations += [location2, location3]
 
-        self.assertEquals(image_stub3.locations, [location2, location3])
-        self.assertEquals(image3.locations, [location2, location3])
-        self.assertRaises(exception.BadStoreUri,
-                          image3.locations.__iadd__,
-                          [location2, location_bad])
         self.assertEquals(image_stub3.locations, [location2, location3])
         self.assertEquals(image3.locations, [location2, location3])
 
@@ -641,43 +766,43 @@ class TestImageFactory(utils.BaseTestCase):
 class TestStoreMetaDataChecker(utils.BaseTestCase):
 
     def test_empty(self):
-        glance.store._check_meta_data({})
+        glance.store.check_location_metadata({})
 
     def test_unicode(self):
         m = {'key': u'somevalue'}
-        glance.store._check_meta_data(m)
+        glance.store.check_location_metadata(m)
 
     def test_unicode_list(self):
         m = {'key': [u'somevalue', u'2']}
-        glance.store._check_meta_data(m)
+        glance.store.check_location_metadata(m)
 
     def test_unicode_dict(self):
         inner = {'key1': u'somevalue', 'key2': u'somevalue'}
         m = {'topkey': inner}
-        glance.store._check_meta_data(m)
+        glance.store.check_location_metadata(m)
 
     def test_unicode_dict_list(self):
         inner = {'key1': u'somevalue', 'key2': u'somevalue'}
         m = {'topkey': inner, 'list': [u'somevalue', u'2'], 'u': u'2'}
-        glance.store._check_meta_data(m)
+        glance.store.check_location_metadata(m)
 
     def test_nested_dict(self):
         inner = {'key1': u'somevalue', 'key2': u'somevalue'}
         inner = {'newkey': inner}
         inner = {'anotherkey': inner}
         m = {'topkey': inner}
-        glance.store._check_meta_data(m)
+        glance.store.check_location_metadata(m)
 
     def test_simple_bad(self):
         m = {'key1': object()}
         self.assertRaises(glance.store.BackendException,
-                          glance.store._check_meta_data,
+                          glance.store.check_location_metadata,
                           m)
 
     def test_list_bad(self):
         m = {'key1': [u'somevalue', object()]}
         self.assertRaises(glance.store.BackendException,
-                          glance.store._check_meta_data,
+                          glance.store.check_location_metadata,
                           m)
 
     def test_nested_dict_bad(self):
@@ -687,7 +812,7 @@ class TestStoreMetaDataChecker(utils.BaseTestCase):
         m = {'topkey': inner}
 
         self.assertRaises(glance.store.BackendException,
-                          glance.store._check_meta_data,
+                          glance.store.check_location_metadata,
                           m)
 
 

@@ -20,6 +20,7 @@ from glance.common import wsgi
 import glance.context
 import glance.db.simple.api as simple_db
 import glance.openstack.common.log as logging
+import glance.store
 
 
 CONF = cfg.CONF
@@ -133,10 +134,8 @@ class FakeStoreAPI(object):
         pass
 
     def delete_image_from_backend(self, context, store_api, image_id, uri):
-        if CONF.delayed_delete:
-            self.schedule_delayed_delete_from_backend(uri, image_id)
-        else:
-            self.safe_delete_from_backend(uri, context, image_id)
+        glance.store.delete_image_from_backend(context,
+                                               store_api, image_id, uri)
 
     def get_size_from_backend(self, context, location):
         return self.get_from_backend(context, location)[1]
@@ -158,6 +157,9 @@ class FakeStoreAPI(object):
         self.data[image_id] = (data, size)
         checksum = 'Z'
         return (image_id, size, checksum, self.store_metadata)
+
+    def check_location_metadata(self, val, key=''):
+        glance.store.check_location_metadata(val)
 
 
 class FakePolicyEnforcer(object):

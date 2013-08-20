@@ -165,7 +165,7 @@ class Store(glance.store.base.Store):
         try:
             with open(CONF.filesystem_store_metadata_file, 'r') as fptr:
                 metadata = json.load(fptr)
-            glance.store._check_meta_data(metadata)
+            glance.store.check_location_metadata(metadata)
             return metadata
         except glance.store.BackendException as bee:
             LOG.error(_('The JSON in the metadata file %s could not be used: '

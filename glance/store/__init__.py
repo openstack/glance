@@ -308,15 +308,15 @@ def delete_image_from_backend(context, store_api, image_id, uri):
         store_api.safe_delete_from_backend(uri, context, image_id)
 
 
-def _check_meta_data(val, key=''):
+def check_location_metadata(val, key=''):
     t = type(val)
     if t == dict:
         for key in val:
-            _check_meta_data(val[key], key=key)
+            check_location_metadata(val[key], key=key)
     elif t == list:
         ndx = 0
         for v in val:
-            _check_meta_data(v, key='%s[%d]' % (key, ndx))
+            check_location_metadata(v, key='%s[%d]' % (key, ndx))
             ndx = ndx + 1
     elif t != unicode:
         raise BackendException(_("The image metadata key %s has an invalid "
@@ -347,7 +347,7 @@ def store_add_to_backend(image_id, data, size, store):
             LOG.error(msg)
             raise BackendException(msg)
         try:
-            _check_meta_data(metadata)
+            check_location_metadata(metadata)
         except BackendException as e:
             e_msg = (_("A bad metadata structure was returned from the "
                        "%s storage driver: %s.  %s.") %
@@ -427,6 +427,11 @@ def _check_location_uri(context, store_api, uri):
         raise exception.BadStoreUri(_('Invalid location: %s') % uri)
 
 
+def _check_image_location(context, store_api, location):
+    _check_location_uri(context, store_api, location['url'])
+    store_api.check_location_metadata(location['metadata'])
+
+
 class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
     def __init__(self, factory, context, store_api):
         self.context = context
@@ -438,7 +443,7 @@ class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
 
     def new_image(self, **kwargs):
         for l in kwargs.get('locations', []):
-            _check_location_uri(self.context, self.store_api, l['url'])
+            _check_image_location(self.context, self.store_api, l)
         return super(ImageFactoryProxy, self).new_image(**kwargs)
 
 
@@ -457,8 +462,8 @@ class StoreLocations(collections.MutableSequence):
             self.value = list(value)
 
     def append(self, location):
-        _check_location_uri(self.image_proxy.context,
-                            self.image_proxy.store_api, location['url'])
+        _check_image_location(self.image_proxy.context,
+                              self.image_proxy.store_api, location)
         self.value.append(location)
 
     def extend(self, other):
@@ -467,14 +472,14 @@ class StoreLocations(collections.MutableSequence):
         else:
             locations = list(other)
             for location in locations:
-                _check_location_uri(self.image_proxy.context,
-                                    self.image_proxy.store_api,
-                                    location['url'])
+                _check_image_location(self.image_proxy.context,
+                                      self.image_proxy.store_api,
+                                      location)
             self.value.extend(locations)
 
     def insert(self, i, location):
-        _check_location_uri(self.image_proxy.context,
-                            self.image_proxy.store_api, location['url'])
+        _check_image_location(self.image_proxy.context,
+                              self.image_proxy.store_api, location)
         self.value.insert(i, location)
 
     def pop(self, i=-1):
@@ -511,8 +516,8 @@ class StoreLocations(collections.MutableSequence):
         return self.value.__getitem__(i)
 
     def __setitem__(self, i, location):
-        _check_location_uri(self.image_proxy.context,
-                            self.image_proxy.store_api, location['url'])
+        _check_image_location(self.image_proxy.context,
+                              self.image_proxy.store_api, location)
         self.value.__setitem__(i, location)
 
     def __delitem__(self, i):
@@ -548,9 +553,9 @@ class StoreLocations(collections.MutableSequence):
         else:
             locations = list(other)
             for location in locations:
-                _check_location_uri(self.image_proxy.context,
-                                    self.image_proxy.store_api,
-                                    location['url'])
+                _check_image_location(self.image_proxy.context,
+                                      self.image_proxy.store_api,
+                                      location)
             self.value += locations
         return self
 
@@ -595,8 +600,8 @@ def _locations_proxy(target, attr):
                                           '%s') % ori_value)
             # NOTE(zhiyan): Check locations are all valid.
             for location in value:
-                _check_location_uri(self.context, self.store_api,
-                                    location['url'])
+                _check_image_location(self.context, self.store_api,
+                                      location)
             return setattr(getattr(self, target), attr, list(value))
 
     def del_attr(self):
