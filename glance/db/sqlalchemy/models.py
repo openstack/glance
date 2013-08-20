@@ -214,6 +214,25 @@ class ImageMember(BASE, ModelBase):
     status = Column(String(20), nullable=False, default="pending")
 
 
+class Task(BASE, ModelBase):
+    """Represents an task in the datastore"""
+    __tablename__ = 'tasks'
+    __table_args__ = (Index('ix_tasks_type', 'type'),
+                      Index('ix_tasks_status', 'status'),
+                      Index('ix_tasks_owner', 'owner'),
+                      Index('ix_tasks_deleted', 'deleted'),
+                      Index('ix_tasks_updated_at', 'updated_at'))
+
+    id = Column(String(36), primary_key=True, default=uuidutils.generate_uuid)
+    type = Column(String(30))
+    status = Column(String(30))
+    input = Column(JSONEncodedDict())
+    result = Column(JSONEncodedDict())
+    owner = Column(String(255))
+    message = Column(Text)
+    expires_at = Column(DateTime, nullable=True)
+
+
 def register_models(engine):
     """
     Creates database tables for all models with the given engine

@@ -993,3 +993,48 @@ class TestMigrations(utils.BaseTestCase):
             md = r['meta_data']
             d = pickle.loads(md)
             self.assertEqual(type(d), dict)
+
+    def _check_030(self, engine, data):
+        table = "tasks"
+        index_type = ('ix_tasks_type', ['type'])
+        index_status = ('ix_tasks_status', ['status'])
+        index_owner = ('ix_tasks_owner', ['owner'])
+        index_deleted = ('ix_tasks_deleted', ['deleted'])
+        index_updated_at = ('ix_tasks_updated_at', ['updated_at'])
+
+        meta = sqlalchemy.MetaData()
+        meta.bind = engine
+
+        tasks_table = sqlalchemy.Table(table, meta, autoload=True)
+
+        index_data = [(idx.name, idx.columns.keys())
+                      for idx in tasks_table.indexes]
+
+        self.assertIn(index_type, index_data)
+        self.assertIn(index_status, index_data)
+        self.assertIn(index_owner, index_data)
+        self.assertIn(index_deleted, index_data)
+        self.assertIn(index_updated_at, index_data)
+
+        expected = [u'id',
+                    u'type',
+                    u'status',
+                    u'owner',
+                    u'input',
+                    u'result',
+                    u'message',
+                    u'expires_at',
+                    u'created_at',
+                    u'updated_at',
+                    u'deleted_at',
+                    u'deleted']
+
+        # NOTE(flwang): Skip the column type checking for now since Jenkins is
+        # using sqlalchemy.dialects.postgresql.base.TIMESTAMP instead of
+        # DATETIME which is using by mysql and sqlite.
+        col_data = [col.name for col in tasks_table.columns]
+        self.assertEqual(expected, col_data)
+
+    def _post_downgrade_030(self, engine):
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          get_table, engine, 'tasks')
