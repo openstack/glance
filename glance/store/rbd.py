@@ -28,6 +28,7 @@ from oslo.config import cfg
 
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
@@ -224,27 +225,62 @@ class Store(glance.store.base.Store):
                     LOG.debug(msg)
                     raise exception.NotFound(msg)
 
-    def _create_image(self, fsid, ioctx, name, size, order):
+    def _create_image(self, fsid, ioctx, image_name, size, order):
         """
         Create an rbd image. If librbd supports it,
         make it a cloneable snapshot, so that copy-on-write
         volumes can be created from it.
 
+        :param image_name Image's name
+
         :retval `glance.store.rbd.StoreLocation` object
         """
         librbd = rbd.RBD()
         if hasattr(rbd, 'RBD_FEATURE_LAYERING'):
-            librbd.create(ioctx, name, size, order, old_format=False,
+            librbd.create(ioctx, image_name, size, order, old_format=False,
                           features=rbd.RBD_FEATURE_LAYERING)
             return StoreLocation({
                 'fsid': fsid,
                 'pool': self.pool,
-                'image': name,
+                'image': image_name,
                 'snapshot': DEFAULT_SNAPNAME,
             })
         else:
-            librbd.create(ioctx, name, size, order, old_format=True)
-            return StoreLocation({'image': name})
+            librbd.create(ioctx, image_name, size, order, old_format=True)
+            return StoreLocation({'image': image_name})
+
+    def _delete_image(self, image_name, snapshot_name):
+        """
+        Find the image file to delete.
+
+        :param image_name Image's name
+        :param snapshot_name Image snapshot's name
+
+        :raises NotFound if image does not exist;
+                InUseByStore if image is in use or snapshot unprotect failed
+        """
+        with rados.Rados(conffile=self.conf_file, rados_id=self.user) as conn:
+            with conn.open_ioctx(self.pool) as ioctx:
+                if snapshot_name:
+                    with rbd.Image(ioctx, image_name) as image:
+                        try:
+                            image.unprotect_snap(snapshot_name)
+                        except rbd.ImageBusy:
+                            log_msg = _("snapshot %s@%s could not be "
+                                        "unprotected because it is in use")
+                            LOG.debug(log_msg % (image_name, snapshot_name))
+                            raise exception.InUseByStore()
+                        image.remove_snap(snapshot_name)
+                try:
+                    rbd.RBD().remove(ioctx, image_name)
+                except rbd.ImageNotFound:
+                    raise exception.NotFound(
+                        _("RBD image %s does not exist") % image_name)
+                except rbd.ImageBusy:
+                    log_msg = _("image %s could not be removed "
+                                "because it is in use")
+                    LOG.debug(log_msg % image_name)
+                    raise exception.InUseByStore()
 
     def add(self, image_id, image_file, image_size):
         """
@@ -269,57 +305,42 @@ class Store(glance.store.base.Store):
                 fsid = conn.get_fsid()
             with conn.open_ioctx(self.pool) as ioctx:
                 order = int(math.log(self.chunk_size, 2))
-                LOG.debug('creating image %s with order %d',
-                          image_name, order)
+                LOG.debug('creating image %s with order %d', image_name, order)
                 try:
-                    location = self._create_image(fsid, ioctx, image_name,
-                                                  image_size, order)
+                    loc = self._create_image(fsid, ioctx, image_name,
+                                             image_size, order)
                 except rbd.ImageExists:
                     raise exception.Duplicate(
                         _('RBD image %s already exists') % image_id)
-                with rbd.Image(ioctx, image_name) as image:
-                    offset = 0
-                    chunks = utils.chunkreadable(image_file, self.chunk_size)
-                    for chunk in chunks:
-                        offset += image.write(chunk, offset)
-                        checksum.update(chunk)
-                    if location.snapshot:
-                        image.create_snap(location.snapshot)
-                        image.protect_snap(location.snapshot)
+                try:
+                    with rbd.Image(ioctx, image_name) as image:
+                        offset = 0
+                        chunks = utils.chunkreadable(image_file,
+                                                     self.chunk_size)
+                        for chunk in chunks:
+                            offset += image.write(chunk, offset)
+                            checksum.update(chunk)
+                        if loc.snapshot:
+                            image.create_snap(loc.snapshot)
+                            image.protect_snap(loc.snapshot)
+                except:
+                    # Note(zhiyan): clean up already received data when
+                    # error occurs such as ImageSizeLimitExceeded exception.
+                    with excutils.save_and_reraise_exception():
+                        self._delete_image(loc.image, loc.snapshot)
 
-        return (location.get_uri(), image_size, checksum.hexdigest(), {})
+        return (loc.get_uri(), image_size, checksum.hexdigest(), {})
 
     def delete(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates
-        where to find the image file to delete
+        where to find the image file to delete.
 
         :location `glance.store.location.Location` object, supplied
                   from glance.store.location.get_location_from_uri()
 
-        :raises NotFound if image does not exist
+        :raises NotFound if image does not exist;
+                InUseByStore if image is in use or snapshot unprotect failed
         """
         loc = location.store_location
-
-        with rados.Rados(conffile=self.conf_file, rados_id=self.user) as conn:
-            with conn.open_ioctx(self.pool) as ioctx:
-                if loc.snapshot:
-                    with rbd.Image(ioctx, loc.image) as image:
-                        try:
-                            image.unprotect_snap(loc.snapshot)
-                        except rbd.ImageBusy:
-                            log_msg = _("snapshot %s@%s could not be "
-                                        "unprotected because it is in use")
-                            LOG.debug(log_msg % (loc.image, loc.snapshot))
-                            raise exception.InUseByStore()
-                        image.remove_snap(loc.snapshot)
-                try:
-                    rbd.RBD().remove(ioctx, loc.image)
-                except rbd.ImageNotFound:
-                    raise exception.NotFound(
-                        _('RBD image %s does not exist') % loc.image)
-                except rbd.ImageBusy:
-                    log_msg = _("image %s could not be removed"
-                                "because it is in use")
-                    LOG.debug(log_msg % loc.image)
-                    raise exception.InUseByStore()
+        self._delete_image(loc.image, loc.snapshot)

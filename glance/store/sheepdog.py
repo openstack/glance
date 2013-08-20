@@ -22,6 +22,7 @@ import hashlib
 from oslo.config import cfg
 
 from glance.common import exception
+from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import processutils
 import glance.store
@@ -271,13 +272,19 @@ class Store(glance.store.base.Store):
 
         image.create(image_size)
 
-        total = left = image_size
-        while left > 0:
-            length = min(self.chunk_size, left)
-            data = image_file.read(length)
-            image.write(data, total - left, length)
-            left -= length
-            checksum.update(data)
+        try:
+            total = left = image_size
+            while left > 0:
+                length = min(self.chunk_size, left)
+                data = image_file.read(length)
+                image.write(data, total - left, length)
+                left -= length
+                checksum.update(data)
+        except:
+            # Note(zhiyan): clean up already received data when
+            # error occurs such as ImageSizeLimitExceeded exception.
+            with excutils.save_and_reraise_exception():
+                image.delete()
 
         return (location.get_uri(), image_size, checksum.hexdigest(), {})
 

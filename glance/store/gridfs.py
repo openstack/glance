@@ -22,6 +22,7 @@ from oslo.config import cfg
 import urlparse
 
 from glance.common import exception
+from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
@@ -185,8 +186,14 @@ class Store(glance.store.base.Store):
         LOG.debug(_("Adding a new image to GridFS with id %s and size %s") %
                  (image_id, image_size))
 
-        self.fs.put(image_file, _id=image_id)
-        image = self._get_file(loc)
+        try:
+            self.fs.put(image_file, _id=image_id)
+            image = self._get_file(loc)
+        except:
+            # Note(zhiyan): clean up already received data when
+            # error occurs such as ImageSizeLimitExceeded exception.
+            with excutils.save_and_reraise_exception():
+                self.fs.delete(image_id)
 
         LOG.debug(_("Uploaded image %s, md5 %s, length %s to GridFS") %
                  (image._id, image.md5, image.length))
