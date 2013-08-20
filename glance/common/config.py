@@ -174,7 +174,7 @@ def _get_paste_config_path():
         # to the last config file
         path = CONF.config_file[-1].replace(conf_suffix, paste_suffix)
     else:
-        path = CONF.prog + '-paste.ini'
+        path = CONF.prog + paste_suffix
     return CONF.find_file(os.path.basename(path))
 
 
