@@ -783,3 +783,27 @@ class TestMigrations(utils.BaseTestCase):
                       for idx in new_table.indexes]
 
         self.assertIn((index, columns), index_data)
+
+    def _check_028(self, engine, data):
+        owner_index = "owner_image_idx"
+        columns = ["owner"]
+
+        images_table = get_table(engine, 'images')
+
+        index_data = [(idx.name, idx.columns.keys())
+                      for idx in images_table.indexes
+                      if idx.name == owner_index]
+
+        self.assertIn((owner_index, columns), index_data)
+
+    def _post_downgrade_028(self, engine):
+        owner_index = "owner_image_idx"
+        columns = ["owner"]
+
+        images_table = get_table(engine, 'images')
+
+        index_data = [(idx.name, idx.columns.keys())
+                      for idx in images_table.indexes
+                      if idx.name == owner_index]
+
+        self.assertNotIn((owner_index, columns), index_data)
