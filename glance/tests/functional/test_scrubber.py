@@ -242,7 +242,7 @@ class TestScrubber(functional.FunctionalTest):
         # it and checking the image_id is intact
         file_path = os.path.join(self.api_server.scrubber_datadir,
                                  str(image_id))
-        marker_uri = ''
+        marker_uri = None
         with open(file_path, 'r') as f:
             marker_uri = f.readline().strip()
         self.assertTrue(marker_uri is not None)
