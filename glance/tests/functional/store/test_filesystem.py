@@ -27,7 +27,6 @@ import testtools
 
 import glance.store.filesystem
 import glance.tests.functional.store as store_tests
-import glance.tests.utils
 
 
 class TestFilesystemStore(store_tests.BaseTestCase, testtools.TestCase):

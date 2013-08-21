@@ -20,13 +20,11 @@ Functional tests for the File store interface
 
 import BaseHTTPServer
 import os
-import os.path
 import signal
 import testtools
 
 import glance.store.http
 import glance.tests.functional.store as store_tests
-import glance.tests.utils
 
 
 def get_handler_class(fixture):
