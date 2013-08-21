@@ -692,7 +692,6 @@ class TestSSL(functional.FunctionalTest):
         with tempfile.NamedTemporaryFile() as test_data_file:
             test_data_file.write("XXX")
             test_data_file.flush()
-        path = "https://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         headers = {'X-Image-Meta-Name': 'Image1',
                    'X-Image-Meta-Container-Format': 'ovf',
                    'X-Image-Meta-Disk-Format': 'vdi'}

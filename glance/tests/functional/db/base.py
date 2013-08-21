@@ -911,7 +911,6 @@ class DriverTests(object):
         memberships = self.db_api.image_member_find(self.context)
         self.assertEqual([], memberships)
 
-        create_time = timeutils.utcnow()
         TENANT1 = uuidutils.generate_uuid()
         # NOTE(flaper87): Update auth token, otherwise
         # non visible members won't be returned.

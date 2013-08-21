@@ -56,8 +56,6 @@ class TestRootApi(functional.FunctionalTest):
             },
         ]}
         versions_json = json.dumps(versions)
-        images = {'images': []}
-        images_json = json.dumps(images)
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
@@ -87,8 +85,6 @@ class TestRootApi(functional.FunctionalTest):
             },
         ]}
         versions_json = json.dumps(versions)
-        images = {'images': []}
-        images_json = json.dumps(images)
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
@@ -118,8 +114,6 @@ class TestRootApi(functional.FunctionalTest):
             },
         ]}
         versions_json = json.dumps(versions)
-        images = {'images': []}
-        images_json = json.dumps(images)
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)

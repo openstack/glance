@@ -54,9 +54,6 @@ class BaseCacheMiddlewareTest(object):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
 
-        api_port = self.api_port
-        registry_port = self.registry_port
-
         # Add an image and verify a 200 OK is returned
         image_data = "*" * FIVE_KB
         headers = minimal_headers('Image1')
@@ -187,9 +184,6 @@ class BaseCacheMiddlewareTest(object):
         self.start_servers(**self.__dict__.copy())
 
         setup_http(self)
-
-        api_port = self.api_port
-        registry_port = self.registry_port
 
         # Add a remote image and verify a 201 Created is returned
         remote_uri = get_http_uri(self, '2')
@@ -344,9 +338,6 @@ class BaseCacheManageMiddlewareTest(object):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
 
-        api_port = self.api_port
-        registry_port = self.registry_port
-
         self.verify_no_images()
 
         image_id = self.add_image("Image1")
@@ -376,8 +367,8 @@ class BaseCacheManageMiddlewareTest(object):
             for time_key in ('last_modified', 'last_accessed'):
                 time_val = cached_image[time_key]
                 try:
-                    time_val_f = float(time_val)
-                except ValueError as e:
+                    float(time_val)
+                except ValueError:
                     self.fail('%s time %s for cached image %s not a valid '
                               'float' % (time_key, time_val,
                                          cached_image['image_id']))
@@ -417,8 +408,6 @@ class BaseCacheManageMiddlewareTest(object):
         """
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
-
-        api_port = self.api_port
 
         self.verify_no_images()
 
@@ -503,9 +492,6 @@ class BaseCacheManageMiddlewareTest(object):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
 
-        api_port = self.api_port
-        registry_port = self.registry_port
-
         self.verify_no_images()
 
         ids = {}
@@ -549,9 +535,6 @@ class BaseCacheManageMiddlewareTest(object):
         """
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
-
-        api_port = self.api_port
-        registry_port = self.registry_port
 
         cache_config_filepath = os.path.join(self.test_dir, 'etc',
                                              'glance-cache.conf')
