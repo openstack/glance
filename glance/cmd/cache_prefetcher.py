@@ -34,14 +34,10 @@ possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
 if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
-from oslo.config import cfg
-
 from glance.common import config
 from glance.image_cache import prefetcher
 from glance.openstack.common import log
 import glance.store
-
-CONF = cfg.CONF
 
 
 def main():
