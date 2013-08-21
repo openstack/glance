@@ -17,10 +17,11 @@
 Disk and Container Formats
 ==========================
 
-When adding an image to Glance, you are may specify what the virtual
-machine image's *disk format* and *container format* are.
-
-This document explains exactly what these formats are.
+When adding an image to Glance, you must specify what the virtual
+machine image's *disk format* and *container format* are. Disk and container
+formats are configurable on a per-deployment basis. This document intends to
+establish a global convention for what specific values of *disk_format* and
+*container_format* mean.
 
 Disk Format
 -----------

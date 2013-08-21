@@ -53,13 +53,13 @@ from glance.store import (get_from_backend,
                           get_store_from_location,
                           get_store_from_scheme)
 
-CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
 SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
-CONTAINER_FORMATS = ['ami', 'ari', 'aki', 'bare', 'ovf']
-DISK_FORMATS = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2', 'vdi',
-                'iso']
+
+CONF = cfg.CONF
+CONF.import_opt('disk_formats', 'glance.domain')
+CONF.import_opt('container_formats', 'glance.domain')
 
 
 def validate_image_meta(req, values):
@@ -69,12 +69,12 @@ def validate_image_meta(req, values):
     container_format = values.get('container_format')
 
     if 'disk_format' in values:
-        if disk_format not in DISK_FORMATS:
+        if disk_format not in CONF.disk_formats:
             msg = "Invalid disk format '%s' for image." % disk_format
             raise HTTPBadRequest(explanation=msg, request=req)
 
     if 'container_format' in values:
-        if container_format not in CONTAINER_FORMATS:
+        if container_format not in CONF.container_formats:
             msg = "Invalid container format '%s' for image." % container_format
             raise HTTPBadRequest(explanation=msg, request=req)
 

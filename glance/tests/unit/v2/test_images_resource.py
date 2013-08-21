@@ -2245,3 +2245,32 @@ class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
         self.config(show_image_direct_url=False)
         image = self._do_show(self.active_image)
         self.assertFalse('direct_url' in image)
+
+
+class TestImageSchemaFormatConfiguration(test_utils.BaseTestCase):
+    def test_default_disk_formats(self):
+        schema = glance.api.v2.images.get_schema()
+        expected = ['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2',
+                    'vdi', 'iso']
+        actual = schema.properties['disk_format']['enum']
+        self.assertEqual(expected, actual)
+
+    def test_custom_disk_formats(self):
+        self.config(disk_formats=['gabe'])
+        schema = glance.api.v2.images.get_schema()
+        expected = ['gabe']
+        actual = schema.properties['disk_format']['enum']
+        self.assertEqual(expected, actual)
+
+    def test_default_container_formats(self):
+        schema = glance.api.v2.images.get_schema()
+        expected = ['ami', 'ari', 'aki', 'bare', 'ovf']
+        actual = schema.properties['container_format']['enum']
+        self.assertEqual(expected, actual)
+
+    def test_custom_container_formats(self):
+        self.config(container_formats=['mark'])
+        schema = glance.api.v2.images.get_schema()
+        expected = ['mark']
+        actual = schema.properties['container_format']['enum']
+        self.assertEqual(expected, actual)
