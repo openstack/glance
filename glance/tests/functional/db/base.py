@@ -639,35 +639,98 @@ class DriverTests(object):
         self.assertEquals(2, len(images))
 
     def test_image_destroy(self):
-        fixture = {'name': 'ping', 'value': 'pong', 'image_id': UUID3}
+        location_data = [{'url': 'a', 'metadata': {'key': 'value'}},
+                         {'url': 'b', 'metadata': {}}]
+        fixture = {'status': 'queued', 'locations': location_data}
+        image = self.db_api.image_create(self.context, fixture)
+        IMG_ID = image['id']
+
+        fixture = {'name': 'ping', 'value': 'pong', 'image_id': IMG_ID}
         prop = self.db_api.image_property_create(self.context, fixture)
         TENANT2 = uuidutils.generate_uuid()
-        fixture = {'image_id': UUID3, 'member': TENANT2, 'can_share': False}
+        fixture = {'image_id': IMG_ID, 'member': TENANT2, 'can_share': False}
         member = self.db_api.image_member_create(self.context, fixture)
-        self.db_api.image_tag_create(self.context, UUID3, 'snarf')
+        self.db_api.image_tag_create(self.context, IMG_ID, 'snarf')
 
-        self.assertEquals(('ping', 'pong', UUID3, False),
+        self.assertEqual(location_data, image['locations'])
+        self.assertEquals(('ping', 'pong', IMG_ID, False),
                           (prop['name'], prop['value'],
                            prop['image_id'], prop['deleted']))
-        self.assertEquals((TENANT2, UUID3, False),
+        self.assertEquals((TENANT2, IMG_ID, False),
                           (member['member'], member['image_id'],
                            member['can_share']))
         self.assertEqual(['snarf'],
-                         self.db_api.image_tag_get_all(self.context, UUID3))
+                         self.db_api.image_tag_get_all(self.context, IMG_ID))
 
-        image = self.db_api.image_destroy(self.adm_context, UUID3)
+        image = self.db_api.image_destroy(self.adm_context, IMG_ID)
         self.assertTrue(image['deleted'])
         self.assertTrue(image['deleted_at'])
         self.assertRaises(exception.NotFound, self.db_api.image_get,
-                          self.context, UUID3)
+                          self.context, IMG_ID)
 
+        self.assertEquals([], image['locations'])
         prop = image['properties'][0]
-        self.assertEquals(('ping', UUID3, True),
+        self.assertEquals(('ping', IMG_ID, True),
                           (prop['name'], prop['image_id'], prop['deleted']))
-        members = self.db_api.image_member_find(self.context, UUID3)
+        self.context.auth_tok = 'user:%s:user' % TENANT2
+        members = self.db_api.image_member_find(self.context, IMG_ID)
         self.assertEquals([], members)
-        tags = self.db_api.image_tag_get_all(self.context, UUID3)
+        tags = self.db_api.image_tag_get_all(self.context, IMG_ID)
         self.assertEquals([], tags)
+
+    def test_image_destroy_with_delete_all(self):
+        """ Check the image child element's _image_delete_all methods
+
+        checks if all the image_delete_all methods deletes only the child
+        elements of the image to be deleted.
+        """
+        TENANT2 = uuidutils.generate_uuid()
+        location_data = [{'url': 'a', 'metadata': {'key': 'value'}},
+                         {'url': 'b', 'metadata': {}}]
+
+        def _create_image_with_child_entries():
+            fixture = {'status': 'queued', 'locations': location_data}
+
+            image_id = self.db_api.image_create(self.context, fixture)['id']
+
+            fixture = {'name': 'ping', 'value': 'pong', 'image_id': image_id}
+            self.db_api.image_property_create(self.context, fixture)
+            fixture = {'image_id': image_id, 'member': TENANT2,
+                       'can_share': False}
+            self.db_api.image_member_create(self.context, fixture)
+            self.db_api.image_tag_create(self.context, image_id, 'snarf')
+            return image_id
+
+        ACTIVE_IMG_ID = _create_image_with_child_entries()
+        DEL_IMG_ID = _create_image_with_child_entries()
+
+        deleted_image = self.db_api.image_destroy(self.adm_context, DEL_IMG_ID)
+        self.assertTrue(deleted_image['deleted'])
+        self.assertTrue(deleted_image['deleted_at'])
+        self.assertRaises(exception.NotFound, self.db_api.image_get,
+                          self.context, DEL_IMG_ID)
+
+        active_image = self.db_api.image_get(self.context, ACTIVE_IMG_ID)
+        self.assertFalse(active_image['deleted'])
+        self.assertFalse(active_image['deleted_at'])
+
+        self.assertEqual(location_data, active_image['locations'])
+        self.assertEquals(1, len(active_image['properties']))
+        prop = active_image['properties'][0]
+        self.assertEquals(('ping', 'pong', ACTIVE_IMG_ID),
+                          (prop['name'], prop['value'],
+                           prop['image_id']))
+        self.assertEquals((False, None),
+                          (prop['deleted'], prop['deleted_at']))
+        self.context.auth_tok = 'user:%s:user' % TENANT2
+        members = self.db_api.image_member_find(self.context, ACTIVE_IMG_ID)
+        self.assertEquals(1, len(members))
+        member = members[0]
+        self.assertEquals((TENANT2, ACTIVE_IMG_ID, False),
+                          (member['member'], member['image_id'],
+                           member['can_share']))
+        tags = self.db_api.image_tag_get_all(self.context, ACTIVE_IMG_ID)
+        self.assertEquals(['snarf'], tags)
 
     def test_image_get_multiple_members(self):
         TENANT1 = uuidutils.generate_uuid()
