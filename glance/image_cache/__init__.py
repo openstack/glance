@@ -45,8 +45,6 @@ image_cache_opts = [
 CONF = cfg.CONF
 CONF.register_opts(image_cache_opts)
 
-DEFAULT_MAX_CACHE_SIZE = 10 * 1024 * 1024 * 1024  # 10 GB
-
 
 class ImageCache(object):
 
