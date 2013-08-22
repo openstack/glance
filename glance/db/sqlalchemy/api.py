@@ -662,8 +662,11 @@ def image_get_all(context, filters=None, marker=None, limit=None,
         marker_image = _image_get(context, marker,
                                   force_show_deleted=showing_deleted)
 
+    sort_keys = ['created_at', 'id']
+    sort_keys.insert(0, sort_key) if sort_key not in sort_keys else sort_keys
+
     query = _paginate_query(query, models.Image, limit,
-                            [sort_key, 'created_at', 'id'],
+                            sort_keys,
                             marker=marker_image,
                             sort_dir=sort_dir)
 
