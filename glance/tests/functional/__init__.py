@@ -718,7 +718,7 @@ class FunctionalTest(test_utils.BaseTestCase):
                             to exit in a timely fashion
         """
         launch_msg = None
-        for i in range(0, max_retries):
+        for i in range(max_retries):
             exitcode, out, err = server.start(expect_exit=not expect_launch,
                                               **kwargs)
             name = server.server_name

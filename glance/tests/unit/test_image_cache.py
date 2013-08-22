@@ -160,7 +160,7 @@ class ImageCacheTestCase(object):
         # prune it. We should see only 5 images left after
         # pruning, and the images that are least recently accessed
         # should be the ones pruned...
-        for x in xrange(0, 10):
+        for x in xrange(10):
             FIXTURE_FILE = StringIO.StringIO(FIXTURE_DATA)
             self.assertTrue(self.cache.cache_image_file(x,
                                                         FIXTURE_FILE))
@@ -168,7 +168,7 @@ class ImageCacheTestCase(object):
         self.assertEqual(10 * 1024, self.cache.get_cache_size())
 
         # OK, hit the images that are now cached...
-        for x in xrange(0, 10):
+        for x in xrange(10):
             buff = StringIO.StringIO()
             with self.cache.open_for_read(x) as cache_file:
                 for chunk in cache_file:
@@ -245,7 +245,7 @@ class ImageCacheTestCase(object):
 
         self.cache.delete_cached_image(1)
 
-        for x in xrange(0, 3):
+        for x in xrange(3):
             self.assertTrue(self.cache.queue_image(x))
 
         self.assertEqual(self.cache.get_queued_images(),

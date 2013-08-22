@@ -134,7 +134,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
 
         # Add a few images and cache the second one of them
         # by GETing the image...
-        for x in xrange(0, 4):
+        for x in xrange(4):
             ids[x] = self.add_image("Image%s" % x)
 
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", api_port,
@@ -181,7 +181,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
 
         # Add a few images and cache the second one of them
         # by GETing the image...
-        for x in xrange(0, 4):
+        for x in xrange(4):
             ids[x] = self.add_image("Image%s" % x)
 
         # Queue second image and then cache it
@@ -279,7 +279,7 @@ log_file = %(log_file)s
         self.assertTrue('No queued images' in out.strip())
 
         # Queue all images
-        for x in xrange(0, 4):
+        for x in xrange(4):
             cmd = ("%s --port=%d --force "
                    "queue-image %s") % (exe_cmd, api_port, ids[x])
 

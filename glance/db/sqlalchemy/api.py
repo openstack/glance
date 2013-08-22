@@ -497,9 +497,9 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
 
         # Build up an array of sort criteria as in the docstring
         criteria_list = []
-        for i in xrange(0, len(sort_keys)):
+        for i in xrange(len(sort_keys)):
             crit_attrs = []
-            for j in xrange(0, i):
+            for j in xrange(i):
                 model_attr = getattr(model, sort_keys[j])
                 attr = sa_sql.expression.case([(model_attr != None,
                                               model_attr), ],

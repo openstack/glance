@@ -63,7 +63,7 @@ class TestMultiprocessing(functional.FunctionalTest):
         cmd = "kill -INT %s" % ' '.join(children)
         execute(cmd, raise_error=True)
 
-        for _ in range(0, 9):
+        for _ in range(9):
             # Yeah. This totally isn't a race condition. Randomly fails
             # set at 0.05. Works most of the time at 0.10
             time.sleep(0.10)
