@@ -216,3 +216,8 @@ def image_tag_delete(client, image_id, value, session=None):
 def image_tag_get_all(client, image_id, session=None):
     """Get a list of tags for a specific image."""
     return client.image_tag_get_all(image_id=image_id)
+
+
+@_get_client
+def user_get_storage_usage(client, owner_id, image_id=None, session=None):
+    return client.user_get_storage_usage(owner_id=owner_id, image_id=image_id)

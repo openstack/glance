@@ -1092,6 +1092,79 @@ class DriverTests(object):
         self.assertEqual(0, len(self.db_api.image_member_find(self.context)))
 
 
+class DriverQuotaTests(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(DriverQuotaTests, self).setUp()
+        self.owner_id1 = uuidutils.generate_uuid()
+        self.context1 = context.RequestContext(
+            is_admin=False, auth_tok='user:user:user', user=self.owner_id1)
+        self.db_api = db_tests.get_db(self.config)
+        db_tests.reset_db(self.db_api)
+        self.addCleanup(timeutils.clear_time_override)
+        dt1 = timeutils.utcnow()
+        dt2 = dt1 + datetime.timedelta(microseconds=5)
+        fixtures = [
+            {
+                'id': UUID1,
+                'created_at': dt1,
+                'updated_at': dt1,
+                'size': 13,
+                'owner': self.owner_id1,
+            },
+            {
+                'id': UUID2,
+                'created_at': dt1,
+                'updated_at': dt2,
+                'size': 17,
+                'owner': self.owner_id1,
+            },
+            {
+                'id': UUID3,
+                'created_at': dt2,
+                'updated_at': dt2,
+                'size': 7,
+                'owner': self.owner_id1,
+            },
+        ]
+        self.owner1_fixtures = [
+            build_image_fixture(**fixture) for fixture in fixtures]
+
+        for fixture in self.owner1_fixtures:
+            self.db_api.image_create(self.context1, fixture)
+
+    def test_storage_quota(self):
+        total = reduce(lambda x, y: x + y,
+                       [f['size'] for f in self.owner1_fixtures])
+        x = self.db_api.user_get_storage_usage(self.context1, self.owner_id1)
+        self.assertEqual(total, x)
+
+    def test_storage_quota_without_image_id(self):
+        total = reduce(lambda x, y: x + y,
+                       [f['size'] for f in self.owner1_fixtures])
+        total = total - self.owner1_fixtures[0]['size']
+        x = self.db_api.user_get_storage_usage(
+            self.context1, self.owner_id1,
+            image_id=self.owner1_fixtures[0]['id'])
+        self.assertEqual(total, x)
+
+    def test_storage_quota_multiple_locations(self):
+        dt1 = timeutils.utcnow()
+        sz = 53
+        new_fixture_dict = {'id': 'SOMEID', 'created_at': dt1,
+                            'updated_at': dt1, 'size': sz,
+                            'owner': self.owner_id1}
+        new_fixture = build_image_fixture(**new_fixture_dict)
+        new_fixture['locations'].append({'url': 'file:///some/path/file',
+                                         'metadata': {}})
+        self.db_api.image_create(self.context1, new_fixture)
+
+        total = reduce(lambda x, y: x + y,
+                       [f['size'] for f in self.owner1_fixtures]) + (sz * 2)
+        x = self.db_api.user_get_storage_usage(self.context1, self.owner_id1)
+        self.assertEqual(total, x)
+
+
 class TestVisibility(test_utils.BaseTestCase):
     def setUp(self):
         super(TestVisibility, self).setUp()

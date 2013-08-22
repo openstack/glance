@@ -416,6 +416,74 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 400)
 
+    def test_add_image_size_header_exceed_quota(self):
+        quota = 500
+        self.config(user_storage_quota=quota)
+        fixture_headers = {'x-image-meta-size': quota + 1,
+                           'x-image-meta-name': 'fake image #3',
+                           'x-image-meta-container_format': 'bare',
+                           'x-image-meta-disk_format': 'qcow2',
+                           'content-type': 'application/octet-stream',
+                           }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        req.body = 'X' * (quota + 1)
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 413)
+
+    def test_add_image_size_data_exceed_quota(self):
+        quota = 500
+        self.config(user_storage_quota=quota)
+        fixture_headers = {
+            'x-image-meta-name': 'fake image #3',
+            'x-image-meta-container_format': 'bare',
+            'x-image-meta-disk_format': 'qcow2',
+            'content-type': 'application/octet-stream',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+
+        req.body = 'X' * (quota + 1)
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 413)
+
+    def test_add_image_size_data_exceed_quota_readd(self):
+        quota = 500
+        self.config(user_storage_quota=quota)
+        fixture_headers = {
+            'x-image-meta-name': 'fake image #3',
+            'x-image-meta-container_format': 'bare',
+            'x-image-meta-disk_format': 'qcow2',
+            'content-type': 'application/octet-stream',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        req.body = 'X' * (quota + 1)
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 413)
+
+        used_size = sum([f['size'] for f in self.FIXTURES])
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        req.body = 'X' * (quota - used_size)
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 201)
+
     def _add_check_no_url_info(self):
 
         fixture_headers = {'x-image-meta-disk-format': 'ami',

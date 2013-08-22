@@ -688,6 +688,17 @@ def _drop_protected_attrs(model_class, values):
             del values[attr]
 
 
+def _image_get_disk_usage_by_owner(owner, session, image_id=None):
+    query = session.query(models.Image)
+    query = query.filter(models.Image.owner == owner)
+    if image_id is not None:
+        query = query.filter(models.Image.id != image_id)
+    query = query.filter(models.Image.size > 0)
+    images = query.all()
+    total = sum([i.size * len(i.locations) for i in images])
+    return total
+
+
 def _validate_image(values):
     """
     Validates the incoming data and raises a Invalid exception
@@ -695,7 +706,6 @@ def _validate_image(values):
 
     :param values: Mapping of image metadata to check
     """
-    status = values.get('status')
 
     status = values.get('status', None)
     if not status:
@@ -1093,3 +1103,10 @@ def image_tag_get_all(context, image_id, session=None):
                   .order_by(sqlalchemy.asc(models.ImageTag.created_at))\
                   .all()
     return [tag['value'] for tag in tags]
+
+
+def user_get_storage_usage(context, owner_id, image_id=None, session=None):
+    session = session or _get_session()
+    total_size = _image_get_disk_usage_by_owner(
+        owner_id, session, image_id=image_id)
+    return total_size

@@ -65,6 +65,10 @@ common_opts = [
     cfg.IntOpt('image_size_cap', default=1099511627776,
                help=_("Maximum size of image a user can upload in bytes. "
                       "Defaults to 1099511627776 bytes (1 TB).")),
+    cfg.IntOpt('user_storage_quota', default=0,
+               help=_("Set a system wide quota for every user.  This value is "
+                      "the total number of bytes that a user can use across "
+                      "all storage systems.  A value of 0 means unlimited.")),
     cfg.BoolOpt('enable_v1_api', default=True,
                 help=_("Deploy the v1 OpenStack Images API. ")),
     cfg.BoolOpt('enable_v2_api', default=True,

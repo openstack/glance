@@ -21,6 +21,7 @@ import webob.exc
 from glance.common import exception
 from glance.openstack.common import excutils
 from glance.common import utils
+import glance.db
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 import glance.store
@@ -79,7 +80,16 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
     Upload image data to the store and cleans up on error.
     """
     image_id = image_meta['id']
+
+    db_api = glance.db.get_api()
+    image_size = image_meta.get('size', None)
+
     try:
+        remaining = glance.api.common.check_quota(
+            req.context, image_size, db_api, image_id=image_id)
+        if remaining is not None:
+            image_data = utils.LimitingReader(image_data, remaining)
+
         (location,
          size,
          checksum,
@@ -88,6 +98,18 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
              utils.CooperativeReader(image_data),
              image_meta['size'],
              store)
+
+        try:
+            # recheck the quota in case there were simultaneous uploads that
+            # did not provide the size
+            glance.api.common.check_quota(
+                req.context, size, db_api, image_id=image_id)
+        except exception.StorageQuotaFull:
+            LOG.info(_('Cleaning up %s after exceeding the quota %s')
+                     % image_id)
+            glance.store.safe_delete_from_backend(
+                location, req.context, image_meta['id'])
+            raise
 
         def _kill_mismatched(image_meta, attr, actual):
             supplied = image_meta.get(attr)
@@ -175,6 +197,16 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
     except exception.ImageSizeLimitExceeded as e:
         msg = (_("Denying attempt to upload image larger than %d bytes.")
                % CONF.image_size_cap)
+        LOG.info(msg)
+        safe_kill(req, image_id)
+        notifier.error('image.upload', msg)
+        raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
+                                                  request=req,
+                                                  content_type='text/plain')
+
+    except exception.StorageQuotaFull as e:
+        msg = (_("Denying attempt to upload image because it exceeds the ."
+                 "quota: %s") % e)
         LOG.info(msg)
         safe_kill(req, image_id)
         notifier.error('image.upload', msg)

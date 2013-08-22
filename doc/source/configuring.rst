@@ -331,6 +331,19 @@ Maximum image size, in bytes, which can be uploaded through the Glance API serve
 **IMPORTANT NOTE**: this value should only be increased after careful consideration
 and must be set to a value under 8 EB (9223372036854775808).
 
+Configuring Glance User Storage Quota
+-------------------------------------
+
+The following configuration option is specified in the
+``glance-api.conf`` config file in the section ``[DEFAULT]``.
+
+* ``user_storage_quota``
+
+Optional. Default: 0 (Unlimited).
+
+This value specifies the maximum amount of bytes that each user can use
+across all storage systems.
+
 Configuring the Filesystem Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

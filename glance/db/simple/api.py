@@ -648,3 +648,12 @@ def is_image_visible(context, image, status=None):
 
     # Private image
     return False
+
+
+def user_get_storage_usage(context, owner_id, image_id=None, session=None):
+    images = image_get_all(context, filters={'owner': owner_id})
+    total = 0
+    for image in images:
+        if image['id'] != image_id:
+            total = total + (image['size'] * len(image['locations']))
+    return total

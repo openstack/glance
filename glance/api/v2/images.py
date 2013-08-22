@@ -122,6 +122,12 @@ class ImagesController(object):
             raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
+        except exception.StorageQuotaFull as e:
+            msg = (_("Denying attempt to upload image because it exceeds the ."
+                     "quota: %s") % e)
+            LOG.info(msg)
+            raise webob.exc.HTTPRequestEntityTooLarge(
+                explanation=msg, request=req, content_type='text/plain')
 
         return image
 
