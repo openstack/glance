@@ -50,6 +50,7 @@ def get_images_table(meta):
                           default=False,
                           index=True),
                    Column('checksum', String(32)),
+                   Column('owner', String(255)),
                    Column('min_disk', Integer(), default=0),
                    Column('min_ram', Integer(), default=0),
                    mysql_engine='InnoDB',
