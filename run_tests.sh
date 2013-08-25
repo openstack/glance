@@ -68,12 +68,8 @@ function run_tests {
 
 function run_flake8 {
   echo "Running flake8 ..."
-  FLAKE8_EXCLUDE=".venv,.git,.tox,dist,doc,etc,*glance/locale*,*openstack/common*,*lib/python*,*egg,build"
-  FLAKE8_OPTIONS="--exclude=$FLAKE8_EXCLUDE"
-  FLAKE8_IGNORE="--ignore=E125,E126,E711,E712,F,H"
-  FLAKE8_INCLUDE="."
 
-  ${wrapper} flake8 $FLAKE8_OPTIONS $FLAKE8_INCLUDE $FLAKE8_IGNORE
+  ${wrapper} flake8
 }
 
 
