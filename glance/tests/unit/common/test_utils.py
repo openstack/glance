@@ -120,9 +120,21 @@ class TestUtils(test_utils.BaseTestCase):
 
     def test_get_meta_from_headers(self):
         resp = webob.Response()
-        resp.headers = {"x-image-meta-*": 'test'}
+        resp.headers = {"x-image-meta-name": 'test'}
         result = utils.get_image_meta_from_headers(resp)
-        self.assertEqual({'*': 'test', 'properties': {}}, result)
+        self.assertEqual({'name': 'test', 'properties': {}}, result)
+
+    def test_get_meta_from_headers_bad_headers(self):
+        resp = webob.Response()
+        resp.headers = {"x-image-meta-bad": 'test'}
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          utils.get_image_meta_from_headers, resp)
+        resp.headers = {"x-image-meta-": 'test'}
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          utils.get_image_meta_from_headers, resp)
+        resp.headers = {"x-image-meta-*": 'test'}
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          utils.get_image_meta_from_headers, resp)
 
     def test_add_features_to_http_headers(self):
         features_test1 = {'x-image-meta-size': 'test'}
