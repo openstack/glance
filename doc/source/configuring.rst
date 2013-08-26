@@ -669,7 +669,7 @@ To set up a user named ``glance`` with minimal permissions, using a pool called
   ceph auth add client.glance -i /etc/glance/rbd.keyring
 
 Configuring the Sheepdog Storage Backend
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * ``sheepdog_store_address=ADDR``
 
