@@ -20,3 +20,6 @@ SUPPORTED_FILTERS = ['name', 'status', 'container_format', 'disk_format',
                      'is_public', 'changes-since', 'protected']
 
 SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
+
+# Metadata which only an admin can change once the image is active
+ACTIVE_IMMUTABLE = ('size', 'checksum')

@@ -81,7 +81,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
              'updated_at': timeutils.utcnow(),
              'deleted_at': None,
              'deleted': False,
-             'checksum': None,
+             'checksum': 'abc123',
              'size': 19,
              'locations': [{'url': "file:///%s/%s" % (self.test_dir, UUID2),
                             'metadata': {}}],
@@ -1741,6 +1741,72 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 401)
+
+    def test_active_image_immutable_props_for_user(self):
+        """
+        Tests user cannot update immutable props of active image
+        """
+        test_router_api = router.API(self.mapper)
+        self.api = test_utils.FakeAuthMiddleware(
+            test_router_api, is_admin=False)
+        fixture_header_list = [{'x-image-meta-checksum': '1234'},
+                               {'x-image-meta-size': '12345'}]
+        for fixture_header in fixture_header_list:
+            req = webob.Request.blank('/images/%s' % UUID2)
+            req.method = 'PUT'
+            for k, v in fixture_header.iteritems():
+                req = webob.Request.blank('/images/%s' % UUID2)
+                req.method = 'HEAD'
+                res = req.get_response(self.api)
+                self.assertEquals(res.status_int, 200)
+                orig_value = res.headers[k]
+
+                req = webob.Request.blank('/images/%s' % UUID2)
+                req.headers[k] = v
+                req.method = 'PUT'
+                res = req.get_response(self.api)
+                self.assertEquals(res.status_int, 403)
+                prop = k[len('x-image-meta-'):]
+                self.assertNotEqual(res.body.find("Forbidden to modify \'%s\' "
+                                                  "of active "
+                                                  "image" % prop), -1)
+
+                req = webob.Request.blank('/images/%s' % UUID2)
+                req.method = 'HEAD'
+                res = req.get_response(self.api)
+                self.assertEquals(res.status_int, 200)
+                self.assertEquals(orig_value, res.headers[k])
+
+    def test_props_of_active_image_mutable_for_admin(self):
+        """
+        Tests admin can update 'immutable' props of active image
+        """
+        test_router_api = router.API(self.mapper)
+        self.api = test_utils.FakeAuthMiddleware(
+            test_router_api, is_admin=True)
+        fixture_header_list = [{'x-image-meta-checksum': '1234'},
+                               {'x-image-meta-size': '12345'}]
+        for fixture_header in fixture_header_list:
+            req = webob.Request.blank('/images/%s' % UUID2)
+            req.method = 'PUT'
+            for k, v in fixture_header.iteritems():
+                req = webob.Request.blank('/images/%s' % UUID2)
+                req.method = 'HEAD'
+                res = req.get_response(self.api)
+                self.assertEquals(res.status_int, 200)
+                orig_value = res.headers[k]
+
+                req = webob.Request.blank('/images/%s' % UUID2)
+                req.headers[k] = v
+                req.method = 'PUT'
+                res = req.get_response(self.api)
+                self.assertEquals(res.status_int, 200)
+
+                req = webob.Request.blank('/images/%s' % UUID2)
+                req.method = 'HEAD'
+                res = req.get_response(self.api)
+                self.assertEquals(res.status_int, 200)
+                self.assertEquals(v, res.headers[k])
 
     def test_replace_members_non_existing_image(self):
         """
