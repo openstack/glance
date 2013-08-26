@@ -22,6 +22,7 @@ import hashlib
 import httplib2
 import json
 import os
+import sys
 
 from glance.tests import functional
 from glance.tests.utils import execute, minimal_headers
@@ -70,7 +71,8 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         """
         Return True if supplied image ID is cached, False otherwise
         """
-        cmd = "glance-cache-manage --port=%d list-cached" % self.api_port
+        exe_cmd = '%s -m glance.cmd.cache_manage' % sys.executable
+        cmd = "%s --port=%d list-cached" % (exe_cmd, self.api_port)
 
         exitcode, out, err = execute(cmd)
 
@@ -81,7 +83,8 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         """
         Return True if supplied image ID is cached, False otherwise
         """
-        cmd = "glance-cache-manage --port=%d list-cached" % self.api_port
+        exe_cmd = '%s -m glance.cmd.cache_manage' % sys.executable
+        cmd = "%s --port=%d list-cached" % (exe_cmd, self.api_port)
 
         exitcode, out, err = execute(cmd)
 
@@ -99,7 +102,8 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         registry_port = self.registry_port
 
         # Verify decent error message returned
-        cmd = "glance-cache-manage --port=%d list-cached" % api_port
+        exe_cmd = '%s -m glance.cmd.cache_manage' % sys.executable
+        cmd = "%s --port=%d list-cached" % (exe_cmd, api_port)
 
         exitcode, out, err = execute(cmd, raise_error=False)
 
@@ -120,7 +124,8 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         registry_port = self.registry_port
 
         # Verify no cached images
-        cmd = "glance-cache-manage --port=%d list-cached" % api_port
+        exe_cmd = '%s -m glance.cmd.cache_manage' % sys.executable
+        cmd = "%s --port=%d list-cached" % (exe_cmd, api_port)
 
         exitcode, out, err = execute(cmd)
 
@@ -159,7 +164,8 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         registry_port = self.registry_port
 
         # Verify no cached images
-        cmd = "glance-cache-manage --port=%d list-cached" % api_port
+        exe_cmd = '%s -m glance.cmd.cache_manage' % sys.executable
+        cmd = "%s --port=%d list-cached" % (exe_cmd, api_port)
 
         exitcode, out, err = execute(cmd)
 
@@ -167,7 +173,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         self.assertTrue('No cached images' in out.strip())
 
         # Verify no queued images
-        cmd = "glance-cache-manage --port=%d list-queued" % api_port
+        cmd = "%s --port=%d list-queued" % (exe_cmd, api_port)
 
         exitcode, out, err = execute(cmd)
 
@@ -182,15 +188,15 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
             ids[x] = self.add_image("Image%s" % x)
 
         # Queue second image and then cache it
-        cmd = "glance-cache-manage --port=%d --force queue-image %s" % (
-                api_port, ids[1])
+        cmd = "%s --port=%d --force queue-image %s" % (
+                exe_cmd, api_port, ids[1])
 
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
 
         # Verify queued second image
-        cmd = "glance-cache-manage --port=%d list-queued" % api_port
+        cmd = "%s --port=%d list-queued" % (exe_cmd, api_port)
 
         exitcode, out, err = execute(cmd)
 
@@ -219,8 +225,8 @@ metadata_encryption_key = %(metadata_encryption_key)s
 log_file = %(log_file)s
 """ % cache_file_options)
 
-        cmd = ("glance-cache-prefetcher --config-file %s" %
-               cache_config_filepath)
+        cmd = ("%s -m glance.cmd.cache_prefetcher --config-file %s" %
+               (sys.executable, cache_config_filepath))
 
         exitcode, out, err = execute(cmd)
 
@@ -228,7 +234,7 @@ log_file = %(log_file)s
         self.assertEqual('', out.strip(), out)
 
         # Verify no queued images
-        cmd = "glance-cache-manage --port=%d list-queued" % api_port
+        cmd = "%s --port=%d list-queued" % (exe_cmd, api_port)
 
         exitcode, out, err = execute(cmd)
 
@@ -236,7 +242,7 @@ log_file = %(log_file)s
         self.assertTrue('No queued images' in out.strip())
 
         # Verify second image now cached
-        cmd = "glance-cache-manage --port=%d list-cached" % api_port
+        cmd = "%s --port=%d list-cached" % (exe_cmd, api_port)
 
         exitcode, out, err = execute(cmd)
 
@@ -244,15 +250,15 @@ log_file = %(log_file)s
         self.assertTrue(ids[1] in out, 'Image %s was not cached!' % ids[1])
 
         # Queue third image and then delete it from queue
-        cmd = "glance-cache-manage --port=%d --force queue-image %s" % (
-                api_port, ids[2])
+        cmd = "%s --port=%d --force queue-image %s" % (
+                exe_cmd, api_port, ids[2])
 
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
 
         # Verify queued third image
-        cmd = "glance-cache-manage --port=%d list-queued" % api_port
+        cmd = "%s --port=%d list-queued" % (exe_cmd, api_port)
 
         exitcode, out, err = execute(cmd)
 
@@ -260,15 +266,15 @@ log_file = %(log_file)s
         self.assertTrue(ids[2] in out, 'Image %s was not queued!' % ids[2])
 
         # Delete the image from the queue
-        cmd = ("glance-cache-manage --port=%d --force "
-               "delete-queued-image %s") % (api_port, ids[2])
+        cmd = ("%s --port=%d --force "
+               "delete-queued-image %s") % (exe_cmd, api_port, ids[2])
 
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
 
         # Verify no queued images
-        cmd = "glance-cache-manage --port=%d list-queued" % api_port
+        cmd = "%s --port=%d list-queued" % (exe_cmd, api_port)
 
         exitcode, out, err = execute(cmd)
 
@@ -277,15 +283,15 @@ log_file = %(log_file)s
 
         # Queue all images
         for x in xrange(0, 4):
-            cmd = ("glance-cache-manage --port=%d --force "
-                   "queue-image %s") % (api_port, ids[x])
+            cmd = ("%s --port=%d --force "
+                   "queue-image %s") % (exe_cmd, api_port, ids[x])
 
             exitcode, out, err = execute(cmd)
 
             self.assertEqual(0, exitcode)
 
         # Verify queued third image
-        cmd = "glance-cache-manage --port=%d list-queued" % api_port
+        cmd = "%s --port=%d list-queued" % (exe_cmd, api_port)
 
         exitcode, out, err = execute(cmd)
 
@@ -293,15 +299,15 @@ log_file = %(log_file)s
         self.assertTrue('Found 3 queued images' in out)
 
         # Delete the image from the queue
-        cmd = ("glance-cache-manage --port=%d --force "
-               "delete-all-queued-images") % (api_port)
+        cmd = ("%s --port=%d --force "
+               "delete-all-queued-images") % (exe_cmd, api_port)
 
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
 
         # Verify nothing in queue anymore
-        cmd = "glance-cache-manage --port=%d list-queued" % api_port
+        cmd = "%s --port=%d list-queued" % (exe_cmd, api_port)
 
         exitcode, out, err = execute(cmd)
 

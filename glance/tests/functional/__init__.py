@@ -80,7 +80,7 @@ class Server(object):
         self.sock = sock
         self.fork_socket = True
         self.process_pid = None
-        self.server_program = None
+        self.server_module = None
         self.stop_kill = False
 
     def write_conf(self, **kwargs):
@@ -141,8 +141,9 @@ class Server(object):
 
         self.create_database()
 
-        cmd = ("%(server_program)s --config-file %(conf_file_name)s"
+        cmd = ("%(server_module)s --config-file %(conf_file_name)s"
                % self.__dict__)
+        cmd = "%s -m %s" % (sys.executable, cmd)
         # close the sock and release the unused port closer to start time
         if self.exec_env:
             exec_env = self.exec_env.copy()
@@ -268,7 +269,7 @@ class ApiServer(Server):
                  pid_file=None, sock=None, **kwargs):
         super(ApiServer, self).__init__(test_dir, port, sock=sock)
         self.server_name = 'api'
-        self.server_program = 'glance-%s' % self.server_name
+        self.server_module = 'glance.cmd.%s' % self.server_name
         self.default_store = kwargs.get("default_store", "file")
         self.key_file = ""
         self.cert_file = ""
@@ -435,7 +436,7 @@ class RegistryServer(Server):
     def __init__(self, test_dir, port, sock=None):
         super(RegistryServer, self).__init__(test_dir, port, sock=sock)
         self.server_name = 'registry'
-        self.server_program = 'glance-%s' % self.server_name
+        self.server_module = 'glance.cmd.%s' % self.server_name
 
         self.needs_database = True
         default_sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
@@ -493,7 +494,7 @@ class ScrubberDaemon(Server):
         # NOTE(jkoelker): Set the port to 0 since we actually don't listen
         super(ScrubberDaemon, self).__init__(test_dir, 0)
         self.server_name = 'scrubber'
-        self.server_program = 'glance-%s' % self.server_name
+        self.server_module = 'glance.cmd.%s' % self.server_name
         self.daemon = daemon
 
         self.image_dir = os.path.join(self.test_dir, "images")

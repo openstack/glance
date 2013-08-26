@@ -508,3 +508,6 @@ Commands:
         sys.exit(result)
     except (RuntimeError, NotImplementedError) as e:
         print "ERROR: ", e
+
+if __name__ == '__main__':
+    main()

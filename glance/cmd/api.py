@@ -64,3 +64,7 @@ def main():
         fail(2, e)
     except RuntimeError as e:
         fail(1, e)
+
+
+if __name__ == '__main__':
+    main()

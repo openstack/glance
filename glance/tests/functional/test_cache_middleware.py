@@ -26,6 +26,7 @@ import hashlib
 import json
 import os
 import shutil
+import sys
 import time
 
 import httplib2
@@ -592,8 +593,8 @@ log_file = %(log_file)s
 
         self.verify_no_cached_images()
 
-        cmd = ("glance-cache-prefetcher --config-file %s" %
-               cache_config_filepath)
+        cmd = ("%s -m glance.cmd.cache_prefetcher --config-file %s" %
+               (sys.executable, cache_config_filepath))
 
         exitcode, out, err = execute(cmd)
 
