@@ -56,13 +56,15 @@ class ImageDataController(object):
             LOG.debug("Cannot save data for image %s: %s", image_id, e)
             raise webob.exc.HTTPBadRequest(explanation=unicode(e))
         except exception.Duplicate as e:
-            msg = _("Unable to upload duplicate image data for image: %s")
-            LOG.debug(msg % image_id)
+            msg = (_("Unable to upload duplicate image data for image: %s") %
+                   image_id)
+            LOG.debug(msg)
             raise webob.exc.HTTPConflict(explanation=msg, request=req)
 
         except exception.Forbidden as e:
-            msg = _("Not allowed to upload image data for image %s")
-            LOG.debug(msg % image_id)
+            msg = (_("Not allowed to upload image data for image %s") %
+                   image_id)
+            LOG.debug(msg)
             raise webob.exc.HTTPForbidden(explanation=msg, request=req)
 
         except exception.NotFound as e:
