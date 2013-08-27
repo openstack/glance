@@ -121,6 +121,7 @@ class ApiTest(test_utils.BaseTestCase):
         self._configure_logging()
         self._setup_database()
         self._setup_stores()
+        self._setup_property_protection()
         self.glance_registry_app = self._load_paste_app(
             'glance-registry',
             flavor=getattr(self, 'registry_flavor', ''),
@@ -134,6 +135,11 @@ class ApiTest(test_utils.BaseTestCase):
             conf=getattr(self, 'api_paste_conf', TESTING_API_PASTE_CONF),
         )
         self.http = test_utils.Httplib2WsgiAdapter(self.glance_api_app)
+
+    def _setup_property_protection(self):
+        self._copy_data_file('property-protections.conf', self.test_dir)
+        self.property_file = os.path.join(self.test_dir,
+                                          'property-protections.conf')
 
     def _configure_logging(self):
         self.config(default_log_levels=[

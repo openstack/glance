@@ -1326,3 +1326,152 @@ class TestApiWithFakeAuth(base.ApiTest):
         self.assertEquals(len(images), 4)
         for image in images:
             self.assertFalse(image['is_public'])
+
+    def test_property_protections(self):
+        # Enable property protection
+        self.config(property_protection_file=self.property_file)
+        self.setUp()
+
+        CREATE_HEADERS = {
+            'X-Image-Meta-Name': 'MyImage',
+            'X-Image-Meta-disk_format': 'raw',
+            'X-Image-Meta-container_format': 'ovf',
+            'X-Image-Meta-Is-Public': 'True',
+            'X-Image-Meta-Owner': 'tenant2',
+        }
+
+        # Create an image for role member with extra properties
+        # Raises 403 since user is not allowed to create 'foo'
+        auth_headers = {
+            'X-Auth-Token': 'user1:tenant1:member',
+        }
+        custom_props = {
+            'x-image-meta-property-foo': 'bar'
+        }
+        auth_headers.update(custom_props)
+        auth_headers.update(CREATE_HEADERS)
+        path = "/v1/images"
+        response, content = self.http.request(path, 'POST',
+                                              headers=auth_headers)
+        self.assertEqual(response.status, 403)
+
+        # Create an image for role member without 'foo'
+        auth_headers = {
+            'X-Auth-Token': 'user1:tenant1:member',
+        }
+        custom_props = {
+            'x-image-meta-property-x_owner_foo': 'o_s_bar',
+        }
+        auth_headers.update(custom_props)
+        auth_headers.update(CREATE_HEADERS)
+        path = "/v1/images"
+        response, content = self.http.request(path, 'POST',
+                                              headers=auth_headers)
+        self.assertEqual(response.status, 201)
+
+        # Returned image entity should have 'x_owner_foo'
+        data = json.loads(content)
+        self.assertEqual(data['image']['properties']['x_owner_foo'],
+                         'o_s_bar')
+
+        # Create an image for role spl_role with extra properties
+        auth_headers = {
+            'X-Auth-Token': 'user1:tenant1:spl_role',
+        }
+        custom_props = {
+            'X-Image-Meta-Property-spl_create_prop': 'create_bar',
+            'X-Image-Meta-Property-spl_read_prop': 'read_bar',
+            'X-Image-Meta-Property-spl_update_prop': 'update_bar',
+            'X-Image-Meta-Property-spl_delete_prop': 'delete_bar'
+        }
+        auth_headers.update(custom_props)
+        auth_headers.update(CREATE_HEADERS)
+        path = "/v1/images"
+        response, content = self.http.request(path, 'POST',
+                                              headers=auth_headers)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        image_id = data['image']['id']
+
+        # Attempt to update two properties, one protected(spl_read_prop), the
+        # other not(spl_update_prop).  Request should be forbidden.
+        auth_headers = {
+            'X-Auth-Token': 'user1:tenant1:spl_role',
+        }
+        custom_props = {
+            'X-Image-Meta-Property-spl_read_prop': 'r',
+            'X-Image-Meta-Property-spl_update_prop': 'u',
+            'X-Glance-Registry-Purge-Props': 'False'
+        }
+        auth_headers.update(auth_headers)
+        auth_headers.update(custom_props)
+        path = "/v1/images/%s" % image_id
+        response, content = self.http.request(path, 'PUT',
+                                              headers=auth_headers)
+        self.assertEqual(response.status, 403)
+
+        # Attempt to create properties which are forbidden
+        auth_headers = {
+            'X-Auth-Token': 'user1:tenant1:spl_role',
+        }
+        custom_props = {
+            'X-Image-Meta-Property-spl_new_prop': 'new',
+            'X-Glance-Registry-Purge-Props': 'True'
+        }
+        auth_headers.update(auth_headers)
+        auth_headers.update(custom_props)
+        path = "/v1/images/%s" % image_id
+        response, content = self.http.request(path, 'PUT',
+                                              headers=auth_headers)
+        self.assertEqual(response.status, 403)
+
+        # Attempt to update, create and delete properties
+        auth_headers = {
+            'X-Auth-Token': 'user1:tenant1:spl_role',
+        }
+        custom_props = {
+            'X-Image-Meta-Property-spl_create_prop': 'create_bar',
+            'X-Image-Meta-Property-spl_read_prop': 'read_bar',
+            'X-Image-Meta-Property-spl_update_prop': 'u',
+            'X-Glance-Registry-Purge-Props': 'True'
+        }
+        auth_headers.update(auth_headers)
+        auth_headers.update(custom_props)
+        path = "/v1/images/%s" % image_id
+        response, content = self.http.request(path, 'PUT',
+                                              headers=auth_headers)
+        self.assertEqual(response.status, 200)
+
+        # Returned image entity should reflect the changes
+        image = json.loads(content)
+
+        # 'spl_update_prop' has update permission for spl_role
+        # hence the value has changed
+        self.assertEqual('u', image['image']['properties']['spl_update_prop'])
+
+        # 'spl_delete_prop' has delete permission for spl_role
+        # hence the property has been deleted
+        self.assertTrue('spl_delete_prop' not in image['image']['properties'])
+
+        # 'spl_create_prop' has create permission for spl_role
+        # hence the property has been created
+        self.assertEqual('create_bar',
+                         image['image']['properties']['spl_create_prop'])
+
+        # Image Deletion should work
+        auth_headers = {
+            'X-Auth-Token': 'user1:tenant1:spl_role',
+        }
+        path = "/v1/images/%s" % image_id
+        response, content = self.http.request(path, 'DELETE',
+                                              headers=auth_headers)
+        self.assertEqual(response.status, 200)
+
+        # This image should be no longer be directly accessible
+        auth_headers = {
+            'X-Auth-Token': 'user1:tenant1:spl_role',
+        }
+        path = "/v1/images/%s" % image_id
+        response, content = self.http.request(path, 'HEAD',
+                                              headers=auth_headers)
+        self.assertEqual(response.status, 404)

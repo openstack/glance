@@ -40,6 +40,7 @@ from glance.api.v1 import controller
 from glance.api.v1 import filters
 from glance.api.v1 import upload_utils
 from glance.common import exception
+from glance.common import property_utils
 from glance.common import utils
 from glance.common import wsgi
 from glance import notifier
@@ -136,6 +137,10 @@ class Controller(controller.BaseController):
         registry.configure_registry_client()
         self.policy = policy.Enforcer()
         self.pool = eventlet.GreenPool(size=1024)
+        if property_utils.is_property_protection_enabled():
+            self.prop_enforcer = property_utils.PropertyRules()
+        else:
+            self.prop_enforcer = None
 
     def _enforce(self, req, action):
         """Authorize an action against our policies"""
@@ -143,6 +148,103 @@ class Controller(controller.BaseController):
             self.policy.enforce(req.context, action, {})
         except exception.Forbidden:
             raise HTTPForbidden()
+
+    def _enforce_create_protected_props(self, create_props, req):
+        """
+        Check request is permitted to create certain properties
+
+        :param create_props: List of properties to check
+        :param req: The WSGI/Webob Request object
+
+        :raises HTTPForbidden if request forbidden to create a property
+        """
+        if property_utils.is_property_protection_enabled():
+            for key in create_props:
+                if (self.prop_enforcer.check_property_rules(
+                        key, 'create', req.context.roles) is False):
+                    msg = _("Property '%s' is protected" % key)
+                    LOG.debug(msg)
+                    raise HTTPForbidden(explanation=msg,
+                                        request=req,
+                                        content_type="text/plain")
+
+    def _enforce_read_protected_props(self, image_meta, req):
+        """
+        Remove entries from metadata properties if they are read protected
+
+        :param image_meta: Mapping of metadata about image
+        :param req: The WSGI/Webob Request object
+        """
+        if property_utils.is_property_protection_enabled():
+            for key in image_meta['properties'].keys():
+                if (self.prop_enforcer.check_property_rules(
+                        key, 'read', req.context.roles) is False):
+                    image_meta['properties'].pop(key)
+
+    def _enforce_update_protected_props(self, update_props, image_meta,
+                                        orig_meta, req):
+        """
+        Check request is permitted to update certain properties.  Read
+        permission is required to delete a property.
+
+        If the property value is unchanged, i.e. a noop, it is permitted,
+        however, it is important to ensure read access first.  Otherwise the
+        value could be discovered using brute force.
+
+        :param update_props: List of properties to check
+        :param image_meta: Mapping of proposed new metadata about image
+        :param orig_meta: Mapping of existing metadata about image
+        :param req: The WSGI/Webob Request object
+
+        :raises HTTPForbidden if request forbidden to create a property
+        """
+        if property_utils.is_property_protection_enabled():
+            for key in update_props:
+                has_read = self.prop_enforcer.check_property_rules(
+                        key, 'read', req.context.roles)
+                if ((self.prop_enforcer.check_property_rules(
+                        key, 'update', req.context.roles) is False and
+                        image_meta['properties'][key] !=
+                        orig_meta['properties'][key]) or not has_read):
+                    msg = _("Property '%s' is protected" % key)
+                    LOG.debug(msg)
+                    raise HTTPForbidden(explanation=msg,
+                                        request=req,
+                                        content_type="text/plain")
+
+    def _enforce_delete_protected_props(self, delete_props, image_meta,
+                                        orig_meta, req):
+        """
+        Check request is permitted to delete certain properties.  Read
+        permission is required to delete a property.
+
+        Note, the absence of a property in a request does not necessarily
+        indicate a delete.  The requester may not have read access, and so can
+        not know the property exists.  Hence, read access is a requirement for
+        delete, otherwise the delete is ignored transparently.
+
+        :param delete_props: List of properties to check
+        :param image_meta: Mapping of proposed new metadata about image
+        :param orig_meta: Mapping of existing metadata about image
+        :param req: The WSGI/Webob Request object
+
+        :raises HTTPForbidden if request forbidden to create a property
+        """
+        if property_utils.is_property_protection_enabled():
+            for key in delete_props:
+                if (self.prop_enforcer.check_property_rules(
+                        key, 'read', req.context.roles) is False):
+                    # NOTE(bourke): if read protected, re-add to image_meta to
+                    # prevent deletion
+                    image_meta['properties'][key] = \
+                        orig_meta['properties'][key]
+                elif (self.prop_enforcer.check_property_rules(
+                        key, 'delete', req.context.roles) is False):
+                    msg = _("Property '%s' is protected" % key)
+                    LOG.debug(msg)
+                    raise HTTPForbidden(explanation=msg,
+                                        request=req,
+                                        content_type="text/plain")
 
     def index(self, req):
         """
@@ -211,6 +313,7 @@ class Controller(controller.BaseController):
             # information to the API end user...
             for image in images:
                 redact_loc(image, copy_dict=False)
+                self._enforce_read_protected_props(image, req)
         except exception.Invalid as e:
             raise HTTPBadRequest(explanation="%s" % e)
         return dict(images=images)
@@ -264,6 +367,7 @@ class Controller(controller.BaseController):
         self._enforce(req, 'get_image')
         image_meta = self.get_image_meta_or_404(req, id)
         image_meta = redact_loc(image_meta)
+        self._enforce_read_protected_props(image_meta, req)
         return {
             'image_meta': image_meta
         }
@@ -320,6 +424,8 @@ class Controller(controller.BaseController):
         self._enforce(req, 'get_image')
         self._enforce(req, 'download_image')
         image_meta = self.get_active_image_meta_or_404(req, id)
+
+        self._enforce_read_protected_props(image_meta, req)
 
         if image_meta.get('size') == 0:
             image_iterator = iter([])
@@ -597,6 +703,9 @@ class Controller(controller.BaseController):
         if Controller._copy_from(req):
             self._enforce(req, 'copy_from')
 
+        self._enforce_create_protected_props(image_meta['properties'].keys(),
+                                             req)
+
         image_meta = self._reserve(req, image_meta)
         id = image_meta['id']
 
@@ -685,6 +794,20 @@ class Controller(controller.BaseController):
                                  request=req,
                                  content_type="text/plain")
 
+        # ensure requester has permissions to create/update/delete properties
+        # according to property-protections.conf
+        orig_keys = set(orig_image_meta['properties'])
+        new_keys = set(image_meta['properties'])
+        self._enforce_update_protected_props(
+                orig_keys.intersection(new_keys), image_meta,
+                orig_image_meta, req)
+        self._enforce_create_protected_props(
+                new_keys.difference(orig_keys), req)
+        if purge_props:
+            self._enforce_delete_protected_props(
+                    orig_keys.difference(new_keys), image_meta,
+                    orig_image_meta, req)
+
         try:
             if location:
                 image_meta['size'] = self._get_size(req.context, image_meta,
@@ -726,6 +849,8 @@ class Controller(controller.BaseController):
         # Prevent client from learning the location, as it
         # could contain security credentials
         image_meta = redact_loc(image_meta)
+
+        self._enforce_read_protected_props(image_meta, req)
 
         return {'image_meta': image_meta}
 

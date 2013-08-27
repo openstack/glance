@@ -31,6 +31,7 @@ import glance.api.common
 from glance.api.v1 import filters
 from glance.api.v1 import images
 from glance.api.v1 import router
+from glance.common import exception
 import glance.common.config
 import glance.context
 from glance.db.sqlalchemy import api as db_api
@@ -40,6 +41,7 @@ from glance.openstack.common import uuidutils
 import glance.store.filesystem
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
+import glance.tests.unit.utils as unit_test_utils
 
 CONF = cfg.CONF
 
@@ -2340,3 +2342,442 @@ class TestFilterValidator(base.IsolatedUnitTest):
         self.assertTrue(glance.api.v1.filters.validate('protected', 'True'))
         self.assertTrue(glance.api.v1.filters.validate('protected', 'FALSE'))
         self.assertFalse(glance.api.v1.filters.validate('protected', '-1'))
+
+
+class TestAPIProtectedProps(base.IsolatedUnitTest):
+    def setUp(self):
+        """Establish a clean test environment"""
+        super(TestAPIProtectedProps, self).setUp()
+        self.mapper = routes.Mapper()
+        # turn on property protections
+        self.set_property_protections()
+        self.api = test_utils.FakeAuthMiddleware(router.API(self.mapper))
+        db_api.setup_db_env()
+        db_api.get_engine()
+        db_models.unregister_models(db_api._ENGINE)
+        db_models.register_models(db_api._ENGINE)
+
+    def tearDown(self):
+        """Clear the test environment"""
+        super(TestAPIProtectedProps, self).tearDown()
+        self.destroy_fixtures()
+
+    def destroy_fixtures(self):
+        # Easiest to just drop the models and re-create them...
+        db_models.unregister_models(db_api._ENGINE)
+        db_models.register_models(db_api._ENGINE)
+
+    def _create_admin_image(self, props={}):
+        request = unit_test_utils.get_fake_request(path='/images')
+        headers = {'x-image-meta-disk-format': 'ami',
+                   'x-image-meta-container-format': 'ami',
+                   'x-image-meta-name': 'foo',
+                   'x-image-meta-size': '0',
+                   'x-auth-token': 'user:tenant:admin'}
+        headers.update(props)
+        for k, v in headers.iteritems():
+            request.headers[k] = v
+        created_image = request.get_response(self.api)
+        res_body = json.loads(created_image.body)['image']
+        image_id = res_body['id']
+        return image_id
+
+    def test_prop_protection_with_create_and_permitted_role(self):
+        """
+        As admin role, create and image and verify permitted role 'member' can
+        create a protected property
+        """
+        image_id = self._create_admin_image()
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:member',
+                   'x-image-meta-property-x_owner_foo': 'bar'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        res_body = json.loads(output.body)['image']
+        self.assertEqual(res_body['properties']['x_owner_foo'], 'bar')
+
+    def test_prop_protection_with_create_and_unpermitted_role(self):
+        """
+        As admin role, create an image and verify unpermitted role
+        'fake_member' can *not* create a protected property
+        """
+        image_id = self._create_admin_image()
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:fake_member',
+                   'x-image-meta-property-x_owner_foo': 'bar'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        another_request.get_response(self.api)
+        output = another_request.get_response(self.api)
+        self.assertEquals(output.status_int, webob.exc.HTTPForbidden.code)
+        self.assertIn("Property '%s' is protected" %
+                      "x_owner_foo", output.body)
+
+    def test_prop_protection_with_show_and_permitted_role(self):
+        """
+        As admin role, create an image with a protected property, and verify
+        permitted role 'member' can read that protected property via HEAD
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-x_owner_foo': 'bar'})
+        another_request = unit_test_utils.get_fake_request(
+                method='HEAD', path='/images/%s' % image_id)
+        headers = {'x-auth-token': 'user:tenant:member'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        res2 = another_request.get_response(self.api)
+        self.assertEqual(res2.headers['x-image-meta-property-x_owner_foo'],
+                         'bar')
+
+    def test_prop_protection_with_show_and_unpermitted_role(self):
+        """
+        As admin role, create an image with a protected property, and verify
+        permitted role 'fake_role' can *not* read that protected property via
+        HEAD
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-x_owner_foo': 'bar'})
+        another_request = unit_test_utils.get_fake_request(
+                method='HEAD', path='/images/%s' % image_id)
+        headers = {'x-auth-token': 'user:tenant:fake_role'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 200)
+        self.assertEqual('', output.body)
+        self.assertNotIn('x-image-meta-property-x_owner_foo', output.headers)
+
+    def test_prop_protection_with_get_and_permitted_role(self):
+        """
+        As admin role, create an image with a protected property, and verify
+        permitted role 'member' can read that protected property via GET
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-x_owner_foo': 'bar'})
+        another_request = unit_test_utils.get_fake_request(
+                method='GET', path='/images/%s' % image_id)
+        headers = {'x-auth-token': 'user:tenant:member'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        res2 = another_request.get_response(self.api)
+        self.assertEqual(res2.headers['x-image-meta-property-x_owner_foo'],
+                         'bar')
+
+    def test_prop_protection_with_get_and_unpermitted_role(self):
+        """
+        As admin role, create an image with a protected property, and verify
+        permitted role 'fake_role' can *not* read that protected property via
+        GET
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-x_owner_foo': 'bar'})
+        another_request = unit_test_utils.get_fake_request(
+                method='GET', path='/images/%s' % image_id)
+        headers = {'x-auth-token': 'user:tenant:fake_role'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 200)
+        self.assertEqual('', output.body)
+        self.assertNotIn('x-image-meta-property-x_owner_foo', output.headers)
+
+    def test_prop_protection_with_detail_and_permitted_role(self):
+        """
+        As admin role, create an image with a protected property, and verify
+        permitted role 'member' can read that protected property via
+        /images/detail
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-x_owner_foo': 'bar'})
+        another_request = unit_test_utils.get_fake_request(
+                method='GET', path='/images/detail')
+        headers = {'x-auth-token': 'user:tenant:member'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 200)
+        res_body = json.loads(output.body)['images'][0]
+        self.assertEqual(res_body['properties']['x_owner_foo'], 'bar')
+
+    def test_prop_protection_with_detail_and_unpermitted_role(self):
+        """
+        As admin role, create an image with a protected property, and verify
+        permitted role 'fake_role' can *not* read that protected property via
+        /images/detail
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-x_owner_foo': 'bar'})
+        another_request = unit_test_utils.get_fake_request(
+                method='GET', path='/images/detail')
+        headers = {'x-auth-token': 'user:tenant:fake_role'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 200)
+        res_body = json.loads(output.body)['images'][0]
+        self.assertNotIn('x-image-meta-property-x_owner_foo',
+                         res_body['properties'])
+
+    def test_prop_protection_with_update_and_permitted_role(self):
+        """
+        As admin role, create an image with protected property, and verify
+        permitted role 'member' can update that protected property
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-x_owner_foo': 'bar'})
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:member',
+                   'x-image-meta-property-x_owner_foo': 'baz'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        res_body = json.loads(output.body)['image']
+        self.assertEqual(res_body['properties']['x_owner_foo'], 'baz')
+
+    def test_prop_protection_with_update_and_unpermitted_role(self):
+        """
+        As admin role, create an image with protected property, and verify
+        unpermitted role 'fake_role' can *not* update that protected property
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-x_owner_foo': 'bar'})
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:fake_role',
+                   'x-image-meta-property-x_owner_foo': 'baz'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEquals(output.status_int, webob.exc.HTTPForbidden.code)
+        self.assertIn("Property '%s' is protected" %
+                      "x_owner_foo", output.body)
+
+    def test_prop_protection_update_without_read(self):
+        """
+        Test protected property cannot be updated without read permission
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-spl_update_only_prop': 'foo'})
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:spl_role',
+                   'x-image-meta-property-spl_update_only_prop': 'bar'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEquals(output.status_int, webob.exc.HTTPForbidden.code)
+        self.assertIn("Property '%s' is protected" %
+                      "spl_update_only_prop", output.body)
+
+    def test_prop_protection_update_noop(self):
+        """
+        Test protected property update is allowed as long as the user has read
+        access and the value is unchanged
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-spl_read_prop': 'foo'})
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:spl_role',
+                   'x-image-meta-property-spl_read_prop': 'foo'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        res_body = json.loads(output.body)['image']
+        self.assertEqual(res_body['properties']['spl_read_prop'], 'foo')
+        self.assertEquals(output.status_int, 200)
+
+    def test_prop_protection_with_delete_and_permitted_role(self):
+        """
+        As admin role, create an image with protected property, and verify
+        permitted role 'member' can can delete that protected property
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-x_owner_foo': 'bar'})
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:member',
+                   'X-Glance-Registry-Purge-Props': 'True'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        res_body = json.loads(output.body)['image']
+        self.assertEqual(res_body['properties'], {})
+
+    def test_prop_protection_with_delete_and_unpermitted_read(self):
+        """
+        Test protected property cannot be deleted without read permission
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-x_owner_foo': 'bar'})
+
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:fake_role',
+                   'X-Glance-Registry-Purge-Props': 'True'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEquals(output.status_int, 200)
+        self.assertNotIn('x-image-meta-property-x_owner_foo', output.headers)
+
+        another_request = unit_test_utils.get_fake_request(
+                method='HEAD', path='/images/%s' % image_id)
+        headers = {'x-auth-token': 'user:tenant:admin'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 200)
+        self.assertEqual('', output.body)
+        self.assertEqual(output.headers['x-image-meta-property-x_owner_foo'],
+                         'bar')
+
+    def test_prop_protection_with_delete_and_unpermitted_delete(self):
+        """
+        Test protected property cannot be deleted without delete permission
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-spl_update_prop': 'foo'})
+
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:spl_role',
+                   'X-Glance-Registry-Purge-Props': 'True'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEquals(output.status_int, 403)
+        self.assertIn("Property '%s' is protected" %
+                      "spl_update_prop", output.body)
+
+        another_request = unit_test_utils.get_fake_request(
+                method='HEAD', path='/images/%s' % image_id)
+        headers = {'x-auth-token': 'user:tenant:admin'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 200)
+        self.assertEqual('', output.body)
+        self.assertEqual(
+                output.headers['x-image-meta-property-spl_update_prop'], 'foo')
+
+    def test_read_protected_props_leak_with_update(self):
+        """
+        Verify when updating props that ones we don't have read permission for
+        are not disclosed
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-spl_update_prop': '0',
+                 'x-image-meta-property-foo': 'bar'})
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:spl_role',
+                   'x-image-meta-property-spl_update_prop': '1',
+                   'X-Glance-Registry-Purge-Props': 'False'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        res_body = json.loads(output.body)['image']
+        self.assertEqual(res_body['properties']['spl_update_prop'], '1')
+        self.assertNotIn('foo', res_body['properties'])
+
+    def test_update_protected_props_mix_no_read(self):
+        """
+        Create an image with two props - one only readable by admin, and one
+        readable/updatable by member.  Verify member can sucessfully update
+        their property while the admin owned one is ignored transparently
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-admin_foo': 'bar',
+                 'x-image-meta-property-x_owner_foo': 'bar'})
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:member',
+                   'x-image-meta-property-x_owner_foo': 'baz'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        res_body = json.loads(output.body)['image']
+        self.assertEqual(res_body['properties']['x_owner_foo'], 'baz')
+        self.assertNotIn('admin_foo', res_body['properties'])
+
+    def test_update_protected_props_mix_read(self):
+        """
+        Create an image with two props - one readable/updatable by admin, but
+        also readable by spl_role.  The other is readable/updatable by
+        spl_role.  Verify spl_role can successfully update their property but
+        not the admin owned one
+        """
+        custom_props = {
+            'x-image-meta-property-spl_read_only_prop': '1',
+            'x-image-meta-property-spl_update_prop': '2'
+        }
+        image_id = self._create_admin_image(custom_props)
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+
+        # verify spl_role can update it's prop
+        headers = {'x-auth-token': 'user:tenant:spl_role',
+                   'x-image-meta-property-spl_read_only_prop': '1',
+                   'x-image-meta-property-spl_update_prop': '1'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        res_body = json.loads(output.body)['image']
+        self.assertEqual(output.status_int, 200)
+        self.assertEqual(res_body['properties']['spl_read_only_prop'], '1')
+        self.assertEqual(res_body['properties']['spl_update_prop'], '1')
+
+        # verify spl_role can not update admin controlled prop
+        headers = {'x-auth-token': 'user:tenant:spl_role',
+                   'x-image-meta-property-spl_read_only_prop': '2',
+                   'x-image-meta-property-spl_update_prop': '1'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 403)
+
+    def test_delete_protected_props_mix_no_read(self):
+        """
+        Create an image with two props - one only readable by admin, and one
+        readable/deletable by member.  Verify member can sucessfully delete
+        their property while the admin owned one is ignored transparently
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-admin_foo': 'bar',
+                 'x-image-meta-property-x_owner_foo': 'bar'})
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:member',
+                   'X-Glance-Registry-Purge-Props': 'True'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        res_body = json.loads(output.body)['image']
+        self.assertNotIn('x_owner_foo', res_body['properties'])
+        self.assertNotIn('admin_foo', res_body['properties'])
+
+    def test_delete_protected_props_mix_read(self):
+        """
+        Create an image with two props - one readable/deletable by admin, but
+        also readable by spl_role.  The other is readable/deletable by
+        spl_role.  Verify spl_role is forbidden to purge_props in this scenario
+        without retaining the readable prop.
+        """
+        custom_props = {
+            'x-image-meta-property-spl_read_only_prop': '1',
+            'x-image-meta-property-spl_delete_prop': '2'
+        }
+        image_id = self._create_admin_image(custom_props)
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:spl_role',
+                   'X-Glance-Registry-Purge-Props': 'True'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 403)
