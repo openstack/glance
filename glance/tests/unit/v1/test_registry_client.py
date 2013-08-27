@@ -1068,6 +1068,36 @@ class TestRegistryV1Client(base.IsolatedUnitTest):
         self.assertEquals(new_image['location_data'][0]['url'], location)
         self.assertEquals(new_image['location_data'][0]['metadata'], loc_meta)
 
+    def test_add_image_with_location_data_with_encryption(self):
+        """Tests that we can add image metadata with properties and
+        enable encryption.
+        """
+        self.client.metadata_encryption_key = '1234567890123456'
+
+        location = "file:///tmp/glance-tests/%d"
+        loc_meta = {'key': 'value'}
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'disk_format': 'vmdk',
+                   'container_format': 'ovf',
+                   'size': 19,
+                   'location_data': [{'url': location % 1,
+                                      'metadata': loc_meta},
+                                     {'url': location % 2,
+                                      'metadata': {}}],
+                   'properties': {'distro': 'Ubuntu 10.04 LTS'}}
+
+        new_image = self.client.add_image(fixture)
+
+        self.assertEquals(new_image['location'], location % 1)
+        self.assertEquals(len(new_image['location_data']), 2)
+        self.assertEquals(new_image['location_data'][0]['url'], location % 1)
+        self.assertEquals(new_image['location_data'][0]['metadata'], loc_meta)
+        self.assertEquals(new_image['location_data'][1]['url'], location % 2)
+        self.assertEquals(new_image['location_data'][1]['metadata'], {})
+
+        self.client.metadata_encryption_key = None
+
     def test_add_image_already_exists(self):
         """Tests proper exception is raised if image with ID already exists"""
         fixture = {
