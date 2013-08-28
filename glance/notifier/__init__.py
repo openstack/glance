@@ -20,6 +20,7 @@ import socket
 import uuid
 
 from oslo.config import cfg
+import webob
 
 from glance.common import exception
 import glance.domain
@@ -200,11 +201,47 @@ class ImageProxy(glance.domain.proxy.Image):
         try:
             self.image.set_data(data, size)
         except exception.StorageFull as e:
-            msg = _("Image storage media is full: %s") % e
+            msg = (_("Image storage media is full: %s") % e)
             self.notifier.error('image.upload', msg)
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg)
         except exception.StorageWriteDenied as e:
-            msg = _("Insufficient permissions on image storage media: %s") % e
+            msg = (_("Insufficient permissions on image storage media: %s")
+                   % e)
             self.notifier.error('image.upload', msg)
+            raise webob.exc.HTTPServiceUnavailable(explanation=msg)
+        except ValueError as e:
+            msg = (_("Cannot save data for image %s: %s")
+                   % (self.image.image_id, e))
+            self.notifier.error('image.upload', msg)
+            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+        except exception.Duplicate as e:
+            msg = (_("Unable to upload duplicate image data for image %s: %s")
+                   % (self.image.image_id, e))
+            self.notifier.error('image.upload', msg)
+            raise webob.exc.HTTPConflict(explanation=msg)
+        except exception.Forbidden as e:
+            msg = (_("Not allowed to upload image data for image %s: %s")
+                   % (self.image.image_id, e))
+            self.notifier.error('image.upload', msg)
+            raise webob.exc.HTTPForbidden(explanation=msg)
+        except exception.NotFound as e:
+            msg = (_("Image %s could not be found after upload. The image may "
+                     "have been deleted during the upload: %s")
+                   % (self.image.image_id, e))
+            self.notifier.error('image.upload', msg)
+            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+        except webob.exc.HTTPError as e:
+            msg = (_("Failed to upload image data for image %s"
+                     " due to HTTP error: %s")
+                   % (self.image.image_id, e))
+            self.notifier.error('image.upload', msg)
+            raise
+        except Exception as e:
+            msg = (_("Failed to upload image data for image %s "
+                     "due to internal error: %s")
+                   % (self.image.image_id, e))
+            self.notifier.error('image.upload', msg)
+            raise
         else:
             payload = format_image_notification(self.image)
             self.notifier.info('image.upload', payload)
