@@ -631,6 +631,12 @@ def image_get_all(context, filters=None, marker=None, limit=None,
                                                          value=v,
                                                          deleted=False))
 
+    if 'tags' in filters:
+        tags = filters.pop('tags')
+        for tag in tags:
+            query = query.filter(models.Image.tags.any(value=tag,
+                                                       deleted=False))
+
     for (k, v) in filters.items():
         if v is not None:
             key = k

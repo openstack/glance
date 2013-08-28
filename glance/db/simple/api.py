@@ -218,6 +218,13 @@ def _filter_images(images, filters, context,
                 add = image.get(key) <= value
             elif k != 'is_public' and image.get(k) is not None:
                 add = image.get(key) == value
+            elif k == 'tags':
+                filter_tags = value
+                image_tags = image_tag_get_all(context, image['id'])
+                for tag in filter_tags:
+                    if tag not in image_tags:
+                        add = False
+                        break
             else:
                 properties = {}
                 for p in image['properties']:

@@ -611,6 +611,55 @@ class DriverTests(object):
         self.assertEquals(1, len(images))
         self.assertEqual(UUIDY, images[0]['id'])
 
+    def test_image_get_all_with_filter_tags(self):
+        self.db_api.image_tag_create(self.context, UUID1, 'x86')
+        self.db_api.image_tag_create(self.context, UUID1, '64bit')
+        self.db_api.image_tag_create(self.context, UUID2, 'power')
+        self.db_api.image_tag_create(self.context, UUID2, '64bit')
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'tags': ['64bit']})
+        self.assertEquals(len(images), 2)
+        image_ids = [image['id'] for image in images]
+        expected = [UUID1, UUID2]
+        self.assertEquals(sorted(expected), sorted(image_ids))
+
+    def test_image_get_all_with_filter_multi_tags(self):
+        self.db_api.image_tag_create(self.context, UUID1, 'x86')
+        self.db_api.image_tag_create(self.context, UUID1, '64bit')
+        self.db_api.image_tag_create(self.context, UUID2, 'power')
+        self.db_api.image_tag_create(self.context, UUID2, '64bit')
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'tags': ['64bit', 'power']
+                                                    })
+        self.assertEquals(len(images), 1)
+        self.assertEquals(UUID2, images[0]['id'])
+
+    def test_image_get_all_with_filter_tags_and_nonexistent(self):
+        self.db_api.image_tag_create(self.context, UUID1, 'x86')
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'tags': ['x86', 'fake']
+                                                    })
+        self.assertEquals(len(images), 0)
+
+    def test_image_get_all_with_filter_deleted_tags(self):
+        tag = self.db_api.image_tag_create(self.context, UUID1, 'AIX')
+        images = self.db_api.image_get_all(self.context,
+                                           filters={
+                                               'tags': [tag],
+                                           })
+        self.assertEquals(len(images), 1)
+        self.db_api.image_tag_delete(self.context, UUID1, tag)
+        images = self.db_api.image_get_all(self.context,
+                                           filters={
+                                               'tags': [tag],
+                                           })
+        self.assertEquals(len(images), 0)
+
+    def test_image_get_all_with_filter_undefined_tags(self):
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'tags': ['fake']})
+        self.assertEquals(len(images), 0)
+
     def test_image_paginate(self):
         """Paginate through a list of images using limit and marker"""
         extra_uuids = [uuidutils.generate_uuid() for i in range(2)]

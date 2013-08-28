@@ -425,6 +425,37 @@ class TestImages(functional.FunctionalTest):
         tags = json.loads(response.text)['tags']
         self.assertEqual(['gabe@example.com', 'snozz', 'sniff'], tags)
 
+        # Query images by single tag
+        path = self._url('/v2/images?tag=sniff')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual('image-1', images[0]['name'])
+
+        # Query images by multiple tags
+        path = self._url('/v2/images?tag=sniff&tag=snozz')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual('image-1', images[0]['name'])
+
+        # Query images by tag and other attributes
+        path = self._url('/v2/images?tag=sniff&status=queued')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual('image-1', images[0]['name'])
+
+        # Query images by tag and a nonexistent tag
+        path = self._url('/v2/images?tag=sniff&tag=fake')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
         # The tag should be deletable
         path = self._url('/v2/images/%s/tags/gabe%%40example.com' % image_id)
         response = requests.delete(path, headers=self._headers())
@@ -441,6 +472,13 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s/tags/gabe%%40example.com' % image_id)
         response = requests.delete(path, headers=self._headers())
         self.assertEqual(404, response.status_code)
+
+        # The tags won't be able to to query the images after deleting
+        path = self._url('/v2/images?tag=gabe%%40example.com')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(0, len(images))
 
         self.stop_servers()
 
