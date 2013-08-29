@@ -107,7 +107,9 @@ class ModelBase(object):
 class Image(BASE, ModelBase):
     """Represents an image in the datastore"""
     __tablename__ = 'images'
-    __table_args__ = (Index('checksum_image_idx', 'checksum'),)
+    __table_args__ = (Index('checksum_image_idx', 'checksum'),
+                      Index('ix_images_is_public', 'is_public'),
+                      Index('ix_images_deleted', 'deleted'),)
 
     id = Column(String(36), primary_key=True, default=uuidutils.generate_uuid)
     name = Column(String(255))
@@ -116,9 +118,9 @@ class Image(BASE, ModelBase):
     size = Column(BigInteger)
     status = Column(String(30), nullable=False)
     is_public = Column(Boolean, nullable=False, default=False)
-    checksum = Column(String(32), index=True)
-    min_disk = Column(Integer(), nullable=False, default=0)
-    min_ram = Column(Integer(), nullable=False, default=0)
+    checksum = Column(String(32))
+    min_disk = Column(Integer, nullable=False, default=0)
+    min_ram = Column(Integer, nullable=False, default=0)
     owner = Column(String(255))
     protected = Column(Boolean, nullable=False, default=False)
 
@@ -126,20 +128,29 @@ class Image(BASE, ModelBase):
 class ImageProperty(BASE, ModelBase):
     """Represents an image properties in the datastore"""
     __tablename__ = 'image_properties'
-    __table_args__ = (UniqueConstraint('image_id', 'name'), {})
+    __table_args__ = (Index('ix_image_properties_image_id', 'image_id'),
+                      Index('ix_image_properties_deleted', 'deleted'),
+                      UniqueConstraint('image_id',
+                                       'name',
+                                       name='ix_image_properties_'
+                                            'image_id_name'),)
 
     id = Column(Integer, primary_key=True)
     image_id = Column(String(36), ForeignKey('images.id'),
                       nullable=False)
     image = relationship(Image, backref=backref('properties'))
 
-    name = Column(String(255), index=True, nullable=False)
+    name = Column(String(255), nullable=False)
     value = Column(Text)
 
 
 class ImageTag(BASE, ModelBase):
     """Represents an image tag in the datastore"""
     __tablename__ = 'image_tags'
+    __table_args__ = (Index('ix_image_tags_image_id', 'image_id'),
+                      Index('ix_image_tags_image_id_tag_value',
+                            'image_id',
+                            'value'),)
 
     id = Column(Integer, primary_key=True, nullable=False)
     image_id = Column(String(36), ForeignKey('images.id'), nullable=False)
@@ -150,6 +161,8 @@ class ImageTag(BASE, ModelBase):
 class ImageLocation(BASE, ModelBase):
     """Represents an image location in the datastore"""
     __tablename__ = 'image_locations'
+    __table_args__ = (Index('ix_image_locations_image_id', 'image_id'),
+                      Index('ix_image_locations_deleted', 'deleted'),)
 
     id = Column(Integer, primary_key=True, nullable=False)
     image_id = Column(String(36), ForeignKey('images.id'), nullable=False)
@@ -162,13 +175,15 @@ class ImageMember(BASE, ModelBase):
     """Represents an image members in the datastore"""
     __tablename__ = 'image_members'
     unique_constraint_key_name = 'image_members_image_id_member_deleted_at_key'
-    __table_args__ = (Index('ix_image_members_image_id_member',
+    __table_args__ = (Index('ix_image_members_deleted', 'deleted'),
+                      Index('ix_image_members_image_id', 'image_id'),
+                      Index('ix_image_members_image_id_member',
                             'image_id',
                             'member'),
                       UniqueConstraint('image_id',
                                        'member',
                                        'deleted_at',
-                                       name=unique_constraint_key_name), {})
+                                       name=unique_constraint_key_name),)
 
     id = Column(Integer, primary_key=True)
     image_id = Column(String(36), ForeignKey('images.id'),
