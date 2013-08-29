@@ -35,6 +35,14 @@ class TestSimpleDriver(base.TestDriver, base.DriverTests):
         self.addCleanup(db_tests.reset)
 
 
+class TestSimpleQuota(base.DriverQuotaTests):
+
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestSimpleQuota, self).setUp()
+        self.addCleanup(db_tests.reset)
+
+
 class TestSimpleVisibility(base.TestVisibility, base.VisibilityTests):
 
     def setUp(self):

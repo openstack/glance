@@ -86,6 +86,11 @@ class StorageFull(GlanceException):
     message = _("There is not enough disk space on the image storage media.")
 
 
+class StorageQuotaFull(GlanceException):
+    message = _("The size of the data %(image_size)s will exceed the limit. "
+                "%(remaining)s bytes remaining.")
+
+
 class StorageWriteDenied(GlanceException):
     message = _("Permission to write image storage media denied.")
 

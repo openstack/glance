@@ -13,10 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.config import cfg
+
 from glance.common import exception
 from glance.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
+CONF = cfg.CONF
 
 
 def size_checked_iter(response, image_meta, expected_size, image_iter,
@@ -76,3 +79,59 @@ def image_send_notification(bytes_written, expected_size, image_meta, request,
         msg = _("An error occurred during image.send"
                 " notification: %(err)s") % locals()
         LOG.error(msg)
+
+
+def get_remaining_quota(context, db_api, image_id=None):
+    """
+    This method is called to see if the user is allowed to store an image
+    of the given size in glance based on their quota and current usage.
+    :param context:
+    :param db_api:  The db_api in use for this configuration
+    :param image_id: The image that will be replaced with this new data size
+    :return: The number of bytes the user has remaining under their quota.
+             None means infinity
+    """
+
+    #NOTE(jbresnah) in the future this value will come from a call to
+    # keystone.
+    users_quota = CONF.user_storage_quota
+    if users_quota <= 0:
+        return None
+
+    usage = db_api.user_get_storage_usage(context,
+                                          context.owner,
+                                          image_id=image_id)
+    return users_quota - usage
+
+
+def check_quota(context, image_size, db_api, image_id=None):
+    """
+    This method is called to see if the user is allowed to store an image
+    of the given size in glance based on their quota and current usage.
+    :param context:
+    :param image_size:  The size of the image we hope to store
+    :param db_api:  The db_api in use for this configuration
+    :param image_id: The image that will be replaced with this new data size
+    :return:
+    """
+
+    remaining = get_remaining_quota(context, db_api, image_id=image_id)
+
+    if remaining is None:
+        return
+
+    if image_size is None:
+        #NOTE(jbresnah) When the image size is None it means that it is
+        # not known.  In this case the only time we will raise an
+        # exception is when there is no room left at all, thus we know
+        # it will not fit
+        if remaining <= 0:
+            raise exception.StorageQuotaFull(image_size=image_size,
+                                             remaining=remaining)
+        return
+
+    if image_size > remaining:
+        raise exception.StorageQuotaFull(image_size=image_size,
+                                         remaining=remaining)
+
+    return remaining

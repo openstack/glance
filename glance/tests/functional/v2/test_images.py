@@ -1111,3 +1111,86 @@ class TestImageMembers(functional.FunctionalTest):
         self.assertEqual(404, response.status_code)
 
         self.stop_servers()
+
+
+class TestQuotas(functional.FunctionalTest):
+
+    def setUp(self):
+        super(TestQuotas, self).setUp()
+        self.cleanup()
+        self.api_server.deployment_flavor = 'noauth'
+        self.user_storage_quota = 100
+        self.start_servers(**self.__dict__.copy())
+
+    def _url(self, path):
+        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
+
+    def _headers(self, custom_headers=None):
+        base_headers = {
+            'X-Identity-Status': 'Confirmed',
+            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
+            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
+            'X-Tenant-Id': TENANT1,
+            'X-Roles': 'member',
+        }
+        base_headers.update(custom_headers or {})
+        return base_headers
+
+    def test_image_upload_under_quota(self):
+        # Image list should be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # Create an image (with a deployer-defined property)
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-2',
+                           'disk_format': 'aki', 'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+
+        # upload data
+        data = 'x' * (self.user_storage_quota - 1)
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(path, headers=headers, data=data)
+        self.assertEqual(204, response.status_code)
+
+        # Deletion should work
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(204, response.status_code)
+
+    def test_image_upload_exceed_quota(self):
+        # Image list should be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # Create an image (with a deployer-defined property)
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar',
+                           'disk_format': 'aki', 'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+
+        # upload data
+        data = 'x' * (self.user_storage_quota + 1)
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(path, headers=headers, data=data)
+        self.assertEqual(413, response.status_code)
+
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(204, response.status_code)

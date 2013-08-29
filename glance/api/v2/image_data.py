@@ -15,6 +15,7 @@
 
 import webob.exc
 
+import glance.api.common
 import glance.api.policy
 from glance.common import exception
 from glance.common import utils
@@ -72,6 +73,24 @@ class ImageDataController(object):
 
         except exception.StorageFull as e:
             msg = _("Image storage media is full: %s") % e
+            LOG.error(msg)
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
+                                                      request=req)
+
+        except exception.StorageFull as e:
+            msg = _("Image storage media is full: %s") % e
+            LOG.error(msg)
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
+                                                      request=req)
+
+        except exception.StorageQuotaFull as e:
+            msg = _("Image exceeds the storage quota: %s") % e
+            LOG.error(msg)
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
+                                                      request=req)
+
+        except exception.ImageSizeLimitExceeded as e:
+            msg = _("The incoming image is too large: %") % e
             LOG.error(msg)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)

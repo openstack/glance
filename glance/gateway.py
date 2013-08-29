@@ -18,6 +18,7 @@ from glance.api import policy
 import glance.db
 import glance.domain
 import glance.notifier
+import glance.quota
 import glance.store
 
 
@@ -34,8 +35,10 @@ class Gateway(object):
         image_factory = glance.domain.ImageFactory()
         store_image_factory = glance.store.ImageFactoryProxy(
                 image_factory, context, self.store_api)
+        quota_image_factory = glance.quota.ImageFactoryProxy(
+                store_image_factory, context, self.db_api)
         policy_image_factory = policy.ImageFactoryProxy(
-                store_image_factory, context, self.policy)
+                quota_image_factory, context, self.policy)
         notifier_image_factory = glance.notifier.ImageFactoryProxy(
                 policy_image_factory, context, self.notifier)
         authorized_image_factory = authorization.ImageFactoryProxy(
@@ -54,8 +57,10 @@ class Gateway(object):
         image_repo = glance.db.ImageRepo(context, self.db_api)
         store_image_repo = glance.store.ImageRepoProxy(
                 image_repo, context, self.store_api)
+        quota_image_repo = glance.quota.ImageRepoProxy(
+                store_image_repo, context, self.db_api)
         policy_image_repo = policy.ImageRepoProxy(
-                store_image_repo, context, self.policy)
+                quota_image_repo, context, self.policy)
         notifier_image_repo = glance.notifier.ImageRepoProxy(
                 policy_image_repo, context, self.notifier)
         authorized_image_repo = authorization.ImageRepoProxy(

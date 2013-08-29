@@ -72,3 +72,15 @@ class TestRegistryDriver(base.TestDriver,
     def tearDown(self):
         self.registry_server.stop()
         super(TestRegistryDriver, self).tearDown()
+
+
+class TestRegistryQuota(base.DriverQuotaTests, FunctionalInitWrapper):
+
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestRegistryQuota, self).setUp()
+        self.addCleanup(db_tests.reset)
+
+    def tearDown(self):
+        self.registry_server.stop()
+        super(TestRegistryQuota, self).tearDown()
