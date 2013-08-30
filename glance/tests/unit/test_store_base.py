@@ -25,17 +25,23 @@ class TestStoreBase(test_base.StoreClearingUnitTest):
         self.config(default_store='file')
         super(TestStoreBase, self).setUp()
 
-    def test_exception_to_str(self):
+    def test_exception_to_unicode(self):
         class FakeException(Exception):
             def __str__(self):
                 raise UnicodeError()
 
-        ret = store_base._exception_to_str(Exception('error message'))
+        exc = Exception('error message')
+        ret = store_base._exception_to_unicode(exc)
+        self.assertEqual(unicode, type(ret))
         self.assertEqual(ret, 'error message')
 
-        ret = store_base._exception_to_str(Exception('\xa5 error message'))
+        exc = Exception('\xa5 error message')
+        ret = store_base._exception_to_unicode(exc)
+        self.assertEqual(unicode, type(ret))
         self.assertEqual(ret, ' error message')
 
-        ret = store_base._exception_to_str(FakeException('\xa5 error message'))
+        exc = FakeException('\xa5 error message')
+        ret = store_base._exception_to_unicode(exc)
+        self.assertEqual(unicode, type(ret))
         self.assertEqual(ret, _("Caught '%(exception)s' exception.") %
                          {'exception': 'FakeException'})

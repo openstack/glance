@@ -27,16 +27,16 @@ from glance.openstack.common import strutils
 LOG = logging.getLogger(__name__)
 
 
-def _exception_to_str(exc):
+def _exception_to_unicode(exc):
     try:
-        error = unicode(exc)
+        return unicode(exc)
     except UnicodeError:
         try:
-            error = str(exc)
+            return strutils.safe_decode(str(exc), errors='ignore')
         except UnicodeError:
-            error = (_("Caught '%(exception)s' exception.") %
-                     {"exception": exc.__class__.__name__})
-    return strutils.safe_encode(error, errors='ignore')
+            msg = (_("Caught '%(exception)s' exception.") %
+                   {"exception": exc.__class__.__name__})
+            return strutils.safe_decode(msg, errors='ignore')
 
 
 class Store(object):
@@ -55,8 +55,8 @@ class Store(object):
             self.configure_add()
         except exception.BadStoreConfiguration as e:
             self.add = self.add_disabled
-            msg = (_("Failed to configure store correctly: %s "
-                     "Disabling add method.") % _exception_to_str(e))
+            msg = (_(u"Failed to configure store correctly: %s "
+                     "Disabling add method.") % _exception_to_unicode(e))
             LOG.warn(msg)
 
     def configure(self):
