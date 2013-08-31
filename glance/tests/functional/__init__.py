@@ -73,6 +73,7 @@ class Server(object):
         self.deployment_flavor = ''
         self.show_image_direct_url = False
         self.show_multiple_locations = False
+        self.property_protection_file = ''
         self.enable_v1_api = True
         self.enable_v2_api = True
         self.needs_database = False
@@ -367,6 +368,8 @@ user_storage_quota = %(user_storage_quota)s
 enable_v1_api = %(enable_v1_api)s
 enable_v2_api = %(enable_v2_api)s
 lock_path = %(lock_path)s
+enable_v2_api= %(enable_v2_api)s
+property_protection_file = %(property_protection_file)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
 """
@@ -571,6 +574,9 @@ class FunctionalTest(test_utils.BaseTestCase):
         utils.safe_mkdirs(conf_dir)
         self.copy_data_file('schema-image.json', conf_dir)
         self.copy_data_file('policy.json', conf_dir)
+        self.copy_data_file('property-protections.conf', conf_dir)
+        self.property_file = os.path.join(conf_dir,
+                                          'property-protections.conf')
         self.policy_file = os.path.join(conf_dir, 'policy.json')
 
         self.api_server = ApiServer(self.test_dir,
