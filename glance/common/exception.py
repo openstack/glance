@@ -298,5 +298,22 @@ class RPCError(GlanceException):
     message = _("%(cls)s exception was raised in the last rpc call: %(val)s")
 
 
-class TaskNotFound(GlanceException):
+class TaskException(GlanceException):
+    message = _("An unknown task exception occurred")
+
+
+class TaskNotFound(TaskException, NotFound):
     message = _("Task with the given id %(task_id)s was not found")
+
+
+class InvalidTaskStatus(TaskException, Invalid):
+    message = _("Provided status of task is unsupported: %(status)s")
+
+
+class InvalidTaskType(TaskException, Invalid):
+    message = _("Provided type of task is unsupported: %(type)s")
+
+
+class InvalidTaskStatusTransition(TaskException, Invalid):
+    message = _("Status transition from %(cur_status)s to"
+                " %(new_status)s is not allowed")

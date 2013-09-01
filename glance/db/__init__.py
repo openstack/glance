@@ -3,6 +3,7 @@
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # Copyright 2010-2012 OpenStack Foundation
+# Copyright 2013 IBM Corp.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -309,3 +310,87 @@ class ThreadPoolWrapper(object):
 
     def unwrap(self):
         return self.wrapped
+
+
+class TaskRepo(object):
+
+    def _format_task_from_db(self, db_task):
+        return glance.domain.Task(
+            task_id=db_task['id'],
+            type=db_task['type'],
+            status=db_task['status'],
+            input=db_task['input'],
+            result=db_task['result'],
+            owner=db_task['owner'],
+            message=db_task['message'],
+            expires_at=db_task['expires_at'],
+            created_at=db_task['created_at'],
+            updated_at=db_task['updated_at'],
+        )
+
+    def _format_task_to_db(self, task):
+        return {'id': task.task_id,
+                'type': task.type,
+                'status': task.status,
+                'input': task.input,
+                'result': task.result,
+                'owner': task.owner,
+                'message': task.message,
+                'expires_at': task.expires_at,
+                'created_at': task.created_at,
+                'updated_at': task.updated_at}
+
+    def __init__(self, context, db_api):
+        self.context = context
+        self.db_api = db_api
+
+    def get(self, task_id):
+        try:
+            db_api_task = self.db_api.task_get(self.context, task_id)
+        except (exception.NotFound, exception.Forbidden):
+            msg = _('Could not find task %s') % task_id
+            raise exception.NotFound(msg)
+        return self._format_task_from_db(db_api_task)
+
+    def list(self,
+             marker=None,
+             limit=None,
+             sort_key='created_at',
+             sort_dir='desc',
+             filters=None):
+        db_api_tasks = self.db_api.task_get_all(self.context,
+                                                filters=filters,
+                                                marker=marker,
+                                                limit=limit,
+                                                sort_key=sort_key,
+                                                sort_dir=sort_dir)
+        return [self._format_task_from_db(task) for task in db_api_tasks]
+
+    def save(self, task):
+        task_values = self._format_task_to_db(task)
+        try:
+            updated_values = self.db_api.task_update(self.context,
+                                                     task.task_id,
+                                                     task_values)
+        except (exception.NotFound, exception.Forbidden):
+            msg = _('Could not find task %s') % task.task_id
+            raise exception.NotFound(msg)
+        task.updated_at = updated_values['updated_at']
+
+    def add(self, task):
+        task_values = self._format_task_to_db(task)
+        updated_values = self.db_api.task_create(self.context, task_values)
+        task.created_at = updated_values['created_at']
+        task.updated_at = updated_values['updated_at']
+
+    def remove(self, task):
+        task_values = self._format_task_to_db(task)
+        try:
+            self.db_api.task_update(self.context, task.task_id, task_values)
+            updated_values = self.db_api.task_delete(self.context,
+                                                     task.task_id)
+        except (exception.NotFound, exception.Forbidden):
+            msg = _('Could not find task %s') % task.task_id
+            raise exception.NotFound(msg)
+        task.updated_at = updated_values['updated_at']
+        task.deleted_at = updated_values['deleted_at']

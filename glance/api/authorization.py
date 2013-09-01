@@ -1,4 +1,5 @@
 # Copyright 2012 OpenStack Foundation
+# Copyright 2013 IBM Corp.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -51,6 +52,24 @@ def proxy_member(context, member):
         return member
     else:
         return ImmutableMemberProxy(member)
+
+
+def is_task_mutable(context, task):
+    """Return True if the task is mutable in this context."""
+    if context.is_admin:
+        return True
+
+    if context.owner is None:
+        return False
+
+    return task.owner == context.owner
+
+
+def proxy_task(context, task):
+    if is_task_mutable(context, task):
+        return task
+    else:
+        return ImmutableTaskProxy(task)
 
 
 class ImageRepoProxy(glance.domain.proxy.Repo):
@@ -294,6 +313,36 @@ class ImmutableMemberProxy(object):
     updated_at = _immutable_attr('base', 'updated_at')
 
 
+class ImmutableTaskProxy(object):
+    def __init__(self, base):
+        self.base = base
+
+    task_id = _immutable_attr('base', 'task_id')
+    type = _immutable_attr('base', 'type')
+    status = _immutable_attr('base', 'status')
+    input = _immutable_attr('base', 'input')
+    owner = _immutable_attr('base', 'owner')
+    message = _immutable_attr('base', 'message')
+    expires_at = _immutable_attr('base', 'expires_at')
+    created_at = _immutable_attr('base', 'created_at')
+    updated_at = _immutable_attr('base', 'updated_at')
+
+    def run(self, executor):
+        raise NotImplementedError()
+
+    def begin_processing(self):
+        message = _("You are not permitted to set status on this task.")
+        raise exception.Forbidden(message)
+
+    def succeed(self, result):
+        message = _("You are not permitted to set status on this task.")
+        raise exception.Forbidden(message)
+
+    def fail(self, message):
+        message = _("You are not permitted to set status on this task.")
+        raise exception.Forbidden(message)
+
+
 class ImageProxy(glance.domain.proxy.Image):
 
     def __init__(self, image, context):
@@ -308,3 +357,53 @@ class ImageProxy(glance.domain.proxy.Image):
         else:
             member_repo = self.image.get_member_repo(**kwargs)
             return ImageMemberRepoProxy(member_repo, self, self.context)
+
+
+class TaskProxy(glance.domain.proxy.Task):
+
+    def __init__(self, task):
+        self.task = task
+        super(TaskProxy, self).__init__(task)
+
+
+class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
+
+    def __init__(self, task_factory, context):
+        self.task_factory = task_factory
+        self.context = context
+        super(TaskFactoryProxy, self).__init__(
+            task_factory,
+            proxy_class=TaskProxy,
+            proxy_kwargs=None
+        )
+
+    def new_task(self, task_type, task_input, owner):
+        #NOTE(nikhil): Unlike Images, Tasks are expected to have owner.
+        # We currently do not allow even admins to set the owner to None.
+        if owner is not None and (owner == self.context.owner
+                                  or self.context.is_admin):
+            return super(TaskFactoryProxy, self).new_task(
+                task_type,
+                task_input,
+                owner
+            )
+        else:
+            message = _("You are not permitted to create this task with "
+                        "owner as: %s")
+            raise exception.Forbidden(message % owner)
+
+
+class TaskRepoProxy(glance.domain.proxy.Repo):
+
+    def __init__(self, task_repo, context):
+        self.task_repo = task_repo
+        self.context = context
+        super(TaskRepoProxy, self).__init__(task_repo)
+
+    def get(self, task_id):
+        task = self.task_repo.get(task_id)
+        return proxy_task(self.context, task)
+
+    def list(self, *args, **kwargs):
+        tasks = self.task_repo.list(*args, **kwargs)
+        return [proxy_task(self.context, t) for t in tasks]

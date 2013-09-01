@@ -1,6 +1,7 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
 # Copyright 2011 OpenStack Foundation
+# Copyright 2013 IBM Corp.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -30,7 +31,7 @@ from glance.common import exception
 import glance.context
 from glance import notifier
 from glance.notifier import notify_kombu
-from glance.openstack.common import importutils
+from glance.openstack.common import importutils, timeutils
 import glance.openstack.common.log as logging
 import glance.tests.unit.utils as unit_test_utils
 from glance.tests import utils
@@ -69,6 +70,34 @@ class ImageRepoStub(object):
 
     def list(self, *args, **kwargs):
         return ['images_from_list']
+
+
+class TaskStub(glance.domain.Task):
+    def run(self):
+        pass
+
+    def succeed(self, result):
+        pass
+
+    def fail(self, message):
+        pass
+
+
+class TaskRepoStub(object):
+    def remove(self, *args, **kwargs):
+        return 'task_from_remove'
+
+    def save(self, *args, **kwargs):
+        return 'task_from_save'
+
+    def add(self, *args, **kwargs):
+        return 'task_from_add'
+
+    def get(self, *args, **kwargs):
+        return 'task_from_get'
+
+    def list(self, *args, **kwargs):
+        return ['tasks_from_list']
 
 
 class TestNotifier(utils.BaseTestCase):
@@ -848,3 +877,127 @@ class RabbitStrategyTestCase(utils.BaseTestCase):
         self.rabbit_strategy._send_message. \
             assert_called_with('fake_msg', 'notifications.warn')
         self.rabbit_strategy.log_failure.assert_called_with('fake_msg', "WARN")
+
+
+class TestTaskNotifications(utils.BaseTestCase):
+    """Test Task Notifications work"""
+
+    def setUp(self):
+        super(TestTaskNotifications, self).setUp()
+        self.task = TaskStub(
+            task_id='aaa',
+            type='import',
+            status='pending',
+            input={"loc": "fake"},
+            result='',
+            owner=TENANT2,
+            message='',
+            expires_at=None,
+            created_at=DATETIME,
+            updated_at=DATETIME
+        )
+        self.context = glance.context.RequestContext(
+            tenant=TENANT2,
+            user=USER1
+        )
+        self.task_repo_stub = TaskRepoStub()
+        self.notifier = unit_test_utils.FakeNotifier()
+        self.task_repo_proxy = glance.notifier.TaskRepoProxy(
+            self.task_repo_stub,
+            self.context,
+            self.notifier
+        )
+        self.task_proxy = glance.notifier.TaskProxy(
+            self.task,
+            self.context,
+            self.notifier
+        )
+        timeutils.set_time_override()
+
+    def tearDown(self):
+        super(TestTaskNotifications, self).tearDown()
+        timeutils.clear_time_override()
+
+    def test_task_create_notification(self):
+        self.task_repo_proxy.add(self.task_proxy)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'INFO')
+        self.assertEqual(output_log['event_type'], 'task.create')
+        self.assertEqual(output_log['payload']['id'], self.task.task_id)
+        self.assertEqual(
+            output_log['payload']['updated_at'],
+            timeutils.isotime(self.task.updated_at)
+        )
+        self.assertEqual(
+            output_log['payload']['created_at'],
+            timeutils.isotime(self.task.created_at)
+        )
+        if 'location' in output_log['payload']:
+            self.fail('Notification contained location field.')
+
+    def test_task_delete_notification(self):
+        now = timeutils.isotime()
+        self.task_repo_proxy.remove(self.task_proxy)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'INFO')
+        self.assertEqual(output_log['event_type'], 'task.delete')
+        self.assertEqual(output_log['payload']['id'], self.task.task_id)
+        self.assertEqual(
+            output_log['payload']['updated_at'],
+            timeutils.isotime(self.task.updated_at)
+        )
+        self.assertEqual(
+            output_log['payload']['created_at'],
+            timeutils.isotime(self.task.created_at)
+        )
+        self.assertEqual(
+            output_log['payload']['deleted_at'],
+            now
+        )
+        if 'location' in output_log['payload']:
+            self.fail('Notification contained location field.')
+
+    def test_task_run_notification(self):
+        self.assertRaises(
+            NotImplementedError,
+            self.task_proxy.run,
+            executor=None
+        )
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'INFO')
+        self.assertEqual(output_log['event_type'], 'task.run')
+        self.assertEqual(output_log['payload']['id'], self.task.task_id)
+
+    def test_task_processing_notification(self):
+        self.task_proxy.begin_processing()
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'INFO')
+        self.assertEqual(output_log['event_type'], 'task.processing')
+        self.assertEqual(output_log['payload']['id'], self.task.task_id)
+
+    def test_task_success_notification(self):
+        self.task_proxy.begin_processing()
+        self.task_proxy.succeed(result=None)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 2)
+        output_log = output_logs[1]
+        self.assertEqual(output_log['notification_type'], 'INFO')
+        self.assertEqual(output_log['event_type'], 'task.success')
+        self.assertEqual(output_log['payload']['id'], self.task.task_id)
+
+    def test_task_failure_notification(self):
+        self.task_proxy.fail(message=None)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'INFO')
+        self.assertEqual(output_log['event_type'], 'task.failure')
+        self.assertEqual(output_log['payload']['id'], self.task.task_id)

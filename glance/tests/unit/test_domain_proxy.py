@@ -1,4 +1,5 @@
 # Copyright 2013 OpenStack Foundation.
+# Copyright 2013 IBM Corp.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -12,6 +13,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+import mock
 
 from glance.domain import proxy
 import glance.tests.utils as test_utils
@@ -279,3 +282,49 @@ class TestImage(test_utils.BaseTestCase):
         member_repo = proxy_image.get_member_repo()
         self.assertTrue(isinstance(member_repo, FakeProxy))
         self.assertEqual(member_repo.base, 'corn')
+
+
+class TestTaskFactory(test_utils.BaseTestCase):
+    def setUp(self):
+        super(TestTaskFactory, self).setUp()
+        self.factory = mock.Mock()
+        self.fake_type = 'import'
+        self.fake_input = "fake input"
+        self.fake_owner = "owner"
+
+    def test_proxy_plain(self):
+        proxy_factory = proxy.TaskFactory(self.factory)
+
+        proxy_factory.new_task(
+            self.fake_type,
+            self.fake_input,
+            self.fake_owner
+        )
+
+        self.factory.new_task.assert_called_once_with(
+            self.fake_type,
+            self.fake_input,
+            self.fake_owner
+        )
+
+    def test_proxy_wrapping(self):
+        proxy_factory = proxy.TaskFactory(
+            self.factory,
+            proxy_class=FakeProxy,
+            proxy_kwargs={'dog': 'bark'}
+        )
+        self.factory.new_task.return_value = 'fake_task'
+
+        task = proxy_factory.new_task(
+            self.fake_type,
+            self.fake_input,
+            self.fake_owner
+        )
+
+        self.factory.new_task.assert_called_once_with(
+            self.fake_type,
+            self.fake_input,
+            self.fake_owner
+        )
+        self.assertTrue(isinstance(task, FakeProxy))
+        self.assertEqual(task.base, 'fake_task')

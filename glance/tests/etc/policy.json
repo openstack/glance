@@ -23,5 +23,10 @@
     "get_members": "",
     "modify_member": "",
 
-    "manage_image_cache": ""
+    "manage_image_cache": "",
+
+    "get_task": "",
+    "get_tasks": "",
+    "add_task": "",
+    "modify_task": ""
 }

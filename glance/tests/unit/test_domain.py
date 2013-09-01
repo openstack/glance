@@ -1,4 +1,5 @@
 # Copyright 2012 OpenStack Foundation.
+# Copyright 2013 IBM Corp.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -13,9 +14,18 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
+
+from oslo.config import cfg
+
 from glance.common import exception
 from glance import domain
+from glance.openstack.common import uuidutils, timeutils
 import glance.tests.utils as test_utils
+import glance.tests.unit.utils as unittest_utils
+
+
+CONF = cfg.CONF
 
 
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
@@ -275,3 +285,147 @@ class TestExtraProperties(test_utils.BaseTestCase):
         extra_properties = domain.ExtraProperties(a_dict)
         random_list = ['foo', 'bar']
         self.assertFalse(extra_properties.__eq__(random_list))
+
+
+class TestTaskFactory(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(TestTaskFactory, self).setUp()
+        self.task_factory = domain.TaskFactory()
+
+    def test_new_task(self):
+        task_type = 'import'
+        task_input = '{"import_from": "fake"}'
+        owner = TENANT1
+        task = self.task_factory.new_task(task_type, task_input, owner)
+        self.assertTrue(task.task_id is not None)
+        self.assertTrue(task.created_at is not None)
+        self.assertEqual(task.created_at, task.updated_at)
+        self.assertEqual(task.status, 'pending')
+        self.assertEqual(task.owner, TENANT1)
+        self.assertEqual(task.input, '{"import_from": "fake"}')
+
+    def test_new_task_invalid_type(self):
+        task_type = 'blah'
+        task_input = '{"import_from": "fake"}'
+        owner = TENANT1
+        self.assertRaises(
+            exception.InvalidTaskType,
+            self.task_factory.new_task,
+            task_type,
+            task_input,
+            owner,
+        )
+
+
+class TestTask(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(TestTask, self).setUp()
+        self.task_factory = domain.TaskFactory()
+        task_type = 'import'
+        task_input = ('{"import_from": "file:///home/a.img",'
+                      ' "import_from_format": "qcow2"}')
+        owner = TENANT1
+        self.gateway = unittest_utils.FakeGateway()
+        self.task = self.task_factory.new_task(task_type, task_input, owner)
+
+    def test_task_invalid_status(self):
+        task_id = uuidutils.generate_uuid()
+        status = 'blah'
+        self.assertRaises(
+            exception.InvalidTaskStatus,
+            domain.Task,
+            task_id,
+            type='import',
+            status=status,
+            input=None,
+            result=None,
+            owner=None,
+            message=None,
+            expires_at=None,
+            created_at=timeutils.utcnow(),
+            updated_at=timeutils.utcnow()
+        )
+
+    def test_validate_status_transition_from_pending(self):
+        self.task.begin_processing()
+        self.assertEqual(self.task.status, 'processing')
+
+    def test_validate_status_transition_from_processing_to_success(self):
+        self.task.begin_processing()
+        self.task.succeed('')
+        self.assertEqual(self.task.status, 'success')
+
+    def test_validate_status_transition_from_processing_to_failure(self):
+        self.task.begin_processing()
+        self.task.fail('')
+        self.assertEqual(self.task.status, 'failure')
+
+    def test_invalid_status_transitions_from_pending(self):
+        #test do not allow transition from pending to success
+        self.assertRaises(
+            exception.InvalidTaskStatusTransition,
+            self.task.succeed,
+            ''
+        )
+
+    def test_invalid_status_transitions_from_success(self):
+        #test do not allow transition from success to processing
+        self.task.begin_processing()
+        self.task.succeed('')
+        self.assertRaises(
+            exception.InvalidTaskStatusTransition,
+            self.task.begin_processing
+        )
+        #test do not allow transition from success to failure
+        self.assertRaises(
+            exception.InvalidTaskStatusTransition,
+            self.task.fail,
+            ''
+        )
+
+    def test_invalid_status_transitions_from_failure(self):
+        #test do not allow transition from failure to processing
+        self.task.begin_processing()
+        self.task.fail('')
+        self.assertRaises(
+            exception.InvalidTaskStatusTransition,
+            self.task.begin_processing
+        )
+        #test do not allow transition from failure to success
+        self.assertRaises(
+            exception.InvalidTaskStatusTransition,
+            self.task.succeed,
+            ''
+        )
+
+    def test_begin_processing(self):
+        self.task.begin_processing()
+        self.assertEqual(self.task.status, 'processing')
+
+    def test_succeed(self):
+        timeutils.set_time_override()
+        self.task.begin_processing()
+        self.task.succeed('{"location": "file://home"}')
+        self.assertEqual(self.task.status, 'success')
+        expected = (timeutils.utcnow() +
+                    datetime.timedelta(hours=CONF.task_time_to_live))
+        self.assertEqual(
+            self.task.expires_at,
+            expected
+        )
+        timeutils.clear_time_override()
+
+    def test_fail(self):
+        timeutils.set_time_override()
+        self.task.begin_processing()
+        self.task.fail('{"message": "connection failed"}')
+        self.assertEqual(self.task.status, 'failure')
+        expected = (timeutils.utcnow() +
+                    datetime.timedelta(hours=CONF.task_time_to_live))
+        self.assertEqual(
+            self.task.expires_at,
+            expected
+        )
+        timeutils.clear_time_override()
