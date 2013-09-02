@@ -250,7 +250,7 @@ def get_image_meta_from_headers(response):
         elif key.startswith('x-image-meta-'):
             field_name = key[len('x-image-meta-'):].replace('-', '_')
             if 'x-image-meta-' + field_name not in IMAGE_META_HEADERS:
-                msg = _(("Bad header: %s") % key)
+                msg = _("Bad header: %(header_name)s") % {'header_name': key}
                 raise exc.HTTPBadRequest(msg, content_type="text/plain")
             result[field_name] = value or None
     result['properties'] = properties
