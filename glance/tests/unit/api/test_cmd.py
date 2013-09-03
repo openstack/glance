@@ -22,6 +22,9 @@ from glance.tests import utils as test_utils
 
 
 class TestGlanceApiCmd(test_utils.BaseTestCase):
+
+    __argv_backup = None
+
     def _do_nothing(self, *args, **kwargs):
         pass
 
@@ -32,6 +35,7 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestGlanceApiCmd, self).setUp()
+        self.__argv_backup = sys.argv
         sys.argv = ['glance-api']
         self.stderr = StringIO.StringIO()
         sys.stderr = self.stderr
@@ -45,6 +49,7 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
 
     def tearDown(self):
         sys.stderr = sys.__stderr__
+        sys.argv = self.__argv_backup
         super(TestGlanceApiCmd, self).tearDown()
 
     def test_supported_default_store(self):
