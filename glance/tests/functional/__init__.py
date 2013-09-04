@@ -320,6 +320,7 @@ class ApiServer(Server):
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
+default_log_levels = eventlet.wsgi.server=DEBUG
 filesystem_store_datadir=%(image_dir)s
 default_store = %(default_store)s
 bind_host = 127.0.0.1
