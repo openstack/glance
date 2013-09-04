@@ -137,7 +137,7 @@ class Server(object):
         """
 
         # Ensure the configuration file is written
-        overridden = self.write_conf(**kwargs)[1]
+        self.write_conf(**kwargs)
 
         self.create_database()
 
@@ -770,7 +770,7 @@ class FunctionalTest(test_utils.BaseTestCase):
             s.connect(("127.0.0.1", port))
             s.close()
             return True
-        except socket.error as e:
+        except socket.error:
             return False
 
     def wait_for_servers(self, servers, expect_launch=True, timeout=10):

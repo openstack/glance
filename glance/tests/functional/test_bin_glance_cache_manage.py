@@ -99,7 +99,6 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         self.start_servers()  # Not passing in cache_manage in pipeline...
 
         api_port = self.api_port
-        registry_port = self.registry_port
 
         # Verify decent error message returned
         exe_cmd = '%s -m glance.cmd.cache_manage' % sys.executable
@@ -121,7 +120,6 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
 
         api_port = self.api_port
-        registry_port = self.registry_port
 
         # Verify no cached images
         exe_cmd = '%s -m glance.cmd.cache_manage' % sys.executable
@@ -161,7 +159,6 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
 
         api_port = self.api_port
-        registry_port = self.registry_port
 
         # Verify no cached images
         exe_cmd = '%s -m glance.cmd.cache_manage' % sys.executable

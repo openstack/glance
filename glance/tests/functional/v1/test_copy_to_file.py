@@ -75,9 +75,6 @@ class TestCopyToFile(functional.FunctionalTest):
 
         self.start_servers(**self.__dict__.copy())
 
-        api_port = self.api_port
-        registry_port = self.registry_port
-
         # POST /images with public image to be stored in from_store,
         # to stand in for the 'external' image
         image_data = "*" * FIVE_KB
@@ -200,9 +197,6 @@ class TestCopyToFile(functional.FunctionalTest):
 
         setup_http(self)
 
-        api_port = self.api_port
-        registry_port = self.registry_port
-
         uri = get_http_uri(self, 'foobar')
         copy_from = uri if exists else uri.replace('images', 'snafu')
 
@@ -271,9 +265,6 @@ class TestCopyToFile(functional.FunctionalTest):
         self.cleanup()
 
         self.start_servers(**self.__dict__.copy())
-
-        api_port = self.api_port
-        registry_port = self.registry_port
 
         with tempfile.NamedTemporaryFile() as image_file:
             image_file.write("XXX")
