@@ -56,7 +56,7 @@ IMAGE_META_HEADERS = ['x-image-meta-location', 'x-image-meta-size',
                       'x-image-meta-status', 'x-image-meta-copy_from',
                       'x-image-meta-uri', 'x-image-meta-checksum',
                       'x-image-meta-created_at', 'x-image-meta-updated_at',
-                      'x-image-meta-deleted-at', 'x-image-meta-min_ram',
+                      'x-image-meta-deleted_at', 'x-image-meta-min_ram',
                       'x-image-meta-min_disk', 'x-image-meta-owner',
                       'x-image-meta-store', 'x-image-meta-id',
                       'x-image-meta-protected', 'x-image-meta-deleted']
