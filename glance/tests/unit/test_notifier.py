@@ -21,6 +21,7 @@ import mox
 import qpid
 import qpid.messaging
 import stubout
+import webob
 
 from glance.common import exception
 import glance.context
@@ -590,8 +591,8 @@ class TestImageNotifications(utils.BaseTestCase):
             yield 'abcde'
             raise exception.StorageFull('Modern Major General')
 
-        self.image_proxy.set_data(data_iterator(), 10)
-
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                          self.image_proxy.set_data, data_iterator(), 10)
         output_logs = self.notifier.get_logs()
         self.assertEqual(len(output_logs), 1)
 
@@ -600,13 +601,48 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertEqual(output_log['event_type'], 'image.upload')
         self.assertTrue('Modern Major General' in output_log['payload'])
 
+    def test_image_set_data_value_error(self):
+        def data_iterator():
+            self.notifier.log = []
+            yield 'abcde'
+            raise ValueError('value wrong')
+
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.image_proxy.set_data, data_iterator(), 10)
+
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'ERROR')
+        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertTrue('value wrong' in output_log['payload'])
+
+    def test_image_set_data_duplicate(self):
+        def data_iterator():
+            self.notifier.log = []
+            yield 'abcde'
+            raise exception.Duplicate('Cant have duplicates')
+
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.image_proxy.set_data, data_iterator(), 10)
+
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'ERROR')
+        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertTrue('Cant have duplicates' in output_log['payload'])
+
     def test_image_set_data_storage_write_denied(self):
         def data_iterator():
             self.notifier.log = []
             yield 'abcde'
             raise exception.StorageWriteDenied('The Very Model')
 
-        self.image_proxy.set_data(data_iterator(), 10)
+        self.assertRaises(webob.exc.HTTPServiceUnavailable,
+                          self.image_proxy.set_data, data_iterator(), 10)
 
         output_logs = self.notifier.get_logs()
         self.assertEqual(len(output_logs), 1)
@@ -615,3 +651,71 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertEqual(output_log['notification_type'], 'ERROR')
         self.assertEqual(output_log['event_type'], 'image.upload')
         self.assertTrue('The Very Model' in output_log['payload'])
+
+    def test_image_set_data_forbidden(self):
+        def data_iterator():
+            self.notifier.log = []
+            yield 'abcde'
+            raise exception.Forbidden('Not allowed')
+
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.image_proxy.set_data, data_iterator(), 10)
+
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'ERROR')
+        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertTrue('Not allowed' in output_log['payload'])
+
+    def test_image_set_data_not_found(self):
+        def data_iterator():
+            self.notifier.log = []
+            yield 'abcde'
+            raise exception.NotFound('Not found')
+
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.image_proxy.set_data, data_iterator(), 10)
+
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'ERROR')
+        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertTrue('Not found' in output_log['payload'])
+
+    def test_image_set_data_HTTP_error(self):
+        def data_iterator():
+            self.notifier.log = []
+            yield 'abcde'
+            raise webob.exc.HTTPError('Http issue')
+
+        self.assertRaises(webob.exc.HTTPError,
+                          self.image_proxy.set_data, data_iterator(), 10)
+
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'ERROR')
+        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertTrue('Http issue' in output_log['payload'])
+
+    def test_image_set_data_error(self):
+        def data_iterator():
+            self.notifier.log = []
+            yield 'abcde'
+            raise Exception('Failed')
+
+        self.assertRaises(Exception,
+                          self.image_proxy.set_data, data_iterator(), 10)
+
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'ERROR')
+        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertTrue('Failed' in output_log['payload'])
