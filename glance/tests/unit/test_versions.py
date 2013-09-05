@@ -38,8 +38,14 @@ class VersionsTest(base.IsolatedUnitTest):
         results = json.loads(res.body)['versions']
         expected = [
             {
-                'id': 'v2.1',
+                'id': 'v2.2',
                 'status': 'CURRENT',
+                'links': [{'rel': 'self',
+                           'href': 'http://127.0.0.1:9292/v2/'}],
+            },
+            {
+                'id': 'v2.1',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': 'http://127.0.0.1:9292/v2/'}],
             },
@@ -107,8 +113,13 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
-    def test_request_url_v2_2_unsupported(self):
+    def test_request_url_v2_2(self):
         request = webob.Request.blank('/v2.2/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)
+
+    def test_request_url_v2_3_unsupported(self):
+        request = webob.Request.blank('/v2.3/images')
         resp = self.middleware.process_request(request)
         self.assertTrue(isinstance(resp, versions.Controller))
 
