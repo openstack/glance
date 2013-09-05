@@ -36,16 +36,16 @@ CONF.register_opts(property_opts)
 
 
 def is_property_protection_enabled():
-    return (CONF.property_protection_file is not None)
+    if CONF.property_protection_file:
+        return True
+    return False
 
 
 class PropertyRules(object):
 
     def __init__(self):
         self.rules = {}
-
-        if is_property_protection_enabled():
-            self._load_rules()
+        self._load_rules()
 
     def _load_rules(self):
         try:

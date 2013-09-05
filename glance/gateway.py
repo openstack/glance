@@ -15,6 +15,8 @@
 
 from glance.api import authorization
 from glance.api import policy
+from glance.api import property_protections
+from glance.common import property_utils
 import glance.db
 import glance.domain
 import glance.notifier
@@ -41,8 +43,16 @@ class Gateway(object):
                 quota_image_factory, context, self.policy)
         notifier_image_factory = glance.notifier.ImageFactoryProxy(
                 policy_image_factory, context, self.notifier)
-        authorized_image_factory = authorization.ImageFactoryProxy(
-                notifier_image_factory, context)
+        if property_utils.is_property_protection_enabled():
+            property_rules = property_utils.PropertyRules()
+            protected_image_factory = property_protections.\
+                ProtectedImageFactoryProxy(notifier_image_factory, context,
+                                           property_rules)
+            authorized_image_factory = authorization.ImageFactoryProxy(
+                    protected_image_factory, context)
+        else:
+            authorized_image_factory = authorization.ImageFactoryProxy(
+                    notifier_image_factory, context)
         return authorized_image_factory
 
     def get_image_member_factory(self, context):
@@ -63,6 +73,15 @@ class Gateway(object):
                 quota_image_repo, context, self.policy)
         notifier_image_repo = glance.notifier.ImageRepoProxy(
                 policy_image_repo, context, self.notifier)
-        authorized_image_repo = authorization.ImageRepoProxy(
-                notifier_image_repo, context)
+        if property_utils.is_property_protection_enabled():
+            property_rules = property_utils.PropertyRules()
+            protected_image_repo = property_protections.\
+                ProtectedImageRepoProxy(notifier_image_repo, context,
+                                        property_rules)
+            authorized_image_repo = authorization.ImageRepoProxy(
+                    protected_image_repo, context)
+        else:
+            authorized_image_repo = authorization.ImageRepoProxy(
+                    notifier_image_repo, context)
+
         return authorized_image_repo
