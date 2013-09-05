@@ -21,11 +21,13 @@ import errno
 import functools
 import os
 import shlex
+import shutil
 import socket
 import StringIO
 import subprocess
 import sys
 
+import fixtures
 from oslo.config import cfg
 import stubout
 import testtools
@@ -51,11 +53,32 @@ class BaseTestCase(testtools.TestCase):
         self.addCleanup(CONF.reset)
         self.stubs = stubout.StubOutForTesting()
         self.stubs.Set(exception, '_FATAL_EXCEPTION_FORMAT_ERRORS', True)
+        self.test_dir = self.useFixture(fixtures.TempDir()).path
 
     def tearDown(self):
         self.stubs.UnsetAll()
         self.stubs.SmartUnsetAll()
         super(BaseTestCase, self).tearDown()
+
+    def set_property_protections(self):
+        self.property_file = self._copy_data_file('property-protections.conf',
+                                                  self.test_dir)
+        self.config(property_protection_file=self.property_file)
+
+    def _copy_data_file(self, file_name, dst_dir):
+        src_file_name = os.path.join('glance/tests/etc', file_name)
+        shutil.copy(src_file_name, dst_dir)
+        dst_file_name = os.path.join(dst_dir, file_name)
+        return dst_file_name
+
+    def set_property_protection_rules(self, rules):
+        f = open(self.property_file, 'w')
+        for rule_key in rules.keys():
+            f.write('[%s]\n' % rule_key)
+            for operation in rules[rule_key].keys():
+                roles_str = ','.join(rules[rule_key][operation])
+                f.write('%s = %s\n' % (operation, roles_str))
+        f.close()
 
     def config(self, **kw):
         """
