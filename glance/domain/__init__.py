@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import collections
 from oslo.config import cfg
 
 from glance.common import exception
@@ -101,7 +102,8 @@ class Image(object):
         self.disk_format = kwargs.pop('disk_format', None)
         self.container_format = kwargs.pop('container_format', None)
         self.size = kwargs.pop('size', None)
-        self.extra_properties = kwargs.pop('extra_properties', None) or {}
+        extra_properties = kwargs.pop('extra_properties', None) or {}
+        self.extra_properties = ExtraProperties(extra_properties)
         self.tags = kwargs.pop('tags', None) or []
         if kwargs:
             message = "__init__() got unexpected keyword argument '%s'"
@@ -154,6 +156,32 @@ class Image(object):
 
     def set_data(self, data, size=None):
         raise NotImplementedError()
+
+
+class ExtraProperties(collections.MutableMapping, dict):
+
+    def __getitem__(self, key):
+        return dict.__getitem__(self, key)
+
+    def __setitem__(self, key, value):
+        return dict.__setitem__(self, key, value)
+
+    def __delitem__(self, key):
+        return dict.__delitem__(self, key)
+
+    def __eq__(self, other):
+        if isinstance(other, ExtraProperties):
+            return dict(self).__eq__(dict(other))
+        elif isinstance(other, dict):
+            return dict(self).__eq__(other)
+        else:
+            return False
+
+    def __len__(self):
+        return dict(self).__len__()
+
+    def keys(self):
+        return dict(self).keys()
 
 
 class ImageMembership(object):
