@@ -625,7 +625,7 @@ def _get_base_properties():
         },
         'status': {
             'type': 'string',
-            'description': _('Status of the image'),
+            'description': _('Status of the image (READ-ONLY)'),
             'enum': ['queued', 'saving', 'active', 'killed',
                      'deleted', 'pending_delete'],
         },
@@ -640,13 +640,13 @@ def _get_base_properties():
         },
         'checksum': {
             'type': 'string',
-            'description': _('md5 hash of image contents.'),
+            'description': _('md5 hash of image contents. (READ-ONLY)'),
             'type': 'string',
             'maxLength': 32,
         },
         'size': {
             'type': 'integer',
-            'description': _('Size of image file in bytes'),
+            'description': _('Size of image file in bytes (READ-ONLY)'),
         },
         'container_format': {
             'type': 'string',
@@ -662,14 +662,16 @@ def _get_base_properties():
         },
         'created_at': {
             'type': 'string',
-            'description': _('Date and time of image registration'),
+            'description': _('Date and time of image registration'
+                             ' (READ-ONLY)'),
             #TODO(bcwaldon): our jsonschema library doesn't seem to like the
             # format attribute, figure out why!
             #'format': 'date-time',
         },
         'updated_at': {
             'type': 'string',
-            'description': _('Date and time of the last image modification'),
+            'description': _('Date and time of the last image modification'
+                             ' (READ-ONLY)'),
             #'format': 'date-time',
         },
         'tags': {
@@ -683,7 +685,7 @@ def _get_base_properties():
         'direct_url': {
             'type': 'string',
             'description': _('URL to access the image file kept in external '
-                             'store'),
+                             'store (READ-ONLY)'),
         },
         'min_ram': {
             'type': 'integer',
@@ -694,9 +696,18 @@ def _get_base_properties():
             'description': _('Amount of disk space (in GB) required to boot '
                              'image.'),
         },
-        'self': {'type': 'string'},
-        'file': {'type': 'string'},
-        'schema': {'type': 'string'},
+        'self': {
+            'type': 'string',
+            'description': '(READ-ONLY)'
+        },
+        'file': {
+            'type': 'string',
+            'description': '(READ-ONLY)'
+        },
+        'schema': {
+            'type': 'string',
+            'description': '(READ-ONLY)'
+        },
         'locations': {
             'type': 'array',
             'items': {
