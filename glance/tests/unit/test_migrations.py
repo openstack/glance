@@ -567,6 +567,134 @@ class TestMigrations(utils.BaseTestCase):
         # No initial values should be remaining
         self.assertEqual(len(values), 0)
 
+    def _pre_upgrade_012(self, engine):
+        """Test rows in images have id changes from int to varchar(32) and
+        value changed from int to UUID. Also test image_members and
+        image_properties gets updated to point to new UUID keys"""
+
+        images = get_table(engine, 'images')
+        image_members = get_table(engine, 'image_members')
+        image_properties = get_table(engine, 'image_properties')
+
+        # Insert kernel, ramdisk and normal images
+        now = timeutils.utcnow()
+        data = {'created_at': now, 'updated_at': now,
+                'status': 'active', 'deleted': False,
+                'is_public': True, 'min_disk': 0, 'min_ram': 0}
+
+        test_data = {}
+        for name in ('kernel', 'ramdisk', 'normal'):
+            data['name'] = '%s migration 012 test' % name
+            result = images.insert().values(data).execute()
+            test_data[name] = result.inserted_primary_key[0]
+
+        # Insert image_members and image_properties rows
+        data = {'created_at': now, 'updated_at': now, 'deleted': False,
+                'image_id': test_data['normal'], 'member': 'foobar',
+                'can_share': False}
+        result = image_members.insert().values(data).execute()
+        test_data['member'] = result.inserted_primary_key[0]
+
+        data = {'created_at': now, 'updated_at': now, 'deleted': False,
+                'image_id': test_data['normal'], 'name': 'ramdisk_id',
+                'value': test_data['ramdisk']}
+        result = image_properties.insert().values(data).execute()
+        test_data['properties'] = [result.inserted_primary_key[0]]
+
+        data.update({'name': 'kernel_id', 'value': test_data['kernel']})
+        result = image_properties.insert().values(data).execute()
+        test_data['properties'].append(result.inserted_primary_key)
+
+        return test_data
+
+    def _check_012(self, engine, test_data):
+        images = get_table(engine, 'images')
+        image_members = get_table(engine, 'image_members')
+        image_properties = get_table(engine, 'image_properties')
+
+        # Find kernel, ramdisk and normal images. Make sure id has been
+        # changed to a uuid
+        uuids = {}
+        for name in ('kernel', 'ramdisk', 'normal'):
+            image_name = '%s migration 012 test' % name
+            rows = images.select()\
+                         .where(images.c.name == image_name)\
+                         .execute().fetchall()
+
+            self.assertEquals(len(rows), 1)
+
+            row = rows[0]
+            print repr(dict(row))
+            self.assertTrue(uuidutils.is_uuid_like(row['id']))
+
+            uuids[name] = row['id']
+
+        # Find all image_members to ensure image_id has been updated
+        results = image_members.select()\
+                               .where(image_members.c.image_id ==
+                                      uuids['normal'])\
+                               .execute().fetchall()
+        self.assertEquals(len(results), 1)
+
+        # Find all image_properties to ensure image_id has been updated
+        # as well as ensure kernel_id and ramdisk_id values have been
+        # updated too
+        results = image_properties.select()\
+                                  .where(image_properties.c.image_id ==
+                                         uuids['normal'])\
+                                  .execute().fetchall()
+        self.assertEquals(len(results), 2)
+        for row in results:
+            self.assertIn(row['name'], ('kernel_id', 'ramdisk_id'))
+
+            if row['name'] == 'kernel_id':
+                self.assertEqual(row['value'], uuids['kernel'])
+            if row['name'] == 'ramdisk_id':
+                self.assertEqual(row['value'], uuids['ramdisk'])
+
+    def _post_downgrade_012(self, engine):
+        images = get_table(engine, 'images')
+        image_members = get_table(engine, 'image_members')
+        image_properties = get_table(engine, 'image_properties')
+
+        # Find kernel, ramdisk and normal images. Make sure id has been
+        # changed back to an integer
+        ids = {}
+        for name in ('kernel', 'ramdisk', 'normal'):
+            image_name = '%s migration 012 test' % name
+            rows = images.select()\
+                         .where(images.c.name == image_name)\
+                         .execute().fetchall()
+            self.assertEquals(len(rows), 1)
+
+            row = rows[0]
+            self.assertFalse(uuidutils.is_uuid_like(row['id']))
+
+            ids[name] = row['id']
+
+        # Find all image_members to ensure image_id has been updated
+        results = image_members.select()\
+                               .where(image_members.c.image_id ==
+                                      ids['normal'])\
+                               .execute().fetchall()
+        self.assertEquals(len(results), 1)
+
+        # Find all image_properties to ensure image_id has been updated
+        # as well as ensure kernel_id and ramdisk_id values have been
+        # updated too
+        results = image_properties.select()\
+                                  .where(image_properties.c.image_id ==
+                                         ids['normal'])\
+                                  .execute().fetchall()
+        self.assertEquals(len(results), 2)
+        for row in results:
+            self.assertIn(row['name'], ('kernel_id', 'ramdisk_id'))
+
+            if row['name'] == 'kernel_id':
+                self.assertEqual(row['value'], str(ids['kernel']))
+            if row['name'] == 'ramdisk_id':
+                self.assertEqual(row['value'], str(ids['ramdisk']))
+
     def _pre_upgrade_015(self, engine):
         images = get_table(engine, 'images')
         unquoted_locations = [
