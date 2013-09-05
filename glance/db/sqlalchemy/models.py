@@ -19,12 +19,14 @@
 """
 SQLAlchemy models for glance data
 """
+import json
 
 from sqlalchemy import Column, Integer, String, BigInteger
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import ForeignKey, DateTime, Boolean, Text, PickleType
+from sqlalchemy import ForeignKey, DateTime, Boolean, Text
 from sqlalchemy.orm import relationship, backref, object_mapper
+from sqlalchemy.types import TypeDecorator
 from sqlalchemy import Index, UniqueConstraint
 
 from glance.openstack.common import timeutils
@@ -36,6 +38,22 @@ BASE = declarative_base()
 @compiles(BigInteger, 'sqlite')
 def compile_big_int_sqlite(type_, compiler, **kw):
     return 'INTEGER'
+
+
+class JSONEncodedDict(TypeDecorator):
+    """Represents an immutable structure as a json-encoded string"""
+
+    impl = Text
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = json.dumps(value)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = json.loads(value)
+        return value
 
 
 class ModelBase(object):
@@ -169,7 +187,7 @@ class ImageLocation(BASE, ModelBase):
     image_id = Column(String(36), ForeignKey('images.id'), nullable=False)
     image = relationship(Image, backref=backref('locations'))
     value = Column(Text(), nullable=False)
-    meta_data = Column(PickleType(), default={})
+    meta_data = Column(JSONEncodedDict(), default={})
 
 
 class ImageMember(BASE, ModelBase):
