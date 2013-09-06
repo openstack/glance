@@ -24,7 +24,6 @@ GridFS backend
 
 import ConfigParser
 import os
-import os.path
 
 import oslo.config.cfg
 import testtools
