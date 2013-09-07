@@ -55,7 +55,7 @@ class PropertyRules(object):
             conf_file = CONF.find_file(CONF.property_protection_file)
             CONFIG.read(conf_file)
         except Exception as e:
-            msg = _("Couldn't find property protection file %s:%s." %
+            msg = (_("Couldn't find property protection file %s:%s.") %
                     (CONF.property_protection_file, e))
             LOG.error(msg)
             raise webob.exc.HTTPInternalServerError(explanation=msg)
@@ -85,8 +85,8 @@ class PropertyRules(object):
         try:
             return re.compile(rule)
         except Exception as e:
-            msg = _("Encountered a malformed property protection rule %s:%s."
-                    % (rule, e))
+            msg = (_("Encountered a malformed property protection rule %s:%s.")
+                   % (rule, e))
             LOG.error(msg)
             raise webob.exc.HTTPInternalServerError(explanation=msg)
 

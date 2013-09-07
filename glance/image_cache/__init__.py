@@ -246,7 +246,7 @@ class ImageCache(object):
                 if (image_checksum and
                         image_checksum != current_checksum.hexdigest()):
                     msg = _("Checksum verification failed. Aborted "
-                            "caching of image '%s'." % image_id)
+                            "caching of image '%s'.") % image_id
                     raise exception.GlanceException(msg)
 
         except exception.GlanceException as e:
