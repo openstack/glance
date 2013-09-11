@@ -82,7 +82,7 @@ class PropertyRules(object):
         try:
             return re.compile(rule)
         except Exception as e:
-            msg = _("Encountered a malfored property protection rule %s:%s."
+            msg = _("Encountered a malformed property protection rule %s:%s."
                     % (rule, e))
             LOG.error(msg)
             raise webob.exc.HTTPInternalServerError(explanation=msg)
