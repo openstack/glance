@@ -2996,3 +2996,170 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 403)
+
+    def test_create_non_protected_prop(self):
+        """
+        Verify property marked with special char '@' is creatable by an unknown
+        role
+        """
+        image_id = self._create_admin_image()
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:joe_soap',
+                   'x-image-meta-property-x_all_permitted': '1'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        res_body = json.loads(output.body)['image']
+        self.assertEqual(res_body['properties']['x_all_permitted'], '1')
+
+    def test_read_non_protected_prop(self):
+        """
+        Verify property marked with special char '@' is readable by an unknown
+        role
+        """
+        custom_props = {
+            'x-image-meta-property-x_all_permitted': '1'
+        }
+        image_id = self._create_admin_image(custom_props)
+        another_request = unit_test_utils.get_fake_request(
+                method='HEAD', path='/images/%s' % image_id)
+        headers = {'x-auth-token': 'user:tenant:joe_soap'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 200)
+        self.assertEqual('', output.body)
+        self.assertEqual(
+                output.headers['x-image-meta-property-x_all_permitted'], '1')
+
+    def test_update_non_protected_prop(self):
+        """
+        Verify property marked with special char '@' is updatable by an unknown
+        role
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-x_all_permitted': '1'})
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:joe_soap',
+                   'x-image-meta-property-x_all_permitted': '2'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        res_body = json.loads(output.body)['image']
+        self.assertEqual(res_body['properties']['x_all_permitted'], '2')
+
+    def test_delete_non_protected_prop(self):
+        """
+        Verify property marked with special char '@' is deletable by an unknown
+        role
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-x_all_permitted': '1'})
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:joe_soap',
+                   'X-Glance-Registry-Purge-Props': 'True'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        res_body = json.loads(output.body)['image']
+        self.assertEqual(res_body['properties'], {})
+
+    def test_create_locked_down_protected_prop(self):
+        """
+        Verify a property protected by special char '!' is creatable by noone
+        """
+        image_id = self._create_admin_image()
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:member',
+                   'x-image-meta-property-x_none_permitted': '1'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 403)
+        # also check admin can not create
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:admin',
+                   'x-image-meta-property-x_none_permitted_admin': '1'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 403)
+
+    def test_read_locked_down_protected_prop(self):
+        """
+        Verify a property protected by special char '!' is readable by noone
+        """
+        custom_props = {
+            'x-image-meta-property-x_none_read': '1'
+        }
+        image_id = self._create_admin_image(custom_props)
+        another_request = unit_test_utils.get_fake_request(
+                method='HEAD', path='/images/%s' % image_id)
+        headers = {'x-auth-token': 'user:tenant:member'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 200)
+        self.assertNotIn('x_none_read', output.headers)
+        # also check admin can not read
+        another_request = unit_test_utils.get_fake_request(
+                method='HEAD', path='/images/%s' % image_id)
+        headers = {'x-auth-token': 'user:tenant:admin'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 200)
+        self.assertNotIn('x_none_read', output.headers)
+
+    def test_update_locked_down_protected_prop(self):
+        """
+        Verify a property protected by special char '!' is updatable by noone
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-x_none_update': '1'})
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:member',
+                   'x-image-meta-property-x_none_update': '2'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 403)
+        # also check admin can't update property
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:admin',
+                   'x-image-meta-property-x_none_update': '2'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 403)
+
+    def test_delete_locked_down_protected_prop(self):
+        """
+        Verify a property protected by special char '!' is deletable by noone
+        """
+        image_id = self._create_admin_image(
+                {'x-image-meta-property-x_none_delete': '1'})
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:member',
+                   'X-Glance-Registry-Purge-Props': 'True'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 403)
+        # also check admin can't delete
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:admin',
+                   'X-Glance-Registry-Purge-Props': 'True'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 403)

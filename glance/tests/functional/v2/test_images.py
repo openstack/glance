@@ -645,6 +645,559 @@ class TestImages(functional.FunctionalTest):
 
         self.stop_servers()
 
+    def test_property_protections_special_chars_roles(self):
+        # Enable property protection
+        self.api_server.property_protection_file = self.property_file_roles
+        self.start_servers(**self.__dict__.copy())
+
+        # Verify both admin and unknown role can create properties marked with
+        # '@'
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_all_permitted_admin': '1'
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-1',
+            'tags': [],
+            'visibility': 'private',
+            'self': '/v2/images/%s' % image_id,
+            'protected': False,
+            'file': '/v2/images/%s/file' % image_id,
+            'min_disk': 0,
+            'x_all_permitted_admin': '1',
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(image[key], value, key)
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'joe_soap'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_all_permitted_joe_soap': '1'
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-1',
+            'tags': [],
+            'visibility': 'private',
+            'self': '/v2/images/%s' % image_id,
+            'protected': False,
+            'file': '/v2/images/%s/file' % image_id,
+            'min_disk': 0,
+            'x_all_permitted_joe_soap': '1',
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(image[key], value, key)
+
+        # Verify both admin and unknown role can read properties marked with
+        # '@'
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)
+        self.assertEqual('1', image['x_all_permitted_joe_soap'])
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'joe_soap'})
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)
+        self.assertEqual('1', image['x_all_permitted_joe_soap'])
+
+        # Verify both admin and unknown role can update properties marked with
+        # '@'
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'admin'})
+        data = json.dumps([
+            {'op': 'replace',
+             'path': '/x_all_permitted_joe_soap', 'value': '2'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
+        image = json.loads(response.text)
+        self.assertEqual('2', image['x_all_permitted_joe_soap'])
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'joe_soap'})
+        data = json.dumps([
+            {'op': 'replace',
+             'path': '/x_all_permitted_joe_soap', 'value': '3'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
+        image = json.loads(response.text)
+        self.assertEqual('3', image['x_all_permitted_joe_soap'])
+
+        # Verify both admin and unknown role can delete properties marked with
+        # '@'
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_all_permitted_a': '1',
+            'x_all_permitted_b': '2'
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'admin'})
+        data = json.dumps([
+            {'op': 'remove', 'path': '/x_all_permitted_a'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
+        image = json.loads(response.text)
+        self.assertNotIn('x_all_permitted_a', image.keys())
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'joe_soap'})
+        data = json.dumps([
+            {'op': 'remove', 'path': '/x_all_permitted_b'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
+        image = json.loads(response.text)
+        self.assertNotIn('x_all_permitted_b', image.keys())
+
+        # Verify neither admin nor unknown role can create a property protected
+        # with '!'
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_none_permitted_admin': '1'
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(403, response.status_code)
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'joe_soap'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_none_permitted_joe_soap': '1'
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(403, response.status_code)
+
+        # Verify neither admin nor unknown role can read properties marked with
+        # '!'
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_none_read': '1'
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+        self.assertNotIn('x_none_read', image.keys())
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)
+        self.assertNotIn('x_none_read', image.keys())
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'joe_soap'})
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)
+        self.assertNotIn('x_none_read', image.keys())
+
+        # Verify neither admin nor unknown role can update properties marked
+        # with '!'
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_none_update': '1'
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('1', image['x_none_update'])
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'admin'})
+        data = json.dumps([
+            {'op': 'replace',
+             'path': '/x_none_update', 'value': '2'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(403, response.status_code, response.text)
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'joe_soap'})
+        data = json.dumps([
+            {'op': 'replace',
+             'path': '/x_none_update', 'value': '3'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(409, response.status_code, response.text)
+
+        # Verify neither admin nor unknown role can delete properties marked
+        # with '!'
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_none_delete': '1',
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'admin'})
+        data = json.dumps([
+            {'op': 'remove', 'path': '/x_none_delete'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(403, response.status_code, response.text)
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'joe_soap'})
+        data = json.dumps([
+            {'op': 'remove', 'path': '/x_none_delete'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(409, response.status_code, response.text)
+
+        self.stop_servers()
+
+    def test_property_protections_special_chars_policies(self):
+        # Enable property protection
+        self.api_server.property_protection_file = self.property_file_policies
+        self.api_server.property_protection_rule_format = 'policies'
+        self.start_servers(**self.__dict__.copy())
+
+        # Verify both admin and unknown role can create properties marked with
+        # '@'
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                'X-Roles': 'admin'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_all_permitted_admin': '1'
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-1',
+            'tags': [],
+            'visibility': 'private',
+            'self': '/v2/images/%s' % image_id,
+            'protected': False,
+            'file': '/v2/images/%s/file' % image_id,
+            'min_disk': 0,
+            'x_all_permitted_admin': '1',
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(image[key], value, key)
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'joe_soap'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_all_permitted_joe_soap': '1'
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-1',
+            'tags': [],
+            'visibility': 'private',
+            'self': '/v2/images/%s' % image_id,
+            'protected': False,
+            'file': '/v2/images/%s/file' % image_id,
+            'min_disk': 0,
+            'x_all_permitted_joe_soap': '1',
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(image[key], value, key)
+
+        # Verify both admin and unknown role can read properties marked with
+        # '@'
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)
+        self.assertEqual('1', image['x_all_permitted_joe_soap'])
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'joe_soap'})
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)
+        self.assertEqual('1', image['x_all_permitted_joe_soap'])
+
+        # Verify both admin and unknown role can update properties marked with
+        # '@'
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'admin'})
+        data = json.dumps([
+            {'op': 'replace',
+             'path': '/x_all_permitted_joe_soap', 'value': '2'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
+        image = json.loads(response.text)
+        self.assertEqual('2', image['x_all_permitted_joe_soap'])
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        header = self._headers({'content-type': media_type,
+                                'X-Roles': 'joe_soap'})
+        data = json.dumps([
+            {'op': 'replace',
+             'path': '/x_all_permitted_joe_soap', 'value': '3'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
+        image = json.loads(response.text)
+        self.assertEqual('3', image['x_all_permitted_joe_soap'])
+
+        # Verify both admin and unknown role can delete properties marked with
+        # '@'
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_all_permitted_a': '1',
+            'x_all_permitted_b': '2'
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'admin'})
+        data = json.dumps([
+            {'op': 'remove', 'path': '/x_all_permitted_a'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
+        image = json.loads(response.text)
+        self.assertNotIn('x_all_permitted_a', image.keys())
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'joe_soap'})
+        data = json.dumps([
+            {'op': 'remove', 'path': '/x_all_permitted_b'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
+        image = json.loads(response.text)
+        self.assertNotIn('x_all_permitted_b', image.keys())
+
+        # Verify neither admin nor unknown role can create a property protected
+        # with '!'
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_none_permitted_admin': '1'
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(403, response.status_code)
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'joe_soap'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_none_permitted_joe_soap': '1'
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(403, response.status_code)
+
+        # Verify neither admin nor unknown role can read properties marked with
+        # '!'
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_none_read': '1'
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+        self.assertNotIn('x_none_read', image.keys())
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)
+        self.assertNotIn('x_none_read', image.keys())
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'joe_soap'})
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)
+        self.assertNotIn('x_none_read', image.keys())
+
+        # Verify neither admin nor unknown role can update properties marked
+        # with '!'
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_none_update': '1'
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('1', image['x_none_update'])
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'admin'})
+        data = json.dumps([
+            {'op': 'replace',
+             'path': '/x_none_update', 'value': '2'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(403, response.status_code, response.text)
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'joe_soap'})
+        data = json.dumps([
+            {'op': 'replace',
+             'path': '/x_none_update', 'value': '3'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(409, response.status_code, response.text)
+
+        # Verify neither admin nor unknown role can delete properties marked
+        # with '!'
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        data = json.dumps({
+            'name': 'image-1',
+            'disk_format': 'aki',
+            'container_format': 'aki',
+            'x_none_delete': '1',
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'admin'})
+        data = json.dumps([
+            {'op': 'remove', 'path': '/x_none_delete'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(403, response.status_code, response.text)
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'joe_soap'})
+        data = json.dumps([
+            {'op': 'remove', 'path': '/x_none_delete'}
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(409, response.status_code, response.text)
+
+        self.stop_servers()
+
     def test_tag_lifecycle(self):
         # Create an image with a tag - duplicate should be ignored
         path = self._url('/v2/images')

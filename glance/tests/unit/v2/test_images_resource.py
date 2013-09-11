@@ -819,6 +819,156 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPConflict, self.controller.update,
                           request, UUID1, changes)
 
+    def test_create_non_protected_prop(self):
+        """
+        Verify property marked with special char '@' is creatable by an unknown
+        role
+        """
+        self.set_property_protections()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
+        image = {'name': 'image-1'}
+        extra_props = {'x_all_permitted_1': '1'}
+        created_image = self.controller.create(request, image=image,
+                                               extra_properties=extra_props,
+                                               tags=[])
+        self.assertEqual(created_image.extra_properties['x_all_permitted_1'],
+                         '1')
+        another_request = unit_test_utils.get_fake_request(roles=['joe_soap'])
+        extra_props = {'x_all_permitted_2': '2'}
+        created_image = self.controller.create(request, image=image,
+                                               extra_properties=extra_props,
+                                               tags=[])
+        self.assertEqual(created_image.extra_properties['x_all_permitted_2'],
+                         '2')
+
+    def test_read_non_protected_prop(self):
+        """
+        Verify property marked with special char '@' is readable by an unknown
+        role
+        """
+        self.set_property_protections()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
+        image = {'name': 'image-1'}
+        extra_props = {'x_all_permitted': '1'}
+        created_image = self.controller.create(request, image=image,
+                                               extra_properties=extra_props,
+                                               tags=[])
+        another_request = unit_test_utils.get_fake_request(roles=['joe_soap'])
+        output = self.controller.show(another_request, created_image.image_id)
+        self.assertEqual(output.extra_properties['x_all_permitted'], '1')
+
+    def test_update_non_protected_prop(self):
+        """
+        Verify property marked with special char '@' is updatable by an unknown
+        role
+        """
+        self.set_property_protections()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
+        image = {'name': 'image-1'}
+        extra_props = {'x_all_permitted': 'bar'}
+        created_image = self.controller.create(request, image=image,
+                                               extra_properties=extra_props,
+                                               tags=[])
+        another_request = unit_test_utils.get_fake_request(roles=['joe_soap'])
+        changes = [
+            {'op': 'replace', 'path': ['x_all_permitted'], 'value': 'baz'},
+        ]
+        output = self.controller.update(another_request,
+                                        created_image.image_id, changes)
+        self.assertEqual(output.extra_properties['x_all_permitted'], 'baz')
+
+    def test_delete_non_protected_prop(self):
+        """
+        Verify property marked with special char '@' is deletable by an unknown
+        role
+        """
+        self.set_property_protections()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
+        image = {'name': 'image-1'}
+        extra_props = {'x_all_permitted': 'bar'}
+        created_image = self.controller.create(request, image=image,
+                                               extra_properties=extra_props,
+                                               tags=[])
+        another_request = unit_test_utils.get_fake_request(roles=['member'])
+        changes = [
+            {'op': 'remove', 'path': ['x_all_permitted']}
+        ]
+        output = self.controller.update(another_request,
+                                        created_image.image_id, changes)
+        self.assertRaises(KeyError, output.extra_properties.__getitem__,
+                          'x_all_permitted')
+
+    def test_create_locked_down_protected_prop(self):
+        """
+        Verify a property protected by special char '!' is creatable by noone
+        """
+        self.set_property_protections()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
+        image = {'name': 'image-1'}
+        created_image = self.controller.create(request, image=image,
+                                               extra_properties={},
+                                               tags=[])
+        roles = ['fake_member']
+        another_request = unit_test_utils.get_fake_request(roles=roles)
+        changes = [
+            {'op': 'add', 'path': ['x_none_permitted'], 'value': 'bar'},
+        ]
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.controller.update, another_request,
+                          created_image.image_id, changes)
+
+    def test_read_locked_down_protected_prop(self):
+        """
+        Verify a property protected by special char '!' is readable by noone
+        """
+        self.set_property_protections()
+        request = unit_test_utils.get_fake_request(roles=['member'])
+        image = {'name': 'image-1'}
+        extra_props = {'x_none_read': 'bar'}
+        created_image = self.controller.create(request, image=image,
+                                               extra_properties=extra_props,
+                                               tags=[])
+        another_request = unit_test_utils.get_fake_request(roles=['fake_role'])
+        output = self.controller.show(another_request, created_image.image_id)
+        self.assertRaises(KeyError, output.extra_properties.__getitem__,
+                          'x_none_read')
+
+    def test_update_locked_down_protected_prop(self):
+        """
+        Verify a property protected by special char '!' is updatable by noone
+        """
+        self.set_property_protections()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
+        image = {'name': 'image-1'}
+        extra_props = {'x_none_update': 'bar'}
+        created_image = self.controller.create(request, image=image,
+                                               extra_properties=extra_props,
+                                               tags=[])
+        another_request = unit_test_utils.get_fake_request(roles=['fake_role'])
+        changes = [
+            {'op': 'replace', 'path': ['x_none_update'], 'value': 'baz'},
+        ]
+        self.assertRaises(webob.exc.HTTPConflict, self.controller.update,
+                          request, UUID1, changes)
+
+    def test_delete_locked_down_protected_prop(self):
+        """
+        Verify a property protected by special char '!' is deletable by noone
+        """
+        self.set_property_protections()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
+        image = {'name': 'image-1'}
+        extra_props = {'x_none_delete': 'bar'}
+        created_image = self.controller.create(request, image=image,
+                                               extra_properties=extra_props,
+                                               tags=[])
+        another_request = unit_test_utils.get_fake_request(roles=['fake_role'])
+        changes = [
+            {'op': 'remove', 'path': ['x_none_delete']}
+        ]
+        self.assertRaises(webob.exc.HTTPConflict, self.controller.update,
+                          request, UUID1, changes)
+
     def test_update_replace_locations(self):
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
