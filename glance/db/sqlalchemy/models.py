@@ -109,7 +109,8 @@ class Image(BASE, ModelBase):
     __tablename__ = 'images'
     __table_args__ = (Index('checksum_image_idx', 'checksum'),
                       Index('ix_images_is_public', 'is_public'),
-                      Index('ix_images_deleted', 'deleted'),)
+                      Index('ix_images_deleted', 'deleted'),
+                      Index('owner_image_idx', 'owner'),)
 
     id = Column(String(36), primary_key=True, default=uuidutils.generate_uuid)
     name = Column(String(255))
