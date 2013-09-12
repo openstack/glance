@@ -95,7 +95,7 @@ class TaskStub(object):
         self.task_id = task_id
         self.status = 'pending'
 
-    def run(self):
+    def run(self, executor):
         self.status = 'processing'
 
 

@@ -64,7 +64,7 @@ class ImageRepoStub(object):
 
 
 class TaskStub(glance.domain.Task):
-    def run(self):
+    def run(self, executor):
         pass
 
     def succeed(self, result):
@@ -453,11 +453,7 @@ class TestTaskNotifications(utils.BaseTestCase):
             self.fail('Notification contained location field.')
 
     def test_task_run_notification(self):
-        self.assertRaises(
-            NotImplementedError,
-            self.task_proxy.run,
-            executor=None
-        )
+        self.task_proxy.run(executor=None)
         output_logs = self.notifier.get_logs()
         self.assertEqual(len(output_logs), 1)
         output_log = output_logs[0]

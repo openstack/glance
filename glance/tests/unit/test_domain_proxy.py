@@ -296,15 +296,15 @@ class TestTaskFactory(test_utils.BaseTestCase):
         proxy_factory = proxy.TaskFactory(self.factory)
 
         proxy_factory.new_task(
-            self.fake_type,
-            self.fake_input,
-            self.fake_owner
+            type=self.fake_type,
+            input=self.fake_input,
+            owner=self.fake_owner
         )
 
         self.factory.new_task.assert_called_once_with(
-            self.fake_type,
-            self.fake_input,
-            self.fake_owner
+            type=self.fake_type,
+            input=self.fake_input,
+            owner=self.fake_owner
         )
 
     def test_proxy_wrapping(self):
@@ -316,15 +316,15 @@ class TestTaskFactory(test_utils.BaseTestCase):
         self.factory.new_task.return_value = 'fake_task'
 
         task = proxy_factory.new_task(
-            self.fake_type,
-            self.fake_input,
-            self.fake_owner
+            type=self.fake_type,
+            input=self.fake_input,
+            owner=self.fake_owner
         )
 
         self.factory.new_task.assert_called_once_with(
-            self.fake_type,
-            self.fake_input,
-            self.fake_owner
+            type=self.fake_type,
+            input=self.fake_input,
+            owner=self.fake_owner
         )
         self.assertTrue(isinstance(task, FakeProxy))
         self.assertEqual(task.base, 'fake_task')

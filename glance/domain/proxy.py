@@ -149,7 +149,7 @@ class Task(object):
     updated_at = _proxy('base', 'updated_at')
 
     def run(self, executor):
-        raise NotImplementedError()
+        self.base.run(executor)
 
     def begin_processing(self):
         self.base.begin_processing()
@@ -166,6 +166,6 @@ class TaskFactory(object):
         self.helper = Helper(proxy_class, proxy_kwargs)
         self.base = base
 
-    def new_task(self, task_type, task_input, owner):
-        t = self.base.new_task(task_type, task_input, owner)
+    def new_task(self, **kwargs):
+        t = self.base.new_task(**kwargs)
         return self.helper.proxy(t)
