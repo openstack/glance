@@ -20,6 +20,7 @@ from oslo.config import cfg
 import testtools
 
 from glance import db as db_api
+import glance.db
 from glance.openstack.common import importutils
 
 CONF = cfg.CONF
@@ -39,6 +40,18 @@ class DbApiTest(testtools.TestCase):
         self.assertFalse(isinstance(dbapi, db_api.ThreadPoolWrapper))
         self.assertEqual(importutils.import_module(CONF.data_api), dbapi)
 
+    def test_unwrap_dbapi_when_db_pool_is_enabled(self):
+        CONF.set_override('use_tpool', False)
+        dbapi = db_api.get_api()
+        self.assertEqual(importutils.import_module(CONF.data_api),
+                         glance.db.unwrap(dbapi))
+
+    def test_unwrap_dbapi_when_db_pool_is_disabled(self):
+        CONF.set_override('use_tpool', True)
+        dbapi = db_api.get_api()
+        self.assertEqual(importutils.import_module(CONF.data_api),
+                         glance.db.unwrap(dbapi))
+
 
 def method_for_test_1(*args, **kwargs):
     return args, kwargs
@@ -46,8 +59,6 @@ def method_for_test_1(*args, **kwargs):
 
 class ThreadPoolWrapper(testtools.TestCase):
     def test_thread_pool(self):
-        module = importutils.import_module('glance.tests.functional.db.'
-                                           'test_db_api')
         CONF.set_override('use_tpool', True)
         CONF.set_override('data_api', 'glance.tests.functional.db.'
                           'test_db_api')
@@ -58,6 +69,15 @@ class ThreadPoolWrapper(testtools.TestCase):
 
         dbapi.method_for_test_1(1, 2, kwarg='arg')
         tpool.execute.assert_called_with(method_for_test_1, 1, 2, kwarg='arg')
+
+    def test_unwrap(self):
+        CONF.set_override('use_tpool', True)
+        CONF.set_override('data_api', 'glance.tests.functional.db.'
+                          'test_db_api')
+
+        dbapi = db_api.get_api()
+        self.assertEqual(importutils.import_module(CONF.data_api),
+                         dbapi.unwrap())
 
     def tearDown(self):
         super(ThreadPoolWrapper, self).tearDown()

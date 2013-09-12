@@ -1256,3 +1256,13 @@ class TestRegistryRPC(base.IsolatedUnitTest):
 
         memb_list = json.loads(res.body)[0]
         self.assertEquals(len(memb_list), 0)
+
+
+class TestRegistryRPCDBPoolEnabled(TestRegistryRPC):
+    def setUp(self):
+        CONF.set_override('use_tpool', True)
+        super(TestRegistryRPCDBPoolEnabled, self).setUp()
+
+    def tearDown(self):
+        super(TestRegistryRPCDBPoolEnabled, self).tearDown()
+        CONF.set_override('use_tpool', False)
