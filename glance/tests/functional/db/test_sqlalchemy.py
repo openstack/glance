@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
+from glance.api import CONF
 import glance.db.sqlalchemy.api
 from glance.db.sqlalchemy import models as db_models
 import glance.tests.functional.db as db_tests
@@ -22,7 +22,8 @@ from glance.tests.functional.db import base
 
 def get_db(config):
     config(sql_connection='sqlite://', verbose=False, debug=False)
-    db_api = glance.db.sqlalchemy.api
+    CONF.set_override('data_api', 'glance.db.sqlalchemy.api')
+    db_api = glance.db.get_api()
     db_api.setup_db_env()
     db_api.get_engine()
     return db_api

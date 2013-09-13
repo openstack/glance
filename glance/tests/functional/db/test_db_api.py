@@ -58,3 +58,7 @@ class ThreadPoolWrapper(testtools.TestCase):
 
         dbapi.method_for_test_1(1, 2, kwarg='arg')
         tpool.execute.assert_called_with(method_for_test_1, 1, 2, kwarg='arg')
+
+    def tearDown(self):
+        super(ThreadPoolWrapper, self).tearDown()
+        CONF.set_override('use_tpool', False)

@@ -13,14 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
+from glance.api import CONF
 import glance.db.simple.api
 import glance.tests.functional.db as db_tests
 from glance.tests.functional.db import base
 
 
 def get_db(config):
-    return glance.db.simple.api
+    CONF.set_override('data_api', 'glance.db.simple.api')
+    db_api = glance.db.get_api()
+    return db_api
 
 
 def reset_db(db_api):
