@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from glance.api import policy
 from glance.api import property_protections
 from glance.common import exception
 from glance.common import property_utils
@@ -48,7 +49,8 @@ class TestProtectedImageRepoProxy(utils.BaseTestCase):
     def setUp(self):
         super(TestProtectedImageRepoProxy, self).setUp()
         self.set_property_protections()
-        self.property_rules = property_utils.PropertyRules()
+        self.policy = policy.Enforcer()
+        self.property_rules = property_utils.PropertyRules(self.policy)
         self.image_factory = glance.domain.ImageFactory()
         extra_props = {'spl_create_prop': 'c',
                        'spl_read_prop': 'r',
@@ -101,7 +103,8 @@ class TestProtectedImageProxy(utils.BaseTestCase):
     def setUp(self):
         super(TestProtectedImageProxy, self).setUp()
         self.set_property_protections()
-        self.property_rules = property_utils.PropertyRules()
+        self.policy = policy.Enforcer()
+        self.property_rules = property_utils.PropertyRules(self.policy)
 
     class ImageStub(object):
         def __init__(self, extra_prop):
@@ -123,92 +126,93 @@ class TestExtraPropertiesProxy(utils.BaseTestCase):
     def setUp(self):
         super(TestExtraPropertiesProxy, self).setUp()
         self.set_property_protections()
-        self.property_rules = property_utils.PropertyRules()
+        self.policy = policy.Enforcer()
+        self.property_rules = property_utils.PropertyRules(self.policy)
 
     def test_read_extra_property_as_admin_role(self):
         extra_properties = {'foo': 'bar', 'ping': 'pong'}
-        roles = ['admin']
+        context = glance.context.RequestContext(roles=['admin'])
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
-                                roles, extra_properties, self.property_rules)
+                                context, extra_properties, self.property_rules)
         test_result = extra_prop_proxy['foo']
         self.assertEqual(test_result, 'bar')
 
     def test_read_extra_property_as_unpermitted_role(self):
         extra_properties = {'foo': 'bar', 'ping': 'pong'}
-        roles = ['unpermitted_role']
+        context = glance.context.RequestContext(roles=['unpermitted_role'])
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
-                                roles, extra_properties, self.property_rules)
+                                context, extra_properties, self.property_rules)
         self.assertRaises(KeyError, extra_prop_proxy.__getitem__, 'foo')
 
     def test_update_extra_property_as_permitted_role_after_read(self):
         extra_properties = {'foo': 'bar', 'ping': 'pong'}
-        roles = ['admin']
+        context = glance.context.RequestContext(roles=['admin'])
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
-                                roles, extra_properties, self.property_rules)
+                                context, extra_properties, self.property_rules)
         extra_prop_proxy['foo'] = 'par'
         self.assertEqual(extra_prop_proxy['foo'], 'par')
 
     def test_update_extra_property_as_unpermitted_role_after_read(self):
         extra_properties = {'spl_read_prop': 'bar'}
-        roles = ['spl_role']
+        context = glance.context.RequestContext(roles=['spl_role'])
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
-                                roles, extra_properties, self.property_rules)
+                                context, extra_properties, self.property_rules)
         self.assertRaises(exception.ReservedProperty,
                           extra_prop_proxy.__setitem__,
                           'spl_read_prop', 'par')
 
-    def test_update_reserved_extra_property_as_permitted_role(self):
+    def test_update_reserved_extra_property(self):
         extra_properties = {'spl_create_prop': 'bar'}
-        roles = ['spl_role']
+        context = glance.context.RequestContext(roles=['spl_role'])
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
-                                roles, extra_properties, self.property_rules)
+                                context, extra_properties, self.property_rules)
         self.assertRaises(exception.ReservedProperty,
                           extra_prop_proxy.__setitem__, 'spl_create_prop',
                           'par')
 
-    def test_create_extra_property_as_permitted_role_after_read(self):
+    def test_create_extra_property_admin(self):
         extra_properties = {}
-        roles = ['admin']
+        context = glance.context.RequestContext(roles=['admin'])
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
-                                roles, extra_properties, self.property_rules)
+                                context, extra_properties, self.property_rules)
         extra_prop_proxy['boo'] = 'doo'
         self.assertEqual(extra_prop_proxy['boo'], 'doo')
 
-    def test_create_reserved_extra_property_as_permitted_role(self):
+    def test_create_reserved_extra_property(self):
         extra_properties = {}
-        roles = ['spl_role']
+        context = glance.context.RequestContext(roles=['spl_role'])
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
-                                roles, extra_properties, self.property_rules)
+                                context, extra_properties, self.property_rules)
         self.assertRaises(exception.ReservedProperty,
                           extra_prop_proxy.__setitem__, 'boo',
                           'doo')
 
     def test_delete_extra_property_as_admin_role(self):
         extra_properties = {'foo': 'bar'}
-        roles = ['admin']
+        context = glance.context.RequestContext(roles=['admin'])
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
-                                roles, extra_properties, self.property_rules)
+                                context, extra_properties, self.property_rules)
         del extra_prop_proxy['foo']
         self.assertRaises(KeyError, extra_prop_proxy.__getitem__, 'foo')
 
     def test_delete_nonexistant_extra_property_as_admin_role(self):
         extra_properties = {}
-        roles = ['admin']
+        context = glance.context.RequestContext(roles=['admin'])
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
-                                roles, extra_properties, self.property_rules)
+                                context, extra_properties, self.property_rules)
         self.assertRaises(KeyError, extra_prop_proxy.__delitem__, 'foo')
 
-    def test_delete_reserved_extra_property_as_permitted_role(self):
+    def test_delete_reserved_extra_property(self):
         extra_properties = {'spl_read_prop': 'r'}
-        roles = ['spl_role']
+        context = glance.context.RequestContext(roles=['spl_role'])
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
-                                roles, extra_properties, self.property_rules)
+                                context, extra_properties, self.property_rules)
         # Ensure property has been created and can be read
         self.assertEqual(extra_prop_proxy['spl_read_prop'], 'r')
         self.assertRaises(exception.ReservedProperty,
                           extra_prop_proxy.__delitem__, 'spl_read_prop')
 
-    def test_delete_nonexistant_extra_property_as_permitted_role(self):
+    def test_delete_nonexistant_extra_property(self):
         extra_properties = {}
         roles = ['spl_role']
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
@@ -221,7 +225,8 @@ class TestProtectedImageFactoryProxy(utils.BaseTestCase):
     def setUp(self):
         super(TestProtectedImageFactoryProxy, self).setUp()
         self.set_property_protections()
-        self.property_rules = property_utils.PropertyRules()
+        self.policy = policy.Enforcer()
+        self.property_rules = property_utils.PropertyRules(self.policy)
         self.factory = glance.domain.ImageFactory()
 
     def test_create_image_no_extra_prop(self):

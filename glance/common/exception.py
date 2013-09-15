@@ -136,6 +136,10 @@ class InvalidSortKey(Invalid):
     message = _("Sort key supplied was not valid.")
 
 
+class InvalidPropertyProtectionConfiguration(Invalid):
+    message = _("Invalid configuration in property protection file.")
+
+
 class InvalidFilterRangeValue(Invalid):
     message = _("Unable to filter using the specified range.")
 

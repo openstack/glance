@@ -55,11 +55,20 @@ class Enforcer(object):
         self.policy_path = self._find_policy_file()
         self.policy_file_mtime = None
         self.policy_file_contents = None
+        self.load_rules()
 
     def set_rules(self, rules):
         """Create a new Rules object based on the provided dict of rules"""
         rules_obj = policy.Rules(rules, self.default_rule)
         policy.set_rules(rules_obj)
+
+    def add_rules(self, rules):
+        """Add new rules to the Rules object"""
+        if policy._rules:
+            rules_obj = policy.Rules(rules)
+            policy._rules.update(rules_obj)
+        else:
+            self.set_rules(rules)
 
     def load_rules(self):
         """Set the rules found in the json file on disk"""
@@ -112,8 +121,6 @@ class Enforcer(object):
            :raises: `glance.common.exception.Forbidden`
            :returns: A non-False value if access is allowed.
         """
-        self.load_rules()
-
         credentials = {
             'roles': context.roles,
             'user': context.user,

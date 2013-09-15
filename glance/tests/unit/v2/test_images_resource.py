@@ -105,7 +105,7 @@ def _db_image_member_fixture(image_id, member_id, **kwargs):
     return obj
 
 
-class TestImagesController(test_utils.BaseTestCase):
+class TestImagesController(base.IsolatedUnitTest):
 
     def setUp(self):
         super(TestImagesController, self).setUp()
@@ -607,6 +607,11 @@ class TestImagesController(test_utils.BaseTestCase):
                           self.controller.update, request, UUID1, changes)
 
     def test_prop_protection_with_create_and_permitted_role(self):
+        enforcer = glance.api.policy.Enforcer()
+        self.controller = glance.api.v2.images.ImagesController(self.db,
+                                                                enforcer,
+                                                                self.notifier,
+                                                                self.store)
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
         image = {'name': 'image-1'}
@@ -621,7 +626,66 @@ class TestImagesController(test_utils.BaseTestCase):
                                         created_image.image_id, changes)
         self.assertEqual(output.extra_properties['x_owner_foo'], 'bar')
 
+    def test_prop_protection_with_update_and_permitted_policy(self):
+        self.set_property_protections(use_policies=True)
+        enforcer = glance.api.policy.Enforcer()
+        self.controller = glance.api.v2.images.ImagesController(self.db,
+                                                                enforcer,
+                                                                self.notifier,
+                                                                self.store)
+        request = unit_test_utils.get_fake_request(roles=['spl_role'])
+        image = {'name': 'image-1'}
+        extra_props = {'spl_creator_policy': 'bar'}
+        created_image = self.controller.create(request, image=image,
+                                               extra_properties=extra_props,
+                                               tags=[])
+        self.assertEqual(created_image.extra_properties['spl_creator_policy'],
+                         'bar')
+
+        another_request = unit_test_utils.get_fake_request(roles=['spl_role'])
+        changes = [
+            {'op': 'replace', 'path': ['spl_creator_policy'], 'value': 'par'},
+        ]
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
+                          another_request, created_image.image_id, changes)
+        another_request = unit_test_utils.get_fake_request(roles=['admin'])
+        output = self.controller.update(another_request,
+                                        created_image.image_id, changes)
+        self.assertEqual(output.extra_properties['spl_creator_policy'],
+                         'par')
+
+    def test_prop_protection_with_create_with_patch_and_policy(self):
+        self.set_property_protections(use_policies=True)
+        enforcer = glance.api.policy.Enforcer()
+        self.controller = glance.api.v2.images.ImagesController(self.db,
+                                                                enforcer,
+                                                                self.notifier,
+                                                                self.store)
+        request = unit_test_utils.get_fake_request(roles=['spl_role', 'admin'])
+        image = {'name': 'image-1'}
+        extra_props = {'spl_default_policy': 'bar'}
+        created_image = self.controller.create(request, image=image,
+                                               extra_properties=extra_props,
+                                               tags=[])
+        another_request = unit_test_utils.get_fake_request(roles=['fake_role'])
+        changes = [
+            {'op': 'add', 'path': ['spl_creator_policy'], 'value': 'bar'},
+        ]
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
+                          another_request, created_image.image_id, changes)
+
+        another_request = unit_test_utils.get_fake_request(roles=['spl_role'])
+        output = self.controller.update(another_request,
+                                        created_image.image_id, changes)
+        self.assertEqual(output.extra_properties['spl_creator_policy'],
+                         'bar')
+
     def test_prop_protection_with_create_and_unpermitted_role(self):
+        enforcer = glance.api.policy.Enforcer()
+        self.controller = glance.api.v2.images.ImagesController(self.db,
+                                                                enforcer,
+                                                                self.notifier,
+                                                                self.store)
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
         image = {'name': 'image-1'}
@@ -638,6 +702,11 @@ class TestImagesController(test_utils.BaseTestCase):
                           created_image.image_id, changes)
 
     def test_prop_protection_with_show_and_permitted_role(self):
+        enforcer = glance.api.policy.Enforcer()
+        self.controller = glance.api.v2.images.ImagesController(self.db,
+                                                                enforcer,
+                                                                self.notifier,
+                                                                self.store)
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
         image = {'name': 'image-1'}
@@ -650,6 +719,11 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual(output.extra_properties['x_owner_foo'], 'bar')
 
     def test_prop_protection_with_show_and_unpermitted_role(self):
+        enforcer = glance.api.policy.Enforcer()
+        self.controller = glance.api.v2.images.ImagesController(self.db,
+                                                                enforcer,
+                                                                self.notifier,
+                                                                self.store)
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['member'])
         image = {'name': 'image-1'}
@@ -663,6 +737,11 @@ class TestImagesController(test_utils.BaseTestCase):
                           'x_owner_foo')
 
     def test_prop_protection_with_update_and_permitted_role(self):
+        enforcer = glance.api.policy.Enforcer()
+        self.controller = glance.api.v2.images.ImagesController(self.db,
+                                                                enforcer,
+                                                                self.notifier,
+                                                                self.store)
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
         image = {'name': 'image-1'}
@@ -679,6 +758,11 @@ class TestImagesController(test_utils.BaseTestCase):
         self.assertEqual(output.extra_properties['x_owner_foo'], 'baz')
 
     def test_prop_protection_with_update_and_unpermitted_role(self):
+        enforcer = glance.api.policy.Enforcer()
+        self.controller = glance.api.v2.images.ImagesController(self.db,
+                                                                enforcer,
+                                                                self.notifier,
+                                                                self.store)
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
         image = {'name': 'image-1'}
@@ -694,6 +778,11 @@ class TestImagesController(test_utils.BaseTestCase):
                           request, UUID1, changes)
 
     def test_prop_protection_with_delete_and_permitted_role(self):
+        enforcer = glance.api.policy.Enforcer()
+        self.controller = glance.api.v2.images.ImagesController(self.db,
+                                                                enforcer,
+                                                                self.notifier,
+                                                                self.store)
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
         image = {'name': 'image-1'}
@@ -711,6 +800,11 @@ class TestImagesController(test_utils.BaseTestCase):
                           'x_owner_foo')
 
     def test_prop_protection_with_delete_and_unpermitted_role(self):
+        enforcer = glance.api.policy.Enforcer()
+        self.controller = glance.api.v2.images.ImagesController(self.db,
+                                                                enforcer,
+                                                                self.notifier,
+                                                                self.store)
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
         image = {'name': 'image-1'}

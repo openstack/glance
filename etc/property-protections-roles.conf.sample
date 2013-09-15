@@ -1,0 +1,32 @@
+# property-protections-roles.conf.sample
+#
+# This file is an example config file for when
+# property_protection_rule_format=roles is enabled.
+#
+# Specify regular expression for which properties will be protected in []
+# For each section, specify CRUD permissions.
+# The property rules will be applied in the order specified. Once
+# a match is found the remaining property rules will not be applied.
+#
+# WARNING:
+# * If the reg ex specified below does not compile, then
+# glance-api service will not start. (Guide for reg ex python compiler used:
+# http://docs.python.org/2/library/re.html#regular-expression-syntax)
+# * If an operation(create, read, update, delete) is not specified or misspelt
+# then the glance-api service will not start.
+# So, remember, with GREAT POWER comes GREAT RESPONSIBILITY!
+#
+# NOTE: Multiple roles can be specified for a given operation. These roles must
+# be comma separated.
+
+[^x_.*]
+create = admin,member
+read = admin,member
+update = admin,member
+delete = admin,member
+
+[.*]
+create = admin
+read = admin
+update = admin
+delete = admin

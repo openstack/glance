@@ -65,10 +65,18 @@ class BaseTestCase(testtools.TestCase):
         self.stubs.SmartUnsetAll()
         super(BaseTestCase, self).tearDown()
 
-    def set_property_protections(self):
-        self.property_file = self._copy_data_file('property-protections.conf',
-                                                  self.test_dir)
+    def set_property_protections(self, use_policies=False):
+        self.unset_property_protections()
+        conf_file = "property-protections.conf"
+        if use_policies:
+            conf_file = "property-protections-policies.conf"
+            self.config(property_protection_rule_format="policies")
+        self.property_file = self._copy_data_file(conf_file, self.test_dir)
         self.config(property_protection_file=self.property_file)
+
+    def unset_property_protections(self):
+        for section in property_utils.CONFIG.sections():
+            property_utils.CONFIG.remove_section(section)
 
     def _copy_data_file(self, file_name, dst_dir):
         src_file_name = os.path.join('glance/tests/etc', file_name)
