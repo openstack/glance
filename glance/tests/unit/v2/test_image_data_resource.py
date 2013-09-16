@@ -164,7 +164,18 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.upload,
                           request, unit_test_utils.UUID1, 'YYYY', 4)
 
-    def test_upload_non_existent_image(self):
+    def test_upload_non_existent_image_during_save(self):
+        def fake_save(self):
+            raise exception.NotFound()
+
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage('abcd', locations=['http://example.com/image'])
+        self.image_repo.result = image
+        self.image_repo.save = fake_save
+        self.assertRaises(webob.exc.HTTPGone, self.controller.upload,
+                          request, uuidutils.generate_uuid(), 'ABC', 3)
+
+    def test_upload_non_existent_image_before_save(self):
         request = unit_test_utils.get_fake_request()
         self.image_repo.result = exception.NotFound()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.upload,

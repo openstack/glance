@@ -50,9 +50,19 @@ class ImageDataController(object):
         try:
             image = image_repo.get(image_id)
             image.status = 'saving'
-            image_repo.save(image)
-            image.set_data(data, size)
-            image_repo.save(image)
+            try:
+                image_repo.save(image)
+                image.set_data(data, size)
+                image_repo.save(image)
+            except exception.NotFound as e:
+                msg = (_("Image %s could not be found after upload."
+                       "The image may have been deleted during the upload: %s")
+                       % (image_id, e))
+                LOG.warn(msg)
+                raise webob.exc.HTTPGone(explanation=msg,
+                                         request=req,
+                                         content_type='text/plain')
+
         except ValueError as e:
             LOG.debug("Cannot save data for image %s: %s", image_id, e)
             raise webob.exc.HTTPBadRequest(explanation=unicode(e))
