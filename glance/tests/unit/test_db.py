@@ -407,7 +407,7 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         image_member = self.image_member_repo.get(TENANT2)
         image_member.status = 'accepted'
         image_member_updated = self.image_member_repo.save(image_member)
-        self.assertTrue(image_member.id, image_member_updated.id)
+        self.assertEqual(image_member.id, image_member_updated.id)
         self.assertEqual(image_member_updated.status, 'accepted')
 
     def test_add_image_member(self):
