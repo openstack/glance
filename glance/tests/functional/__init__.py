@@ -215,7 +215,7 @@ class Server(object):
                 os.system('cp %s %s/tests.sqlite'
                           % (db_location, self.test_dir))
             else:
-                cmd = ('%s -m glance.cmd.manage --config-file %s db_sync' %
+                cmd = ('%s -m glance.cmd.manage --config-file %s db sync' %
                        (sys.executable, conf_filepath))
                 execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env,
                         expect_exit=True)

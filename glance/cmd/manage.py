@@ -44,67 +44,128 @@ from oslo.config import cfg
 from glance.common import config
 from glance.common import exception
 import glance.db.sqlalchemy.api
-import glance.db.sqlalchemy.migration
+from glance.db.sqlalchemy import migration
 from glance.openstack.common import log
 
 CONF = cfg.CONF
 
 
-def do_db_version():
-    """Print database's current migration level"""
-    print(glance.db.sqlalchemy.migration.db_version())
+# Decorators for actions
+def args(*args, **kwargs):
+    def _decorator(func):
+        func.__dict__.setdefault('args', []).insert(0, (args, kwargs))
+        return func
+    return _decorator
 
 
-def do_upgrade():
-    """Upgrade the database's migration level"""
-    glance.db.sqlalchemy.migration.upgrade(CONF.command.version)
+class DbCommands(object):
+    """Class for managing the db"""
+
+    def __init__(self):
+        pass
+
+    def version(self):
+        """Print database's current migration level"""
+        print(migration.db_version())
+
+    @args('--version', metavar='<version>', help='Database version')
+    def upgrade(self, version=None):
+        """Upgrade the database's migration level"""
+        migration.upgrade(version)
+
+    @args('--version', metavar='<version>', help='Database version')
+    def downgrade(self, version=None):
+        """Downgrade the database's migration level"""
+        migration.downgrade(version)
+
+    @args('--version', metavar='<version>', help='Database version')
+    def version_control(self, version=None):
+        """Place a database under migration control"""
+        migration.version_control(version)
+
+    @args('--version', metavar='<version>', help='Database version')
+    @args('--current_version', metavar='<version>',
+          help='Current Database version')
+    def sync(self, version=None, current_version=None):
+        """
+        Place a database under migration control and upgrade,
+        creating first if necessary.
+        """
+        migration.db_sync(version, current_version)
 
 
-def do_downgrade():
-    """Downgrade the database's migration level"""
-    glance.db.sqlalchemy.migration.downgrade(CONF.command.version)
+def add_legacy_command_parsers(command_object, subparsers):
 
-
-def do_version_control():
-    """Place a database under migration control"""
-    glance.db.sqlalchemy.migration.version_control(CONF.command.version)
-
-
-def do_db_sync():
-    """
-    Place a database under migration control and upgrade,
-    creating first if necessary.
-    """
-    glance.db.sqlalchemy.migration.db_sync(CONF.command.version,
-                                           CONF.command.current_version)
-
-
-def add_command_parsers(subparsers):
     parser = subparsers.add_parser('db_version')
-    parser.set_defaults(func=do_db_version)
+    parser.set_defaults(action_fn=command_object.version)
 
-    parser = subparsers.add_parser('upgrade')
-    parser.set_defaults(func=do_upgrade)
+    parser = subparsers.add_parser('db_upgrade')
+    parser.set_defaults(action_fn=command_object.upgrade)
     parser.add_argument('version', nargs='?')
 
-    parser = subparsers.add_parser('downgrade')
-    parser.set_defaults(func=do_downgrade)
+    parser = subparsers.add_parser('db_downgrade')
+    parser.set_defaults(action_fn=command_object.downgrade)
     parser.add_argument('version')
 
-    parser = subparsers.add_parser('version_control')
-    parser.set_defaults(func=do_version_control)
+    parser = subparsers.add_parser('db_version_control')
+    parser.set_defaults(action_fn=command_object.version_control)
     parser.add_argument('version', nargs='?')
 
     parser = subparsers.add_parser('db_sync')
-    parser.set_defaults(func=do_db_sync)
+    parser.set_defaults(action_fn=command_object.sync)
     parser.add_argument('version', nargs='?')
     parser.add_argument('current_version', nargs='?')
+
+
+def add_command_parsers(subparsers):
+    command_object = DbCommands()
+
+    parser = subparsers.add_parser('db')
+    parser.set_defaults(command_object=command_object)
+
+    category_subparsers = parser.add_subparsers(dest='action')
+
+    for (action, action_fn) in methods_of(command_object):
+        parser = category_subparsers.add_parser(action)
+
+        action_kwargs = []
+        for args, kwargs in getattr(action_fn, 'args', []):
+            # FIXME(basha): hack to assume dest is the arg name without
+            # the leading hyphens if no dest is supplied
+            kwargs.setdefault('dest', args[0][2:])
+            if kwargs['dest'].startswith('action_kwarg_'):
+                action_kwargs.append(
+                    kwargs['dest'][len('action_kwarg_'):])
+            else:
+                action_kwargs.append(kwargs['dest'])
+                kwargs['dest'] = 'action_kwarg_' + kwargs['dest']
+
+            parser.add_argument(*args, **kwargs)
+
+        parser.set_defaults(action_fn=action_fn)
+        parser.set_defaults(action_kwargs=action_kwargs)
+
+        parser.add_argument('action_args', nargs='*')
+
+        add_legacy_command_parsers(command_object, subparsers)
 
 
 command_opt = cfg.SubCommandOpt('command',
                                 title='Commands',
                                 help='Available commands',
                                 handler=add_command_parsers)
+
+
+def methods_of(obj):
+    """Get all callable methods of an object that don't start with underscore
+
+    returns a list of tuples of the form (method_name, method)
+    """
+    result = []
+    for i in dir(obj):
+        if callable(getattr(obj, i)) and not i.startswith('_'):
+            result.append((i, getattr(obj, i)))
+    return result
 
 
 def main():
@@ -125,7 +186,8 @@ def main():
         sys.exit("ERROR: %s" % e)
 
     try:
-        CONF.command.func()
+
+        CONF.command.action_fn()
     except exception.GlanceException as e:
         sys.exit("ERROR: %s" % e)
 

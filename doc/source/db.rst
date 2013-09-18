@@ -21,27 +21,31 @@ The default metadata driver for glance uses sqlalchemy, which implies there
 exists a backend database which must be managed. The ``glance-manage`` binary
 provides a set of commands for making this easier.
 
+The commands should be executed as a subcommand of 'db':
 
-Initializing an Empty Database
-------------------------------
+    glance-manage db <cmd> <args>
 
-    glance-manage db_sync
 
-This will take an empty database and create the necessary tables.
+Sync the Database
+-----------------
+
+    glance-manage db sync <version> <current_version>
+
+Place a database under migration control and upgrade, creating it first if necessary.
 
 
 Determining the Database Version
 --------------------------------
 
-    glance-manage db_version
+    glance-manage db version
 
-This will print the version of a glance database.
+This will print the current migration level of a glance database.
 
 
 Upgrading an Existing Database
 ------------------------------
 
-    glance-manage db_sync <VERSION>
+    glance-manage db upgrade <VERSION>
 
 This will take an existing database and upgrade it to the specified VERSION.
 
@@ -49,7 +53,7 @@ This will take an existing database and upgrade it to the specified VERSION.
 Downgrading an Existing Database
 --------------------------------
 
-    glance-manage downgrade <VERSION>
+    glance-manage db downgrade <VERSION>
 
 This will downgrade an existing database from the current version to the
 specified VERSION.
