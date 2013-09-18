@@ -20,6 +20,7 @@ Helper script for starting/stopping/reloading Glance server programs.
 Thanks for some of the code, Swifties ;)
 """
 
+from __future__ import print_function
 from __future__ import with_statement
 
 import argparse
@@ -97,11 +98,11 @@ def do_start(verb, pid_file, server, args):
     if verb != 'Respawn' and pid_file == CONF.pid_file:
         for pid_file, pid in pid_files(server, pid_file):
             if os.path.exists('/proc/%s' % pid):
-                print ("%s appears to already be running: %s" %
-                       (server, pid_file))
+                print("%s appears to already be running: %s" %
+                      (server, pid_file))
                 return
             else:
-                print "Removing stale pid file %s" % pid_file
+                print("Removing stale pid file %s" % pid_file)
                 os.unlink(pid_file)
 
         try:
@@ -111,7 +112,7 @@ def do_start(verb, pid_file, server, args):
                                (MAX_MEMORY, MAX_MEMORY))
         except ValueError:
             action = 'increase file descriptor limit'
-            print 'Unable to %s.  Running as non-root?' % action
+            print('Unable to %s.  Running as non-root?' % action)
         os.environ['PYTHON_EGG_CACHE'] = '/tmp'
 
     def write_pid_file(pid_file, pid):
@@ -156,11 +157,11 @@ def do_start(verb, pid_file, server, args):
 
     def launch(pid_file, conf_file=None, capture_output=False, await_time=0):
         args = [server]
-        print '%sing %s' % (verb, server),
+        msg = '%sing %s' % (verb, server)
         if conf_file:
             args += ['--config-file', conf_file]
-            print 'with %s' % conf_file,
-        print
+            msg += 'with %s' % conf_file
+        print(msg)
 
         close_stdio_on_exec()
 
@@ -200,9 +201,9 @@ def do_start(verb, pid_file, server, args):
 def do_check_status(pid_file, server):
     if os.path.exists(pid_file):
         pid = open(pid_file).read().strip()
-        print "%s running: %s" % (server, pid)
+        print("%s running: %s" % (server, pid))
     else:
-        print "No %s running" % server
+        print("No %s running" % server)
 
 
 def get_pid_file(server, pid_file):
@@ -222,7 +223,7 @@ def get_pid_file(server, pid_file):
                'Falling back to a temp file, you can stop %s service using:\n'
                '  %s %s stop --pid-file %s'
                % (pid_file, server, __file__, server, fallback))
-        print msg
+        print(msg)
         pid_file = fallback
 
     return pid_file
@@ -243,20 +244,20 @@ def do_stop(server, args, graceful=False):
         except OSError:
             pass
         try:
-            print 'Stopping %s  pid: %s  signal: %s' % (server, pid, sig)
+            print('Stopping %s  pid: %s  signal: %s' % (server, pid, sig))
             os.kill(pid, sig)
         except OSError:
-            print "Process %d not running" % pid
+            print("Process %d not running" % pid)
     for pid_file, pid in pfiles:
         for _junk in xrange(150):  # 15 seconds
             if not os.path.exists('/proc/%s' % pid):
                 break
             time.sleep(0.1)
         else:
-            print ('Waited 15 seconds for pid %s (%s) to die; giving up' %
-                   (pid, pid_file))
+            print('Waited 15 seconds for pid %s (%s) to die; giving up' %
+                  (pid, pid_file))
     if not did_anything:
-        print 'No %s running' % server
+        print('No %s running' % server)
 
 
 def add_command_parsers(subparsers):
@@ -333,7 +334,7 @@ def main():
                     children[new_pid] = args
                 else:
                     rsn = 'bouncing' if bouncing else 'deliberately stopped'
-                    print 'Supressed respawn as %s was %s.' % (server, rsn)
+                    print('Supressed respawn as %s was %s.' % (server, rsn))
 
     if CONF.server.command == 'start':
         children = {}

@@ -22,6 +22,8 @@
 Glance Management Utility
 """
 
+from __future__ import print_function
+
 # FIXME(sirp): When we have glance-admin we can consider merging this into it
 # Perhaps for consistency with Nova, we would then rename glance-admin ->
 # glance-manage (or the other way around)
@@ -50,7 +52,7 @@ CONF = cfg.CONF
 
 def do_db_version():
     """Print database's current migration level"""
-    print glance.db.sqlalchemy.migration.db_version()
+    print(glance.db.sqlalchemy.migration.db_version())
 
 
 def do_upgrade():

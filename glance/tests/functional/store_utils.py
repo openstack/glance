@@ -20,6 +20,8 @@
 Utility methods to set testcases up for Swift and/or S3 tests.
 """
 
+from __future__ import print_function
+
 import BaseHTTPServer
 import ConfigParser
 import httplib
@@ -105,7 +107,7 @@ def setup_swift(test):
 
     if not CONFIG_FILE_PATH:
         test.disabled_message = "GLANCE_TEST_SWIFT_CONF environ not set."
-        print "GLANCE_TEST_SWIFT_CONF environ not set."
+        print("GLANCE_TEST_SWIFT_CONF environ not set.")
         test.disabled = True
         return
 

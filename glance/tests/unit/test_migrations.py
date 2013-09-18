@@ -25,6 +25,8 @@ properly both upgrading and downgrading, and that no data loss occurs
 if possible.
 """
 
+from __future__ import print_function
+
 import commands
 import ConfigParser
 import datetime
@@ -624,7 +626,7 @@ class TestMigrations(utils.BaseTestCase):
             self.assertEquals(len(rows), 1)
 
             row = rows[0]
-            print repr(dict(row))
+            print(repr(dict(row)))
             self.assertTrue(uuidutils.is_uuid_like(row['id']))
 
             uuids[name] = row['id']
