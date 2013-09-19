@@ -58,7 +58,7 @@ socket_opts = [
                help=_('The backlog value that will be used when creating the '
                       'TCP listener socket.')),
     cfg.IntOpt('tcp_keepidle', default=600,
-               help=_('The value for the socket option TCP_KEEPIDLE.  This is'
+               help=_('The value for the socket option TCP_KEEPIDLE.  This is '
                       'the time in seconds that the connection must be idle '
                       'before TCP starts sending keepalive probes.')),
     cfg.StrOpt('ca_file', help=_('CA certificate file to use to verify '
