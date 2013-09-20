@@ -19,6 +19,7 @@
 
 import hashlib
 import httplib
+import mock
 import StringIO
 import tempfile
 import urllib
@@ -544,6 +545,32 @@ class SwiftTests(object):
         self.assertRaises(exception.Duplicate,
                           self.store.add,
                           FAKE_UUID, image_swift, 0)
+
+    def test_add_saves_and_reraises_and_not_uses_wildcard_raise(self):
+        image_id = uuidutils.generate_uuid()
+        swift_size = self.store.large_object_size = 1024
+        loc = 'swift+https://%s:key@localhost:8080/glance/%s'
+        swift_contents = "*" * swift_size
+        connection = mock.Mock()
+
+        def fake_delete_chunk(connection,
+                              container,
+                              chunks):
+            try:
+                raise Exception()
+            except Exception:
+                pass
+
+        image_swift = StringIO.StringIO(swift_contents)
+        connection.put_object.side_effect = exception.ClientConnectionError
+        self.store._delete_stale_chunks = fake_delete_chunk
+
+        self.assertRaises(exception.ClientConnectionError,
+                          self.store.add,
+                          image_id,
+                          image_swift,
+                          swift_size,
+                          connection)
 
     def _option_required(self, key):
         conf = self.getConfig()
