@@ -50,21 +50,38 @@ class RegistryClient(BaseClient):
                             **kwargs)
 
     def decrypt_metadata(self, image_metadata):
-        if (self.metadata_encryption_key is not None and
-            'location' in image_metadata and
-            image_metadata['location'] is not None):
-            location = crypt.urlsafe_decrypt(self.metadata_encryption_key,
-                                             image_metadata['location'])
-            image_metadata['location'] = location
+        if self.metadata_encryption_key is not None:
+            if image_metadata.get('location'):
+                location = crypt.urlsafe_decrypt(self.metadata_encryption_key,
+                                                 image_metadata['location'])
+                image_metadata['location'] = location
+            if image_metadata.get('location_data'):
+                ld = []
+                for loc in image_metadata['location_data']:
+                    url = crypt.urlsafe_decrypt(self.metadata_encryption_key,
+                                                loc['url'])
+                    ld.append({'url': url, 'metadata': loc['metadata']})
+                image_metadata['location_data'] = ld
         return image_metadata
 
     def encrypt_metadata(self, image_metadata):
-        if (self.metadata_encryption_key is not None and
-            'location' in image_metadata and
-            image_metadata['location'] is not None):
-            location = crypt.urlsafe_encrypt(self.metadata_encryption_key,
-                                             image_metadata['location'], 64)
-            image_metadata['location'] = location
+        if self.metadata_encryption_key is not None:
+            location_url = image_metadata.get('location')
+            if location_url:
+                location = crypt.urlsafe_encrypt(self.metadata_encryption_key,
+                                                 location_url,
+                                                 64)
+                image_metadata['location'] = location
+            if image_metadata.get('location_data'):
+                ld = []
+                for loc in image_metadata['location_data']:
+                    if loc['url'] == location_url:
+                        url = location
+                    else:
+                        url = crypt.urlsafe_encrypt(
+                            self.metadata_encryption_key, loc['url'], 64)
+                    ld.append({'url': url, 'metadata': loc['metadata']})
+                image_metadata['location_data'] = ld
         return image_metadata
 
     def get_images(self, **kwargs):

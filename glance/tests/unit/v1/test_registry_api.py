@@ -27,6 +27,7 @@ import webob
 
 import glance.api.common
 import glance.common.config
+from glance.common import crypt
 import glance.context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
@@ -2672,7 +2673,8 @@ class TestRegistryAPILocations(base.IsolatedUnitTest):
                          image['location_data'][0])
         self.assertEqual(self.FIXTURES[0]['locations'][0]['url'],
                          image['location_data'][0]['url'])
-        self.assertEqual(image['location_data'][0]['metadata'], {})
+        self.assertEqual(self.FIXTURES[0]['locations'][0]['metadata'],
+                         image['location_data'][0]['metadata'])
 
     def test_show_from_location_data(self):
         req = webob.Request.blank('/images/%s' % UUID2)
@@ -2686,3 +2688,61 @@ class TestRegistryAPILocations(base.IsolatedUnitTest):
                          image['location_data'][0]['url'])
         self.assertEqual(self.FIXTURES[1]['locations'][0]['metadata'],
                          image['location_data'][0]['metadata'])
+
+    def test_create_from_location_data_with_encryption(self):
+        encryption_key = '1234567890123456'
+        location_url1 = "file:///%s/%s" % (self.test_dir, _gen_uuid())
+        location_url2 = "file:///%s/%s" % (self.test_dir, _gen_uuid())
+        encrypted_location_url1 = crypt.urlsafe_encrypt(encryption_key,
+                                                        location_url1, 64)
+        encrypted_location_url2 = crypt.urlsafe_encrypt(encryption_key,
+                                                        location_url2, 64)
+        fixture = {'name': 'fake image #3',
+                   'status': 'active',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
+                   'is_public': True,
+                   'checksum': None,
+                   'min_disk': 5,
+                   'min_ram': 256,
+                   'size': 19,
+                   'location': encrypted_location_url1,
+                   'location_data': [{'url': encrypted_location_url1,
+                                      'metadata': {'key': 'value'}},
+                                     {'url': encrypted_location_url2,
+                                      'metadata': {'key': 'value'}}]}
+
+        self.config(metadata_encryption_key=encryption_key)
+        req = webob.Request.blank('/images')
+        req.method = 'POST'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(image=fixture))
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        res_dict = json.loads(res.body)
+        image = res_dict['image']
+        # NOTE(zhiyan) _normalize_image_location_for_db() function will
+        # not re-encrypted the url within location.
+        self.assertEqual(fixture['location'], image['location'])
+        self.assertEqual(len(image['location_data']), 2)
+        self.assertEqual(fixture['location_data'][0]['url'],
+                         image['location_data'][0]['url'])
+        self.assertEqual(fixture['location_data'][0]['metadata'],
+                         image['location_data'][0]['metadata'])
+        self.assertEqual(fixture['location_data'][1]['url'],
+                         image['location_data'][1]['url'])
+        self.assertEqual(fixture['location_data'][1]['metadata'],
+                         image['location_data'][1]['metadata'])
+
+        image_entry = db_api.image_get(self.context, image['id'])
+        self.assertEqual(image_entry['locations'][0]['url'],
+                         encrypted_location_url1)
+        self.assertEqual(image_entry['locations'][1]['url'],
+                         encrypted_location_url2)
+        decrypted_location_url1 = crypt.urlsafe_decrypt(
+                            encryption_key, image_entry['locations'][0]['url'])
+        decrypted_location_url2 = crypt.urlsafe_decrypt(
+                            encryption_key, image_entry['locations'][1]['url'])
+        self.assertEqual(location_url1, decrypted_location_url1)
+        self.assertEqual(location_url2, decrypted_location_url2)
