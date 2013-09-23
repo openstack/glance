@@ -650,7 +650,7 @@ Distinctions from Version 1.x API Calls
 
   request body::
 
-  { "member_id": "<MEMBER_ID>" }
+  { "member": "<MEMBER_ID>" }
 
   where the {memberId} is the tenant ID of the image member.
 
@@ -669,9 +669,3 @@ New API Calls
 
   where <STATUS_VALUE> is one of ``pending``, ``accepted``, or ``rejected``.
   The {memberId} is the tenant ID of the image member.
-
-* Determine the status of an image member
-
-  call: ``GET`` on ``/v2/images/{imageId}/members/{memberId}``
-
-  response: see the JSON schema at ``/v2/schemas/member``
