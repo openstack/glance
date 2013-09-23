@@ -83,30 +83,31 @@ class QpidStrategy(strategy.Strategy):
     def _open_connection(self):
         """Initialize the Qpid notification strategy."""
         broker = CONF.qpid_hostname + ":" + CONF.qpid_port
-        self.connection = qpid.messaging.Connection(broker)
-        self.connection.username = CONF.qpid_username
-        self.connection.password = CONF.qpid_password
-        self.connection.sasl_mechanisms = CONF.qpid_sasl_mechanisms
+        connection = qpid.messaging.Connection(broker)
+        connection.username = CONF.qpid_username
+        connection.password = CONF.qpid_password
+        connection.sasl_mechanisms = CONF.qpid_sasl_mechanisms
         # Hard code this option as enabled so that reconnect logic isn't needed
         # in this file at all.
-        self.connection.reconnect = True
+        connection.reconnect = True
         if CONF.qpid_reconnect_timeout:
-            self.connection.reconnect_timeout = CONF.qpid_reconnect_timeout
+            connection.reconnect_timeout = CONF.qpid_reconnect_timeout
         if CONF.qpid_reconnect_limit:
-            self.connection.reconnect_limit = CONF.qpid_reconnect_limit
+            connection.reconnect_limit = CONF.qpid_reconnect_limit
         if CONF.qpid_reconnect_interval_max:
-            self.connection.reconnect_interval_max = (
+            connection.reconnect_interval_max = (
                                         CONF.qpid_reconnect_interval_max)
         if CONF.qpid_reconnect_interval_min:
-            self.connection.reconnect_interval_min = (
+            connection.reconnect_interval_min = (
                                         CONF.qpid_reconnect_interval_min)
         if CONF.qpid_reconnect_interval:
-            self.connection.reconnect_interval = CONF.qpid_reconnect_interval
-        self.connection.heartbeat = CONF.qpid_heartbeat
-        self.connection.protocol = CONF.qpid_protocol
-        self.connection.tcp_nodelay = CONF.qpid_tcp_nodelay
-        self.connection.open()
+            connection.reconnect_interval = CONF.qpid_reconnect_interval
+        connection.heartbeat = CONF.qpid_heartbeat
+        connection.protocol = CONF.qpid_protocol
+        connection.tcp_nodelay = CONF.qpid_tcp_nodelay
+        connection.open()
         LOG.info(_('Connected to AMQP server on %s') % broker)
+        return connection
 
     def _send(self, priority, msg):
         addr_opts = {
@@ -124,11 +125,10 @@ class QpidStrategy(strategy.Strategy):
         topic = "%s.%s" % (CONF.qpid_notification_topic, priority)
         address = "%s/%s ; %s" % (CONF.qpid_notification_exchange, topic,
                                   json.dumps(addr_opts))
-
+        connection = None
         try:
-            self.connection = None
-            self._open_connection()
-            session = self.connection.session()
+            connection = self._open_connection()
+            session = connection.session()
             sender = session.sender(address)
             qpid_msg = qpid.messaging.Message(content=msg)
             sender.send(qpid_msg)
@@ -138,8 +138,8 @@ class QpidStrategy(strategy.Strategy):
                             'Message: %(msg)s') % details)
             raise
         finally:
-            if self.connection and self.connection.opened():
-                self.connection.close()
+            if connection and connection.opened():
+                connection.close()
 
     def warn(self, msg):
         self._send('warn', msg)
