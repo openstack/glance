@@ -439,8 +439,15 @@ class Driver(base.Driver):
                            will be deleted.
         """
         for path in self.get_cache_files(self.incomplete_dir):
-            os.unlink(path)
-            LOG.info(_("Removed stalled cache file %s"), path)
+            if os.path.getmtime(path) < older_than:
+                try:
+                    os.unlink(path)
+                    LOG.info(_("Removed stalled cache file %s"), path)
+                except Exception as e:
+                    msg = (_("Failed to delete file %(path)s. "
+                             "Got error: %(e)s") %
+                           dict(path=path, e=e))
+                    LOG.warn(msg)
 
     def get_queued_images(self):
         """
