@@ -353,7 +353,7 @@ class TestQpidNotifier(utils.BaseTestCase):
         qpid.messaging.Sender = self.orig_sender
         qpid.messaging.Receiver = self.orig_receiver
 
-    def _test_notify(self, priority, exception=False, opened=True):
+    def _test_notify(self, priority, exception=False, exception_send=False):
         test_msg = {'a': 'b'}
 
         self.mock_connection = self.mocker.CreateMock(self.orig_connection)
@@ -363,7 +363,7 @@ class TestQpidNotifier(utils.BaseTestCase):
         self.mock_connection.username = ""
         if exception:
             self.mock_connection.open().AndRaise(
-                    Exception('Test Exception'))
+                    Exception('Test open Exception'))
         else:
             self.mock_connection.open()
             self.mock_connection.session().AndReturn(self.mock_session)
@@ -373,9 +373,14 @@ class TestQpidNotifier(utils.BaseTestCase):
                                 '"create": "always"}' % priority)
             self.mock_session.sender(expected_address).AndReturn(
                     self.mock_sender)
-            self.mock_sender.send(mox.IgnoreArg())
-        self.mock_connection.opened().AndReturn(opened)
-        if opened:
+            if exception_send:
+                self.mock_sender.send(mox.IgnoreArg()).AndRaise(
+                    Exception('Test send Exception'))
+                # NOTE(afazekas): the opened and close call is expected
+                # in this case, but not expected if the open fails
+            else:
+                self.mock_sender.send(mox.IgnoreArg())
+            self.mock_connection.opened().AndReturn(True)
             self.mock_connection.close()
 
         self.mocker.ReplayAll()
@@ -383,17 +388,17 @@ class TestQpidNotifier(utils.BaseTestCase):
         self.config(notifier_strategy="qpid")
         notifier = self.notify_qpid.QpidStrategy()
         if priority == 'info':
-            if exception:
+            if exception or exception_send:
                 self.assertRaises(Exception, notifier.info, test_msg)
             else:
                 notifier.info(test_msg)
         elif priority == 'warn':
-            if exception:
+            if exception or exception_send:
                 self.assertRaises(Exception, notifier.warn, test_msg)
             else:
                 notifier.warn(test_msg)
         elif priority == 'error':
-            if exception:
+            if exception or exception_send:
                 self.assertRaises(Exception, notifier.error, test_msg)
             else:
                 notifier.error(test_msg)
@@ -412,8 +417,14 @@ class TestQpidNotifier(utils.BaseTestCase):
     def test_exception_open_successful(self):
         self._test_notify('info', exception=True)
 
-    def test_exception_open_failed(self):
-        self._test_notify('info', exception=True, opened=False)
+    def test_info_fail(self):
+        self._test_notify('info', exception_send=True)
+
+    def test_warn_fail(self):
+        self._test_notify('warn', exception_send=True)
+
+    def test_error_fail(self):
+        self._test_notify('error', exception_send=True)
 
 
 class TestRabbitContentType(utils.BaseTestCase):
