@@ -2033,6 +2033,88 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPNoContent.code)
 
+    def test_get_members_of_deleted_image_raises_404(self):
+        """
+        Tests members listing for deleted image raises 404.
+        """
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        req = webob.Request.blank('/images/%s/members' % UUID2)
+        req.method = 'GET'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
+        self.assertTrue(
+            'Image with identifier %s has been deleted.' % UUID2 in res.body)
+
+    def test_delete_member_of_deleted_image_raises_404(self):
+        """
+        Tests deleting members of deleted image raises 404.
+        """
+        test_router = router.API(self.mapper)
+        self.api = test_utils.FakeAuthMiddleware(test_router, is_admin=True)
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
+        req.method = 'DELETE'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
+        self.assertTrue(
+            'Image with identifier %s has been deleted.' % UUID2 in res.body)
+
+    def test_update_members_of_deleted_image_raises_404(self):
+        """
+        Tests update members of deleted image raises 404.
+        """
+        test_router = router.API(self.mapper)
+        self.api = test_utils.FakeAuthMiddleware(test_router, is_admin=True)
+
+        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
+        req.method = 'PUT'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 204)
+
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        fixture = [{'member_id': 'pattieblack', 'can_share': 'false'}]
+        req = webob.Request.blank('/images/%s/members' % UUID2)
+        req.method = 'PUT'
+        req.content_type = 'application/json'
+        req.body = json.dumps(dict(memberships=fixture))
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
+        self.assertTrue(
+            'Image with identifier %s has been deleted.' % UUID2 in res.body)
+
+    def test_create_member_to_deleted_image_raises_404(self):
+        """
+        Tests adding members to deleted image raises 404.
+        """
+        test_router = router.API(self.mapper)
+        self.api = test_utils.FakeAuthMiddleware(test_router, is_admin=True)
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
+        req.method = 'PUT'
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, webob.exc.HTTPNotFound.code)
+        self.assertTrue(
+            'Image with identifier %s has been deleted.' % UUID2 in res.body)
+
     def test_delete_member(self):
         """
         Tests deleting image members raises right exception
