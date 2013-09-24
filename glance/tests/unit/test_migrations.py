@@ -28,6 +28,7 @@ if possible.
 import commands
 import ConfigParser
 import datetime
+import json
 import os
 import pickle
 import urlparse
@@ -935,3 +936,60 @@ class TestMigrations(utils.BaseTestCase):
                       if idx.name == owner_index]
 
         self.assertNotIn((owner_index, columns), index_data)
+
+    def _pre_upgrade_029(self, engine):
+        image_locations = get_table(engine, 'image_locations')
+
+        meta_data = {'somelist': ['a', 'b', 'c'], 'avalue': 'hello',
+                     'adict': {}}
+
+        now = datetime.datetime.now()
+        image_id = 'fake_029_id'
+        url = 'file:///some/place/onthe/fs029'
+
+        images = get_table(engine, 'images')
+        temp = dict(deleted=False,
+                    created_at=now,
+                    updated_at=now,
+                    status='active',
+                    is_public=True,
+                    min_disk=0,
+                    min_ram=0,
+                    id=image_id)
+        images.insert().values(temp).execute()
+
+        pickle_md = pickle.dumps(meta_data)
+        temp = dict(deleted=False,
+                    created_at=now,
+                    updated_at=now,
+                    image_id=image_id,
+                    value=url,
+                    meta_data=pickle_md)
+        image_locations.insert().values(temp).execute()
+
+        return meta_data, image_id
+
+    def _check_029(self, engine, data):
+        meta_data = data[0]
+        image_id = data[1]
+        image_locations = get_table(engine, 'image_locations')
+
+        records = image_locations.select().\
+            where(image_locations.c.image_id == image_id).execute().fetchall()
+
+        for r in records:
+            d = json.loads(r['meta_data'])
+            self.assertEqual(d, meta_data)
+
+    def _post_downgrade_029(self, engine):
+        image_id = 'fake_029_id'
+
+        image_locations = get_table(engine, 'image_locations')
+
+        records = image_locations.select().\
+            where(image_locations.c.image_id == image_id).execute().fetchall()
+
+        for r in records:
+            md = r['meta_data']
+            d = pickle.loads(md)
+            self.assertEqual(type(d), dict)
