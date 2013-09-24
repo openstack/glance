@@ -18,6 +18,17 @@ import webob.exc
 from glance.common import property_utils
 from glance.tests import utils
 
+CONFIG_SECTIONS = [
+    '^x_owner_.*',
+    'spl_create_prop',
+    'spl_read_prop',
+    'spl_read_only_prop',
+    'spl_update_prop',
+    'spl_update_only_prop',
+    'spl_delete_prop',
+    '.*'
+]
+
 
 class TestPropertyRules(utils.BaseTestCase):
 
@@ -149,3 +160,21 @@ class TestPropertyRules(utils.BaseTestCase):
         self.rules_checker = property_utils.PropertyRules()
         self.assertFalse(self.rules_checker.check_property_rules('test_prop',
                          'delete', ['member']))
+
+    def test_property_config_loaded_in_order(self):
+        """
+        Verify the order of loaded config sections matches that from the
+        configuration file
+        """
+        self.rules_checker = property_utils.PropertyRules()
+        self.assertEqual(property_utils.CONFIG.sections(), CONFIG_SECTIONS)
+
+    def test_property_rules_loaded_in_order(self):
+        """
+        Verify rules are iterable in the same order as read from the config
+        file
+        """
+        self.rules_checker = property_utils.PropertyRules()
+        for i in xrange(len(property_utils.CONFIG.sections())):
+            self.assertEqual(property_utils.CONFIG.sections()[i],
+                             self.rules_checker.rules[i][0].pattern)
