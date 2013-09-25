@@ -146,7 +146,7 @@ class ImageMembersController(object):
             member_repo = image.get_member_repo()
             member = member_repo.get(member_id)
             member_repo.remove(member)
-            return webob.Response(body='', status=200)
+            return webob.Response(body='', status=204)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=unicode(e))
         except exception.Forbidden as e:

@@ -1222,7 +1222,7 @@ class TestImageMembers(functional.FunctionalTest):
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
                                                        TENANT3))
         response = requests.delete(path, headers=get_header('tenant1'))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(204, response.status_code)
 
         # Now the image has only no members
         path = self._url('/v2/images/%s/members' % image_fixture[1]['id'])

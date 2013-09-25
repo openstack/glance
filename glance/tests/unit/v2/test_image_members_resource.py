@@ -280,6 +280,7 @@ class TestImageMembersController(test_utils.BaseTestCase):
         image_id = UUID2
         res = self.controller.delete(request, image_id, member_id)
         self.assertEqual(res.body, '')
+        self.assertEqual(res.status_code, 204)
         found_member = self.db.image_member_find(
                 request.context, image_id=image_id, member=member_id)
         self.assertEqual(found_member, [])
