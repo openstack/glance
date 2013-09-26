@@ -16,10 +16,12 @@
 #    under the License.
 
 from contextlib import contextmanager
+import datetime
 import hashlib
 import os
 import StringIO
 import tempfile
+import time
 
 import fixtures
 import stubout
@@ -146,6 +148,35 @@ class ImageCacheTestCase(object):
         self.cache.clean(stall_time=0)
 
         self.assertFalse(os.path.exists(incomplete_file_path))
+
+    @skip_if_disabled
+    def test_clean_stalled_nonzero_stall_time(self):
+        """
+        Test the clean method removes the stalled images as expected
+        """
+        incomplete_file_path_1 = os.path.join(self.cache_dir,
+                                              'incomplete', '1')
+        incomplete_file_path_2 = os.path.join(self.cache_dir,
+                                              'incomplete', '2')
+        for f in (incomplete_file_path_1, incomplete_file_path_2):
+            incomplete_file = open(f, 'w')
+            incomplete_file.write(FIXTURE_DATA)
+            incomplete_file.close()
+
+        mtime = os.path.getmtime(incomplete_file_path_1)
+        pastday = datetime.datetime.fromtimestamp(mtime) - \
+            datetime.timedelta(days=1)
+        atime = int(time.mktime(pastday.timetuple()))
+        mtime = atime
+        os.utime(incomplete_file_path_1, (atime, mtime))
+
+        self.assertTrue(os.path.exists(incomplete_file_path_1))
+        self.assertTrue(os.path.exists(incomplete_file_path_2))
+
+        self.cache.clean(stall_time=3600)
+
+        self.assertFalse(os.path.exists(incomplete_file_path_1))
+        self.assertTrue(os.path.exists(incomplete_file_path_2))
 
     @skip_if_disabled
     def test_prune(self):
