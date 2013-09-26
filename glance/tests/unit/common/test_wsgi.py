@@ -151,6 +151,28 @@ class ResourceTest(test_utils.BaseTestCase):
         self.assertRaises(AttributeError, resource.dispatch, Controller(),
                           'index', 'on', pants='off')
 
+    def test_call(self):
+        class FakeController(object):
+            def index(self, shirt, pants=None):
+                return (shirt, pants)
+
+        resource = wsgi.Resource(FakeController(), None, None)
+
+        def dispatch(self, obj, action, *args, **kwargs):
+            if isinstance(obj, wsgi.JSONRequestDeserializer):
+                return []
+            if isinstance(obj, wsgi.JSONResponseSerializer):
+                raise webob.exc.HTTPForbidden()
+
+        self.stubs.Set(wsgi.Resource, 'dispatch', dispatch)
+
+        request = wsgi.Request.blank('/')
+
+        response = resource.__call__(request)
+
+        self.assertIsInstance(response, webob.exc.HTTPForbidden)
+        self.assertEqual(response.status_code, 403)
+
 
 class JSONResponseSerializerTest(test_utils.BaseTestCase):
 

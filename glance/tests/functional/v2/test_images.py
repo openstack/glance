@@ -906,7 +906,8 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         image = json.loads(response.text)
-        self.assertFalse('locations' in image)
+        self.assertTrue('locations' in image)
+        self.assertTrue(image["locations"] == [])
 
         # Upload some image data, setting the image location
         path = self._url('/v2/images/%s/file' % image_id)

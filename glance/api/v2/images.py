@@ -550,25 +550,37 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         return base_href
 
     def _format_image(self, image):
-        image_view = dict(image.extra_properties)
-        attributes = ['name', 'disk_format', 'container_format', 'visibility',
-                      'size', 'status', 'checksum', 'protected',
-                      'min_ram', 'min_disk']
-        for key in attributes:
-            image_view[key] = getattr(image, key)
-        image_view['id'] = image.image_id
-        image_view['created_at'] = timeutils.isotime(image.created_at)
-        image_view['updated_at'] = timeutils.isotime(image.updated_at)
-        if image.locations:
+        image_view = dict()
+        try:
+            image_view = dict(image.extra_properties)
+            attributes = ['name', 'disk_format', 'container_format',
+                          'visibility', 'size', 'status', 'checksum',
+                          'protected', 'min_ram', 'min_disk']
+            for key in attributes:
+                image_view[key] = getattr(image, key)
+            image_view['id'] = image.image_id
+            image_view['created_at'] = timeutils.isotime(image.created_at)
+            image_view['updated_at'] = timeutils.isotime(image.updated_at)
+
             if CONF.show_multiple_locations:
-                image_view['locations'] = list(image.locations)
-            if CONF.show_image_direct_url:
+                if image.locations:
+                    image_view['locations'] = list(image.locations)
+                else:
+                    # NOTE (flwang): We will still show "locations": [] if
+                    # image.locations is None to indicate it's allowed to show
+                    # locations but it's just non-existent.
+                    image_view['locations'] = []
+
+            if CONF.show_image_direct_url and image.locations:
                 image_view['direct_url'] = image.locations[0]['url']
-        image_view['tags'] = list(image.tags)
-        image_view['self'] = self._get_image_href(image)
-        image_view['file'] = self._get_image_href(image, 'file')
-        image_view['schema'] = '/v2/schemas/image'
-        image_view = self.schema.filter(image_view)  # domain
+
+            image_view['tags'] = list(image.tags)
+            image_view['self'] = self._get_image_href(image)
+            image_view['file'] = self._get_image_href(image, 'file')
+            image_view['schema'] = '/v2/schemas/image'
+            image_view = self.schema.filter(image_view)  # domain
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(unicode(e))
         return image_view
 
     def create(self, response, image):
