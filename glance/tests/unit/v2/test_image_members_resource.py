@@ -213,6 +213,18 @@ class TestImageMembersController(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.create,
                           request, image_id=UUID2, member_id=TENANT3)
 
+    def test_create_duplicate_member(self):
+        request = unit_test_utils.get_fake_request()
+        image_id = UUID2
+        member_id = TENANT3
+        output = self.controller.create(request, image_id=image_id,
+                                        member_id=member_id)
+        self.assertEqual(UUID2, output.image_id)
+        self.assertEqual(TENANT3, output.member_id)
+
+        self.assertRaises(webob.exc.HTTPConflict, self.controller.create,
+                          request, image_id=image_id, member_id=member_id)
+
     def test_update_done_by_member(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT4)
         image_id = UUID2
