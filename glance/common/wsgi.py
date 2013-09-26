@@ -609,6 +609,8 @@ class Resource(object):
             self.dispatch(self.serializer, action, response, action_result)
             return response
 
+        except webob.exc.HTTPException as e:
+            return e
         # return unserializable result (typically a webob exc)
         except Exception:
             return action_result

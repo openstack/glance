@@ -124,14 +124,14 @@ class ImageDataController(object):
         image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
+            if not image.locations:
+                reason = _("No image data could be found")
+                raise exception.NotFound(reason)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=unicode(e))
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
 
-        if not image.locations:
-            reason = _("No image data could be found")
-            raise webob.exc.HTTPNotFound(reason)
         return image
 
 
@@ -149,10 +149,13 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 class ResponseSerializer(wsgi.JSONResponseSerializer):
     def download(self, response, image):
         response.headers['Content-Type'] = 'application/octet-stream'
-        # NOTE(markwash): filesystem store (and maybe others?) cause a problem
-        # with the caching middleware if they are not wrapped in an iterator
-        # very strange
-        response.app_iter = iter(image.get_data())
+        try:
+            # NOTE(markwash): filesystem store (and maybe others?) cause a
+            # problem with the caching middleware if they are not wrapped in
+            # an iterator very strange
+            response.app_iter = iter(image.get_data())
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(unicode(e))
         #NOTE(saschpe): "response.app_iter = ..." currently resets Content-MD5
         # (https://github.com/Pylons/webob/issues/86), so it should be set
         # afterwards for the time being.
