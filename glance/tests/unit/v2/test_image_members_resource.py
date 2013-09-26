@@ -451,6 +451,12 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
                           request)
 
+    def test_create_member_empty(self):
+        request = unit_test_utils.get_fake_request()
+        request.body = json.dumps({'member': ''})
+        self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
+                          request)
+
     def test_update(self):
         request = unit_test_utils.get_fake_request()
         request.body = json.dumps({'status': 'accepted'})
