@@ -16,13 +16,16 @@
 
 import ConfigParser
 import re
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 from oslo.config import cfg
 import webob.exc
 
 import glance.api.policy
 from glance.common import exception
-from glance.common.ordereddict import OrderedDict
 from glance.openstack.common import log as logging
 from glance.openstack.common import policy
 

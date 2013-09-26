@@ -20,6 +20,7 @@ httplib2
 kombu>=2.4.8
 pycrypto>=2.6
 iso8601>=0.1.8
+ordereddict
 oslo.config>=1.2.0
 
 # For Swift storage backend.
