@@ -1145,6 +1145,18 @@ Optional. Default: "default"
 
 Name of the rule in the policy configuration file to use as the default rule
 
+Configuring Glance Property Protections
+---------------------------------------
+
+Access to image meta properties may be configured using a
+:doc:`Property Protections Configuration file <property-protections>`.  The
+location for this file can be specified in the ``glance-api.conf`` config file
+in the section ``[DEFAULT]``.
+
+* ``property_protection_file=PATH``
+
+Optional. Default: not enabled.
+
 Configuring Glance APIs
 -----------------------
 
