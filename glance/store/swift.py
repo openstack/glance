@@ -102,6 +102,11 @@ swift_opts = [
                 help=_('A list of tenants that will be granted read/write '
                        'access on all Swift containers created by Glance in '
                        'multi-tenant mode.')),
+    cfg.BoolOpt('swift_store_ssl_compression', default=True,
+                help=_('If set to False, disables SSL layer compression of '
+                       'https swift requests. Setting to False may improve '
+                       'performance for images which are already in a '
+                       'compressed format, eg qcow2.')),
 ]
 
 CONF = cfg.CONF
@@ -267,6 +272,7 @@ class BaseStore(glance.store.base.Store):
         self.endpoint_type = CONF.swift_store_endpoint_type
         self.snet = CONF.swift_enable_snet
         self.insecure = CONF.swift_store_auth_insecure
+        self.ssl_compression = CONF.swift_store_ssl_compression
 
     def get(self, location, connection=None):
         location = location.store_location
@@ -574,7 +580,8 @@ class SingleTenantStore(BaseStore):
         return swiftclient.Connection(
                 auth_url, user, location.key, insecure=self.insecure,
                 tenant_name=tenant_name, snet=self.snet,
-                auth_version=self.auth_version, os_options=os_options)
+                auth_version=self.auth_version, os_options=os_options,
+                ssl_compression=self.ssl_compression)
 
 
 class MultiTenantStore(BaseStore):
@@ -654,7 +661,8 @@ class MultiTenantStore(BaseStore):
                 preauthurl=location.swift_url,
                 preauthtoken=self.context.auth_tok,
                 tenant_name=self.context.tenant,
-                auth_version='2', snet=self.snet, insecure=self.insecure)
+                auth_version='2', snet=self.snet, insecure=self.insecure,
+                ssl_compression=self.ssl_compression)
 
 
 class ChunkReader(object):
