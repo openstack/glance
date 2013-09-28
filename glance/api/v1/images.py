@@ -637,6 +637,24 @@ class Controller(controller.BaseController):
         else:
             if location:
                 self._validate_image_for_activation(req, image_id, image_meta)
+                image_size_meta = image_meta.get('size')
+                if image_size_meta:
+                    image_size_store = get_size_from_backend(req.context,
+                                                             location)
+                    # NOTE(zhiyan): A returned size of zero usually means
+                    # the driver encountered an error. In this case the
+                    # size provided by the client will be used as-is.
+                    if (image_size_store and
+                            image_size_store != image_size_meta):
+                        msg = _("Provided image size must match the stored "
+                                "image size. (provided size: %(ps)d, "
+                                "stored size: %(ss)d)" %
+                                {"ps": image_size_meta,
+                                 "ss": image_size_store})
+                        LOG.debug(msg)
+                        raise HTTPConflict(explanation=msg,
+                                           request=req,
+                                           content_type="text/plain")
                 image_meta = self._activate(req, image_id, location)
         return image_meta
 

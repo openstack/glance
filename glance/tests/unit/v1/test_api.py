@@ -768,6 +768,27 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 400)
 
+    def test_add_location_with_conflict_image_size(self):
+        """Tests creates an image from location and conflict image size"""
+
+        self.stubs.Set(glance.api.v1.images, 'get_size_from_backend',
+                       lambda *args, **kwargs: 2)
+
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-location': 'http://a/b/c.tar.gz',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #F',
+                           'x-image-meta-size': '1'}
+
+        req = webob.Request.blank("/images")
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 409)
+
     def test_add_copy_from_with_location(self):
         """Tests creates an image from copy-from and location"""
         fixture_headers = {'x-image-meta-store': 'file',
