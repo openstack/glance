@@ -229,9 +229,9 @@ following shows an example of the HTTP headers returned from the above
   x-image-meta-updated_at       2010-02-03 09:34:01
   x-image-meta-deleted_at
   x-image-meta-status           available
-  x-image-meta-is-public        true
-  x-image-meta-min-ram          256
-  x-image-meta-min-disk         0
+  x-image-meta-is_public        true
+  x-image-meta-min_ram          256
+  x-image-meta-min_disk         0
   x-image-meta-owner            null
   x-image-meta-property-distro  Ubuntu 10.04 LTS
 
@@ -251,7 +251,7 @@ following shows an example of the HTTP headers returned from the above
   The response's `ETag` header will always be equal to the
   `x-image-meta-checksum` value
 
-  The response's `x-image-meta-is-public` value is a boolean indicating
+  The response's `x-image-meta-is_public` value is a boolean indicating
   whether the image is publically available
 
   The response's `x-image-meta-owner` value is a string which may either
@@ -292,9 +292,9 @@ returned from the above ``GET`` request::
   x-image-meta-updated_at       2010-02-03 09:34:01
   x-image-meta-deleted_at
   x-image-meta-status           available
-  x-image-meta-is-public        true
-  x-image-meta-min-ram          256
-  x-image-meta-min-disk         5
+  x-image-meta-is_public        true
+  x-image-meta-min_ram          256
+  x-image-meta-min_disk         5
   x-image-meta-owner            null
   x-image-meta-property-distro  Ubuntu 10.04 LTS
 
@@ -317,7 +317,7 @@ returned from the above ``GET`` request::
   The response's `ETag` header will always be equal to the
   `x-image-meta-checksum` value
 
-  The response's `x-image-meta-is-public` value is a boolean indicating
+  The response's `x-image-meta-is_public` value is a boolean indicating
   whether the image is publically available
 
   The response's `x-image-meta-owner` value is a string which may either
@@ -451,7 +451,7 @@ The list of metadata headers that Glance accepts are listed below.
   store when storing your image against this value and return a
   **400 Bad Request** if the values do not match.
 
-* ``x-image-meta-is-public``
+* ``x-image-meta-is_public``
 
   This header is optional.
 
@@ -462,14 +462,14 @@ The list of metadata headers that Glance accepts are listed below.
   When not present, the image is assumed to be *not public* and owned by
   a user.
 
-* ``x-image-meta-min-ram``
+* ``x-image-meta-min_ram``
 
   This header is optional. When present it shall be the expected minimum ram
   required in megabytes to run this image on a server.
 
   When not present, the image is assumed to have a minimum ram requirement of 0.
 
-* ``x-image-meta-min-disk``
+* ``x-image-meta-min_disk``
 
   This header is optional. When present it shall be the expected minimum disk
   space required in gigabytes to run this image on a server.
