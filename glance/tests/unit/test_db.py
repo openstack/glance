@@ -441,6 +441,25 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         self.assertRaises(exception.Duplicate, self.image_member_repo.add,
                           image_member)
 
+    def test_get_image_member(self):
+        image = self.image_repo.get(UUID1)
+        image_member = self.image_member_factory.new_image_member(image,
+                                                                  TENANT4)
+        self.assertIsNone(image_member.id)
+        self.image_member_repo.add(image_member)
+
+        member = self.image_member_repo.get(image_member.member_id)
+
+        self.assertEqual(member.id, image_member.id)
+        self.assertEqual(member.image_id, image_member.image_id)
+        self.assertEqual(member.member_id, image_member.member_id)
+        self.assertEqual(member.status, 'pending')
+
+    def test_get_nonexistent_image_member(self):
+        fake_image_member_id = 'fake'
+        self.assertRaises(exception.NotFound, self.image_member_repo.get,
+                          fake_image_member_id)
+
     def test_remove_image_member(self):
         image_member = self.image_member_repo.get(TENANT2)
         self.image_member_repo.remove(image_member)
