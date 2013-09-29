@@ -39,7 +39,7 @@ class TestUtils(test_utils.BaseTestCase):
             for chunk in utils.CooperativeReader(tmp_fd):
                 bytes_read += len(chunk)
 
-        self.assertEquals(bytes_read, BYTES)
+        self.assertEqual(bytes_read, BYTES)
 
         bytes_read = 0
         with tempfile.TemporaryFile('w+') as tmp_fd:
@@ -51,7 +51,7 @@ class TestUtils(test_utils.BaseTestCase):
                 bytes_read += 1
                 byte = reader.read(1)
 
-        self.assertEquals(bytes_read, BYTES)
+        self.assertEqual(bytes_read, BYTES)
 
     def test_cooperative_reader_of_iterator(self):
         """Ensure cooperative reader supports iterator backends too"""
@@ -83,7 +83,7 @@ class TestUtils(test_utils.BaseTestCase):
         for chunk in utils.LimitingReader(data, BYTES):
             bytes_read += len(chunk)
 
-        self.assertEquals(bytes_read, BYTES)
+        self.assertEqual(bytes_read, BYTES)
 
         bytes_read = 0
         data = StringIO.StringIO("*" * BYTES)
@@ -93,7 +93,7 @@ class TestUtils(test_utils.BaseTestCase):
             bytes_read += 1
             byte = reader.read(1)
 
-        self.assertEquals(bytes_read, BYTES)
+        self.assertEqual(bytes_read, BYTES)
 
     def test_limiting_reader_fails(self):
         """Ensure limiting reader class throws exceptions if limit exceeded"""

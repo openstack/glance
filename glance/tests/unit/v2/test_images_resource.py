@@ -337,7 +337,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request, marker=UUID3)
         actual = set([image.image_id for image in output['images']])
-        self.assertEquals(1, len(actual))
+        self.assertEqual(1, len(actual))
         self.assertTrue(UUID2 in actual)
 
     def test_index_with_limit(self):
@@ -346,7 +346,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request, limit=limit)
         actual = set([image.image_id for image in output['images']])
-        self.assertEquals(limit, len(actual))
+        self.assertEqual(limit, len(actual))
         self.assertTrue(UUID3 in actual)
         self.assertTrue(UUID2 in actual)
 
@@ -356,7 +356,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request, limit=4)
         actual = set([image.image_id for image in output['images']])
-        self.assertEquals(3, len(actual))
+        self.assertEqual(3, len(actual))
         self.assertTrue(output['next_marker'] not in output)
 
     def test_index_default_limit(self):
@@ -365,27 +365,27 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request)
         actual = set([image.image_id for image in output['images']])
-        self.assertEquals(1, len(actual))
+        self.assertEqual(1, len(actual))
 
     def test_index_with_sort_dir(self):
         path = '/images'
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request, sort_dir='asc', limit=3)
         actual = [image.image_id for image in output['images']]
-        self.assertEquals(3, len(actual))
-        self.assertEquals(UUID1, actual[0])
-        self.assertEquals(UUID2, actual[1])
-        self.assertEquals(UUID3, actual[2])
+        self.assertEqual(3, len(actual))
+        self.assertEqual(UUID1, actual[0])
+        self.assertEqual(UUID2, actual[1])
+        self.assertEqual(UUID3, actual[2])
 
     def test_index_with_sort_key(self):
         path = '/images'
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request, sort_key='created_at', limit=3)
         actual = [image.image_id for image in output['images']]
-        self.assertEquals(3, len(actual))
-        self.assertEquals(UUID3, actual[0])
-        self.assertEquals(UUID2, actual[1])
-        self.assertEquals(UUID1, actual[2])
+        self.assertEqual(3, len(actual))
+        self.assertEqual(UUID3, actual[0])
+        self.assertEqual(UUID2, actual[1])
+        self.assertEqual(UUID1, actual[2])
 
     def test_index_with_marker_not_found(self):
         fake_uuid = uuidutils.generate_uuid()
@@ -411,9 +411,9 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request, filters={'tags': ['64bit']})
         actual = [image.tags for image in output['images']]
-        self.assertEquals(2, len(actual))
-        self.assertEqual(True, '64bit' in actual[0])
-        self.assertEqual(True, '64bit' in actual[1])
+        self.assertEqual(2, len(actual))
+        self.assertTrue('64bit' in actual[0])
+        self.assertTrue('64bit' in actual[1])
 
     def test_index_with_multi_tags(self):
         path = '/images?tag=power&tag=64bit'
@@ -421,9 +421,9 @@ class TestImagesController(base.IsolatedUnitTest):
         output = self.controller.index(request,
                                        filters={'tags': ['power', '64bit']})
         actual = [image.tags for image in output['images']]
-        self.assertEquals(1, len(actual))
-        self.assertEqual(True, '64bit' in actual[0])
-        self.assertEqual(True, 'power' in actual[0])
+        self.assertEqual(1, len(actual))
+        self.assertTrue('64bit' in actual[0])
+        self.assertTrue('power' in actual[0])
 
     def test_index_with_multi_tags_and_nonexistent(self):
         path = '/images?tag=power&tag=fake'
@@ -431,7 +431,7 @@ class TestImagesController(base.IsolatedUnitTest):
         output = self.controller.index(request,
                                        filters={'tags': ['power', 'fake']})
         actual = [image.tags for image in output['images']]
-        self.assertEquals(0, len(actual))
+        self.assertEqual(0, len(actual))
 
     def test_index_with_tags_and_properties(self):
         path = '/images?tag=64bit&hypervisor_type=kvm'
@@ -441,8 +441,8 @@ class TestImagesController(base.IsolatedUnitTest):
                                                 'hypervisor_type': 'kvm'})
         tags = [image.tags for image in output['images']]
         properties = [image.extra_properties for image in output['images']]
-        self.assertEquals(True, len(tags) == len(properties))
-        self.assertEqual(True, '64bit' in tags[0])
+        self.assertTrue(len(tags) == len(properties))
+        self.assertTrue('64bit' in tags[0])
         self.assertEqual('kvm', properties[0]['hypervisor_type'])
 
     def test_index_with_non_existent_tags(self):
@@ -451,7 +451,7 @@ class TestImagesController(base.IsolatedUnitTest):
         output = self.controller.index(request,
                                        filters={'tags': ['fake']})
         actual = [image.tags for image in output['images']]
-        self.assertEquals(0, len(actual))
+        self.assertEqual(0, len(actual))
 
     def test_show(self):
         request = unit_test_utils.get_fake_request()
@@ -491,7 +491,7 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_show_not_allowed(self):
         request = unit_test_utils.get_fake_request()
-        self.assertEquals(request.context.tenant, TENANT1)
+        self.assertEqual(request.context.tenant, TENANT1)
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.show, request, UUID4)
 
@@ -1389,7 +1389,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         request.body = json.dumps([])
         output = self.deserializer.update(request)
         expected = {'changes': []}
-        self.assertEquals(output, expected)
+        self.assertEqual(output, expected)
 
     def test_update_unsupported_content_type(self):
         request = unit_test_utils.get_fake_request()
@@ -1471,7 +1471,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
              'value': [{'url': 'scheme5://path5', 'metadata': {}},
                        {'url': 'scheme6://path6', 'metadata': {}}]},
         ]}
-        self.assertEquals(output, expected)
+        self.assertEqual(output, expected)
 
     def test_update_v2_0_compatibility(self):
         request = self._get_fake_patch_request(content_type_minor_version=0)
@@ -1509,7 +1509,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
              'value': [{'url': 'scheme5://path5', 'metadata': {}},
                        {'url': 'scheme6://path6', 'metadata': {}}]},
         ]}
-        self.assertEquals(output, expected)
+        self.assertEqual(output, expected)
 
     def test_update_base_attributes(self):
         request = self._get_fake_patch_request()
@@ -1545,7 +1545,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
              'value': [{'url': 'scheme5://path5', 'metadata': {}},
                        {'url': 'scheme6://path6', 'metadata': {}}]}
         ]}
-        self.assertEquals(output, expected)
+        self.assertEqual(output, expected)
 
     def test_update_disallowed_attributes(self):
         samples = {
@@ -2057,12 +2057,12 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         request = webob.Request.blank(url)
         response = webob.Response(request=request)
         result = {'images': self.fixtures}
-        self.assertEquals(response.status_int, 200)
+        self.assertEqual(response.status_int, 200)
 
         # The image index should work though the user is forbidden
         result['images'][0].locations = ImageLocations()
         self.serializer.index(response, result)
-        self.assertEquals(response.status_int, 200)
+        self.assertEqual(response.status_int, 200)
 
     def test_show_full_fixture(self):
         expected = {

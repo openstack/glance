@@ -315,7 +315,7 @@ class TestScrubber(functional.FunctionalTest):
             swift.head_object(swift_config['swift_store_container'], image_id)
             self.fail('image should have been deleted from swift')
         except swiftclient.ClientException as e:
-            self.assertEquals(e.http_status, 404)
+            self.assertEqual(e.http_status, 404)
 
         # wait for the scrub time on the image to pass
         time.sleep(self.api_server.scrub_time)

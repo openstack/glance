@@ -389,7 +389,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
         plugin = auth.KeystoneStrategy(no_region_creds)
         self.assertTrue(plugin.authenticate() is None)
-        self.assertEquals(plugin.management_url, 'http://localhost:9292')
+        self.assertEqual(plugin.management_url, 'http://localhost:9292')
 
         # Add another image service, with a different region
         mock_token.add_service('image', ['RegionTwo'])
@@ -485,7 +485,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
         for creds in good_creds:
             plugin = auth.KeystoneStrategy(creds)
             self.assertTrue(plugin.authenticate() is None)
-            self.assertEquals(plugin.management_url, 'http://localhost:9292')
+            self.assertEqual(plugin.management_url, 'http://localhost:9292')
 
         ambiguous_region_creds = {
             'username': 'user1',
@@ -573,13 +573,13 @@ class TestEndpoints(utils.BaseTestCase):
     def test_get_endpoint_with_custom_server_type(self):
         endpoint = auth.get_endpoint(self.service_catalog,
                                      service_type='object-store')
-        self.assertEquals('http://publicURL/', endpoint)
+        self.assertEqual('http://publicURL/', endpoint)
 
     def test_get_endpoint_with_custom_endpoint_type(self):
         endpoint = auth.get_endpoint(self.service_catalog,
                                      service_type='object-store',
                                      endpoint_type='internalURL')
-        self.assertEquals('http://internalURL/', endpoint)
+        self.assertEqual('http://internalURL/', endpoint)
 
     def test_get_endpoint_raises_with_invalid_service_type(self):
         self.assertRaises(exception.NoServiceEndpoint,
@@ -773,7 +773,7 @@ class TestImmutableImage(utils.BaseTestCase):
 
         image = glance.api.authorization.ImmutableImageProxy(
                 FakeImage(), self.context)
-        self.assertEquals(image.get_data(), 'tiddlywinks')
+        self.assertEqual(image.get_data(), 'tiddlywinks')
 
 
 class TestImageFactoryProxy(utils.BaseTestCase):

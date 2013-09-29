@@ -462,14 +462,14 @@ class RegistryAPIMixIn(object):
         elif content_type == 'octet':
             req.content_type = 'application/octet-stream'
         res = req.get_response(api)
-        self.assertEquals(res.status_int, http_resp)
+        self.assertEqual(res.status_int, http_resp)
         return res
 
     def assertEqualImages(self, res, uuids, key='images', unjsonify=True):
         images = json.loads(res.body)[key] if unjsonify else res
-        self.assertEquals(len(images), len(uuids))
+        self.assertEqual(len(images), len(uuids))
         for i, uuid in enumerate(uuids):
-            self.assertEquals(images[i]['id'], uuid)
+            self.assertEqual(images[i]['id'], uuid)
 
 
 class FakeAuthMiddleware(wsgi.Middleware):

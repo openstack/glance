@@ -99,9 +99,9 @@ class TestStore(base.IsolatedUnitTest):
                                                      image_file,
                                                      expected_file_size)
 
-        self.assertEquals(expected_location, location)
-        self.assertEquals(expected_file_size, size)
-        self.assertEquals(expected_checksum, checksum)
+        self.assertEqual(expected_location, location)
+        self.assertEqual(expected_file_size, size)
+        self.assertEqual(expected_checksum, checksum)
 
         uri = "file:///%s/%s" % (self.test_dir, expected_image_id)
         loc = get_location_from_uri(uri)
@@ -113,8 +113,8 @@ class TestStore(base.IsolatedUnitTest):
             new_image_file_size += len(chunk)
             new_image_contents += chunk
 
-        self.assertEquals(expected_file_contents, new_image_contents)
-        self.assertEquals(expected_file_size, new_image_file_size)
+        self.assertEqual(expected_file_contents, new_image_contents)
+        self.assertEqual(expected_file_size, new_image_file_size)
 
     def test_add_check_metadata_success(self):
         expected_image_id = uuidutils.generate_uuid()
@@ -133,7 +133,7 @@ class TestStore(base.IsolatedUnitTest):
                                                             image_file,
                                                             expected_file_size)
 
-        self.assertEquals(metadata, in_metadata)
+        self.assertEqual(metadata, in_metadata)
 
     def test_add_check_metadata_bad_data(self):
         expected_image_id = uuidutils.generate_uuid()
@@ -152,7 +152,7 @@ class TestStore(base.IsolatedUnitTest):
                                                             image_file,
                                                             expected_file_size)
 
-        self.assertEquals(metadata, {})
+        self.assertEqual(metadata, {})
 
     def test_add_check_metadata_bad_nosuch_file(self):
         expected_image_id = uuidutils.generate_uuid()
@@ -168,7 +168,7 @@ class TestStore(base.IsolatedUnitTest):
                                                             image_file,
                                                             expected_file_size)
 
-        self.assertEquals(metadata, {})
+        self.assertEqual(metadata, {})
 
     def test_add_already_existing(self):
         """

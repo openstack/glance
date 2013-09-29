@@ -82,7 +82,7 @@ class TestProtectedImageRepoProxy(utils.BaseTestCase):
 
     def test_list_image(self):
         result_images = self.image_repo.list()
-        self.assertEquals(len(result_images), 3)
+        self.assertEqual(len(result_images), 3)
         result_extra_props = result_images[0].extra_properties
         self.assertEqual(result_extra_props['spl_create_prop'], 'c')
         self.assertEqual(result_extra_props['spl_read_prop'], 'r')

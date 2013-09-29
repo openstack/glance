@@ -165,9 +165,9 @@ class TestRabbitNotifier(utils.BaseTestCase):
         if self.called is False:
             self.fail("Did not call _send_message properly.")
 
-        self.assertEquals("test_message", self.called["message"]["payload"])
-        self.assertEquals("WARN", self.called["message"]["priority"])
-        self.assertEquals("fake_topic.warn", self.called["routing_key"])
+        self.assertEqual("test_message", self.called["message"]["payload"])
+        self.assertEqual("WARN", self.called["message"]["priority"])
+        self.assertEqual("fake_topic.warn", self.called["routing_key"])
 
     def test_info(self):
         self.notifier.info("test_event", "test_message")
@@ -175,9 +175,9 @@ class TestRabbitNotifier(utils.BaseTestCase):
         if self.called is False:
             self.fail("Did not call _send_message properly.")
 
-        self.assertEquals("test_message", self.called["message"]["payload"])
-        self.assertEquals("INFO", self.called["message"]["priority"])
-        self.assertEquals("fake_topic.info", self.called["routing_key"])
+        self.assertEqual("test_message", self.called["message"]["payload"])
+        self.assertEqual("INFO", self.called["message"]["priority"])
+        self.assertEqual("fake_topic.info", self.called["routing_key"])
 
     def test_error(self):
         self.notifier.error("test_event", "test_message")
@@ -185,9 +185,9 @@ class TestRabbitNotifier(utils.BaseTestCase):
         if self.called is False:
             self.fail("Did not call _send_message properly.")
 
-        self.assertEquals("test_message", self.called["message"]["payload"])
-        self.assertEquals("ERROR", self.called["message"]["priority"])
-        self.assertEquals("fake_topic.error", self.called["routing_key"])
+        self.assertEqual("test_message", self.called["message"]["payload"])
+        self.assertEqual("ERROR", self.called["message"]["priority"])
+        self.assertEqual("fake_topic.error", self.called["routing_key"])
 
     def test_unknown_error_on_connect_raises(self):
         class MyException(Exception):
@@ -217,9 +217,9 @@ class TestRabbitNotifier(utils.BaseTestCase):
         if self.called is False:
             self.fail("Did not call _send_message properly.")
 
-        self.assertEquals("test_message", self.called["message"]["payload"])
-        self.assertEquals("ERROR", self.called["message"]["priority"])
-        self.assertEquals(info['num_called'], 2)
+        self.assertEqual("test_message", self.called["message"]["payload"])
+        self.assertEqual("ERROR", self.called["message"]["priority"])
+        self.assertEqual(info['num_called'], 2)
 
     def test_connection_error_on_connect_reconnects(self):
         info = {'num_called': 0}
@@ -241,9 +241,9 @@ class TestRabbitNotifier(utils.BaseTestCase):
         if self.called is False:
             self.fail("Did not call _send_message properly.")
 
-        self.assertEquals("test_message", self.called["message"]["payload"])
-        self.assertEquals("ERROR", self.called["message"]["priority"])
-        self.assertEquals(info['num_called'], 2)
+        self.assertEqual("test_message", self.called["message"]["payload"])
+        self.assertEqual("ERROR", self.called["message"]["priority"])
+        self.assertEqual(info['num_called'], 2)
 
     def test_unknown_error_on_send_message_raises(self):
         class MyException(Exception):
@@ -278,10 +278,10 @@ class TestRabbitNotifier(utils.BaseTestCase):
         if self.called is False:
             self.fail("Did not call _send_message properly.")
 
-        self.assertEquals("test_message", self.called["message"]["payload"])
-        self.assertEquals("ERROR", self.called["message"]["priority"])
-        self.assertEquals(info['send_called'], 2)
-        self.assertEquals(info['conn_called'], 2)
+        self.assertEqual("test_message", self.called["message"]["payload"])
+        self.assertEqual("ERROR", self.called["message"]["priority"])
+        self.assertEqual(info['send_called'], 2)
+        self.assertEqual(info['conn_called'], 2)
 
     def test_connection_error_on_send_message_reconnects(self):
         info = {'send_called': 0, 'conn_called': 0}
@@ -308,10 +308,10 @@ class TestRabbitNotifier(utils.BaseTestCase):
         if self.called is False:
             self.fail("Did not call _send_message properly.")
 
-        self.assertEquals("test_message", self.called["message"]["payload"])
-        self.assertEquals("ERROR", self.called["message"]["priority"])
-        self.assertEquals(info['send_called'], 2)
-        self.assertEquals(info['conn_called'], 2)
+        self.assertEqual("test_message", self.called["message"]["payload"])
+        self.assertEqual("ERROR", self.called["message"]["priority"])
+        self.assertEqual(info['send_called'], 2)
+        self.assertEqual(info['conn_called'], 2)
 
 
 class TestQpidNotifier(utils.BaseTestCase):
@@ -463,7 +463,7 @@ class TestRabbitContentType(utils.BaseTestCase):
 
     def test_content_type_passed(self):
         self.notifier.warn("test_event", "test_message")
-        self.assertEquals(self.called['content_type'], 'application/json')
+        self.assertEqual(self.called['content_type'], 'application/json')
 
 
 class TestImageNotifications(utils.BaseTestCase):

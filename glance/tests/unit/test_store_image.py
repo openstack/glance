@@ -88,24 +88,24 @@ class TestStoreImage(utils.BaseTestCase):
     def test_image_delete(self):
         image = glance.store.ImageProxy(self.image_stub, {}, self.store_api)
         location = image.locations[0]
-        self.assertEquals(image.status, 'active')
+        self.assertEqual(image.status, 'active')
         self.store_api.get_from_backend({}, location['url'])
         image.delete()
-        self.assertEquals(image.status, 'deleted')
+        self.assertEqual(image.status, 'deleted')
         self.assertRaises(exception.NotFound,
                           self.store_api.get_from_backend, {}, location['url'])
 
     def test_image_delayed_delete(self):
         self.config(delayed_delete=True)
         image = glance.store.ImageProxy(self.image_stub, {}, self.store_api)
-        self.assertEquals(image.status, 'active')
+        self.assertEqual(image.status, 'active')
         image.delete()
-        self.assertEquals(image.status, 'pending_delete')
+        self.assertEqual(image.status, 'pending_delete')
         self.store_api.get_from_backend({}, image.locations[0]['url'])
 
     def test_image_get_data(self):
         image = glance.store.ImageProxy(self.image_stub, {}, self.store_api)
-        self.assertEquals(image.get_data(), 'XXX')
+        self.assertEqual(image.get_data(), 'XXX')
 
     def test_image_get_data_from_second_location(self):
         def fake_get_from_backend(self, context, location):
@@ -115,21 +115,21 @@ class TestStoreImage(utils.BaseTestCase):
                 return self.data[location]
 
         image1 = glance.store.ImageProxy(self.image_stub, {}, self.store_api)
-        self.assertEquals(image1.get_data(), 'XXX')
+        self.assertEqual(image1.get_data(), 'XXX')
         # Multiple location support
         context = glance.context.RequestContext(user=USER1)
         (image2, image_stub2) = self._add_image(context, UUID2, 'ZZZ', 3)
         location_data = image2.locations[0]
         image1.locations.append(location_data)
-        self.assertEquals(len(image1.locations), 2)
-        self.assertEquals(location_data['url'], UUID2)
+        self.assertEqual(len(image1.locations), 2)
+        self.assertEqual(location_data['url'], UUID2)
 
         self.stubs.Set(unit_test_utils.FakeStoreAPI, 'get_from_backend',
                        fake_get_from_backend)
 
-        self.assertEquals(image1.get_data().fd, 'ZZZ')
+        self.assertEqual(image1.get_data().fd, 'ZZZ')
         image1.locations.pop(0)
-        self.assertEquals(len(image1.locations), 1)
+        self.assertEqual(len(image1.locations), 1)
         image2.delete()
 
     def test_image_set_data(self):
@@ -137,11 +137,11 @@ class TestStoreImage(utils.BaseTestCase):
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image = glance.store.ImageProxy(image_stub, context, self.store_api)
         image.set_data('YYYY', 4)
-        self.assertEquals(image.size, 4)
+        self.assertEqual(image.size, 4)
         #NOTE(markwash): FakeStore returns image_id for location
-        self.assertEquals(image.locations[0]['url'], UUID2)
-        self.assertEquals(image.checksum, 'Z')
-        self.assertEquals(image.status, 'active')
+        self.assertEqual(image.locations[0]['url'], UUID2)
+        self.assertEqual(image.checksum, 'Z')
+        self.assertEqual(image.status, 'active')
 
     def test_image_set_data_location_metadata(self):
         context = glance.context.RequestContext(user=USER1)
@@ -150,14 +150,14 @@ class TestStoreImage(utils.BaseTestCase):
         store_api = unit_test_utils.FakeStoreAPI(store_metadata=loc_meta)
         image = glance.store.ImageProxy(image_stub, context, store_api)
         image.set_data('YYYY', 4)
-        self.assertEquals(image.size, 4)
+        self.assertEqual(image.size, 4)
         location_data = image.locations[0]
-        self.assertEquals(location_data['url'], UUID2)
-        self.assertEquals(location_data['metadata'], loc_meta)
-        self.assertEquals(image.checksum, 'Z')
-        self.assertEquals(image.status, 'active')
+        self.assertEqual(location_data['url'], UUID2)
+        self.assertEqual(location_data['metadata'], loc_meta)
+        self.assertEqual(image.checksum, 'Z')
+        self.assertEqual(image.status, 'active')
         image.delete()
-        self.assertEquals(image.status, 'deleted')
+        self.assertEqual(image.status, 'deleted')
         self.assertRaises(exception.NotFound,
                           self.store_api.get_from_backend, {},
                           image.locations[0]['url'])
@@ -167,13 +167,13 @@ class TestStoreImage(utils.BaseTestCase):
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image = glance.store.ImageProxy(image_stub, context, self.store_api)
         image.set_data('YYYY', None)
-        self.assertEquals(image.size, 4)
+        self.assertEqual(image.size, 4)
         #NOTE(markwash): FakeStore returns image_id for location
-        self.assertEquals(image.locations[0]['url'], UUID2)
-        self.assertEquals(image.checksum, 'Z')
-        self.assertEquals(image.status, 'active')
+        self.assertEqual(image.locations[0]['url'], UUID2)
+        self.assertEqual(image.checksum, 'Z')
+        self.assertEqual(image.status, 'active')
         image.delete()
-        self.assertEquals(image.status, 'deleted')
+        self.assertEqual(image.status, 'deleted')
         self.assertRaises(exception.NotFound,
                           self.store_api.get_from_backend, {},
                           image.locations[0]['url'])
@@ -183,11 +183,11 @@ class TestStoreImage(utils.BaseTestCase):
         image = glance.store.ImageProxy(image_stub,
                                         context, self.store_api)
         image.set_data(data, len)
-        self.assertEquals(image.size, len)
+        self.assertEqual(image.size, len)
         #NOTE(markwash): FakeStore returns image_id for location
         location = {'url': image_id, 'metadata': {}}
-        self.assertEquals(image.locations, [location])
-        self.assertEquals(image_stub.locations, [location])
+        self.assertEqual(image.locations, [location])
+        self.assertEqual(image_stub.locations, [location])
         self.assertEqual(image.status, 'active')
         return (image, image_stub)
 
@@ -244,8 +244,8 @@ class TestStoreImage(utils.BaseTestCase):
 
         image1.locations.append(location3)
 
-        self.assertEquals(image_stub1.locations, [location2, location3])
-        self.assertEquals(image1.locations, [location2, location3])
+        self.assertEqual(image_stub1.locations, [location2, location3])
+        self.assertEqual(image1.locations, [location2, location3])
 
         image1.delete()
 
@@ -268,13 +268,13 @@ class TestStoreImage(utils.BaseTestCase):
 
         image1.locations.append(location3)
 
-        self.assertEquals(image_stub1.locations, [location2, location3])
-        self.assertEquals(image1.locations, [location2, location3])
+        self.assertEqual(image_stub1.locations, [location2, location3])
+        self.assertEqual(image1.locations, [location2, location3])
 
         image1.locations.pop()
 
-        self.assertEquals(image_stub1.locations, [location2])
-        self.assertEquals(image1.locations, [location2])
+        self.assertEqual(image_stub1.locations, [location2])
+        self.assertEqual(image1.locations, [location2])
 
         image1.delete()
 
@@ -333,8 +333,8 @@ class TestStoreImage(utils.BaseTestCase):
 
         image1.locations.extend([location3])
 
-        self.assertEquals(image_stub1.locations, [location2, location3])
-        self.assertEquals(image1.locations, [location2, location3])
+        self.assertEqual(image_stub1.locations, [location2, location3])
+        self.assertEqual(image1.locations, [location2, location3])
 
         image1.delete()
 
@@ -359,8 +359,8 @@ class TestStoreImage(utils.BaseTestCase):
         image1.locations.extend([location3])
         image1.locations.remove(location2)
 
-        self.assertEquals(image_stub1.locations, [location3])
-        self.assertEquals(image1.locations, [location3])
+        self.assertEqual(image_stub1.locations, [location3])
+        self.assertEqual(image1.locations, [location3])
         self.assertRaises(ValueError,
                           image1.locations.remove, location_bad)
 
@@ -379,7 +379,7 @@ class TestStoreImage(utils.BaseTestCase):
 
         del image1.locations[0]
 
-        self.assertEquals(image_stub1.locations, [])
+        self.assertEqual(image_stub1.locations, [])
         self.assertEqual(len(image1.locations), 0)
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
@@ -435,8 +435,8 @@ class TestStoreImage(utils.BaseTestCase):
 
         image1.locations.insert(0, location3)
 
-        self.assertEquals(image_stub1.locations, [location3, location2])
-        self.assertEquals(image1.locations, [location3, location2])
+        self.assertEqual(image_stub1.locations, [location3, location2])
+        self.assertEqual(image1.locations, [location3, location2])
 
         image1.delete()
 
@@ -460,7 +460,7 @@ class TestStoreImage(utils.BaseTestCase):
         image1.locations.insert(0, location3)
         del image1.locations[0:100]
 
-        self.assertEquals(image_stub1.locations, [])
+        self.assertEqual(image_stub1.locations, [])
         self.assertEqual(len(image1.locations), 0)
         self.assertRaises(exception.BadStoreUri,
                           image1.locations.insert, 0, location2)
@@ -485,8 +485,8 @@ class TestStoreImage(utils.BaseTestCase):
 
         self.assertRaises(exception.BadStoreUri,
                           image1.locations.__iadd__, [location_bad])
-        self.assertEquals(image_stub1.locations, [])
-        self.assertEquals(image1.locations, [])
+        self.assertEqual(image_stub1.locations, [])
+        self.assertEqual(image1.locations, [])
 
         image1.delete()
 
@@ -506,8 +506,8 @@ class TestStoreImage(utils.BaseTestCase):
 
         self.assertRaises(glance.store.BackendException,
                           image2.locations.__iadd__, [location_bad])
-        self.assertEquals(image_stub2.locations, [])
-        self.assertEquals(image2.locations, [])
+        self.assertEqual(image_stub2.locations, [])
+        self.assertEqual(image2.locations, [])
 
         image1.delete()
         image2.delete()
@@ -531,8 +531,8 @@ class TestStoreImage(utils.BaseTestCase):
 
         image3.locations += [location2, location3]
 
-        self.assertEquals(image_stub3.locations, [location2, location3])
-        self.assertEquals(image3.locations, [location2, location3])
+        self.assertEqual(image_stub3.locations, [location2, location3])
+        self.assertEqual(image3.locations, [location2, location3])
 
         image3.delete()
 
@@ -642,8 +642,8 @@ class TestStoreImage(utils.BaseTestCase):
 
         image_stub3.locations.reverse()
 
-        self.assertEquals(image_stub3.locations, [location3, location2])
-        self.assertEquals(image3.locations, [location3, location2])
+        self.assertEqual(image_stub3.locations, [location3, location2])
+        self.assertEqual(image3.locations, [location3, location2])
 
         image3.delete()
 
@@ -696,8 +696,8 @@ class TestStoreImageRepo(utils.BaseTestCase):
         self.assertIn('glue', self.store_api.acls)
         acls = self.store_api.acls['glue']
         self.assertFalse(acls['public'])
-        self.assertEquals(acls['write'], [])
-        self.assertEquals(acls['read'], [TENANT1, TENANT2])
+        self.assertEqual(acls['write'], [])
+        self.assertEqual(acls['read'], [TENANT1, TENANT2])
 
     def test_save_fetches_members_if_private(self):
         self.image_stub.locations = [{'url': 'glue', 'metadata': {}}]
@@ -706,8 +706,8 @@ class TestStoreImageRepo(utils.BaseTestCase):
         self.assertIn('glue', self.store_api.acls)
         acls = self.store_api.acls['glue']
         self.assertFalse(acls['public'])
-        self.assertEquals(acls['write'], [])
-        self.assertEquals(acls['read'], [TENANT1, TENANT2])
+        self.assertEqual(acls['write'], [])
+        self.assertEqual(acls['read'], [TENANT1, TENANT2])
 
     def test_member_addition_updates_acls(self):
         self.image_stub.locations = [{'url': 'glug', 'metadata': {}}]
@@ -719,8 +719,8 @@ class TestStoreImageRepo(utils.BaseTestCase):
         self.assertIn('glug', self.store_api.acls)
         acls = self.store_api.acls['glug']
         self.assertFalse(acls['public'])
-        self.assertEquals(acls['write'], [])
-        self.assertEquals(acls['read'], [TENANT1, TENANT2, TENANT3])
+        self.assertEqual(acls['write'], [])
+        self.assertEqual(acls['read'], [TENANT1, TENANT2, TENANT3])
 
     def test_member_removal_updates_acls(self):
         self.image_stub.locations = [{'url': 'glug', 'metadata': {}}]
@@ -732,8 +732,8 @@ class TestStoreImageRepo(utils.BaseTestCase):
         self.assertIn('glug', self.store_api.acls)
         acls = self.store_api.acls['glug']
         self.assertFalse(acls['public'])
-        self.assertEquals(acls['write'], [])
-        self.assertEquals(acls['read'], [TENANT2])
+        self.assertEqual(acls['write'], [])
+        self.assertEqual(acls['read'], [TENANT2])
 
 
 class TestImageFactory(utils.BaseTestCase):
@@ -750,13 +750,13 @@ class TestImageFactory(utils.BaseTestCase):
         self.assertTrue(image.image_id is None)
         self.assertTrue(image.status is None)
         self.assertEqual(image.visibility, 'private')
-        self.assertEquals(image.locations, [])
+        self.assertEqual(image.locations, [])
 
     def test_new_image_with_location(self):
         locations = [{'url': '%s/%s' % (BASE_URI, UUID1),
                       'metadata': {}}]
         image = self.image_factory.new_image(locations=locations)
-        self.assertEquals(image.locations, locations)
+        self.assertEqual(image.locations, locations)
         location_bad = {'url': 'unknown://location', 'metadata': {}}
         self.assertRaises(exception.BadStoreUri,
                           self.image_factory.new_image,

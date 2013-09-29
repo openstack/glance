@@ -89,9 +89,9 @@ class TestProxyRepoWrapping(test_utils.BaseTestCase):
         method = getattr(self.proxy_repo, name)
         proxy_result = method(*args, **kwargs)
         self.assertTrue(isinstance(proxy_result, FakeProxy))
-        self.assertEquals(proxy_result.base, base_result)
-        self.assertEquals(len(proxy_result.args), 0)
-        self.assertEquals(proxy_result.kwargs, {'a': 1})
+        self.assertEqual(proxy_result.base, base_result)
+        self.assertEqual(len(proxy_result.args), 0)
+        self.assertEqual(proxy_result.kwargs, {'a': 1})
         self.assertEqual(self.fake_repo.args, args)
         self.assertEqual(self.fake_repo.kwargs, kwargs)
 

@@ -153,8 +153,8 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
                              200, json.dumps({'images': []}), {})
 
         imgs = list(c.get_images())
-        self.assertEquals(len(imgs), 2)
-        self.assertEquals(c.conn.count, 2)
+        self.assertEqual(len(imgs), 2)
+        self.assertEqual(c.conn.count, 2)
 
     def test_rest_get_image(self):
         c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
@@ -166,7 +166,7 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
                              200, image_contents, IMG_RESPONSE_ACTIVE)
 
         body = c.get_image(IMG_RESPONSE_ACTIVE['id'])
-        self.assertEquals(body.read(), image_contents)
+        self.assertEqual(body.read(), image_contents)
 
     def test_rest_header_list_to_dict(self):
         i = [('x-image-meta-banana', 42),
@@ -224,8 +224,8 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
                              200, '', IMG_RESPONSE_ACTIVE)
 
         headers, body = c.add_image(IMG_RESPONSE_ACTIVE, image_body)
-        self.assertEquals(headers, IMG_RESPONSE_ACTIVE)
-        self.assertEquals(c.conn.count, 1)
+        self.assertEqual(headers, IMG_RESPONSE_ACTIVE)
+        self.assertEqual(c.conn.count, 1)
 
     def test_rest_add_image_meta(self):
         c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
