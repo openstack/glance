@@ -442,8 +442,8 @@ class Scrubber(object):
             uri = crypt.urlsafe_decrypt(CONF.metadata_encryption_key, uri)
 
         try:
-            LOG.debug(_("Deleting %(uri)s from image %(image_id)s.") %
-                      {'image_id': image_id, 'uri': uri})
+            LOG.debug(_("Deleting URI from image %(image_id)s.") %
+                      {'image_id': image_id})
 
             # Here we create a request context with credentials to support
             # delayed delete when using multi-tenant backend storage
@@ -455,8 +455,8 @@ class Scrubber(object):
 
             self.store_api.delete_from_backend(admin_context, uri)
         except Exception:
-            msg = _("Failed to delete image %(image_id)s from %(uri)s.")
-            LOG.error(msg % {'image_id': image_id, 'uri': uri})
+            msg = _("Failed to delete URI from image %(image_id)s")
+            LOG.error(msg % {'image_id': image_id})
 
     def _read_cleanup_file(self, file_path):
         """Reading cleanup to get latest cleanup timestamp.
