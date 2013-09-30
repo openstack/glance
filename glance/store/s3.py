@@ -122,7 +122,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                        "s3+https:// scheme, like so: "
                        "s3+https://accesskey:secretkey@"
                        "s3.amazonaws.com/bucket/key-id")
-            LOG.debug(_("Invalid store uri %(uri)s: %(reason)s") % locals())
+            LOG.debug(_("Invalid store uri: %s") % reason)
             raise exception.BadStoreUri(message=reason)
 
         pieces = urlparse.urlparse(uri)

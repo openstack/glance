@@ -80,7 +80,8 @@ def migrate_location_credentials(migrate_engine, to_quoted):
 
     for image in images:
         try:
-            fixed_uri = fix_uri_credentials(image['location'], to_quoted)
+            fixed_uri = fix_uri_credentials(image['location'], to_quoted,
+                                            image['id'])
             images_table.update()\
                         .where(images_table.c.id == image['id'])\
                         .values(location=fixed_uri).execute()
@@ -97,7 +98,7 @@ def encrypt_location(uri):
     return crypt.urlsafe_encrypt(CONF.metadata_encryption_key, uri, 64)
 
 
-def fix_uri_credentials(uri, to_quoted):
+def fix_uri_credentials(uri, to_quoted, image_id):
     """
     Fix the given uri's embedded credentials by round-tripping with
     StoreLocation.
@@ -119,10 +120,10 @@ def fix_uri_credentials(uri, to_quoted):
     except (TypeError, ValueError) as e:
         raise exception.Invalid(str(e))
 
-    return legacy_parse_uri(decrypted_uri, to_quoted)
+    return legacy_parse_uri(decrypted_uri, to_quoted, image_id)
 
 
-def legacy_parse_uri(uri, to_quote):
+def legacy_parse_uri(uri, to_quote, image_id):
     """
     Parse URLs. This method fixes an issue where credentials specified
     in the URL are interpreted differently in Python 2.6.1+ than prior
@@ -150,7 +151,7 @@ def legacy_parse_uri(uri, to_quote):
                    "like so: "
                    "swift+http://user:pass@authurl.com/v1/container/obj")
 
-        LOG.error(_("Invalid store uri %(uri)s: %(reason)s") % locals())
+        LOG.error(_("Invalid store uri for image %s: %s") % (image_id, reason))
         raise exception.BadStoreUri(message=reason)
 
     pieces = urlparse.urlparse(uri)
