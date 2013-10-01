@@ -97,6 +97,10 @@ class API(wsgi.Router):
                        conditions={'method': ['GET']})
         mapper.connect('/images/{image_id}/members/{member_id}',
                        controller=image_members_resource,
+                       action='show',
+                       conditions={'method': ['GET']})
+        mapper.connect('/images/{image_id}/members/{member_id}',
+                       controller=image_members_resource,
                        action='update',
                        conditions={'method': ['PUT']})
         mapper.connect('/images/{image_id}/members',
