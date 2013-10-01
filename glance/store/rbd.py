@@ -305,7 +305,13 @@ class Store(glance.store.base.Store):
                 fsid = conn.get_fsid()
             with conn.open_ioctx(self.pool) as ioctx:
                 order = int(math.log(self.chunk_size, 2))
-                LOG.debug('creating image %s with order %d', image_name, order)
+                LOG.debug('creating image %s with order %d and size %d',
+                          image_name, order, image_size)
+                if image_size == 0:
+                    LOG.warning(_("since image size is zero we will be doing "
+                                  "resize-before-write for each chunk which "
+                                  "will be considerably slower than normal"))
+
                 try:
                     loc = self._create_image(fsid, ioctx, image_name,
                                              image_size, order)
@@ -318,6 +324,17 @@ class Store(glance.store.base.Store):
                         chunks = utils.chunkreadable(image_file,
                                                      self.chunk_size)
                         for chunk in chunks:
+                            # If the image size provided is zero we need to do
+                            # a resize for the amount we are writing. This will
+                            # be slower so setting a higher chunk size may
+                            # speed things up a bit.
+                            if image_size == 0:
+                                length = offset + len(chunk)
+                                LOG.debug(_("resizing image to %s KiB") %
+                                          (length / 1024))
+                                image.resize(length)
+                            LOG.debug(_("writing chunk at offset %s") %
+                                      (offset))
                             offset += image.write(chunk, offset)
                             checksum.update(chunk)
                         if loc.snapshot:
