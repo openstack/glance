@@ -741,6 +741,40 @@ When sending images to S3, what directory should be
 used to buffer the chunks? By default the platform's
 temporary directory will be used.
 
+* ``s3_store_large_object_size=SIZE_IN_MB``
+
+Optional. Default: ``100``
+
+Can only be specified in configuration files.
+
+`This option is specific to the S3 storage backend.`
+
+Size, in ``MB``, should S3 start chunking image files
+and do a multipart upload in S3.
+
+* ``s3_store_large_object_chunk_size=SIZE_IN_MB``
+
+Optional. Default: ``10``
+
+Can only be specified in configuration files.
+
+`This option is specific to the S3 storage backend.`
+
+Multipart upload part size, in ``MB``, should S3 use
+when uploading parts. The size must be greater than or
+equal to 5MB. The default is 10MB.
+
+* ``s3_store_thread_pools=NUM``
+
+Optional. Default: ``10``
+
+Can only be specified in configuration files.
+
+`This option is specific to the S3 storage backend.`
+
+The number of thread pools to perform a multipart upload
+in S3. The default is 10.
+
 Configuring the RBD Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
