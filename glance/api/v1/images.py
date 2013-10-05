@@ -23,8 +23,7 @@ import copy
 
 import eventlet
 from oslo.config import cfg
-from webob.exc import (HTTPError,
-                       HTTPNotFound,
+from webob.exc import (HTTPNotFound,
                        HTTPConflict,
                        HTTPBadRequest,
                        HTTPForbidden,
