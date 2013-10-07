@@ -29,6 +29,7 @@ import re
 import webob
 
 from glance.api.common import size_checked_iter
+from glance.api import policy
 from glance.api.v1 import images
 from glance.common import exception
 from glance.common import utils
@@ -54,6 +55,7 @@ class CacheFilter(wsgi.Middleware):
     def __init__(self, app):
         self.cache = image_cache.ImageCache()
         self.serializer = images.ImageSerializer()
+        self.policy = policy.Enforcer()
         LOG.info(_("Initialized image cache middleware"))
         super(CacheFilter, self).__init__(app)
 
@@ -91,6 +93,13 @@ class CacheFilter(wsgi.Middleware):
             else:
                 return (version, method, image_id)
 
+    def _enforce(self, req, action):
+        """Authorize an action against our policies"""
+        try:
+            self.policy.enforce(req.context, action, {})
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=unicode(e), request=req)
+
     def process_request(self, request):
         """
         For requests for an image file, we check the local image
@@ -108,6 +117,11 @@ class CacheFilter(wsgi.Middleware):
         self._stash_request_info(request, image_id, method)
 
         if request.method != 'GET' or not self.cache.is_cached(image_id):
+            return None
+
+        try:
+            self._enforce(request, 'download_image')
+        except webob.exc.HTTPForbidden:
             return None
 
         LOG.debug(_("Cache hit for image '%s'"), image_id)
@@ -216,6 +230,13 @@ class CacheFilter(wsgi.Middleware):
 
         if not image_checksum:
             LOG.error(_("Checksum header is missing."))
+
+        # NOTE(zhiyan): image_cache return a generator object and set to
+        # response.app_iter, it will be called by eventlet.wsgi later.
+        # So we need enforce policy firstly but do it by application
+        # since eventlet.wsgi could not catch webob.exc.HTTPForbidden and
+        # return 403 error to client then.
+        self._enforce(resp.request, 'download_image')
 
         resp.app_iter = self.cache.get_caching_iter(image_id, image_checksum,
                                                     resp.app_iter)

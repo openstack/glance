@@ -17,10 +17,14 @@ import stubout
 import testtools
 import webob
 
+import oslo.config.cfg
+
 import glance.api.middleware.cache
+from glance.api import policy
 from glance.common import exception
 from glance import context
 from glance import registry
+from glance.tests.unit import utils as unit_test_utils
 
 
 class TestCacheMiddlewareURLMatching(testtools.TestCase):
@@ -85,13 +89,21 @@ class ChecksumTestCacheFilter(glance.api.middleware.cache.CacheFilter):
                 self.image_checksum = image_checksum
 
         self.cache = DummyCache()
+        self.policy = unit_test_utils.FakePolicyEnforcer()
 
 
 class TestCacheMiddlewareChecksumVerification(testtools.TestCase):
+
+    def setUp(self):
+        super(TestCacheMiddlewareChecksumVerification, self).setUp()
+        self.context = context.RequestContext(is_admin=True)
+        self.request = webob.Request.blank('')
+        self.request.context = self.context
+
     def test_checksum_v1_header(self):
         cache_filter = ChecksumTestCacheFilter()
         headers = {"x-image-meta-checksum": "1234567890"}
-        resp = webob.Response(headers=headers)
+        resp = webob.Response(request=self.request, headers=headers)
         cache_filter._process_GET_response(resp, None)
 
         self.assertEqual("1234567890", cache_filter.cache.image_checksum)
@@ -102,14 +114,14 @@ class TestCacheMiddlewareChecksumVerification(testtools.TestCase):
             "x-image-meta-checksum": "1234567890",
             "Content-MD5": "abcdefghi"
         }
-        resp = webob.Response(headers=headers)
+        resp = webob.Response(request=self.request, headers=headers)
         cache_filter._process_GET_response(resp, None)
 
         self.assertEqual("abcdefghi", cache_filter.cache.image_checksum)
 
     def test_checksum_missing_header(self):
         cache_filter = ChecksumTestCacheFilter()
-        resp = webob.Response()
+        resp = webob.Response(request=self.request)
         cache_filter._process_GET_response(resp, None)
 
         self.assertEqual(None, cache_filter.cache.image_checksum)
@@ -117,6 +129,8 @@ class TestCacheMiddlewareChecksumVerification(testtools.TestCase):
 
 class ProcessRequestTestCacheFilter(glance.api.middleware.cache.CacheFilter):
     def __init__(self):
+        self.policy = policy.Enforcer()
+
         class DummyCache(object):
             def __init__(self):
                 self.deleted_images = []
@@ -151,6 +165,10 @@ class TestCacheMiddlewareProcessRequest(testtools.TestCase):
             for i in range(3):
                 yield i
 
+        def fake_find_file(self, name):
+            return None
+        self.stubs.Set(oslo.config.cfg.ConfigOpts, 'find_file',
+                       fake_find_file)
         image_id = 'test1'
         request = webob.Request.blank('/v1/images/%s' % image_id)
         request.context = context.RequestContext()
@@ -168,8 +186,13 @@ class TestCacheMiddlewareProcessRequest(testtools.TestCase):
         def fake_process_v1_request(request, image_id, image_iterator):
             raise exception.NotFound()
 
+        def fake_find_file(self, name):
+            return None
+        self.stubs.Set(oslo.config.cfg.ConfigOpts, 'find_file',
+                       fake_find_file)
         image_id = 'test1'
         request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext()
 
         cache_filter = ProcessRequestTestCacheFilter()
         self.stubs.Set(cache_filter, '_process_v1_request',
