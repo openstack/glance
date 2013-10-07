@@ -22,7 +22,8 @@ from glance.common import exception
 from glance import context
 import glance.db.sqlalchemy.api as db
 import glance.registry.client.v1.api as registry
-from glance.tests import utils
+from glance.tests.unit import base
+from glance.tests.unit import utils as unit_test_utils
 
 
 class TestCacheMiddlewareURLMatching(testtools.TestCase):
@@ -87,13 +88,20 @@ class ChecksumTestCacheFilter(glance.api.middleware.cache.CacheFilter):
                 self.image_checksum = image_checksum
 
         self.cache = DummyCache()
+        self.policy = unit_test_utils.FakePolicyEnforcer()
 
 
-class TestCacheMiddlewareChecksumVerification(testtools.TestCase):
+class TestCacheMiddlewareChecksumVerification(base.IsolatedUnitTest):
+    def setUp(self):
+        super(TestCacheMiddlewareChecksumVerification, self).setUp()
+        self.context = context.RequestContext(is_admin=True)
+        self.request = webob.Request.blank('')
+        self.request.context = self.context
+
     def test_checksum_v1_header(self):
         cache_filter = ChecksumTestCacheFilter()
         headers = {"x-image-meta-checksum": "1234567890"}
-        resp = webob.Response(headers=headers)
+        resp = webob.Response(request=self.request, headers=headers)
         cache_filter._process_GET_response(resp, None)
 
         self.assertEqual("1234567890", cache_filter.cache.image_checksum)
@@ -104,14 +112,14 @@ class TestCacheMiddlewareChecksumVerification(testtools.TestCase):
             "x-image-meta-checksum": "1234567890",
             "Content-MD5": "abcdefghi"
         }
-        resp = webob.Response(headers=headers)
+        resp = webob.Response(request=self.request, headers=headers)
         cache_filter._process_GET_response(resp, None)
 
         self.assertEqual("abcdefghi", cache_filter.cache.image_checksum)
 
     def test_checksum_missing_header(self):
         cache_filter = ChecksumTestCacheFilter()
-        resp = webob.Response()
+        resp = webob.Response(request=self.request)
         cache_filter._process_GET_response(resp, None)
 
         self.assertEqual(None, cache_filter.cache.image_checksum)
@@ -143,14 +151,10 @@ class ProcessRequestTestCacheFilter(glance.api.middleware.cache.CacheFilter):
                 pass
 
         self.cache = DummyCache()
+        self.policy = unit_test_utils.FakePolicyEnforcer()
 
 
-class TestCacheMiddlewareProcessRequest(utils.BaseTestCase):
-    def setUp(self):
-        super(TestCacheMiddlewareProcessRequest, self).setUp()
-        self.stubs = stubout.StubOutForTesting()
-        self.addCleanup(self.stubs.UnsetAll)
-
+class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
     def test_v1_deleted_image_fetch(self):
         """
         Test for determining that when an admin tries to download a deleted
@@ -182,6 +186,7 @@ class TestCacheMiddlewareProcessRequest(utils.BaseTestCase):
 
         image_id = 'test1'
         request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext()
 
         cache_filter = ProcessRequestTestCacheFilter()
         self.stubs.Set(cache_filter, '_process_v1_request',
@@ -307,23 +312,32 @@ class TestCacheMiddlewareProcessRequest(utils.BaseTestCase):
         self.assertEqual(response.headers['Content-Length'],
                          '123456789')
 
+    def test_process_request_without_download_image_policy(self):
+        """
+        Test for cache middleware skip processing when request
+        context has not 'download_image' role.
+        """
+        image_id = 'test1'
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext()
 
-class TestProcessResponse(utils.BaseTestCase):
-    def setUp(self):
-        super(TestProcessResponse, self).setUp()
-        self.stubs = stubout.StubOutForTesting()
+        cache_filter = ProcessRequestTestCacheFilter()
 
-    def tearDown(self):
-        super(TestProcessResponse, self).tearDown()
-        self.stubs.UnsetAll()
+        rules = {'download_image': '!'}
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
 
+        self.assertEqual(None, cache_filter.process_request(request))
+
+
+class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
     def test_process_v1_DELETE_response(self):
         image_id = 'test1'
         request = webob.Request.blank('/v1/images/%s' % image_id)
         request.context = context.RequestContext()
         cache_filter = ProcessRequestTestCacheFilter()
         headers = {"x-image-meta-deleted": True}
-        resp = webob.Response(headers=headers)
+        resp = webob.Response(request=request, headers=headers)
         actual = cache_filter._process_DELETE_response(resp, image_id)
         self.assertEqual(actual, resp)
 
@@ -335,7 +349,7 @@ class TestProcessResponse(utils.BaseTestCase):
         self.assertEqual(200, actual)
 
     def test_process_response(self):
-        def fake_fetch_request_info():
+        def fake_fetch_request_info(*args, **kwargs):
             return ('test1', 'GET')
 
         cache_filter = ProcessRequestTestCacheFilter()
@@ -344,6 +358,28 @@ class TestProcessResponse(utils.BaseTestCase):
         request = webob.Request.blank('/v1/images/%s' % image_id)
         request.context = context.RequestContext()
         headers = {"x-image-meta-deleted": True}
-        resp1 = webob.Response(headers=headers)
-        actual = cache_filter.process_response(resp1)
-        self.assertEqual(actual, resp1)
+        resp = webob.Response(request=request, headers=headers)
+        actual = cache_filter.process_response(resp)
+        self.assertEqual(actual, resp)
+
+    def test_process_response_without_download_image_policy(self):
+        """
+        Test for cache middleware raise webob.exc.HTTPForbidden directly
+        when request context has not 'download_image' role.
+        """
+        def fake_fetch_request_info(*args, **kwargs):
+            return ('test1', 'GET')
+
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._fetch_request_info = fake_fetch_request_info
+        rules = {'download_image': '!'}
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+
+        image_id = 'test1'
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext()
+        resp = webob.Response(request=request)
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          cache_filter.process_response, resp)
+        self.assertEqual([''], resp.app_iter)
