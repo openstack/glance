@@ -29,6 +29,7 @@ from oslo.config import cfg
 
 from glance.common import auth
 from glance.common import exception
+from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
@@ -385,12 +386,12 @@ class BaseStore(glance.store.base.Store):
                         written_chunks.append(chunk_name)
                     except Exception:
                         # Delete orphaned segments from swift backend
-                        LOG.exception(_("Error during chunked upload to "
-                                        "backend, deleting stale chunks"))
-                        self._delete_stale_chunks(connection,
-                                                  location.container,
-                                                  written_chunks)
-                        raise
+                        with excutils.save_and_reraise_exception():
+                            LOG.exception(_("Error during chunked upload to "
+                                            "backend, deleting stale chunks"))
+                            self._delete_stale_chunks(connection,
+                                                      location.container,
+                                                      written_chunks)
 
                     bytes_read = reader.bytes_read
                     msg = _("Wrote chunk %(chunk_name)s (%(chunk_id)d/"
