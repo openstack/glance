@@ -325,7 +325,10 @@ class Middleware(object):
             return response
         response = req.get_response(self.application)
         response.request = req
-        return self.process_response(response)
+        try:
+            return self.process_response(response)
+        except webob.exc.HTTPException as e:
+            return e
 
 
 class Debug(Middleware):
