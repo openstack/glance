@@ -565,7 +565,7 @@ class Controller(controller.BaseController):
                 image_data, image_size = self._get_from_store(req.context,
                                                               copy_from)
             except Exception as e:
-                upload_utils.safe_kill(req, image_meta['id'])
+                upload_utils.safe_kill(req, image_meta['id'], 'queued')
                 msg = _("Copy from external source failed: %s") % e
                 LOG.debug(msg)
                 return
@@ -574,7 +574,7 @@ class Controller(controller.BaseController):
             try:
                 req.get_content_type(('application/octet-stream',))
             except exception.InvalidContentType:
-                upload_utils.safe_kill(req, image_meta['id'])
+                upload_utils.safe_kill(req, image_meta['id'], 'queued')
                 msg = _("Content-Type must be application/octet-stream")
                 LOG.debug(msg)
                 raise HTTPBadRequest(explanation=msg)
