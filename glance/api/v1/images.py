@@ -583,7 +583,7 @@ class Controller(controller.BaseController):
                                                               copy_from,
                                                               dest=store)
             except Exception:
-                upload_utils.safe_kill(req, image_meta['id'])
+                upload_utils.safe_kill(req, image_meta['id'], 'queued')
                 msg = (_LE("Copy from external source '%(scheme)s' failed for "
                            "image: %(image)s") %
                        {'scheme': scheme, 'image': image_meta['id']})
@@ -594,7 +594,7 @@ class Controller(controller.BaseController):
             try:
                 req.get_content_type(('application/octet-stream',))
             except exception.InvalidContentType:
-                upload_utils.safe_kill(req, image_meta['id'])
+                upload_utils.safe_kill(req, image_meta['id'], 'queued')
                 msg = "Content-Type must be application/octet-stream"
                 LOG.debug(msg)
                 raise HTTPBadRequest(explanation=msg)
@@ -649,8 +649,7 @@ class Controller(controller.BaseController):
                 LOG.debug("duplicate operation - deleting image data for "
                           " %(id)s (location:%(location)s)" %
                           {'id': image_id, 'location': image_meta['location']})
-                upload_utils.initiate_deletion(req, image_meta['location'],
-                                               image_id, CONF.delayed_delete)
+                upload_utils.initiate_deletion(req, location_data, image_id)
         except exception.Invalid as e:
             msg = ("Failed to activate image. Got error: %s" %
                    utils.exception_to_str(e))
