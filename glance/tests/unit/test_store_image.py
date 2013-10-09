@@ -835,7 +835,7 @@ class TestStoreAddToBackend(utils.BaseTestCase):
         store = self.mox.CreateMockAnything()
         store.add(self.image_id, mox.IgnoreArg(), self.size).AndReturn(
             (self.location, self.size, self.checksum, in_metadata))
-        store.__str__().AndReturn(('hello'))
+        store.__str__ = lambda: "hello"
 
         self.mox.ReplayAll()
 
@@ -910,7 +910,7 @@ class TestStoreAddToBackend(utils.BaseTestCase):
         store = self.mox.CreateMockAnything()
         store.add(self.image_id, mox.IgnoreArg(), self.size).AndReturn(
             (self.location, self.size, self.checksum, []))
-        store.__str__().AndReturn(('hello'))
+        store.__str__ = lambda: "hello"
 
         self.mox.ReplayAll()
 
