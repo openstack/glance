@@ -68,10 +68,6 @@ class API(wsgi.Router):
                        conditions={'method': ['GET']})
         mapper.connect("/images/{image_id}/members",
                        controller=members_resource,
-                       action="create",
-                       conditions={'method': ['POST']})
-        mapper.connect("/images/{image_id}/members",
-                       controller=members_resource,
                        action="update_all",
                        conditions=dict(method=["PUT"]))
         mapper.connect("/images/{image_id}/members/{id}",
