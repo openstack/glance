@@ -424,6 +424,23 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         self.assertEqual(retreived_image_member.status,
                          'pending')
 
+    def test_add_duplicate_image_member(self):
+        image = self.image_repo.get(UUID1)
+        image_member = self.image_member_factory.new_image_member(image,
+                                                                  TENANT4)
+        self.assertTrue(image_member.id is None)
+        retreived_image_member = self.image_member_repo.add(image_member)
+        self.assertEqual(retreived_image_member.id, image_member.id)
+        self.assertEqual(retreived_image_member.image_id,
+                         image_member.image_id)
+        self.assertEqual(retreived_image_member.member_id,
+                         image_member.member_id)
+        self.assertEqual(retreived_image_member.status,
+                         'pending')
+
+        self.assertRaises(exception.Duplicate, self.image_member_repo.add,
+                          image_member)
+
     def test_remove_image_member(self):
         image_member = self.image_member_repo.get(TENANT2)
         self.image_member_repo.remove(image_member)
