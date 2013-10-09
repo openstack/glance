@@ -421,7 +421,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         self.assertEquals(len(images), 1)
 
         # expect list to be sorted by created_at desc
-        self.assertTrue(images[0]['id'], UUID4)
+        self.assertEqual(images[0]['id'], UUID4)
 
     def test_get_index_limit_negative(self):
         """
