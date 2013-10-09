@@ -114,9 +114,8 @@ def main():
 
         cfg_files = cfg.find_config_files(project='glance',
                                           prog='glance-registry')
-        if not cfg_files:
-            cfg_files = cfg.find_config_files(project='glance',
-                                              prog='glance-api')
+        cfg_files.extend(cfg.find_config_files(project='glance',
+                                               prog='glance-api'))
         config.parse_args(default_config_files=cfg_files,
                           usage="%(prog)s [options] <cmd>")
         log.setup('glance')
