@@ -123,6 +123,18 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.download,
                           request, uuidutils.generate_uuid())
 
+    def test_download_get_image_location_forbidden(self):
+        class ImageLocations(object):
+            def __len__(self):
+                raise exception.Forbidden()
+
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage('abcd')
+        self.image_repo.result = image
+        image.locations = ImageLocations()
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.download,
+                          request, uuidutils.generate_uuid())
+
     def test_upload(self):
         request = unit_test_utils.get_fake_request()
         image = FakeImage('abcd')
@@ -362,6 +374,26 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         self.assertEqual(checksum, response.headers['Content-MD5'])
         self.assertEqual('application/octet-stream',
                          response.headers['Content-Type'])
+
+    def test_download_forbidden(self):
+        """Make sure the serializer can return 403 forbidden error instead of
+        500 internal server error.
+        """
+        def get_data():
+            raise exception.Forbidden()
+
+        self.stubs.Set(glance.api.policy.ImageProxy,
+                       'get_data',
+                       get_data)
+        request = webob.Request.blank('/')
+        request.environ = {}
+        response = webob.Response()
+        response.request = request
+        image = FakeImage(size=3, data=iter('ZZZ'))
+        image.get_data = get_data
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.serializer.download,
+                          response, image)
 
     def test_upload(self):
         request = webob.Request.blank('/')

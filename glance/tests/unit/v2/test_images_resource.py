@@ -21,6 +21,7 @@ import testtools
 import webob
 
 import glance.api.v2.images
+from glance.common import exception
 from glance.openstack.common import uuidutils
 import glance.schema
 import glance.store
@@ -1946,6 +1947,28 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                          output['first'])
         expect_next = '/v2/images?sort_key=id&sort_dir=asc&limit=10&marker=%s'
         self.assertEqual(expect_next % UUID2, output['next'])
+
+    def test_index_forbidden_get_image_location(self):
+        """Make sure the serializer works fine no mater if current user is
+        authorized to get image location if the show_multiple_locations is
+        False.
+        """
+        class ImageLocations(object):
+            def __len__(self):
+                raise exception.Forbidden()
+
+        self.config(show_multiple_locations=False)
+        self.config(show_image_direct_url=False)
+        url = '/v2/images?limit=10&sort_key=id&sort_dir=asc'
+        request = webob.Request.blank(url)
+        response = webob.Response(request=request)
+        result = {'images': self.fixtures}
+        self.assertEquals(response.status_int, 200)
+
+        # The image index should work though the user is forbidden
+        result['images'][0].locations = ImageLocations()
+        self.serializer.index(response, result)
+        self.assertEquals(response.status_int, 200)
 
     def test_show_full_fixture(self):
         expected = {
