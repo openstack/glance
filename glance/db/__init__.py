@@ -229,6 +229,17 @@ class ImageMemberRepo(object):
         return image_members
 
     def add(self, image_member):
+        try:
+            self.get(image_member.member_id)
+        except exception.NotFound:
+            pass
+        else:
+            msg = _('The target member %(member_id)s is already '
+                    'associated with image %(image_id)s.' %
+                    dict(member_id=image_member.member_id,
+                         image_id=self.image.image_id))
+            raise exception.Duplicate(msg)
+
         image_member_values = self._format_image_member_to_db(image_member)
         new_values = self.db_api.image_member_create(self.context,
                                                      image_member_values)
