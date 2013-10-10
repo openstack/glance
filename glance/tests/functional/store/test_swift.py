@@ -196,9 +196,9 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
         image_size = 5242880  # 5 MB
         image_data = StringIO.StringIO('X' * image_size)
         image_checksum = 'eb7f8c3716b9f059cee7617a4ba9d0d3'
-        uri, add_size, add_checksum = store.add(image_id,
-                                                image_data,
-                                                image_size)
+        uri, add_size, add_checksum, _ = store.add(image_id,
+                                                   image_data,
+                                                   image_size)
 
         self.assertEqual(image_size, add_size)
         self.assertEqual(image_checksum, add_checksum)
@@ -335,7 +335,7 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
 
         image_id = uuidutils.generate_uuid()
         image_data = StringIO.StringIO('XXX')
-        uri, _, _ = store.add(image_id, image_data, 3)
+        uri, _, _, _ = store.add(image_id, image_data, 3)
 
         location = glance.store.location.Location(
                 self.store_name,
@@ -352,14 +352,16 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
 
         container_name = location.store_location.container
         container, _ = swift_get_container(self.swift_client, container_name)
-        self.assertEqual(read_tenant, container.get('x-container-read'))
-        self.assertEqual(write_tenant, container.get('x-container-write'))
+        self.assertEqual(read_tenant + ':*',
+                         container.get('x-container-read'))
+        self.assertEqual(write_tenant + ':*',
+                         container.get('x-container-write'))
 
         store.set_acls(location, public=True, read_tenants=[read_tenant])
 
         container_name = location.store_location.container
         container, _ = swift_get_container(self.swift_client, container_name)
-        self.assertEqual('.r:*', container.get('x-container-read'))
+        self.assertEqual('.r:*,.rlistings', container.get('x-container-read'))
         self.assertEqual('', container.get('x-container-write', ''))
 
         (get_iter, get_size) = store.get(location)
