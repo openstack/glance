@@ -222,6 +222,121 @@ class BaseCacheMiddlewareTest(object):
 
         self.stop_servers()
 
+    @skip_if_disabled
+    def test_cache_middleware_trans_v1_without_download_image_policy(self):
+        """
+        Ensure the image v1 API image transfer applied 'download_image'
+        policy enforcement.
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        # Add an image and verify a 200 OK is returned
+        image_data = "*" * FIVE_KB
+        headers = minimal_headers('Image1')
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=image_data)
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        self.assertEqual(data['image']['checksum'],
+                         hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_KB)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(data['image']['is_public'], True)
+
+        image_id = data['image']['id']
+
+        # Verify image not in cache
+        image_cached_path = os.path.join(self.api_server.image_cache_dir,
+                                         image_id)
+        self.assertFalse(os.path.exists(image_cached_path))
+
+        rules = {"context_is_admin": "role:admin", "default": "",
+                 "download_image": "!"}
+        self.set_policy_rules(rules)
+
+        # Grab the image
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 403)
+
+        # Now, we delete the image from the server and verify that
+        # the image cache no longer contains the deleted image
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
+        self.assertFalse(os.path.exists(image_cached_path))
+
+        self.stop_servers()
+
+    @skip_if_disabled
+    def test_cache_middleware_trans_v2_without_download_image_policy(self):
+        """
+        Ensure the image v2 API image transfer applied 'download_image'
+        policy enforcement.
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        # Add an image and verify success
+        path = "http://%s:%d/v2/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        headers = {'content-type': 'application/json'}
+        image_entity = {
+            'name': 'Image1',
+            'visibility': 'public',
+            'container_format': 'bare',
+            'disk_format': 'raw',
+        }
+        response, content = http.request(path, 'POST',
+                                         headers=headers,
+                                         body=json.dumps(image_entity))
+        self.assertEqual(response.status, 201)
+        data = json.loads(content)
+        image_id = data['id']
+
+        path = "http://%s:%d/v2/images/%s/file" % ("0.0.0.0", self.api_port,
+                                                   image_id)
+        headers = {'content-type': 'application/octet-stream'}
+        image_data = "*" * FIVE_KB
+        response, content = http.request(path, 'PUT',
+                                         headers=headers,
+                                         body=image_data)
+        self.assertEqual(response.status, 204)
+
+        # Verify image not in cache
+        image_cached_path = os.path.join(self.api_server.image_cache_dir,
+                                         image_id)
+        self.assertFalse(os.path.exists(image_cached_path))
+
+        rules = {"context_is_admin": "role:admin", "default": "",
+                 "download_image": "!"}
+        self.set_policy_rules(rules)
+
+        # Grab the image
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 403)
+
+        # Now, we delete the image from the server and verify that
+        # the image cache no longer contains the deleted image
+        path = "http://%s:%d/v2/images/%s" % ("0.0.0.0", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 204)
+
+        self.assertFalse(os.path.exists(image_cached_path))
+
+        self.stop_servers()
+
 
 class BaseCacheManageMiddlewareTest(object):
 
