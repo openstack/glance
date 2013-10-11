@@ -272,14 +272,14 @@ def safe_delete_from_backend(context, uri, image_id, **kwargs):
     try:
         return delete_from_backend(context, uri, **kwargs)
     except exception.NotFound:
-        msg = _('Failed to delete image in store at URI: %s')
-        LOG.warn(msg % uri)
+        msg = _('Failed to delete image %s in store from URI')
+        LOG.warn(msg % image_id)
     except exception.StoreDeleteNotSupported as e:
         LOG.warn(str(e))
     except UnsupportedBackend:
         exc_type = sys.exc_info()[0].__name__
-        msg = (_('Failed to delete image at %s from store (%s)') %
-               (uri, exc_type))
+        msg = (_('Failed to delete image %s from store (%s)') %
+               (image_id, exc_type))
         LOG.error(msg)
 
 

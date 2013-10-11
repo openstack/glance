@@ -69,7 +69,7 @@ class VersionNegotiationFilter(wsgi.Middleware):
         req.environ['api.version'] = version
         req.path_info = ''.join(('/v', str(version), req.path_info))
         LOG.debug(_("Matched version: v%d"), version)
-        LOG.debug('new uri %s' % req.path_info)
+        LOG.debug('new path %s' % req.path_info)
         return None
 
     def _match_version_string(self, subject):
