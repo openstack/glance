@@ -38,7 +38,8 @@ try:
     import rados
     import rbd
 except ImportError:
-    pass
+    rados = None
+    rbd = None
 
 DEFAULT_POOL = 'rbd'
 DEFAULT_CONFFILE = ''  # librados will locate the default conf file
@@ -249,9 +250,9 @@ class Store(glance.store.base.Store):
             librbd.create(ioctx, image_name, size, order, old_format=True)
             return StoreLocation({'image': image_name})
 
-    def _delete_image(self, image_name, snapshot_name):
+    def _delete_image(self, image_name, snapshot_name=None):
         """
-        Find the image file to delete.
+        Delete RBD image and snapshot.
 
         :param image_name Image's name
         :param snapshot_name Image snapshot's name
@@ -261,17 +262,23 @@ class Store(glance.store.base.Store):
         """
         with rados.Rados(conffile=self.conf_file, rados_id=self.user) as conn:
             with conn.open_ioctx(self.pool) as ioctx:
-                if snapshot_name:
-                    with rbd.Image(ioctx, image_name) as image:
-                        try:
-                            image.unprotect_snap(snapshot_name)
-                        except rbd.ImageBusy:
-                            log_msg = _("snapshot %s@%s could not be "
-                                        "unprotected because it is in use")
-                            LOG.debug(log_msg % (image_name, snapshot_name))
-                            raise exception.InUseByStore()
-                        image.remove_snap(snapshot_name)
                 try:
+                    # First remove snapshot.
+                    if snapshot_name is not None:
+                        with rbd.Image(ioctx, image_name) as image:
+                            try:
+                                image.unprotect_snap(snapshot_name)
+                            except rbd.ImageBusy:
+                                log_msg = _("snapshot %(image)s@%(snap)s "
+                                            "could not be unprotected because "
+                                            "it is in use")
+                                LOG.debug(log_msg %
+                                          {'image': image_name,
+                                           'snap': snapshot_name})
+                                raise exception.InUseByStore()
+                            image.remove_snap(snapshot_name)
+
+                    # Then delete image.
                     rbd.RBD().remove(ioctx, image_name)
                 except rbd.ImageNotFound:
                     raise exception.NotFound(
@@ -340,11 +347,14 @@ class Store(glance.store.base.Store):
                         if loc.snapshot:
                             image.create_snap(loc.snapshot)
                             image.protect_snap(loc.snapshot)
-                except:
-                    # Note(zhiyan): clean up already received data when
-                    # error occurs such as ImageSizeLimitExceeded exception.
-                    with excutils.save_and_reraise_exception():
+                except Exception as exc:
+                    # Delete image if one was created
+                    try:
                         self._delete_image(loc.image, loc.snapshot)
+                    except exception.NotFound:
+                        pass
+
+                    raise exc
 
         return (loc.get_uri(), image_size, checksum.hexdigest(), {})
 
