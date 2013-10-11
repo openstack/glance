@@ -311,4 +311,34 @@ log_file = %(log_file)s
         self.assertEqual(0, exitcode)
         self.assertTrue('No queued images' in out.strip())
 
+        # verify two image id when queue-image
+        cmd = ("%s --port=%d --force "
+               "queue-image %s %s") % (exe_cmd, api_port, ids[0], ids[1])
+
+        exitcode, out, err = execute(cmd, raise_error=False)
+
+        self.assertEqual(1, exitcode)
+        self.assertTrue('Please specify one and only ID of '
+                        'the image you wish to ' in out.strip())
+
+        # verify two image id when delete-queued-image
+        cmd = ("%s --port=%d --force delete-queued-image "
+               "%s %s") % (exe_cmd, api_port, ids[0], ids[1])
+
+        exitcode, out, err = execute(cmd, raise_error=False)
+
+        self.assertEqual(1, exitcode)
+        self.assertTrue('Please specify one and only ID of '
+                        'the image you wish to ' in out.strip())
+
+        # verify two image id when delete-cached-image
+        cmd = ("%s --port=%d --force delete-cached-image "
+               "%s %s") % (exe_cmd, api_port, ids[0], ids[1])
+
+        exitcode, out, err = execute(cmd, raise_error=False)
+
+        self.assertEqual(1, exitcode)
+        self.assertTrue('Please specify one and only ID of '
+                        'the image you wish to ' in out.strip())
+
         self.stop_servers()

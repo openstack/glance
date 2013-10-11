@@ -147,11 +147,11 @@ def queue_image(options, args):
 %(prog)s queue-image <IMAGE_ID> [options]
 
 Queues an image for caching"""
-    try:
+    if len(args) == 1:
         image_id = args.pop()
-    except IndexError:
-        print("Please specify the ID of the image you wish to queue ")
-        print("from the cache as the first argument")
+    else:
+        print("Please specify one and only ID of the image you wish to ")
+        print("queue from the cache as the first argument")
         return FAILURE
 
     if (not options.force and
@@ -171,14 +171,14 @@ Queues an image for caching"""
 @catch_error('delete the specified cached image')
 def delete_cached_image(options, args):
     """
-%(prog)s delete-cached-image [options]
+%(prog)s delete-cached-image <IMAGE_ID> [options]
 
 Deletes an image from the cache"""
-    try:
+    if len(args) == 1:
         image_id = args.pop()
-    except IndexError:
-        print("Please specify the ID of the image you wish to delete ")
-        print("from the cache as the first argument")
+    else:
+        print("Please specify one and only ID of the image you wish to ")
+        print("delete from the cache as the first argument")
         return FAILURE
 
     if (not options.force and
@@ -217,14 +217,14 @@ Removes all images from the cache"""
 @catch_error('delete the specified queued image')
 def delete_queued_image(options, args):
     """
-%(prog)s delete-queued-image [options]
+%(prog)s delete-queued-image <IMAGE_ID> [options]
 
 Deletes an image from the cache"""
-    try:
+    if len(args) == 1:
         image_id = args.pop()
-    except IndexError:
-        print("Please specify the ID of the image you wish to delete ")
-        print("from the cache as the first argument")
+    else:
+        print("Please specify one and only ID of the image you wish to ")
+        print("delete from the cache as the first argument")
         return FAILURE
 
     if (not options.force and
