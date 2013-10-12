@@ -70,9 +70,9 @@ common_opts = [
                       "the total number of bytes that a user can use across "
                       "all storage systems.  A value of 0 means unlimited.")),
     cfg.BoolOpt('enable_v1_api', default=True,
-                help=_("Deploy the v1 OpenStack Images API. ")),
+                help=_("Deploy the v1 OpenStack Images API.")),
     cfg.BoolOpt('enable_v2_api', default=True,
-                help=_("Deploy the v2 OpenStack Images API. ")),
+                help=_("Deploy the v2 OpenStack Images API.")),
     cfg.StrOpt('pydev_worker_debug_host', default=None,
                help=_('The hostname/IP of the pydev process listening for '
                       'debug connections')),
