@@ -19,6 +19,7 @@
 
 import errno
 import functools
+import json
 import os
 import shlex
 import shutil
@@ -36,6 +37,9 @@ import webob
 from glance.common import config
 from glance.common import exception
 from glance.common import wsgi
+from glance.db.sqlalchemy import api as db_api
+from glance.db.sqlalchemy import models as db_models
+from glance.openstack.common import timeutils
 from glance import context
 from glance.common import property_utils
 
@@ -393,6 +397,71 @@ def minimal_add_command(port, name, suffix='', public=True):
     return ("bin/glance --port=%d add %s"
             " disk_format=raw container_format=ovf"
             " name=%s %s" % (port, visibility, name, suffix))
+
+
+class RegistryAPIMixIn(object):
+
+    def create_fixtures(self):
+        for fixture in self.FIXTURES:
+            db_api.image_create(self.context, fixture)
+            with open(os.path.join(self.test_dir, fixture['id']),
+                      'wb') as image:
+                image.write("chunk00000remainder")
+
+    def destroy_fixtures(self):
+        db_models.unregister_models(db_api._ENGINE)
+        db_models.register_models(db_api._ENGINE)
+
+    def get_fixture(self, **kwargs):
+        fixture = {'name': 'fake public image',
+                   'status': 'active',
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf',
+                   'is_public': True,
+                   'size': 20,
+                   'checksum': None}
+        fixture.update(kwargs)
+        return fixture
+
+    def get_minimal_fixture(self, **kwargs):
+        fixture = {'name': 'fake public image',
+                   'is_public': True,
+                   'disk_format': 'vhd',
+                   'container_format': 'ovf'}
+        fixture.update(kwargs)
+        return fixture
+
+    def get_extra_fixture(self, id, name, **kwargs):
+        return self.get_fixture(
+            id=id, name=name, deleted=False, deleted_at=None,
+            created_at=timeutils.utcnow(), updated_at=timeutils.utcnow(),
+            **kwargs)
+
+    def get_api_response_ext(self, http_resp, url='/images', headers={},
+                             body=None, method=None, api=None,
+                             content_type=None):
+        if api is None:
+            api = self.api
+        req = webob.Request.blank(url)
+        for k, v in headers.iteritems():
+            req.headers[k] = v
+        if method:
+            req.method = method
+        if body:
+            req.body = body
+        if content_type == 'json':
+            req.content_type = 'application/json'
+        elif content_type == 'octet':
+            req.content_type = 'application/octet-stream'
+        res = req.get_response(api)
+        self.assertEquals(res.status_int, http_resp)
+        return res
+
+    def assertEqualImages(self, res, uuids, key='images', unjsonify=True):
+        images = json.loads(res.body)[key] if unjsonify else res
+        self.assertEquals(len(images), len(uuids))
+        for i, uuid in enumerate(uuids):
+            self.assertEquals(images[i]['id'], uuid)
 
 
 class FakeAuthMiddleware(wsgi.Middleware):
