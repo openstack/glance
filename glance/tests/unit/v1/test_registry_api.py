@@ -30,7 +30,6 @@ import glance.common.config
 from glance.common import crypt
 import glance.context
 from glance.db.sqlalchemy import api as db_api
-from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
 from glance.registry.api import v1 as rserver
@@ -98,49 +97,29 @@ class TestRegistryDb(test_utils.BaseTestCase):
         self.assertTrue(self.log_written)
 
 
-class TestRegistryAPI(base.IsolatedUnitTest):
+class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
+
     def setUp(self):
         """Establish a clean test environment"""
         super(TestRegistryAPI, self).setUp()
         self.mapper = routes.Mapper()
         self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
                                                  is_admin=True)
+
+        def _get_extra_fixture(id, name, **kwargs):
+            return self.get_extra_fixture(
+                id, name,
+                locations=[{'url': "file:///%s/%s" % (self.test_dir, id),
+                            'metadata': {}}], **kwargs)
+
         self.FIXTURES = [
-            {'id': UUID1,
-             'name': 'fake image #1',
-             'status': 'active',
-             'disk_format': 'ami',
-             'container_format': 'ami',
-             'is_public': False,
-             'created_at': timeutils.utcnow(),
-             'updated_at': timeutils.utcnow(),
-             'deleted_at': None,
-             'deleted': False,
-             'checksum': None,
-             'min_disk': 0,
-             'min_ram': 0,
-             'size': 13,
-             'owner': '123',
-             'locations': [{'url': "file:///%s/%s" % (self.test_dir, UUID1),
-                            'metadata': {}}],
-             'properties': {'type': 'kernel'}},
-            {'id': UUID2,
-             'name': 'fake image #2',
-             'status': 'active',
-             'disk_format': 'vhd',
-             'container_format': 'ovf',
-             'is_public': True,
-             'created_at': timeutils.utcnow(),
-             'updated_at': timeutils.utcnow(),
-             'deleted_at': None,
-             'deleted': False,
-             'checksum': None,
-             'min_disk': 5,
-             'min_ram': 256,
-             'size': 19,
-             'locations': [{'url': "file:///%s/%s" % (self.test_dir, UUID2),
-                            'metadata': {}}],
-             'properties': {}}]
+            _get_extra_fixture(UUID1, 'fake image #1', is_public=False,
+                               disk_format='ami', container_format='ami',
+                               min_disk=0, min_ram=0, owner=123,
+                               size=13, properties={'type': 'kernel'}),
+            _get_extra_fixture(UUID2, 'fake image #2',
+                               min_disk=5, min_ram=256,
+                               size=19, properties={})]
         self.context = glance.context.RequestContext(is_admin=True)
         db_api.setup_db_env()
         db_api.get_engine()
@@ -151,19 +130,6 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         """Clear the test environment"""
         super(TestRegistryAPI, self).tearDown()
         self.destroy_fixtures()
-
-    def create_fixtures(self):
-        for fixture in self.FIXTURES:
-            db_api.image_create(self.context, fixture)
-            # We write a fake image file to the filesystem
-            with open("%s/%s" % (self.test_dir, fixture['id']), 'wb') as image:
-                image.write("chunk00000remainder")
-                image.flush()
-
-    def destroy_fixtures(self):
-        # Easiest to just drop the models and re-create them...
-        db_models.unregister_models(db_api._ENGINE)
-        db_models.register_models(db_api._ENGINE)
 
     def test_show(self):
         """
@@ -176,9 +142,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
                    'min_ram': 256,
                    'min_disk': 5,
                    'checksum': None}
-        req = webob.Request.blank('/images/%s' % UUID2)
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
+        res = self.get_api_response_ext(200, '/images/%s' % UUID2)
         res_dict = json.loads(res.body)
         image = res_dict['image']
         for k, v in fixture.iteritems():
@@ -189,18 +153,14 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/<id> registry API endpoint
         returns a 404 for an unknown image id
         """
-        req = webob.Request.blank('/images/%s' % _gen_uuid())
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 404)
+        self.get_api_response_ext(404, '/images/%s' % _gen_uuid())
 
     def test_show_invalid(self):
         """
         Tests that the /images/<id> registry API endpoint
         returns a 404 for an invalid (therefore unknown) image id
         """
-        req = webob.Request.blank('/images/%s' % _gen_uuid())
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 404)
+        self.get_api_response_ext(404, '/images/%s' % _gen_uuid())
 
     def test_show_deleted_image_as_admin(self):
         """
@@ -208,14 +168,9 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         returns a 200 for deleted image to admin user.
         """
         # Delete image #2
-        req = webob.Request.blank('/images/%s' % UUID2)
-        req.method = 'DELETE'
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
+        self.get_api_response_ext(200, '/images/%s' % UUID2, method='DELETE')
 
-        req = webob.Request.blank('/images/%s' % UUID2)
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
+        self.get_api_response_ext(200, '/images/%s' % UUID2)
 
     def test_show_deleted_image_as_nonadmin(self):
         """
@@ -223,49 +178,29 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         returns a 404 for deleted image to non-admin user.
         """
         # Delete image #2
-        req = webob.Request.blank('/images/%s' % UUID2)
-        req.method = 'DELETE'
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
+        self.get_api_response_ext(200, '/images/%s' % UUID2, method='DELETE')
 
         api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
                                             is_admin=False)
-        req = webob.Request.blank('/images/%s' % UUID2)
-        res = req.get_response(api)
-        self.assertEquals(res.status_int, 404)
+        self.get_api_response_ext(404, '/images/%s' % UUID2, api=api)
 
     def test_show_private_image_with_no_admin_user(self):
         UUID4 = _gen_uuid()
-        extra_fixture = {'id': UUID4,
-                         'owner': 'test user',
-                         'status': 'active',
-                         'is_public': False,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 18,
-                         'checksum': None}
-
+        extra_fixture = self.get_fixture(id=UUID4, size=18, owner='test user',
+                                         is_public=False)
         db_api.image_create(self.context, extra_fixture)
         test_rserv = rserver.API(self.mapper)
         api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
-        req = webob.Request.blank('/images/%s' % UUID4)
-        res = req.get_response(api)
-        self.assertEquals(res.status_int, 404)
+        self.get_api_response_ext(404, '/images/%s' % UUID4, api=api)
 
     def test_get_root(self):
         """
         Tests that the root registry API returns "index",
         which is a list of public images
         """
-        fixture = {'id': UUID2,
-                   'name': 'fake image #2',
-                   'size': 19,
-                   'checksum': None}
-        req = webob.Request.blank('/')
-        res = req.get_response(self.api)
+        fixture = {'id': UUID2, 'size': 19, 'checksum': None}
+        res = self.get_api_response_ext(200, url='/')
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 1)
@@ -278,14 +213,9 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images registry API returns list of
         public images
         """
-        fixture = {'id': UUID2,
-                   'name': 'fake image #2',
-                   'size': 19,
-                   'checksum': None}
-        req = webob.Request.blank('/images')
-        res = req.get_response(self.api)
+        fixture = {'id': UUID2, 'size': 19, 'checksum': None}
+        res = self.get_api_response_ext(200)
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 1)
@@ -303,73 +233,36 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         time3 = timeutils.utcnow()
 
         UUID3 = _gen_uuid()
-        extra_fixture = {'id': UUID3,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 19,
-                         'checksum': None,
-                         'created_at': time1}
+        extra_fixture = self.get_fixture(id=UUID3, size=19, created_at=time1)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
-        extra_fixture = {'id': UUID4,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 20,
-                         'checksum': None,
-                         'created_at': time2}
+        extra_fixture = self.get_fixture(id=UUID4, created_at=time2)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID5 = _gen_uuid()
-        extra_fixture = {'id': UUID5,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 20,
-                         'checksum': None,
-                         'created_at': time3}
+        extra_fixture = self.get_fixture(id=UUID5, created_at=time3)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images?marker=%s' % UUID4)
-        res = req.get_response(self.api)
-        res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
-
-        images = res_dict['images']
-        # should be sorted by created_at desc, id desc
-        # page should start after marker 4
-        self.assertEquals(len(images), 2)
-        self.assertEquals(images[0]['id'], UUID5)
-        self.assertEquals(images[1]['id'], UUID2)
+        res = self.get_api_response_ext(200, url='/images?marker=%s' % UUID4)
+        self.assertEqualImages(res, (UUID5, UUID2))
 
     def test_get_index_unknown_marker(self):
         """
         Tests that the /images registry API returns a 400
         when an unknown marker is provided
         """
-        req = webob.Request.blank('/images?marker=%s' % _gen_uuid())
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        self.get_api_response_ext(400, url='/images?marker=%s' % _gen_uuid())
 
     def test_get_index_malformed_marker(self):
         """
         Tests that the /images registry API returns a 400
         when a malformed marker is provided
         """
-        req = webob.Request.blank('/images?marker=4')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        res = self.get_api_response_ext(400, url='/images?marker=4')
         self.assertTrue('marker' in res.body)
 
     def test_get_index_forbidden_marker(self):
@@ -379,9 +272,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         """
         test_rserv = rserver.API(self.mapper)
         api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
-        req = webob.Request.blank('/images?marker=%s' % UUID1)
-        res = req.get_response(api)
-        self.assertEquals(res.status_int, 400)
+        self.get_api_response_ext(400, url='/images?marker=%s' % UUID1,
+                                  api=api)
 
     def test_get_index_limit(self):
         """
@@ -389,33 +281,17 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         public images that conforms to a limit query param
         """
         UUID3 = _gen_uuid()
-        extra_fixture = {'id': UUID3,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID3, size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
-        extra_fixture = {'id': UUID4,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 20,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID4)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images?limit=1')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200, url='/images?limit=1')
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 1)
@@ -428,18 +304,14 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images registry API returns list of
         public images that conforms to a limit query param
         """
-        req = webob.Request.blank('/images?limit=-1')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        self.get_api_response_ext(400, url='/images?limit=-1')
 
     def test_get_index_limit_non_int(self):
         """
         Tests that the /images registry API returns list of
         public images that conforms to a limit query param
         """
-        req = webob.Request.blank('/images?limit=a')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        self.get_api_response_ext(400, url='/images?limit=a')
 
     def test_get_index_limit_marker(self):
         """
@@ -447,38 +319,17 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         public images that conforms to limit and marker query params
         """
         UUID3 = _gen_uuid()
-        extra_fixture = {'id': UUID3,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID3, size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 20,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid())
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images?marker=%s&limit=1' % UUID3)
-        res = req.get_response(self.api)
-        res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
-
-        images = res_dict['images']
-        self.assertEquals(len(images), 1)
-
-        # expect list to be sorted by created_at desc
-        self.assertEqual(images[0]['id'], UUID2)
+        res = self.get_api_response_ext(
+            200, url='/images?marker=%s&limit=1' % UUID3)
+        self.assertEqualImages(res, (UUID2,))
 
     def test_get_index_filter_name(self):
         """
@@ -486,37 +337,17 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         public images that have a specific name. This is really a sanity
         check, filtering is tested more in-depth using /images/detail
         """
-        fixture = {'id': UUID2,
-                   'name': 'fake image #2',
-                   'size': 19,
-                   'checksum': None}
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(),
+                                         name='new name! #123', size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 20,
-                         'checksum': None}
-
+        extra_fixture = self.get_fixture(id=_gen_uuid(), name='new name! #123')
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images?name=new name! #123')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200, url='/images?name=new name! #123')
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 2)
@@ -534,67 +365,30 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         time3 = timeutils.utcnow()
 
         UUID3 = _gen_uuid()
-        extra_fixture = {'id': UUID3,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 19,
-                         'checksum': None,
-                         'created_at': time1}
+        extra_fixture = self.get_fixture(id=UUID3, size=19, created_at=time1)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
-        extra_fixture = {'id': UUID4,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 20,
-                         'checksum': None,
-                         'created_at': time2}
+        extra_fixture = self.get_fixture(id=UUID4, created_at=time2)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID5 = _gen_uuid()
-        extra_fixture = {'id': UUID5,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 20,
-                         'checksum': None,
-                         'created_at': time3}
+        extra_fixture = self.get_fixture(id=UUID5, created_at=time3)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images')
-        res = req.get_response(self.api)
-        res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
-
-        images = res_dict['images']
-        self.assertEquals(len(images), 4)
-        self.assertEquals(images[0]['id'], UUID3)
-        self.assertEquals(images[1]['id'], UUID4)
-        self.assertEquals(images[2]['id'], UUID5)
-        self.assertEquals(images[3]['id'], UUID2)
+        res = self.get_api_response_ext(200, url='/images')
+        self.assertEqualImages(res, (UUID3, UUID4, UUID5, UUID2))
 
     def test_get_index_bad_sort_key(self):
         """Ensure a 400 is returned when a bad sort_key is provided."""
-        req = webob.Request.blank('/images?sort_key=asdf')
-        res = req.get_response(self.api)
-        self.assertEqual(400, res.status_int)
+        self.get_api_response_ext(400, url='/images?sort_key=asdf')
 
     def test_get_index_bad_sort_dir(self):
         """Ensure a 400 is returned when a bad sort_dir is provided."""
-        req = webob.Request.blank('/images?sort_dir=asdf')
-        res = req.get_response(self.api)
-        self.assertEqual(400, res.status_int)
+        self.get_api_response_ext(400, url='/images?sort_dir=asdf')
 
     def test_get_index_null_name(self):
         """Check 200 is returned when sort_key is null name
@@ -603,19 +397,11 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         for specified marker
         """
         UUID6 = _gen_uuid()
-        extra_fixture = {'id': UUID6,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'size': 20,
-                         'name': None,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID6, name=None)
 
         db_api.image_create(self.context, extra_fixture)
-        req = webob.Request.blank('/images?sort_key=name&marker=%s' % UUID6)
-        res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.get_api_response_ext(
+            200, url='/images?sort_key=name&marker=%s' % UUID6)
 
     def test_get_index_null_disk_format(self):
         """Check 200 is returned when sort_key is null disk_format
@@ -624,20 +410,11 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         disk_format is null for specified marker
         """
         UUID6 = _gen_uuid()
-        extra_fixture = {'id': UUID6,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': None,
-                         'container_format': 'ovf',
-                         'size': 20,
-                         'name': 'Fake image',
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID6, disk_format=None, size=19)
 
         db_api.image_create(self.context, extra_fixture)
-        req = webob.Request.blank('/images?sort_key=disk_format&marker=%s'
-                                  % UUID6)
-        res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.get_api_response_ext(
+            200, url='/images?sort_key=disk_format&marker=%s' % UUID6)
 
     def test_get_index_null_container_format(self):
         """Check 200 is returned when sort_key is null container_format
@@ -646,20 +423,11 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         container_format is null for specified marker
         """
         UUID6 = _gen_uuid()
-        extra_fixture = {'id': UUID6,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': None,
-                         'size': 20,
-                         'name': 'Fake image',
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID6, container_format=None)
 
         db_api.image_create(self.context, extra_fixture)
-        req = webob.Request.blank('/images?sort_key=container_format&marker=%s'
-                                  % UUID6)
-        res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.get_api_response_ext(
+            200, url='/images?sort_key=container_format&marker=%s' % UUID6)
 
     def test_get_index_sort_name_asc(self):
         """
@@ -668,39 +436,17 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         ascending order.
         """
         UUID3 = _gen_uuid()
-        extra_fixture = {'id': UUID3,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'asdf',
-                         'size': 19,
-                         'checksum': None}
-
+        extra_fixture = self.get_fixture(id=UUID3, name='asdf', size=19)
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
-        extra_fixture = {'id': UUID4,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'xyz',
-                         'size': 20,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID4, name='xyz')
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images?sort_key=name&sort_dir=asc')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        res_dict = json.loads(res.body)
-
-        images = res_dict['images']
-        self.assertEquals(len(images), 3)
-        self.assertEquals(images[0]['id'], UUID3)
-        self.assertEquals(images[1]['id'], UUID2)
-        self.assertEquals(images[2]['id'], UUID4)
+        url = '/images?sort_key=name&sort_dir=asc'
+        res = self.get_api_response_ext(200, url=url)
+        self.assertEqualImages(res, (UUID3, UUID2, UUID4))
 
     def test_get_index_sort_status_desc(self):
         """
@@ -709,39 +455,18 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         descending order.
         """
         UUID3 = _gen_uuid()
-        extra_fixture = {'id': UUID3,
-                         'status': 'queued',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'asdf',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID3, status='queued', size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
-        extra_fixture = {'id': UUID4,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'xyz',
-                         'size': 20,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID4)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images?sort_key=status&sort_dir=desc')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        res_dict = json.loads(res.body)
-
-        images = res_dict['images']
-        self.assertEquals(len(images), 3)
-        self.assertEquals(images[0]['id'], UUID3)
-        self.assertEquals(images[1]['id'], UUID4)
-        self.assertEquals(images[2]['id'], UUID2)
+        res = self.get_api_response_ext(200, url=(
+            '/images?sort_key=status&sort_dir=desc'))
+        self.assertEqualImages(res, (UUID3, UUID4, UUID2))
 
     def test_get_index_sort_disk_format_asc(self):
         """
@@ -750,39 +475,19 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         ascending order.
         """
         UUID3 = _gen_uuid()
-        extra_fixture = {'id': UUID3,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'ami',
-                         'container_format': 'ami',
-                         'name': 'asdf',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID3, disk_format='ami',
+                                         container_format='ami', size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
-        extra_fixture = {'id': UUID4,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vdi',
-                         'container_format': 'ovf',
-                         'name': 'xyz',
-                         'size': 20,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID4, disk_format='vdi')
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images?sort_key=disk_format&sort_dir=asc')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        res_dict = json.loads(res.body)
-
-        images = res_dict['images']
-        self.assertEquals(len(images), 3)
-        self.assertEquals(images[0]['id'], UUID3)
-        self.assertEquals(images[1]['id'], UUID4)
-        self.assertEquals(images[2]['id'], UUID2)
+        res = self.get_api_response_ext(200, url=(
+            '/images?sort_key=disk_format&sort_dir=asc'))
+        self.assertEqualImages(res, (UUID3, UUID4, UUID2))
 
     def test_get_index_sort_container_format_desc(self):
         """
@@ -791,40 +496,20 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         descending order.
         """
         UUID3 = _gen_uuid()
-        extra_fixture = {'id': UUID3,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'ami',
-                         'container_format': 'ami',
-                         'name': 'asdf',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID3, size=19, disk_format='ami',
+                                         container_format='ami')
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
-        extra_fixture = {'id': UUID4,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'iso',
-                         'container_format': 'bare',
-                         'name': 'xyz',
-                         'size': 20,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID4, disk_format='iso',
+                                         container_format='bare')
 
         db_api.image_create(self.context, extra_fixture)
 
         url = '/images?sort_key=container_format&sort_dir=desc'
-        req = webob.Request.blank(url)
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        res_dict = json.loads(res.body)
-
-        images = res_dict['images']
-        self.assertEquals(len(images), 3)
-        self.assertEquals(images[0]['id'], UUID2)
-        self.assertEquals(images[1]['id'], UUID4)
-        self.assertEquals(images[2]['id'], UUID3)
+        res = self.get_api_response_ext(200, url=url)
+        self.assertEqualImages(res, (UUID2, UUID4, UUID3))
 
     def test_get_index_sort_size_asc(self):
         """
@@ -832,40 +517,20 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         public images sorted by size in ascending order.
         """
         UUID3 = _gen_uuid()
-        extra_fixture = {'id': UUID3,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'ami',
-                         'container_format': 'ami',
-                         'name': 'asdf',
-                         'size': 100,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID3, disk_format='ami',
+                                         container_format='ami', size=100)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
-        extra_fixture = {'id': UUID4,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'iso',
-                         'container_format': 'bare',
-                         'name': 'xyz',
-                         'size': 2,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID4, disk_format='iso',
+                                         container_format='bare', size=2)
 
         db_api.image_create(self.context, extra_fixture)
 
         url = '/images?sort_key=size&sort_dir=asc'
-        req = webob.Request.blank(url)
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        res_dict = json.loads(res.body)
-
-        images = res_dict['images']
-        self.assertEquals(len(images), 3)
-        self.assertEquals(images[0]['id'], UUID4)
-        self.assertEquals(images[1]['id'], UUID2)
-        self.assertEquals(images[2]['id'], UUID3)
+        res = self.get_api_response_ext(200, url=url)
+        self.assertEqualImages(res, (UUID4, UUID2, UUID3))
 
     def test_get_index_sort_created_at_asc(self):
         """
@@ -877,41 +542,18 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         time2 = now
 
         UUID3 = _gen_uuid()
-        extra_fixture = {'id': UUID3,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 19,
-                         'checksum': None,
-                         'created_at': time1}
+        extra_fixture = self.get_fixture(id=UUID3, created_at=time1, size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
-        extra_fixture = {'id': UUID4,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 20,
-                         'checksum': None,
-                         'created_at': time2}
+        extra_fixture = self.get_fixture(id=UUID4, created_at=time2)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images?sort_key=created_at&sort_dir=asc')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        res_dict = json.loads(res.body)
-
-        images = res_dict['images']
-        self.assertEquals(len(images), 3)
-        self.assertEquals(images[0]['id'], UUID2)
-        self.assertEquals(images[1]['id'], UUID4)
-        self.assertEquals(images[2]['id'], UUID3)
+        res = self.get_api_response_ext(200, url=(
+            '/images?sort_key=created_at&sort_dir=asc'))
+        self.assertEqualImages(res, (UUID2, UUID4, UUID3))
 
     def test_get_index_sort_updated_at_desc(self):
         """
@@ -923,43 +565,20 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         time2 = now
 
         UUID3 = _gen_uuid()
-        extra_fixture = {'id': UUID3,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 19,
-                         'checksum': None,
-                         'created_at': None,
-                         'updated_at': time1}
+        extra_fixture = self.get_fixture(id=UUID3, size=19, created_at=None,
+                                         updated_at=time1)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
-        extra_fixture = {'id': UUID4,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 20,
-                         'checksum': None,
-                         'created_at': None,
-                         'updated_at': time2}
+        extra_fixture = self.get_fixture(id=UUID4, created_at=None,
+                                         updated_at=time2)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images?sort_key=updated_at&sort_dir=desc')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        res_dict = json.loads(res.body)
-
-        images = res_dict['images']
-        self.assertEquals(len(images), 3)
-        self.assertEquals(images[0]['id'], UUID3)
-        self.assertEquals(images[1]['id'], UUID4)
-        self.assertEquals(images[2]['id'], UUID2)
+        res = self.get_api_response_ext(200, url=(
+            '/images?sort_key=updated_at&sort_dir=desc'))
+        self.assertEqualImages(res, (UUID3, UUID4, UUID2))
 
     def test_get_details(self):
         """
@@ -977,10 +596,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
                    'container_format': 'ovf',
                    'status': 'active'}
 
-        req = webob.Request.blank('/images/detail')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200, url='/images/detail')
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 1)
@@ -996,32 +613,17 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         just a sanity check
         """
         UUID3 = _gen_uuid()
-        extra_fixture = {'id': UUID3,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID3, size=20)
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 20,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid())
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?marker=%s&limit=1' % UUID3)
-        res = req.get_response(self.api)
+        url = '/images/detail?marker=%s&limit=1' % UUID3
+        res = self.get_api_response_ext(200, url=url)
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 1)
@@ -1034,19 +636,15 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry API returns a 400
         when an invalid marker is provided
         """
-        req = webob.Request.blank('/images/detail?marker=%s'
-                                  % _gen_uuid())
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        url = '/images/detail?marker=%s' % _gen_uuid()
+        self.get_api_response_ext(400, url=url)
 
     def test_get_details_malformed_marker(self):
         """
         Tests that the /images/detail registry API returns a 400
         when a malformed marker is provided
         """
-        req = webob.Request.blank('/images/detail?marker=4')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        res = self.get_api_response_ext(400, url='/images/detail?marker=4')
         self.assertTrue('marker' in res.body)
 
     def test_get_details_forbidden_marker(self):
@@ -1056,41 +654,27 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         """
         test_rserv = rserver.API(self.mapper)
         api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
-        req = webob.Request.blank('/images/detail?marker=%s' % UUID1)
-        res = req.get_response(api)
-        self.assertEquals(res.status_int, 400)
+        self.get_api_response_ext(400, api=api,
+                                  url='/images/detail?marker=%s' % UUID1)
 
     def test_get_details_filter_name(self):
         """
         Tests that the /images/detail registry API returns list of
         public images that have a specific name
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(),
+                                         name='new name! #123', size=20)
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'new name! #123',
-                         'size': 20,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(),
+                                         name='new name! #123')
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?name=new name! #123')
-        res = req.get_response(self.api)
+        url = '/images/detail?name=new name! #123'
+        res = self.get_api_response_ext(200, url=url)
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 2)
@@ -1103,32 +687,18 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry API returns list of
         public images that have a specific status
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'saving',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), status='saving')
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #4',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), size=19,
+                                         status='active')
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?status=saving')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200,
+                                        url='/images/detail?status=saving')
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 1)
@@ -1141,32 +711,19 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry API returns list of
         public images that have a specific container_format
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vdi',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), disk_format='vdi',
+                                         size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'ami',
-                         'container_format': 'ami',
-                         'name': 'fake image #4',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), disk_format='ami',
+                                         container_format='ami', size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?container_format=ovf')
-        res = req.get_response(self.api)
+        url = '/images/detail?container_format=ovf'
+        res = self.get_api_response_ext(200, url=url)
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 2)
@@ -1179,33 +736,17 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry API returns list of
         public images that have a specific min_disk
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 19,
-                         'min_disk': 7,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), min_disk=7, size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'ami',
-                         'container_format': 'ami',
-                         'name': 'fake image #4',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), disk_format='ami',
+                                         container_format='ami', size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?min_disk=7')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200, url='/images/detail?min_disk=7')
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 1)
@@ -1218,33 +759,17 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry API returns list of
         public images that have a specific min_ram
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 19,
-                         'min_ram': 514,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), min_ram=514, size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'ami',
-                         'container_format': 'ami',
-                         'name': 'fake image #4',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), disk_format='ami',
+                                         container_format='ami', size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?min_ram=514')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200, url='/images/detail?min_ram=514')
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 1)
@@ -1257,32 +782,18 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry API returns list of
         public images that have a specific disk_format
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'ami',
-                         'container_format': 'ami',
-                         'name': 'fake image #4',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), disk_format='ami',
+                                         container_format='ami', size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?disk_format=vhd')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200,
+                                        url='/images/detail?disk_format=vhd')
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 2)
@@ -1295,32 +806,17 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry API returns list of
         public images that have a size greater than or equal to size_min
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 18,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), size=18)
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'ami',
-                         'container_format': 'ami',
-                         'name': 'fake image #4',
-                         'size': 20,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), disk_format='ami',
+                                         container_format='ami')
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?size_min=19')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200, url='/images/detail?size_min=19')
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 2)
@@ -1333,32 +829,17 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry API returns list of
         public images that have a size less than or equal to size_max
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 18,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), size=18)
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'ami',
-                         'container_format': 'ami',
-                         'name': 'fake image #4',
-                         'size': 20,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), disk_format='ami',
+                                         container_format='ami')
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?size_max=19')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200, url='/images/detail?size_max=19')
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 2)
@@ -1372,43 +853,22 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         public images that have a size less than or equal to size_max
         and greater than or equal to size_min
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 18,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), size=18)
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'ami',
-                         'container_format': 'ami',
-                         'name': 'fake image #4',
-                         'size': 20,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), disk_format='ami',
+                                         container_format='ami')
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'ami',
-                         'container_format': 'ami',
-                         'name': 'fake image #5',
-                         'size': 6,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), size=6)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?size_min=18&size_max=19')
-        res = req.get_response(self.api)
+        url = '/images/detail?size_min=18&size_max=19'
+        res = self.get_api_response_ext(200, url=url)
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 2)
@@ -1435,132 +895,77 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         iso4 = timeutils.isotime(dt4)
 
         UUID3 = _gen_uuid()
-        extra_fixture = {'id': UUID3,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 18,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID3, size=18)
 
         db_api.image_create(self.context, extra_fixture)
         db_api.image_destroy(self.context, UUID3)
 
         UUID4 = _gen_uuid()
-        extra_fixture = {'id': UUID4,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'ami',
-                         'container_format': 'ami',
-                         'name': 'fake image #4',
-                         'size': 20,
-                         'checksum': None,
-                         'created_at': image_ts,
-                         'updated_at': image_ts}
+        extra_fixture = self.get_fixture(id=UUID4,
+                                         disk_format='ami',
+                                         container_format='ami',
+                                         created_at=image_ts,
+                                         updated_at=image_ts)
 
         db_api.image_create(self.context, extra_fixture)
 
         # Check a standard list, 4 images in db (2 deleted)
-        req = webob.Request.blank('/images/detail')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        res_dict = json.loads(res.body)
-        images = res_dict['images']
-        self.assertEquals(len(images), 2)
-        self.assertEqual(images[0]['id'], UUID4)
-        self.assertEqual(images[1]['id'], UUID2)
+        res = self.get_api_response_ext(200, url='/images/detail')
+        self.assertEqualImages(res, (UUID4, UUID2))
 
         # Expect 3 images (1 deleted)
-        req = webob.Request.blank('/images/detail?changes-since=%s' % iso1)
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        res_dict = json.loads(res.body)
-        images = res_dict['images']
-        self.assertEquals(len(images), 3)
-        self.assertEqual(images[0]['id'], UUID4)
-        self.assertEqual(images[1]['id'], UUID3)  # deleted
-        self.assertEqual(images[2]['id'], UUID2)
+        res = self.get_api_response_ext(200, url=(
+            '/images/detail?changes-since=%s' % iso1))
+        self.assertEqualImages(res, (UUID4, UUID3, UUID2))
 
         # Expect 1 images (0 deleted)
-        req = webob.Request.blank('/images/detail?changes-since=%s' % iso2)
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        res_dict = json.loads(res.body)
-        images = res_dict['images']
-        self.assertEquals(len(images), 1)
-        self.assertEqual(images[0]['id'], UUID4)
+        res = self.get_api_response_ext(200, url=(
+            '/images/detail?changes-since=%s' % iso2))
+        self.assertEqualImages(res, (UUID4,))
 
         # Expect 1 images (0 deleted)
-        req = webob.Request.blank('/images/detail?changes-since=%s' %
-                                  hour_before)
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        res_dict = json.loads(res.body)
-        images = res_dict['images']
-        self.assertEquals(len(images), 1)
-        self.assertEqual(images[0]['id'], UUID4)
+        res = self.get_api_response_ext(200, url=(
+            '/images/detail?changes-since=%s' % hour_before))
+        self.assertEqualImages(res, (UUID4,))
 
         # Expect 0 images (0 deleted)
-        req = webob.Request.blank('/images/detail?changes-since=%s' %
-                                  hour_after)
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        res_dict = json.loads(res.body)
-        images = res_dict['images']
-        self.assertEquals(len(images), 0)
+        res = self.get_api_response_ext(200, url=(
+            '/images/detail?changes-since=%s' % hour_after))
+        self.assertEqualImages(res, ())
 
         # Expect 0 images (0 deleted)
-        req = webob.Request.blank('/images/detail?changes-since=%s' % iso4)
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        res_dict = json.loads(res.body)
-        images = res_dict['images']
-        self.assertEquals(len(images), 0)
+        res = self.get_api_response_ext(200, url=(
+            '/images/detail?changes-since=%s' % iso4))
+        self.assertEqualImages(res, ())
 
         # Bad request (empty changes-since param)
-        req = webob.Request.blank('/images/detail?changes-since=')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        self.get_api_response_ext(400,
+                                  url='/images/detail?changes-since=')
 
         # Bad request (invalid changes-since param)
-        req = webob.Request.blank('/images/detail?changes-since=2011-09-05')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        self.get_api_response_ext(400, url=(
+            '/images/detail?changes-since=2011-09-05'))
 
     def test_get_details_filter_property(self):
         """
         Tests that the /images/detail registry API returns list of
         public images that have a specific custom property
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 19,
-                         'checksum': None,
-                         'properties': {'prop_123': 'v a'}}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), size=19,
+                                         properties={'prop_123': 'v a'})
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'ami',
-                         'container_format': 'ami',
-                         'name': 'fake image #4',
-                         'size': 19,
-                         'checksum': None,
-                         'properties': {'prop_123': 'v b'}}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), size=19,
+                                         disk_format='ami',
+                                         container_format='ami',
+                                         properties={'prop_123': 'v b'})
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?property-prop_123=v%20a')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200, url=(
+            '/images/detail?property-prop_123=v%20a'))
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 1)
@@ -1573,21 +978,14 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry API returns list of
         all images if is_public none is passed
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': False,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 18,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(),
+                                         is_public=False, size=18)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?is_public=None')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200,
+                                        url='/images/detail?is_public=None')
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 3)
@@ -1597,21 +995,14 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry API returns list of
         private images if is_public false is passed
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': False,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 18,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(),
+                                         is_public=False, size=18)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?is_public=False')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200,
+                                        url='/images/detail?is_public=False')
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 2)
@@ -1624,21 +1015,14 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry API returns list of
         public images if is_public true is passed (same as default)
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': False,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 18,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(),
+                                         is_public=False, size=18)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?is_public=True')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200,
+                                        url='/images/detail?is_public=True')
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 1)
@@ -1651,20 +1035,12 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests that the /images/detail registry
         API returns 400 Bad error for filter is_public with wrong format
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': 'true',
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 18,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(),
+                                         is_public='true', size=18)
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?is_public=public')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        self.get_api_response_ext(400, url='/images/detail?is_public=public')
 
     def test_get_details_filter_deleted_false(self):
         """
@@ -1674,18 +1050,17 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         """
         extra_fixture = {'id': _gen_uuid(),
                          'status': 'active',
-                         'name': 'test deleted filter 1',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
+                         'name': 'test deleted filter 1',
                          'size': 18,
-                         'checksum': None,
-                         'deleted': False}
+                         'deleted': False,
+                         'checksum': None}
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?deleted=False')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
+        res = self.get_api_response_ext(200,
+                                        url='/images/detail?deleted=False')
         res_dict = json.loads(res.body)
 
         images = res_dict['images']
@@ -1699,22 +1074,15 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         public images if is_public true is passed (same as default)
         """
         UUID4 = _gen_uuid()
-        extra_fixture = {'id': UUID4,
-                         'status': 'active',
-                         'is_public': False,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 18,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID4,
+                                         is_public=False, size=18)
 
         db_api.image_create(self.context, extra_fixture)
         test_rserv = rserver.API(self.mapper)
         api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
-        req = webob.Request.blank('/images/detail?is_public=False')
-        res = req.get_response(api)
+        res = self.get_api_response_ext(200, api=api,
+                                        url='/images/detail?is_public=False')
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         images = res_dict['images']
         self.assertEquals(len(images), 1)
@@ -1726,39 +1094,21 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         """
         Tests that the /images/detail registry API returns 400 error
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 18,
-                         'protected': "False",
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(), size=18,
+                                         protected="False")
 
         db_api.image_create(self.context, extra_fixture)
-        req = webob.Request.blank('/images/detail?protected=')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        self.get_api_response_ext(400, url='/images/detail?protected=')
 
     def test_get_filter_protected_with_True_value(self):
         """
         Tests that the /images/detail registry API returns 400 error
         """
-        extra_fixture = {'id': _gen_uuid(),
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'fake image #3',
-                         'size': 18,
-                         'protected': "True",
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=_gen_uuid(),
+                                         size=18, protected="True")
 
         db_api.image_create(self.context, extra_fixture)
-        req = webob.Request.blank('/images/detail?protected=True')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
+        self.get_api_response_ext(200, url='/images/detail?protected=True')
 
     def test_get_details_sort_name_asc(self):
         """
@@ -1767,57 +1117,27 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         ascending order.
         """
         UUID3 = _gen_uuid()
-        extra_fixture = {'id': UUID3,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'asdf',
-                         'size': 19,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID3, name='asdf', size=19)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
-        extra_fixture = {'id': UUID4,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'xyz',
-                         'size': 20,
-                         'checksum': None}
+        extra_fixture = self.get_fixture(id=UUID4, name='xyz')
 
         db_api.image_create(self.context, extra_fixture)
 
-        req = webob.Request.blank('/images/detail?sort_key=name&sort_dir=asc')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        res_dict = json.loads(res.body)
-
-        images = res_dict['images']
-        self.assertEquals(len(images), 3)
-        self.assertEquals(images[0]['id'], UUID3)
-        self.assertEquals(images[1]['id'], UUID2)
-        self.assertEquals(images[2]['id'], UUID4)
+        res = self.get_api_response_ext(200, url=(
+            '/images/detail?sort_key=name&sort_dir=asc'))
+        self.assertEqualImages(res, (UUID3, UUID2, UUID4))
 
     def test_create_image(self):
         """Tests that the /images POST registry API creates the image"""
-        fixture = {'name': 'fake public image',
-                   'is_public': True,
-                   'disk_format': 'vhd',
-                   'container_format': 'ovf'}
 
-        req = webob.Request.blank('/images')
+        fixture = self.get_minimal_fixture()
+        body = json.dumps(dict(image=fixture))
 
-        req.method = 'POST'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(image=fixture))
-
-        res = req.get_response(self.api)
-
-        self.assertEquals(res.status_int, 200)
-
+        res = self.get_api_response_ext(200, body=body,
+                                        method='POST', content_type='json')
         res_dict = json.loads(res.body)
 
         for k, v in fixture.iteritems():
@@ -1828,125 +1148,63 @@ class TestRegistryAPI(base.IsolatedUnitTest):
 
     def test_create_image_with_min_disk(self):
         """Tests that the /images POST registry API creates the image"""
-        fixture = {'name': 'fake public image',
-                   'is_public': True,
-                   'min_disk': 5,
-                   'disk_format': 'vhd',
-                   'container_format': 'ovf'}
+        fixture = self.get_minimal_fixture(min_disk=5)
+        body = json.dumps(dict(image=fixture))
 
-        req = webob.Request.blank('/images')
-
-        req.method = 'POST'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(image=fixture))
-
-        res = req.get_response(self.api)
-
-        self.assertEquals(res.status_int, 200)
-
+        res = self.get_api_response_ext(200, body=body,
+                                        method='POST', content_type='json')
         res_dict = json.loads(res.body)
 
         self.assertEquals(5, res_dict['image']['min_disk'])
 
     def test_create_image_with_min_ram(self):
         """Tests that the /images POST registry API creates the image"""
-        fixture = {'name': 'fake public image',
-                   'is_public': True,
-                   'min_ram': 256,
-                   'disk_format': 'vhd',
-                   'container_format': 'ovf'}
+        fixture = self.get_minimal_fixture(min_ram=256)
+        body = json.dumps(dict(image=fixture))
 
-        req = webob.Request.blank('/images')
-
-        req.method = 'POST'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(image=fixture))
-
-        res = req.get_response(self.api)
-
-        self.assertEquals(res.status_int, 200)
-
+        res = self.get_api_response_ext(200, body=body,
+                                        method='POST', content_type='json')
         res_dict = json.loads(res.body)
 
         self.assertEquals(256, res_dict['image']['min_ram'])
 
     def test_create_image_with_min_ram_default(self):
         """Tests that the /images POST registry API creates the image"""
-        fixture = {'name': 'fake public image',
-                   'is_public': True,
-                   'disk_format': 'vhd',
-                   'container_format': 'ovf'}
+        fixture = self.get_minimal_fixture()
+        body = json.dumps(dict(image=fixture))
 
-        req = webob.Request.blank('/images')
-
-        req.method = 'POST'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(image=fixture))
-
-        res = req.get_response(self.api)
-
-        self.assertEquals(res.status_int, 200)
-
+        res = self.get_api_response_ext(200, body=body,
+                                        method='POST', content_type='json')
         res_dict = json.loads(res.body)
 
         self.assertEquals(0, res_dict['image']['min_ram'])
 
     def test_create_image_with_min_disk_default(self):
         """Tests that the /images POST registry API creates the image"""
-        fixture = {'name': 'fake public image',
-                   'is_public': True,
-                   'disk_format': 'vhd',
-                   'container_format': 'ovf'}
+        fixture = self.get_minimal_fixture()
+        body = json.dumps(dict(image=fixture))
 
-        req = webob.Request.blank('/images')
-
-        req.method = 'POST'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(image=fixture))
-
-        res = req.get_response(self.api)
-
-        self.assertEquals(res.status_int, 200)
-
+        res = self.get_api_response_ext(200, body=body,
+                                        method='POST', content_type='json')
         res_dict = json.loads(res.body)
 
         self.assertEquals(0, res_dict['image']['min_disk'])
 
     def test_create_image_with_bad_status(self):
         """Tests proper exception is raised if a bad status is set"""
-        fixture = {'id': _gen_uuid(),
-                   'name': 'fake public image',
-                   'is_public': True,
-                   'disk_format': 'vhd',
-                   'container_format': 'ovf',
-                   'status': 'bad status'}
+        fixture = self.get_minimal_fixture(id=_gen_uuid(), status='bad status')
+        body = json.dumps(dict(image=fixture))
 
-        req = webob.Request.blank('/images')
-
-        req.method = 'POST'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(image=fixture))
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        res = self.get_api_response_ext(400, body=body,
+                                        method='POST', content_type='json')
         self.assertTrue('Invalid image status' in res.body)
 
     def test_create_image_with_bad_id(self):
         """Tests proper exception is raised if a bad disk_format is set"""
-        fixture = {'id': 'asdf',
-                   'name': 'fake public image',
-                   'is_public': True,
-                   'disk_format': 'vhd',
-                   'container_format': 'ovf'}
+        fixture = self.get_minimal_fixture(id='asdf')
 
-        req = webob.Request.blank('/images')
-
-        req.method = 'POST'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(image=fixture))
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        self.get_api_response_ext(400, content_type='json', method='POST',
+                                  body=json.dumps(dict(image=fixture)))
 
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
@@ -1954,16 +1212,11 @@ class TestRegistryAPI(base.IsolatedUnitTest):
                    'min_disk': 5,
                    'min_ram': 256,
                    'disk_format': 'raw'}
+        body = json.dumps(dict(image=fixture))
 
-        req = webob.Request.blank('/images/%s' % UUID2)
-
-        req.method = 'PUT'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(image=fixture))
-
-        res = req.get_response(self.api)
-
-        self.assertEquals(res.status_int, 200)
+        res = self.get_api_response_ext(200, url='/images/%s' % UUID2,
+                                        body=body, method='PUT',
+                                        content_type='json')
 
         res_dict = json.loads(res.body)
 
@@ -1979,28 +1232,19 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         non-existing image
         """
         fixture = {'status': 'killed'}
+        body = json.dumps(dict(image=fixture))
 
-        req = webob.Request.blank('/images/%s' % _gen_uuid())
-
-        req.method = 'PUT'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(image=fixture))
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 404)
+        self.get_api_response_ext(404, url='/images/%s' % _gen_uuid(),
+                                  method='PUT', body=body, content_type='json')
 
     def test_update_image_with_bad_status(self):
         """Tests that exception raised trying to set a bad status"""
         fixture = {'status': 'invalid'}
+        body = json.dumps(dict(image=fixture))
 
-        req = webob.Request.blank('/images/%s' % UUID2)
-
-        req.method = 'PUT'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(image=fixture))
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        res = self.get_api_response_ext(400, method='PUT', body=body,
+                                        url='/images/%s' % UUID2,
+                                        content_type='json')
         self.assertTrue('Invalid image status' in res.body)
 
     def test_update_private_image_no_admin(self):
@@ -2009,53 +1253,33 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         private image with non admin user, that not belongs to it
         """
         UUID8 = _gen_uuid()
-        extra_fixture = {'id': UUID8,
-                         'status': 'active',
-                         'is_public': False,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'test update private image',
-                         'size': 19,
-                         'checksum': None,
-                         'protected': True,
-                         'owner': 'test user'}
+        extra_fixture = self.get_fixture(id=UUID8, size=19, is_public=False,
+                                         protected=True, owner='test user')
 
         db_api.image_create(self.context, extra_fixture)
         test_rserv = rserver.API(self.mapper)
         api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
-        req = webob.Request.blank('/images/%s' % UUID8)
-        req.method = 'PUT'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(image=extra_fixture))
-
-        res = req.get_response(api)
-        # Access denied but should return 404 error code
-        self.assertEquals(res.status_int, 404)
+        body = json.dumps(dict(image=extra_fixture))
+        self.get_api_response_ext(404, body=body, api=api,
+                                  url='/images/%s' % UUID8, method='PUT',
+                                  content_type='json')
 
     def test_delete_image(self):
         """Tests that the /images DELETE registry API deletes the image"""
 
         # Grab the original number of images
-        req = webob.Request.blank('/images')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200)
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         orig_num_images = len(res_dict['images'])
 
         # Delete image #2
-        req = webob.Request.blank('/images/%s' % UUID2)
-        req.method = 'DELETE'
-
-        res = req.get_response(self.api)
-
-        self.assertEquals(res.status_int, 200)
+        self.get_api_response_ext(200, url='/images/%s' % UUID2,
+                                  method='DELETE')
 
         # Verify one less image
-        req = webob.Request.blank('/images')
-        res = req.get_response(self.api)
+        res = self.get_api_response_ext(200)
         res_dict = json.loads(res.body)
-        self.assertEquals(res.status_int, 200)
 
         new_num_images = len(res_dict['images'])
         self.assertEquals(new_num_images, orig_num_images - 1)
@@ -2064,11 +1288,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         """Tests that the registry API delete returns the image metadata"""
 
         image = self.FIXTURES[0]
-        req = webob.Request.blank('/images/%s' % image['id'])
-        req.method = 'DELETE'
-        res = req.get_response(self.api)
-
-        self.assertEquals(res.status_int, 200)
+        res = self.get_api_response_ext(200, url='/images/%s' % image['id'],
+                                        method='DELETE')
         deleted_image = json.loads(res.body)['image']
 
         self.assertEquals(image['id'], deleted_image['id'])
@@ -2080,11 +1301,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests proper exception is raised if attempt to delete
         non-existing image
         """
-        req = webob.Request.blank('/images/%s' % _gen_uuid())
-        req.method = 'DELETE'
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 404)
+        self.get_api_response_ext(404, url='/images/%s' % _gen_uuid(),
+                                  method='DELETE')
 
     def test_delete_public_image_no_admin(self):
         """
@@ -2092,24 +1310,14 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         public image with non admin user
         """
         UUID8 = _gen_uuid()
-        extra_fixture = {'id': UUID8,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'test delete public image',
-                         'size': 19,
-                         'checksum': None,
-                         'protected': True,
-                         'owner': 'test user'}
+        extra_fixture = self.get_fixture(id=UUID8, size=19, protected=True,
+                                         owner='test user')
 
         db_api.image_create(self.context, extra_fixture)
         test_rserv = rserver.API(self.mapper)
         api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
-        req = webob.Request.blank('/images/%s' % UUID8)
-        req.method = 'DELETE'
-        res = req.get_response(api)
-        self.assertEquals(res.status_int, 403)
+        self.get_api_response_ext(403, url='/images/%s' % UUID8,
+                                  method='DELETE', api=api)
 
     def test_delete_private_image_no_admin(self):
         """
@@ -2117,35 +1325,21 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         private image with non admin user, that not belongs to it
         """
         UUID8 = _gen_uuid()
-        extra_fixture = {'id': UUID8,
-                         'status': 'active',
-                         'is_public': False,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'test delete private image',
-                         'size': 19,
-                         'checksum': None,
-                         'protected': True,
-                         'owner': 'test user'}
+        extra_fixture = self.get_fixture(id=UUID8, is_public=False, size=19,
+                                         protected=True, owner='test user')
 
         db_api.image_create(self.context, extra_fixture)
         test_rserv = rserver.API(self.mapper)
         api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
-        req = webob.Request.blank('/images/%s' % UUID8)
-        req.method = 'DELETE'
-        res = req.get_response(api)
-        # Access denided but should return 404 error code
-        self.assertEquals(res.status_int, 404)
+        self.get_api_response_ext(404, url='/images/%s' % UUID8,
+                                  method='DELETE', api=api)
 
     def test_get_image_members(self):
         """
         Tests members listing for existing images
         """
-        req = webob.Request.blank('/images/%s/members' % UUID2)
-        req.method = 'GET'
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
+        res = self.get_api_response_ext(200, url='/images/%s/members' % UUID2,
+                                        method='GET')
 
         memb_list = json.loads(res.body)
         num_members = len(memb_list['members'])
@@ -2156,11 +1350,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Tests proper exception is raised if attempt to get members of
         non-existing image
         """
-        req = webob.Request.blank('/images/%s/members' % _gen_uuid())
-        req.method = 'GET'
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 404)
+        self.get_api_response_ext(404, method='GET',
+                                  url='/images/%s/members' % _gen_uuid())
 
     def test_get_image_members_forbidden(self):
         """
@@ -2169,35 +1360,21 @@ class TestRegistryAPI(base.IsolatedUnitTest):
 
         """
         UUID8 = _gen_uuid()
-        extra_fixture = {'id': UUID8,
-                         'status': 'active',
-                         'is_public': False,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'test delete private image',
-                         'size': 19,
-                         'checksum': None,
-                         'protected': True,
-                         'owner': 'test user'}
+        extra_fixture = self.get_fixture(id=UUID8, is_public=False, size=19,
+                                         protected=True, owner='test user')
 
         db_api.image_create(self.context, extra_fixture)
         test_rserv = rserver.API(self.mapper)
         api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
-        req = webob.Request.blank('/images/%s/members' % UUID8)
-        req.method = 'GET'
-
-        res = req.get_response(api)
-        self.assertEquals(res.status_int, 404)
+        self.get_api_response_ext(404, url='/images/%s/members' % UUID8,
+                                  method='GET', api=api)
 
     def test_get_member_images(self):
         """
         Tests image listing for members
         """
-        req = webob.Request.blank('/shared-images/pattieblack')
-        req.method = 'GET'
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
+        res = self.get_api_response_ext(200, url='/shared-images/pattieblack',
+                                        method='GET')
 
         memb_list = json.loads(res.body)
         num_members = len(memb_list['shared_images'])
@@ -2210,14 +1387,11 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
                                                  is_admin=False)
         fixture = dict(member_id='pattieblack')
+        body = json.dumps(dict(image_memberships=fixture))
 
-        req = webob.Request.blank('/images/%s/members' % UUID2)
-        req.method = 'PUT'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(image_memberships=fixture))
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 401)
+        self.get_api_response_ext(401, method='PUT', body=body,
+                                  url='/images/%s/members' % UUID2,
+                                  content_type='json')
 
     def test_update_all_image_members_non_existing_image_id(self):
         """
@@ -2230,7 +1404,6 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         self.context.tenant = 'test2'
         req.content_type = 'application/json'
         req.body = json.dumps(dict(image_memberships=fixture))
-
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 404)
 
@@ -2239,16 +1412,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Test update image members raises right exception
         """
         UUID8 = _gen_uuid()
-        extra_fixture = {'id': UUID8,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'test delete private image',
-                         'size': 19,
-                         'checksum': None,
-                         'protected': False,
-                         'owner': 'test user'}
+        extra_fixture = self.get_fixture(id=UUID8, size=19, protected=False,
+                                         owner='test user')
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -2257,24 +1422,18 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         req.method = 'PUT'
         res = req.get_response(self.api)
         # Get all image members:
-        req = webob.Request.blank('/images/%s/members' % UUID8)
-        req.method = 'GET'
-        res = req.get_response(self.api)
-
-        self.assertEquals(res.status_int, 200)
+        res = self.get_api_response_ext(200, url='/images/%s/members' % UUID8,
+                                        method='GET')
 
         memb_list = json.loads(res.body)
         num_members = len(memb_list['members'])
         self.assertEquals(num_members, 1)
 
         fixture = dict(member_id='test1')
-        req = webob.Request.blank('/images/%s/members' % UUID8)
-        req.method = 'PUT'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(image_memberships=fixture))
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        body = json.dumps(dict(image_memberships=fixture))
+        self.get_api_response_ext(400, url='/images/%s/members' % UUID8,
+                                  method='PUT', body=body,
+                                  content_type='json')
 
     def test_update_all_image_members_non_shared_image_forbidden(self):
         """
@@ -2283,15 +1442,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         test_rserv = rserver.API(self.mapper)
         api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
         UUID9 = _gen_uuid()
-        extra_fixture = {'id': UUID9,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'test delete private image',
-                         'size': 19,
-                         'checksum': None,
-                         'protected': False}
+        extra_fixture = self.get_fixture(id=UUID9, size=19, protected=False)
+
         db_api.image_create(self.context, extra_fixture)
         fixture = dict(member_id='test1')
         req = webob.Request.blank('/images/%s/members' % UUID9)
@@ -2308,32 +1460,21 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Test update non existing image members
         """
         UUID8 = _gen_uuid()
-        extra_fixture = {'id': UUID8,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'test delete private image',
-                         'size': 19,
-                         'checksum': None,
-                         'protected': False,
-                         'owner': 'test user'}
+        extra_fixture = self.get_fixture(id=UUID8, size=19, protected=False,
+                                         owner='test user')
 
         db_api.image_create(self.context, extra_fixture)
 
         # Add several members to image
         req = webob.Request.blank('/images/%s/members/test1' % UUID8)
         req.method = 'PUT'
-        res = req.get_response(self.api)
+        req.get_response(self.api)
 
         fixture = [dict(member_id='test2', can_share=True)]
-
-        req = webob.Request.blank('/images/%s/members' % UUID8)
-        req.method = 'PUT'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(memberships=fixture))
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 204)
+        body = json.dumps(dict(memberships=fixture))
+        self.get_api_response_ext(204, url='/images/%s/members' % UUID8,
+                                  method='PUT', body=body,
+                                  content_type='json')
 
     def test_update_all_image_members_bad_request(self):
         """
@@ -2341,62 +1482,41 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         in case if wrong memberships association is supplied
         """
         UUID8 = _gen_uuid()
-        extra_fixture = {'id': UUID8,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'test delete private image',
-                         'size': 19,
-                         'checksum': None,
-                         'protected': False,
-                         'owner': 'test user'}
+        extra_fixture = self.get_fixture(id=UUID8, size=19, protected=False,
+                                         owner='test user')
 
         db_api.image_create(self.context, extra_fixture)
 
         # Add several members to image
         req = webob.Request.blank('/images/%s/members/test1' % UUID8)
         req.method = 'PUT'
-        res = req.get_response(self.api)
+        req.get_response(self.api)
         fixture = dict(member_id='test3')
-        req = webob.Request.blank('/images/%s/members' % UUID8)
-        req.method = 'PUT'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(memberships=fixture))
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        body = json.dumps(dict(memberships=fixture))
+        self.get_api_response_ext(400, url='/images/%s/members' % UUID8,
+                                  method='PUT', body=body,
+                                  content_type='json')
 
     def test_update_all_image_existing_members(self):
         """
         Test update existing image members
         """
         UUID8 = _gen_uuid()
-        extra_fixture = {'id': UUID8,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'test delete private image',
-                         'size': 19,
-                         'checksum': None,
-                         'protected': False,
-                         'owner': 'test user'}
+        extra_fixture = self.get_fixture(id=UUID8, size=19, protected=False,
+                                         owner='test user')
 
         db_api.image_create(self.context, extra_fixture)
 
         # Add several members to image
         req = webob.Request.blank('/images/%s/members/test1' % UUID8)
         req.method = 'PUT'
-        res = req.get_response(self.api)
+        req.get_response(self.api)
 
         fixture = [dict(member_id='test1', can_share=False)]
-
-        req = webob.Request.blank('/images/%s/members' % UUID8)
-        req.method = 'PUT'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(memberships=fixture))
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 204)
+        body = json.dumps(dict(memberships=fixture))
+        self.get_api_response_ext(204, url='/images/%s/members' % UUID8,
+                                  method='PUT', body=body,
+                                  content_type='json')
 
     def test_add_member(self):
         """
@@ -2404,36 +1524,25 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         """
         self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
                                                  is_admin=False)
-        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
-        req.method = 'PUT'
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 401)
+        self.get_api_response_ext(401, method='PUT',
+                                  url=('/images/%s/members/pattieblack' %
+                                       UUID2))
 
     def test_add_member_to_image_positive(self):
         """
         Test check that member can be successfully added
         """
         UUID8 = _gen_uuid()
-        extra_fixture = {'id': UUID8,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'test delete private image',
-                         'size': 19,
-                         'checksum': None,
-                         'protected': False,
-                         'owner': 'test user'}
+        extra_fixture = self.get_fixture(id=UUID8, size=19, protected=False,
+                                         owner='test user')
+
         db_api.image_create(self.context, extra_fixture)
         fixture = dict(can_share=True)
         test_uri = '/images/%s/members/test_add_member_positive'
-        req = webob.Request.blank(test_uri % UUID8)
-        req.method = 'PUT'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(member=fixture))
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 204)
+        body = json.dumps(dict(member=fixture))
+        self.get_api_response_ext(204, url=test_uri % UUID8,
+                                  method='PUT', body=body,
+                                  content_type='json')
 
     def test_add_member_to_non_exist_image(self):
         """
@@ -2442,12 +1551,10 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         """
         fixture = dict(can_share=True)
         test_uri = '/images/%s/members/test_add_member_positive'
-        req = webob.Request.blank(test_uri % _gen_uuid())
-        req.method = 'PUT'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(member=fixture))
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 404)
+        body = json.dumps(dict(member=fixture))
+        self.get_api_response_ext(404, url=test_uri % _gen_uuid(),
+                                  method='PUT', body=body,
+                                  content_type='json')
 
     def test_add_image_member_non_shared_image_forbidden(self):
         """
@@ -2457,15 +1564,7 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         api = test_utils.FakeAuthMiddleware(
             test_rserver_api, is_admin=False)
         UUID9 = _gen_uuid()
-        extra_fixture = {'id': UUID9,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'test delete private image',
-                         'size': 19,
-                         'checksum': None,
-                         'protected': False}
+        extra_fixture = self.get_fixture(id=UUID9, size=19, protected=False)
         db_api.image_create(self.context, extra_fixture)
         fixture = dict(can_share=True)
         test_uri = '/images/%s/members/test_add_member_to_non_share_image'
@@ -2483,27 +1582,17 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         Test check right status code is returned
         """
         UUID8 = _gen_uuid()
-        extra_fixture = {'id': UUID8,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'test delete private image',
-                         'size': 19,
-                         'checksum': None,
-                         'protected': False,
-                         'owner': 'test user'}
+        extra_fixture = self.get_fixture(id=UUID8, size=19, protected=False,
+                                         owner='test user')
 
         db_api.image_create(self.context, extra_fixture)
 
         fixture = [dict(can_share=True)]
         test_uri = '/images/%s/members/test_add_member_bad_request'
-        req = webob.Request.blank(test_uri % UUID8)
-        req.method = 'PUT'
-        req.content_type = 'application/json'
-        req.body = json.dumps(dict(member=fixture))
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        body = json.dumps(dict(member=fixture))
+        self.get_api_response_ext(400, url=test_uri % UUID8,
+                                  method='PUT', body=body,
+                                  content_type='json')
 
     def test_delete_member(self):
         """
@@ -2511,11 +1600,9 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         """
         self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
                                                  is_admin=False)
-        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
-        req.method = 'DELETE'
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 401)
+        self.get_api_response_ext(401, method='DELETE',
+                                  url=('/images/%s/members/pattieblack' %
+                                       UUID2))
 
     def test_delete_member_invalid(self):
         """
@@ -2523,11 +1610,9 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         """
         self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
                                                  is_admin=True)
-        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
-        req.method = 'DELETE'
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 404)
+        res = self.get_api_response_ext(404, method='DELETE',
+                                        url=('/images/%s/members/pattieblack' %
+                                             UUID2))
         self.assertTrue('Membership could not be found' in res.body)
 
     def test_delete_member_from_non_exist_image(self):
@@ -2538,11 +1623,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         self.api = test_utils.FakeAuthMiddleware(
             test_rserver_api, is_admin=True)
         test_uri = '/images/%s/members/pattieblack'
-        req = webob.Request.blank(test_uri % _gen_uuid())
-        req.method = 'DELETE'
-
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 404)
+        self.get_api_response_ext(404, method='DELETE',
+                                  url=test_uri % _gen_uuid())
 
     def test_delete_image_member_non_shared_image_forbidden(self):
         """
@@ -2552,15 +1634,8 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         api = test_utils.FakeAuthMiddleware(
             test_rserver_api, is_admin=False)
         UUID9 = _gen_uuid()
-        extra_fixture = {'id': UUID9,
-                         'status': 'active',
-                         'is_public': True,
-                         'disk_format': 'vhd',
-                         'container_format': 'ovf',
-                         'name': 'test delete private image',
-                         'size': 19,
-                         'checksum': None,
-                         'protected': False}
+        extra_fixture = self.get_fixture(id=UUID9, size=19, protected=False)
+
         db_api.image_create(self.context, extra_fixture)
         test_uri = '/images/%s/members/test_add_member_to_non_share_image'
         req = webob.Request.blank(test_uri % UUID9)
@@ -2573,72 +1648,41 @@ class TestRegistryAPI(base.IsolatedUnitTest):
 
     def test_get_images_bad_urls(self):
         """Check that routes collections are not on (LP bug 1185828)"""
-        req = webob.Request.blank('/images/detail.xxx')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 404)
+        self.get_api_response_ext(404, url='/images/detail.xxx')
 
-        req = webob.Request.blank('/images.xxx')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 404)
+        self.get_api_response_ext(404, url='/images.xxx')
 
-        req = webob.Request.blank('/images/new')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 404)
+        self.get_api_response_ext(404, url='/images/new')
 
-        req = webob.Request.blank("/images/%s/members" % UUID1)
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
+        self.get_api_response_ext(200, url='/images/%s/members' % UUID1)
 
-        req = webob.Request.blank("/images/%s/members.xxx" % UUID1)
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 404)
+        self.get_api_response_ext(404, url='/images/%s/members.xxx' % UUID1)
 
 
-class TestRegistryAPILocations(base.IsolatedUnitTest):
+class TestRegistryAPILocations(base.IsolatedUnitTest,
+                               test_utils.RegistryAPIMixIn):
+
     def setUp(self):
         """Establish a clean test environment"""
         super(TestRegistryAPILocations, self).setUp()
         self.mapper = routes.Mapper()
         self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
                                                  is_admin=True)
+
+        def _get_extra_fixture(id, name, **kwargs):
+            return self.get_extra_fixture(
+                id, name,
+                locations=[{'url': "file:///%s/%s" % (self.test_dir, id),
+                            'metadata': {}}], **kwargs)
+
         self.FIXTURES = [
-            {'id': UUID1,
-             'name': 'fake image #1',
-             'status': 'active',
-             'disk_format': 'ami',
-             'container_format': 'ami',
-             'is_public': False,
-             'created_at': timeutils.utcnow(),
-             'updated_at': timeutils.utcnow(),
-             'deleted_at': None,
-             'deleted': False,
-             'checksum': None,
-             'min_disk': 0,
-             'min_ram': 0,
-             'size': 13,
-             'owner': '123',
-             'locations': [
-                 {'url': "file:///%s/%s" % (self.test_dir, UUID1),
-                  'metadata': {}}],
-             'properties': {'type': 'kernel'}},
-            {'id': UUID2,
-             'name': 'fake image #2',
-             'status': 'active',
-             'disk_format': 'vhd',
-             'container_format': 'ovf',
-             'is_public': True,
-             'created_at': timeutils.utcnow(),
-             'updated_at': timeutils.utcnow(),
-             'deleted_at': None,
-             'deleted': False,
-             'checksum': None,
-             'min_disk': 5,
-             'min_ram': 256,
-             'size': 19,
-             'locations': [
-                 {'url': "file:///%s/%s" % (self.test_dir, UUID2),
-                  'metadata': {'key': 'value'}}],
-             'properties': {}}]
+            _get_extra_fixture(UUID1, 'fake image #1', is_public=False,
+                               disk_format='ami', container_format='ami',
+                               min_disk=0, min_ram=0, owner=123,
+                               size=13, properties={'type': 'kernel'}),
+            _get_extra_fixture(UUID2, 'fake image #2',
+                               min_disk=5, min_ram=256,
+                               size=19, properties={})]
         self.context = glance.context.RequestContext(is_admin=True)
         db_api.setup_db_env()
         db_api.get_engine()
@@ -2649,19 +1693,6 @@ class TestRegistryAPILocations(base.IsolatedUnitTest):
         """Clear the test environment"""
         super(TestRegistryAPILocations, self).tearDown()
         self.destroy_fixtures()
-
-    def create_fixtures(self):
-        for fixture in self.FIXTURES:
-            db_api.image_create(self.context, fixture)
-            # We write a fake image file to the filesystem
-            with open("%s/%s" % (self.test_dir, fixture['id']), 'wb') as image:
-                image.write("chunk00000remainder")
-                image.flush()
-
-    def destroy_fixtures(self):
-        # Easiest to just drop the models and re-create them...
-        db_models.unregister_models(db_api._ENGINE)
-        db_models.register_models(db_api._ENGINE)
 
     def test_show_from_locations(self):
         req = webob.Request.blank('/images/%s' % UUID1)
