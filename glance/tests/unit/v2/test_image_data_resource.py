@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import mock
 import StringIO
 
 import webob
@@ -176,7 +177,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.upload,
                           request, unit_test_utils.UUID1, 'YYYY', 4)
 
-    def test_upload_non_existent_image_during_save(self):
+    def test_upload_non_existent_image_during_save_initiates_deletion(self):
         def fake_save(self):
             raise exception.NotFound()
 
@@ -184,8 +185,10 @@ class TestImagesController(base.StoreClearingUnitTest):
         image = FakeImage('abcd', locations=['http://example.com/image'])
         self.image_repo.result = image
         self.image_repo.save = fake_save
+        image.delete = mock.Mock()
         self.assertRaises(webob.exc.HTTPGone, self.controller.upload,
                           request, uuidutils.generate_uuid(), 'ABC', 3)
+        self.assertTrue(image.delete.called)
 
     def test_upload_non_existent_image_before_save(self):
         request = unit_test_utils.get_fake_request()
