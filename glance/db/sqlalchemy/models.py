@@ -25,10 +25,11 @@ from sqlalchemy import Column, Integer, String, BigInteger
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import ForeignKey, DateTime, Boolean, Text
-from sqlalchemy.orm import relationship, backref, object_mapper
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy import Index, UniqueConstraint
 
+from glance.openstack.common.db.sqlalchemy import models
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
 
@@ -56,9 +57,8 @@ class JSONEncodedDict(TypeDecorator):
         return value
 
 
-class ModelBase(object):
-
-    """Base class for Nova and Glance Models."""
+class GlanceBase(models.ModelBase, models.TimestampMixin):
+    """Base class for Glance Models."""
 
     __table_args__ = {'mysql_engine': 'InnoDB'}
     __table_initialized__ = False
@@ -67,11 +67,21 @@ class ModelBase(object):
 
     created_at = Column(DateTime, default=timeutils.utcnow,
                         nullable=False)
+    # TODO(vsergeyev): Column `updated_at` have no default value in
+    #                  openstack common code. We should decide, is this value
+    #                  required and make changes in oslo (if required) or
+    #                  in glance (if not).
     updated_at = Column(DateTime, default=timeutils.utcnow,
                         nullable=False, onupdate=timeutils.utcnow)
+    # TODO(boris-42): Use SoftDeleteMixin instead of deleted Column after
+    #                 migration that provides UniqueConstraints and change
+    #                 type of this column.
     deleted_at = Column(DateTime)
     deleted = Column(Boolean, nullable=False, default=False)
 
+    # TODO(vsergeyev): we should use save() method from
+    #                  models.ModelBase(), when we will use common
+    #                  oslo session
     def save(self, session=None):
         """Save this object."""
         # import api here to prevent circular dependency problem
@@ -85,25 +95,6 @@ class ModelBase(object):
         self.deleted = True
         self.deleted_at = timeutils.utcnow()
         self.save(session=session)
-
-    def update(self, values):
-        """dict.update() behaviour."""
-        for k, v in values.iteritems():
-            self[k] = v
-
-    def __setitem__(self, key, value):
-        setattr(self, key, value)
-
-    def __getitem__(self, key):
-        return getattr(self, key)
-
-    def __iter__(self):
-        self._i = iter(object_mapper(self).columns)
-        return self
-
-    def next(self):
-        n = self._i.next().name
-        return n, getattr(self, n)
 
     def keys(self):
         return self.__dict__.keys()
@@ -124,7 +115,7 @@ class ModelBase(object):
         return d
 
 
-class Image(BASE, ModelBase):
+class Image(BASE, GlanceBase):
     """Represents an image in the datastore."""
     __tablename__ = 'images'
     __table_args__ = (Index('checksum_image_idx', 'checksum'),
@@ -146,7 +137,7 @@ class Image(BASE, ModelBase):
     protected = Column(Boolean, nullable=False, default=False)
 
 
-class ImageProperty(BASE, ModelBase):
+class ImageProperty(BASE, GlanceBase):
     """Represents an image properties in the datastore."""
     __tablename__ = 'image_properties'
     __table_args__ = (Index('ix_image_properties_image_id', 'image_id'),
@@ -165,7 +156,7 @@ class ImageProperty(BASE, ModelBase):
     value = Column(Text)
 
 
-class ImageTag(BASE, ModelBase):
+class ImageTag(BASE, GlanceBase):
     """Represents an image tag in the datastore."""
     __tablename__ = 'image_tags'
     __table_args__ = (Index('ix_image_tags_image_id', 'image_id'),
@@ -179,7 +170,7 @@ class ImageTag(BASE, ModelBase):
     value = Column(String(255), nullable=False)
 
 
-class ImageLocation(BASE, ModelBase):
+class ImageLocation(BASE, GlanceBase):
     """Represents an image location in the datastore."""
     __tablename__ = 'image_locations'
     __table_args__ = (Index('ix_image_locations_image_id', 'image_id'),
@@ -192,7 +183,7 @@ class ImageLocation(BASE, ModelBase):
     meta_data = Column(JSONEncodedDict(), default={})
 
 
-class ImageMember(BASE, ModelBase):
+class ImageMember(BASE, GlanceBase):
     """Represents an image members in the datastore."""
     __tablename__ = 'image_members'
     unique_constraint_key_name = 'image_members_image_id_member_deleted_at_key'
@@ -216,7 +207,7 @@ class ImageMember(BASE, ModelBase):
     status = Column(String(20), nullable=False, default="pending")
 
 
-class Task(BASE, ModelBase):
+class Task(BASE, GlanceBase):
     """Represents an task in the datastore"""
     __tablename__ = 'tasks'
     __table_args__ = (Index('ix_tasks_type', 'type'),
