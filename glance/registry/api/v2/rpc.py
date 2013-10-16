@@ -48,7 +48,7 @@ class Controller(rpc.Controller):
         # db_api as a resource to expose.
         db_api = glance.db.get_api()
         db_api.setup_db_env()
-        self.register(db_api)
+        self.register(glance.db.unwrap(db_api))
 
 
 def create_resource():

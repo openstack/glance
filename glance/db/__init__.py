@@ -42,6 +42,11 @@ def get_api():
     return ThreadPoolWrapper(CONF.data_api)
 
 
+def unwrap(db_api):
+    if not CONF.use_tpool:
+        return db_api
+    return db_api.unwrap()
+
 # attributes common to all models
 BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
                         'deleted'])
@@ -297,3 +302,6 @@ class ThreadPoolWrapper(object):
             output = tpool.execute(original, *args, **kwargs)
             return output
         return wrapper
+
+    def unwrap(self):
+        return self.wrapped
