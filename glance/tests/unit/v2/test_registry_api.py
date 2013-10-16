@@ -25,7 +25,6 @@ import webob
 
 import glance.api.common
 import glance.common.config
-from glance.common import exception
 import glance.context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
