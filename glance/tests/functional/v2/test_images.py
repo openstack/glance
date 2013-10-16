@@ -1130,14 +1130,40 @@ class TestImageMembers(functional.FunctionalTest):
         body = json.loads(response.text)
         self.assertEqual(0, len(body['members']))
 
-        # Tenant 1, who is the owner cannot change status of image
+        # Tenant 1, who is the owner cannot change status of image member
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
                                                        TENANT3))
         body = json.dumps({'status': 'accepted'})
         response = requests.put(path, headers=get_header('tenant1'), data=body)
         self.assertEqual(403, response.status_code)
 
-        # Tenant 3 can change status of image
+        # Tenant 1, who is the owner can get status of its own image member
+        path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
+                                                       TENANT3))
+        response = requests.get(path, headers=get_header('tenant1'))
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.text)
+        self.assertEqual(body['status'], 'pending')
+        self.assertEqual(body['image_id'], image_fixture[1]['id'])
+        self.assertEqual(body['member_id'], TENANT3)
+
+        # Tenant 3, who is the member can get status of its own status
+        path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
+                                                       TENANT3))
+        response = requests.get(path, headers=get_header(TENANT3))
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.text)
+        self.assertEqual(body['status'], 'pending')
+        self.assertEqual(body['image_id'], image_fixture[1]['id'])
+        self.assertEqual(body['member_id'], TENANT3)
+
+        # Tenant 2, who not the owner cannot get status of image member
+        path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
+                                                       TENANT3))
+        response = requests.get(path, headers=get_header('tenant2'))
+        self.assertEqual(404, response.status_code)
+
+        # Tenant 3 can change status of image member
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
                                                        TENANT3))
         body = json.dumps({'status': 'accepted'})

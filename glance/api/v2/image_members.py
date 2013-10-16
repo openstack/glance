@@ -136,6 +136,29 @@ class ImageMembersController(object):
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
 
+    def show(self, req, image_id, member_id):
+        """
+        Returns the membership of the tenant wrt to the image_id specified.
+
+        :param req: the Request object coming from the wsgi layer
+        :param image_id: The image identifier
+        :retval The response body is a mapping of the following form::
+
+            {'member_id': <MEMBER>,
+             'image_id': <IMAGE>,
+             'status': <MEMBER_STATUS>
+             'created_at': ..,
+             'updated_at': ..}
+        """
+        image_repo = self.gateway.get_repo(req.context)
+        try:
+            image = image_repo.get(image_id)
+            member_repo = image.get_member_repo()
+            member = member_repo.get(member_id)
+            return member
+        except (exception.NotFound, exception.Forbidden) as e:
+            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+
     @utils.mutating
     def delete(self, req, image_id, member_id):
         """
@@ -228,6 +251,12 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         totalview = dict(members=image_members_view)
         totalview['schema'] = '/v2/schemas/members'
         body = json.dumps(totalview, ensure_ascii=False)
+        response.unicode_body = unicode(body)
+        response.content_type = 'application/json'
+
+    def show(self, response, image_member):
+        image_member_view = self._format_image_member(image_member)
+        body = json.dumps(image_member_view, ensure_ascii=False)
         response.unicode_body = unicode(body)
         response.content_type = 'application/json'
 

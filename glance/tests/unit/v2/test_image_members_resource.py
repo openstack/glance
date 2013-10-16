@@ -72,6 +72,7 @@ def _db_image_member_fixture(image_id, member_id, **kwargs):
     obj = {
         'image_id': image_id,
         'member': member_id,
+        'status': 'pending',
     }
     obj.update(kwargs)
     return obj
@@ -187,6 +188,34 @@ class TestImageMembersController(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.index,
                           request, image_id=UUID2)
+
+    def test_show(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT1)
+        output = self.controller.show(request, UUID2, TENANT4)
+        expected = self.image_members[0]
+        self.assertEqual(output.image_id, expected['image_id'])
+        self.assertEqual(output.member_id, expected['member'])
+        self.assertEqual(output.status, expected['status'])
+
+    def test_show_by_member(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT4)
+        output = self.controller.show(request, UUID2, TENANT4)
+        expected = self.image_members[0]
+        self.assertEqual(output.image_id, expected['image_id'])
+        self.assertEqual(output.member_id, expected['member'])
+        self.assertEqual(output.status, expected['status'])
+
+    def test_show_forbidden(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT2)
+        self.assertRaises(webob.exc.HTTPNotFound, self.controller.show,
+                          request, UUID2, TENANT4)
+
+    def test_show_not_found(self):
+        # one member should not be able to view status of another member
+        # of the same image
+        request = unit_test_utils.get_fake_request(tenant=TENANT2)
+        self.assertRaises(webob.exc.HTTPNotFound, self.controller.show,
+                          request, UUID3, TENANT4)
 
     def test_create(self):
         request = unit_test_utils.get_fake_request()
@@ -401,6 +430,24 @@ class TestImageMembersSerializer(test_utils.BaseTestCase):
         response = webob.Response(request=request)
         result = {'members': self.fixtures}
         self.serializer.index(response, result)
+        actual = json.loads(response.body)
+        self.assertEqual(expected, actual)
+        self.assertEqual('application/json', response.content_type)
+
+    def test_show(self):
+        expected = {
+            'image_id': UUID2,
+            'member_id': TENANT1,
+            'status': 'accepted',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
+            'schema': '/v2/schemas/member',
+        }
+        request = webob.Request.blank('/v2/images/%s/members/%s'
+                                      % (UUID2, TENANT1))
+        response = webob.Response(request=request)
+        result = self.fixtures[0]
+        self.serializer.show(response, result)
         actual = json.loads(response.body)
         self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
