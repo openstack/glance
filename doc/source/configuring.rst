@@ -1164,7 +1164,8 @@ Configuring Glance Property Protections
 Access to image meta properties may be configured using a
 :doc:`Property Protections Configuration file <property-protections>`.  The
 location for this file can be specified in the ``glance-api.conf`` config file
-in the section ``[DEFAULT]``.
+in the section ``[DEFAULT]``. **If an incorrect value is specified, glance api
+service will not start.**
 
 * ``property_protection_file=PATH``
 
