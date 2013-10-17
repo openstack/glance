@@ -368,9 +368,9 @@ class TestImages(functional.FunctionalTest):
 
         self.stop_servers()
 
-    def test_property_protections(self):
+    def test_property_protections_with_roles(self):
         # Enable property protection
-        self.api_server.property_protection_file = self.property_file
+        self.api_server.property_protection_file = self.property_file_roles
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -427,6 +427,7 @@ class TestImages(functional.FunctionalTest):
         data = json.dumps({'name': 'image-1',
                            'disk_format': 'aki', 'container_format': 'aki',
                            'spl_create_prop': 'create_bar',
+                           'spl_create_prop_policy': 'create_policy_bar',
                            'spl_read_prop': 'read_bar',
                            'spl_update_prop': 'update_bar',
                            'spl_delete_prop': 'delete_bar'})
@@ -482,6 +483,155 @@ class TestImages(functional.FunctionalTest):
         # 'spl_delete_prop' has delete permission for spl_role
         # hence the property has been deleted
         self.assertTrue('spl_delete_prop' not in image.keys())
+
+        # Image Deletion should work
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(204, response.status_code)
+
+        # This image should be no longer be directly accessible
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(404, response.status_code)
+
+        self.stop_servers()
+
+    def test_property_protections_with_policies(self):
+        # Enable property protection
+        self.api_server.property_protection_file = self.property_file_policies
+        self.api_server.property_protection_rule_format = 'policies'
+        self.start_servers(**self.__dict__.copy())
+
+        # Image list should be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        ## Create an image for role member with extra props
+        # Raises 403 since user is not allowed to set 'foo'
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'member'})
+        data = json.dumps({'name': 'image-1', 'foo': 'bar',
+                           'disk_format': 'aki', 'container_format': 'aki',
+                           'x_owner_foo': 'o_s_bar'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(403, response.status_code)
+
+        ## Create an image for role member without 'foo'
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'member'})
+        data = json.dumps({'name': 'image-1', 'disk_format': 'aki',
+                           'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+
+        # Returned image entity
+        image = json.loads(response.text)
+        image_id = image['id']
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-1',
+            'tags': [],
+            'visibility': 'private',
+            'self': '/v2/images/%s' % image_id,
+            'protected': False,
+            'file': '/v2/images/%s/file' % image_id,
+            'min_disk': 0,
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(image[key], value, key)
+
+        # Create an image for role spl_role with extra props
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'spl_role, admin'})
+        data = json.dumps({'name': 'image-1',
+                           'disk_format': 'aki', 'container_format': 'aki',
+                           'spl_creator_policy': 'creator_bar',
+                           'spl_default_policy': 'default_bar'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = json.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('creator_bar', image['spl_creator_policy'])
+        self.assertEqual('default_bar', image['spl_default_policy'])
+
+        # Attempt to replace a property which is permitted
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'admin'})
+        data = json.dumps([
+            {'op': 'replace', 'path': '/spl_creator_policy', 'value': 'r'},
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
+
+        # Returned image entity should reflect the changes
+        image = json.loads(response.text)
+
+        # 'spl_creator_policy' has update permission for admin
+        # hence the value has changed
+        self.assertEqual('r', image['spl_creator_policy'])
+
+        # Attempt to replace a property which is forbidden
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'spl_role'})
+        data = json.dumps([
+            {'op': 'replace', 'path': '/spl_creator_policy', 'value': 'z'},
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(403, response.status_code, response.text)
+
+        # Attempt to read properties
+        path = self._url('/v2/images/%s' % image_id)
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'random_role'})
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        image = json.loads(response.text)
+        # 'random_role' is allowed read 'spl_default_policy'.
+        self.assertEqual(image['spl_default_policy'], 'default_bar')
+        # 'random_role' is forbidden to read 'spl_creator_policy'.
+        self.assertFalse('spl_creator_policy' in image)
+
+        # Attempt to add and remove properties which are permitted
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'admin'})
+        data = json.dumps([
+            {'op': 'remove', 'path': '/spl_creator_policy'},
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
+
+        # Returned image entity should reflect the changes
+        image = json.loads(response.text)
+
+        # 'spl_creator_policy' has delete permission for admin
+        # hence the value has been deleted
+        self.assertFalse('spl_creator_policy' in image)
+
+        # Attempt to read a property that is permitted
+        path = self._url('/v2/images/%s' % image_id)
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'random_role'})
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        # Returned image entity should reflect the changes
+        image = json.loads(response.text)
+        self.assertEqual(image['spl_default_policy'], 'default_bar')
 
         # Image Deletion should work
         path = self._url('/v2/images/%s' % image_id)

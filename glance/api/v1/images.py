@@ -137,7 +137,7 @@ class Controller(controller.BaseController):
         self.policy = policy.Enforcer()
         self.pool = eventlet.GreenPool(size=1024)
         if property_utils.is_property_protection_enabled():
-            self.prop_enforcer = property_utils.PropertyRules()
+            self.prop_enforcer = property_utils.PropertyRules(self.policy)
         else:
             self.prop_enforcer = None
 
@@ -160,7 +160,7 @@ class Controller(controller.BaseController):
         if property_utils.is_property_protection_enabled():
             for key in create_props:
                 if (self.prop_enforcer.check_property_rules(
-                        key, 'create', req.context.roles) is False):
+                        key, 'create', req.context) is False):
                     msg = _("Property '%s' is protected" % key)
                     LOG.debug(msg)
                     raise HTTPForbidden(explanation=msg,
@@ -177,7 +177,7 @@ class Controller(controller.BaseController):
         if property_utils.is_property_protection_enabled():
             for key in image_meta['properties'].keys():
                 if (self.prop_enforcer.check_property_rules(
-                        key, 'read', req.context.roles) is False):
+                        key, 'read', req.context) is False):
                     image_meta['properties'].pop(key)
 
     def _enforce_update_protected_props(self, update_props, image_meta,
@@ -200,9 +200,9 @@ class Controller(controller.BaseController):
         if property_utils.is_property_protection_enabled():
             for key in update_props:
                 has_read = self.prop_enforcer.check_property_rules(
-                        key, 'read', req.context.roles)
+                        key, 'read', req.context)
                 if ((self.prop_enforcer.check_property_rules(
-                        key, 'update', req.context.roles) is False and
+                        key, 'update', req.context) is False and
                         image_meta['properties'][key] !=
                         orig_meta['properties'][key]) or not has_read):
                     msg = _("Property '%s' is protected" % key)
@@ -232,13 +232,13 @@ class Controller(controller.BaseController):
         if property_utils.is_property_protection_enabled():
             for key in delete_props:
                 if (self.prop_enforcer.check_property_rules(
-                        key, 'read', req.context.roles) is False):
+                        key, 'read', req.context) is False):
                     # NOTE(bourke): if read protected, re-add to image_meta to
                     # prevent deletion
                     image_meta['properties'][key] = \
                         orig_meta['properties'][key]
                 elif (self.prop_enforcer.check_property_rules(
-                        key, 'delete', req.context.roles) is False):
+                        key, 'delete', req.context) is False):
                     msg = _("Property '%s' is protected" % key)
                     LOG.debug(msg)
                     raise HTTPForbidden(explanation=msg,

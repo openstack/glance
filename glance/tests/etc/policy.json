@@ -1,4 +1,5 @@
 {
     "context_is_admin":  "role:admin",
-    "default": ""
+    "default": "",
+    "glance_creator": "role:admin or role:spl_role"
 }

@@ -310,6 +310,7 @@ class ApiServer(Server):
         self.image_cache_driver = 'sqlite'
         self.policy_file = policy_file
         self.policy_default_rule = 'default'
+        self.property_protection_rule_format = 'roles'
 
         self.needs_database = True
         default_sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
@@ -370,6 +371,7 @@ enable_v2_api = %(enable_v2_api)s
 lock_path = %(lock_path)s
 enable_v2_api= %(enable_v2_api)s
 property_protection_file = %(property_protection_file)s
+property_protection_rule_format = %(property_protection_rule_format)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
 """
@@ -575,8 +577,12 @@ class FunctionalTest(test_utils.BaseTestCase):
         self.copy_data_file('schema-image.json', conf_dir)
         self.copy_data_file('policy.json', conf_dir)
         self.copy_data_file('property-protections.conf', conf_dir)
-        self.property_file = os.path.join(conf_dir,
-                                          'property-protections.conf')
+        self.copy_data_file('property-protections-policies.conf', conf_dir)
+        self.property_file_roles = os.path.join(conf_dir,
+                                                'property-protections.conf')
+        property_policies = 'property-protections-policies.conf'
+        self.property_file_policies = os.path.join(conf_dir,
+                                                   property_policies)
         self.policy_file = os.path.join(conf_dir, 'policy.json')
 
         self.api_server = ApiServer(self.test_dir,

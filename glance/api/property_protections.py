@@ -23,7 +23,6 @@ class ProtectedImageFactoryProxy(glance.domain.proxy.ImageFactory):
     def __init__(self, image_factory, context, property_rules):
         self.image_factory = image_factory
         self.context = context
-        self.roles = self.context.roles
         self.property_rules = property_rules
         kwargs = {'context': self.context,
                   'property_rules': self.property_rules}
@@ -38,7 +37,7 @@ class ProtectedImageFactoryProxy(glance.domain.proxy.ImageFactory):
         extra_properties = {}
         for key in extra_props.keys():
             if self.property_rules.check_property_rules(key, 'create',
-                                                        self.roles):
+                                                        self.context):
                 extra_properties[key] = extra_props[key]
             else:
                 raise exception.ReservedProperty(property=key)
@@ -72,11 +71,10 @@ class ProtectedImageProxy(glance.domain.proxy.Image):
     def __init__(self, image, context, property_rules):
         self.image = image
         self.context = context
-        self.roles = self.context.roles
         self.property_rules = property_rules
 
         self.image.extra_properties = ExtraPropertiesProxy(
-                                            self.roles,
+                                            self.context,
                                             self.image.extra_properties,
                                             self.property_rules)
         super(ProtectedImageProxy, self).__init__(self.image)
@@ -84,18 +82,18 @@ class ProtectedImageProxy(glance.domain.proxy.Image):
 
 class ExtraPropertiesProxy(glance.domain.ExtraProperties):
 
-    def __init__(self, roles, extra_props, property_rules):
-        self.roles = roles
+    def __init__(self, context, extra_props, property_rules):
+        self.context = context
         self.property_rules = property_rules
         extra_properties = {}
         for key in extra_props.keys():
             if self.property_rules.check_property_rules(key, 'read',
-                                                        self.roles):
+                                                        self.context):
                 extra_properties[key] = extra_props[key]
         super(ExtraPropertiesProxy, self).__init__(extra_properties)
 
     def __getitem__(self, key):
-        if self.property_rules.check_property_rules(key, 'read', self.roles):
+        if self.property_rules.check_property_rules(key, 'read', self.context):
             return dict.__getitem__(self, key)
         else:
             raise KeyError
@@ -108,13 +106,13 @@ class ExtraPropertiesProxy(glance.domain.ExtraProperties):
         try:
             if self.__getitem__(key):
                 if self.property_rules.check_property_rules(key, 'update',
-                                                            self.roles):
+                                                            self.context):
                     return dict.__setitem__(self, key, value)
                 else:
                     raise exception.ReservedProperty(property=key)
         except KeyError:
             if self.property_rules.check_property_rules(key, 'create',
-                                                        self.roles):
+                                                        self.context):
                 return dict.__setitem__(self, key, value)
             else:
                 raise exception.ReservedProperty(property=key)
@@ -124,7 +122,7 @@ class ExtraPropertiesProxy(glance.domain.ExtraProperties):
             raise KeyError
 
         if self.property_rules.check_property_rules(key, 'delete',
-                                                    self.roles):
+                                                    self.context):
             return dict.__delitem__(self, key)
         else:
             raise exception.ReservedProperty(property=key)

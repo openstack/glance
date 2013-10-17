@@ -1,0 +1,34 @@
+# property-protections-policies.conf.sample
+#
+# This file is an example config file for when
+# property_protection_rule_format=policies is enabled.
+#
+# Specify regular expression for which properties will be protected in []
+# For each section, specify CRUD permissions. You may refer to policies defined
+# in policy.json.
+# The property rules will be applied in the order specified. Once
+# a match is found the remaining property rules will not be applied.
+#
+# WARNING:
+# * If the reg ex specified below does not compile, then
+# the glance-api service fails to start. (Guide for reg ex python compiler
+# used:
+# http://docs.python.org/2/library/re.html#regular-expression-syntax)
+# * If an operation(create, read, update, delete) is not specified or misspelt
+# then the glance-api service fails to start.
+# So, remember, with GREAT POWER comes GREAT RESPONSIBILITY!
+#
+# NOTE: Only one policy can be specified per action. If multiple policies are
+# specified, then the glance-api service fails to start.
+
+[^x_.*]
+create = default
+read = default
+update = default
+delete = default
+
+[.*]
+create = context_is_admin
+read = context_is_admin
+update = context_is_admin
+delete = context_is_admin

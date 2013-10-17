@@ -44,7 +44,7 @@ class Gateway(object):
         notifier_image_factory = glance.notifier.ImageFactoryProxy(
                 policy_image_factory, context, self.notifier)
         if property_utils.is_property_protection_enabled():
-            property_rules = property_utils.PropertyRules()
+            property_rules = property_utils.PropertyRules(self.policy)
             protected_image_factory = property_protections.\
                 ProtectedImageFactoryProxy(notifier_image_factory, context,
                                            property_rules)
@@ -74,7 +74,7 @@ class Gateway(object):
         notifier_image_repo = glance.notifier.ImageRepoProxy(
                 policy_image_repo, context, self.notifier)
         if property_utils.is_property_protection_enabled():
-            property_rules = property_utils.PropertyRules()
+            property_rules = property_utils.PropertyRules(self.policy)
             protected_image_repo = property_protections.\
                 ProtectedImageRepoProxy(notifier_image_repo, context,
                                         property_rules)
