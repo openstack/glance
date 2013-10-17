@@ -19,6 +19,7 @@
 """
 A simple cache management utility for Glance.
 """
+from __future__ import print_function
 
 import functools
 import optparse
@@ -55,20 +56,20 @@ def catch_error(action):
                 return SUCCESS if ret is None else ret
             except exception.NotFound:
                 options = args[0]
-                print ("Cache management middleware not enabled on host %s" %
-                       options.host)
+                print("Cache management middleware not enabled on host %s" %
+                      options.host)
                 return FAILURE
             except exception.Forbidden:
-                print "Not authorized to make this request."
+                print("Not authorized to make this request.")
                 return FAILURE
             except Exception as e:
                 options = args[0]
                 if options.debug:
                     raise
-                print "Failed to %s. Got error:" % action
+                print("Failed to %s. Got error:" % action)
                 pieces = unicode(e).split('\n')
                 for piece in pieces:
-                    print piece
+                    print(piece)
                 return FAILURE
 
         return wrapper
@@ -84,10 +85,10 @@ List all images currently cached"""
     client = get_client(options)
     images = client.get_cached_images()
     if not images:
-        print "No cached images."
+        print("No cached images.")
         return SUCCESS
 
-    print "Found %d cached images..." % len(images)
+    print("Found %d cached images..." % len(images))
 
     pretty_table = utils.PrettyTable()
     pretty_table.add_column(36, label="ID")
@@ -97,7 +98,7 @@ List all images currently cached"""
     pretty_table.add_column(14, label="Size", just="r")
     pretty_table.add_column(10, label="Hits", just="r")
 
-    print pretty_table.make_header()
+    print(pretty_table.make_header())
 
     for image in images:
         last_modified = image['last_modified']
@@ -109,12 +110,12 @@ List all images currently cached"""
         else:
             last_accessed = timeutils.iso8601_from_timestamp(last_accessed)
 
-        print pretty_table.make_row(
+        print(pretty_table.make_row(
             image['image_id'],
             last_accessed,
             last_modified,
             image['size'],
-            image['hits'])
+            image['hits']))
 
 
 @catch_error('show queued images')
@@ -126,18 +127,18 @@ List all images currently queued for caching"""
     client = get_client(options)
     images = client.get_queued_images()
     if not images:
-        print "No queued images."
+        print("No queued images.")
         return SUCCESS
 
-    print "Found %d queued images..." % len(images)
+    print("Found %d queued images..." % len(images))
 
     pretty_table = utils.PrettyTable()
     pretty_table.add_column(36, label="ID")
 
-    print pretty_table.make_header()
+    print(pretty_table.make_header())
 
     for image in images:
-        print pretty_table.make_row(image)
+        print(pretty_table.make_row(image))
 
 
 @catch_error('queue the specified image for caching')
@@ -149,8 +150,8 @@ Queues an image for caching"""
     try:
         image_id = args.pop()
     except IndexError:
-        print "Please specify the ID of the image you wish to queue "
-        print "from the cache as the first argument"
+        print("Please specify the ID of the image you wish to queue ")
+        print("from the cache as the first argument")
         return FAILURE
 
     if (not options.force and
@@ -162,7 +163,7 @@ Queues an image for caching"""
     client.queue_image_for_caching(image_id)
 
     if options.verbose:
-        print "Queued image %(image_id)s for caching" % locals()
+        print("Queued image %(image_id)s for caching" % locals())
 
     return SUCCESS
 
@@ -176,8 +177,8 @@ Deletes an image from the cache"""
     try:
         image_id = args.pop()
     except IndexError:
-        print "Please specify the ID of the image you wish to delete "
-        print "from the cache as the first argument"
+        print("Please specify the ID of the image you wish to delete ")
+        print("from the cache as the first argument")
         return FAILURE
 
     if (not options.force and
@@ -189,7 +190,7 @@ Deletes an image from the cache"""
     client.delete_cached_image(image_id)
 
     if options.verbose:
-        print "Deleted cached image %(image_id)s" % locals()
+        print("Deleted cached image %(image_id)s" % locals())
 
     return SUCCESS
 
@@ -208,7 +209,7 @@ Removes all images from the cache"""
     num_deleted = client.delete_all_cached_images()
 
     if options.verbose:
-        print "Deleted %(num_deleted)s cached images" % locals()
+        print("Deleted %(num_deleted)s cached images" % locals())
 
     return SUCCESS
 
@@ -222,8 +223,8 @@ Deletes an image from the cache"""
     try:
         image_id = args.pop()
     except IndexError:
-        print "Please specify the ID of the image you wish to delete "
-        print "from the cache as the first argument"
+        print("Please specify the ID of the image you wish to delete ")
+        print("from the cache as the first argument")
         return FAILURE
 
     if (not options.force and
@@ -235,7 +236,7 @@ Deletes an image from the cache"""
     client.delete_queued_image(image_id)
 
     if options.verbose:
-        print "Deleted queued image %(image_id)s" % locals()
+        print("Deleted queued image %(image_id)s" % locals())
 
     return SUCCESS
 
@@ -254,7 +255,7 @@ Removes all images from the cache queue"""
     num_deleted = client.delete_all_queued_images()
 
     if options.verbose:
-        print "Deleted %(num_deleted)s queued images" % locals()
+        print("Deleted %(num_deleted)s queued images" % locals())
 
     return SUCCESS
 
@@ -419,7 +420,7 @@ def print_help(options, args):
     command_name = args.pop()
     command = lookup_command(parser, command_name)
 
-    print command.__doc__ % {'prog': os.path.basename(sys.argv[0])}
+    print(command.__doc__ % {'prog': os.path.basename(sys.argv[0])})
 
 
 def lookup_command(parser, command_name):
@@ -504,10 +505,10 @@ Commands:
         result = command(options, args)
         end_time = time.time()
         if options.verbose:
-            print "Completed in %-0.4f sec." % (end_time - start_time)
+            print("Completed in %-0.4f sec." % (end_time - start_time))
         sys.exit(result)
     except (RuntimeError, NotImplementedError) as e:
-        print "ERROR: ", e
+        print("ERROR: ", e)
 
 if __name__ == '__main__':
     main()

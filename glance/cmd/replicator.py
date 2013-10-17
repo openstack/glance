@@ -16,6 +16,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from __future__ import print_function
+
 import httplib
 import json
 import logging
@@ -297,7 +299,7 @@ def replication_size(options, args):
             total_size += int(image['size'])
             count += 1
 
-    print _('Total size is %d bytes across %d images') % (total_size, count)
+    print(_('Total size is %d bytes across %d images') % (total_size, count))
 
 
 def replication_dump(options, args):
@@ -675,14 +677,14 @@ def print_help(options, args):
     args: the command line
     """
     if len(args) != 1:
-        print COMMANDS
+        print(COMMANDS)
         sys.exit(1)
 
     parser = options.__parser
     command_name = args.pop()
     command = lookup_command(parser, command_name)
 
-    print command.__doc__ % {'prog': os.path.basename(sys.argv[0])}
+    print(command.__doc__ % {'prog': os.path.basename(sys.argv[0])})
 
 
 def lookup_command(parser, command_name):
