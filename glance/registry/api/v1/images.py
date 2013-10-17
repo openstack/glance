@@ -413,6 +413,7 @@ class Controller(object):
         :retval Returns the updated image information as a mapping,
         """
         image_data = body['image']
+        from_state = body.get('from_state', None)
 
         # Prohibit modification of 'owner'
         if not req.context.is_admin and 'owner' in image_data:
@@ -428,11 +429,15 @@ class Controller(object):
                                             'image_data': image_data})
             image_data = _normalize_image_location_for_db(image_data)
             if purge_props == "true":
-                updated_image = self.db_api.image_update(req.context, id,
-                                                         image_data, True)
+                purge_props = True
             else:
-                updated_image = self.db_api.image_update(req.context, id,
-                                                         image_data)
+                purge_props = False
+
+            updated_image = self.db_api.image_update(req.context, id,
+                                                     image_data,
+                                                     purge_props=purge_props,
+                                                     from_state=from_state)
+
             msg = _("Updating metadata for image %(id)s")
             LOG.info(msg % {'id': id})
             return dict(image=make_image_dict(updated_image))
@@ -457,6 +462,11 @@ class Controller(object):
             msg = _("Access denied to image %(id)s but returning 'not found'")
             LOG.info(msg % {'id': id})
             raise exc.HTTPNotFound(body='Image not found',
+                                   request=req,
+                                   content_type='text/plain')
+        except exception.Conflict as e:
+            LOG.info(unicode(e))
+            raise exc.HTTPConflict(body='Image operation conflicts',
                                    request=req,
                                    content_type='text/plain')
 

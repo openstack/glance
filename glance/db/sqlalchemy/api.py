@@ -258,16 +258,18 @@ def _wrap_db_error(f):
 
 def image_create(context, values):
     """Create an image from the values dictionary."""
-    return _image_update(context, values, None, False)
+    return _image_update(context, values, None, purge_props=False)
 
 
-def image_update(context, image_id, values, purge_props=False):
+def image_update(context, image_id, values, purge_props=False,
+                 from_state=None):
     """
     Set the given properties on an image and update it.
 
     :raises NotFound if image does not exist.
     """
-    return _image_update(context, values, image_id, purge_props)
+    return _image_update(context, values, image_id, purge_props,
+                         from_state=from_state)
 
 
 def image_destroy(context, image_id):
@@ -743,7 +745,8 @@ def _update_values(image_ref, values):
             setattr(image_ref, k, values[k])
 
 
-def _image_update(context, values, image_id, purge_props=False):
+def _image_update(context, values, image_id, purge_props=False,
+                  from_state=None):
     """
     Used internally by image_create and image_update
 
@@ -768,9 +771,10 @@ def _image_update(context, values, image_id, purge_props=False):
 
         location_data = values.pop('locations', None)
 
+        new_status = values.get('status', None)
         if image_id:
             image_ref = _image_get(context, image_id, session=session)
-
+            current = image_ref.status
             # Perform authorization check
             _check_mutate_authorization(context, image_ref)
         else:
@@ -797,20 +801,49 @@ def _image_update(context, values, image_id, purge_props=False):
             #NOTE(iccha-sethi): updated_at must be explicitly set in case
             #                   only ImageProperty table was modifited
             values['updated_at'] = timeutils.utcnow()
-        image_ref.update(values)
 
-        # Validate the attributes before we go any further. From my
-        # investigation, the @validates decorator does not validate
-        # on new records, only on existing records, which is, well,
-        # idiotic.
-        values = _validate_image(image_ref.to_dict())
-        _update_values(image_ref, values)
+        if image_id:
+            query = session.query(models.Image).filter_by(id=image_id)
+            if from_state:
+                query = query.filter_by(status=from_state)
 
-        try:
-            image_ref.save(session=session)
-        except sqlalchemy.exc.IntegrityError:
-            raise exception.Duplicate("Image ID %s already exists!"
-                                      % values['id'])
+            if new_status:
+                _validate_image(values)
+
+            # Validate fields for Images table. This is similar to what is done
+            # for the query result update except that we need to do it prior
+            # in this case.
+            # TODO(dosaboy): replace this with a dict comprehension once py26
+            #                support is deprecated.
+            keys = values.keys()
+            for k in keys:
+                if k not in image_ref.to_dict():
+                    del values[k]
+            updated = query.update(values, synchronize_session='fetch')
+
+            if not updated:
+                msg = (_('cannot transition from %(current)s to '
+                         '%(next)s in update (wanted '
+                         'from_state=%(from)s)') %
+                       {'current': current, 'next': new_status,
+                        'from': from_state})
+                raise exception.Conflict(msg)
+
+            image_ref = _image_get(context, image_id, session=session)
+        else:
+            image_ref.update(values)
+            # Validate the attributes before we go any further. From my
+            # investigation, the @validates decorator does not validate
+            # on new records, only on existing records, which is, well,
+            # idiotic.
+            values = _validate_image(image_ref.to_dict())
+            _update_values(image_ref, values)
+
+            try:
+                image_ref.save(session=session)
+            except sqlalchemy.exc.IntegrityError:
+                raise exception.Duplicate("Image ID %s already exists!"
+                                          % values['id'])
 
         _set_properties_for_image(context, image_ref, properties, purge_props,
                                   session)

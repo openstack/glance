@@ -594,7 +594,8 @@ class Controller(controller.BaseController):
 
         return location, loc_meta
 
-    def _activate(self, req, image_id, location, location_metadata=None):
+    def _activate(self, req, image_id, location, location_metadata=None,
+                  from_state=None):
         """
         Sets the image status to `active` and the image's location
         attribute.
@@ -612,12 +613,24 @@ class Controller(controller.BaseController):
                                             'metadata': location_metadata}]
 
         try:
+            s = from_state
             image_meta_data = registry.update_image_metadata(req.context,
                                                              image_id,
-                                                             image_meta)
+                                                             image_meta,
+                                                             from_state=s)
             self.notifier.info("image.activate", redact_loc(image_meta_data))
             self.notifier.info("image.update", redact_loc(image_meta_data))
             return image_meta_data
+        except exception.Duplicate:
+            # Delete image data since it has been supersceded by another
+            # upload.
+            LOG.debug("duplicate operation - deleting image data for %s "
+                      "(location:%s)" %
+                      (image_id, image_meta['location']))
+            upload_utils.initiate_deletion(req, image_meta['location'],
+                                           image_id, CONF.delayed_delete)
+            # Then propagate the exception.
+            raise
         except exception.Invalid as e:
             msg = _("Failed to activate image. Got error: %(e)s") % {'e': e}
             LOG.debug(msg)
@@ -645,7 +658,8 @@ class Controller(controller.BaseController):
         return self._activate(req,
                               image_id,
                               location,
-                              location_metadata) if location else None
+                              location_metadata,
+                              from_state='saving') if location else None
 
     def _get_size(self, context, image_meta, location):
         # retrieve the image size from remote store (if not provided)
@@ -918,6 +932,11 @@ class Controller(controller.BaseController):
             raise HTTPForbidden(explanation=msg,
                                 request=req,
                                 content_type="text/plain")
+        except (exception.Conflict, exception.Duplicate) as e:
+            LOG.info(unicode(e))
+            raise HTTPConflict(body='Image operation conflicts',
+                               request=req,
+                               content_type='text/plain')
         else:
             self.notifier.info('image.update', redact_loc(image_meta))
 

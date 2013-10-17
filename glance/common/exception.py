@@ -78,6 +78,11 @@ class Duplicate(GlanceException):
     message = _("An object with the same identifier already exists.")
 
 
+class Conflict(GlanceException):
+    message = _("An object with the same identifier is currently being "
+                "operated on.")
+
+
 class StorageFull(GlanceException):
     message = _("There is not enough disk space on the image storage media.")
 

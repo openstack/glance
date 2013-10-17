@@ -169,7 +169,8 @@ class RegistryClient(BaseClient):
         image = data['image']
         return self.decrypt_metadata(image)
 
-    def update_image(self, image_id, image_metadata, purge_props=False):
+    def update_image(self, image_id, image_metadata, purge_props=False,
+                     from_state=None):
         """
         Updates Registry's information about an image
         """
@@ -178,6 +179,7 @@ class RegistryClient(BaseClient):
 
         encrypted_metadata = self.encrypt_metadata(image_metadata['image'])
         image_metadata['image'] = encrypted_metadata
+        image_metadata['from_state'] = from_state
         body = json.dumps(image_metadata)
 
         headers = {

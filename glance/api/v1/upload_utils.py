@@ -166,7 +166,9 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
     except exception.Duplicate as e:
         msg = _("Attempt to upload duplicate image: %s") % e
         LOG.debug(msg)
-        safe_kill(req, image_id)
+        # NOTE(dosaboy): do not delete the image since it is likely that this
+        # conflict is a result of another concurrent upload that will be
+        # successful.
         notifier.error('image.upload', msg)
         raise webob.exc.HTTPConflict(explanation=msg,
                                      request=req,
