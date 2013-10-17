@@ -530,6 +530,132 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
     return query
 
 
+def _make_conditions_from_filters(filters, is_public=None):
+    #NOTE(venkatesh) make copy of the filters are to be altered in this method.
+    filters = filters.copy()
+
+    image_conditions = []
+    prop_conditions = []
+    tag_conditions = []
+
+    if is_public is not None:
+        image_conditions.append(models.Image.is_public == is_public)
+
+    if 'checksum' in filters:
+        checksum = filters.pop('checksum')
+        image_conditions.append(models.Image.checksum == checksum)
+
+    if 'is_public' in filters:
+        key = 'is_public'
+        value = filters.pop('is_public')
+        prop_filters = _make_image_property_condition(key=key, value=value)
+        prop_conditions.append(prop_filters)
+
+    for (k, v) in filters.pop('properties', {}).items():
+        prop_filters = _make_image_property_condition(key=k, value=v)
+        prop_conditions.append(prop_filters)
+
+    if 'changes-since' in filters:
+        # normalize timestamp to UTC, as sqlalchemy doesn't appear to
+        # respect timezone offsets
+        changes_since = timeutils.normalize_time(filters.pop('changes-since'))
+        image_conditions.append(models.Image.updated_at > changes_since)
+
+    if 'deleted' in filters:
+        deleted_filter = filters.pop('deleted')
+        image_conditions.append(models.Image.deleted == deleted_filter)
+        # TODO(bcwaldon): handle this logic in registry server
+        if not deleted_filter:
+            image_statuses = [s for s in STATUSES if s != 'killed']
+            image_conditions.append(models.Image.status.in_(image_statuses))
+
+    if 'tags' in filters:
+        tags = filters.pop('tags')
+        for tag in tags:
+            tag_filters = [models.ImageTag.deleted == False]
+            tag_filters.extend([models.ImageTag.value == tag])
+            tag_conditions.append(tag_filters)
+
+    filters = dict([(k, v) for k, v in filters.items() if v is not None])
+
+    for (k, v) in filters.items():
+        key = k
+        if k.endswith('_min') or k.endswith('_max'):
+            key = key[0:-4]
+            try:
+                v = int(filters.pop(k))
+            except ValueError:
+                msg = _("Unable to filter on a range "
+                        "with a non-numeric value.")
+                raise exception.InvalidFilterRangeValue(msg)
+
+            if k.endswith('_min'):
+                image_conditions.append(getattr(models.Image, key) >= v)
+            if k.endswith('_max'):
+                image_conditions.append(getattr(models.Image, key) <= v)
+
+    for (k, v) in filters.items():
+        value = filters.pop(k)
+        if hasattr(models.Image, k):
+            image_conditions.append(getattr(models.Image, k) == value)
+        else:
+            prop_filters = _make_image_property_condition(key=k, value=value)
+            prop_conditions.append(prop_filters)
+
+    return image_conditions, prop_conditions, tag_conditions
+
+
+def _make_image_property_condition(key, value):
+    prop_filters = [models.ImageProperty.deleted == False]
+    prop_filters.extend([models.ImageProperty.name == key])
+    prop_filters.extend([models.ImageProperty.value == value])
+    return prop_filters
+
+
+def _select_images_query(context, image_conditions, admin_as_user,
+                         member_status, visibility):
+    session = _get_session()
+
+    img_conditional_clause = sa_sql.and_(*image_conditions)
+
+    regular_user = (not context.is_admin) or admin_as_user
+
+    query_member = session.query(models.Image) \
+        .join(models.Image.members) \
+        .filter(img_conditional_clause)
+    if regular_user:
+        member_filters = [models.ImageMember.deleted == False]
+        if context.owner is not None:
+            member_filters.extend([models.ImageMember.member == context.owner])
+            if member_status != 'all':
+                member_filters.extend([
+                    models.ImageMember.status == member_status])
+        query_member = query_member.filter(sa_sql.and_(*member_filters))
+
+    #NOTE(venkatesh) if the 'visibility' is set to 'shared', we just
+    # query the image members table. No union is required.
+    if visibility is not None and visibility == 'shared':
+        return query_member
+
+    query_image = session.query(models.Image)\
+        .filter(img_conditional_clause)
+    if regular_user:
+        query_image = query_image.filter(models.Image.is_public == True)
+        query_image_owner = None
+        if context.owner is not None:
+            query_image_owner = session.query(models.Image) \
+                .filter(models.Image.owner == context.owner) \
+                .filter(img_conditional_clause)
+        if query_image_owner is not None:
+            query = query_image.union(query_image_owner, query_member)
+        else:
+            query = query_image.union(query_member)
+        return query
+    else:
+        #Admin user
+        return query_image
+
+
 def image_get_all(context, filters=None, marker=None, limit=None,
                   sort_key='created_at', sort_dir='desc',
                   member_status='accepted', is_public=None,
@@ -554,114 +680,39 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     """
     filters = filters or {}
 
-    session = _get_session()
-    query_image = session.query(models.Image)
-    query_member = session.query(models.Image).join(models.Image.members)
+    visibility = filters.pop('visibility', None)
+    showing_deleted = 'changes-since' in filters or filters.get('deleted',
+                                                                False)
 
-    if (not context.is_admin) or admin_as_user == True:
-        visibility_filters = [models.Image.is_public == True]
-        member_filters = [models.ImageMember.deleted == False]
+    img_conditions, prop_conditions, tag_conditions = \
+        _make_conditions_from_filters(filters, is_public)
 
-        if context.owner is not None:
-            if member_status == 'all':
-                visibility_filters.extend([
-                    models.Image.owner == context.owner])
-                member_filters.extend([
-                    models.ImageMember.member == context.owner])
-            else:
-                visibility_filters.extend([
-                    models.Image.owner == context.owner])
-                member_filters.extend([
-                    models.ImageMember.member == context.owner,
-                    models.ImageMember.status == member_status])
+    query = _select_images_query(context,
+                                 img_conditions,
+                                 admin_as_user,
+                                 member_status,
+                                 visibility)
 
-        query_image = query_image.filter(sa_sql.or_(*visibility_filters))
-        query_member = query_member.filter(sa_sql.and_(*member_filters))
-
-    query = query_image.union(query_member)
-
-    if 'visibility' in filters:
-        visibility = filters.pop('visibility')
+    if visibility is not None:
         if visibility == 'public':
             query = query.filter(models.Image.is_public == True)
         elif visibility == 'private':
             query = query.filter(models.Image.is_public == False)
-            if context.owner is not None and ((not context.is_admin)
-                                              or admin_as_user == True):
-                query = query.filter(
-                    models.Image.owner == context.owner)
-        else:
-            query_member = query_member.filter(
-                models.ImageMember.member == context.owner,
-                models.ImageMember.deleted == False)
-            query = query_member
 
-    if is_public is not None:
-        query = query.filter(models.Image.is_public == is_public)
+    if prop_conditions:
+        for prop_condition in prop_conditions:
+            query = query.join(models.ImageProperty, aliased=True)\
+                .filter(sa_sql.and_(*prop_condition))
 
-    if 'is_public' in filters:
-        spec = models.Image.properties.any(name='is_public',
-                                           value=filters.pop('is_public'),
-                                           deleted=False)
-        query = query.filter(spec)
-
-    showing_deleted = False
-
-    if 'checksum' in filters:
-        checksum = filters.pop('checksum')
-        query = query.filter(models.Image.checksum == checksum)
-
-    if 'changes-since' in filters:
-        # normalize timestamp to UTC, as sqlalchemy doesn't appear to
-        # respect timezone offsets
-        changes_since = timeutils.normalize_time(filters.pop('changes-since'))
-        query = query.filter(models.Image.updated_at > changes_since)
-        showing_deleted = True
-
-    if 'deleted' in filters:
-        deleted_filter = filters.pop('deleted')
-        query = query.filter_by(deleted=deleted_filter)
-        showing_deleted = deleted_filter
-        # TODO(bcwaldon): handle this logic in registry server
-        if not deleted_filter:
-            query = query.filter(models.Image.status != 'killed')
-
-    for (k, v) in filters.pop('properties', {}).items():
-        query = query.filter(models.Image.properties.any(name=k,
-                                                         value=v,
-                                                         deleted=False))
-
-    if 'tags' in filters:
-        tags = filters.pop('tags')
-        for tag in tags:
-            query = query.filter(models.Image.tags.any(value=tag,
-                                                       deleted=False))
-
-    for (k, v) in filters.items():
-        if v is not None:
-            key = k
-            if k.endswith('_min') or k.endswith('_max'):
-                key = key[0:-4]
-                try:
-                    v = int(v)
-                except ValueError:
-                    msg = _("Unable to filter on a range "
-                            "with a non-numeric value.")
-                    raise exception.InvalidFilterRangeValue(msg)
-
-            if k.endswith('_min'):
-                query = query.filter(getattr(models.Image, key) >= v)
-            elif k.endswith('_max'):
-                query = query.filter(getattr(models.Image, key) <= v)
-            elif hasattr(models.Image, key):
-                query = query.filter(getattr(models.Image, key) == v)
-            else:
-                query = query.filter(models.Image.properties.any(name=key,
-                                                                 value=v))
+    if tag_conditions:
+        for tag_condition in tag_conditions:
+            query = query.join(models.ImageTag, aliased=True)\
+                .filter(sa_sql.and_(*tag_condition))
 
     marker_image = None
     if marker is not None:
-        marker_image = _image_get(context, marker,
+        marker_image = _image_get(context,
+                                  marker,
                                   force_show_deleted=showing_deleted)
 
     sort_keys = ['created_at', 'id']
