@@ -43,10 +43,10 @@ rabbit_opts = [
                help=_('The virtual host used in the rabbitmq connection.')),
     cfg.StrOpt('rabbit_notification_exchange', default='glance',
                help=_('Exchange name to use for connection when using rabbit'
-               ' strategy.')),
+                      ' strategy.')),
     cfg.StrOpt('rabbit_notification_topic', default='notifications',
                help=_('Topic to use for connection when using rabbit '
-               'strategy.')),
+                      'strategy.')),
     cfg.IntOpt('rabbit_max_retries', default=0,
                help=_('The maximum number of times to attempt to connect to '
                       'the AMQP server.')),

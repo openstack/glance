@@ -44,19 +44,19 @@ paste_deploy_opts = [
 common_opts = [
     cfg.BoolOpt('allow_additional_image_properties', default=True,
                 help=_('Whether to allow users to specify image properties '
-                'beyond what the image schema provides')),
+                       'beyond what the image schema provides')),
     cfg.StrOpt('data_api', default='glance.db.sqlalchemy.api',
                help=_('Python module path of data access API')),
     cfg.IntOpt('limit_param_default', default=25,
                help=_('Default value for the number of items returned by a '
-               'request if not specified explicitly in the request')),
+                      'request if not specified explicitly in the request')),
     cfg.IntOpt('api_limit_max', default=1000,
                help=_('Maximum permissible number of items that could be '
-               'returned by a request')),
+                      'returned by a request')),
     cfg.BoolOpt('show_image_direct_url', default=False,
                 help=_('Whether to include the backend image storage location '
-                'in image properties. Revealing storage location can be a '
-                'security risk, so use this setting with caution!')),
+                       'in image properties. Revealing storage location can be'
+                       'a security risk, so use this setting with caution!')),
     cfg.BoolOpt('show_multiple_locations', default=False,
                 help=_('Whether to include the backend image locations '
                        'in image properties. Revealing storage location can '

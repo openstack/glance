@@ -372,7 +372,7 @@ def _dict_diff(a, b):
                           '%(key)s: master "%(master_value)s" vs '
                           'slave "%(slave_value)s"') %
                           {'key': key, 'master_value': a[key],
-                          'slave_value': b[key]})
+                           'slave_value': b[key]})
             return True
 
     return False
