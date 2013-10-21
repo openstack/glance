@@ -1408,11 +1408,6 @@ class TestRegistryAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 400)
 
-        # Bad request (invalid changes-since param)
-        req = webob.Request.blank('/images/detail?changes-since=2011-09-05')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
-
     def test_get_details_filter_property(self):
         """
         Tests that the /images/detail registry API returns list of
@@ -2728,6 +2723,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         dt1 = timeutils.utcnow() - datetime.timedelta(1)
         iso1 = timeutils.isotime(dt1)
 
+        date_only1 = dt1.strftime('%Y-%m-%d')
+        date_only2 = dt1.strftime('%Y%m%d')
+        date_only3 = dt1.strftime('%Y-%m%d')
+
         dt2 = timeutils.utcnow() + datetime.timedelta(1)
         iso2 = timeutils.isotime(dt2)
 
@@ -2822,13 +2821,21 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         images = res_dict['images']
         self.assertEquals(len(images), 0)
 
+        for param in [date_only1, date_only2, date_only3]:
+            # Expect 3 images (1 deleted)
+            req = webob.Request.blank('/images/detail?changes-since=%s' %
+                                      param)
+            res = req.get_response(self.api)
+            self.assertEquals(res.status_int, 200)
+            res_dict = json.loads(res.body)
+            images = res_dict['images']
+            self.assertEquals(len(images), 3)
+            self.assertEqual(images[0]['id'], UUID4)
+            self.assertEqual(images[1]['id'], UUID3)  # deleted
+            self.assertEqual(images[2]['id'], UUID2)
+
         # Bad request (empty changes-since param)
         req = webob.Request.blank('/images/detail?changes-since=')
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
-
-        # Bad request (invalid changes-since param)
-        req = webob.Request.blank('/images/detail?changes-since=2011-09-05')
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 400)
 
