@@ -884,6 +884,10 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         dt1 = timeutils.utcnow() - datetime.timedelta(1)
         iso1 = timeutils.isotime(dt1)
 
+        date_only1 = dt1.strftime('%Y-%m-%d')
+        date_only2 = dt1.strftime('%Y%m%d')
+        date_only3 = dt1.strftime('%Y-%m%d')
+
         dt2 = timeutils.utcnow() + datetime.timedelta(1)
         iso2 = timeutils.isotime(dt2)
 
@@ -938,13 +942,15 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
             '/images/detail?changes-since=%s' % iso4))
         self.assertEqualImages(res, ())
 
+        for param in [date_only1, date_only2, date_only3]:
+            # Expect 3 images (1 deleted)
+            res = self.get_api_response_ext(200, url=(
+                '/images/detail?changes-since=%s' % param))
+            self.assertEqualImages(res, (UUID4, UUID3, UUID2))
+
         # Bad request (empty changes-since param)
         self.get_api_response_ext(400,
                                   url='/images/detail?changes-since=')
-
-        # Bad request (invalid changes-since param)
-        self.get_api_response_ext(400, url=(
-            '/images/detail?changes-since=2011-09-05'))
 
     def test_get_details_filter_property(self):
         """
