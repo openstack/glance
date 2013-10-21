@@ -1204,6 +1204,23 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
 
+    def test_add_image_wrong_content_type(self):
+        fixture_headers = {
+            'x-image-meta-name': 'fake image #3',
+            'x-image-meta-container_format': 'ami',
+            'x-image-meta-disk_format': 'ami',
+            'transfer-encoding': 'chunked',
+            'content-type': 'application/octet-st',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 400)
+
     def test_get_index_sort_name_asc(self):
         """
         Tests that the /images registry API returns list of

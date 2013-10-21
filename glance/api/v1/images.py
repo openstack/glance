@@ -525,7 +525,7 @@ class Controller(controller.BaseController):
             image_meta['size'] = image_size or image_meta['size']
         else:
             try:
-                req.get_content_type('application/octet-stream')
+                req.get_content_type(('application/octet-stream',))
             except exception.InvalidContentType:
                 upload_utils.safe_kill(req, image_meta['id'])
                 msg = _("Content-Type must be application/octet-stream")
