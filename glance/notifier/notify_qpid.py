@@ -103,7 +103,7 @@ class QpidStrategy(strategy.Strategy):
         if CONF.qpid_reconnect_interval:
             connection.reconnect_interval = CONF.qpid_reconnect_interval
         connection.heartbeat = CONF.qpid_heartbeat
-        connection.protocol = CONF.qpid_protocol
+        connection.transport = CONF.qpid_protocol
         connection.tcp_nodelay = CONF.qpid_tcp_nodelay
         connection.open()
         LOG.info(_('Connected to AMQP server on %s') % broker)
