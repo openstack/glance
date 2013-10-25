@@ -70,7 +70,8 @@ class ImageRepo(object):
             db_api_image = dict(self.db_api.image_get(self.context, image_id))
             assert not db_api_image['deleted']
         except (exception.NotFound, exception.Forbidden, AssertionError):
-            raise exception.NotFound(image_id=image_id)
+            msg = _("No image found with ID %s") % image_id
+            raise exception.NotFound(msg)
         tags = self.db_api.image_tag_get_all(self.context, image_id)
         image = self._format_image_from_db(db_api_image, tags)
         return ImageProxy(image, self.context, self.db_api)
@@ -170,7 +171,8 @@ class ImageRepo(object):
                                                   image_values,
                                                   purge_props=True)
         except (exception.NotFound, exception.Forbidden):
-            raise exception.NotFound(image_id=image.image_id)
+            msg = _("No image found with ID %s") % image.image_id
+            raise exception.NotFound(msg)
         self.db_api.image_tag_set_all(self.context, image.image_id,
                                       image.tags)
         image.updated_at = new_values['updated_at']
@@ -181,7 +183,8 @@ class ImageRepo(object):
             self.db_api.image_update(self.context, image.image_id,
                                      image_values, purge_props=True)
         except (exception.NotFound, exception.Forbidden):
-            raise exception.NotFound(image_id=image.image_id)
+            msg = _("No image found with ID %s") % image.image_id
+            raise exception.NotFound(msg)
         # NOTE(markwash): don't update tags?
         new_values = self.db_api.image_destroy(self.context, image.image_id)
         image.updated_at = new_values['updated_at']
@@ -257,7 +260,8 @@ class ImageMemberRepo(object):
         try:
             self.db_api.image_member_delete(self.context, image_member.id)
         except (exception.NotFound, exception.Forbidden):
-            raise exception.NotFound(member_id=image_member.id)
+            msg = _("The specified member %s could not be found")
+            raise exception.NotFound(msg % image_member.id)
 
     def save(self, image_member):
         image_member_values = self._format_image_member_to_db(image_member)
