@@ -16,6 +16,7 @@
 
 """Policy Engine For Glance"""
 
+import copy
 import os.path
 
 from oslo.config import cfg
@@ -303,6 +304,14 @@ class ImageLocationsProxy(object):
         self.locations = locations
         self.context = context
         self.policy = policy
+
+    def __copy__(self):
+        return type(self)(self.locations, self.context, self.policy)
+
+    def __deepcopy__(self, memo):
+        # NOTE(zhiyan): Only copy location entries, others can be reused.
+        return type(self)(copy.deepcopy(self.locations, memo),
+                          self.context, self.policy)
 
     def _get_checker(action, func_name):
         def _checker(self, *args, **kwargs):

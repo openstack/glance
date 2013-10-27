@@ -14,6 +14,7 @@
 #    under the License.
 
 import collections
+import copy
 import sys
 
 from oslo.config import cfg
@@ -621,6 +622,15 @@ class StoreLocations(collections.MutableSequence):
 
     def __iter__(self):
         return iter(self.value)
+
+    def __copy__(self):
+        return type(self)(self.image_proxy, self.value)
+
+    def __deepcopy__(self, memo):
+        # NOTE(zhiyan): Only copy location entries, others can be reused.
+        value = copy.deepcopy(self.value, memo)
+        self.image_proxy.image.locations = value
+        return type(self)(self.image_proxy, value)
 
 
 def _locations_proxy(target, attr):
