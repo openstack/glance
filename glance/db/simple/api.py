@@ -1,4 +1,5 @@
 # Copyright 2012 OpenStack, Foundation
+# Copyright 2013 IBM Corp.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -29,6 +30,7 @@ DATA = {
     'members': {},
     'tags': {},
     'locations': [],
+    'tasks': {},
 }
 
 
@@ -54,6 +56,7 @@ def reset():
         'members': [],
         'tags': {},
         'locations': [],
+        'tasks': {},
     }
 
 
@@ -114,6 +117,26 @@ def _image_member_format(image_id, tenant_id, can_share, status='pending'):
         'created_at': dt,
         'updated_at': dt,
     }
+
+
+def _task_format(task_id, **values):
+    dt = timeutils.utcnow()
+    task = {
+        'id': task_id,
+        'type': 'import',
+        'status': 'pending',
+        'input': None,
+        'result': None,
+        'owner': None,
+        'message': None,
+        'expires_at': None,
+        'created_at': dt,
+        'updated_at': dt,
+        'deleted_at': None,
+        'deleted': False,
+    }
+    task.update(values)
+    return task
 
 
 def _image_format(image_id, **values):
@@ -657,3 +680,187 @@ def user_get_storage_usage(context, owner_id, image_id=None, session=None):
         if image['id'] != image_id:
             total = total + (image['size'] * len(image['locations']))
     return total
+
+
+@log_call
+def task_create(context, task_values):
+    """Create a task object"""
+    global DATA
+    task_id = task_values.get('id', uuidutils.generate_uuid())
+    required_attributes = ['type', 'status', 'input']
+    allowed_attributes = ['id', 'type', 'status', 'input', 'result', 'owner',
+                          'message', 'expires_at', 'created_at',
+                          'updated_at', 'deleted_at', 'deleted']
+
+    if task_id in DATA['tasks']:
+        raise exception.Duplicate()
+
+    for key in required_attributes:
+        if key not in task_values:
+            raise exception.Invalid('%s is a required attribute' % key)
+
+    incorrect_keys = set(task_values.keys()) - set(allowed_attributes)
+    if incorrect_keys:
+        raise exception.Invalid(
+            'The keys %s are not valid' % str(incorrect_keys))
+
+    task = _task_format(task_id, **task_values)
+    DATA['tasks'][task_id] = task
+
+    return copy.deepcopy(task)
+
+
+@log_call
+def task_update(context, task_id, values, purge_props=False):
+    """Update a task object"""
+    global DATA
+    try:
+        task = DATA['tasks'][task_id]
+    except KeyError:
+        msg = (_("No task found with ID %s") % task_id)
+        LOG.debug(msg)
+        raise exception.TaskNotFound(task_id=task_id)
+
+    task.update(values)
+    task['updated_at'] = timeutils.utcnow()
+    DATA['tasks'][task_id] = task
+    return task
+
+
+@log_call
+def task_get(context, task_id, force_show_deleted=False):
+    task = _task_get(context, task_id, force_show_deleted)
+    return copy.deepcopy(task)
+
+
+def _task_get(context, task_id, force_show_deleted=False):
+    try:
+        task = DATA['tasks'][task_id]
+    except KeyError:
+        msg = _('Could not find task %s') % task_id
+        LOG.info(msg)
+        raise exception.TaskNotFound(task_id=task_id)
+
+    if task['deleted'] and not (force_show_deleted or context.show_deleted):
+        msg = _('Unable to get deleted task %s') % task_id
+        LOG.info(msg)
+        raise exception.TaskNotFound(task_id=task_id)
+
+    if not _is_task_visible(context, task):
+        msg = (_("Forbidding request, task %s is not visible") % task_id)
+        LOG.debug(msg)
+        raise exception.Forbidden(msg)
+
+    return task
+
+
+@log_call
+def task_delete(context, task_id):
+    global DATA
+    try:
+        DATA['tasks'][task_id]['deleted'] = True
+        DATA['tasks'][task_id]['deleted_at'] = timeutils.utcnow()
+        DATA['tasks'][task_id]['updated_at'] = timeutils.utcnow()
+        return copy.deepcopy(DATA['tasks'][task_id])
+    except KeyError:
+        msg = (_("No task found with ID %s") % task_id)
+        LOG.debug(msg)
+        raise exception.TaskNotFound(task_id=task_id)
+
+
+@log_call
+def task_get_all(context, filters=None, marker=None, limit=None,
+                 sort_key='created_at', sort_dir='desc'):
+    """
+    Get all tasks that match zero or more filters.
+
+    :param filters: dict of filter keys and values.
+    :param marker: task id after which to start page
+    :param limit: maximum number of tasks to return
+    :param sort_key: task attribute by which results should be sorted
+    :param sort_dir: direction in which results should be sorted (asc, desc)
+    :return: tasks set
+    """
+    filters = filters or {}
+    tasks = DATA['tasks'].values()
+    tasks = _filter_tasks(tasks, filters, context)
+    tasks = _sort_tasks(tasks, sort_key, sort_dir)
+    tasks = _paginate_tasks(context, tasks, marker, limit,
+                            filters.get('deleted'))
+
+    return tasks
+
+
+def _is_task_visible(context, task):
+    """Return True if the task is visible in this context."""
+    # Is admin == task visible
+    if context.is_admin:
+        return True
+
+    # No owner == task visible
+    if task['owner'] is None:
+        return True
+
+    # Perform tests based on whether we have an owner
+    if context.owner is not None:
+        if context.owner == task['owner']:
+            return True
+
+    return False
+
+
+def _filter_tasks(tasks, filters, context, admin_as_user=False):
+    filtered_tasks = []
+
+    for task in tasks:
+        has_ownership = context.owner and task['owner'] == context.owner
+        can_see = (has_ownership or (context.is_admin and not admin_as_user))
+        if not can_see:
+            continue
+
+        add = True
+        for k, value in filters.iteritems():
+            add = task[k] == value and task['deleted'] is False
+            if not add:
+                break
+
+        if add:
+            filtered_tasks.append(task)
+
+    return filtered_tasks
+
+
+def _sort_tasks(tasks, sort_key, sort_dir):
+    reverse = False
+    if tasks and not (sort_key in tasks[0]):
+        raise exception.InvalidSortKey()
+    keyfn = lambda x: (x[sort_key] if x[sort_key] is not None else '',
+                       x['created_at'], x['id'])
+    reverse = sort_dir == 'desc'
+    tasks.sort(key=keyfn, reverse=reverse)
+
+    return tasks
+
+
+def _paginate_tasks(context, tasks, marker, limit, show_deleted):
+    start = 0
+    end = -1
+    if marker is None:
+        start = 0
+    else:
+        # Check that the task is accessible
+        _task_get(context, marker, force_show_deleted=show_deleted)
+
+        for i, task in enumerate(tasks):
+            if task['id'] == marker:
+                start = i + 1
+                break
+        else:
+            if task:
+                raise exception.TaskNotFound(task_id=task['id'])
+            else:
+                msg = _("Task does not exist")
+                raise exception.NotFound(message=msg)
+
+    end = start + limit if limit is not None else None
+    return tasks[start:end]

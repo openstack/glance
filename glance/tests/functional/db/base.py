@@ -2,6 +2,7 @@
 
 # Copyright 2010-2012 OpenStack, LLC
 # Copyright 2012 Justin Santa Barbara
+# Copyright 2013 IBM Corp.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -58,6 +59,23 @@ def build_image_fixture(**kwargs):
     }
     image.update(kwargs)
     return image
+
+
+def build_task_fixture(**kwargs):
+    default_datetime = timeutils.utcnow()
+    task = {
+        'id': uuidutils.generate_uuid(),
+        'type': 'import',
+        'status': 'pending',
+        'input': {'ping': 'pong'},
+        'owner': uuidutils.generate_uuid(),
+        'message': None,
+        'expires_at': None,
+        'created_at': default_datetime,
+        'updated_at': default_datetime
+    }
+    task.update(kwargs)
+    return task
 
 
 class TestDriver(test_utils.BaseTestCase):
@@ -1162,6 +1180,200 @@ class DriverQuotaTests(test_utils.BaseTestCase):
                        [f['size'] for f in self.owner1_fixtures]) + (sz * 2)
         x = self.db_api.user_get_storage_usage(self.context1, self.owner_id1)
         self.assertEqual(total, x)
+
+
+class DriverTaskTests(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(DriverTaskTests, self).setUp()
+        self.owner_id1 = uuidutils.generate_uuid()
+        self.adm_context = context.RequestContext(is_admin=True,
+                                                  auth_tok='user:user:admin')
+        self.context = context.RequestContext(
+            is_admin=False, auth_tok='user:user:user', user=self.owner_id1)
+        self.db_api = db_tests.get_db(self.config)
+        self.fixtures = self.build_task_fixtures()
+        db_tests.reset_db(self.db_api)
+        self.addCleanup(timeutils.clear_time_override)
+
+    def build_task_fixtures(self):
+        self.context.tenant = uuidutils.generate_uuid()
+        fixtures = [
+            {
+                'owner': self.context.owner,
+                'type': 'import',
+                'input': {'import_from': 'file:///a.img',
+                          'import_from_format': 'qcow2',
+                          'image_properties': {
+                          "name": "GreatStack 1.22",
+                          "tags": ["lamp", "custom"]
+                          }},
+            },
+            {
+                'owner': self.context.owner,
+                'type': 'import',
+                'input': {'import_from': 'file:///b.img',
+                          'import_from_format': 'qcow2',
+                          'image_properties': {
+                          "name": "GreatStack 1.23",
+                          "tags": ["lamp", "good"]
+                          }},
+            },
+            {
+                'owner': self.context.owner,
+                "type": "export",
+                "input": {
+                "export_uuid": "deadbeef-dead-dead-dead-beefbeefbeef",
+                "export_to": "swift://cloud.foo/myaccount/mycontainer/path",
+                "export_format": "qcow2"
+                }
+            },
+        ]
+        return [build_task_fixture(**fixture) for fixture in fixtures]
+
+    def test_task_get_all_with_filter(self):
+        for fixture in self.fixtures:
+            task = self.db_api.task_create(self.context,
+                                           build_task_fixture(**fixture))
+
+        import_tasks = self.db_api.task_get_all(self.context,
+                                                filters={'type': 'import'})
+
+        self.assertTrue(import_tasks)
+        self.assertEqual(len(import_tasks), 2)
+        for task in import_tasks:
+            self.assertEqual(task['type'], 'import')
+            self.assertEqual(task['owner'], self.context.owner)
+
+    def test_task_get_all_as_admin(self):
+        tasks = []
+        for fixture in self.fixtures:
+            task = self.db_api.task_create(self.context,
+                                           build_task_fixture(**fixture))
+            tasks.append(task)
+        import_tasks = self.db_api.task_get_all(self.adm_context)
+        self.assertTrue(import_tasks)
+        self.assertEqual(len(import_tasks), 3)
+
+    def test_task_get_all_marker(self):
+        for fixture in self.fixtures:
+            task = self.db_api.task_create(self.context,
+                                           build_task_fixture(**fixture))
+        tasks = self.db_api.task_get_all(self.context, sort_key='id')
+        task_ids = [t['id'] for t in tasks]
+        tasks = self.db_api.task_get_all(self.context, sort_key='id',
+                                         marker=task_ids[0])
+        self.assertEqual(len(tasks), 2)
+
+    def test_task_get_all_limit(self):
+        for fixture in self.fixtures:
+            task = self.db_api.task_create(self.context,
+                                           build_task_fixture(**fixture))
+
+        tasks = self.db_api.task_get_all(self.context, limit=2)
+        self.assertEqual(2, len(tasks))
+
+        # A limit of None should not equate to zero
+        tasks = self.db_api.task_get_all(self.context, limit=None)
+        self.assertEqual(3, len(tasks))
+
+        # A limit of zero should actually mean zero
+        tasks = self.db_api.task_get_all(self.context, limit=0)
+        self.assertEqual(0, len(tasks))
+
+    def test_task_get_all_owned(self):
+        TENANT1 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False,
+                                       tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1)
+
+        task_values = {'type': 'import', 'status': 'pending',
+                       'input': '{"loc": "fake"}', 'owner': TENANT1}
+        self.db_api.task_create(ctxt1, task_values)
+
+        TENANT2 = uuidutils.generate_uuid()
+        ctxt2 = context.RequestContext(is_admin=False,
+                                       tenant=TENANT2,
+                                       auth_tok='user:%s:user' % TENANT2)
+
+        task_values = {'type': 'export', 'status': 'pending',
+                       'input': '{"loc": "fake"}', 'owner': TENANT2}
+        self.db_api.task_create(ctxt2, task_values)
+
+        tasks = self.db_api.task_get_all(ctxt1)
+
+        task_owners = set([task['owner'] for task in tasks])
+        expected = set([TENANT1])
+        self.assertEqual(sorted(expected), sorted(task_owners))
+
+    def test_task_get(self):
+        expires_at = timeutils.utcnow()
+        fixture = {
+            'owner': self.context.owner,
+            'type': 'import',
+            'status': 'pending',
+            'input': '{"loc": "fake"}',
+            'expires_at': expires_at
+        }
+
+        task = self.db_api.task_create(self.context, fixture)
+
+        self.assertIsNotNone(task)
+        self.assertIsNotNone(task['id'])
+
+        task_id = task['id']
+        task = self.db_api.task_get(self.context, task_id)
+
+        self.assertIsNotNone(task)
+        self.assertEqual(task['id'], task_id)
+        self.assertEqual(task['owner'], self.context.owner)
+        self.assertEqual(task['type'], 'import')
+        self.assertEqual(task['status'], 'pending')
+        self.assertEqual(task['expires_at'], expires_at)
+
+    def test_task_create(self):
+        task_id = uuidutils.generate_uuid()
+        self.context.tenant = uuidutils.generate_uuid()
+        values = {
+            'id': task_id,
+            'owner': self.context.owner,
+            'type': 'export',
+            'status': 'pending',
+        }
+        task_values = build_task_fixture(**values)
+        task = self.db_api.task_create(self.context, task_values)
+        self.assertIsNotNone(task)
+        self.assertEqual(task['id'], task_id)
+        self.assertEqual(task['owner'], self.context.owner)
+        self.assertEqual(task['type'], 'export')
+        self.assertEqual(task['status'], 'pending')
+
+    def test_task_update(self):
+        self.context.tenant = uuidutils.generate_uuid()
+        task_values = build_task_fixture(owner=self.context.owner)
+        task = self.db_api.task_create(self.context, task_values)
+
+        task_id = task['id']
+        fixture = {'status': 'processing'}
+        task = self.db_api.task_update(self.context, task_id, fixture)
+
+        self.assertEqual(task['id'], task_id)
+        self.assertEqual(task['owner'], self.context.owner)
+        self.assertEqual(task['type'], 'import')
+        self.assertEqual(task['status'], 'processing')
+
+    def test_task_delete(self):
+        task_values = build_task_fixture()
+        task = self.db_api.task_create(self.context, task_values)
+
+        self.assertIsNotNone(task)
+        self.assertEqual(task['deleted'], False)
+        self.assertIsNone(task['deleted_at'])
+
+        task_id = task['id']
+        self.db_api.task_delete(self.context, task_id)
+        self.assertRaises(exception.TaskNotFound, self.db_api.task_get,
+                          self.context, task_id)
 
 
 class TestVisibility(test_utils.BaseTestCase):

@@ -4,6 +4,7 @@
 # Administrator of the National Aeronautics and Space Administration.
 # Copyright 2010-2011 OpenStack LLC.
 # Copyright 2012 Justin Santa Barbara
+# Copyright 2013 IBM Corp.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -1161,3 +1162,162 @@ def user_get_storage_usage(context, owner_id, image_id=None, session=None):
     total_size = _image_get_disk_usage_by_owner(
         owner_id, session, image_id=image_id)
     return total_size
+
+
+def task_create(context, values, session=None):
+    """Create a task object"""
+    task_ref = models.Task()
+    _task_update(context, task_ref, values, session=session)
+    return _task_format(task_ref)
+
+
+def task_update(context, task_id, values, session=None):
+    """Update a task object"""
+    session = session or _get_session()
+    task_ref = _task_get(context, task_id, session)
+    _task_update(context, task_ref, values, session)
+    return _task_format(task_ref)
+
+
+def task_get(context, task_id, session=None):
+    """Fetch a task entity by id"""
+    task_ref = _task_get(context, task_id, session=session)
+    return _task_format(task_ref)
+
+
+def task_delete(context, task_id, session=None):
+    """Delete a task"""
+    session = session or _get_session()
+    query = session.query(models.Task)\
+                   .filter_by(id=task_id)\
+                   .filter_by(deleted=False)
+    try:
+        task_ref = query.one()
+    except sa_orm.exc.NoResultFound:
+        msg = (_("No task found with ID %s") % task_id)
+        LOG.debug(msg)
+        raise exception.TaskNotFound(task_id=task_id)
+
+    task_ref.delete(session=session)
+
+
+def task_get_all(context, filters=None, marker=None, limit=None,
+                 sort_key='created_at', sort_dir='desc', admin_as_user=False):
+    """
+    Get all tasks that match zero or more filters.
+
+    :param filters: dict of filter keys and values.
+    :param marker: task id after which to start page
+    :param limit: maximum number of tasks to return
+    :param sort_key: task attribute by which results should be sorted
+    :param sort_dir: direction in which results should be sorted (asc, desc)
+    :param admin_as_user: For backwards compatibility. If true, then return to
+                      an admin the equivalent set of tasks which it would see
+                      if it were a regular user
+    :return: tasks set
+    """
+    filters = filters or {}
+
+    session = _get_session()
+    query = session.query(models.Task)
+
+    if not (context.is_admin or admin_as_user == True) and \
+            context.owner is not None:
+        query = query.filter(models.Task.owner == context.owner)
+
+    showing_deleted = False
+
+    if 'deleted' in filters:
+        deleted_filter = filters.pop('deleted')
+        query = query.filter_by(deleted=deleted_filter)
+        showing_deleted = deleted_filter
+
+    for (k, v) in filters.items():
+        if v is not None:
+            key = k
+            if hasattr(models.Task, key):
+                query = query.filter(getattr(models.Task, key) == v)
+
+    marker_task = None
+    if marker is not None:
+        marker_task = _task_get(context, marker,
+                                force_show_deleted=showing_deleted)
+
+    sort_keys = ['created_at', 'id']
+    if sort_key not in sort_keys:
+        sort_keys.insert(0, sort_key)
+
+    query = _paginate_query(query, models.Task, limit,
+                            sort_keys,
+                            marker=marker_task,
+                            sort_dir=sort_dir)
+
+    return [_task_format(task) for task in query.all()]
+
+
+def _is_task_visible(context, task):
+    """Return True if the task is visible in this context."""
+    # Is admin == task visible
+    if context.is_admin:
+        return True
+
+    # No owner == task visible
+    if task['owner'] is None:
+        return True
+
+    # Perform tests based on whether we have an owner
+    if context.owner is not None:
+        if context.owner == task['owner']:
+            return True
+
+    return False
+
+
+def _task_get(context, task_id, session=None, force_show_deleted=False):
+    """Fetch a task entity by id"""
+    session = session or _get_session()
+    query = session.query(models.Task)
+    query = query.filter_by(id=task_id)
+    if not force_show_deleted and not _can_show_deleted(context):
+        query = query.filter_by(deleted=False)
+    try:
+        task_ref = query.one()
+    except sa_orm.exc.NoResultFound:
+        msg = (_("No task found with ID %s") % task_id)
+        LOG.debug(msg)
+        raise exception.TaskNotFound(task_id=task_id)
+
+    # Make sure the task is visible
+    if not _is_task_visible(context, task_ref):
+        msg = (_("Forbidding request, task %s is not visible") % task_id)
+        LOG.debug(msg)
+        raise exception.Forbidden(msg)
+
+    return task_ref
+
+
+def _task_update(context, task_ref, values, session=None):
+    """Apply supplied dictionary of values to a task object."""
+    _drop_protected_attrs(models.Task, values)
+    values["deleted"] = False
+    task_ref.update(values)
+    task_ref.save(session=session)
+    return task_ref
+
+
+def _task_format(task_ref):
+    """Format a task ref for consumption outside of this module"""
+    return {
+        'id': task_ref['id'],
+        'type': task_ref['type'],
+        'status': task_ref['status'],
+        'input': task_ref['input'],
+        'result': task_ref['result'],
+        'owner': task_ref['owner'],
+        'message': task_ref['message'],
+        'expires_at': task_ref['expires_at'],
+        'created_at': task_ref['created_at'],
+        'updated_at': task_ref['updated_at'],
+        'deleted_at': task_ref['deleted_at'],
+        'deleted': task_ref['deleted']
+    }

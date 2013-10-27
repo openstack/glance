@@ -291,3 +291,7 @@ class ImageSizeLimitExceeded(GlanceException):
 
 class RPCError(GlanceException):
     message = _("%(cls)s exception was raised in the last rpc call: %(val)s")
+
+
+class TaskNotFound(GlanceException):
+    message = _("Task with the given id %(task_id)s was not found")
