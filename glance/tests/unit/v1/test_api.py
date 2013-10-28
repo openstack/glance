@@ -1801,18 +1801,18 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 404)
 
-    def test_add_member(self):
+    def test_add_member_positive(self):
         """
         Tests adding image members
         """
         test_router_api = router.API(self.mapper)
         self.api = test_utils.FakeAuthMiddleware(
             test_router_api, is_admin=True)
-        req = webob.Request.blank('/images/%s/members/test' % UUID2)
+        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
         req.method = 'PUT'
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 201)
+        self.assertEquals(res.status_int, 204)
 
     def test_get_member_images(self):
         """
@@ -1991,7 +1991,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, webob.exc.HTTPNoContent.code)
 
-    def test_add_member(self):
+    def test_add_member_unauthorized(self):
         """
         Tests adding image members raises right exception
         """
@@ -2017,18 +2017,6 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEquals(res.status_int, 404)
-
-    def test_add_member_positive(self):
-        """
-        Tests adding image members
-        """
-        test_router = router.API(self.mapper)
-        self.api = test_utils.FakeAuthMiddleware(
-            test_router, is_admin=True)
-        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
-        req.method = 'PUT'
-        res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 204)
 
     def test_add_member_with_body(self):
         """
