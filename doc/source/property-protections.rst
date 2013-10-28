@@ -117,3 +117,14 @@ read and modify any properties.
   read = admin
   update = admin
   delete = admin
+
+**Example 3**. Limit all property interactions to admin only using policy
+rule context_is_admin defined in policy.json.
+
+ ::
+
+  [.*]
+  create = context_is_admin
+  read = context_is_admin
+  update = context_is_admin
+  delete = context_is_admin
