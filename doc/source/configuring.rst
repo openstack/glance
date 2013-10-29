@@ -1039,7 +1039,7 @@ the ``error`` and ``warn`` notification priorities. To receive all
 notifications, you would set up a receiver with a topic of
 ``notifications.*``.
 
-* ``qpid_host``
+* ``qpid_hostname``
 
 Optional. Default: ``localhost``
 
@@ -1050,7 +1050,7 @@ when Glance has been configured to use the ``qpid`` notification strategy.
 
 Optional. Default: ``5672``
 
-This is the port number to connect to on the Qpid broker, ``qpid_host``,
+This is the port number to connect to on the Qpid broker, ``qpid_hostname``,
 when using the ``qpid`` notification strategy.
 
 * ``qpid_username``
