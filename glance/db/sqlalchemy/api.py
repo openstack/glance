@@ -497,12 +497,17 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
             crit_attrs = []
             for j in xrange(i):
                 model_attr = getattr(model, sort_keys[j])
+                default = None if isinstance(
+                            model_attr.property.columns[0].type,
+                            sqlalchemy.DateTime) else ''
                 attr = sa_sql.expression.case([(model_attr != None,
                                               model_attr), ],
                                               else_=default)
                 crit_attrs.append((attr == marker_values[j]))
 
             model_attr = getattr(model, sort_keys[i])
+            default = None if isinstance(model_attr.property.columns[0].type,
+                                         sqlalchemy.DateTime) else ''
             attr = sa_sql.expression.case([(model_attr != None,
                                           model_attr), ],
                                           else_=default)
