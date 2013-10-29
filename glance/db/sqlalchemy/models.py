@@ -219,11 +219,27 @@ class Task(BASE, GlanceBase):
     id = Column(String(36), primary_key=True, default=uuidutils.generate_uuid)
     type = Column(String(30))
     status = Column(String(30))
+    owner = Column(String(255))
+    expires_at = Column(DateTime, nullable=True)
+
+
+class TaskInfo(BASE, models.ModelBase):
+    """Represents task info in the datastore"""
+    __tablename__ = 'task_info'
+
+    task_id = Column(String(36),
+                     ForeignKey('tasks.id'),
+                     primary_key=True,
+                     nullable=False)
+
+    task = relationship(Task, backref=backref('info', uselist=False))
+
+    #NOTE(nikhil): input and result are stored as text in the DB.
+    # SQLAlchemy marshals the data to/from JSON using custom type
+    # JSONEncodedDict. It uses simplejson underneath.
     input = Column(JSONEncodedDict())
     result = Column(JSONEncodedDict())
-    owner = Column(String(255))
     message = Column(Text)
-    expires_at = Column(DateTime, nullable=True)
 
 
 def register_models(engine):

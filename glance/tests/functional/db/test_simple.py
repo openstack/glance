@@ -63,7 +63,7 @@ class TestSimpleMembershipVisibility(base.TestMembershipVisibility,
         self.addCleanup(db_tests.reset)
 
 
-class TestSimpleTask(base.DriverTaskTests):
+class TestSimpleTask(base.TaskTests):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)

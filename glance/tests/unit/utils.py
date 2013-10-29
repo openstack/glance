@@ -86,7 +86,8 @@ class FakeDB(object):
             'members': [],
             'tags': {},
             'locations': [],
-            'tasks': {}
+            'tasks': {},
+            'task_info': {}
         }
 
     def __getattr__(self, key):

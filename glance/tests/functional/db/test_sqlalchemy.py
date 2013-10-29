@@ -100,7 +100,7 @@ class TestSqlAlchemyDBDataIntegrity(base.TestDriver):
                                            sort_key='name')
 
 
-class TestSqlAlchemyTask(base.DriverTaskTests):
+class TestSqlAlchemyTask(base.TaskTests):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)

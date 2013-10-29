@@ -31,6 +31,7 @@ DATA = {
     'tags': {},
     'locations': [],
     'tasks': {},
+    'task_info': {}
 }
 
 
@@ -57,6 +58,7 @@ def reset():
         'tags': {},
         'locations': [],
         'tasks': {},
+        'task_info': {}
     }
 
 
@@ -119,16 +121,32 @@ def _image_member_format(image_id, tenant_id, can_share, status='pending'):
     }
 
 
+def _pop_task_info_values(values):
+    task_info_values = {}
+    for k, v in values.items():
+        if k in ['input', 'result', 'message']:
+            values.pop(k)
+            task_info_values[k] = v
+
+    return task_info_values
+
+
+def _format_task_from_db(task_ref, task_info_ref):
+    task = copy.deepcopy(task_ref)
+    if task_info_ref:
+        task_info = copy.deepcopy(task_info_ref)
+        task_info_values = _pop_task_info_values(task_info)
+        task.update(task_info_values)
+    return task
+
+
 def _task_format(task_id, **values):
     dt = timeutils.utcnow()
     task = {
         'id': task_id,
         'type': 'import',
         'status': 'pending',
-        'input': None,
-        'result': None,
         'owner': None,
-        'message': None,
         'expires_at': None,
         'created_at': dt,
         'updated_at': dt,
@@ -137,6 +155,17 @@ def _task_format(task_id, **values):
     }
     task.update(values)
     return task
+
+
+def _task_info_format(task_id, **values):
+    task_info = {
+        'task_id': task_id,
+        'input': None,
+        'result': None,
+        'message': None,
+    }
+    task_info.update(values)
+    return task_info
 
 
 def _image_format(image_id, **values):
@@ -697,9 +726,11 @@ def user_get_storage_usage(context, owner_id, image_id=None, session=None):
 
 
 @log_call
-def task_create(context, task_values):
+def task_create(context, values):
     """Create a task object"""
     global DATA
+
+    task_values = copy.deepcopy(values)
     task_id = task_values.get('id', uuidutils.generate_uuid())
     required_attributes = ['type', 'status', 'input']
     allowed_attributes = ['id', 'type', 'status', 'input', 'result', 'owner',
@@ -718,16 +749,20 @@ def task_create(context, task_values):
         raise exception.Invalid(
             'The keys %s are not valid' % str(incorrect_keys))
 
+    task_info_values = _pop_task_info_values(task_values)
     task = _task_format(task_id, **task_values)
     DATA['tasks'][task_id] = task
+    task_info = _task_info_create(task['id'], task_info_values)
 
-    return copy.deepcopy(task)
+    return _format_task_from_db(task, task_info)
 
 
 @log_call
-def task_update(context, task_id, values, purge_props=False):
+def task_update(context, task_id, values):
     """Update a task object"""
     global DATA
+    task_values = copy.deepcopy(values)
+    task_info_values = _pop_task_info_values(task_values)
     try:
         task = DATA['tasks'][task_id]
     except KeyError:
@@ -735,16 +770,18 @@ def task_update(context, task_id, values, purge_props=False):
         LOG.debug(msg)
         raise exception.TaskNotFound(task_id=task_id)
 
-    task.update(values)
+    task.update(task_values)
     task['updated_at'] = timeutils.utcnow()
     DATA['tasks'][task_id] = task
-    return task
+    task_info = _task_info_update(task['id'], task_info_values)
+
+    return _format_task_from_db(task, task_info)
 
 
 @log_call
 def task_get(context, task_id, force_show_deleted=False):
-    task = _task_get(context, task_id, force_show_deleted)
-    return copy.deepcopy(task)
+    task, task_info = _task_get(context, task_id, force_show_deleted)
+    return _format_task_from_db(task, task_info)
 
 
 def _task_get(context, task_id, force_show_deleted=False):
@@ -765,7 +802,9 @@ def _task_get(context, task_id, force_show_deleted=False):
         LOG.debug(msg)
         raise exception.Forbidden(msg)
 
-    return task
+    task_info = _task_info_get(task_id)
+
+    return task, task_info
 
 
 @log_call
@@ -802,7 +841,12 @@ def task_get_all(context, filters=None, marker=None, limit=None,
     tasks = _paginate_tasks(context, tasks, marker, limit,
                             filters.get('deleted'))
 
-    return tasks
+    filtered_tasks = []
+    for task in tasks:
+        task_info = DATA['task_info'][task['id']]
+        filtered_tasks.append(_format_task_from_db(task, task_info))
+
+    return filtered_tasks
 
 
 def _is_task_visible(context, task):
@@ -878,3 +922,41 @@ def _paginate_tasks(context, tasks, marker, limit, show_deleted):
 
     end = start + limit if limit is not None else None
     return tasks[start:end]
+
+
+def _task_info_create(task_id, values):
+    """Create a Task Info for Task with given task ID"""
+    global DATA
+    task_info = _task_info_format(task_id, **values)
+    DATA['task_info'][task_id] = task_info
+
+    return task_info
+
+
+def _task_info_update(task_id, values):
+    """Update Task Info for Task with given task ID and updated values"""
+    global DATA
+    try:
+        task_info = DATA['task_info'][task_id]
+    except KeyError:
+        msg = (_("No task info found with task id %s") % task_id)
+        LOG.debug(msg)
+        raise exception.TaskNotFound(task_id=task_id)
+
+    task_info.update(values)
+    DATA['task_info'][task_id] = task_info
+
+    return task_info
+
+
+def _task_info_get(task_id):
+    """Get Task Info for Task with given task ID"""
+    global DATA
+    try:
+        task_info = DATA['task_info'][task_id]
+    except KeyError:
+        msg = _('Could not find task info %s') % task_id
+        LOG.info(msg)
+        raise exception.TaskNotFound(task_id=task_id)
+
+    return task_info

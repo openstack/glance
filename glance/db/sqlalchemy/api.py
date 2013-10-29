@@ -1177,42 +1177,120 @@ def user_get_storage_usage(context, owner_id, image_id=None, session=None):
     return total_size
 
 
+def _task_info_format(task_info_ref):
+    """Format a task info ref for consumption outside of this module"""
+    if task_info_ref is None:
+        return {}
+    return {
+        'task_id': task_info_ref['task_id'],
+        'input': task_info_ref['input'],
+        'result': task_info_ref['result'],
+        'message': task_info_ref['message'],
+    }
+
+
+def _task_info_create(context, task_id, values, session=None):
+    """Create an TaskInfo object"""
+    session = session or _get_session()
+    task_info_ref = models.TaskInfo()
+    task_info_ref.task_id = task_id
+    task_info_ref.update(values)
+    task_info_ref.save(session=session)
+    return _task_info_format(task_info_ref)
+
+
+def _task_info_update(context, task_id, values, session=None):
+    """Update an TaskInfo object"""
+    session = session or _get_session()
+    task_info_ref = _task_info_get(context, task_id, session=session)
+    if task_info_ref:
+        task_info_ref.update(values)
+        task_info_ref.save(session=session)
+    return _task_info_format(task_info_ref)
+
+
+def _task_info_get(context, task_id, session=None):
+    """Fetch an TaskInfo entity by task_id"""
+    session = session or _get_session()
+    query = session.query(models.TaskInfo)
+    query = query.filter_by(task_id=task_id)
+    try:
+        task_info_ref = query.one()
+    except sa_orm.exc.NoResultFound:
+        msg = (_("TaskInfo was not found for task with id %(task_id)s") %
+               {'task_id': task_id})
+        LOG.debug(msg)
+        task_info_ref = None
+
+    return task_info_ref
+
+
 def task_create(context, values, session=None):
     """Create a task object"""
-    task_ref = models.Task()
-    _task_update(context, task_ref, values, session=session)
-    return _task_format(task_ref)
+
+    values = values.copy()
+    session = session or _get_session()
+    with session.begin():
+        task_info_values = _pop_task_info_values(values)
+
+        task_ref = models.Task()
+        _task_update(context, task_ref, values, session=session)
+
+        _task_info_create(context,
+                          task_ref.id,
+                          task_info_values,
+                          session=session)
+
+    return task_get(context, task_ref.id, session)
+
+
+def _pop_task_info_values(values):
+    task_info_values = {}
+    for k, v in values.items():
+        if k in ['input', 'result', 'message']:
+            values.pop(k)
+            task_info_values[k] = v
+
+    return task_info_values
 
 
 def task_update(context, task_id, values, session=None):
     """Update a task object"""
+
     session = session or _get_session()
-    task_ref = _task_get(context, task_id, session)
-    _task_update(context, task_ref, values, session)
-    return _task_format(task_ref)
+
+    with session.begin():
+        task_info_values = _pop_task_info_values(values)
+
+        task_ref = _task_get(context, task_id, session)
+        _drop_protected_attrs(models.Task, values)
+
+        values['updated_at'] = timeutils.utcnow()
+
+        _task_update(context, task_ref, values, session)
+
+        if task_info_values:
+            _task_info_update(context,
+                              task_id,
+                              task_info_values,
+                              session)
+
+    return task_get(context, task_id, session)
 
 
-def task_get(context, task_id, session=None):
+def task_get(context, task_id, session=None, force_show_deleted=False):
     """Fetch a task entity by id"""
-    task_ref = _task_get(context, task_id, session=session)
-    return _task_format(task_ref)
+    task_ref = _task_get(context, task_id, session=session,
+                         force_show_deleted=force_show_deleted)
+    return _task_format(task_ref, task_ref.info)
 
 
 def task_delete(context, task_id, session=None):
     """Delete a task"""
     session = session or _get_session()
-    query = session.query(models.Task)\
-                   .filter_by(id=task_id)\
-                   .filter_by(deleted=False)
-    try:
-        task_ref = query.one()
-    except sa_orm.exc.NoResultFound:
-        msg = (_("No task found with ID %s") % task_id)
-        LOG.debug(msg)
-        raise exception.TaskNotFound(task_id=task_id)
-
+    task_ref = _task_get(context, task_id, session=session)
     task_ref.delete(session=session)
-    return _task_format(task_ref)
+    return _task_format(task_ref, task_ref.info)
 
 
 def task_get_all(context, filters=None, marker=None, limit=None,
@@ -1233,7 +1311,8 @@ def task_get_all(context, filters=None, marker=None, limit=None,
     filters = filters or {}
 
     session = _get_session()
-    query = session.query(models.Task)
+    query = session.query(models.Task)\
+        .options(sa_orm.joinedload(models.Task.info))
 
     if not (context.is_admin or admin_as_user == True) and \
             context.owner is not None:
@@ -1266,7 +1345,17 @@ def task_get_all(context, filters=None, marker=None, limit=None,
                             marker=marker_task,
                             sort_dir=sort_dir)
 
-    return [_task_format(task) for task in query.all()]
+    task_refs = query.all()
+
+    tasks = []
+    for task_ref in task_refs:
+        # NOTE(venkatesh): call to task_ref.info does not make any
+        # seperate query call to fetch task info as it has been
+        # eagerly loaded using joinedload(models.Task.info) method above.
+        task_info_ref = task_ref.info
+        tasks.append(_task_format(task_ref, task_info_ref))
+
+    return tasks
 
 
 def _is_task_visible(context, task):
@@ -1290,8 +1379,10 @@ def _is_task_visible(context, task):
 def _task_get(context, task_id, session=None, force_show_deleted=False):
     """Fetch a task entity by id"""
     session = session or _get_session()
-    query = session.query(models.Task)
-    query = query.filter_by(id=task_id)
+    query = session.query(models.Task).options(
+        sa_orm.joinedload(models.Task.info)
+    ).filter_by(id=task_id)
+
     if not force_show_deleted and not _can_show_deleted(context):
         query = query.filter_by(deleted=False)
     try:
@@ -1312,26 +1403,32 @@ def _task_get(context, task_id, session=None, force_show_deleted=False):
 
 def _task_update(context, task_ref, values, session=None):
     """Apply supplied dictionary of values to a task object."""
-    _drop_protected_attrs(models.Task, values)
     values["deleted"] = False
     task_ref.update(values)
     task_ref.save(session=session)
     return task_ref
 
 
-def _task_format(task_ref):
+def _task_format(task_ref, task_info_ref=None):
     """Format a task ref for consumption outside of this module"""
-    return {
+    task_dict = {
         'id': task_ref['id'],
         'type': task_ref['type'],
         'status': task_ref['status'],
-        'input': task_ref['input'],
-        'result': task_ref['result'],
         'owner': task_ref['owner'],
-        'message': task_ref['message'],
         'expires_at': task_ref['expires_at'],
         'created_at': task_ref['created_at'],
         'updated_at': task_ref['updated_at'],
         'deleted_at': task_ref['deleted_at'],
         'deleted': task_ref['deleted']
     }
+
+    if task_info_ref:
+        task_info_dict = {
+            'input': task_info_ref['input'],
+            'result': task_info_ref['result'],
+            'message': task_info_ref['message'],
+        }
+        task_dict.update(task_info_dict)
+
+    return task_dict

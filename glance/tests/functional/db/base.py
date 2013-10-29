@@ -1210,10 +1210,10 @@ class DriverQuotaTests(test_utils.BaseTestCase):
         self.assertEqual(total, x)
 
 
-class DriverTaskTests(test_utils.BaseTestCase):
+class TaskTests(test_utils.BaseTestCase):
 
     def setUp(self):
-        super(DriverTaskTests, self).setUp()
+        super(TaskTests, self).setUp()
         self.owner_id1 = uuidutils.generate_uuid()
         self.adm_context = context.RequestContext(is_admin=True,
                                                   auth_tok='user:user:admin')
@@ -1261,8 +1261,8 @@ class DriverTaskTests(test_utils.BaseTestCase):
 
     def test_task_get_all_with_filter(self):
         for fixture in self.fixtures:
-            task = self.db_api.task_create(self.context,
-                                           build_task_fixture(**fixture))
+            self.db_api.task_create(self.context,
+                                    build_task_fixture(**fixture))
 
         import_tasks = self.db_api.task_get_all(self.context,
                                                 filters={'type': 'import'})
@@ -1295,8 +1295,8 @@ class DriverTaskTests(test_utils.BaseTestCase):
 
     def test_task_get_all_limit(self):
         for fixture in self.fixtures:
-            task = self.db_api.task_create(self.context,
-                                           build_task_fixture(**fixture))
+            self.db_api.task_create(self.context,
+                                    build_task_fixture(**fixture))
 
         tasks = self.db_api.task_get_all(self.context, limit=2)
         self.assertEqual(2, len(tasks))
@@ -1336,11 +1336,14 @@ class DriverTaskTests(test_utils.BaseTestCase):
 
     def test_task_get(self):
         expires_at = timeutils.utcnow()
+        image_id = uuidutils.generate_uuid()
         fixture = {
             'owner': self.context.owner,
             'type': 'import',
             'status': 'pending',
             'input': '{"loc": "fake"}',
+            'result': "{'image_id': %s}" % image_id,
+            'message': 'blah',
             'expires_at': expires_at
         }
 
@@ -1357,7 +1360,66 @@ class DriverTaskTests(test_utils.BaseTestCase):
         self.assertEqual(task['owner'], self.context.owner)
         self.assertEqual(task['type'], 'import')
         self.assertEqual(task['status'], 'pending')
+        self.assertEqual(task['input'], fixture['input'])
+        self.assertEqual(task['result'], fixture['result'])
+        self.assertEqual(task['message'], fixture['message'])
         self.assertEqual(task['expires_at'], expires_at)
+
+    def test_task_get_all(self):
+        now = timeutils.utcnow()
+        image_id = uuidutils.generate_uuid()
+        fixture1 = {
+            'owner': self.context.owner,
+            'type': 'import',
+            'status': 'pending',
+            'input': '{"loc": "fake_1"}',
+            'result': "{'image_id': %s}" % image_id,
+            'message': 'blah_1',
+            'expires_at': now,
+            'created_at': now,
+            'updated_at': now
+        }
+
+        fixture2 = {
+            'owner': self.context.owner,
+            'type': 'import',
+            'status': 'pending',
+            'input': '{"loc": "fake_2"}',
+            'result': "{'image_id': %s}" % image_id,
+            'message': 'blah_2',
+            'expires_at': now,
+            'created_at': now,
+            'updated_at': now
+        }
+
+        task1 = self.db_api.task_create(self.context, fixture1)
+        task2 = self.db_api.task_create(self.context, fixture2)
+
+        self.assertIsNotNone(task1)
+        self.assertIsNotNone(task2)
+
+        task1_id = task1['id']
+        task2_id = task2['id']
+        task_fixtures = {task1_id: fixture1, task2_id: fixture2}
+        tasks = self.db_api.task_get_all(self.context)
+
+        self.assertEqual(len(tasks), 2)
+        self.assertEqual(set((tasks[0]['id'], tasks[1]['id'])),
+                         set((task1_id, task2_id)))
+        for task in tasks:
+            fixture = task_fixtures[task['id']]
+
+            self.assertEqual(task['owner'], self.context.owner)
+            self.assertEqual(task['type'], fixture['type'])
+            self.assertEqual(task['status'], fixture['status'])
+            self.assertEqual(task['expires_at'], fixture['expires_at'])
+            self.assertFalse(task['deleted'])
+            self.assertIsNone(task['deleted_at'])
+            self.assertEqual(task['created_at'], fixture['created_at'])
+            self.assertEqual(task['updated_at'], fixture['updated_at'])
+            self.assertEqual(task['input'], fixture['input'])
+            self.assertEqual(task['result'], fixture['result'])
+            self.assertEqual(task['message'], fixture['message'])
 
     def test_task_create(self):
         task_id = uuidutils.generate_uuid()
@@ -1375,10 +1437,64 @@ class DriverTaskTests(test_utils.BaseTestCase):
         self.assertEqual(task['owner'], self.context.owner)
         self.assertEqual(task['type'], 'export')
         self.assertEqual(task['status'], 'pending')
+        self.assertEqual(task['input'], {'ping': 'pong'})
+
+    def test_task_create_with_all_task_info_null(self):
+        task_id = uuidutils.generate_uuid()
+        self.context.tenant = uuidutils.generate_uuid()
+        values = {
+            'id': task_id,
+            'owner': self.context.owner,
+            'type': 'export',
+            'status': 'pending',
+            'input': None,
+            'result': None,
+            'message': None,
+        }
+        task_values = build_task_fixture(**values)
+        task = self.db_api.task_create(self.context, task_values)
+        self.assertIsNotNone(task)
+        self.assertEqual(task['id'], task_id)
+        self.assertEqual(task['owner'], self.context.owner)
+        self.assertEqual(task['type'], 'export')
+        self.assertEqual(task['status'], 'pending')
+        self.assertEqual(task['input'], None)
+        self.assertEqual(task['result'], None)
+        self.assertEqual(task['message'], None)
 
     def test_task_update(self):
         self.context.tenant = uuidutils.generate_uuid()
-        task_values = build_task_fixture(owner=self.context.owner)
+        result = {'foo': 'bar'}
+        task_values = build_task_fixture(owner=self.context.owner,
+                                         result=result)
+        task = self.db_api.task_create(self.context, task_values)
+
+        task_id = task['id']
+        fixture = {
+            'status': 'processing',
+            'message': 'This is a error string',
+        }
+        task = self.db_api.task_update(self.context, task_id, fixture)
+
+        self.assertEqual(task['id'], task_id)
+        self.assertEqual(task['owner'], self.context.owner)
+        self.assertEqual(task['type'], 'import')
+        self.assertEqual(task['status'], 'processing')
+        self.assertEqual(task['input'], {'ping': 'pong'})
+        self.assertEqual(task['result'], result)
+        self.assertEqual(task['message'], 'This is a error string')
+        self.assertEqual(task['deleted'], False)
+        self.assertIsNone(task['deleted_at'])
+        self.assertIsNone(task['expires_at'])
+        self.assertEqual(task['created_at'], task_values['created_at'])
+        self.assertTrue(task['updated_at'] > task['created_at'])
+
+    def test_task_update_with_all_task_info_null(self):
+        self.context.tenant = uuidutils.generate_uuid()
+        task_values = build_task_fixture(owner=self.context.owner,
+                                         input=None,
+                                         result=None,
+                                         message=None)
         task = self.db_api.task_create(self.context, task_values)
 
         task_id = task['id']
@@ -1389,9 +1505,17 @@ class DriverTaskTests(test_utils.BaseTestCase):
         self.assertEqual(task['owner'], self.context.owner)
         self.assertEqual(task['type'], 'import')
         self.assertEqual(task['status'], 'processing')
+        self.assertEqual(task['input'], None)
+        self.assertEqual(task['result'], None)
+        self.assertEqual(task['message'], None)
+        self.assertEqual(task['deleted'], False)
+        self.assertIsNone(task['deleted_at'])
+        self.assertIsNone(task['expires_at'])
+        self.assertEqual(task['created_at'], task_values['created_at'])
+        self.assertTrue(task['updated_at'] > task['created_at'])
 
     def test_task_delete(self):
-        task_values = build_task_fixture()
+        task_values = build_task_fixture(owner=self.context.owner)
         task = self.db_api.task_create(self.context, task_values)
 
         self.assertIsNotNone(task)
@@ -1402,6 +1526,24 @@ class DriverTaskTests(test_utils.BaseTestCase):
         self.db_api.task_delete(self.context, task_id)
         self.assertRaises(exception.TaskNotFound, self.db_api.task_get,
                           self.context, task_id)
+
+    def test_task_delete_as_admin(self):
+        task_values = build_task_fixture(owner=self.context.owner)
+        task = self.db_api.task_create(self.context, task_values)
+
+        self.assertIsNotNone(task)
+        self.assertEqual(task['deleted'], False)
+        self.assertIsNone(task['deleted_at'])
+
+        task_id = task['id']
+        self.db_api.task_delete(self.context, task_id)
+        del_task = self.db_api.task_get(self.adm_context,
+                                        task_id,
+                                        force_show_deleted=True)
+        self.assertIsNotNone(del_task)
+        self.assertEqual(task_id, del_task['id'])
+        self.assertEqual(True, del_task['deleted'])
+        self.assertIsNotNone(del_task['deleted_at'])
 
 
 class TestVisibility(test_utils.BaseTestCase):
