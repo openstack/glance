@@ -19,25 +19,6 @@
 """
 Tests copying images to a Glance API server which uses a filesystem-
 based storage backend.
-
-The from_swift testcase requires that a real Swift account is available.
-It looks in a file GLANCE_TEST_SWIFT_CONF environ variable for the
-credentials to use.
-
-Note that this test clears the entire container from the Swift account
-for use by the test case, so make sure you supply credentials for
-test accounts only.
-
-The from_s3 testcase requires that a real S3 account is available.
-It looks in a file specified in the GLANCE_TEST_S3_CONF environ variable
-for the credentials to use.
-
-Note that this test clears the entire bucket from the S3 account
-for use by the test case, so make sure you supply credentials for
-test accounts only.
-
-In either case, if a connection to the external store cannot be
-established, then the relevant test case is skipped.
 """
 
 import hashlib
@@ -47,13 +28,7 @@ import tempfile
 import time
 
 from glance.tests import functional
-from glance.tests.functional.store_utils import (setup_swift,
-                                                 teardown_swift,
-                                                 get_swift_uri,
-                                                 setup_s3,
-                                                 teardown_s3,
-                                                 get_s3_uri,
-                                                 setup_http,
+from glance.tests.functional.store_utils import (setup_http,
                                                  get_http_uri)
 from glance.tests.utils import skip_if_disabled, requires
 
@@ -63,8 +38,8 @@ FIVE_KB = 5 * 1024
 class TestCopyToFile(functional.FunctionalTest):
 
     """
-    Functional tests for copying images from the Swift, S3 & HTTP storage
-    backends to file
+    Functional tests for copying images from the HTTP storage
+    backend to file
     """
 
     def _do_test_copy_from(self, from_store, get_uri):
@@ -74,6 +49,7 @@ class TestCopyToFile(functional.FunctionalTest):
         self.cleanup()
 
         self.start_servers(**self.__dict__.copy())
+        setup_http(self)
 
         # POST /images with public image to be stored in from_store,
         # to stand in for the 'external' image
@@ -168,21 +144,12 @@ class TestCopyToFile(functional.FunctionalTest):
 
         self.stop_servers()
 
-    @requires(setup_swift, teardown_swift)
     @skip_if_disabled
-    def test_copy_from_swift(self):
+    def test_copy_from_http_store(self):
         """
-        Ensure we can copy from an external image in Swift.
+        Ensure we can copy from an external image in HTTP store.
         """
-        self._do_test_copy_from('swift', get_swift_uri)
-
-    @requires(setup_s3, teardown_s3)
-    @skip_if_disabled
-    def test_copy_from_s3(self):
-        """
-        Ensure we can copy from an external image in S3.
-        """
-        self._do_test_copy_from('s3', get_s3_uri)
+        self._do_test_copy_from('file', get_http_uri)
 
     @skip_if_disabled
     def _do_test_copy_from_http(self, exists):
