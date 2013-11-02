@@ -29,8 +29,6 @@ It also allows setting of formatting information through conf.
 
 """
 
-import ConfigParser
-import cStringIO
 import inspect
 import itertools
 import logging
@@ -41,11 +39,13 @@ import sys
 import traceback
 
 from oslo.config import cfg
+import six
+from six import moves
 
-from glance.openstack.common.gettextutils import _
+from glance.openstack.common.gettextutils import _  # noqa
+from glance.openstack.common import importutils
 from glance.openstack.common import jsonutils
 from glance.openstack.common import local
-from glance.openstack.common import notifier
 
 
 _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -64,17 +64,20 @@ common_cli_opts = [
 ]
 
 logging_cli_opts = [
-    cfg.StrOpt('log-config',
+    cfg.StrOpt('log-config-append',
                metavar='PATH',
-               help='If this option is specified, the logging configuration '
-                    'file specified is used and overrides any other logging '
-                    'options specified. Please see the Python logging module '
+               deprecated_name='log-config',
+               help='The name of logging configuration file. It does not '
+                    'disable existing loggers, but just appends specified '
+                    'logging configuration to any other existing logging '
+                    'options. Please see the Python logging module '
                     'documentation for details on logging configuration '
                     'files.'),
     cfg.StrOpt('log-format',
                default=None,
                metavar='FORMAT',
-               help='A logging.Formatter log message format string which may '
+               help='DEPRECATED. '
+                    'A logging.Formatter log message format string which may '
                     'use any of the available logging.LogRecord attributes. '
                     'This option is deprecated.  Please use '
                     'logging_context_format_string and '
@@ -126,12 +129,13 @@ log_opts = [
                help='prefix each line of exception output with this format'),
     cfg.ListOpt('default_log_levels',
                 default=[
+                    'amqp=WARN',
                     'amqplib=WARN',
-                    'sqlalchemy=WARN',
                     'boto=WARN',
-                    'suds=INFO',
                     'keystone=INFO',
-                    'eventlet.wsgi.server=WARN'
+                    'qpid=WARN',
+                    'sqlalchemy=WARN',
+                    'suds=INFO',
                 ],
                 help='list of logger=LEVEL pairs'),
     cfg.BoolOpt('publish_errors',
@@ -207,6 +211,8 @@ def _get_log_file_path(binary=None):
         binary = binary or _get_binary_name()
         return '%s.log' % (os.path.join(logdir, binary),)
 
+    return None
+
 
 class BaseLoggerAdapter(logging.LoggerAdapter):
 
@@ -249,6 +255,13 @@ class ContextAdapter(BaseLoggerAdapter):
             self.warn(stdmsg, *args, **kwargs)
 
     def process(self, msg, kwargs):
+        # NOTE(mrodden): catch any Message/other object and
+        #                coerce to unicode before they can get
+        #                to the python logging and possibly
+        #                cause string encoding trouble
+        if not isinstance(msg, six.string_types):
+            msg = six.text_type(msg)
+
         if 'extra' not in kwargs:
             kwargs['extra'] = {}
         extra = kwargs['extra']
@@ -260,14 +273,14 @@ class ContextAdapter(BaseLoggerAdapter):
             extra.update(_dictify_context(context))
 
         instance = kwargs.pop('instance', None)
+        instance_uuid = (extra.get('instance_uuid', None) or
+                         kwargs.pop('instance_uuid', None))
         instance_extra = ''
         if instance:
             instance_extra = CONF.instance_format % instance
-        else:
-            instance_uuid = kwargs.pop('instance_uuid', None)
-            if instance_uuid:
-                instance_extra = (CONF.instance_uuid_format
-                                  % {'uuid': instance_uuid})
+        elif instance_uuid:
+            instance_extra = (CONF.instance_uuid_format
+                              % {'uuid': instance_uuid})
         extra.update({'instance': instance_extra})
 
         extra.update({"project": self.project})
@@ -322,17 +335,6 @@ class JSONFormatter(logging.Formatter):
         return jsonutils.dumps(message)
 
 
-class PublishErrorsHandler(logging.Handler):
-    def emit(self, record):
-        if ('glance.openstack.common.notifier.log_notifier' in
-                CONF.notification_driver):
-            return
-        notifier.api.notify(None, 'error.publisher',
-                            'error_notification',
-                            notifier.api.ERROR,
-                            dict(error=record.msg))
-
-
 def _create_logging_excepthook(product_name):
     def logging_excepthook(type, value, tb):
         extra = {}
@@ -355,17 +357,18 @@ class LogConfigError(Exception):
                                    err_msg=self.err_msg)
 
 
-def _load_log_config(log_config):
+def _load_log_config(log_config_append):
     try:
-        logging.config.fileConfig(log_config)
-    except ConfigParser.Error as exc:
-        raise LogConfigError(log_config, str(exc))
+        logging.config.fileConfig(log_config_append,
+                                  disable_existing_loggers=False)
+    except moves.configparser.Error as exc:
+        raise LogConfigError(log_config_append, str(exc))
 
 
 def setup(product_name):
     """Setup logging."""
-    if CONF.log_config:
-        _load_log_config(CONF.log_config)
+    if CONF.log_config_append:
+        _load_log_config(CONF.log_config_append)
     else:
         _setup_logging_from_conf()
     sys.excepthook = _create_logging_excepthook(product_name)
@@ -428,7 +431,10 @@ def _setup_logging_from_conf():
         log_root.addHandler(streamlog)
 
     if CONF.publish_errors:
-        log_root.addHandler(PublishErrorsHandler(logging.ERROR))
+        handler = importutils.import_object(
+            "glance.openstack.common.log_handler.PublishErrorsHandler",
+            logging.ERROR)
+        log_root.addHandler(handler)
 
     datefmt = CONF.log_date_format
     for handler in log_root.handlers:
@@ -467,10 +473,11 @@ def getLogger(name='unknown', version='unknown'):
 
 
 def getLazyLogger(name='unknown', version='unknown'):
-    """
-    create a pass-through logger that does not create the real logger
+    """Returns lazy logger.
+
+    Creates a pass-through logger that does not create the real logger
     until it is really needed and delegates all calls to the real logger
-    once it is created
+    once it is created.
     """
     return LazyAdapter(name, version)
 
@@ -527,7 +534,7 @@ class ContextFormatter(logging.Formatter):
         if not record:
             return logging.Formatter.formatException(self, exc_info)
 
-        stringbuffer = cStringIO.StringIO()
+        stringbuffer = moves.StringIO()
         traceback.print_exception(exc_info[0], exc_info[1], exc_info[2],
                                   None, stringbuffer)
         lines = stringbuffer.getvalue().split('\n')
