@@ -353,40 +353,6 @@ def is_image_mutable(context, image):
     return image['owner'] == context.owner
 
 
-def is_image_sharable(context, image, **kwargs):
-    """Return True if the image can be shared to others in this context."""
-    # Is admin == image sharable
-    if context.is_admin:
-        return True
-
-    # Only allow sharing if we have an owner
-    if context.owner is None:
-        return False
-
-    # If we own the image, we can share it
-    if context.owner == image['owner']:
-        return True
-
-    # Let's get the membership association
-    if 'membership' in kwargs:
-        membership = kwargs['membership']
-        if membership is None:
-            # Not shared with us anyway
-            return False
-    else:
-        members = image_member_find(context,
-                                    image_id=image['id'],
-                                    member=context.owner)
-        if members:
-            member = members[0]
-        else:
-            # Not shared with us anyway
-            return False
-
-    # It's the can_share attribute we're now interested in
-    return member['can_share']
-
-
 def is_image_visible(context, image, status=None):
     """Return True if the image is visible in this context."""
     # Is admin == image visible

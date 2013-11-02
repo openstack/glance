@@ -28,8 +28,9 @@ import webob
 import glance.api.common
 import glance.common.config
 from glance.common import crypt
-import glance.context
+from glance import context
 from glance.db.sqlalchemy import api as db_api
+from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
 from glance.registry.api import v1 as rserver
@@ -120,7 +121,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
             _get_extra_fixture(UUID2, 'fake image #2',
                                min_disk=5, min_ram=256,
                                size=19, properties={})]
-        self.context = glance.context.RequestContext(is_admin=True)
+        self.context = context.RequestContext(is_admin=True)
         db_api.setup_db_env()
         db_api.get_engine()
         self.destroy_fixtures()
@@ -1689,7 +1690,7 @@ class TestRegistryAPILocations(base.IsolatedUnitTest,
             _get_extra_fixture(UUID2, 'fake image #2',
                                min_disk=5, min_ram=256,
                                size=19, properties={})]
-        self.context = glance.context.RequestContext(is_admin=True)
+        self.context = context.RequestContext(is_admin=True)
         db_api.setup_db_env()
         db_api.get_engine()
         self.destroy_fixtures()
@@ -1783,3 +1784,138 @@ class TestRegistryAPILocations(base.IsolatedUnitTest,
                             encryption_key, image_entry['locations'][1]['url'])
         self.assertEqual(location_url1, decrypted_location_url1)
         self.assertEqual(location_url2, decrypted_location_url2)
+
+
+class TestSharability(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(TestSharability, self).setUp()
+        self.setup_db()
+        self.controller = glance.registry.api.v1.members.Controller()
+
+    def setup_db(self):
+        db_api.setup_db_env()
+        db_api.get_engine()
+        db_models.unregister_models(db_api._ENGINE)
+        db_models.register_models(db_api._ENGINE)
+
+    def test_is_image_sharable_as_admin(self):
+        TENANT1 = uuidutils.generate_uuid()
+        TENANT2 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1,
+                                       owner_is_tenant=True)
+        ctxt2 = context.RequestContext(is_admin=True, user=TENANT2,
+                                       auth_tok='user:%s:admin' % TENANT2,
+                                       owner_is_tenant=False)
+        UUIDX = uuidutils.generate_uuid()
+        #we need private image and context.owner should not match image owner
+        image = db_api.image_create(ctxt1, {'id': UUIDX,
+                                            'status': 'queued',
+                                            'is_public': False,
+                                            'owner': TENANT1})
+
+        result = self.controller.is_image_sharable(ctxt2, image)
+        self.assertTrue(result)
+
+    def test_is_image_sharable_owner_can_share(self):
+        TENANT1 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1,
+                                       owner_is_tenant=True)
+        UUIDX = uuidutils.generate_uuid()
+        #we need private image and context.owner should not match image owner
+        image = db_api.image_create(ctxt1, {'id': UUIDX,
+                                            'status': 'queued',
+                                            'is_public': False,
+                                            'owner': TENANT1})
+
+        result = self.controller.is_image_sharable(ctxt1, image)
+        self.assertTrue(result)
+
+    def test_is_image_sharable_non_owner_cannot_share(self):
+        TENANT1 = uuidutils.generate_uuid()
+        TENANT2 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1,
+                                       owner_is_tenant=True)
+        ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
+                                       auth_tok='user:%s:user' % TENANT2,
+                                       owner_is_tenant=False)
+        UUIDX = uuidutils.generate_uuid()
+        #we need private image and context.owner should not match image owner
+        image = db_api.image_create(ctxt1, {'id': UUIDX,
+                                            'status': 'queued',
+                                            'is_public': False,
+                                            'owner': TENANT1})
+
+        result = self.controller.is_image_sharable(ctxt2, image)
+        self.assertFalse(result)
+
+    def test_is_image_sharable_non_owner_can_share_as_image_member(self):
+        TENANT1 = uuidutils.generate_uuid()
+        TENANT2 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1,
+                                       owner_is_tenant=True)
+        ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
+                                       auth_tok='user:%s:user' % TENANT2,
+                                       owner_is_tenant=False)
+        UUIDX = uuidutils.generate_uuid()
+        #we need private image and context.owner should not match image owner
+        image = db_api.image_create(ctxt1, {'id': UUIDX,
+                                            'status': 'queued',
+                                            'is_public': False,
+                                            'owner': TENANT1})
+
+        membership = {'can_share': True,
+                      'member': TENANT2,
+                      'image_id': UUIDX}
+
+        db_api.image_member_create(ctxt1, membership)
+
+        result = self.controller.is_image_sharable(ctxt2, image)
+        self.assertTrue(result)
+
+    def test_is_image_sharable_non_owner_as_image_member_without_sharing(self):
+        TENANT1 = uuidutils.generate_uuid()
+        TENANT2 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1,
+                                       owner_is_tenant=True)
+        ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
+                                       auth_tok='user:%s:user' % TENANT2,
+                                       owner_is_tenant=False)
+        UUIDX = uuidutils.generate_uuid()
+        #we need private image and context.owner should not match image owner
+        image = db_api.image_create(ctxt1, {'id': UUIDX,
+                                            'status': 'queued',
+                                            'is_public': False,
+                                            'owner': TENANT1})
+
+        membership = {'can_share': False,
+                      'member': TENANT2,
+                      'image_id': UUIDX}
+
+        db_api.image_member_create(ctxt1, membership)
+
+        result = self.controller.is_image_sharable(ctxt2, image)
+        self.assertFalse(result)
+
+    def test_is_image_sharable_owner_is_none(self):
+        TENANT1 = uuidutils.generate_uuid()
+        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                       auth_tok='user:%s:user' % TENANT1,
+                                       owner_is_tenant=True)
+        ctxt2 = context.RequestContext(is_admin=False, tenant=None,
+                                       auth_tok='user:%s:user' % TENANT1,
+                                       owner_is_tenant=True)
+        UUIDX = uuidutils.generate_uuid()
+        #we need private image and context.owner should not match image owner
+        image = db_api.image_create(ctxt1, {'id': UUIDX,
+                                            'status': 'queued',
+                                            'is_public': False,
+                                            'owner': TENANT1})
+
+        result = self.controller.is_image_sharable(ctxt2, image)
+        self.assertFalse(result)

@@ -37,6 +37,28 @@ class Controller(object):
         self.db_api = glance.db.get_api()
         self.db_api.setup_db_env()
 
+    def is_image_sharable(self, context, image):
+        """Return True if the image can be shared to others in this context."""
+        # Is admin == image sharable
+        if context.is_admin:
+            return True
+
+        # Only allow sharing if we have an owner
+        if context.owner is None:
+            return False
+
+        # If we own the image, we can share it
+        if context.owner == image['owner']:
+            return True
+
+        members = self.db_api.image_member_find(context,
+                                                image_id=image['id'],
+                                                member=context.owner)
+        if members:
+            return members[0]['can_share']
+
+        return False
+
     def index(self, req, image_id):
         """
         Get the members of an image.
@@ -89,7 +111,7 @@ class Controller(object):
             raise webob.exc.HTTPNotFound()
 
         # Can they manipulate the membership?
-        if not self.db_api.is_image_sharable(req.context, image):
+        if not self.is_image_sharable(req.context, image):
             msg = _("User lacks permission to share image %(id)s")
             LOG.info(msg % {'id': image_id})
             msg = _("No permission to share that image")
@@ -202,7 +224,7 @@ class Controller(object):
             raise webob.exc.HTTPNotFound()
 
         # Can they manipulate the membership?
-        if not self.db_api.is_image_sharable(req.context, image):
+        if not self.is_image_sharable(req.context, image):
             msg = _("User lacks permission to share image %(id)s")
             LOG.info(msg % {'id': image_id})
             msg = _("No permission to share that image")
@@ -262,7 +284,7 @@ class Controller(object):
             raise webob.exc.HTTPNotFound()
 
         # Can they manipulate the membership?
-        if not self.db_api.is_image_sharable(req.context, image):
+        if not self.is_image_sharable(req.context, image):
             msg = _("User lacks permission to share image %(id)s")
             LOG.info(msg % {'id': image_id})
             msg = _("No permission to share that image")
