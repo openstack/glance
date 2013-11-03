@@ -43,6 +43,7 @@ import testtools
 
 from glance import tests as glance_tests
 from glance.common import utils
+from glance.openstack.common import units
 from glance.tests import utils as test_utils
 
 execute, get_unused_port = test_utils.execute, test_utils.get_unused_port
@@ -293,7 +294,7 @@ class ApiServer(Server):
         self.swift_store_container = kwargs.get("swift_store_container", "")
         self.swift_store_create_container_on_put = kwargs.get(
             "swift_store_create_container_on_put", "True")
-        self.swift_store_large_object_size = 5 * 1024
+        self.swift_store_large_object_size = 5 * units.Ki
         self.swift_store_large_object_chunk_size = 200
         self.swift_store_multi_tenant = False
         self.swift_store_admin_tenants = []

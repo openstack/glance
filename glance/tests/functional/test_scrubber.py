@@ -24,6 +24,7 @@ import httplib2
 import swiftclient
 
 from glance.common import crypt
+from glance.openstack.common import units
 from glance.store.swift import StoreLocation
 from glance.tests import functional
 from glance.tests.functional.store.test_swift import parse_config
@@ -32,7 +33,7 @@ from glance.tests.functional.store.test_swift import swift_connect
 from glance.tests.utils import execute
 
 
-TEST_IMAGE_DATA = '*' * 5 * 1024
+TEST_IMAGE_DATA = '*' * 5 * units.Ki
 TEST_IMAGE_META = {
     'name': 'test_image',
     'is_public': False,

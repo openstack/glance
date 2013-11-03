@@ -22,6 +22,7 @@ from oslo.config import cfg
 
 from glance.common import exception
 import glance.openstack.common.log as logging
+from glance.openstack.common import units
 import glance.openstack.common.uuidutils as uuidutils
 import glance.store
 import glance.store.base
@@ -172,7 +173,7 @@ class Store(glance.store.base.Store):
         try:
             volume = get_cinderclient(self.context).volumes.get(loc.volume_id)
             # GB unit convert to byte
-            return volume.size * 1024 * 1024 * 1024
+            return volume.size * units.Gi
         except cinder_exception.NotFound as e:
             reason = _("Failed to get image size due to "
                        "volume can not be found: %s") % self.volume_id

@@ -23,6 +23,7 @@ from glance.common import utils
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import strutils
+from glance.openstack.common import units
 
 LOG = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ def _exception_to_unicode(exc):
 
 class Store(object):
 
-    CHUNKSIZE = (16 * 1024 * 1024)  # 16M
+    CHUNKSIZE = 16 * units.Mi  # 16M
 
     def __init__(self, context=None, location=None):
         """

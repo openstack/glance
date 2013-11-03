@@ -25,6 +25,7 @@ from glance.common import exception
 from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import processutils
+from glance.openstack.common import units
 import glance.store
 import glance.store.base
 import glance.store.location
@@ -191,7 +192,7 @@ class Store(glance.store.base.Store):
         """
 
         try:
-            self.chunk_size = CONF.sheepdog_store_chunk_size * 1024 * 1024
+            self.chunk_size = CONF.sheepdog_store_chunk_size * units.Mi
             self.addr = CONF.sheepdog_store_address
             self.port = CONF.sheepdog_store_port
         except cfg.ConfigFileValueError as e:

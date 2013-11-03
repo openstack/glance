@@ -30,10 +30,11 @@ import random
 import swiftclient
 import thread
 
+from glance.openstack.common import units
 from glance.store.s3 import get_s3_location, get_calling_format
 
 
-FIVE_KB = 5 * 1024
+FIVE_KB = 5 * units.Ki
 
 
 class RemoteImageHandler(BaseHTTPServer.BaseHTTPRequestHandler):

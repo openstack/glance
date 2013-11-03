@@ -18,11 +18,12 @@ import tempfile
 import testtools
 
 from glance.openstack.common import timeutils
+from glance.openstack.common import units
 from glance.tests.integration.legacy_functional import base
 from glance.tests.utils import minimal_headers
 
-FIVE_KB = 5 * 1024
-FIVE_GB = 5 * 1024 * 1024 * 1024
+FIVE_KB = 5 * units.Ki
+FIVE_GB = 5 * units.Gi
 
 
 class TestApi(base.ApiTest):

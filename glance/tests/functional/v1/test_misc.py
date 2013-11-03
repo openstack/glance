@@ -20,11 +20,12 @@ import httplib2
 import json
 import os
 
+from glance.openstack.common import units
 from glance.tests import functional
 from glance.tests.utils import execute, minimal_headers
 
-FIVE_KB = 5 * 1024
-FIVE_GB = 5 * 1024 * 1024 * 1024
+FIVE_KB = 5 * units.Ki
+FIVE_GB = 5 * units.Gi
 
 
 class TestMiscellaneous(functional.FunctionalTest):
