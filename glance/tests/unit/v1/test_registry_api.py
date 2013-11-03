@@ -22,7 +22,6 @@ import json
 from oslo.config import cfg
 import routes
 from sqlalchemy import exc
-import stubout
 import webob
 
 import glance.api.common
@@ -30,6 +29,7 @@ import glance.common.config
 from glance.common import crypt
 import glance.context
 from glance.db.sqlalchemy import api as db_api
+from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
 from glance.registry.api import v1 as rserver
@@ -50,14 +50,13 @@ class TestRegistryDb(test_utils.BaseTestCase):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestRegistryDb, self).setUp()
-        self.stubs = stubout.StubOutForTesting()
-        self.orig_engine = db_api._ENGINE
-        self.orig_connection = db_api._CONNECTION
-        self.orig_maker = db_api._MAKER
-        self.addCleanup(self.stubs.UnsetAll)
-        self.addCleanup(setattr, db_api, '_ENGINE', self.orig_engine)
-        self.addCleanup(setattr, db_api, '_CONNECTION', self.orig_connection)
-        self.addCleanup(setattr, db_api, '_MAKER', self.orig_maker)
+        self.setup_db()
+
+    def setup_db(self):
+        db_api.setup_db_env()
+        db_api.get_engine()
+        db_models.unregister_models(db_api._ENGINE)
+        db_models.register_models(db_api._ENGINE)
 
     def test_bad_sql_connection(self):
         """
