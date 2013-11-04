@@ -19,7 +19,6 @@
 """Base class for all storage backends"""
 
 from glance.common import exception
-from glance.common import utils
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import strutils

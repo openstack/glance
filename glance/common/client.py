@@ -36,7 +36,7 @@ except ImportError:
     import ssl
 
 try:
-    import sendfile
+    import sendfile  # noqa
     SENDFILE_SUPPORTED = True
 except ImportError:
     SENDFILE_SUPPORTED = False

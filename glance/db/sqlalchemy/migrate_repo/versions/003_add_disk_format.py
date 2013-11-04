@@ -15,8 +15,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from migrate.changeset import *
-from sqlalchemy import *
+from migrate.changeset import *  # noqa
+from sqlalchemy import *  # noqa
 
 from glance.db.sqlalchemy.migrate_repo.schema import (
     Boolean, DateTime, Integer, String, Text, from_migration_import)

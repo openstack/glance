@@ -28,7 +28,7 @@ migration performs the following steps for every entry in the images table:
 
 Fixes bug #1081043
 """
-import types
+import types  # noqa
 import urllib
 import urlparse
 
@@ -38,7 +38,7 @@ import sqlalchemy
 from glance.common import crypt
 from glance.common import exception
 import glance.openstack.common.log as logging
-import glance.store.swift
+import glance.store.swift  # noqa
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF

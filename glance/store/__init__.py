@@ -16,13 +16,10 @@
 #    under the License.
 
 import collections
-import os
 import sys
-import time
 
 from oslo.config import cfg
 
-from glance.common import crypt
 from glance.common import exception
 from glance.common import utils
 import glance.context

@@ -733,7 +733,7 @@ class TestImageCacheXattr(functional.FunctionalTest,
 
         if not getattr(self, 'inited', False):
             try:
-                import xattr
+                import xattr  # noqa
             except ImportError:
                 self.inited = True
                 self.disabled = True
@@ -779,7 +779,7 @@ class TestImageCacheManageXattr(functional.FunctionalTest,
 
         if not getattr(self, 'inited', False):
             try:
-                import xattr
+                import xattr  # noqa
             except ImportError:
                 self.inited = True
                 self.disabled = True
@@ -825,7 +825,7 @@ class TestImageCacheSqlite(functional.FunctionalTest,
 
         if not getattr(self, 'inited', False):
             try:
-                import sqlite3
+                import sqlite3  # noqa
             except ImportError:
                 self.inited = True
                 self.disabled = True
@@ -864,7 +864,7 @@ class TestImageCacheManageSqlite(functional.FunctionalTest,
 
         if not getattr(self, 'inited', False):
             try:
-                import sqlite3
+                import sqlite3  # noqa
             except ImportError:
                 self.inited = True
                 self.disabled = True

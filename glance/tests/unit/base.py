@@ -21,7 +21,6 @@ import shutil
 
 import fixtures
 from oslo.config import cfg
-import stubout
 
 from glance import store
 from glance.store import location

@@ -30,7 +30,7 @@ from glance.common import exception
 from glance import image_cache
 from glance.openstack.common import units
 #NOTE(bcwaldon): This is imported to load the registry config options
-import glance.registry
+import glance.registry  # noqa
 import glance.store.filesystem as fs_store
 import glance.store.s3 as s3_store
 from glance.tests import utils as test_utils
@@ -483,7 +483,7 @@ class TestImageCacheXattr(test_utils.BaseTestCase,
 
         if not getattr(self, 'inited', False):
             try:
-                import xattr
+                import xattr  # noqa
             except ImportError:
                 self.inited = True
                 self.disabled = True
@@ -521,7 +521,7 @@ class TestImageCacheSqlite(test_utils.BaseTestCase,
 
         if not getattr(self, 'inited', False):
             try:
-                import sqlite3
+                import sqlite3  # noqa
             except ImportError:
                 self.inited = True
                 self.disabled = True

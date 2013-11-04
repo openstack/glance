@@ -19,7 +19,7 @@ import json
 import pickle
 
 import sqlalchemy
-from sqlalchemy import MetaData, Table, Column
+from sqlalchemy import MetaData, Table, Column  # noqa
 from glance.db.sqlalchemy import models
 
 

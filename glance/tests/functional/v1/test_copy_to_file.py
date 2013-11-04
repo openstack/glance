@@ -31,7 +31,7 @@ from glance.openstack.common import units
 from glance.tests import functional
 from glance.tests.functional.store_utils import (setup_http,
                                                  get_http_uri)
-from glance.tests.utils import skip_if_disabled, requires
+from glance.tests.utils import skip_if_disabled
 
 FIVE_KB = 5 * units.Ki
 
