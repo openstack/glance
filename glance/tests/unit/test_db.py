@@ -99,13 +99,13 @@ class TestImageRepo(test_utils.BaseTestCase):
                         name='1', size=256,
                         is_public=True, status='active',
                         locations=[{'url': UUID1_LOCATION,
-                        'metadata': UUID1_LOCATION_METADATA}]),
+                                    'metadata': UUID1_LOCATION_METADATA}]),
             _db_fixture(UUID2, owner=TENANT1, checksum=CHCKSUM1,
                         name='2', size=512, is_public=False),
             _db_fixture(UUID3, owner=TENANT3, checksum=CHCKSUM1,
                         name='3', size=1024, is_public=True,
                         locations=[{'url': UUID3_LOCATION,
-                        'metadata': {}}]),
+                                    'metadata': {}}]),
             _db_fixture(UUID4, owner=TENANT4, name='4', size=2048),
         ]
         [self.db.image_create(None, image) for image in self.images]

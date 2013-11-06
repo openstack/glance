@@ -474,27 +474,27 @@ class TestSSL(functional.FunctionalTest):
             "status": "CURRENT",
             "links": [{
                 "rel": "self",
-                "href": "https://127.0.0.1:%d/v2/" % self.api_port}]}, {
-            "id": "v2.1",
-            "status": "SUPPORTED",
-            "links": [{
-                "rel": "self",
-                "href": "https://127.0.0.1:%d/v2/" % self.api_port}]}, {
-            "id": "v2.0",
-            "status": "SUPPORTED",
-            "links": [{
-                "rel": "self",
-                "href": "https://127.0.0.1:%d/v2/" % self.api_port}]}, {
-            "id": "v1.1",
-            "status": "CURRENT",
-            "links": [{
-                "rel": "self",
-                "href": "https://127.0.0.1:%d/v1/" % self.api_port}]}, {
-            "id": "v1.0",
-            "status": "SUPPORTED",
-            "links": [{
-                "rel": "self",
-                "href": "https://127.0.0.1:%d/v1/" % self.api_port}]}]}
+                "href": "https://127.0.0.1:%d/v2/" % self.api_port}]},
+                {"id": "v2.1",
+                 "status": "SUPPORTED",
+                 "links": [{
+                     "rel": "self",
+                     "href": "https://127.0.0.1:%d/v2/" % self.api_port}]},
+                {"id": "v2.0",
+                 "status": "SUPPORTED",
+                 "links": [{
+                     "rel": "self",
+                     "href": "https://127.0.0.1:%d/v2/" % self.api_port}]},
+                {"id": "v1.1",
+                 "status": "CURRENT",
+                 "links": [{
+                     "rel": "self",
+                     "href": "https://127.0.0.1:%d/v1/" % self.api_port}]},
+                {"id": "v1.0",
+                 "status": "SUPPORTED",
+                 "links": [{
+                     "rel": "self",
+                     "href": "https://127.0.0.1:%d/v1/" % self.api_port}]}]}
         versions_json = json.dumps(versions)
         images = {'images': []}
         images_json = json.dumps(images)

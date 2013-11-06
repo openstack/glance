@@ -114,11 +114,9 @@ class TestUploadUtils(base.StoreClearingUnitTest):
         self.mox.StubOutWithMock(registry, "update_image_metadata")
         update_data = {'checksum': checksum,
                        'size': size}
-        registry.update_image_metadata(req.context,
-                                       image_meta['id'],
-                                       update_data
-                                       ).AndReturn(
-                                           image_meta.update(update_data))
+        registry.update_image_metadata(
+            req.context, image_meta['id'],
+            update_data).AndReturn(image_meta.update(update_data))
         self.mox.ReplayAll()
 
         actual_meta, actual_loc, loc_meta = upload_utils.upload_data_to_store(
@@ -150,11 +148,9 @@ class TestUploadUtils(base.StoreClearingUnitTest):
 
         self.mox.StubOutWithMock(registry, "update_image_metadata")
         update_data = {'checksum': checksum}
-        registry.update_image_metadata(req.context,
-                                       image_meta['id'],
-                                       update_data
-                                       ).AndReturn(
-                                           image_meta.update(update_data))
+        registry.update_image_metadata(
+            req.context, image_meta['id'],
+            update_data).AndReturn(image_meta.update(update_data))
         notifier.error('image.upload', mox.IgnoreArg())
         self.mox.ReplayAll()
 
@@ -187,10 +183,9 @@ class TestUploadUtils(base.StoreClearingUnitTest):
 
         self.mox.StubOutWithMock(registry, "update_image_metadata")
         update_data = {'checksum': checksum}
-        registry.update_image_metadata(req.context,
-                                       image_meta['id'],
-                                       update_data).AndReturn(
-                                               image_meta.update(update_data))
+        registry.update_image_metadata(
+            req.context, image_meta['id'],
+            update_data).AndReturn(image_meta.update(update_data))
         notifier.error('image.upload', mox.IgnoreArg())
         self.mox.ReplayAll()
 

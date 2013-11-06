@@ -940,9 +940,9 @@ class TestRegistryV1ClientRequests(base.IsolatedUnitTest):
                                              identity_headers=identity_headers)
 
         self.mox.StubOutWithMock(test_client.BaseClient, 'do_request')
-        test_client.BaseClient.do_request("GET", "/images",
-                                          headers=identity_headers).AndReturn(
-                                              FakeResponse())
+        test_client.BaseClient.do_request(
+            "GET", "/images",
+            headers=identity_headers).AndReturn(FakeResponse())
         self.mox.ReplayAll()
 
         self.client.do_request("GET", "/images")
