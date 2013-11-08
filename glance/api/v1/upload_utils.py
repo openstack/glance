@@ -115,10 +115,12 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
         def _kill_mismatched(image_meta, attr, actual):
             supplied = image_meta.get(attr)
             if supplied and supplied != actual:
-                msg = _("Supplied %(attr)s (%(supplied)s) and "
-                        "%(attr)s generated from uploaded image "
-                        "(%(actual)s) did not match. Setting image "
-                        "status to 'killed'.") % locals()
+                msg = (_("Supplied %(attr)s (%(supplied)s) and "
+                         "%(attr)s generated from uploaded image "
+                         "(%(actual)s) did not match. Setting image "
+                         "status to 'killed'.") % {'attr': attr,
+                                                   'supplied': supplied,
+                                                   'actual': actual})
                 LOG.error(msg)
                 safe_kill(req, image_id)
                 initiate_deletion(req, location, image_id, CONF.delayed_delete)
@@ -135,7 +137,9 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
         # from the backend store
         LOG.debug(_("Updating image %(image_id)s data. "
                   "Checksum set to %(checksum)s, size set "
-                  "to %(size)d"), locals())
+                  "to %(size)d"), {'image_id': image_id,
+                                   'checksum': checksum,
+                                   'size': size})
         update_data = {'checksum': checksum,
                        'size': size}
         try:

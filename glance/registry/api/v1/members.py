@@ -275,8 +275,9 @@ class Controller(object):
         if members:
             self.db_api.image_member_delete(req.context, members[0]['id'])
         else:
-            msg = _("%(id)s is not a member of image %(image_id)s")
-            LOG.debug(msg % locals())
+            msg = (_("%(id)s is not a member of image %(image_id)s") %
+                   {'id': id, 'image_id': image_id})
+            LOG.debug(msg)
             msg = _("Membership could not be found.")
             raise webob.exc.HTTPNotFound(explanation=msg)
 

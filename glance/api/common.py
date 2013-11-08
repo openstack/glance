@@ -41,18 +41,21 @@ def size_checked_iter(response, image_meta, expected_size, image_iter,
             yield chunk
             bytes_written += len(chunk)
     except Exception as err:
-        msg = _("An error occurred reading from backend storage "
-                "for image %(image_id)s: %(err)s") % locals()
+        msg = (_("An error occurred reading from backend storage "
+                 "for image %(image_id)s: %(err)s") % {'image_id': image_id,
+                                                       'err': err})
         LOG.error(msg)
         raise
 
     if expected_size != bytes_written:
-        msg = _("Backend storage for image %(image_id)s "
-                "disconnected after writing only %(bytes_written)d "
-                "bytes") % locals()
+        msg = (_("Backend storage for image %(image_id)s "
+                 "disconnected after writing only %(bytes_written)d "
+                 "bytes") % {'image_id': image_id,
+                             'bytes_written': bytes_written})
         LOG.error(msg)
         raise exception.GlanceException(_("Corrupt image download for "
-                                          "image %(image_id)s") % locals())
+                                          "image %(image_id)s") %
+                                        {'image_id': image_id})
 
 
 def image_send_notification(bytes_written, expected_size, image_meta, request,
@@ -76,8 +79,8 @@ def image_send_notification(bytes_written, expected_size, image_meta, request,
         notify('image.send', payload)
 
     except Exception as err:
-        msg = _("An error occurred during image.send"
-                " notification: %(err)s") % locals()
+        msg = (_("An error occurred during image.send"
+                 " notification: %(err)s") % {'err': err})
         LOG.error(msg)
 
 

@@ -113,8 +113,8 @@ class Store(glance.store.base.Store):
     def _option_get(self, param):
         result = getattr(CONF, param)
         if not result:
-            reason = _("Could not find %(param)s in configuration "
-                       "options.") % locals()
+            reason = (_("Could not find %(param)s in configuration "
+                        "options.") % {'param': param})
             LOG.debug(reason)
             raise exception.BadStoreConfiguration(store_name="gridfs",
                                                   reason=reason)

@@ -181,7 +181,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                        ", you need to change it to use the "
                        "swift+http:// scheme, like so: "
                        "swift+http://user:pass@authurl.com/v1/container/obj")
-            LOG.debug(_("Invalid store URI: %(reason)s") % locals())
+            LOG.debug(_("Invalid store URI: %(reason)s"), {'reason': reason})
             raise exception.BadStoreUri(message=reason)
 
         pieces = urlparse.urlparse(uri)
@@ -316,7 +316,7 @@ class BaseStore(glance.store.base.Store):
         result = getattr(CONF, param)
         if not result:
             reason = (_("Could not find %(param)s in configuration "
-                        "options.") % locals())
+                        "options.") % {'param': param})
             LOG.error(reason)
             raise exception.BadStoreConfiguration(store_name="swift",
                                                   reason=reason)
@@ -394,11 +394,16 @@ class BaseStore(glance.store.base.Store):
                                                       written_chunks)
 
                     bytes_read = reader.bytes_read
-                    msg = _("Wrote chunk %(chunk_name)s (%(chunk_id)d/"
-                            "%(total_chunks)s) of length %(bytes_read)d "
-                            "to Swift returning MD5 of content: "
-                            "%(chunk_etag)s")
-                    LOG.debug(msg % locals())
+                    msg = (_("Wrote chunk %(chunk_name)s (%(chunk_id)d/"
+                             "%(total_chunks)s) of length %(bytes_read)d "
+                             "to Swift returning MD5 of content: "
+                             "%(chunk_etag)s") %
+                           {'chunk_name': chunk_name,
+                            'chunk_id': chunk_id,
+                            'total_chunks': total_chunks,
+                            'bytes_read': bytes_read,
+                            'chunk_etag': chunk_etag})
+                    LOG.debug(msg)
 
                     if bytes_read == 0:
                         # Delete the last chunk, because it's of zero size.
@@ -443,7 +448,7 @@ class BaseStore(glance.store.base.Store):
                 raise exception.Duplicate(_("Swift already has an image at "
                                             "this location"))
             msg = (_("Failed to add object to Swift.\n"
-                     "Got error from Swift: %(e)s") % locals())
+                     "Got error from Swift: %(e)s") % {'e': e})
             LOG.error(msg)
             raise glance.store.BackendException(msg)
 
@@ -504,15 +509,15 @@ class BaseStore(glance.store.base.Store):
                     try:
                         connection.put_container(container)
                     except swiftclient.ClientException as e:
-                        msg = _("Failed to add container to Swift.\n"
-                                "Got error from Swift: %(e)s") % locals()
+                        msg = (_("Failed to add container to Swift.\n"
+                                 "Got error from Swift: %(e)s") % {'e': e})
                         raise glance.store.BackendException(msg)
                 else:
                     msg = (_("The container %(container)s does not exist in "
                              "Swift. Please set the "
                              "swift_store_create_container_on_put option"
                              "to add container to Swift automatically.") %
-                           locals())
+                           {'container': container})
                     raise glance.store.BackendException(msg)
             else:
                 raise

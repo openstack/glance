@@ -389,16 +389,16 @@ class Controller(object):
         try:
             image_data = _normalize_image_location_for_db(image_data)
             image_data = self.db_api.image_create(req.context, image_data)
-            msg = _("Successfully created image %(id)s")
-            LOG.info(msg % {'id': image_id})
+            msg = _("Successfully created image %(id)s") % {'id': image_id}
+            LOG.info(msg)
             return dict(image=make_image_dict(image_data))
         except exception.Duplicate:
-            msg = (_("Image with identifier %s already exists!") % image_id)
+            msg = _("Image with identifier %s already exists!") % image_id
             LOG.error(msg)
             return exc.HTTPConflict(msg)
         except exception.Invalid as e:
             msg = (_("Failed to add image metadata. "
-                     "Got error: %(e)s") % locals())
+                     "Got error: %(e)s") % {'e': e})
             LOG.error(msg)
             return exc.HTTPBadRequest(msg)
 
@@ -424,7 +424,8 @@ class Controller(object):
         purge_props = req.headers.get("X-Glance-Registry-Purge-Props", "false")
         try:
             LOG.debug(_("Updating image %(id)s with metadata: "
-                        "%(image_data)r") % locals())
+                        "%(image_data)r"), {'id': id,
+                                            'image_data': image_data})
             image_data = _normalize_image_location_for_db(image_data)
             if purge_props == "true":
                 updated_image = self.db_api.image_update(req.context, id,
@@ -437,7 +438,7 @@ class Controller(object):
             return dict(image=make_image_dict(updated_image))
         except exception.Invalid as e:
             msg = (_("Failed to update image metadata. "
-                     "Got error: %(e)s") % locals())
+                     "Got error: %(e)s") % {'e': e})
             LOG.error(msg)
             return exc.HTTPBadRequest(msg)
         except exception.NotFound:

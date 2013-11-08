@@ -251,8 +251,8 @@ class Store(glance.store.base.Store):
     def _option_get(self, param):
         result = getattr(CONF, param)
         if not result:
-            reason = _("Could not find %(param)s in configuration "
-                       "options.") % locals()
+            reason = (_("Could not find %(param)s in configuration "
+                        "options.") % {'param': param})
             LOG.debug(reason)
             raise exception.BadStoreConfiguration(store_name="s3",
                                                   reason=reason)
@@ -414,7 +414,9 @@ class Store(glance.store.base.Store):
         checksum_hex = checksum.hexdigest()
 
         LOG.debug(_("Wrote %(size)d bytes to S3 key named %(obj_name)s "
-                    "with checksum %(checksum_hex)s") % locals())
+                    "with checksum %(checksum_hex)s"),
+                  {'size': size, 'obj_name': obj_name,
+                   'checksum_hex': checksum_hex})
 
         return (loc.get_uri(), size, checksum_hex, {})
 
@@ -461,7 +463,7 @@ def get_bucket(conn, bucket_id):
 
     bucket = conn.get_bucket(bucket_id)
     if not bucket:
-        msg = _("Could not find bucket with ID %(bucket_id)s") % locals()
+        msg = _("Could not find bucket with ID %s") % bucket_id
         LOG.debug(msg)
         raise exception.NotFound(msg)
 
@@ -503,14 +505,14 @@ def create_bucket_if_missing(bucket, s3_conn):
                     s3_conn.create_bucket(bucket, location=location)
                 except S3ResponseError as e:
                     msg = (_("Failed to add bucket to S3.\n"
-                             "Got error from S3: %(e)s") % locals())
+                             "Got error from S3: %(e)s") % {'e': e})
                     raise glance.store.BackendException(msg)
             else:
                 msg = (_("The bucket %(bucket)s does not exist in "
                          "S3. Please set the "
                          "s3_store_create_bucket_on_put option "
                          "to add bucket to S3 automatically.")
-                       % locals())
+                       % {'bucket': bucket})
                 raise glance.store.BackendException(msg)
 
 
@@ -525,7 +527,8 @@ def get_key(bucket, obj):
 
     key = bucket.get_key(obj)
     if not key or not key.exists():
-        msg = _("Could not find key %(obj)s in bucket %(bucket)s") % locals()
+        msg = (_("Could not find key %(obj)s in bucket %(bucket)s") %
+               {'obj': obj, 'bucket': bucket})
         LOG.debug(msg)
         raise exception.NotFound(msg)
     return key

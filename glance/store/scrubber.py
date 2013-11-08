@@ -177,7 +177,7 @@ class ScrubFileQueue(ScrubQueue):
                     return
             except exception.NotFound as e:
                 LOG.error(_("Failed to find image to delete: "
-                            "%(e)s") % locals())
+                            "%(e)s"), {'e': e})
                 return
 
             delete_time = time.time() + self.scrub_time
@@ -355,7 +355,8 @@ def get_scrub_queues():
 class Daemon(object):
     def __init__(self, wakeup_time=300, threads=1000):
         LOG.info(_("Starting Daemon: wakeup_time=%(wakeup_time)s "
-                   "threads=%(threads)s") % locals())
+                   "threads=%(threads)s"),
+                 {'wakeup_time': wakeup_time, 'threads': threads})
         self.wakeup_time = wakeup_time
         self.event = eventlet.event.Event()
         self.pool = eventlet.greenpool.GreenPool(threads)

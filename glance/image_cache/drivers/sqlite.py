@@ -323,7 +323,10 @@ class Driver(base.Driver):
 
                     LOG.debug(_("Fetch of cache file failed (%(e)s), rolling "
                                 "back by moving '%(incomplete_path)s' to "
-                                "'%(invalid_path)s'") % locals())
+                                "'%(invalid_path)s'"),
+                              {'e': e,
+                               'incomplete_path': incomplete_path,
+                               'invalid_path': invalid_path})
                     os.rename(incomplete_path, invalid_path)
 
                 db.execute("""DELETE FROM cached_images

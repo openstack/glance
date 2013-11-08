@@ -80,8 +80,9 @@ class Enforcer(object):
             rule_type = "default "
 
         text_rules = dict((k, str(v)) for k, v in rules.items())
-        LOG.debug(_('Loaded %(rule_type)spolicy rules: %(text_rules)s') %
-                  locals())
+        msg = (_('Loaded %(rule_type)spolicy rules: %(text_rules)s') %
+               {'rule_type': rule_type, 'text_rules': text_rules})
+        LOG.debug(msg)
 
         self.set_rules(rules)
 
