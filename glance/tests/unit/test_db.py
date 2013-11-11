@@ -122,13 +122,13 @@ class TestImageRepo(test_utils.BaseTestCase):
 
     def test_get(self):
         image = self.image_repo.get(UUID1)
-        self.assertEquals(image.image_id, UUID1)
-        self.assertEquals(image.name, '1')
-        self.assertEquals(image.tags, set(['ping', 'pong']))
-        self.assertEquals(image.visibility, 'public')
-        self.assertEquals(image.status, 'active')
-        self.assertEquals(image.size, 256)
-        self.assertEquals(image.owner, TENANT1)
+        self.assertEqual(image.image_id, UUID1)
+        self.assertEqual(image.name, '1')
+        self.assertEqual(image.tags, set(['ping', 'pong']))
+        self.assertEqual(image.visibility, 'public')
+        self.assertEqual(image.status, 'active')
+        self.assertEqual(image.size, 256)
+        self.assertEqual(image.owner, TENANT1)
 
     def test_location_value(self):
         image = self.image_repo.get(UUID3)
@@ -208,46 +208,46 @@ class TestImageRepo(test_utils.BaseTestCase):
         filters = {'checksum': CHECKSUM}
         images = self.image_repo.list(filters=filters)
         image_ids = list([i.image_id for i in images])
-        self.assertEquals(1, len(image_ids))
+        self.assertEqual(1, len(image_ids))
         self.assertEqual([UUID1], image_ids)
 
     def test_list_with_checksum_filter_multiple_images(self):
         filters = {'checksum': CHCKSUM1}
         images = self.image_repo.list(filters=filters)
         image_ids = list([i.image_id for i in images])
-        self.assertEquals(2, len(image_ids))
+        self.assertEqual(2, len(image_ids))
         self.assertEqual([UUID3, UUID2], image_ids)
 
     def test_list_with_wrong_checksum(self):
         WRONG_CHKSUM = 'd2fd42f979e1ed1aafadc7eb9354bff839c858cd'
         filters = {'checksum': WRONG_CHKSUM}
         images = self.image_repo.list(filters=filters)
-        self.assertEquals(0, len(images))
+        self.assertEqual(0, len(images))
 
     def test_list_with_tags_filter_single_tag(self):
         filters = {'tags': ['ping']}
         images = self.image_repo.list(filters=filters)
         image_ids = list([i.image_id for i in images])
-        self.assertEquals(1, len(image_ids))
+        self.assertEqual(1, len(image_ids))
         self.assertEqual([UUID1], image_ids)
 
     def test_list_with_tags_filter_multiple_tags(self):
         filters = {'tags': ['ping', 'pong']}
         images = self.image_repo.list(filters=filters)
         image_ids = list([i.image_id for i in images])
-        self.assertEquals(1, len(image_ids))
+        self.assertEqual(1, len(image_ids))
         self.assertEqual([UUID1], image_ids)
 
     def test_list_with_tags_filter_multiple_tags_and_nonexistent(self):
         filters = {'tags': ['ping', 'fake']}
         images = self.image_repo.list(filters=filters)
         image_ids = list([i.image_id for i in images])
-        self.assertEquals(0, len(image_ids))
+        self.assertEqual(0, len(image_ids))
 
     def test_list_with_wrong_tags(self):
         filters = {'tags': ['fake']}
         images = self.image_repo.list(filters=filters)
-        self.assertEquals(0, len(images))
+        self.assertEqual(0, len(images))
 
     def test_list_public_images(self):
         filters = {'visibility': 'public'}

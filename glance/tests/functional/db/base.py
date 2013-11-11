@@ -267,7 +267,7 @@ class DriverTests(object):
 
     def test_image_get(self):
         image = self.db_api.image_get(self.context, UUID1)
-        self.assertEquals(image['id'], self.fixtures[0]['id'])
+        self.assertEqual(image['id'], self.fixtures[0]['id'])
 
     def test_image_get_disallow_deleted(self):
         self.db_api.image_destroy(self.adm_context, UUID1)
@@ -277,14 +277,14 @@ class DriverTests(object):
     def test_image_get_allow_deleted(self):
         self.db_api.image_destroy(self.adm_context, UUID1)
         image = self.db_api.image_get(self.adm_context, UUID1)
-        self.assertEquals(image['id'], self.fixtures[0]['id'])
+        self.assertEqual(image['id'], self.fixtures[0]['id'])
         self.assertTrue(image['deleted'])
 
     def test_image_get_force_allow_deleted(self):
         self.db_api.image_destroy(self.adm_context, UUID1)
         image = self.db_api.image_get(self.context, UUID1,
                                       force_show_deleted=True)
-        self.assertEquals(image['id'], self.fixtures[0]['id'])
+        self.assertEqual(image['id'], self.fixtures[0]['id'])
 
     def test_image_get_not_owned(self):
         TENANT1 = uuidutils.generate_uuid()
@@ -305,21 +305,21 @@ class DriverTests(object):
 
     def test_image_get_all(self):
         images = self.db_api.image_get_all(self.context)
-        self.assertEquals(3, len(images))
+        self.assertEqual(3, len(images))
 
     def test_image_get_all_with_filter(self):
         images = self.db_api.image_get_all(self.context,
                                            filters={
                                                'id': self.fixtures[0]['id'],
                                            })
-        self.assertEquals(len(images), 1)
-        self.assertEquals(images[0]['id'], self.fixtures[0]['id'])
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], self.fixtures[0]['id'])
 
     def test_image_get_all_with_filter_user_defined_property(self):
         images = self.db_api.image_get_all(self.context,
                                            filters={'foo': 'bar'})
-        self.assertEquals(len(images), 1)
-        self.assertEquals(images[0]['id'], self.fixtures[0]['id'])
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], self.fixtures[0]['id'])
 
     def test_image_get_all_with_filter_user_deleted_property(self):
         fixture = {'name': 'poo', 'value': 'bear', 'image_id': UUID1}
@@ -330,19 +330,19 @@ class DriverTests(object):
                                            filters={
                                                'properties': {'poo': 'bear'},
                                            })
-        self.assertEquals(len(images), 1)
+        self.assertEqual(len(images), 1)
         self.db_api.image_property_delete(self.context,
                                           prop['name'], images[0]['id'])
         images = self.db_api.image_get_all(self.context,
                                            filters={
                                                'properties': {'poo': 'bear'},
                                            })
-        self.assertEquals(len(images), 0)
+        self.assertEqual(len(images), 0)
 
     def test_image_get_all_with_filter_undefined_property(self):
         images = self.db_api.image_get_all(self.context,
                                            filters={'poo': 'bear'})
-        self.assertEquals(len(images), 0)
+        self.assertEqual(len(images), 0)
 
     def test_image_get_all_size_min_max(self):
         images = self.db_api.image_get_all(self.context,
@@ -350,27 +350,27 @@ class DriverTests(object):
                                                'size_min': 10,
                                                'size_max': 15,
                                            })
-        self.assertEquals(len(images), 1)
-        self.assertEquals(images[0]['id'], self.fixtures[0]['id'])
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], self.fixtures[0]['id'])
 
     def test_image_get_all_size_min(self):
         images = self.db_api.image_get_all(self.context,
                                            filters={'size_min': 15})
-        self.assertEquals(len(images), 2)
-        self.assertEquals(images[0]['id'], self.fixtures[2]['id'])
-        self.assertEquals(images[1]['id'], self.fixtures[1]['id'])
+        self.assertEqual(len(images), 2)
+        self.assertEqual(images[0]['id'], self.fixtures[2]['id'])
+        self.assertEqual(images[1]['id'], self.fixtures[1]['id'])
 
     def test_image_get_all_size_range(self):
         images = self.db_api.image_get_all(self.context,
                                            filters={'size_max': 15,
                                                     'size_min': 20})
-        self.assertEquals(len(images), 0)
+        self.assertEqual(len(images), 0)
 
     def test_image_get_all_size_max(self):
         images = self.db_api.image_get_all(self.context,
                                            filters={'size_max': 15})
-        self.assertEquals(len(images), 1)
-        self.assertEquals(images[0]['id'], self.fixtures[0]['id'])
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], self.fixtures[0]['id'])
 
     def test_image_get_all_with_filter_min_range_bad_value(self):
         self.assertRaises(exception.InvalidFilterRangeValue,
@@ -384,7 +384,7 @@ class DriverTests(object):
 
     def test_image_get_all_marker(self):
         images = self.db_api.image_get_all(self.context, marker=UUID3)
-        self.assertEquals(2, len(images))
+        self.assertEqual(2, len(images))
 
     def test_image_get_all_marker_deleted(self):
         """Cannot specify a deleted image as a marker."""
@@ -398,7 +398,7 @@ class DriverTests(object):
         self.db_api.image_destroy(self.adm_context, UUID3)
         images = self.db_api.image_get_all(self.adm_context, marker=UUID3)
         #NOTE(bcwaldon): an admin should see all images (deleted or not)
-        self.assertEquals(2, len(images))
+        self.assertEqual(2, len(images))
 
     def test_image_get_all_marker_deleted_showing_deleted(self):
         """Specify a deleted image as a marker if showing deleted images.
@@ -411,7 +411,7 @@ class DriverTests(object):
         filters = {'deleted': True}
         images = self.db_api.image_get_all(self.context, marker=UUID3,
                                            filters=filters)
-        self.assertEquals(1, len(images))
+        self.assertEqual(1, len(images))
 
     def test_image_get_all_marker_null_name_desc(self):
         """Check an image with name null is handled
@@ -547,15 +547,15 @@ class DriverTests(object):
 
     def test_image_get_all_limit(self):
         images = self.db_api.image_get_all(self.context, limit=2)
-        self.assertEquals(2, len(images))
+        self.assertEqual(2, len(images))
 
         # A limit of None should not equate to zero
         images = self.db_api.image_get_all(self.context, limit=None)
-        self.assertEquals(3, len(images))
+        self.assertEqual(3, len(images))
 
         # A limit of zero should actually mean zero
         images = self.db_api.image_get_all(self.context, limit=0)
-        self.assertEquals(0, len(images))
+        self.assertEqual(0, len(images))
 
     def test_image_get_all_owned(self):
         TENANT1 = uuidutils.generate_uuid()
@@ -626,7 +626,7 @@ class DriverTests(object):
         filters = {'visibility': 'shared', 'checksum': CHECKSUM2}
         images = self.db_api.image_get_all(ctxt2, filters)
 
-        self.assertEquals(1, len(images))
+        self.assertEqual(1, len(images))
         self.assertEqual(UUIDY, images[0]['id'])
 
     def test_image_get_all_with_filter_tags(self):
@@ -636,10 +636,10 @@ class DriverTests(object):
         self.db_api.image_tag_create(self.context, UUID2, '64bit')
         images = self.db_api.image_get_all(self.context,
                                            filters={'tags': ['64bit']})
-        self.assertEquals(len(images), 2)
+        self.assertEqual(len(images), 2)
         image_ids = [image['id'] for image in images]
         expected = [UUID1, UUID2]
-        self.assertEquals(sorted(expected), sorted(image_ids))
+        self.assertEqual(sorted(expected), sorted(image_ids))
 
     def test_image_get_all_with_filter_multi_tags(self):
         self.db_api.image_tag_create(self.context, UUID1, 'x86')
@@ -649,15 +649,15 @@ class DriverTests(object):
         images = self.db_api.image_get_all(self.context,
                                            filters={'tags': ['64bit', 'power']
                                                     })
-        self.assertEquals(len(images), 1)
-        self.assertEquals(UUID2, images[0]['id'])
+        self.assertEqual(len(images), 1)
+        self.assertEqual(UUID2, images[0]['id'])
 
     def test_image_get_all_with_filter_tags_and_nonexistent(self):
         self.db_api.image_tag_create(self.context, UUID1, 'x86')
         images = self.db_api.image_get_all(self.context,
                                            filters={'tags': ['x86', 'fake']
                                                     })
-        self.assertEquals(len(images), 0)
+        self.assertEqual(len(images), 0)
 
     def test_image_get_all_with_filter_deleted_tags(self):
         tag = self.db_api.image_tag_create(self.context, UUID1, 'AIX')
@@ -665,18 +665,18 @@ class DriverTests(object):
                                            filters={
                                                'tags': [tag],
                                            })
-        self.assertEquals(len(images), 1)
+        self.assertEqual(len(images), 1)
         self.db_api.image_tag_delete(self.context, UUID1, tag)
         images = self.db_api.image_get_all(self.context,
                                            filters={
                                                'tags': [tag],
                                            })
-        self.assertEquals(len(images), 0)
+        self.assertEqual(len(images), 0)
 
     def test_image_get_all_with_filter_undefined_tags(self):
         images = self.db_api.image_get_all(self.context,
                                            filters={'tags': ['fake']})
-        self.assertEquals(len(images), 0)
+        self.assertEqual(len(images), 0)
 
     def test_image_paginate(self):
         """Paginate through a list of images using limit and marker"""
@@ -688,14 +688,14 @@ class DriverTests(object):
         extra_uuids.reverse()
 
         page = self.db_api.image_get_all(self.context, limit=2)
-        self.assertEquals(extra_uuids, [i['id'] for i in page])
+        self.assertEqual(extra_uuids, [i['id'] for i in page])
         last = page[-1]['id']
 
         page = self.db_api.image_get_all(self.context, limit=2, marker=last)
-        self.assertEquals([UUID3, UUID2], [i['id'] for i in page])
+        self.assertEqual([UUID3, UUID2], [i['id'] for i in page])
 
         page = self.db_api.image_get_all(self.context, limit=2, marker=UUID2)
-        self.assertEquals([UUID1], [i['id'] for i in page])
+        self.assertEqual([UUID1], [i['id'] for i in page])
 
     def test_image_get_all_invalid_sort_key(self):
         self.assertRaises(exception.InvalidSortKey, self.db_api.image_get_all,
@@ -703,7 +703,7 @@ class DriverTests(object):
 
     def test_image_get_all_limit_marker(self):
         images = self.db_api.image_get_all(self.context, limit=2)
-        self.assertEquals(2, len(images))
+        self.assertEqual(2, len(images))
 
     def test_image_destroy(self):
         location_data = [{'url': 'a', 'metadata': {'key': 'value'}},
@@ -720,12 +720,12 @@ class DriverTests(object):
         self.db_api.image_tag_create(self.context, IMG_ID, 'snarf')
 
         self.assertEqual(location_data, image['locations'])
-        self.assertEquals(('ping', 'pong', IMG_ID, False),
-                          (prop['name'], prop['value'],
-                           prop['image_id'], prop['deleted']))
-        self.assertEquals((TENANT2, IMG_ID, False),
-                          (member['member'], member['image_id'],
-                           member['can_share']))
+        self.assertEqual(('ping', 'pong', IMG_ID, False),
+                         (prop['name'], prop['value'],
+                          prop['image_id'], prop['deleted']))
+        self.assertEqual((TENANT2, IMG_ID, False),
+                         (member['member'], member['image_id'],
+                          member['can_share']))
         self.assertEqual(['snarf'],
                          self.db_api.image_tag_get_all(self.context, IMG_ID))
 
@@ -735,15 +735,15 @@ class DriverTests(object):
         self.assertRaises(exception.NotFound, self.db_api.image_get,
                           self.context, IMG_ID)
 
-        self.assertEquals([], image['locations'])
+        self.assertEqual([], image['locations'])
         prop = image['properties'][0]
-        self.assertEquals(('ping', IMG_ID, True),
-                          (prop['name'], prop['image_id'], prop['deleted']))
+        self.assertEqual(('ping', IMG_ID, True),
+                         (prop['name'], prop['image_id'], prop['deleted']))
         self.context.auth_tok = 'user:%s:user' % TENANT2
         members = self.db_api.image_member_find(self.context, IMG_ID)
-        self.assertEquals([], members)
+        self.assertEqual([], members)
         tags = self.db_api.image_tag_get_all(self.context, IMG_ID)
-        self.assertEquals([], tags)
+        self.assertEqual([], tags)
 
     def test_image_destroy_with_delete_all(self):
         """Check the image child element's _image_delete_all methods.
@@ -782,22 +782,22 @@ class DriverTests(object):
         self.assertFalse(active_image['deleted_at'])
 
         self.assertEqual(location_data, active_image['locations'])
-        self.assertEquals(1, len(active_image['properties']))
+        self.assertEqual(1, len(active_image['properties']))
         prop = active_image['properties'][0]
-        self.assertEquals(('ping', 'pong', ACTIVE_IMG_ID),
-                          (prop['name'], prop['value'],
-                           prop['image_id']))
-        self.assertEquals((False, None),
-                          (prop['deleted'], prop['deleted_at']))
+        self.assertEqual(('ping', 'pong', ACTIVE_IMG_ID),
+                         (prop['name'], prop['value'],
+                          prop['image_id']))
+        self.assertEqual((False, None),
+                         (prop['deleted'], prop['deleted_at']))
         self.context.auth_tok = 'user:%s:user' % TENANT2
         members = self.db_api.image_member_find(self.context, ACTIVE_IMG_ID)
-        self.assertEquals(1, len(members))
+        self.assertEqual(1, len(members))
         member = members[0]
-        self.assertEquals((TENANT2, ACTIVE_IMG_ID, False),
-                          (member['member'], member['image_id'],
-                           member['can_share']))
+        self.assertEqual((TENANT2, ACTIVE_IMG_ID, False),
+                         (member['member'], member['image_id'],
+                          member['can_share']))
         tags = self.db_api.image_tag_get_all(self.context, ACTIVE_IMG_ID)
-        self.assertEquals(['snarf'], tags)
+        self.assertEqual(['snarf'], tags)
 
     def test_image_get_multiple_members(self):
         TENANT1 = uuidutils.generate_uuid()
@@ -818,38 +818,38 @@ class DriverTests(object):
         self.db_api.image_member_create(ctxt1, values)
 
         image = self.db_api.image_get(ctxt2, UUIDX)
-        self.assertEquals(UUIDX, image['id'])
+        self.assertEqual(UUIDX, image['id'])
 
         # by default get_all displays only images with status 'accepted'
         images = self.db_api.image_get_all(ctxt2)
-        self.assertEquals(3, len(images))
+        self.assertEqual(3, len(images))
 
         # filter by rejected
         images = self.db_api.image_get_all(ctxt2, member_status='rejected')
-        self.assertEquals(3, len(images))
+        self.assertEqual(3, len(images))
 
         # filter by visibility
         images = self.db_api.image_get_all(ctxt2,
                                            filters={'visibility': 'shared'})
-        self.assertEquals(0, len(images))
+        self.assertEqual(0, len(images))
 
         # filter by visibility
         images = self.db_api.image_get_all(ctxt2, member_status='pending',
                                            filters={'visibility': 'shared'})
-        self.assertEquals(1, len(images))
+        self.assertEqual(1, len(images))
 
         # filter by visibility
         images = self.db_api.image_get_all(ctxt2, member_status='all',
                                            filters={'visibility': 'shared'})
-        self.assertEquals(1, len(images))
+        self.assertEqual(1, len(images))
 
         # filter by status pending
         images = self.db_api.image_get_all(ctxt2, member_status='pending')
-        self.assertEquals(4, len(images))
+        self.assertEqual(4, len(images))
 
         # filter by status all
         images = self.db_api.image_get_all(ctxt2, member_status='all')
-        self.assertEquals(4, len(images))
+        self.assertEqual(4, len(images))
 
     def test_is_image_visible(self):
         TENANT1 = uuidutils.generate_uuid()
@@ -1428,157 +1428,157 @@ class VisibilityTests(object):
 
     def test_unknown_admin_sees_all(self):
         images = self.db_api.image_get_all(self.admin_none_context)
-        self.assertEquals(len(images), 8)
+        self.assertEqual(len(images), 8)
 
     def test_unknown_admin_is_public_true(self):
         images = self.db_api.image_get_all(self.admin_none_context,
                                            is_public=True)
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
 
     def test_unknown_admin_is_public_false(self):
         images = self.db_api.image_get_all(self.admin_none_context,
                                            is_public=False)
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for i in images:
             self.assertFalse(i['is_public'])
 
     def test_unknown_admin_is_public_none(self):
         images = self.db_api.image_get_all(self.admin_none_context)
-        self.assertEquals(len(images), 8)
+        self.assertEqual(len(images), 8)
 
     def test_unknown_admin_visibility_public(self):
         images = self.db_api.image_get_all(self.admin_none_context,
                                            filters={'visibility': 'public'})
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
 
     def test_unknown_admin_visibility_private(self):
         images = self.db_api.image_get_all(self.admin_none_context,
                                            filters={'visibility': 'private'})
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for i in images:
             self.assertFalse(i['is_public'])
 
     def test_known_admin_sees_all(self):
         images = self.db_api.image_get_all(self.admin_context)
-        self.assertEquals(len(images), 8)
+        self.assertEqual(len(images), 8)
 
     def test_known_admin_is_public_true(self):
         images = self.db_api.image_get_all(self.admin_context, is_public=True)
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
 
     def test_known_admin_is_public_false(self):
         images = self.db_api.image_get_all(self.admin_context,
                                            is_public=False)
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for i in images:
             self.assertFalse(i['is_public'])
 
     def test_known_admin_is_public_none(self):
         images = self.db_api.image_get_all(self.admin_context)
-        self.assertEquals(len(images), 8)
+        self.assertEqual(len(images), 8)
 
     def test_admin_as_user_true(self):
         images = self.db_api.image_get_all(self.admin_context,
                                            admin_as_user=True)
-        self.assertEquals(len(images), 5)
+        self.assertEqual(len(images), 5)
         for i in images:
             self.assertTrue(i['is_public'] or i['owner'] == self.admin_tenant)
 
     def test_known_admin_visibility_public(self):
         images = self.db_api.image_get_all(self.admin_context,
                                            filters={'visibility': 'public'})
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
 
     def test_known_admin_visibility_private(self):
         images = self.db_api.image_get_all(self.admin_context,
                                            filters={'visibility': 'private'})
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for i in images:
             self.assertFalse(i['is_public'])
 
     def test_what_unknown_user_sees(self):
         images = self.db_api.image_get_all(self.none_context)
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
 
     def test_unknown_user_is_public_true(self):
         images = self.db_api.image_get_all(self.none_context, is_public=True)
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
 
     def test_unknown_user_is_public_false(self):
         images = self.db_api.image_get_all(self.none_context, is_public=False)
-        self.assertEquals(len(images), 0)
+        self.assertEqual(len(images), 0)
 
     def test_unknown_user_is_public_none(self):
         images = self.db_api.image_get_all(self.none_context)
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
 
     def test_unknown_user_visibility_public(self):
         images = self.db_api.image_get_all(self.none_context,
                                            filters={'visibility': 'public'})
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
 
     def test_unknown_user_visibility_private(self):
         images = self.db_api.image_get_all(self.none_context,
                                            filters={'visibility': 'private'})
-        self.assertEquals(len(images), 0)
+        self.assertEqual(len(images), 0)
 
     def test_what_tenant1_sees(self):
         images = self.db_api.image_get_all(self.tenant1_context)
-        self.assertEquals(len(images), 5)
+        self.assertEqual(len(images), 5)
         for i in images:
             if not i['is_public']:
-                self.assertEquals(i['owner'], self.tenant1)
+                self.assertEqual(i['owner'], self.tenant1)
 
     def test_tenant1_is_public_true(self):
         images = self.db_api.image_get_all(self.tenant1_context,
                                            is_public=True)
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
 
     def test_tenant1_is_public_false(self):
         images = self.db_api.image_get_all(self.tenant1_context,
                                            is_public=False)
-        self.assertEquals(len(images), 1)
+        self.assertEqual(len(images), 1)
         self.assertFalse(images[0]['is_public'])
-        self.assertEquals(images[0]['owner'], self.tenant1)
+        self.assertEqual(images[0]['owner'], self.tenant1)
 
     def test_tenant1_is_public_none(self):
         images = self.db_api.image_get_all(self.tenant1_context)
-        self.assertEquals(len(images), 5)
+        self.assertEqual(len(images), 5)
         for i in images:
             if not i['is_public']:
-                self.assertEquals(i['owner'], self.tenant1)
+                self.assertEqual(i['owner'], self.tenant1)
 
     def test_tenant1_visibility_public(self):
         images = self.db_api.image_get_all(self.tenant1_context,
                                            filters={'visibility': 'public'})
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for i in images:
             self.assertTrue(i['is_public'])
 
     def test_tenant1_visibility_private(self):
         images = self.db_api.image_get_all(self.tenant1_context,
                                            filters={'visibility': 'private'})
-        self.assertEquals(len(images), 1)
+        self.assertEqual(len(images), 1)
         self.assertFalse(images[0]['is_public'])
-        self.assertEquals(images[0]['owner'], self.tenant1)
+        self.assertEqual(images[0]['owner'], self.tenant1)
 
     def _setup_is_public_red_herring(self):
         values = {
@@ -1612,46 +1612,46 @@ class VisibilityTests(object):
     def test_admin_is_public_true_and_visibility_public(self):
         images = self.db_api.image_get_all(self.admin_context, is_public=True,
                                            filters={'visibility': 'public'})
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
 
     def test_admin_is_public_false_and_visibility_public(self):
         images = self.db_api.image_get_all(self.admin_context, is_public=False,
                                            filters={'visibility': 'public'})
-        self.assertEquals(len(images), 0)
+        self.assertEqual(len(images), 0)
 
     def test_admin_is_public_true_and_visibility_private(self):
         images = self.db_api.image_get_all(self.admin_context, is_public=True,
                                            filters={'visibility': 'private'})
-        self.assertEquals(len(images), 0)
+        self.assertEqual(len(images), 0)
 
     def test_admin_is_public_false_and_visibility_private(self):
         images = self.db_api.image_get_all(self.admin_context, is_public=False,
                                            filters={'visibility': 'private'})
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
 
     def test_tenant1_is_public_true_and_visibility_public(self):
         images = self.db_api.image_get_all(self.tenant1_context,
                                            is_public=True,
                                            filters={'visibility': 'public'})
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
 
     def test_tenant1_is_public_false_and_visibility_public(self):
         images = self.db_api.image_get_all(self.tenant1_context,
                                            is_public=False,
                                            filters={'visibility': 'public'})
-        self.assertEquals(len(images), 0)
+        self.assertEqual(len(images), 0)
 
     def test_tenant1_is_public_true_and_visibility_private(self):
         images = self.db_api.image_get_all(self.tenant1_context,
                                            is_public=True,
                                            filters={'visibility': 'private'})
-        self.assertEquals(len(images), 0)
+        self.assertEqual(len(images), 0)
 
     def test_tenant1_is_public_false_and_visibility_private(self):
         images = self.db_api.image_get_all(self.tenant1_context,
                                            is_public=False,
                                            filters={'visibility': 'private'})
-        self.assertEquals(len(images), 1)
+        self.assertEqual(len(images), 1)
 
 
 class TestMembershipVisibility(test_utils.BaseTestCase):

@@ -65,8 +65,8 @@ class UtilsTestCase(test_utils.BaseTestCase):
         self.assertFalse('x-image-meta-snafu' in headers)
         self.assertFalse('x-image-meta-property-arch' in headers)
 
-        self.assertEquals(headers.get('x-image-meta-foo'), 'bar')
-        self.assertEquals(headers.get('x-image-meta-bells'), 'whistles')
-        self.assertEquals(headers.get('x-image-meta-empty'), '')
-        self.assertEquals(headers.get('x-image-meta-property-distro'), '')
-        self.assertEquals(headers.get('x-image-meta-property-user'), 'nobody')
+        self.assertEqual(headers.get('x-image-meta-foo'), 'bar')
+        self.assertEqual(headers.get('x-image-meta-bells'), 'whistles')
+        self.assertEqual(headers.get('x-image-meta-empty'), '')
+        self.assertEqual(headers.get('x-image-meta-property-distro'), '')
+        self.assertEqual(headers.get('x-image-meta-property-user'), 'nobody')

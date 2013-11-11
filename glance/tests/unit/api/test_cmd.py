@@ -59,11 +59,11 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
     def test_unsupported_default_store(self):
         self.config(default_store='shouldnotexist')
         exit = self.assertRaises(SystemExit, glance.cmd.api.main)
-        self.assertEquals(exit.code, 1)
+        self.assertEqual(exit.code, 1)
 
     def test_worker_creation_failure(self):
         failure = exc.WorkerCreationFailure(reason='test')
         self.stubs.Set(glance.common.wsgi.Server, 'start',
                        self._raise(failure))
         exit = self.assertRaises(SystemExit, glance.cmd.api.main)
-        self.assertEquals(exit.code, 2)
+        self.assertEqual(exit.code, 2)

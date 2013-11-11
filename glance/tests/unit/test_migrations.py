@@ -470,7 +470,7 @@ class TestMigrations(utils.BaseTestCase):
         """Assure that checksum data is present on table"""
         images = get_table(engine, 'images')
         self.assertIn('checksum', images.c)
-        self.assertEquals(images.c['checksum'].type.length, 32)
+        self.assertEqual(images.c['checksum'].type.length, 32)
 
     def _pre_upgrade_005(self, engine):
         now = timeutils.utcnow()
@@ -628,7 +628,7 @@ class TestMigrations(utils.BaseTestCase):
                          .where(images.c.name == image_name)\
                          .execute().fetchall()
 
-            self.assertEquals(len(rows), 1)
+            self.assertEqual(len(rows), 1)
 
             row = rows[0]
             print(repr(dict(row)))
@@ -641,7 +641,7 @@ class TestMigrations(utils.BaseTestCase):
                                .where(image_members.c.image_id ==
                                       uuids['normal'])\
                                .execute().fetchall()
-        self.assertEquals(len(results), 1)
+        self.assertEqual(len(results), 1)
 
         # Find all image_properties to ensure image_id has been updated
         # as well as ensure kernel_id and ramdisk_id values have been
@@ -650,7 +650,7 @@ class TestMigrations(utils.BaseTestCase):
                                   .where(image_properties.c.image_id ==
                                          uuids['normal'])\
                                   .execute().fetchall()
-        self.assertEquals(len(results), 2)
+        self.assertEqual(len(results), 2)
         for row in results:
             self.assertIn(row['name'], ('kernel_id', 'ramdisk_id'))
 
@@ -672,7 +672,7 @@ class TestMigrations(utils.BaseTestCase):
             rows = images.select()\
                          .where(images.c.name == image_name)\
                          .execute().fetchall()
-            self.assertEquals(len(rows), 1)
+            self.assertEqual(len(rows), 1)
 
             row = rows[0]
             self.assertFalse(uuidutils.is_uuid_like(row['id']))
@@ -684,7 +684,7 @@ class TestMigrations(utils.BaseTestCase):
                                .where(image_members.c.image_id ==
                                       ids['normal'])\
                                .execute().fetchall()
-        self.assertEquals(len(results), 1)
+        self.assertEqual(len(results), 1)
 
         # Find all image_properties to ensure image_id has been updated
         # as well as ensure kernel_id and ramdisk_id values have been
@@ -693,7 +693,7 @@ class TestMigrations(utils.BaseTestCase):
                                   .where(image_properties.c.image_id ==
                                          ids['normal'])\
                                   .execute().fetchall()
-        self.assertEquals(len(results), 2)
+        self.assertEqual(len(results), 2)
         for row in results:
             self.assertIn(row['name'], ('kernel_id', 'ramdisk_id'))
 
@@ -898,8 +898,8 @@ class TestMigrations(utils.BaseTestCase):
             .where(image_locations.c.image_id == data).execute()
 
         r = list(results)
-        self.assertEquals(len(r), 1)
-        self.assertEquals(r[0]['value'], 'file:///some/place/onthe/fs')
+        self.assertEqual(len(r), 1)
+        self.assertEqual(r[0]['value'], 'file:///some/place/onthe/fs')
         self.assertTrue('meta_data' in r[0])
         x = pickle.loads(r[0]['meta_data'])
         self.assertEqual(x, {})

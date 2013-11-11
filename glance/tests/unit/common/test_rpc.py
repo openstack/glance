@@ -132,7 +132,7 @@ class TestRPCController(base.IsolatedUnitTest):
         res = req.get_response(api)
         returned = json.loads(res.body)
         self.assertTrue(isinstance(returned, list))
-        self.assertEquals(returned[0], 1)
+        self.assertEqual(returned[0], 1)
 
     def test_request_exc(self):
         api = create_api()
@@ -160,27 +160,27 @@ class TestRPCController(base.IsolatedUnitTest):
         # Body is not a list, it should fail
         req.body = json.dumps({})
         res = req.get_response(api)
-        self.assertEquals(res.status_int, 400)
+        self.assertEqual(res.status_int, 400)
 
         # cmd is not dict, it should fail.
         req.body = json.dumps([None])
         res = req.get_response(api)
-        self.assertEquals(res.status_int, 400)
+        self.assertEqual(res.status_int, 400)
 
         # No command key, it should fail.
         req.body = json.dumps([{}])
         res = req.get_response(api)
-        self.assertEquals(res.status_int, 400)
+        self.assertEqual(res.status_int, 400)
 
         # kwargs not dict, it should fail.
         req.body = json.dumps([{"command": "test", "kwargs": 200}])
         res = req.get_response(api)
-        self.assertEquals(res.status_int, 400)
+        self.assertEqual(res.status_int, 400)
 
         # Command does not exist, it should fail.
         req.body = json.dumps([{"command": "test"}])
         res = req.get_response(api)
-        self.assertEquals(res.status_int, 404)
+        self.assertEqual(res.status_int, 404)
 
     def test_rpc_exception_propagation(self):
         api = create_api()
@@ -190,18 +190,18 @@ class TestRPCController(base.IsolatedUnitTest):
 
         req.body = json.dumps([{"command": "raise_value_error"}])
         res = req.get_response(api)
-        self.assertEquals(res.status_int, 200)
+        self.assertEqual(res.status_int, 200)
 
         returned = json.loads(res.body)[0]
-        self.assertEquals(returned['_error']['cls'], 'exceptions.ValueError')
+        self.assertEqual(returned['_error']['cls'], 'exceptions.ValueError')
 
         req.body = json.dumps([{"command": "raise_weird_error"}])
         res = req.get_response(api)
-        self.assertEquals(res.status_int, 200)
+        self.assertEqual(res.status_int, 200)
 
         returned = json.loads(res.body)[0]
-        self.assertEquals(returned['_error']['cls'],
-                          'glance.common.exception.RPCError')
+        self.assertEqual(returned['_error']['cls'],
+                         'glance.common.exception.RPCError')
 
 
 class TestRPCClient(base.IsolatedUnitTest):
@@ -231,7 +231,7 @@ class TestRPCClient(base.IsolatedUnitTest):
                     {"command": "get_all_images"}]
 
         res = self.client.bulk_request(commands)
-        self.assertEquals(len(res), 2)
+        self.assertEqual(len(res), 2)
         self.assertTrue(res[0])
         self.assertFalse(res[1])
 
@@ -240,7 +240,7 @@ class TestRPCClient(base.IsolatedUnitTest):
             self.client.raise_value_error()
             self.fail("Exception not raised")
         except ValueError as exc:
-            self.assertEquals(str(exc), "Yep, Just like that!")
+            self.assertEqual(str(exc), "Yep, Just like that!")
 
     def test_rpc_exception(self):
         try:
@@ -251,7 +251,7 @@ class TestRPCClient(base.IsolatedUnitTest):
 
     def test_non_str_or_dict_response(self):
         rst = self.client.count_images(images=[1, 2, 3, 4])
-        self.assertEquals(rst, 4)
+        self.assertEqual(rst, 4)
         self.assertTrue(isinstance(rst, int))
 
 

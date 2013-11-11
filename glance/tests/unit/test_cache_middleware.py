@@ -211,7 +211,7 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
                        fake_get_image_metadata)
         actual = cache_filter._process_v1_request(
             request, image_id, dummy_img_iterator)
-        self.assertEqual(True, actual)
+        self.assertTrue(actual)
 
     def test_v1_remove_location_image_fetch(self):
 

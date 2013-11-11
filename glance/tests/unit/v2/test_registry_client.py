@@ -88,7 +88,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
     def test_image_get_index(self):
         """Test correct set of public image returned"""
         images = self.client.image_get_all()
-        self.assertEquals(len(images), 2)
+        self.assertEqual(len(images), 2)
 
     def test_create_image_with_null_min_disk_min_ram(self):
         UUID3 = _gen_uuid()
@@ -300,7 +300,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.image_get_all(limit=2)
-        self.assertEquals(len(images), 2)
+        self.assertEqual(len(images), 2)
 
     def test_image_get_index_marker_limit(self):
         """Test correct set of images returned with marker/limit params."""
@@ -333,7 +333,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.image_get_all(limit=None)
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
 
     def test_image_get_index_by_name(self):
         """
@@ -345,10 +345,10 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.image_get_all(filters={'name': 'new name! #123'})
-        self.assertEquals(len(images), 1)
+        self.assertEqual(len(images), 1)
 
         for image in images:
-            self.assertEquals('new name! #123', image['name'])
+            self.assertEqual('new name! #123', image['name'])
 
     def test_image_get_is_public_v2(self):
         """Tests that a detailed call can be filtered by a property"""
@@ -360,10 +360,10 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
 
         filters = {'is_public': 'avalue'}
         images = self.client.image_get_all(filters=filters)
-        self.assertEquals(len(images), 1)
+        self.assertEqual(len(images), 1)
 
         for image in images:
-            self.assertEquals('avalue', image['properties'][0]['value'])
+            self.assertEqual('avalue', image['properties'][0]['value'])
 
     def test_image_get(self):
         """Tests that the detailed info about an image returned"""
@@ -375,10 +375,10 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
 
         for k, v in fixture.items():
             el = data[k]
-            self.assertEquals(v, data[k],
-                              "Failed v != data[k] where v = %(v)s and "
-                              "k = %(k)s and data[k] = %(el)s" %
-                              dict(v=v, k=k, el=el))
+            self.assertEqual(v, data[k],
+                             "Failed v != data[k] where v = %(v)s and "
+                             "k = %(k)s and data[k] = %(el)s" %
+                             dict(v=v, k=k, el=el))
 
     def test_image_get_non_existing(self):
         """Tests that NotFound is raised when getting a non-existing image"""
@@ -396,11 +396,11 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         data = self.client.image_get(image_id=new_image['id'])
 
         for k, v in fixture.items():
-            self.assertEquals(v, data[k])
+            self.assertEqual(v, data[k])
 
         # Test status was updated properly
         self.assertTrue('status' in data.keys())
-        self.assertEquals('active', data['status'])
+        self.assertEqual('active', data['status'])
 
     def test_image_create_with_properties(self):
         """Tests that we can add image metadata with properties"""
@@ -410,18 +410,18 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         new_image = self.client.image_create(values=fixture)
 
         self.assertIn('properties', new_image)
-        self.assertEquals(new_image['properties'][0]['value'],
-                          fixture['properties']['distro'])
+        self.assertEqual(new_image['properties'][0]['value'],
+                         fixture['properties']['distro'])
 
         del fixture['location']
         del fixture['properties']
 
         for k, v in fixture.items():
-            self.assertEquals(v, new_image[k])
+            self.assertEqual(v, new_image[k])
 
         # Test status was updated properly
         self.assertTrue('status' in new_image.keys())
-        self.assertEquals('active', new_image['status'])
+        self.assertEqual('active', new_image['status'])
 
     def test_image_create_already_exists(self):
         """Tests proper exception is raised if image with ID already exists"""
@@ -453,7 +453,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         data = self.client.image_get(image_id=UUID2)
 
         for k, v in fixture.items():
-            self.assertEquals(v, data[k])
+            self.assertEqual(v, data[k])
 
     def test_image_update_not_existing(self):
         """Tests non existing image update doesn't work"""
@@ -473,7 +473,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         image = self.FIXTURES[1]
         deleted_image = self.client.image_destroy(image_id=image['id'])
         self.assertTrue(deleted_image)
-        self.assertEquals(image['id'], deleted_image['id'])
+        self.assertEqual(image['id'], deleted_image['id'])
         self.assertTrue(deleted_image['deleted'])
         self.assertTrue(deleted_image['deleted_at'])
 
@@ -481,7 +481,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         filters = {'deleted': False}
         new_num_images = len(self.client.image_get_all(filters=filters))
 
-        self.assertEquals(new_num_images, orig_num_images - 1)
+        self.assertEqual(new_num_images, orig_num_images - 1)
 
     def test_image_destroy_not_existing(self):
         """Tests cannot delete non-existing image"""
@@ -493,7 +493,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         """Tests getting image members"""
         memb_list = self.client.image_member_find(image_id=UUID2)
         num_members = len(memb_list)
-        self.assertEquals(num_members, 0)
+        self.assertEqual(num_members, 0)
 
     def test_image_get_members_not_existing(self):
         """Tests getting non-existent image members"""
@@ -505,7 +505,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         """Tests getting member images"""
         memb_list = self.client.image_member_find(member='pattieblack')
         num_members = len(memb_list)
-        self.assertEquals(num_members, 0)
+        self.assertEqual(num_members, 0)
 
     def test_add_update_members(self):
         """Tests updating image members"""
@@ -524,7 +524,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
 
         self.client.image_member_delete(memb_id=member['id'])
         memb_list = self.client.image_member_find(member='pattieblack')
-        self.assertEquals(len(memb_list), 0)
+        self.assertEqual(len(memb_list), 0)
 
 
 class TestRegistryV2ClientApi(base.IsolatedUnitTest):
@@ -576,9 +576,9 @@ class TestRegistryV2ClientApi(base.IsolatedUnitTest):
         self.config(auth_region=expected['region'])
         self.stubs.Set(os, 'getenv', lambda x: None)
 
-        self.assertEquals(rapi._CLIENT_CREDS, None)
+        self.assertEqual(rapi._CLIENT_CREDS, None)
         rapi.configure_registry_admin_creds()
-        self.assertEquals(rapi._CLIENT_CREDS, expected)
+        self.assertEqual(rapi._CLIENT_CREDS, expected)
 
     def test_configure_registry_admin_creds_with_auth_url(self):
         expected = self._get_fake_config_creds()
@@ -589,6 +589,6 @@ class TestRegistryV2ClientApi(base.IsolatedUnitTest):
         self.config(auth_strategy='test_strategy')
         self.config(auth_region=expected['region'])
 
-        self.assertEquals(rapi._CLIENT_CREDS, None)
+        self.assertEqual(rapi._CLIENT_CREDS, None)
         rapi.configure_registry_admin_creds()
-        self.assertEquals(rapi._CLIENT_CREDS, expected)
+        self.assertEqual(rapi._CLIENT_CREDS, expected)

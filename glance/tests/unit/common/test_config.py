@@ -70,7 +70,7 @@ class TestPasteApp(test_utils.BaseTestCase):
 
         app = config.load_paste_app('glance-registry')
 
-        self.assertEquals(expected_app_type, type(app))
+        self.assertEqual(expected_app_type, type(app))
 
     def test_load_paste_app(self):
         expected_middleware = context.UnauthenticatedContextMiddleware

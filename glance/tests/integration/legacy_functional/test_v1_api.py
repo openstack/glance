@@ -1115,7 +1115,7 @@ class TestApi(base.ApiTest):
         images_dir = os.path.join(self.test_dir, 'images')
         image_count = len([name for name in os.listdir(images_dir)
                            if os.path.isfile(os.path.join(images_dir, name))])
-        self.assertEquals(image_count, 0)
+        self.assertEqual(image_count, 0)
 
     def test_mismatched_size(self):
         """
@@ -1273,57 +1273,57 @@ class TestApiWithFakeAuth(base.ApiTest):
 
         # 1. Known user sees public and their own images
         images = list_images('tenant1')
-        self.assertEquals(len(images), 5)
+        self.assertEqual(len(images), 5)
         for image in images:
             self.assertTrue(image['is_public'] or image['owner'] == 'tenant1')
 
         # 2. Unknown user sees only public images
         images = list_images('none')
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for image in images:
             self.assertTrue(image['is_public'])
 
         # 3. Unknown admin sees only public images
         images = list_images('none', role='admin')
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for image in images:
             self.assertTrue(image['is_public'])
 
         # 4. Unknown admin, is_public=none, shows all images
         images = list_images('none', role='admin', is_public='none')
-        self.assertEquals(len(images), 8)
+        self.assertEqual(len(images), 8)
 
         # 5. Unknown admin, is_public=true, shows only public images
         images = list_images('none', role='admin', is_public='true')
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for image in images:
             self.assertTrue(image['is_public'])
 
         # 6. Unknown admin, is_public=false, sees only private images
         images = list_images('none', role='admin', is_public='false')
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for image in images:
             self.assertFalse(image['is_public'])
 
         # 7. Known admin sees public and their own images
         images = list_images('admin', role='admin')
-        self.assertEquals(len(images), 5)
+        self.assertEqual(len(images), 5)
         for image in images:
             self.assertTrue(image['is_public'] or image['owner'] == 'admin')
 
         # 8. Known admin, is_public=none, shows all images
         images = list_images('admin', role='admin', is_public='none')
-        self.assertEquals(len(images), 8)
+        self.assertEqual(len(images), 8)
 
         # 9. Known admin, is_public=true, sees all public and their images
         images = list_images('admin', role='admin', is_public='true')
-        self.assertEquals(len(images), 5)
+        self.assertEqual(len(images), 5)
         for image in images:
             self.assertTrue(image['is_public'] or image['owner'] == 'admin')
 
         # 10. Known admin, is_public=false, sees all private images
         images = list_images('admin', role='admin', is_public='false')
-        self.assertEquals(len(images), 4)
+        self.assertEqual(len(images), 4)
         for image in images:
             self.assertFalse(image['is_public'])
 

@@ -244,9 +244,9 @@ class TestStore(base.StoreClearingUnitTest):
                                                      image_s3,
                                                      expected_s3_size)
 
-        self.assertEquals(expected_location, location)
-        self.assertEquals(expected_s3_size, size)
-        self.assertEquals(expected_checksum, checksum)
+        self.assertEqual(expected_location, location)
+        self.assertEqual(expected_s3_size, size)
+        self.assertEqual(expected_checksum, checksum)
 
         loc = get_location_from_uri(expected_location)
         (new_image_s3, new_image_size) = self.store.get(loc)
@@ -255,8 +255,8 @@ class TestStore(base.StoreClearingUnitTest):
             new_image_contents.write(chunk)
         new_image_s3_size = new_image_contents.len
 
-        self.assertEquals(expected_s3_contents, new_image_contents.getvalue())
-        self.assertEquals(expected_s3_size, new_image_s3_size)
+        self.assertEqual(expected_s3_contents, new_image_contents.getvalue())
+        self.assertEqual(expected_s3_size, new_image_s3_size)
 
     def test_add_host_variations(self):
         """
@@ -294,17 +294,17 @@ class TestStore(base.StoreClearingUnitTest):
                                                          image_s3,
                                                          expected_s3_size)
 
-            self.assertEquals(expected_location, location)
-            self.assertEquals(expected_s3_size, size)
-            self.assertEquals(expected_checksum, checksum)
+            self.assertEqual(expected_location, location)
+            self.assertEqual(expected_s3_size, size)
+            self.assertEqual(expected_checksum, checksum)
 
             loc = get_location_from_uri(expected_location)
             (new_image_s3, new_image_size) = self.store.get(loc)
             new_image_contents = new_image_s3.getvalue()
             new_image_s3_size = len(new_image_s3)
 
-            self.assertEquals(expected_s3_contents, new_image_contents)
-            self.assertEquals(expected_s3_size, new_image_s3_size)
+            self.assertEqual(expected_s3_contents, new_image_contents)
+            self.assertEqual(expected_s3_size, new_image_s3_size)
 
     def test_add_already_existing(self):
         """
@@ -366,12 +366,12 @@ class TestStore(base.StoreClearingUnitTest):
         self.assertRaises(exception.NotFound, self.store.delete, loc)
 
     def _do_test_get_s3_location(self, host, loc):
-        self.assertEquals(get_s3_location(host), loc)
-        self.assertEquals(get_s3_location(host + ':80'), loc)
-        self.assertEquals(get_s3_location('http://' + host), loc)
-        self.assertEquals(get_s3_location('http://' + host + ':80'), loc)
-        self.assertEquals(get_s3_location('https://' + host), loc)
-        self.assertEquals(get_s3_location('https://' + host + ':80'), loc)
+        self.assertEqual(get_s3_location(host), loc)
+        self.assertEqual(get_s3_location(host + ':80'), loc)
+        self.assertEqual(get_s3_location('http://' + host), loc)
+        self.assertEqual(get_s3_location('http://' + host + ':80'), loc)
+        self.assertEqual(get_s3_location('https://' + host), loc)
+        self.assertEqual(get_s3_location('https://' + host + ':80'), loc)
 
     def test_get_s3_good_location(self):
         """
