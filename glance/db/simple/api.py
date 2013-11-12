@@ -503,7 +503,7 @@ def image_update(context, image_id, image_values, purge_props=False):
     try:
         image = DATA['images'][image_id]
     except KeyError:
-        raise exception.NotFound(image_id=image_id)
+        raise exception.NotFound()
 
     location_data = image_values.pop('locations', None)
     if location_data is not None:

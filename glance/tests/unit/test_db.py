@@ -145,8 +145,10 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.assertEqual(image.locations, [])
 
     def test_get_not_found(self):
-        self.assertRaises(exception.NotFound, self.image_repo.get,
-                          uuidutils.generate_uuid())
+        fake_uuid = uuidutils.generate_uuid()
+        exc = self.assertRaises(exception.NotFound, self.image_repo.get,
+                                fake_uuid)
+        self.assertTrue(fake_uuid in unicode(exc))
 
     def test_get_forbidden(self):
         self.assertRaises(exception.NotFound, self.image_repo.get, UUID4)
@@ -281,12 +283,28 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.assertEqual(image.tags, set(['king', 'kong']))
         self.assertEqual(image.updated_at, current_update_time)
 
+    def test_save_image_not_found(self):
+        fake_uuid = uuidutils.generate_uuid()
+        image = self.image_repo.get(UUID1)
+        image.image_id = fake_uuid
+        exc = self.assertRaises(exception.NotFound, self.image_repo.save,
+                                image)
+        self.assertTrue(fake_uuid in unicode(exc))
+
     def test_remove_image(self):
         image = self.image_repo.get(UUID1)
         previous_update_time = image.updated_at
         self.image_repo.remove(image)
         self.assertTrue(image.updated_at > previous_update_time)
         self.assertRaises(exception.NotFound, self.image_repo.get, UUID1)
+
+    def test_remove_image_not_found(self):
+        fake_uuid = uuidutils.generate_uuid()
+        image = self.image_repo.get(UUID1)
+        image.image_id = fake_uuid
+        exc = self.assertRaises(exception.NotFound, self.image_repo.remove,
+                                image)
+        self.assertTrue(fake_uuid in unicode(exc))
 
 
 class TestEncryptedLocations(test_utils.BaseTestCase):
@@ -448,8 +466,12 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
                           TENANT2)
 
     def test_remove_image_member_does_not_exist(self):
+        fake_uuid = uuidutils.generate_uuid()
         image = self.image_repo.get(UUID2)
         fake_member = glance.domain.ImageMemberFactory()\
                                    .new_image_member(image, TENANT4)
-        self.assertRaises(exception.NotFound, self.image_member_repo.remove,
-                          fake_member)
+        fake_member.id = fake_uuid
+        exc = self.assertRaises(exception.NotFound,
+                                self.image_member_repo.remove,
+                                fake_member)
+        self.assertTrue(fake_uuid in unicode(exc))
