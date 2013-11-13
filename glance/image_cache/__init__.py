@@ -66,7 +66,9 @@ class ImageCache(object):
         except ImportError as import_err:
             LOG.warn(_("Image cache driver "
                        "'%(driver_name)s' failed to load. "
-                       "Got error: '%(import_err)s.") % locals())
+                       "Got error: '%(import_err)s."),
+                     {'driver_name': driver_name,
+                      'import_err': import_err})
 
             driver_module = __name__ + '.drivers.sqlite.Driver'
             LOG.info(_("Defaulting to SQLite driver."))
@@ -85,7 +87,9 @@ class ImageCache(object):
             driver_module = self.driver_class.__module__
             LOG.warn(_("Image cache driver "
                        "'%(driver_module)s' failed to configure. "
-                       "Got error: '%(config_err)s") % locals())
+                       "Got error: '%(config_err)s"),
+                     {'driver_module': driver_module,
+                      'config_err': config_err})
             LOG.info(_("Defaulting to SQLite driver."))
             default_module = __name__ + '.drivers.sqlite.Driver'
             self.driver_class = importutils.import_class(default_module)
@@ -173,8 +177,8 @@ class ImageCache(object):
 
         overage = current_size - max_size
         LOG.debug(_("Image cache currently %(overage)d bytes over max "
-                    "size. Starting prune to max size of %(max_size)d ") %
-                  locals())
+                    "size. Starting prune to max size of %(max_size)d "),
+                  {'overage': overage, 'max_size': max_size})
 
         total_bytes_pruned = 0
         total_files_pruned = 0
@@ -191,7 +195,9 @@ class ImageCache(object):
 
         LOG.debug(_("Pruning finished pruning. "
                     "Pruned %(total_files_pruned)d and "
-                    "%(total_bytes_pruned)d.") % locals())
+                    "%(total_bytes_pruned)d."),
+                  {'total_files_pruned': total_files_pruned,
+                   'total_bytes_pruned': total_bytes_pruned})
         return total_files_pruned, total_bytes_pruned
 
     def clean(self, stall_time=None):

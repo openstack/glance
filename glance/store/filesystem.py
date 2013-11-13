@@ -230,7 +230,7 @@ class Store(glance.store.base.Store):
         fn = loc.path
         if os.path.exists(fn):
             try:
-                LOG.debug(_("Deleting image at %(fn)s") % locals())
+                LOG.debug(_("Deleting image at %(fn)s"), {'fn': fn})
                 os.unlink(fn)
             except OSError:
                 raise exception.Forbidden(_("You cannot delete file %s") % fn)
@@ -288,7 +288,10 @@ class Store(glance.store.base.Store):
         metadata = self._get_metadata()
 
         LOG.debug(_("Wrote %(bytes_written)d bytes to %(filepath)s with "
-                    "checksum %(checksum_hex)s") % locals())
+                    "checksum %(checksum_hex)s"),
+                  {'bytes_written': bytes_written,
+                   'filepath': filepath,
+                   'checksum_hex': checksum_hex})
         return ('file://%s' % filepath, bytes_written, checksum_hex, metadata)
 
     @staticmethod

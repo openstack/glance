@@ -161,7 +161,7 @@ class Controller(controller.BaseController):
             for key in create_props:
                 if (self.prop_enforcer.check_property_rules(
                         key, 'create', req.context) is False):
-                    msg = _("Property '%s' is protected" % key)
+                    msg = _("Property '%s' is protected") % key
                     LOG.debug(msg)
                     raise HTTPForbidden(explanation=msg,
                                         request=req,
@@ -205,7 +205,7 @@ class Controller(controller.BaseController):
                         key, 'update', req.context) is False and
                         image_meta['properties'][key] !=
                         orig_meta['properties'][key]) or not has_read):
-                    msg = _("Property '%s' is protected" % key)
+                    msg = _("Property '%s' is protected") % key
                     LOG.debug(msg)
                     raise HTTPForbidden(explanation=msg,
                                         request=req,
@@ -239,7 +239,7 @@ class Controller(controller.BaseController):
                         orig_meta['properties'][key]
                 elif (self.prop_enforcer.check_property_rules(
                         key, 'delete', req.context) is False):
-                    msg = _("Property '%s' is protected" % key)
+                    msg = _("Property '%s' is protected") % key
                     LOG.debug(msg)
                     raise HTTPForbidden(explanation=msg,
                                         request=req,
@@ -485,7 +485,7 @@ class Controller(controller.BaseController):
                                request=req,
                                content_type="text/plain")
         except exception.Invalid as e:
-            msg = (_("Failed to reserve image. Got error: %(e)s") % locals())
+            msg = _("Failed to reserve image. Got error: %(e)s") % {'e': e}
             for line in msg.split('\n'):
                 LOG.debug(line)
             raise HTTPBadRequest(explanation=msg,
@@ -544,7 +544,8 @@ class Controller(controller.BaseController):
                                        {'status': 'saving'})
 
         LOG.debug(_("Uploading image data for image %(image_id)s "
-                    "to %(scheme)s store"), locals())
+                    "to %(scheme)s store"), {'image_id': image_id,
+                                             'scheme': scheme})
 
         self.notifier.info("image.prepare", redact_loc(image_meta))
 
@@ -580,8 +581,7 @@ class Controller(controller.BaseController):
             self.notifier.info("image.update", redact_loc(image_meta_data))
             return image_meta_data
         except exception.Invalid as e:
-            msg = (_("Failed to activate image. Got error: %(e)s")
-                   % locals())
+            msg = _("Failed to activate image. Got error: %(e)s") % {'e': e}
             LOG.debug(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
@@ -840,21 +840,21 @@ class Controller(controller.BaseController):
                                                  image_data)
 
         except exception.Invalid as e:
-            msg = (_("Failed to update image metadata. Got error: %(e)s")
-                   % locals())
+            msg = (_("Failed to update image metadata. Got error: %(e)s") %
+                   {'e': e})
             LOG.debug(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
         except exception.NotFound as e:
-            msg = (_("Failed to find image to update: %(e)s") % locals())
+            msg = _("Failed to find image to update: %(e)s") % {'e': e}
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPNotFound(explanation=msg,
                                request=req,
                                content_type="text/plain")
         except exception.Forbidden as e:
-            msg = (_("Forbidden to update image: %(e)s") % locals())
+            msg = _("Forbidden to update image: %(e)s") % {'e': e}
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPForbidden(explanation=msg,
@@ -925,14 +925,14 @@ class Controller(controller.BaseController):
                 upload_utils.initiate_deletion(req, image['location'], id,
                                                CONF.delayed_delete)
         except exception.NotFound as e:
-            msg = (_("Failed to find image to delete: %(e)s") % locals())
+            msg = _("Failed to find image to delete: %(e)s") % {'e': e}
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPNotFound(explanation=msg,
                                request=req,
                                content_type="text/plain")
         except exception.Forbidden as e:
-            msg = (_("Forbidden to delete image: %(e)s") % locals())
+            msg = _("Forbidden to delete image: %(e)s") % {'e': e}
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPForbidden(explanation=msg,

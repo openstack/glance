@@ -117,7 +117,8 @@ class ImagesController(object):
                     image_repo.save(image)
 
         except exception.NotFound:
-            msg = _("Failed to find image %(image_id)s to update") % locals()
+            msg = (_("Failed to find image %(image_id)s to update") %
+                   {'image_id': image_id})
             LOG.info(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.Forbidden as e:
@@ -184,7 +185,8 @@ class ImagesController(object):
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
         except exception.NotFound as e:
-            msg = ("Failed to find image %(image_id)s to delete" % locals())
+            msg = ("Failed to find image %(image_id)s to delete" %
+                   {'image_id': image_id})
             LOG.info(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
 

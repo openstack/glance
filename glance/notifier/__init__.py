@@ -191,8 +191,8 @@ class ImageProxy(glance.domain.proxy.Image):
         try:
             notify('image.send', self._format_image_send(sent))
         except Exception as err:
-            msg = _("An error occurred during image.send"
-                    " notification: %(err)s") % locals()
+            msg = (_("An error occurred during image.send"
+                     " notification: %(err)s") % {'err': err})
             LOG.error(msg)
 
     def set_data(self, data, size=None):

@@ -110,14 +110,18 @@ class RegistryClient(BaseClient):
                                                          **kwargs)
             status = res.status
             request_id = res.getheader('x-openstack-request-id')
-            msg = _("Registry request %(method)s %(action)s HTTP %(status)s"
-                    " request id %(request_id)s")
-            LOG.debug(msg % locals())
+            msg = (_("Registry request %(method)s %(action)s HTTP %(status)s"
+                     " request id %(request_id)s") %
+                   {'method': method, 'action': action,
+                    'status': status, 'request_id': request_id})
+            LOG.debug(msg)
 
         except Exception as exc:
             exc_name = exc.__class__.__name__
             LOG.info(_("Registry client request %(method)s %(action)s "
-                       "raised %(exc_name)s") % locals())
+                       "raised %(exc_name)s"),
+                     {'method': method, 'action': action,
+                      'exc_name': exc_name})
             raise
         return res
 

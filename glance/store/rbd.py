@@ -103,14 +103,18 @@ class StoreLocation(glance.store.location.StoreLocation):
         prefix = 'rbd://'
         if not uri.startswith(prefix):
             reason = _('URI must start with rbd://')
-            LOG.debug(_("Invalid URI: %(uri)s: %(reason)s") % locals())
+            msg = (_("Invalid URI: %(uri)s: %(reason)s") % {'uri': uri,
+                                                            'reason': reason})
+            LOG.debug(msg)
             raise exception.BadStoreUri(message=reason)
         # convert to ascii since librbd doesn't handle unicode
         try:
             ascii_uri = str(uri)
         except UnicodeError:
             reason = _('URI contains non-ascii characters')
-            LOG.debug(_("Invalid URI: %(uri)s: %(reason)s") % locals())
+            msg = (_("Invalid URI: %(uri)s: %(reason)s") % {'uri': uri,
+                                                            'reason': reason})
+            LOG.debug(msg)
             raise exception.BadStoreUri(message=reason)
         pieces = ascii_uri[len(prefix):].split('/')
         if len(pieces) == 1:
@@ -121,11 +125,15 @@ class StoreLocation(glance.store.location.StoreLocation):
                 map(urllib.unquote, pieces)
         else:
             reason = _('URI must have exactly 1 or 4 components')
-            LOG.debug(_("Invalid URI: %(uri)s: %(reason)s") % locals())
+            msg = (_("Invalid URI: %(uri)s: %(reason)s") % {'uri': uri,
+                                                            'reason': reason})
+            LOG.debug(msg)
             raise exception.BadStoreUri(message=reason)
         if any(map(lambda p: p == '', pieces)):
             reason = _('URI cannot contain empty components')
-            LOG.debug(_("Invalid URI: %(uri)s: %(reason)s") % locals())
+            msg = (_("Invalid URI: %(uri)s: %(reason)s") % {'uri': uri,
+                                                            'reason': reason})
+            LOG.debug(msg)
             raise exception.BadStoreUri(message=reason)
 
 
