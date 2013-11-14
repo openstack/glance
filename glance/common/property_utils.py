@@ -164,6 +164,16 @@ class PropertyRules(object):
             if rule_exp.search(str(property_name)):
                 rule_roles = rule.get(action)
                 if rule_roles:
+                    if '@' in rule_roles and '!' in rule_roles:
+                        msg = _("Malformed property protection rule '%s': '@' "
+                                "and '!' are mutually exclusive"
+                                % property_name)
+                        LOG.error(msg)
+                        raise webob.exc.HTTPInternalServerError(msg)
+                    elif '@' in rule_roles:
+                        return True
+                    elif '!' in rule_roles:
+                        return False
                     if self.prop_prot_rule_format == 'policies':
                         prop_exp_key = self.prop_exp_mapping[rule_exp]
                         return self._check_policy(prop_exp_key, action,
