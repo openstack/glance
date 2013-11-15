@@ -289,6 +289,11 @@ class ImageSizeLimitExceeded(GlanceException):
     message = _("The provided image is too large.")
 
 
+class ImagePropertyLimitExceeded(GlanceException):
+    message = _("The limit has been exceeded on the number of allowed image "
+                "properties. Attempted: %(attempted)s, Maximum: %(maximum)s")
+
+
 class RPCError(GlanceException):
     message = _("%(cls)s exception was raised in the last rpc call: %(val)s")
 

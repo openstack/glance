@@ -263,6 +263,18 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, 400)
         self.assertTrue('Invalid container format' in res.body)
 
+    def test_create_image_with_too_many_properties(self):
+        self.config(image_property_quota=1)
+        another_request = unit_test_utils.get_fake_request(
+                path='/images', method='POST')
+        headers = {'x-auth-token': 'user:tenant:joe_soap',
+                   'x-image-meta-property-x_all_permitted': '1',
+                   'x-image-meta-property-x_all_permitted_foo': '2'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(output.status_int, 413)
+
     def test_bad_container_format(self):
         fixture_headers = {
             'x-image-meta-store': 'bad',
@@ -3261,3 +3273,116 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 403)
+
+
+class TestAPIPropertyQuotas(base.IsolatedUnitTest):
+    def setUp(self):
+        """Establish a clean test environment"""
+        super(TestAPIPropertyQuotas, self).setUp()
+        self.mapper = routes.Mapper()
+        self.api = test_utils.FakeAuthMiddleware(router.API(self.mapper))
+        db_api.setup_db_env()
+        db_api.get_engine()
+        db_models.unregister_models(db_api._ENGINE)
+        db_models.register_models(db_api._ENGINE)
+
+    def _create_admin_image(self, props={}):
+        request = unit_test_utils.get_fake_request(path='/images')
+        headers = {'x-image-meta-disk-format': 'ami',
+                   'x-image-meta-container-format': 'ami',
+                   'x-image-meta-name': 'foo',
+                   'x-image-meta-size': '0',
+                   'x-auth-token': 'user:tenant:admin'}
+        headers.update(props)
+        for k, v in headers.iteritems():
+            request.headers[k] = v
+        created_image = request.get_response(self.api)
+        res_body = json.loads(created_image.body)['image']
+        image_id = res_body['id']
+        return image_id
+
+    def test_update_image_with_too_many_properties(self):
+        """
+        Ensure that updating image properties enforces the quota.
+        """
+        self.config(image_property_quota=1)
+        image_id = self._create_admin_image()
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:joe_soap',
+                   'x-image-meta-property-x_all_permitted': '1',
+                   'x-image-meta-property-x_all_permitted_foo': '2'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+
+        output = another_request.get_response(self.api)
+
+        self.assertEqual(output.status_int, 413)
+        self.assertTrue("Attempted: 2, Maximum: 1" in output.text)
+
+    def test_update_image_with_too_many_properties_without_purge_props(self):
+        """
+        Ensure that updating image properties counts existing image propertys
+        when enforcing property quota.
+        """
+        self.config(image_property_quota=1)
+        request = unit_test_utils.get_fake_request(path='/images')
+        headers = {'x-image-meta-disk-format': 'ami',
+                   'x-image-meta-container-format': 'ami',
+                   'x-image-meta-name': 'foo',
+                   'x-image-meta-size': '0',
+                   'x-image-meta-property-x_all_permitted_create': '1',
+                   'x-auth-token': 'user:tenant:admin'}
+        for k, v in headers.iteritems():
+            request.headers[k] = v
+        created_image = request.get_response(self.api)
+        res_body = json.loads(created_image.body)['image']
+        image_id = res_body['id']
+
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:joe_soap',
+                   'x-glance-registry-purge-props': 'False',
+                   'x-image-meta-property-x_all_permitted': '1'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+
+        output = another_request.get_response(self.api)
+
+        self.assertEqual(output.status_int, 413)
+        self.assertTrue("Attempted: 2, Maximum: 1" in output.text)
+
+    def test_update_properties_without_purge_props_overwrite_value(self):
+        """
+        Ensure that updating image properties does not count against image
+        property quota.
+        """
+        self.config(image_property_quota=2)
+        request = unit_test_utils.get_fake_request(path='/images')
+        headers = {'x-image-meta-disk-format': 'ami',
+                   'x-image-meta-container-format': 'ami',
+                   'x-image-meta-name': 'foo',
+                   'x-image-meta-size': '0',
+                   'x-image-meta-property-x_all_permitted_create': '1',
+                   'x-auth-token': 'user:tenant:admin'}
+        for k, v in headers.iteritems():
+            request.headers[k] = v
+        created_image = request.get_response(self.api)
+        res_body = json.loads(created_image.body)['image']
+        image_id = res_body['id']
+
+        another_request = unit_test_utils.get_fake_request(
+                path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:joe_soap',
+                   'x-glance-registry-purge-props': 'False',
+                   'x-image-meta-property-x_all_permitted_create': '3',
+                   'x-image-meta-property-x_all_permitted': '1'}
+        for k, v in headers.iteritems():
+            another_request.headers[k] = v
+
+        output = another_request.get_response(self.api)
+
+        self.assertEqual(output.status_int, 200)
+        res_body = json.loads(output.body)['image']
+        self.assertEqual(res_body['properties']['x_all_permitted'], '1')
+        self.assertEqual(res_body['properties']['x_all_permitted_create'], '3')

@@ -15,6 +15,8 @@
 #    under the License.
 
 
+from oslo.config import cfg
+
 import glance.api.common
 import glance.common.exception as exception
 from glance.common import utils
@@ -24,6 +26,8 @@ import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)
+CONF = cfg.CONF
+CONF.import_opt('image_property_quota', 'glance.common.config')
 
 
 class ImageRepoProxy(glance.domain.proxy.Repo):
@@ -35,6 +39,25 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         super(ImageRepoProxy, self).__init__(image_repo,
                                              item_proxy_class=ImageProxy,
                                              item_proxy_kwargs=proxy_kwargs)
+
+    def _enforce_image_property_quota(self, image):
+        if CONF.image_property_quota < 0:
+            # If value is negative, allow unlimited number of properties
+            return
+
+        attempted = len(image.extra_properties)
+        maximum = CONF.image_property_quota
+        if attempted > maximum:
+            raise exception.ImagePropertyLimitExceeded(attempted=attempted,
+                                                       maximum=maximum)
+
+    def save(self, image):
+        self._enforce_image_property_quota(image)
+        super(ImageRepoProxy, self).save(image)
+
+    def add(self, image):
+        self._enforce_image_property_quota(image)
+        super(ImageRepoProxy, self).add(image)
 
 
 class ImageFactoryProxy(glance.domain.proxy.ImageFactory):

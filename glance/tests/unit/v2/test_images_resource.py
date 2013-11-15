@@ -512,6 +512,35 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(output_log['event_type'], 'image.create')
         self.assertEqual(output_log['payload']['name'], 'image-1')
 
+    def test_create_with_properties(self):
+        request = unit_test_utils.get_fake_request()
+        image_properties = {'foo': 'bar'}
+        image = {'name': 'image-1'}
+        output = self.controller.create(request, image=image,
+                                        extra_properties=image_properties,
+                                        tags=[])
+        self.assertEqual('image-1', output.name)
+        self.assertEqual(image_properties, output.extra_properties)
+        self.assertEqual(set([]), output.tags)
+        self.assertEqual('private', output.visibility)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(len(output_logs), 1)
+        output_log = output_logs[0]
+        self.assertEqual(output_log['notification_type'], 'INFO')
+        self.assertEqual(output_log['event_type'], 'image.create')
+        self.assertEqual(output_log['payload']['name'], 'image-1')
+
+    def test_create_with_too_many_properties(self):
+        self.config(image_property_quota=1)
+        request = unit_test_utils.get_fake_request()
+        image_properties = {'foo': 'bar', 'foo2': 'bar'}
+        image = {'name': 'image-1'}
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                          self.controller.create, request,
+                          image=image,
+                          extra_properties=image_properties,
+                          tags=[])
+
     def test_create_public_image_as_admin(self):
         request = unit_test_utils.get_fake_request()
         image = {'name': 'image-1', 'visibility': 'public'}
@@ -595,6 +624,127 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(output.image_id, UUID1)
         self.assertEqual(output.extra_properties['foo'], 'baz')
         self.assertEqual(output.extra_properties['snitch'], 'golden')
+        self.assertNotEqual(output.created_at, output.updated_at)
+
+    def test_update_add_property(self):
+        request = unit_test_utils.get_fake_request()
+        output = self.controller.show(request, UUID1)
+
+        changes = [
+            {'op': 'add', 'path': ['foo'], 'value': 'baz'},
+            {'op': 'add', 'path': ['snitch'], 'value': 'golden'},
+        ]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(output.extra_properties['foo'], 'baz')
+        self.assertEqual(output.extra_properties['snitch'], 'golden')
+        self.assertNotEqual(output.created_at, output.updated_at)
+
+    def test_update_add_too_many_properties(self):
+        self.config(image_property_quota=1)
+        request = unit_test_utils.get_fake_request()
+        output = self.controller.show(request, UUID1)
+
+        changes = [
+            {'op': 'add', 'path': ['foo'], 'value': 'baz'},
+            {'op': 'add', 'path': ['snitch'], 'value': 'golden'},
+        ]
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                          self.controller.update, request,
+                          UUID1, changes)
+
+    def test_update_add_and_remove_too_many_properties(self):
+        request = unit_test_utils.get_fake_request()
+
+        changes = [
+            {'op': 'add', 'path': ['foo'], 'value': 'baz'},
+            {'op': 'add', 'path': ['snitch'], 'value': 'golden'},
+        ]
+        self.controller.update(request, UUID1, changes)
+        self.config(image_property_quota=1)
+
+        # We must remove two properties to avoid being
+        # over the limit of 1 property
+        changes = [
+            {'op': 'remove', 'path': ['foo']},
+            {'op': 'add', 'path': ['fizz'], 'value': 'buzz'},
+        ]
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                          self.controller.update, request,
+                          UUID1, changes)
+
+    def test_update_add_unlimited_properties(self):
+        self.config(image_property_quota=-1)
+        request = unit_test_utils.get_fake_request()
+        output = self.controller.show(request, UUID1)
+
+        changes = [{'op': 'add',
+                    'path': ['foo'],
+                    'value': 'bar'}]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output.image_id, UUID1)
+        self.assertNotEqual(output.created_at, output.updated_at)
+
+    def test_update_remove_property_while_over_limit(self):
+        """
+        Ensure that image properties can be removed.
+
+        Image properties should be able to be removed as long as the image has
+        fewer than the limited number of image properties after the
+        transaction.
+
+        """
+        request = unit_test_utils.get_fake_request()
+
+        changes = [
+            {'op': 'add', 'path': ['foo'], 'value': 'baz'},
+            {'op': 'add', 'path': ['snitch'], 'value': 'golden'},
+            {'op': 'add', 'path': ['fizz'], 'value': 'buzz'},
+        ]
+        self.controller.update(request, UUID1, changes)
+        self.config(image_property_quota=1)
+
+        # We must remove two properties to avoid being
+        # over the limit of 1 property
+        changes = [
+            {'op': 'remove', 'path': ['foo']},
+            {'op': 'remove', 'path': ['snitch']},
+        ]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(len(output.extra_properties), 1)
+        self.assertEqual(output.extra_properties['fizz'], 'buzz')
+        self.assertNotEqual(output.created_at, output.updated_at)
+
+    def test_update_add_and_remove_property_under_limit(self):
+        """
+        Ensure that image properties can be removed.
+
+        Image properties should be able to be added and removed simultaneously
+        as long as the image has fewer than the limited number of image
+        properties after the transaction.
+
+        """
+        request = unit_test_utils.get_fake_request()
+
+        changes = [
+            {'op': 'add', 'path': ['foo'], 'value': 'baz'},
+            {'op': 'add', 'path': ['snitch'], 'value': 'golden'},
+        ]
+        self.controller.update(request, UUID1, changes)
+        self.config(image_property_quota=1)
+
+        # We must remove two properties to avoid being
+        # over the limit of 1 property
+        changes = [
+            {'op': 'remove', 'path': ['foo']},
+            {'op': 'remove', 'path': ['snitch']},
+            {'op': 'add', 'path': ['fizz'], 'value': 'buzz'},
+        ]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(len(output.extra_properties), 1)
+        self.assertEqual(output.extra_properties['fizz'], 'buzz')
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_replace_missing_property(self):

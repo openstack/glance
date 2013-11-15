@@ -154,6 +154,20 @@ class TestImages(functional.FunctionalTest):
         self.assertTrue(image['protected'])
         self.assertFalse('type' in image, response.text)
 
+        # Adding 11 image properties should fail since configured limit is 10
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type})
+        changes = []
+        for i in range(11):
+            changes.append({'op': 'add',
+                            'path': '/ping%i' % i,
+                            'value': 'pong'})
+
+        data = json.dumps(changes)
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(413, response.status_code, response.text)
+
         # Ensure the v2.0 json-patch content type is accepted
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.0-json-patch'

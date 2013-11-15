@@ -59,6 +59,7 @@ ACTIVE_IMMUTABLE = glance.api.v1.ACTIVE_IMMUTABLE
 CONF = cfg.CONF
 CONF.import_opt('disk_formats', 'glance.domain')
 CONF.import_opt('container_formats', 'glance.domain')
+CONF.import_opt('image_property_quota', 'glance.common.config')
 
 
 def validate_image_meta(req, values):
@@ -147,6 +148,33 @@ class Controller(controller.BaseController):
             self.policy.enforce(req.context, action, {})
         except exception.Forbidden:
             raise HTTPForbidden()
+
+    def _enforce_image_property_quota(self,
+                                      image_meta,
+                                      orig_image_meta=None,
+                                      purge_props=False,
+                                      req=None):
+        if CONF.image_property_quota < 0:
+            # If value is negative, allow unlimited number of properties
+            return
+
+        props = image_meta['properties'].keys()
+
+        # NOTE(ameade): If we are not removing existing properties,
+        # take them in to account
+        if (not purge_props) and orig_image_meta:
+            original_props = orig_image_meta['properties'].keys()
+            props.extend(original_props)
+            props = set(props)
+
+        if len(props) > CONF.image_property_quota:
+            msg = (_("The limit has been exceeded on the number of allowed "
+                     "image properties. Attempted: %s, Maximum: %s") %
+                   (len(props), CONF.image_property_quota))
+            LOG.info(msg)
+            raise HTTPRequestEntityTooLarge(explanation=msg,
+                                            request=req,
+                                            content_type="text/plain")
 
     def _enforce_create_protected_props(self, create_props, req):
         """
@@ -723,6 +751,8 @@ class Controller(controller.BaseController):
         self._enforce_create_protected_props(image_meta['properties'].keys(),
                                              req)
 
+        self._enforce_image_property_quota(image_meta, req=req)
+
         image_meta = self._reserve(req, image_meta)
         id = image_meta['id']
 
@@ -824,6 +854,11 @@ class Controller(controller.BaseController):
             self._enforce_delete_protected_props(
                     orig_keys.difference(new_keys), image_meta,
                     orig_image_meta, req)
+
+        self._enforce_image_property_quota(image_meta,
+                                           orig_image_meta=orig_image_meta,
+                                           purge_props=purge_props,
+                                           req=req)
 
         try:
             if location:
