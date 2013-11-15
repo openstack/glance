@@ -1261,6 +1261,34 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
                           request, UUID2, changes)
 
+    def test_update_add_duplicate_locations(self):
+        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': new_location}]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(len(output.locations), 2)
+        self.assertEqual(new_location, output.locations[1])
+
+        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
+                          request, UUID1, changes)
+
+    def test_update_replace_duplicate_locations(self):
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(len(output.locations), 0)
+        self.assertEqual(output.status, 'queued')
+
+        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
+        changes = [{'op': 'replace', 'path': ['locations'],
+                    'value': [new_location, new_location]}]
+
+        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
+                          request, UUID1, changes)
+
     def test_update_remove_base_property(self):
         self.db.image_update(None, UUID1, {'properties': {'foo': 'bar'}})
         request = unit_test_utils.get_fake_request()

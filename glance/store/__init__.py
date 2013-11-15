@@ -434,8 +434,13 @@ class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
                                                 proxy_kwargs=proxy_kwargs)
 
     def new_image(self, **kwargs):
-        for l in kwargs.get('locations', []):
+        locations = kwargs.get('locations', [])
+        for l in locations:
             _check_image_location(self.context, self.store_api, l)
+
+            if locations.count(l) > 1:
+                raise exception.DuplicateLocation(location=l['url'])
+
         return super(ImageFactoryProxy, self).new_image(**kwargs)
 
 
@@ -454,24 +459,27 @@ class StoreLocations(collections.MutableSequence):
             self.value = list(value)
 
     def append(self, location):
-        _check_image_location(self.image_proxy.context,
-                              self.image_proxy.store_api, location)
-        self.value.append(location)
+        # NOTE(flaper87): Insert this
+        # location at the very end of
+        # the value list.
+        self.insert(len(self.value), location)
 
     def extend(self, other):
         if isinstance(other, StoreLocations):
-            self.value.extend(other.value)
+            locations = other.value
         else:
             locations = list(other)
-            for location in locations:
-                _check_image_location(self.image_proxy.context,
-                                      self.image_proxy.store_api,
-                                      location)
-            self.value.extend(locations)
+
+        for location in locations:
+            self.append(location)
 
     def insert(self, i, location):
         _check_image_location(self.image_proxy.context,
                               self.image_proxy.store_api, location)
+
+        if location in self.value:
+            raise exception.DuplicateLocation(location=location['url'])
+
         self.value.insert(i, location)
 
     def pop(self, i=-1):
@@ -540,15 +548,7 @@ class StoreLocations(collections.MutableSequence):
             self.value.__delitem__(i)
 
     def __iadd__(self, other):
-        if isinstance(other, StoreLocations):
-            self.value += other.value
-        else:
-            locations = list(other)
-            for location in locations:
-                _check_image_location(self.image_proxy.context,
-                                      self.image_proxy.store_api,
-                                      location)
-            self.value += locations
+        self.extend(other)
         return self
 
     def __contains__(self, location):
@@ -594,6 +594,10 @@ def _locations_proxy(target, attr):
             for location in value:
                 _check_image_location(self.context, self.store_api,
                                       location)
+
+                if value.count(location) > 1:
+                    raise exception.DuplicateLocation(location=location['url'])
+
             return setattr(getattr(self, target), attr, list(value))
 
     def del_attr(self):
