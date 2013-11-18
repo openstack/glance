@@ -26,12 +26,6 @@ oslo.config>=1.2.0
 # For Swift storage backend.
 python-swiftclient>=1.5
 
-# Note you will need gcc buildtools installed and must
-# have installed libxml headers for lxml to be successfully
-# installed using pip, therefore you will need to install the
-# libxml2-dev and libxslt-dev Ubuntu packages.
-lxml>=2.3
-
 # For paste.util.template used in keystone.common.template
 Paste
 
