@@ -17,16 +17,14 @@
 #    under the License.
 
 
-import socket
-import uuid
+import warnings
 
 from oslo.config import cfg
+from oslo import messaging
 import webob
 
 from glance.common import exception
-import glance.domain
 import glance.domain.proxy
-from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 
@@ -37,7 +35,10 @@ notifier_opts = [
                       'notifications, logging (via the log_file directive), '
                       'rabbit (via a rabbitmq queue), qpid (via a Qpid '
                       'message queue), or noop (no notifications sent, the '
-                      'default).'))
+                      'default). (DEPRECATED)')),
+
+    cfg.StrOpt('default_publisher_id', default="image.localhost",
+               help='Default publisher_id for outgoing notifications'),
 ]
 
 CONF = cfg.CONF
@@ -46,11 +47,11 @@ CONF.register_opts(notifier_opts)
 LOG = logging.getLogger(__name__)
 
 _STRATEGY_ALIASES = {
-    "logging": "glance.notifier.notify_log.LoggingStrategy",
-    "rabbit": "glance.notifier.notify_kombu.RabbitStrategy",
-    "qpid": "glance.notifier.notify_qpid.QpidStrategy",
-    "noop": "glance.notifier.notify_noop.NoopStrategy",
-    "default": "glance.notifier.notify_noop.NoopStrategy",
+    "logging": "log",
+    "rabbit": "messaging",
+    "qpid": "messaging",
+    "noop": "noop",
+    "default": "noop",
 }
 
 
@@ -58,44 +59,42 @@ class Notifier(object):
     """Uses a notification strategy to send out messages about events."""
 
     def __init__(self, strategy=None):
-        _strategy = CONF.notifier_strategy
-        try:
-            strategy = _STRATEGY_ALIASES[_strategy]
-            msg = _('Converted strategy alias %s to %s')
-            LOG.debug(msg % (_strategy, strategy))
-        except KeyError:
-            strategy = _strategy
-            LOG.debug(_('No strategy alias found for %s') % strategy)
 
-        try:
-            strategy_class = importutils.import_class(strategy)
-        except ImportError:
-            raise exception.InvalidNotifierStrategy(strategy=strategy)
-        else:
-            self.strategy = strategy_class()
+        if CONF.notifier_strategy != 'default':
+            msg = _("notifier_strategy was deprecated in "
+                    "favor of `notification_driver`")
+            warnings.warn(msg, DeprecationWarning)
 
-    @staticmethod
-    def generate_message(event_type, priority, payload):
-        return {
-            "message_id": str(uuid.uuid4()),
-            "publisher_id": socket.gethostname(),
-            "event_type": event_type,
-            "priority": priority,
-            "payload": payload,
-            "timestamp": str(timeutils.utcnow()),
-        }
+        # NOTE(flaper87): Use this to keep backwards
+        # compatibility. We'll try to get an oslo.messaging
+        # driver from the specified strategy.
+        _strategy = strategy or CONF.notifier_strategy
+        _driver = _STRATEGY_ALIASES.get(_strategy)
+
+        # NOTE(flaper87): The next 3 lines help
+        # with the migration to oslo.messaging.
+        # Without them, gate tests won't know
+        # what driver should be loaded.
+        # Once this patch lands, devstack will be
+        # updated and then these lines will be removed.
+        url = None
+        if _strategy in ['rabbit', 'qpid']:
+            url = _strategy + '://'
+
+        publisher_id = CONF.default_publisher_id
+        self._transport = messaging.get_transport(CONF, url)
+        self._notifier = messaging.Notifier(self._transport,
+                                            driver=_driver,
+                                            publisher_id=publisher_id)
 
     def warn(self, event_type, payload):
-        msg = self.generate_message(event_type, "WARN", payload)
-        self.strategy.warn(msg)
+        self._notifier.warn({}, event_type, payload)
 
     def info(self, event_type, payload):
-        msg = self.generate_message(event_type, "INFO", payload)
-        self.strategy.info(msg)
+        self._notifier.info({}, event_type, payload)
 
     def error(self, event_type, payload):
-        msg = self.generate_message(event_type, "ERROR", payload)
-        self.strategy.error(msg)
+        self._notifier.error({}, event_type, payload)
 
 
 def format_image_notification(image):
@@ -156,11 +155,13 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
 
     def save(self, image):
         super(ImageRepoProxy, self).save(image)
-        self.notifier.info('image.update', format_image_notification(image))
+        self.notifier.info('image.update',
+                           format_image_notification(image))
 
     def add(self, image):
         super(ImageRepoProxy, self).add(image)
-        self.notifier.info('image.create', format_image_notification(image))
+        self.notifier.info('image.create',
+                           format_image_notification(image))
 
     def remove(self, image):
         super(ImageRepoProxy, self).remove(image)
@@ -207,7 +208,8 @@ class ImageProxy(glance.domain.proxy.Image):
             notify = self.notifier.info
 
         try:
-            notify('image.send', self._format_image_send(sent))
+            notify('image.send',
+                   self._format_image_send(sent))
         except Exception as err:
             msg = (_("An error occurred during image.send"
                      " notification: %(err)s") % {'err': err})
@@ -278,7 +280,8 @@ class TaskRepoProxy(glance.domain.proxy.Repo):
                                             item_proxy_kwargs=proxy_kwargs)
 
     def add(self, task):
-        self.notifier.info('task.create', format_task_notification(task))
+        self.notifier.info('task.create',
+                           format_task_notification(task))
         return super(TaskRepoProxy, self).add(task)
 
     def remove(self, task):
@@ -306,7 +309,8 @@ class TaskProxy(glance.domain.proxy.Task):
         super(TaskProxy, self).__init__(task)
 
     def run(self, executor):
-        self.notifier.info('task.run', format_task_notification(self.task))
+        self.notifier.info('task.run',
+                           format_task_notification(self.task))
         return super(TaskProxy, self).run(executor)
 
     def begin_processing(self):

@@ -241,10 +241,6 @@ class StoreAddDisabled(GlanceException):
                 "store is disabled.")
 
 
-class InvalidNotifierStrategy(GlanceException):
-    message = _("'%(strategy)s' is not an available notifier strategy.")
-
-
 class MaxRedirectsExceeded(GlanceException):
     message = _("Maximum redirects (%(redirects)s) was exceeded.")
 
