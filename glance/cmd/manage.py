@@ -43,11 +43,11 @@ from oslo.config import cfg
 
 from glance.common import config
 from glance.common import exception
-import glance.db.sqlalchemy.api
 from glance.db.sqlalchemy import migration
 from glance.openstack.common import log
 
 CONF = cfg.CONF
+CONF.import_group("database", "glance.openstack.common.db.sqlalchemy.session")
 
 
 # Decorators for actions
@@ -171,10 +171,6 @@ def methods_of(obj):
 def main():
     CONF.register_cli_opt(command_opt)
     try:
-        # We load the glance-registry config section because
-        # sql_connection is only part of the glance registry.
-        glance.db.sqlalchemy.api.add_cli_options()
-
         cfg_files = cfg.find_config_files(project='glance',
                                           prog='glance-registry')
         cfg_files.extend(cfg.find_config_files(project='glance',

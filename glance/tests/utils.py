@@ -418,8 +418,8 @@ class RegistryAPIMixIn(object):
                 image.write("chunk00000remainder")
 
     def destroy_fixtures(self):
-        db_models.unregister_models(db_api._ENGINE)
-        db_models.register_models(db_api._ENGINE)
+        db_models.unregister_models(db_api.get_engine())
+        db_models.register_models(db_api.get_engine())
 
     def get_fixture(self, **kwargs):
         fixture = {'name': 'fake public image',

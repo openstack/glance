@@ -35,7 +35,6 @@ class Controller(object):
 
     def __init__(self):
         self.db_api = glance.db.get_api()
-        self.db_api.setup_db_env()
 
     def is_image_sharable(self, context, image):
         """Return True if the image can be shared to others in this context."""

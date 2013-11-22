@@ -36,7 +36,6 @@ class ImageDataController(object):
                  gateway=None):
         if gateway is None:
             db_api = db_api or glance.db.get_api()
-            db_api.setup_db_env()
             store_api = store_api or glance.store
             policy = policy_enforcer or glance.api.policy.Enforcer()
             notifier = notifier or glance.notifier.Notifier()

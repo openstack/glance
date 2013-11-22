@@ -62,15 +62,6 @@ def reset():
     }
 
 
-def setup_db_env(*args, **kwargs):
-    """
-    Setup global environment configuration variables.
-
-    We have no connection-oriented environment variables, so this is a NOOP.
-    """
-    pass
-
-
 def clear_db_env(*args, **kwargs):
     """
     Setup global environment configuration variables.

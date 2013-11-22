@@ -90,7 +90,6 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                             'metadata': {}}],
              'properties': {}}]
         self.context = glance.context.RequestContext(is_admin=True)
-        db_api.setup_db_env()
         db_api.get_engine()
         self.destroy_fixtures()
         self.create_fixtures()
@@ -110,8 +109,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def destroy_fixtures(self):
         # Easiest to just drop the models and re-create them...
-        db_models.unregister_models(db_api._ENGINE)
-        db_models.register_models(db_api._ENGINE)
+        db_models.unregister_models(db_api.get_engine())
+        db_models.register_models(db_api.get_engine())
 
     def _do_test_defaulted_format(self, format_key, format_value):
         fixture_headers = {'x-image-meta-name': 'defaulted',
@@ -3106,10 +3105,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         # turn on property protections
         self.set_property_protections()
         self.api = test_utils.FakeAuthMiddleware(router.API(self.mapper))
-        db_api.setup_db_env()
         db_api.get_engine()
-        db_models.unregister_models(db_api._ENGINE)
-        db_models.register_models(db_api._ENGINE)
+        db_models.unregister_models(db_api.get_engine())
+        db_models.register_models(db_api.get_engine())
 
     def tearDown(self):
         """Clear the test environment"""
@@ -3118,8 +3116,8 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
 
     def destroy_fixtures(self):
         # Easiest to just drop the models and re-create them...
-        db_models.unregister_models(db_api._ENGINE)
-        db_models.register_models(db_api._ENGINE)
+        db_models.unregister_models(db_api.get_engine())
+        db_models.register_models(db_api.get_engine())
 
     def _create_admin_image(self, props={}):
         request = unit_test_utils.get_fake_request(path='/images')
@@ -3823,10 +3821,9 @@ class TestAPIPropertyQuotas(base.IsolatedUnitTest):
         super(TestAPIPropertyQuotas, self).setUp()
         self.mapper = routes.Mapper()
         self.api = test_utils.FakeAuthMiddleware(router.API(self.mapper))
-        db_api.setup_db_env()
         db_api.get_engine()
-        db_models.unregister_models(db_api._ENGINE)
-        db_models.register_models(db_api._ENGINE)
+        db_models.unregister_models(db_api.get_engine())
+        db_models.register_models(db_api.get_engine())
 
     def _create_admin_image(self, props={}):
         request = unit_test_utils.get_fake_request(path='/images')

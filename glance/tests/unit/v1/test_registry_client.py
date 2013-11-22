@@ -55,7 +55,6 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestRegistryV1Client, self).setUp()
-        db_api.setup_db_env()
         db_api.get_engine()
         self.context = context.RequestContext(is_admin=True)
 

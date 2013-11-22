@@ -18,7 +18,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import functools
 from oslo.config import cfg
 
 from glance.common import crypt
@@ -27,26 +26,18 @@ import glance.domain
 import glance.domain.proxy
 from glance.openstack.common import importutils
 
-db_opt = cfg.BoolOpt('use_tpool',
-                     default=False,
-                     help='Enable the use of thread pooling for '
-                     'all DB API calls')
 
 CONF = cfg.CONF
 CONF.import_opt('metadata_encryption_key', 'glance.common.config')
-CONF.register_opt(db_opt)
 
 
 def get_api():
-    if not CONF.use_tpool:
-        return importutils.import_module(CONF.data_api)
-    return ThreadPoolWrapper(CONF.data_api)
+    return importutils.import_module(CONF.data_api)
 
 
 def unwrap(db_api):
-    if not CONF.use_tpool:
-        return db_api
-    return db_api.unwrap()
+    return db_api
+
 
 # attributes common to all models
 BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
@@ -289,27 +280,6 @@ class ImageMemberRepo(object):
         image_member = self._format_image_member_from_db(
             db_api_image_member[0])
         return image_member
-
-
-class ThreadPoolWrapper(object):
-
-    def __init__(self, wrapped):
-        self.wrapped = importutils.import_module(wrapped)
-
-    def __getattr__(self, key):
-        original = getattr(self.wrapped, key)
-        if not callable(original):
-            return original
-
-        @functools.wraps(original)
-        def wrapper(*args, **kwargs):
-            from eventlet import tpool
-            output = tpool.execute(original, *args, **kwargs)
-            return output
-        return wrapper
-
-    def unwrap(self):
-        return self.wrapped
 
 
 class TaskRepo(object):

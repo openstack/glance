@@ -153,7 +153,7 @@ class ApiTest(test_utils.BaseTestCase):
 
     def _setup_database(self):
         sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
-        self.config(sql_connection=sql_connection)
+        self.config(connection=sql_connection, group='database')
         glance.db.sqlalchemy.api.clear_db_env()
         glance_db_env = 'GLANCE_DB_TEST_SQLITE_FILE'
         if glance_db_env in os.environ:

@@ -89,7 +89,6 @@ class TestRegistryRPC(base.IsolatedUnitTest):
              'properties': {}}]
 
         self.context = glance.context.RequestContext(is_admin=True)
-        db_api.setup_db_env()
         db_api.get_engine()
         self.destroy_fixtures()
         self.create_fixtures()
@@ -109,8 +108,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
 
     def destroy_fixtures(self):
         # Easiest to just drop the models and re-create them...
-        db_models.unregister_models(db_api._ENGINE)
-        db_models.register_models(db_api._ENGINE)
+        db_models.unregister_models(db_api.get_engine())
+        db_models.register_models(db_api.get_engine())
 
     def test_show(self):
         """
@@ -1366,13 +1365,3 @@ class TestRegistryRPC(base.IsolatedUnitTest):
 
         memb_list = json.loads(res.body)[0]
         self.assertEqual(len(memb_list), 0)
-
-
-class TestRegistryRPCDBPoolEnabled(TestRegistryRPC):
-    def setUp(self):
-        CONF.set_override('use_tpool', True)
-        super(TestRegistryRPCDBPoolEnabled, self).setUp()
-
-    def tearDown(self):
-        super(TestRegistryRPCDBPoolEnabled, self).tearDown()
-        CONF.set_override('use_tpool', False)

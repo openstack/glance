@@ -79,17 +79,6 @@ class GlanceBase(models.ModelBase, models.TimestampMixin):
     deleted_at = Column(DateTime)
     deleted = Column(Boolean, nullable=False, default=False)
 
-    # TODO(vsergeyev): we should use save() method from
-    #                  models.ModelBase(), when we will use common
-    #                  oslo session
-    def save(self, session=None):
-        """Save this object."""
-        # import api here to prevent circular dependency problem
-        import glance.db.sqlalchemy.api as db_api
-        session = session or db_api._get_session()
-        session.add(self)
-        session.flush()
-
     def delete(self, session=None):
         """Delete this object."""
         self.deleted = True

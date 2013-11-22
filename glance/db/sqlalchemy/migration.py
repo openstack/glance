@@ -37,7 +37,7 @@ def db_version():
     :retval version number
     """
     repo_path = get_migrate_repo_path()
-    sql_connection = CONF.sql_connection
+    sql_connection = CONF.database.connection
     try:
         return versioning_api.db_version(sql_connection, repo_path)
     except versioning_exceptions.DatabaseNotControlledError as e:
@@ -54,7 +54,7 @@ def upgrade(version=None):
     """
     db_version()  # Ensure db is under migration control
     repo_path = get_migrate_repo_path()
-    sql_connection = CONF.sql_connection
+    sql_connection = CONF.database.connection
     version_str = version or 'latest'
     LOG.info(_("Upgrading database to version %s") %
              version_str)
@@ -70,7 +70,7 @@ def downgrade(version):
     """
     db_version()  # Ensure db is under migration control
     repo_path = get_migrate_repo_path()
-    sql_connection = CONF.sql_connection
+    sql_connection = CONF.database.connection
     LOG.info(_("Downgrading database to version %s") %
              version)
     return versioning_api.downgrade(sql_connection, repo_path, version)
@@ -95,7 +95,7 @@ def _version_control(version):
     run any migrations.
     """
     repo_path = get_migrate_repo_path()
-    sql_connection = CONF.sql_connection
+    sql_connection = CONF.database.connection
     if version is None:
         version = versioning_repository.Repository(repo_path).latest
     return versioning_api.version_control(sql_connection, repo_path, version)

@@ -27,7 +27,7 @@ import os
 import sys
 
 # Monkey patch socket and time
-eventlet.patcher.monkey_patch(all=False, socket=True, time=True)
+eventlet.patcher.monkey_patch(all=False, socket=True, time=True, thread=True)
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...

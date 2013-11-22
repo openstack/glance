@@ -47,7 +47,6 @@ class Controller(rpc.Controller):
         # NOTE(flaper87): Register the
         # db_api as a resource to expose.
         db_api = glance.db.get_api()
-        db_api.setup_db_env()
         self.register(glance.db.unwrap(db_api))
 
 

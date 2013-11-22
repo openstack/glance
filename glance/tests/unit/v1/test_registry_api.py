@@ -22,7 +22,6 @@ import uuid
 
 from oslo.config import cfg
 import routes
-from sqlalchemy import exc
 import webob
 
 import glance.api.common
@@ -44,57 +43,6 @@ _gen_uuid = lambda: str(uuid.uuid4())
 
 UUID1 = _gen_uuid()
 UUID2 = _gen_uuid()
-
-
-class TestRegistryDb(test_utils.BaseTestCase):
-
-    def setUp(self):
-        """Establish a clean test environment"""
-        super(TestRegistryDb, self).setUp()
-        self.setup_db()
-
-    def setup_db(self):
-        db_api.setup_db_env()
-        db_api.get_engine()
-        db_models.unregister_models(db_api._ENGINE)
-        db_models.register_models(db_api._ENGINE)
-
-    def test_bad_sql_connection(self):
-        """
-        Test that a bad sql_connection option supplied to the registry
-        API controller results in a) an Exception being thrown and b)
-        a message being logged to the registry log file...
-        """
-        self.config(verbose=True, debug=True, sql_connection='baddriver:///')
-
-        # We set this to None to trigger a reconfigure, otherwise
-        # other modules may have already correctly configured the DB
-        db_api._ENGINE = None
-        db_api._CONNECTION = None
-        db_api._MAKER = None
-        db_api.setup_db_env()
-        self.assertRaises((ImportError, exc.ArgumentError),
-                          db_api.get_engine)
-        exc_raised = False
-        self.log_written = False
-
-        def fake_log_error(msg):
-            if 'Error configuring registry database' in msg:
-                self.log_written = True
-
-        self.stubs.Set(db_api.LOG, 'error', fake_log_error)
-        try:
-            api_obj = rserver.API(routes.Mapper())
-            api = test_utils.FakeAuthMiddleware(api_obj, is_admin=True)
-            req = webob.Request.blank('/images/%s' % _gen_uuid())
-            res = req.get_response(api)
-        except exc.ArgumentError:
-            exc_raised = True
-        except ImportError:
-            exc_raised = True
-
-        self.assertTrue(exc_raised)
-        self.assertTrue(self.log_written)
 
 
 class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
@@ -121,7 +69,6 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
                                min_disk=5, min_ram=256,
                                size=19, properties={})]
         self.context = context.RequestContext(is_admin=True)
-        db_api.setup_db_env()
         db_api.get_engine()
         self.destroy_fixtures()
         self.create_fixtures()
@@ -1811,7 +1758,6 @@ class TestRegistryAPILocations(base.IsolatedUnitTest,
                                min_disk=5, min_ram=256,
                                size=19, properties={})]
         self.context = context.RequestContext(is_admin=True)
-        db_api.setup_db_env()
         db_api.get_engine()
         self.destroy_fixtures()
         self.create_fixtures()
@@ -1914,10 +1860,9 @@ class TestSharability(test_utils.BaseTestCase):
         self.controller = glance.registry.api.v1.members.Controller()
 
     def setup_db(self):
-        db_api.setup_db_env()
         db_api.get_engine()
-        db_models.unregister_models(db_api._ENGINE)
-        db_models.register_models(db_api._ENGINE)
+        db_models.unregister_models(db_api.get_engine())
+        db_models.register_models(db_api.get_engine())
 
     def test_is_image_sharable_as_admin(self):
         TENANT1 = str(uuid.uuid4())
