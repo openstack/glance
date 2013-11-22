@@ -28,6 +28,20 @@ import glance.openstack.common.log as logging
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 CONF.import_opt('image_property_quota', 'glance.common.config')
+CONF.import_opt('image_tag_quota', 'glance.common.config')
+
+
+def _enforce_image_tag_quota(tags):
+    if CONF.image_tag_quota < 0:
+        # If value is negative, allow unlimited number of tags
+        return
+
+    if not tags:
+        return
+
+    if len(tags) > CONF.image_tag_quota:
+        raise exception.ImageTagLimitExceeded(attempted=len(tags),
+                                              maximum=CONF.image_tag_quota)
 
 
 class ImageRepoProxy(glance.domain.proxy.Repo):
@@ -66,6 +80,42 @@ class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
         super(ImageFactoryProxy, self).__init__(factory,
                                                 proxy_class=ImageProxy,
                                                 proxy_kwargs=proxy_kwargs)
+
+    def new_image(self, **kwargs):
+        tags = kwargs.pop('tags', set([]))
+
+        _enforce_image_tag_quota(tags)
+        return super(ImageFactoryProxy, self).new_image(tags=tags, **kwargs)
+
+
+class QuotaImageTagsProxy(object):
+
+    def __init__(self, orig_set):
+        if orig_set is None:
+            orig_set = set([])
+        self.tags = orig_set
+
+    def add(self, item):
+        self.tags.add(item)
+        _enforce_image_tag_quota(self.tags)
+
+    def __cast__(self, *args, **kwargs):
+        return self.tags.__cast__(*args, **kwargs)
+
+    def __contains__(self, *args, **kwargs):
+        return self.tags.__contains__(*args, **kwargs)
+
+    def __eq__(self, other):
+        return self.tags == other
+
+    def __iter__(self, *args, **kwargs):
+        return self.tags.__iter__(*args, **kwargs)
+
+    def __len__(self, *args, **kwargs):
+        return self.tags.__len__(*args, **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self.tags, name)
 
 
 class QuotaImageLocationsProxy(object):
@@ -180,6 +230,15 @@ class ImageProxy(glance.domain.proxy.Image):
             glance.store.safe_delete_from_backend(
                 location, self.context, self.image.image_id)
             raise
+
+    @property
+    def tags(self):
+        return QuotaImageTagsProxy(self.image.tags)
+
+    @tags.setter
+    def tags(self, value):
+        _enforce_image_tag_quota(value)
+        self.image.tags = value
 
     @property
     def locations(self):

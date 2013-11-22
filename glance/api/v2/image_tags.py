@@ -48,6 +48,8 @@ class Controller(object):
             raise webob.exc.HTTPNotFound(explanation=unicode(e))
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
+        except exception.ImageTagLimitExceeded as e:
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=unicode(e))
 
     @utils.mutating
     def delete(self, req, image_id, tag_value):

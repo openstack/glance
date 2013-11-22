@@ -1228,6 +1228,70 @@ class TestImages(functional.FunctionalTest):
         tags = json.loads(response.text)['tags']
         self.assertEqual(['sniff'], tags)
 
+        # Delete all tags
+        for tag in tags:
+            path = self._url('/v2/images/%s/tags/%s' % (image_id, tag))
+            response = requests.delete(path, headers=self._headers())
+            self.assertEqual(204, response.status_code)
+
+        # Update image with too many tags via PUT
+        # Configured limit is 10 tags
+        for i in range(10):
+            path = self._url('/v2/images/%s/tags/foo%i' % (image_id, i))
+            response = requests.put(path, headers=self._headers())
+            self.assertEqual(204, response.status_code)
+
+        # 11th tag should fail
+        path = self._url('/v2/images/%s/tags/fail_me' % image_id)
+        response = requests.put(path, headers=self._headers())
+        self.assertEqual(413, response.status_code)
+
+        # Make sure the 11th tag was not added
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        tags = json.loads(response.text)['tags']
+        self.assertEqual(10, len(tags))
+
+        # Update image tags via PATCH
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type})
+        doc = [
+            {
+                'op': 'replace',
+                'path': '/tags',
+                'value': ['foo'],
+            },
+        ]
+        data = json.dumps(doc)
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+
+        # Update image with too many tags via PATCH
+        # Configured limit is 10 tags
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type})
+        tags = ['foo%d' % i for i in range(11)]
+        doc = [
+            {
+                'op': 'replace',
+                'path': '/tags',
+                'value': tags,
+            },
+        ]
+        data = json.dumps(doc)
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(413, response.status_code)
+
+        # Tags should not have changed since request was over limit
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        tags = json.loads(response.text)['tags']
+        self.assertEqual(['foo'], tags)
+
         # Update image with duplicate tag - it should be ignored
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'

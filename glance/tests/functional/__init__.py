@@ -313,6 +313,7 @@ class ApiServer(Server):
         self.policy_default_rule = 'default'
         self.property_protection_rule_format = 'roles'
         self.image_property_quota = 10
+        self.image_tag_quota = 10
 
         self.needs_database = True
         default_sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
@@ -375,6 +376,7 @@ enable_v2_api= %(enable_v2_api)s
 property_protection_file = %(property_protection_file)s
 property_protection_rule_format = %(property_protection_rule_format)s
 image_property_quota=%(image_property_quota)s
+image_tag_quota=%(image_tag_quota)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
 """

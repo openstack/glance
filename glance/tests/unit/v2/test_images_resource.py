@@ -567,12 +567,23 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(output_log['event_type'], 'image.create')
         self.assertEqual(output_log['payload']['id'], output.image_id)
 
+    def test_create_with_too_many_tags(self):
+        self.config(image_tag_quota=1)
+        request = unit_test_utils.get_fake_request()
+        tags = ['ping', 'pong']
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                          self.controller.create,
+                          request, image={}, extra_properties={},
+                          tags=tags)
+
     def test_update_no_changes(self):
         request = unit_test_utils.get_fake_request()
         output = self.controller.update(request, UUID1, changes=[])
         self.assertEqual(output.image_id, UUID1)
         self.assertEqual(output.created_at, output.updated_at)
-        self.assertEqual(output.tags, set(['ping', 'pong']))
+        self.assertEqual(len(output.tags), 2)
+        self.assertTrue('ping' in output.tags)
+        self.assertTrue('pong' in output.tags)
         output_logs = self.notifier.get_logs()
         #NOTE(markwash): don't send a notification if nothing is updated
         self.assertTrue(len(output_logs) == 0)
@@ -605,7 +616,9 @@ class TestImagesController(base.IsolatedUnitTest):
         ]
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(output.tags, set(['king', 'kong']))
+        self.assertEqual(len(output.tags), 2)
+        self.assertTrue('king' in output.tags)
+        self.assertTrue('kong' in output.tags)
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_replace_property(self):
@@ -1404,7 +1417,8 @@ class TestImagesController(base.IsolatedUnitTest):
             {'op': 'replace', 'path': ['tags'], 'value': ['ping', 'ping']},
         ]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(set(['ping']), output.tags)
+        self.assertEqual(len(output.tags), 1)
+        self.assertTrue('ping' in output.tags)
         output_logs = self.notifier.get_logs()
         self.assertEqual(len(output_logs), 1)
         output_log = output_logs[0]

@@ -35,6 +35,13 @@ class TestImageTagsController(base.IsolatedUnitTest):
         tags = self.db.image_tag_get_all(context, unit_test_utils.UUID1)
         self.assertEqual(1, len([tag for tag in tags if tag == 'dink']))
 
+    def test_create_too_many_tags(self):
+        self.config(image_tag_quota=0)
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                          self.controller.update,
+                          request, unit_test_utils.UUID1, 'dink')
+
     def test_create_duplicate_tag_ignored(self):
         request = unit_test_utils.get_fake_request()
         self.controller.update(request, unit_test_utils.UUID1, 'dink')
