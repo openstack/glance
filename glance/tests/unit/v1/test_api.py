@@ -28,16 +28,15 @@ import webob
 
 import glance.api
 import glance.api.common
-from glance.api.v1 import filters
 from glance.api.v1 import images
 from glance.api.v1 import router
-from glance.common import exception
 import glance.common.config
 import glance.context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
+import glance.registry.client.v1.api as registry
 import glance.store.filesystem
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
@@ -1009,6 +1008,88 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                         "Did not find required property in headers. "
                         "Got headers: %r" % res.headers)
         self.assertEqual("active", res.headers['x-image-meta-status'])
+
+    def test_delete_during_image_upload(self):
+        req = unit_test_utils.get_fake_request()
+
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3',
+                           'x-image-meta-property-key1': 'value1'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 201)
+        res_body = json.loads(res.body)['image']
+
+        self.assertTrue('id' in res_body)
+
+        image_id = res_body['id']
+        self.assertTrue('/images/%s' % image_id in res.headers['location'])
+
+        # Verify the status is queued
+        self.assertEqual('queued', res_body['status'])
+
+        called = {'initiate_deletion': False}
+
+        def mock_initiate_deletion(*args, **kwargs):
+            called['initiate_deletion'] = True
+
+        self.stubs.Set(glance.api.v1.upload_utils, 'initiate_deletion',
+                       mock_initiate_deletion)
+
+        orig_update_image_metadata = registry.update_image_metadata
+        ctlr = glance.api.v1.controller.BaseController
+        orig_get_image_meta_or_404 = ctlr.get_image_meta_or_404
+
+        def mock_update_image_metadata(*args, **kwargs):
+
+            if args[2].get('status', None) == 'deleted':
+
+                # One shot.
+                def mock_get_image_meta_or_404(*args, **kwargs):
+                    ret = orig_get_image_meta_or_404(*args, **kwargs)
+                    ret['status'] = 'queued'
+                    self.stubs.Set(ctlr, 'get_image_meta_or_404',
+                                   orig_get_image_meta_or_404)
+                    return ret
+
+                self.stubs.Set(ctlr, 'get_image_meta_or_404',
+                               mock_get_image_meta_or_404)
+
+                req = webob.Request.blank("/images/%s" % image_id)
+                req.method = 'PUT'
+                req.headers['Content-Type'] = 'application/octet-stream'
+                req.body = "somedata"
+                res = req.get_response(self.api)
+                self.assertEquals(res.status_int, 200)
+
+                self.stubs.Set(registry, 'update_image_metadata',
+                               orig_update_image_metadata)
+
+            return orig_update_image_metadata(*args, **kwargs)
+
+        self.stubs.Set(registry, 'update_image_metadata',
+                       mock_update_image_metadata)
+
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+
+        self.assertTrue(called['initiate_deletion'])
+
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 200)
+        self.assertEquals(res.headers['x-image-meta-deleted'], 'True')
+        self.assertEquals(res.headers['x-image-meta-status'], 'deleted')
 
     def test_disable_purge_props(self):
         """

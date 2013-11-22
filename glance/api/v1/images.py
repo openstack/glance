@@ -914,7 +914,8 @@ class Controller(controller.BaseController):
             # Delete the image from the registry first, since we rely on it
             # for authorization checks.
             # See https://bugs.launchpad.net/glance/+bug/1065187
-            registry.update_image_metadata(req.context, id, {'status': status})
+            image = registry.update_image_metadata(req.context, id,
+                                                   {'status': status})
             registry.delete_image_metadata(req.context, id)
 
             # The image's location field may be None in the case
