@@ -45,6 +45,8 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 from oslo.config import cfg
 
 from glance.common import config
+from glance.openstack.common import units
+
 
 CONF = cfg.CONF
 
@@ -54,7 +56,7 @@ ALL_SERVERS = ['api', 'registry', 'scrubber']
 GRACEFUL_SHUTDOWN_SERVERS = ['glance-api', 'glance-registry',
                              'glance-scrubber']
 MAX_DESCRIPTORS = 32768
-MAX_MEMORY = (1024 * 1024 * 1024) * 2  # 2 GB
+MAX_MEMORY = 2 * units.Gi  # 2 GB
 USAGE = """%(prog)s [options] <SERVER> <COMMAND> [CONFPATH]
 
 Where <SERVER> is one of:

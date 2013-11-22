@@ -27,6 +27,7 @@ import StringIO
 import mox
 
 from glance.common import exception
+from glance.openstack.common import units
 from glance.openstack.common import uuidutils
 from glance.store.filesystem import Store, ChunkedFile
 from glance.store.location import get_location_from_uri
@@ -88,7 +89,7 @@ class TestStore(base.IsolatedUnitTest):
         """Test that we can add an image via the filesystem backend"""
         ChunkedFile.CHUNKSIZE = 1024
         expected_image_id = uuidutils.generate_uuid()
-        expected_file_size = 1024 * 5  # 5K
+        expected_file_size = 5 * units.Ki  # 5K
         expected_file_contents = "*" * expected_file_size
         expected_checksum = hashlib.md5(expected_file_contents).hexdigest()
         expected_location = "file://%s/%s" % (self.test_dir,
@@ -177,7 +178,7 @@ class TestStore(base.IsolatedUnitTest):
         """
         ChunkedFile.CHUNKSIZE = 1024
         image_id = uuidutils.generate_uuid()
-        file_size = 1024 * 5  # 5K
+        file_size = 5 * units.Ki  # 5K
         file_contents = "*" * file_size
         image_file = StringIO.StringIO(file_contents)
 
@@ -192,7 +193,7 @@ class TestStore(base.IsolatedUnitTest):
     def _do_test_add_write_failure(self, errno, exception):
         ChunkedFile.CHUNKSIZE = 1024
         image_id = uuidutils.generate_uuid()
-        file_size = 1024 * 5  # 5K
+        file_size = 5 * units.Ki  # 5K
         file_contents = "*" * file_size
         path = os.path.join(self.test_dir, image_id)
         image_file = StringIO.StringIO(file_contents)
@@ -249,7 +250,7 @@ class TestStore(base.IsolatedUnitTest):
         """
         ChunkedFile.CHUNKSIZE = 1024
         image_id = uuidutils.generate_uuid()
-        file_size = 1024 * 5  # 5K
+        file_size = 5 * units.Ki  # 5K
         file_contents = "*" * file_size
         path = os.path.join(self.test_dir, image_id)
         image_file = StringIO.StringIO(file_contents)
@@ -270,7 +271,7 @@ class TestStore(base.IsolatedUnitTest):
         """
         # First add an image
         image_id = uuidutils.generate_uuid()
-        file_size = 1024 * 5  # 5K
+        file_size = 5 * units.Ki  # 5K
         file_contents = "*" * file_size
         image_file = StringIO.StringIO(file_contents)
 

@@ -28,6 +28,7 @@ import stubout
 
 from glance.common import exception
 from glance import image_cache
+from glance.openstack.common import units
 #NOTE(bcwaldon): This is imported to load the registry config options
 import glance.registry
 import glance.store.filesystem as fs_store
@@ -186,7 +187,7 @@ class ImageCacheTestCase(object):
             self.assertTrue(self.cache.cache_image_file(x,
                                                         FIXTURE_FILE))
 
-        self.assertEqual(10 * 1024, self.cache.get_cache_size())
+        self.assertEqual(10 * units.Ki, self.cache.get_cache_size())
 
         # OK, hit the images that are now cached...
         for x in xrange(10):
@@ -197,7 +198,7 @@ class ImageCacheTestCase(object):
 
         self.cache.prune()
 
-        self.assertEqual(5 * 1024, self.cache.get_cache_size())
+        self.assertEqual(5 * units.Ki, self.cache.get_cache_size())
 
         for x in xrange(0, 5):
             self.assertFalse(self.cache.is_cached(x),
@@ -493,7 +494,7 @@ class TestImageCacheXattr(test_utils.BaseTestCase,
         self.disabled = False
         self.config(image_cache_dir=self.cache_dir,
                     image_cache_driver='xattr',
-                    image_cache_max_size=1024 * 5)
+                    image_cache_max_size=5 * units.Ki)
         self.cache = image_cache.ImageCache()
 
         if not xattr_writes_supported(self.cache_dir):
@@ -532,7 +533,7 @@ class TestImageCacheSqlite(test_utils.BaseTestCase,
         self.cache_dir = self.useFixture(fixtures.TempDir()).path
         self.config(image_cache_dir=self.cache_dir,
                     image_cache_driver='sqlite',
-                    image_cache_max_size=1024 * 5)
+                    image_cache_max_size=5 * units.Ki)
         self.cache = image_cache.ImageCache()
 
 

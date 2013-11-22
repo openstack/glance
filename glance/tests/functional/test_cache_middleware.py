@@ -31,6 +31,7 @@ import time
 
 import httplib2
 
+from glance.openstack.common import units
 from glance.tests import functional
 from glance.tests.utils import (skip_if_disabled,
                                 execute,
@@ -40,7 +41,7 @@ from glance.tests.utils import (skip_if_disabled,
 from glance.tests.functional.store_utils import (setup_http,
                                                  get_http_uri)
 
-FIVE_KB = 5 * 1024
+FIVE_KB = 5 * units.Ki
 
 
 class BaseCacheMiddlewareTest(object):

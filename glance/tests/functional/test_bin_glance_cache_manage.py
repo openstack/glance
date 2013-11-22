@@ -24,10 +24,11 @@ import json
 import os
 import sys
 
+from glance.openstack.common import units
 from glance.tests import functional
 from glance.tests.utils import execute, minimal_headers
 
-FIVE_KB = 5 * 1024
+FIVE_KB = 5 * units.Ki
 
 
 class TestBinGlanceCacheManage(functional.FunctionalTest):

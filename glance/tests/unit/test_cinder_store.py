@@ -20,6 +20,7 @@ import stubout
 from cinderclient.v2 import client as cinderclient
 
 from glance.common import exception
+from glance.openstack.common import units
 import glance.store.cinder as cinder
 from glance.store.location import get_location_from_uri
 from glance.tests.unit import base
@@ -79,6 +80,6 @@ class TestCinderStore(base.StoreClearingUnitTest):
         store = cinder.Store(context=fake_context)
         image_size = store.get_size(loc)
         self.assertEqual(image_size,
-                         fake_volumes.values()[0].size * 1024 * 1024 * 1024)
+                         fake_volumes.values()[0].size * units.Gi)
         self.assertEqual(fake_client.auth_token, 'fake_token')
         self.assertEqual(fake_client.management_url, 'foo_public_url')

@@ -30,6 +30,7 @@ from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
+from glance.openstack.common import units
 import glance.store
 import glance.store.base
 import glance.store.location
@@ -185,7 +186,7 @@ class Store(glance.store.base.Store):
         itself, it should raise `exception.BadStoreConfiguration`
         """
         try:
-            self.chunk_size = CONF.rbd_store_chunk_size * 1024 * 1024
+            self.chunk_size = CONF.rbd_store_chunk_size * units.Mi
 
             # these must not be unicode since they will be passed to a
             # non-unicode-aware C library
@@ -346,7 +347,7 @@ class Store(glance.store.base.Store):
                             if image_size == 0:
                                 length = offset + len(chunk)
                                 LOG.debug(_("resizing image to %s KiB") %
-                                          (length / 1024))
+                                          (length / units.Ki))
                                 image.resize(length)
                             LOG.debug(_("writing chunk at offset %s") %
                                       (offset))

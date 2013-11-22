@@ -30,6 +30,7 @@ import swiftclient
 
 import glance.common.auth
 from glance.common import exception
+from glance.openstack.common import units
 from glance.openstack.common import uuidutils
 from glance.store import BackendException
 from glance.store.location import get_location_from_uri
@@ -41,8 +42,8 @@ CONF = cfg.CONF
 FAKE_UUID = uuidutils.generate_uuid
 
 Store = glance.store.swift.Store
-FIVE_KB = (5 * 1024)
-FIVE_GB = (5 * 1024 * 1024 * 1024)
+FIVE_KB = 5 * units.Ki
+FIVE_GB = 5 * units.Gi
 MAX_SWIFT_OBJECT_SIZE = FIVE_GB
 SWIFT_PUT_OBJECT_CALLS = 0
 SWIFT_CONF = {'verbose': True,
@@ -89,7 +90,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
         # Large object manifest...
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS += 1
-        CHUNKSIZE = 64 * 1024
+        CHUNKSIZE = 64 * units.Ki
         fixture_key = "%s/%s" % (container, name)
         if fixture_key not in fixture_headers:
             if kwargs.get('headers'):
@@ -963,7 +964,7 @@ class TestChunkReader(base.StoreClearingUnitTest):
         CHUNKSIZE = 100
         checksum = hashlib.md5()
         data_file = tempfile.NamedTemporaryFile()
-        data_file.write('*' * 1024)
+        data_file.write('*' * units.Ki)
         data_file.flush()
         infile = open(data_file.name, 'rb')
         bytes_read = 0

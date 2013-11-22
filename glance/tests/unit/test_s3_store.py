@@ -24,6 +24,7 @@ import boto.s3.connection
 import stubout
 
 from glance.common import exception
+from glance.openstack.common import units
 from glance.openstack.common import uuidutils
 from glance.store.location import get_location_from_uri
 import glance.store.s3
@@ -34,7 +35,7 @@ from glance.tests.unit import base
 
 FAKE_UUID = uuidutils.generate_uuid()
 
-FIVE_KB = (5 * 1024)
+FIVE_KB = 5 * units.Ki
 S3_CONF = {'verbose': True,
            'debug': True,
            'default_store': 's3',

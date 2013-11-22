@@ -27,13 +27,14 @@ from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
+from glance.openstack.common import units
 
 LOG = logging.getLogger(__name__)
 
 image_cache_opts = [
     cfg.StrOpt('image_cache_driver', default='sqlite',
                help=_('The driver to use for image cache management.')),
-    cfg.IntOpt('image_cache_max_size', default=10 * (1024 ** 3),  # 10 GB
+    cfg.IntOpt('image_cache_max_size', default=10 * units.Gi,  # 10 GB
                help=_('The maximum size in bytes that the cache can use.')),
     cfg.IntOpt('image_cache_stall_time', default=86400,  # 24 hours
                help=_('The amount of time to let an image remain in the '
@@ -297,7 +298,7 @@ class ImageCache(object):
 
         :retval True if image file was cached, False otherwise
         """
-        CHUNKSIZE = 64 * 1024 * 1024
+        CHUNKSIZE = 64 * units.Mi
 
         return self.cache_image_iter(image_id,
                                      utils.chunkiter(image_file, CHUNKSIZE))
