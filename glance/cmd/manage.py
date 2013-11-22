@@ -42,7 +42,8 @@ from oslo.config import cfg
 
 from glance.common import config
 from glance.common import exception
-from glance.db.sqlalchemy import migration
+from glance.db import migration as db_migration
+from glance.openstack.common.db.sqlalchemy import migration
 from glance.openstack.common import log
 
 CONF = cfg.CONF
@@ -65,22 +66,23 @@ class DbCommands(object):
 
     def version(self):
         """Print database's current migration level"""
-        print(migration.db_version())
+        print(migration.db_version(db_migration.MIGRATE_REPO_PATH,
+                                   db_migration.INIT_VERSION))
 
     @args('--version', metavar='<version>', help='Database version')
     def upgrade(self, version=None):
         """Upgrade the database's migration level"""
-        migration.upgrade(version)
+        migration.db_sync(db_migration.MIGRATE_REPO_PATH, version)
 
     @args('--version', metavar='<version>', help='Database version')
     def downgrade(self, version=None):
         """Downgrade the database's migration level"""
-        migration.downgrade(version)
+        migration.db_sync(db_migration.MIGRATE_REPO_PATH, version)
 
     @args('--version', metavar='<version>', help='Database version')
     def version_control(self, version=None):
         """Place a database under migration control"""
-        migration.version_control(version)
+        migration.db_version_control(db_migration.MIGRATE_REPO_PATH, version)
 
     @args('--version', metavar='<version>', help='Database version')
     @args('--current_version', metavar='<version>',
@@ -90,7 +92,10 @@ class DbCommands(object):
         Place a database under migration control and upgrade/downgrade it,
         creating first if necessary.
         """
-        migration.db_sync(version, current_version)
+        if current_version is not None:
+            migration.db_version_control(db_migration.MIGRATE_REPO_PATH,
+                                         current_version)
+        migration.db_sync(db_migration.MIGRATE_REPO_PATH, version)
 
 
 def add_legacy_command_parsers(command_object, subparsers):

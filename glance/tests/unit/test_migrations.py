@@ -33,6 +33,7 @@ import subprocess
 import urlparse
 import uuid
 
+from migrate.versioning import api as migration_api
 from migrate.versioning.repository import Repository
 from oslo.config import cfg
 from six.moves import xrange
@@ -42,7 +43,6 @@ from glance.common import crypt
 from glance.common import utils
 import glance.db.migration as migration
 import glance.db.sqlalchemy.migrate_repo
-from glance.db.sqlalchemy.migration import versioning_api as migration_api
 from glance.db.sqlalchemy import models
 from glance.openstack.common import jsonutils
 from glance.openstack.common import log as logging

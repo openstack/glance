@@ -19,20 +19,31 @@
 
 """Database setup and migration commands."""
 
+import os
+
 from glance.common import utils
 
 
-IMPL = utils.LazyPluggable('db_backend',
-                           sqlalchemy='glance.db.sqlalchemy.migration')
+IMPL = utils.LazyPluggable(
+    'backend',
+    config_group='database',
+    sqlalchemy='glance.openstack.common.db.sqlalchemy.migration')
 
 INIT_VERSION = 000
+
+MIGRATE_REPO_PATH = os.path.join(
+    os.path.abspath(os.path.dirname(__file__)),
+    'sqlalchemy',
+    'migrate_repo',
+)
 
 
 def db_sync(version=None):
     """Migrate the database to `version` or the most recent version."""
-    return IMPL.db_sync(version=version)
+    return IMPL.db_sync(abs_path=MIGRATE_REPO_PATH, version=version)
 
 
 def db_version():
     """Display the current database version."""
-    return IMPL.db_version()
+    return IMPL.db_version(abs_path=MIGRATE_REPO_PATH,
+                           init_version=INIT_VERSION)

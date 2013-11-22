@@ -22,8 +22,8 @@ from oslo.config import cfg
 
 import glance.common.client
 from glance.common import config
+from glance.db import migration
 import glance.db.sqlalchemy.api
-import glance.db.sqlalchemy.migration
 import glance.registry.client.v1.client
 import glance.store
 from glance import tests as glance_tests
@@ -166,7 +166,7 @@ class ApiTest(test_utils.BaseTestCase):
             test_utils.execute('cp %s %s/tests.sqlite'
                                % (db_location, self.test_dir))
         else:
-            glance.db.sqlalchemy.migration.db_sync()
+            migration.db_sync()
 
             # copy the clean db to a temp location so that it
             # can be reused for future tests
