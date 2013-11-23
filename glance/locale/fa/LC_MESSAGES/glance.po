@@ -1,4 +1,4 @@
-# Bulgarian (Bulgaria) translations for glance.
+# Persian translations for glance.
 # Copyright (C) 2013 ORGANIZATION
 # This file is distributed under the same license as the glance project.
 #
@@ -8,11 +8,11 @@ msgstr ""
 "Project-Id-Version:  Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2013-11-23 06:03+0000\n"
-"PO-Revision-Date: 2013-08-30 08:49+0000\n"
+"PO-Revision-Date: 2013-11-21 06:05+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
-"Language-Team: Bulgarian (Bulgaria) "
-"(http://www.transifex.com/projects/p/openstack/language/bg_BG/)\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Language-Team: Persian "
+"(http://www.transifex.com/projects/p/openstack/language/fa/)\n"
+"Plural-Forms: nplurals=1; plural=0\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -3459,87 +3459,4 @@ msgstr ""
 #, python-format
 msgid "location: %s data lost"
 msgstr ""
-
-#~ msgid "Status of the image"
-#~ msgstr ""
-
-#~ msgid "md5 hash of image contents."
-#~ msgstr ""
-
-#~ msgid "Size of image file in bytes"
-#~ msgstr ""
-
-#~ msgid "Date and time of image registration"
-#~ msgstr ""
-
-#~ msgid "Date and time of the last image modification"
-#~ msgstr ""
-
-#~ msgid "URL to access the image file kept in external store"
-#~ msgstr ""
-
-#~ msgid ""
-#~ msgstr ""
-
-#~ msgid "Image id %(image_id)s already queued for delete"
-#~ msgstr ""
-
-#~ msgid "image %s could not be removedbecause it is in use"
-#~ msgstr ""
-
-#~ msgid "Initializing scrubber with conf: %s"
-#~ msgstr ""
-
-#~ msgid "%s does not exist"
-#~ msgstr ""
-
-#~ msgid "Deleting %s images"
-#~ msgstr ""
-
-#~ msgid "Deleting %(id)s"
-#~ msgstr ""
-
-#~ msgid "Failed to delete image from store (%(id)s)."
-#~ msgstr ""
-
-#~ msgid "Image not found in store (%(id)s)."
-#~ msgstr ""
-
-#~ msgid "Deploy the v1 OpenStack Images API. "
-#~ msgstr ""
-
-#~ msgid "Deploy the v2 OpenStack Images API. "
-#~ msgstr ""
-
-#~ msgid "Invalid store uri %(uri)s: %(reason)s"
-#~ msgstr ""
-
-#~ msgid "Failed to delete image in store at URI: %s"
-#~ msgstr ""
-
-#~ msgid "Failed to delete image at %s from store (%s)"
-#~ msgstr ""
-
-#~ msgid "snapshot %s@%s could not be unprotected because it is in use"
-#~ msgstr ""
-
-#~ msgid "Deleting %(uri)s from image %(image_id)s."
-#~ msgstr ""
-
-#~ msgid "Failed to delete image %(image_id)s from %(uri)s."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Whether to include the backend image "
-#~ "storage location in image properties. "
-#~ "Revealing storage location can be a "
-#~ "security risk, so use this setting "
-#~ "with caution!"
-#~ msgstr ""
-
-#~ msgid "Invalid syslog facility"
-#~ msgstr ""
-
-#~ msgid "Could not find bucket with ID %(bucket_id)s"
-#~ msgstr ""
 
