@@ -34,18 +34,18 @@ class RequestTest(test_utils.BaseTestCase):
     def test_content_type_missing(self):
         request = wsgi.Request.blank('/tests/123')
         self.assertRaises(exception.InvalidContentType,
-                          request.get_content_type, ('application/xml'))
+                          request.get_content_type, ('application/xml',))
 
     def test_content_type_unsupported(self):
         request = wsgi.Request.blank('/tests/123')
         request.headers["Content-Type"] = "text/html"
         self.assertRaises(exception.InvalidContentType,
-                          request.get_content_type, ('application/xml'))
+                          request.get_content_type, ('application/xml',))
 
     def test_content_type_with_charset(self):
         request = wsgi.Request.blank('/tests/123')
         request.headers["Content-Type"] = "application/json; charset=UTF-8"
-        result = request.get_content_type(('application/json'))
+        result = request.get_content_type(('application/json',))
         self.assertEqual(result, "application/json")
 
     def test_content_type_from_accept_xml(self):

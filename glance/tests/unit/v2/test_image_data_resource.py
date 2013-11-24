@@ -344,6 +344,12 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
                           self.deserializer.upload, request)
 
+        request = unit_test_utils.get_fake_request()
+        request.headers['Content-Type'] = 'application/octet-st'
+        request.body = 'YYYYY'
+        self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
+                          self.deserializer.upload, request)
+
 
 class TestImageDataSerializer(test_utils.BaseTestCase):
 

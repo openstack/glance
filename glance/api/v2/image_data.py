@@ -145,7 +145,7 @@ class ImageDataController(object):
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
     def upload(self, request):
         try:
-            request.get_content_type('application/octet-stream')
+            request.get_content_type(('application/octet-stream',))
         except exception.InvalidContentType:
             raise webob.exc.HTTPUnsupportedMediaType()
 
