@@ -50,6 +50,10 @@ The actions that may have a rule enforced on them are:
   * ``GET /v1/images/<IMAGE_ID>``
   * ``GET /v2/images/<IMAGE_ID>/file``
 
+* ``upload_image`` - Upload binary image data
+
+  * ``PUT /v2/images/<IMAGE_ID>/file``
+
 * ``add_image`` - Create an image entity
 
   * ``POST /v1/images``
