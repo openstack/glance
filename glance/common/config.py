@@ -45,6 +45,9 @@ common_opts = [
     cfg.BoolOpt('allow_additional_image_properties', default=True,
                 help=_('Whether to allow users to specify image properties '
                        'beyond what the image schema provides')),
+    cfg.IntOpt('image_property_quota', default=128,
+               help=_('Maximum number of properties allowed on an image. '
+                      'Negative values evaluate to unlimited.')),
     cfg.StrOpt('data_api', default='glance.db.sqlalchemy.api',
                help=_('Python module path of data access API')),
     cfg.IntOpt('limit_param_default', default=25,

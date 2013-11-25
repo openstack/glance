@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import mock
 import mox
 
 from glance.common import exception
@@ -257,3 +258,66 @@ class TestImageQuota(test_utils.BaseTestCase):
             self.fail('Should have raised the quota exception')
         except exception.StorageQuotaFull:
             pass
+
+
+class TestImagePropertyQuotas(test_utils.BaseTestCase):
+    def setUp(self):
+        super(TestImagePropertyQuotas, self).setUp()
+        self.base_image = mock.Mock()
+        self.image = glance.quota.ImageProxy(self.base_image,
+                                             mock.Mock(),
+                                             mock.Mock())
+
+        self.image_repo_mock = mock.Mock()
+        self.image_repo_proxy = glance.quota.ImageRepoProxy(
+                                    self.image_repo_mock,
+                                    mock.Mock(),
+                                    mock.Mock())
+
+    def test_save_image_with_image_property(self):
+        self.config(image_property_quota=1)
+
+        self.image.extra_properties = {'foo': 'bar'}
+        self.image_repo_proxy.save(self.image)
+
+        self.image_repo_mock.save.assert_called_once_with(self.base_image)
+
+    def test_save_image_too_many_image_properties(self):
+        self.config(image_property_quota=1)
+
+        self.image.extra_properties = {'foo': 'bar', 'foo2': 'bar2'}
+        exc = self.assertRaises(exception.ImagePropertyLimitExceeded,
+                                self.image_repo_proxy.save, self.image)
+        self.assertTrue("Attempted: 2, Maximum: 1" in str(exc))
+
+    def test_save_image_unlimited_image_properties(self):
+        self.config(image_property_quota=-1)
+
+        self.image.extra_properties = {'foo': 'bar'}
+        self.image_repo_proxy.save(self.image)
+
+        self.image_repo_mock.save.assert_called_once_with(self.base_image)
+
+    def test_add_image_with_image_property(self):
+        self.config(image_property_quota=1)
+
+        self.image.extra_properties = {'foo': 'bar'}
+        self.image_repo_proxy.add(self.image)
+
+        self.image_repo_mock.add.assert_called_once_with(self.base_image)
+
+    def test_add_image_too_many_image_properties(self):
+        self.config(image_property_quota=1)
+
+        self.image.extra_properties = {'foo': 'bar', 'foo2': 'bar2'}
+        exc = self.assertRaises(exception.ImagePropertyLimitExceeded,
+                                self.image_repo_proxy.add, self.image)
+        self.assertTrue("Attempted: 2, Maximum: 1" in str(exc))
+
+    def test_add_image_unlimited_image_properties(self):
+        self.config(image_property_quota=-1)
+
+        self.image.extra_properties = {'foo': 'bar'}
+        self.image_repo_proxy.add(self.image)
+
+        self.image_repo_mock.add.assert_called_once_with(self.base_image)

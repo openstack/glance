@@ -56,29 +56,31 @@ class TestApi(functional.FunctionalTest):
         - Verify the image we just added is returned
         7. PUT image with custom properties of "distro" and "arch"
         - Verify 200 returned
-        8. GET image
+        8. PUT image with too many custom properties
+        - Verify 413 returned
+        9. GET image
         - Verify updated information about image was stored
-        9. PUT image
-        - Remove a previously existing property.
         10. PUT image
+        - Remove a previously existing property.
+        11. PUT image
         - Add a previously deleted property.
-        11. PUT image/members/member1
+        12. PUT image/members/member1
         - Add member1 to image
-        12. PUT image/members/member2
+        13. PUT image/members/member2
         - Add member2 to image
-        13. GET image/members
+        14. GET image/members
         - List image members
-        14. DELETE image/members/member1
+        15. DELETE image/members/member1
         - Delete image member1
-        15. DELETE image
+        16. DELETE image
         - Delete image
-        16. GET image/members
+        17. GET image/members
         -  List deleted image members
-        17. PUT image/members/member2
+        18. PUT image/members/member2
         - Update existing member2 of deleted image
-        18. PUT image/members/member3
+        19. PUT image/members/member3
         - Add member3 to deleted image
-        19. DELETE image/members/member2
+        20. DELETE image/members/member2
         - Delete member2 from deleted image
         """
         self.cleanup()
@@ -222,7 +224,18 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(data['image']['properties']['arch'], "x86_64")
         self.assertEqual(data['image']['properties']['distro'], "Ubuntu")
 
-        # 8. GET /images/detail
+        # 8. PUT image with too many custom properties
+        # Verify 413 returned
+        headers = {}
+        for i in range(11):  # configured limit is 10
+            headers['X-Image-Meta-Property-foo%d' % i] = 'bar'
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT', headers=headers)
+        self.assertEqual(response.status, 413)
+
+        # 9. GET /images/detail
         # Verify image and all its metadata
         path = "http://%s:%d/v1/images/detail" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
@@ -250,7 +263,7 @@ class TestApi(functional.FunctionalTest):
                                            expected_value,
                                            image['images'][0][expected_key]))
 
-        # 9. PUT image and remove a previously existing property.
+        # 10. PUT image and remove a previously existing property.
         headers = {'X-Image-Meta-Property-Arch': 'x86_64'}
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
@@ -265,7 +278,7 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(len(data['properties']), 1)
         self.assertEqual(data['properties']['arch'], "x86_64")
 
-        # 10. PUT image and add a previously deleted property.
+        # 11. PUT image and add a previously deleted property.
         headers = {'X-Image-Meta-Property-Distro': 'Ubuntu',
                    'X-Image-Meta-Property-Arch': 'x86_64'}
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
@@ -284,21 +297,21 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(data['properties']['distro'], "Ubuntu")
         self.assertNotEqual(data['created_at'], data['updated_at'])
 
-        # 11. Add member to image
+        # 12. Add member to image
         path = ("http://%s:%d/v1/images/%s/members/pattieblack" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'PUT')
         self.assertEqual(response.status, 204)
 
-        # 12. Add member to image
+        # 13. Add member to image
         path = ("http://%s:%d/v1/images/%s/members/pattiewhite" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'PUT')
         self.assertEqual(response.status, 204)
 
-        # 13. List image members
+        # 14. List image members
         path = ("http://%s:%d/v1/images/%s/members" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
@@ -309,28 +322,28 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(data['members'][0]['member_id'], 'pattieblack')
         self.assertEqual(data['members'][1]['member_id'], 'pattiewhite')
 
-        # 14. Delete image member
+        # 15. Delete image member
         path = ("http://%s:%d/v1/images/%s/members/pattieblack" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 204)
 
-        # 15. DELETE image
+        # 16. DELETE image
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 200)
 
-        # 16. Try to list members of deleted image
+        # 17. Try to list members of deleted image
         path = ("http://%s:%d/v1/images/%s/members" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 404)
 
-        # 17. Try to update member of deleted image
+        # 18. Try to update member of deleted image
         path = ("http://%s:%d/v1/images/%s/members" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
@@ -339,14 +352,14 @@ class TestApi(functional.FunctionalTest):
         response, content = http.request(path, 'PUT', body=body)
         self.assertEqual(response.status, 404)
 
-        # 18. Try to add member to deleted image
+        # 19. Try to add member to deleted image
         path = ("http://%s:%d/v1/images/%s/members/chickenpattie" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'PUT')
         self.assertEqual(response.status, 404)
 
-        # 19. Try to delete member of deleted image
+        # 20. Try to delete member of deleted image
         path = ("http://%s:%d/v1/images/%s/members/pattieblack" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()

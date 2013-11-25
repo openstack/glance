@@ -62,6 +62,10 @@ class ImagesController(object):
             image_repo.add(image)
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
+        except exception.ImagePropertyLimitExceeded as e:
+            LOG.info(unicode(e))
+            raise webob.exc.HTTPRequestEntityTooLarge(
+                explanation=unicode(e), request=req, content_type='text/plain')
 
         return image
 
@@ -129,6 +133,10 @@ class ImagesController(object):
             LOG.info(msg)
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=msg, request=req, content_type='text/plain')
+        except exception.ImagePropertyLimitExceeded as e:
+            LOG.info(unicode(e))
+            raise webob.exc.HTTPRequestEntityTooLarge(
+                explanation=unicode(e), request=req, content_type='text/plain')
 
         return image
 
