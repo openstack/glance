@@ -312,6 +312,7 @@ class ApiServer(Server):
         self.policy_file = policy_file
         self.policy_default_rule = 'default'
         self.property_protection_rule_format = 'roles'
+        self.image_member_quota = 10
         self.image_property_quota = 10
         self.image_tag_quota = 10
 
@@ -375,6 +376,7 @@ lock_path = %(lock_path)s
 enable_v2_api= %(enable_v2_api)s
 property_protection_file = %(property_protection_file)s
 property_protection_rule_format = %(property_protection_rule_format)s
+image_member_quota=%(image_member_quota)s
 image_property_quota=%(image_property_quota)s
 image_tag_quota=%(image_tag_quota)s
 [paste_deploy]

@@ -422,3 +422,38 @@ class TestQuotaImageTagsProxy(test_utils.BaseTestCase):
         for item in proxy:
             items.remove(item)
         self.assertEqual(len(items), 0)
+
+
+class TestImageMemberQuotas(test_utils.BaseTestCase):
+    def setUp(self):
+        super(TestImageMemberQuotas, self).setUp()
+        db_api = unit_test_utils.FakeDB()
+        context = FakeContext()
+        self.image = mock.Mock()
+        self.base_image_member_factory = mock.Mock()
+        self.image_member_factory = glance.quota.ImageMemberFactoryProxy(
+                                    self.base_image_member_factory, context,
+                                    db_api)
+
+    def test_new_image_member(self):
+        self.config(image_member_quota=1)
+
+        self.image_member_factory.new_image_member(self.image,
+                                                   'fake_id')
+        self.base_image_member_factory.new_image_member\
+            .assert_called_once_with(self.image.base, 'fake_id')
+
+    def test_new_image_member_unlimited_members(self):
+        self.config(image_member_quota=-1)
+
+        self.image_member_factory.new_image_member(self.image,
+                                                   'fake_id')
+        self.base_image_member_factory.new_image_member\
+            .assert_called_once_with(self.image.base, 'fake_id')
+
+    def test_new_image_member_too_many_members(self):
+        self.config(image_member_quota=0)
+
+        self.assertRaises(exception.ImageMemberLimitExceeded,
+                          self.image_member_factory.new_image_member,
+                          self.image, 'fake_id')

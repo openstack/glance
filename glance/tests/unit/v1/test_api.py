@@ -2141,6 +2141,28 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 204)
 
+    def test_add_member_overlimit(self):
+        self.config(image_member_quota=0)
+        test_router_api = router.API(self.mapper)
+        self.api = test_utils.FakeAuthMiddleware(
+            test_router_api, is_admin=True)
+        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
+        req.method = 'PUT'
+
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 413)
+
+    def test_add_member_unlimited(self):
+        self.config(image_member_quota=-1)
+        test_router_api = router.API(self.mapper)
+        self.api = test_utils.FakeAuthMiddleware(
+            test_router_api, is_admin=True)
+        req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
+        req.method = 'PUT'
+
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 204)
+
     def test_add_member_forbidden_by_policy(self):
         rules = {"modify_member": '!'}
         self.set_policy_rules(rules)
@@ -2225,6 +2247,87 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, webob.exc.HTTPNotFound.code)
         self.assertTrue(
             'Image with identifier %s has been deleted.' % UUID2 in res.body)
+
+    def test_replace_members_of_image(self):
+        test_router = router.API(self.mapper)
+        self.api = test_utils.FakeAuthMiddleware(test_router, is_admin=True)
+
+        fixture = [{'member_id': 'pattieblack', 'can_share': 'false'}]
+        req = webob.Request.blank('/images/%s/members' % UUID2)
+        req.method = 'PUT'
+        req.body = json.dumps(dict(memberships=fixture))
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 204)
+
+        req = webob.Request.blank('/images/%s/members' % UUID2)
+        req.method = 'GET'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+
+        memb_list = json.loads(res.body)
+        self.assertEqual(len(memb_list), 1)
+
+    def test_replace_members_of_image_overlimit(self):
+        # Set image_member_quota to 1
+        self.config(image_member_quota=1)
+        test_router = router.API(self.mapper)
+        self.api = test_utils.FakeAuthMiddleware(test_router, is_admin=True)
+
+        # PUT an original member entry
+        fixture = [{'member_id': 'baz', 'can_share': False}]
+        req = webob.Request.blank('/images/%s/members' % UUID2)
+        req.method = 'PUT'
+        req.body = json.dumps(dict(memberships=fixture))
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 204)
+
+        # GET original image member list
+        req = webob.Request.blank('/images/%s/members' % UUID2)
+        req.method = 'GET'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        original_members = json.loads(res.body)['members']
+        self.assertEqual(len(original_members), 1)
+
+        # PUT 2 image members to replace existing (overlimit)
+        fixture = [{'member_id': 'foo1', 'can_share': False},
+                   {'member_id': 'foo2', 'can_share': False}]
+        req = webob.Request.blank('/images/%s/members' % UUID2)
+        req.method = 'PUT'
+        req.body = json.dumps(dict(memberships=fixture))
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 413)
+
+        # GET member list
+        req = webob.Request.blank('/images/%s/members' % UUID2)
+        req.method = 'GET'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+
+        # Assert the member list was not changed
+        memb_list = json.loads(res.body)['members']
+        self.assertEqual(memb_list, original_members)
+
+    def test_replace_members_of_image_unlimited(self):
+        self.config(image_member_quota=-1)
+        test_router = router.API(self.mapper)
+        self.api = test_utils.FakeAuthMiddleware(test_router, is_admin=True)
+
+        fixture = [{'member_id': 'foo1', 'can_share': False},
+                   {'member_id': 'foo2', 'can_share': False}]
+        req = webob.Request.blank('/images/%s/members' % UUID2)
+        req.method = 'PUT'
+        req.body = json.dumps(dict(memberships=fixture))
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 204)
+
+        req = webob.Request.blank('/images/%s/members' % UUID2)
+        req.method = 'GET'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+
+        memb_list = json.loads(res.body)['members']
+        self.assertEqual(memb_list, fixture)
 
     def test_create_member_to_deleted_image_raises_404(self):
         """

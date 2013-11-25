@@ -254,6 +254,25 @@ class TestImageMembersController(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPConflict, self.controller.create,
                           request, image_id=image_id, member_id=member_id)
 
+    def test_create_overlimit(self):
+        self.config(image_member_quota=0)
+        request = unit_test_utils.get_fake_request()
+        image_id = UUID2
+        member_id = TENANT3
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                          self.controller.create, request,
+                          image_id=image_id, member_id=member_id)
+
+    def test_create_unlimited(self):
+        self.config(image_member_quota=-1)
+        request = unit_test_utils.get_fake_request()
+        image_id = UUID2
+        member_id = TENANT3
+        output = self.controller.create(request, image_id=image_id,
+                                        member_id=member_id)
+        self.assertEqual(UUID2, output.image_id)
+        self.assertEqual(TENANT3, output.member_id)
+
     def test_update_done_by_member(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT4)
         image_id = UUID2

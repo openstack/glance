@@ -27,6 +27,7 @@ import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
+CONF.import_opt('image_member_quota', 'glance.common.config')
 CONF.import_opt('image_property_quota', 'glance.common.config')
 CONF.import_opt('image_tag_quota', 'glance.common.config')
 
@@ -116,6 +117,35 @@ class QuotaImageTagsProxy(object):
 
     def __getattr__(self, name):
         return getattr(self.tags, name)
+
+
+class ImageMemberFactoryProxy(glance.domain.proxy.ImageMembershipFactory):
+
+    def __init__(self, member_factory, context, db_api):
+        self.db_api = db_api
+        self.context = context
+        super(ImageMemberFactoryProxy, self).__init__(
+            member_factory,
+            image_proxy_class=ImageProxy,
+            image_proxy_kwargs={})
+
+    def _enforce_image_member_quota(self, image):
+        if CONF.image_member_quota < 0:
+            # If value is negative, allow unlimited number of members
+            return
+
+        current_member_count = self.db_api.image_member_count(self.context,
+                                                              image.image_id)
+        attempted = current_member_count + 1
+        maximum = CONF.image_member_quota
+        if attempted > maximum:
+            raise exception.ImageMemberLimitExceeded(attempted=attempted,
+                                                     maximum=maximum)
+
+    def new_image_member(self, image, member_id):
+        self._enforce_image_member_quota(image)
+        return super(ImageMemberFactoryProxy, self).new_image_member(image,
+                                                                     member_id)
 
 
 class QuotaImageLocationsProxy(object):

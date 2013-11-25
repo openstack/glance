@@ -2039,6 +2039,19 @@ class TestImageMembers(functional.FunctionalTest):
         body = json.loads(response.text)
         self.assertEqual(0, len(body['members']))
 
+        # Adding 11 image members should fail since configured limit is 10
+        path = self._url('/v2/images/%s/members' % image_fixture[1]['id'])
+        for i in range(10):
+            body = json.dumps({'member': uuidutils.generate_uuid()})
+            response = requests.post(path, headers=get_header('tenant1'),
+                                     data=body)
+            self.assertEqual(200, response.status_code)
+
+        body = json.dumps({'member': uuidutils.generate_uuid()})
+        response = requests.post(path, headers=get_header('tenant1'),
+                                 data=body)
+        self.assertEqual(413, response.status_code)
+
         # Delete Image members not found for public image
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[0]['id'],
                                                        TENANT3))

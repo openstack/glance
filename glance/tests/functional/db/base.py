@@ -1097,6 +1097,34 @@ class DriverTests(object):
                                                image_id=image_id)
         _assertMemberListMatch([], output)
 
+    def test_image_member_count(self):
+        TENANT1 = uuidutils.generate_uuid()
+        self.db_api.image_member_create(self.context,
+                                        {'member': TENANT1,
+                                         'image_id': UUID1})
+
+        actual = self.db_api.image_member_count(self.context, UUID1)
+
+        self.assertEqual(actual, 1)
+
+    def test_image_member_count_invalid_image_id(self):
+        TENANT1 = uuidutils.generate_uuid()
+        self.db_api.image_member_create(self.context,
+                                        {'member': TENANT1,
+                                         'image_id': UUID1})
+
+        self.assertRaises(exception.Invalid, self.db_api.image_member_count,
+                          self.context, None)
+
+    def test_image_member_count_empty_image_id(self):
+        TENANT1 = uuidutils.generate_uuid()
+        self.db_api.image_member_create(self.context,
+                                        {'member': TENANT1,
+                                         'image_id': UUID1})
+
+        self.assertRaises(exception.Invalid, self.db_api.image_member_count,
+                          self.context, "")
+
     def test_image_member_delete(self):
         TENANT1 = uuidutils.generate_uuid()
         # NOTE(flaper87): Update auth token, otherwise

@@ -394,6 +394,20 @@ def image_member_find(context, image_id=None, member=None, status=None):
 
 
 @log_call
+def image_member_count(context, image_id):
+    """Return the number of image members for this image
+
+    :param image_id: identifier of image entity
+    """
+    if not image_id:
+        msg = _("Image id is required.")
+        raise exception.Invalid(msg)
+
+    members = DATA['members']
+    return len(filter(lambda x: x['image_id'] == image_id, members))
+
+
+@log_call
 def image_member_create(context, values):
     member = _image_member_format(values['image_id'],
                                   values['member'],

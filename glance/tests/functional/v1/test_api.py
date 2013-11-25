@@ -72,15 +72,19 @@ class TestApi(functional.FunctionalTest):
         - List image members
         15. DELETE image/members/member1
         - Delete image member1
-        16. DELETE image
+        16. PUT image/members
+        - Attempt to replace members with an overlimit amount
+        17. PUT image/members/member11
+        - Attempt to add a member while at limit
+        18. DELETE image
         - Delete image
-        17. GET image/members
+        19. GET image/members
         -  List deleted image members
-        18. PUT image/members/member2
+        20. PUT image/members/member2
         - Update existing member2 of deleted image
-        19. PUT image/members/member3
+        21. PUT image/members/member3
         - Add member3 to deleted image
-        20. DELETE image/members/member2
+        22. DELETE image/members/member2
         - Delete member2 from deleted image
         """
         self.cleanup()
@@ -329,21 +333,53 @@ class TestApi(functional.FunctionalTest):
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 204)
 
-        # 16. DELETE image
+        # 16. Attempt to replace members with an overlimit amount
+        # Adding 11 image members should fail since configured limit is 10
+        path = ("http://%s:%d/v1/images/%s/members" %
+               ("127.0.0.1", self.api_port, image_id))
+        memberships = []
+        for i in range(11):
+            member_id = "foo%d" % i
+            memberships.append(dict(member_id=member_id))
+        http = httplib2.Http()
+        body = json.dumps(dict(memberships=memberships))
+        response, content = http.request(path, 'PUT', body=body)
+        self.assertEqual(response.status, 413)
+
+        # 17. Attempt to add a member while at limit
+        # Adding an 11th member should fail since configured limit is 10
+        path = ("http://%s:%d/v1/images/%s/members" %
+               ("127.0.0.1", self.api_port, image_id))
+        memberships = []
+        for i in range(10):
+            member_id = "foo%d" % i
+            memberships.append(dict(member_id=member_id))
+        http = httplib2.Http()
+        body = json.dumps(dict(memberships=memberships))
+        response, content = http.request(path, 'PUT', body=body)
+        self.assertEqual(response.status, 204)
+
+        path = ("http://%s:%d/v1/images/%s/members/fail_me" %
+               ("127.0.0.1", self.api_port, image_id))
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT')
+        self.assertEqual(response.status, 413)
+
+        # 18. DELETE image
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
         self.assertEqual(response.status, 200)
 
-        # 17. Try to list members of deleted image
+        # 19. Try to list members of deleted image
         path = ("http://%s:%d/v1/images/%s/members" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 404)
 
-        # 18. Try to update member of deleted image
+        # 20. Try to update member of deleted image
         path = ("http://%s:%d/v1/images/%s/members" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
@@ -352,14 +388,14 @@ class TestApi(functional.FunctionalTest):
         response, content = http.request(path, 'PUT', body=body)
         self.assertEqual(response.status, 404)
 
-        # 19. Try to add member to deleted image
+        # 21. Try to add member to deleted image
         path = ("http://%s:%d/v1/images/%s/members/chickenpattie" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'PUT')
         self.assertEqual(response.status, 404)
 
-        # 20. Try to delete member of deleted image
+        # 22. Try to delete member of deleted image
         path = ("http://%s:%d/v1/images/%s/members/pattieblack" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()

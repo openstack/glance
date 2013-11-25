@@ -196,6 +196,15 @@ def image_member_find(client, image_id=None, member=None, status=None):
 
 
 @_get_client
+def image_member_count(client, image_id):
+    """Return the number of image members for this image
+
+    :param image_id: identifier of image entity
+    """
+    return client.image_member_count(image_id=image_id)
+
+
+@_get_client
 def image_tag_set_all(client, image_id, tags):
     client.image_tag_set_all(image_id=image_id, tags=tags)
 

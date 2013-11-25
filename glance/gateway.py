@@ -58,8 +58,10 @@ class Gateway(object):
 
     def get_image_member_factory(self, context):
         image_factory = glance.domain.ImageMemberFactory()
+        quota_image_factory = glance.quota.ImageMemberFactoryProxy(
+                image_factory, context, self.db_api)
         policy_member_factory = policy.ImageMemberFactoryProxy(
-                image_factory, context, self.policy)
+                quota_image_factory, context, self.policy)
         authorized_image_factory = authorization.ImageMemberFactoryProxy(
                                     policy_member_factory, context)
         return authorized_image_factory

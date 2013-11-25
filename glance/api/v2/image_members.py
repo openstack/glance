@@ -74,6 +74,8 @@ class ImageMembersController(object):
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=unicode(e))
+        except exception.ImageMemberLimitExceeded as e:
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=unicode(e))
 
     @utils.mutating
     def update(self, req, image_id, member_id, status):

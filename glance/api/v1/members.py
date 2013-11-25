@@ -16,6 +16,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.config import cfg
 import webob.exc
 
 from glance.api import policy
@@ -27,6 +28,8 @@ import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
+CONF = cfg.CONF
+CONF.import_opt('image_member_quota', 'glance.common.config')
 
 
 class Controller(controller.BaseController):
@@ -107,6 +110,19 @@ class Controller(controller.BaseController):
         """This will cover the missing 'show' and 'create' actions"""
         raise webob.exc.HTTPMethodNotAllowed()
 
+    def _enforce_image_member_quota(self, req, attempted):
+        if CONF.image_member_quota < 0:
+            # If value is negative, allow unlimited number of members
+            return
+
+        maximum = CONF.image_member_quota
+        if attempted > maximum:
+            msg = _("The limit has been exceeded on the number of allowed "
+                    "image members for this image. Attempted: %(attempted)s, "
+                    "Maximum: %(maximum)s") % locals()
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
+                                                      request=req)
+
     @utils.mutating
     def update(self, req, image_id, id, body=None):
         """
@@ -124,6 +140,10 @@ class Controller(controller.BaseController):
         self._check_can_access_image_members(req.context)
         self._enforce(req, 'modify_member')
         self._raise_404_if_image_deleted(req, image_id)
+
+        new_number_of_members = len(registry.get_image_members(req.context,
+                                                               image_id)) + 1
+        self._enforce_image_member_quota(req, new_number_of_members)
 
         # Figure out can_share
         can_share = None
@@ -161,6 +181,11 @@ class Controller(controller.BaseController):
         self._check_can_access_image_members(req.context)
         self._enforce(req, 'modify_member')
         self._raise_404_if_image_deleted(req, image_id)
+
+        memberships = body.get('memberships')
+        if memberships:
+            new_number_of_members = len(body['memberships'])
+            self._enforce_image_member_quota(req, new_number_of_members)
 
         try:
             registry.replace_members(req.context, image_id, body)

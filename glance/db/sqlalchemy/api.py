@@ -1079,6 +1079,24 @@ def _image_member_find(context, session, image_id=None,
     return query.all()
 
 
+def image_member_count(context, image_id):
+    """Return the number of image members for this image
+
+    :param image_id: identifier of image entity
+    """
+    session = _get_session()
+
+    if not image_id:
+        msg = _("Image id is required.")
+        raise exception.Invalid(msg)
+
+    query = session.query(models.ImageMember)
+    query = query.filter_by(deleted=False)
+    query = query.filter(models.ImageMember.image_id == str(image_id))
+
+    return query.count()
+
+
 # pylint: disable-msg=C0111
 def _can_show_deleted(context):
     """
