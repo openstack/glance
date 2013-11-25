@@ -25,7 +25,6 @@ from __future__ import print_function
 import datetime
 import errno
 import json
-import logging
 import os
 import signal
 import sys
@@ -43,7 +42,7 @@ import webob.exc
 
 from glance.common import exception
 from glance.common import utils
-import glance.openstack.common.log as os_logging
+import glance.openstack.common.log as logging
 
 
 bind_opts = [
@@ -86,17 +85,6 @@ CONF = cfg.CONF
 CONF.register_opts(bind_opts)
 CONF.register_opts(socket_opts)
 CONF.register_opts(eventlet_opts)
-
-
-class WritableLogger(object):
-    """A thin wrapper that responds to `write` and logs."""
-
-    def __init__(self, logger, level=logging.DEBUG):
-        self.logger = logger
-        self.level = level
-
-    def write(self, msg):
-        self.logger.log(self.level, msg.strip("\n"))
 
 
 def get_bind_addr(default_port=None):
@@ -234,7 +222,7 @@ class Server(object):
         self.sock = get_socket(default_port)
 
         os.umask(0o27)  # ensure files are created with the correct privileges
-        self.logger = os_logging.getLogger('eventlet.wsgi.server')
+        self.logger = logging.getLogger('glance.wsgi.server')
 
         if CONF.workers == 0:
             # Useful for profiling, test, debug etc.
@@ -323,7 +311,7 @@ class Server(object):
         try:
             eventlet.wsgi.server(self.sock,
                                  self.application,
-                                 log=WritableLogger(self.logger),
+                                 log=logging.WritableLogger(self.logger),
                                  custom_pool=self.pool,
                                  debug=False)
         except socket.error as err:
@@ -335,7 +323,8 @@ class Server(object):
         """Start a WSGI server in a new green thread."""
         self.logger.info(_("Starting single process server"))
         eventlet.wsgi.server(sock, application, custom_pool=self.pool,
-                             log=WritableLogger(self.logger), debug=False)
+                             log=logging.WritableLogger(self.logger),
+                             debug=False)
 
 
 class Middleware(object):
