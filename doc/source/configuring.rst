@@ -1171,6 +1171,13 @@ service will not start.**
 
 Optional. Default: not enabled.
 
+If property_protection_file is set, the file may use either roles or policies
+to specify property protections.
+
+* ``property_protection_rule_format=<roles|policies>``
+
+Optional. Default: ``roles``.
+
 Configuring Glance APIs
 -----------------------
 

@@ -42,15 +42,20 @@ expression matching a set of properties to be protected.
 
 .. note::
 
-  Section headers must compile to a valid regular expression, otherwise a **500
-  Internal Server Error** will be thrown on server startup. Regular expressions
+  Section headers must compile to a valid regular expression, otherwise 
+  glance api service will not start. Regular expressions
   will be handled by python's re module which is PERL like.
 
 Each section describes four key-value pairs, where the key is one of
 ``create/read/update/delete``, and the value is a comma separated list of user
-roles that are permitted to perform that operation in the Glance API. If any of
+roles that are permitted to perform that operation in the Glance API. **If any of
 the keys are not specified, then the glance api service will not start
-successfully.
+successfully.**
+
+.. note::
+
+  Only one policy rule is allowed per property operation. **If multiple are
+  specified, then the glance api service will not start.**
 
 The path to the file should be specified in the ``[DEFAULT]`` section of
 ``glance-api.conf`` as follows.
@@ -61,6 +66,16 @@ The path to the file should be specified in the ``[DEFAULT]`` section of
 
 If this config value is not specified, property protections are not enforced.
 **If the path is invalid, glance api service will not start successfully.**
+
+The file may use either roles or policies to describe the property protections.
+The config value should be specified in the ``[DEFAULT]`` section of
+``glance-api.conf`` as follows.
+
+ ::
+
+  property_protection_rule_format=<roles|policies>
+
+The default value for ``property_protection_rule_format`` is ``roles``.
 
 Property protections are applied in the order specified in the configuration
 file.  This means that if for example you specify a section with ``[.*]`` at
