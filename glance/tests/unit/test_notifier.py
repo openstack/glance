@@ -16,17 +16,20 @@
 #    under the License.
 
 import datetime
+
 import kombu.entity
+import mock
 import mox
 import qpid
 import qpid.messaging
 import stubout
+import time
 import webob
 
 from glance.common import exception
 import glance.context
 from glance import notifier
-import glance.notifier.notify_kombu
+from glance.notifier import notify_kombu
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
 import glance.tests.unit.utils as unit_test_utils
@@ -439,7 +442,7 @@ class TestRabbitContentType(utils.BaseTestCase):
             pass
 
         self.stubs.Set(kombu.entity.Exchange, 'publish', dummy)
-        self.stubs.Set(glance.notifier.notify_kombu.RabbitStrategy, '_connect',
+        self.stubs.Set(notify_kombu.RabbitStrategy, '_connect',
                        _fake_connect)
         self.called = False
         self.config(notifier_strategy="rabbit",
@@ -730,3 +733,118 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertEqual(output_log['notification_type'], 'ERROR')
         self.assertEqual(output_log['event_type'], 'image.upload')
         self.assertTrue('Failed' in output_log['payload'])
+
+
+class RabbitStrategyTestCase(utils.BaseTestCase):
+    def setUp(self):
+        super(RabbitStrategyTestCase, self).setUp()
+        self.rabbit_strategy = notify_kombu.RabbitStrategy()
+        self.rabbit_strategy.retry_attempts = 0
+        self.rabbit_strategy.max_retries = 2
+
+    def test_close(self):
+        self.rabbit_strategy.connection = kombu.connection.BrokerConnection()
+        self.rabbit_strategy.connection.close = mock.Mock()
+        self.rabbit_strategy._close()
+        self.assertEqual(self.rabbit_strategy.connection, None)
+
+    def test_connect(self):
+        self.rabbit_strategy._close = mock.Mock()
+        connection = kombu.connection.BrokerConnection(
+            hostname='localhost',
+            port=5672,
+            userid='guest',
+            password='guest',
+            virtual_host='/',
+            ssl=False)
+        kombu.connection.BrokerConnection = mock.Mock()
+        kombu.connection.BrokerConnection.return_value = connection
+        connection.connect = mock.Mock()
+        connection.channel = mock.Mock()
+        connection.channel.return_value = 'fake_channel'
+        kombu.entity.Exchange = mock.Mock()
+        kombu.entity.Exchange.return_value = 'fake_exchange'
+        fake_queue = mock.Mock()
+        fake_queue.declare = mock.Mock()
+        kombu.entity.Queue = mock.Mock()
+        kombu.entity.Queue.return_value = fake_queue
+
+        self.rabbit_strategy._connect()
+        kombu.connection.BrokerConnection.assert_called_with(
+            hostname='localhost',
+            port=5672,
+            userid='guest',
+            password='guest',
+            virtual_host='/',
+            ssl=False)
+        kombu.entity.Exchange.assert_called_with(
+            channel='fake_channel',
+            type='topic',
+            durable=False,
+            name='glance')
+        for routing_key in ['notifications.warn', 'notifications.info',
+                            'notifications.error']:
+            kombu.entity.Queue.assert_any_called(
+                channel='fake_channel',
+                exchange='fake_exchange',
+                durable=False,
+                name=routing_key,
+                routing_key=routing_key)
+
+    def test_reconnect_sleep_time(self):
+        self.rabbit_strategy._connect = mock.Mock(
+            side_effect=Exception('timeout'))
+        time.sleep = mock.Mock()
+        try:
+            self.rabbit_strategy.reconnect()
+        except notify_kombu.KombuMaxRetriesReached:
+            pass
+        finally:
+            time.sleep.assert_called_once_with(2)
+
+    def test_reconnect_sleep_time_2(self):
+        self.rabbit_strategy.retry_backoff = 40
+        self.rabbit_strategy._connect = mock.Mock(
+            side_effect=Exception('timeout'))
+        time.sleep = mock.Mock()
+        try:
+            self.rabbit_strategy.reconnect()
+        except notify_kombu.KombuMaxRetriesReached:
+            pass
+        finally:
+            time.sleep.assert_called_once_with(30)
+
+    def test_reconnect_sleep_time_no_retry_max_backoff(self):
+        self.rabbit_strategy.retry_max_backoff = None
+        self.rabbit_strategy.retry_backoff = 100
+        self.rabbit_strategy._connect = mock.Mock(
+            side_effect=Exception('timeout'))
+        time.sleep = mock.Mock()
+        try:
+            self.rabbit_strategy.reconnect()
+        except notify_kombu.KombuMaxRetriesReached:
+            pass
+        finally:
+            time.sleep.assert_called_once_with(100)
+
+    def test_notify_process_komby_max_retries_reached_error(self):
+        self.rabbit_strategy.connection = None
+        self.rabbit_strategy.reconnect = mock.Mock(
+            side_effect=notify_kombu.KombuMaxRetriesReached())
+        self.rabbit_strategy.log_failure = mock.Mock()
+
+        self.rabbit_strategy._notify('fake_msg', "WARN")
+        self.rabbit_strategy.log_failure.assert_called_with('fake_msg', "WARN")
+
+    def test_notify_check_if_log_failure(self):
+        self.rabbit_strategy.connection = 'fake_connection'
+        self.rabbit_strategy._send_message = mock.Mock(
+            side_effect=Exception('timeout'))
+        self.rabbit_strategy.reconnect = mock.Mock(
+            side_effect=notify_kombu.KombuMaxRetriesReached())
+        self.rabbit_strategy.log_failure = mock.Mock()
+
+        self.rabbit_strategy._notify('fake_msg', "WARN")
+        self.rabbit_strategy._send_message. \
+            assert_called_with('fake_msg', 'notifications.warn')
+        self.rabbit_strategy.log_failure.assert_called_with('fake_msg', "WARN")
