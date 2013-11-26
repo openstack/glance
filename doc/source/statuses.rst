@@ -55,3 +55,15 @@ Images in Glance can be in one the following statuses:
   This is similiar to `deleted`, however, Glance has not yet removed the
   image data. An image in this state is recoverable.
 
+
+.. figure:: /images/image_status_transition.png
+   :figwidth: 100%
+   :align: center
+   :alt: Image status transition
+
+   This is a representation of how the image move from one status to the next.
+
+   * Add location from zero to more than one.
+
+   * Remove location from one or more to zero by PATCH method which is only
+     supported in v2.

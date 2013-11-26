@@ -1,0 +1,47 @@
+/*
+# All Rights Reserved.
+# Copyright 2013 IBM Corp.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+*/
+
+/*
+This file can be compiled by graphviz with issuing the following command:
+
+   dot -Tpng -oimage_status_transition.png image_status_transition.dot
+
+See http://www.graphviz.org to get more info.
+*/
+
+digraph {
+  node [shape="doublecircle" color="#006699" style="filled"
+        fillcolor="#33CCFF" fixedsize="True" width="1.5" height="1.5"];
+
+  "" -> "queued" [label="create image"];
+
+  "queued" -> "active" [label="add location*"];
+  "queued" -> "saving" [label="upload"];
+  "queued" -> "deleted" [label="delete"];
+
+  "saving" -> "active" [label="upload succeed"];
+  "saving" -> "killed" [label="upload fail"];
+  "saving" -> "deleted" [label="delete"];
+
+  "active" -> "queued" [label="remove location*"];
+  "active" -> "pending_delete" [label="delayed delete"];
+  "active" -> "deleted" [label="delete"];
+
+  "killed" -> "deleted" [label="delete"];
+
+  "pending_delete" -> "deleted" [label="after scrub time"];
+}
