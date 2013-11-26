@@ -67,3 +67,29 @@ Images in Glance can be in one the following statuses:
 
    * Remove location from one or more to zero by PATCH method which is only
      supported in v2.
+
+Task Statuses
+==============
+
+Tasks in Glance can be in one the following statuses:
+
+* ``pending``
+
+  The task identifier has been reserved for a task in the Glance.
+  No processing has begun on it yet.
+
+* ``processing``
+
+  The task has been picked up by the underlying executor and is being run
+  using the backend Glance execution logic for that task type.
+
+* ``success``
+
+  Denotes that the task has had a successful run within Glance. The ``result``
+  field of the task shows more details about the outcome.
+
+* ``failure``
+
+  Denotes that an error occurred during the execution of the task and it
+  cannot continue processing. The ``message`` field of the task shows what the
+  error was.

@@ -1295,3 +1295,20 @@ glance-registry service while the v2 API is not. This means that
 in order to use the v2 API, you must copy the necessary sql
 configuration from your glance-registry service to your
 glance-api configuration file.
+
+Configuring Glance Tasks
+------------------------
+
+Glance Tasks are implemented only for version 2 of the OpenStack Images API.
+
+``Please be aware that Glance tasks are currently a work in progress
+feature.`` Although, the API is available, the execution part of it
+is being worked on.
+
+The config value ``task_time_to_live`` is used to determine how long a task
+would be visible to the user after transitioning to either the ``success`` or
+the ``failure`` state.
+
+* ``task_time_to_live=<Time_in_hours>``
+
+Optional. Default: ``48``
