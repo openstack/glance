@@ -58,8 +58,13 @@ class TestGlanceManage(functional.FunctionalTest):
 
         #NOTE(bcwaldon): For some reason we need double-quotes around
         # these two table names
-        self.assertTrue('CREATE TABLE "image_members"' in out)
-        self.assertTrue('CREATE TABLE "image_properties"' in out)
+        # NOTE(vsergeyev): There are some cases when we have no double-quotes
+        self.assertTrue(
+            'CREATE TABLE "image_members"' in out or
+            'CREATE TABLE image_members' in out)
+        self.assertTrue(
+            'CREATE TABLE "image_properties"' in out or
+            'CREATE TABLE image_properties' in out)
 
     @depends_on_exe('sqlite3')
     @skip_if_disabled
