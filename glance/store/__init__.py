@@ -39,6 +39,7 @@ store_opts = [
                     'glance.store.swift.Store',
                     'glance.store.sheepdog.Store',
                     'glance.store.cinder.Store',
+                    'glance.store.vmware_datastore.Store',
                 ],
                 help=_('List of which store classes and store class locations '
                        'are currently known to glance at startup.')),

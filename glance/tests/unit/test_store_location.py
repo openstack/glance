@@ -22,6 +22,7 @@ import glance.store.http
 import glance.store.location as location
 import glance.store.s3
 import glance.store.swift
+import glance.store.vmware_datastore
 from glance.tests.unit import base
 
 
@@ -53,6 +54,7 @@ class TestStoreLocation(base.StoreClearingUnitTest):
             'rbd://%2F/%2F/%2F/%2F',
             'sheepdog://imagename',
             'cinder://12345678-9012-3455-6789-012345678901',
+            'vsphere://ip/folder/openstack_glance/2332298?dcPath=dc&dsName=ds',
         ]
 
         for uri in good_store_uris:
@@ -377,6 +379,27 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         bad_uri = 'http://image'
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
 
+    def test_vmware_store_location(self):
+        """
+        Test the specific StoreLocation for the VMware store
+        """
+        uri = ('vsphere://127.0.0.1/folder/'
+               'openstack_glance/29038321?dcPath=my-dc&dsName=my-ds')
+        loc = glance.store.vmware_datastore.StoreLocation({})
+        loc.parse_uri(uri)
+
+        self.assertEqual("vsphere", loc.scheme)
+        self.assertEqual("127.0.0.1", loc.server_host)
+        self.assertEqual("/folder/openstack_glance/29038321", loc.path)
+        self.assertEqual("dcPath=my-dc&dsName=my-ds", loc.query)
+        self.assertEqual(uri, loc.get_uri())
+
+        bad_uri = 'vphere://'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = 'http://image'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
     def test_cinder_store_good_location(self):
         """
         Test the specific StoreLocation for the Cinder store
@@ -412,7 +435,8 @@ class TestStoreLocation(base.StoreClearingUnitTest):
             'https': glance.store.http.Store,
             'rbd': glance.store.rbd.Store,
             'sheepdog': glance.store.sheepdog.Store,
-            'cinder': glance.store.cinder.Store}
+            'cinder': glance.store.cinder.Store,
+            'vsphere': glance.store.vmware_datastore.Store}
 
         ctx = context.RequestContext()
         for scheme, store in good_results.items():

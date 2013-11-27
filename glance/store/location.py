@@ -65,6 +65,7 @@ def get_location_from_uri(uri):
         s3+https://accesskey:secretkey@s3.amazonaws.com/bucket/key-id
         file:///var/lib/glance/images/1
         cinder://volume-id
+        vsphere://server_host/folder/file_path?dcPath=dc_path&dsName=ds_name
     """
     pieces = urlparse.urlparse(uri)
     if pieces.scheme not in SCHEME_TO_CLS_MAP.keys():

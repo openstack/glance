@@ -367,7 +367,8 @@ Optional. Default: ``file``
 Can only be specified in configuration files.
 
 Sets the storage backend to use by default when storing images in Glance.
-Available options for this option are (``file``, ``swift``, ``s3``, ``rbd``, or ``sheepdog``, or ``cinder``).
+Available options for this option are (``file``, ``swift``, ``s3``, ``rbd``, ``sheepdog``, 
+``cinder`` or ``vsphere``).
 
 Configuring Glance Image Size Limit
 -----------------------------------

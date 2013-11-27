@@ -23,6 +23,7 @@ from glance.openstack.common import jsonutils
 from glance import store
 from glance.store import location
 from glance.store import sheepdog
+from glance.store import vmware_datastore
 from glance.tests import stubs
 from glance.tests import utils as test_utils
 
@@ -47,6 +48,8 @@ class StoreClearingUnitTest(test_utils.BaseTestCase):
         on collie.
         """
         self.stubs.Set(sheepdog.Store, 'configure_add', lambda x: None)
+        self.stubs.Set(vmware_datastore.Store, 'configure', lambda x: None)
+        self.stubs.Set(vmware_datastore.Store, 'configure_add', lambda x: None)
         store.create_stores()
 
 
