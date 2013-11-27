@@ -20,3 +20,7 @@ tests.sqlite
 glance/versioninfo
 # Files created by doc build
 doc/source/api
+
+# IDE files
+.project
+.pydevproject
