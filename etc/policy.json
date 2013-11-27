@@ -22,5 +22,10 @@
     "get_members": "",
     "modify_member": "",
 
-    "manage_image_cache": "role:admin"
+    "manage_image_cache": "role:admin",
+
+    "get_task": "",
+    "get_tasks": "",
+    "add_task": "",
+    "modify_task": ""
 }

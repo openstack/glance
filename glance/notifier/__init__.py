@@ -2,6 +2,7 @@
 
 # Copyright 2011, OpenStack Foundation
 # Copyright 2012, Red Hat, Inc.
+# Copyright 2013 IBM Corp.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -125,6 +126,23 @@ def format_image_notification(image):
     }
 
 
+def format_task_notification(task):
+    # NOTE(nikhil): input is not passed to the notifier payload as it may
+    # contain sensitive info.
+    return {'id': task.task_id,
+            'type': task.type,
+            'status': task.status,
+            'result': None,
+            'owner': task.owner,
+            'message': None,
+            'expires_at': timeutils.isotime(task.expires_at),
+            'created_at': timeutils.isotime(task.created_at),
+            'updated_at': timeutils.isotime(task.updated_at),
+            'deleted': False,
+            'deleted_at': None,
+            }
+
+
 class ImageRepoProxy(glance.domain.proxy.Repo):
 
     def __init__(self, image_repo, context, notifier):
@@ -246,3 +264,64 @@ class ImageProxy(glance.domain.proxy.Image):
             payload = format_image_notification(self.image)
             self.notifier.info('image.upload', payload)
             self.notifier.info('image.activate', payload)
+
+
+class TaskRepoProxy(glance.domain.proxy.Repo):
+
+    def __init__(self, task_repo, context, notifier):
+        self.task_repo = task_repo
+        self.context = context
+        self.notifier = notifier
+        proxy_kwargs = {'context': self.context, 'notifier': self.notifier}
+        super(TaskRepoProxy, self).__init__(task_repo,
+                                            item_proxy_class=TaskProxy,
+                                            item_proxy_kwargs=proxy_kwargs)
+
+    def add(self, task):
+        self.notifier.info('task.create', format_task_notification(task))
+        return super(TaskRepoProxy, self).add(task)
+
+    def remove(self, task):
+        payload = format_task_notification(task)
+        payload['deleted'] = True
+        payload['deleted_at'] = timeutils.isotime()
+        self.notifier.info('task.delete', payload)
+        return super(TaskRepoProxy, self).add(task)
+
+
+class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
+    def __init__(self, factory, context, notifier):
+        kwargs = {'context': context, 'notifier': notifier}
+        super(TaskFactoryProxy, self).__init__(factory,
+                                               proxy_class=TaskProxy,
+                                               proxy_kwargs=kwargs)
+
+
+class TaskProxy(glance.domain.proxy.Task):
+
+    def __init__(self, task, context, notifier):
+        self.task = task
+        self.context = context
+        self.notifier = notifier
+        super(TaskProxy, self).__init__(task)
+
+    def run(self, executor):
+        self.notifier.info('task.run', format_task_notification(self.task))
+        return super(TaskProxy, self).run(executor)
+
+    def begin_processing(self):
+        self.notifier.info(
+            'task.processing',
+            format_task_notification(self.task)
+        )
+        return super(TaskProxy, self).begin_processing()
+
+    def succeed(self, result):
+        self.notifier.info('task.success',
+                           format_task_notification(self.task))
+        return super(TaskProxy, self).succeed(result)
+
+    def fail(self, message):
+        self.notifier.info('task.failure',
+                           format_task_notification(self.task))
+        return super(TaskProxy, self).fail(message)

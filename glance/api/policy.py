@@ -1,6 +1,7 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
 # Copyright (c) 2011 OpenStack Foundation
+# Copyright 2013 IBM Corp.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -353,3 +354,59 @@ class ImageLocationsProxy(object):
     __delslice__ = _get_checker('delete_image_location', '__delslice__')
 
     del _get_checker
+
+
+class TaskProxy(glance.domain.proxy.Task):
+
+    def __init__(self, task, context, policy):
+        self.task = task
+        self.context = context
+        self.policy = policy
+        super(TaskProxy, self).__init__(task)
+
+    def run(self, executor):
+        self.base.run(executor)
+
+
+class TaskRepoProxy(glance.domain.proxy.Repo):
+
+    def __init__(self, task_repo, context, policy):
+        self.context = context
+        self.policy = policy
+        self.task_repo = task_repo
+        proxy_kwargs = {'context': self.context, 'policy': self.policy}
+        super(TaskRepoProxy, self).__init__(
+            task_repo,
+            item_proxy_class=TaskProxy,
+            item_proxy_kwargs=proxy_kwargs
+        )
+
+    def get(self, task_id):
+        self.policy.enforce(self.context, 'get_task', {})
+        return super(TaskRepoProxy, self).get(task_id)
+
+    def list(self, *args, **kwargs):
+        self.policy.enforce(self.context, 'get_tasks', {})
+        return super(TaskRepoProxy, self).list(*args, **kwargs)
+
+    def add(self, task):
+        self.policy.enforce(self.context, 'add_task', {})
+        return super(TaskRepoProxy, self).add(task)
+
+    def save(self, task):
+        self.policy.enforce(self.context, 'modify_task', {})
+        return super(TaskRepoProxy, self).save(task)
+
+
+class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
+
+    def __init__(self, task_factory, context, policy):
+        self.task_factory = task_factory
+        self.context = context
+        self.policy = policy
+        proxy_kwargs = {'context': self.context, 'policy': self.policy}
+        super(TaskFactoryProxy, self).__init__(
+            task_factory,
+            proxy_class=TaskProxy,
+            proxy_kwargs=proxy_kwargs
+        )

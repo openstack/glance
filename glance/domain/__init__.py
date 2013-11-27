@@ -1,4 +1,5 @@
 # Copyright 2012 OpenStack Foundation
+# Copyright 2013 IBM Corp.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -14,11 +15,17 @@
 #    under the License.
 
 import collections
+import datetime
+
 from oslo.config import cfg
 
 from glance.common import exception
+import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 from glance.openstack.common import uuidutils
+
+
+LOG = logging.getLogger(__name__)
 
 
 image_format_opts = [
@@ -31,6 +38,10 @@ image_format_opts = [
                          'vdi', 'iso'],
                 help=_("Supported values for the 'disk_format' "
                        "image attribute")),
+    cfg.IntOpt('task_time_to_live',
+               default=48,
+               help=_("Time in hours for which a task lives after, either "
+                      "succeeding or failing")),
 ]
 
 
@@ -216,3 +227,117 @@ class ImageMemberFactory(object):
         return ImageMembership(image_id=image.image_id, member_id=member_id,
                                created_at=created_at, updated_at=updated_at,
                                status='pending')
+
+
+class Task(object):
+    _supported_task_type = ('import',)
+
+    _supported_task_status = ('pending', 'processing', 'success', 'failure')
+
+    def __init__(self, task_id, type, status, input, result, owner, message,
+                 expires_at, created_at, updated_at):
+
+        if type not in self._supported_task_type:
+            raise exception.InvalidTaskType(type)
+
+        if status not in self._supported_task_status:
+            raise exception.InvalidTaskStatus(status)
+
+        self.task_id = task_id
+        self._status = status
+        self.type = type
+        self.input = input
+        self.result = result
+        self.owner = owner
+        self.message = message
+        self.expires_at = expires_at
+        # NOTE(nikhil): We use '_time_to_live' to determine how long a
+        # task should live from the time it succeeds or fails.
+        self._time_to_live = datetime.timedelta(hours=CONF.task_time_to_live)
+        self.created_at = created_at
+        self.updated_at = updated_at
+
+    @property
+    def status(self):
+        return self._status
+
+    def run(self, executor):
+        # NOTE(flwang): The task status won't be set here but handled by the
+        # executor.
+        # NOTE(nikhil): Ideally, a task should always be instantiated with an
+        # executor. However, we need to make that a part of the framework
+        # and we are planning to add such logic when Controller would
+        # be introduced.
+        if executor:
+            executor.run(self.task_id)
+
+    def _validate_task_status_transition(self, cur_status, new_status):
+            valid_transitions = {
+                'pending': ['processing', 'failure'],
+                'processing': ['success', 'failure'],
+                'success': [],
+                'failure': [],
+            }
+
+            if new_status in valid_transitions[cur_status]:
+                return True
+            else:
+                return False
+
+    def _set_task_status(self, new_status):
+        if self._validate_task_status_transition(self.status, new_status):
+            self._status = new_status
+            log_msg = (_("Task status changed from %(cur_status)s to "
+                         "%(new_status)s") % {'cur_status': self.status,
+                                              'new_status': new_status})
+            LOG.info(log_msg)
+        else:
+            log_msg = (_("Task status failed to change from %(cur_status)s "
+                         "to %(new_status)s") % {'cur_status': self.status,
+                                                 'new_status': new_status})
+            LOG.error(log_msg)
+            raise exception.InvalidTaskStatusTransition(
+                cur_status=self.status,
+                new_status=new_status
+            )
+
+    def begin_processing(self):
+        new_status = 'processing'
+        self._set_task_status(new_status)
+
+    def succeed(self, result):
+        new_status = 'success'
+        self.result = result
+        self._set_task_status(new_status)
+        self.expires_at = timeutils.utcnow() + self._time_to_live
+
+    def fail(self, message):
+        new_status = 'failure'
+        self.message = message
+        self._set_task_status(new_status)
+        self.expires_at = timeutils.utcnow() + self._time_to_live
+
+
+class TaskFactory(object):
+    def new_task(self, task_type, task_input, owner):
+        task_id = uuidutils.generate_uuid()
+        status = 'pending'
+        result = None
+        message = None
+        # Note(nikhil): expires_at would be set on the task, only when it
+        # succeeds or fails.
+        expires_at = None
+        created_at = timeutils.utcnow()
+        updated_at = created_at
+        return Task(
+            task_id,
+            task_type,
+            status,
+            task_input,
+            result,
+            owner,
+            message,
+            expires_at,
+            created_at,
+            updated_at
+        )

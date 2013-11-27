@@ -1194,6 +1194,7 @@ def task_delete(context, task_id, session=None):
         raise exception.TaskNotFound(task_id=task_id)
 
     task_ref.delete(session=session)
+    return _task_format(task_ref)
 
 
 def task_get_all(context, filters=None, marker=None, limit=None,

@@ -1,4 +1,5 @@
 # Copyright 2012 OpenStack Foundation
+# Copyright 2013 IBM Corp.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -22,6 +23,7 @@ import glance.api.policy
 from glance.common import exception
 import glance.context
 from glance.tests.unit import base
+import glance.tests.unit.utils as unit_test_utils
 from glance.tests import utils as test_utils
 
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
@@ -75,6 +77,31 @@ class MemberRepoStub(object):
 
     def remove(self, *args, **kwargs):
         return 'member_repo_remove'
+
+
+class TaskRepoStub(object):
+    def get(self, *args, **kwargs):
+        return 'task_from_get'
+
+    def add(self, *args, **kwargs):
+        return 'task_from_add'
+
+    def list(self, *args, **kwargs):
+        return ['task_from_list_0', 'task_from_list_1']
+
+
+class TaskStub(object):
+    def __init__(self, task_id):
+        self.task_id = task_id
+        self.status = 'pending'
+
+    def run(self):
+        self.status = 'processing'
+
+
+class TaskFactoryStub(object):
+    def new_task(self, *args):
+        return 'new_task'
 
 
 class TestPolicyEnforcer(base.IsolatedUnitTest):
@@ -332,6 +359,82 @@ class TestMemberPolicy(test_utils.BaseTestCase):
         output = self.member_repo.remove('')
         self.assertEqual(output, 'member_repo_remove')
         self.policy.enforce.assert_called_once_with({}, "delete_member", {})
+
+
+class TestTaskPolicy(test_utils.BaseTestCase):
+    def setUp(self):
+        self.task_stub = TaskStub(UUID1)
+        self.task_repo_stub = TaskRepoStub()
+        self.task_factory_stub = TaskFactoryStub()
+        self.policy = unit_test_utils.FakePolicyEnforcer()
+        super(TestTaskPolicy, self).setUp()
+
+    def test_get_task_not_allowed(self):
+        rules = {"get_task": False}
+        self.policy.set_rules(rules)
+        task_repo = glance.api.policy.TaskRepoProxy(
+            self.task_repo_stub,
+            {},
+            self.policy
+        )
+        self.assertRaises(exception.Forbidden, task_repo.get, UUID1)
+
+    def test_get_task_allowed(self):
+        rules = {"get_task": True}
+        self.policy.set_rules(rules)
+        task_repo = glance.api.policy.TaskRepoProxy(
+            self.task_repo_stub,
+            {},
+            self.policy
+        )
+        output = task_repo.get(UUID1)
+        self.assertTrue(isinstance(output, glance.api.policy.TaskProxy))
+        self.assertEqual(output.task, 'task_from_get')
+
+    def test_get_tasks_not_allowed(self):
+        rules = {"get_tasks": False}
+        self.policy.set_rules(rules)
+        task_repo = glance.api.policy.TaskRepoProxy(
+            self.task_repo_stub,
+            {},
+            self.policy
+        )
+        self.assertRaises(exception.Forbidden, task_repo.list)
+
+    def test_get_tasks_allowed(self):
+        rules = {"get_task": True}
+        self.policy.set_rules(rules)
+        task_repo = glance.api.policy.TaskRepoProxy(
+            self.task_repo_stub,
+            {},
+            self.policy
+        )
+        tasks = task_repo.list()
+        for i, task in enumerate(tasks):
+            self.assertTrue(isinstance(task, glance.api.policy.TaskProxy))
+            self.assertEqual(task.task, 'task_from_list_%d' % i)
+
+    def test_add_task_not_allowed(self):
+        rules = {"add_task": False}
+        self.policy.set_rules(rules)
+        task_repo = glance.api.policy.TaskRepoProxy(
+            self.task_repo_stub,
+            {},
+            self.policy
+        )
+        task = glance.api.policy.TaskProxy(self.task_stub, {}, self.policy)
+        self.assertRaises(exception.Forbidden, task_repo.add, task)
+
+    def test_add_task_allowed(self):
+        rules = {"add_task": True}
+        self.policy.set_rules(rules)
+        task_repo = glance.api.policy.TaskRepoProxy(
+            self.task_repo_stub,
+            {},
+            self.policy
+        )
+        task = glance.api.policy.TaskProxy(self.task_stub, {}, self.policy)
+        task_repo.add(task)
 
 
 class TestContextPolicyEnforcer(base.IsolatedUnitTest):
