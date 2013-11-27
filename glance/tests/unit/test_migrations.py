@@ -631,7 +631,6 @@ class TestMigrations(utils.BaseTestCase):
             self.assertEqual(len(rows), 1)
 
             row = rows[0]
-            print(repr(dict(row)))
             self.assertTrue(uuidutils.is_uuid_like(row['id']))
 
             uuids[name] = row['id']
@@ -1044,3 +1043,50 @@ class TestMigrations(utils.BaseTestCase):
     def _post_downgrade_030(self, engine):
         self.assertRaises(sqlalchemy.exc.NoSuchTableError,
                           get_table, engine, 'tasks')
+
+    def _pre_upgrade_031(self, engine):
+        images = get_table(engine, 'images')
+        now = datetime.datetime.now()
+        image_id = 'fake_031_id'
+        temp = dict(deleted=False,
+                    created_at=now,
+                    updated_at=now,
+                    status='active',
+                    is_public=True,
+                    min_disk=0,
+                    min_ram=0,
+                    id=image_id)
+        images.insert().values(temp).execute()
+
+        locations_table = get_table(engine, 'image_locations')
+        data = image_id
+        locations = [
+            ('file://ab', '{"a": "yo yo"}'),
+            ('file://ab', '{}'),
+            ('file://ab', '{}'),
+            ('file://ab1', '{"a": "that one, please"}'),
+            ('file://ab1', '{"a": "that one, please"}'),
+        ]
+        temp = dict(deleted=False,
+                    created_at=now,
+                    updated_at=now,
+                    image_id=image_id)
+
+        for location, metadata in locations:
+            temp.update(value=location, meta_data=metadata)
+            locations_table.insert().values(temp).execute()
+        return image_id
+
+    def _check_031(self, engine, image_id):
+        locations_table = get_table(engine, 'image_locations')
+        result = locations_table.select()\
+                                .where(locations_table.c.image_id == image_id)\
+                                .execute().fetchall()
+
+        locations = set([(x['value'], x['meta_data']) for x in result])
+        actual_locations = set([
+            ('file://ab', '{"a": "yo yo"}'),
+            ('file://ab', '{}'),
+            ('file://ab1', '{"a": "that one, please"}'),
+        ])
+        self.assertFalse(actual_locations.symmetric_difference(locations))

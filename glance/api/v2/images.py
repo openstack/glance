@@ -60,6 +60,8 @@ class ImagesController(object):
             image = image_factory.new_image(extra_properties=extra_properties,
                                             tags=tags, **image)
             image_repo.add(image)
+        except exception.DuplicateLocation as dup:
+            raise webob.exc.HTTPBadRequest(explanation=unicode(dup))
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
         except exception.ImagePropertyLimitExceeded as e:
@@ -227,7 +229,7 @@ class ImagesController(object):
                 image.locations = value
                 if image.status == 'queued':
                     image.status = 'active'
-            except exception.BadStoreUri as bse:
+            except (exception.BadStoreUri, exception.DuplicateLocation) as bse:
                 raise webob.exc.HTTPBadRequest(explanation=unicode(bse))
             except ValueError as ve:    # update image status failed.
                 raise webob.exc.HTTPBadRequest(explanation=unicode(ve))
@@ -242,7 +244,7 @@ class ImagesController(object):
             image.locations.insert(pos, value)
             if image.status == 'queued':
                 image.status = 'active'
-        except exception.BadStoreUri as bse:
+        except (exception.BadStoreUri, exception.DuplicateLocation) as bse:
             raise webob.exc.HTTPBadRequest(explanation=unicode(bse))
         except ValueError as ve:    # update image status failed.
             raise webob.exc.HTTPBadRequest(explanation=unicode(ve))

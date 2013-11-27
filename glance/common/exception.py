@@ -317,3 +317,7 @@ class InvalidTaskType(TaskException, Invalid):
 class InvalidTaskStatusTransition(TaskException, Invalid):
     message = _("Status transition from %(cur_status)s to"
                 " %(new_status)s is not allowed")
+
+
+class DuplicateLocation(Duplicate):
+    message = _("The location %(location)s already exists")
