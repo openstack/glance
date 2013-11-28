@@ -336,6 +336,7 @@ class Store(glance.store.base.Store):
                         _('RBD image %s already exists') % image_id)
                 try:
                     with rbd.Image(ioctx, image_name) as image:
+                        bytes_written = 0
                         offset = 0
                         chunks = utils.chunkreadable(image_file,
                                                      self.chunk_size)
@@ -345,7 +346,9 @@ class Store(glance.store.base.Store):
                             # be slower so setting a higher chunk size may
                             # speed things up a bit.
                             if image_size == 0:
-                                length = offset + len(chunk)
+                                chunk_length = len(chunk)
+                                length = offset + chunk_length
+                                bytes_written += chunk_length
                                 LOG.debug(_("resizing image to %s KiB") %
                                           (length / units.Ki))
                                 image.resize(length)
@@ -364,6 +367,10 @@ class Store(glance.store.base.Store):
                         pass
 
                     raise exc
+
+        # Make sure we send back the image size whether provided or inferred.
+        if image_size == 0:
+            image_size = bytes_written
 
         return (loc.get_uri(), image_size, checksum.hexdigest(), {})
 

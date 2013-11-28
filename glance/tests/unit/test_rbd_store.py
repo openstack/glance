@@ -14,8 +14,12 @@
 #    under the License.
 
 import StringIO
+
+import mock
+
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import units
 import glance.store.rbd as rbd_store
 from glance.store.location import Location
 from glance.store.rbd import StoreLocation
@@ -37,6 +41,20 @@ class TestStore(base.StoreClearingUnitTest):
         self.store_specs = {'image': 'fake_image',
                             'snapshot': 'fake_snapshot'}
         self.location = StoreLocation(self.store_specs)
+        # Provide enough data to get more than one chunk iteration.
+        self.data_len = 3 * units.Ki
+        self.data_iter = StringIO.StringIO('*' * self.data_len)
+
+    def test_add_w_image_size_zero(self):
+        """Assert that correct size is returned even though 0 was provided."""
+        self.store.chunk_size = units.Ki
+        with mock.patch.object(rbd_store.rbd.Image, 'resize') as resize:
+            with mock.patch.object(rbd_store.rbd.Image, 'write') as write:
+                ret = self.store.add('fake_image_id', self.data_iter, 0)
+
+        resize.assert_called()
+        write.assert_called()
+        self.assertEquals(ret[1], self.data_len)
 
     def test_add_w_rbd_image_exception(self):
         def _fake_create_image(*args, **kwargs):
@@ -54,7 +72,7 @@ class TestStore(base.StoreClearingUnitTest):
         self.stubs.Set(mock_rbd.Image, '__enter__', _fake_enter)
 
         self.assertRaises(exception.NotFound, self.store.add,
-                          'fake_image_id', StringIO.StringIO('xx'), 2)
+                          'fake_image_id', self.data_iter, self.data_len)
 
         self.called_commands_expected = ['create', 'delete']
 
@@ -65,7 +83,7 @@ class TestStore(base.StoreClearingUnitTest):
 
         self.stubs.Set(self.store, '_create_image', _fake_create_image)
         self.assertRaises(exception.Duplicate, self.store.add,
-                          'fake_image_id', StringIO.StringIO('xx'), 2)
+                          'fake_image_id', self.data_iter, self.data_len)
         self.called_commands_expected = ['create']
 
     def test_delete(self):
@@ -136,9 +154,10 @@ class TestStore(base.StoreClearingUnitTest):
 
         self.stubs.Set(mock_rbd.Image, 'write', _fake_write)
         self.stubs.Set(self.store, '_delete_image', _fake_delete_image)
-        data = utils.LimitingReader(StringIO.StringIO('abcd'), 4)
+        data = utils.LimitingReader(self.data_iter, self.data_len)
         self.assertRaises(exception.ImageSizeLimitExceeded,
-                          self.store.add, 'fake_image_id', data, 5)
+                          self.store.add, 'fake_image_id',
+                          data, self.data_len + 1)
 
         self.called_commands_expected = ['write', 'delete']
 
