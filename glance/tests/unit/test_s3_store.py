@@ -42,7 +42,8 @@ S3_CONF = {'verbose': True,
            's3_store_access_key': 'user',
            's3_store_secret_key': 'key',
            's3_store_host': 'localhost:8080',
-           's3_store_bucket': 'glance'}
+           's3_store_bucket': 'glance',
+           'known_stores': ['glance.store.s3.Store']}
 
 
 # We stub out as little as possible to ensure that the code paths
