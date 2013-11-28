@@ -413,6 +413,38 @@ the filesystem storage backend will attempt to create this directory if it does
 not exist. Ensure that the user that ``glance-api`` runs under has write
 permissions to this directory.
 
+Configuring the Filesystem Storage Backend with multiple stores
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``filesystem_store_datadirs=PATH:PRIORITY``
+
+Optional. Default: ``/var/lib/glance/images/:1``
+
+Example::
+
+  filesystem_store_datadirs = /var/glance/store
+  filesystem_store_datadirs = /var/glance/store1:100
+  filesystem_store_datadirs = /var/glance/store2:200
+
+This option can only be specified in configuration file and is specific
+to the filesystem storage backend only.
+
+filesystem_store_datadirs option allows administrators to configure
+multiple store directories to save glance image in filesystem storage backend.
+Each directory can be coupled with its priority.
+
+**NOTE**:
+
+* This option can be specified multiple times to specify multiple stores.
+* Either filesystem_store_datadir or filesystem_store_datadirs option must be
+  specified in glance-api.conf
+* Store with priority 200 has precedence over store with priority 100.
+* If no priority is specified, default priority '0' is associated with it.
+* If two filesystem stores have same priority store with maximum free space
+  will be chosen to store the image.
+* If same store is specified multiple times then BadStoreConfiguration
+  exception will be raised.
+
 Configuring the Swift Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
