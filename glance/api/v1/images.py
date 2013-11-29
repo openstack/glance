@@ -307,7 +307,7 @@ class Controller(controller.BaseController):
 
     def detail(self, req):
         """
-        Returns detailed information for all public, available images
+        Returns detailed information for all available images
 
         :param req: The WSGI/Webob Request object
         :retval The response body is a mapping of the following form::
