@@ -383,7 +383,8 @@ class TestTasksDeserializer(test_utils.BaseTestCase):
     def test_index_with_many_filter(self):
         status = 'success'
         type = 'import'
-        path = '/tasks?status=%(status)s&type=%(type)s' % locals()
+        path = '/tasks?status=%(status)s&type=%(type)s' % {'status': status,
+                                                           'type': type}
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)
         self.assertEqual(output['filters']['status'], status)

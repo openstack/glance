@@ -72,7 +72,8 @@ def _get_connect_string(backend,
         backend = "postgresql+psycopg2"
 
     return ("%(backend)s://%(user)s:%(passwd)s@localhost/%(database)s"
-            % locals())
+            % {'backend': backend, 'user': user, 'passwd': passwd,
+               'database': database})
 
 
 def _is_backend_avail(backend,
@@ -199,10 +200,11 @@ class TestMigrations(test_utils.BaseTestCase):
                 if len(auth_pieces) > 1:
                     if auth_pieces[1].strip():
                         password = "-p\"%s\"" % auth_pieces[1]
-                sql = ("drop database if exists %(database)s; "
-                       "create database %(database)s;") % locals()
+                sql = ("drop database if exists %(database)s; create "
+                       "database %(database)s;") % {'database': database}
                 cmd = ("mysql -u \"%(user)s\" %(password)s -h %(host)s "
-                       "-e \"%(sql)s\"") % locals()
+                       "-e \"%(sql)s\"") % {'user': user, 'password': password,
+                                            'host': host, 'sql': sql}
                 execute_cmd(cmd)
             elif conn_string.startswith('postgresql'):
                 database = conn_pieces.path.strip('/')
@@ -217,18 +219,23 @@ class TestMigrations(test_utils.BaseTestCase):
                 # note(boris-42): This file is used for authentication
                 # without password prompt.
                 createpgpass = ("echo '*:*:*:%(user)s:%(password)s' > "
-                                "~/.pgpass && chmod 0600 ~/.pgpass" % locals())
+                                "~/.pgpass && chmod 0600 ~/.pgpass" %
+                                {'user': user, 'password': password})
                 execute_cmd(createpgpass)
                 # note(boris-42): We must create and drop database, we can't
                 # drop database which we have connected to, so for such
                 # operations there is a special database template1.
                 sqlcmd = ("psql -w -U %(user)s -h %(host)s -c"
                           " '%(sql)s' -d template1")
-                sql = ("drop database if exists %(database)s;") % locals()
-                droptable = sqlcmd % locals()
+                sql = ("drop database if exists %(database)s;")
+                sql = sql % {'database': database}
+                droptable = sqlcmd % {'user': user, 'host': host,
+                                      'sql': sql}
                 execute_cmd(droptable)
-                sql = ("create database %(database)s;") % locals()
-                createtable = sqlcmd % locals()
+                sql = ("create database %(database)s;")
+                sql = sql % {'database': database}
+                createtable = sqlcmd % {'user': user, 'host': host,
+                                        'sql': sql}
                 execute_cmd(createtable)
 
     def test_walk_versions(self):

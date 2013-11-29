@@ -634,7 +634,9 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
             el = data[k]
             self.assertEqual(v, data[k],
                              "Failed v != data[k] where v = %(v)s and "
-                             "k = %(k)s and data[k] = %(el)s" % locals())
+                             "k = %(k)s and data[k] = %(el)s" % {'v': v,
+                                                                 'k': k,
+                                                                 'el': el})
 
     def test_get_image_non_existing(self):
         """Tests that NotFound is raised when getting a non-existing image"""
