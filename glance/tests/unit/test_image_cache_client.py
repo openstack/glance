@@ -37,21 +37,21 @@ class CacheClientTestCase(utils.BaseTestCase):
         expected_data = '{"cached_images": "some_images"}'
         self.client.do_request.return_value = \
             utils.FakeHTTPResponse(data=expected_data)
-        self.assertEquals(self.client.get_cached_images(), "some_images")
+        self.assertEqual(self.client.get_cached_images(), "some_images")
         self.client.do_request.assert_called_with("GET", "/cached_images")
 
     def test_get_queued_images(self):
         expected_data = '{"queued_images": "some_images"}'
         self.client.do_request.return_value = \
             utils.FakeHTTPResponse(data=expected_data)
-        self.assertEquals(self.client.get_queued_images(), "some_images")
+        self.assertEqual(self.client.get_queued_images(), "some_images")
         self.client.do_request.assert_called_with("GET", "/queued_images")
 
     def test_delete_all_cached_images(self):
         expected_data = '{"num_deleted": 4}'
         self.client.do_request.return_value = \
             utils.FakeHTTPResponse(data=expected_data)
-        self.assertEquals(self.client.delete_all_cached_images(), 4)
+        self.assertEqual(self.client.delete_all_cached_images(), 4)
         self.client.do_request.assert_called_with("DELETE", "/cached_images")
 
     def test_queue_image_for_caching(self):
@@ -70,7 +70,7 @@ class CacheClientTestCase(utils.BaseTestCase):
         expected_data = '{"num_deleted": 4}'
         self.client.do_request.return_value = \
             utils.FakeHTTPResponse(data=expected_data)
-        self.assertEquals(self.client.delete_all_queued_images(), 4)
+        self.assertEqual(self.client.delete_all_queued_images(), 4)
         self.client.do_request.assert_called_with("DELETE", "/queued_images")
 
 
