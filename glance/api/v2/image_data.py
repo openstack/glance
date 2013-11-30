@@ -94,12 +94,6 @@ class ImageDataController(object):
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
-        except exception.StorageFull as e:
-            msg = _("Image storage media is full: %s") % e
-            LOG.error(msg)
-            raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
-                                                      request=req)
-
         except exception.StorageQuotaFull as e:
             msg = _("Image exceeds the storage quota: %s") % e
             LOG.error(msg)
