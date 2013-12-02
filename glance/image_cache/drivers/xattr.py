@@ -55,7 +55,6 @@ $image_cache_dir/
 
 from __future__ import absolute_import
 from contextlib import contextmanager
-import datetime
 import errno
 import os
 import stat

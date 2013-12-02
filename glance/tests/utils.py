@@ -26,7 +26,6 @@ import shutil
 import socket
 import StringIO
 import subprocess
-import sys
 
 import fixtures
 from oslo.config import cfg

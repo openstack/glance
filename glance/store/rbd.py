@@ -28,7 +28,6 @@ from oslo.config import cfg
 
 from glance.common import exception
 from glance.common import utils
-from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import units
 import glance.store

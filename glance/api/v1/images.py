@@ -27,9 +27,7 @@ from webob.exc import (HTTPNotFound,
                        HTTPConflict,
                        HTTPBadRequest,
                        HTTPForbidden,
-                       HTTPRequestEntityTooLarge,
-                       HTTPInternalServerError,
-                       HTTPServiceUnavailable)
+                       HTTPRequestEntityTooLarge)
 from webob import Response
 
 from glance.api import common

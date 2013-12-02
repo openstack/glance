@@ -24,7 +24,6 @@ import logging
 import logging.config
 import logging.handlers
 import os
-import sys
 
 from oslo.config import cfg
 from paste import deploy

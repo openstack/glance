@@ -15,12 +15,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import socket
-import time
-
 import datetime
 import eventlet.patcher
-import httplib2
 import webob
 
 from glance.common import exception

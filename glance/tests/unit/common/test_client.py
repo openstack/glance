@@ -14,7 +14,6 @@
 #    under the License.
 
 import httplib
-import StringIO
 
 import mox
 import testtools

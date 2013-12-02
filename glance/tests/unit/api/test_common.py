@@ -20,9 +20,7 @@ import webob
 import glance.api.common
 from glance.common import config
 from glance.common import exception
-from glance.common import wsgi
 from glance.tests import utils as test_utils
-from glance.tests.unit import base
 
 
 class SimpleIterator(object):

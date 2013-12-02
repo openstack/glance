@@ -18,10 +18,8 @@
 import copy
 import datetime
 import os
-import stubout
 
 import mox
-
 import testtools
 
 from glance.common import config

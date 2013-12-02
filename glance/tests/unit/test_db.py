@@ -20,7 +20,7 @@ from glance.common import crypt
 from glance.common import exception
 import glance.context
 import glance.db
-from glance.openstack.common import uuidutils, timeutils
+from glance.openstack.common import uuidutils
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 

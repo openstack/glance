@@ -16,7 +16,6 @@
 #    under the License.
 
 import routes
-from webob import exc
 
 from glance.common import wsgi
 from glance.registry.api.v2 import rpc
