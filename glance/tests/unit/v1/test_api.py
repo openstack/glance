@@ -1036,7 +1036,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             req.headers[k] = v
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 201)
+        self.assertEqual(res.status_int, 201)
         res_body = json.loads(res.body)['image']
 
         self.assertTrue('id' in res_body)
@@ -1079,7 +1079,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                 req.headers['Content-Type'] = 'application/octet-stream'
                 req.body = "somedata"
                 res = req.get_response(self.api)
-                self.assertEquals(res.status_int, 200)
+                self.assertEqual(res.status_int, 200)
 
                 self.stubs.Set(registry, 'update_image_metadata',
                                orig_update_image_metadata)
@@ -1092,16 +1092,16 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images/%s" % image_id)
         req.method = 'DELETE'
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
+        self.assertEqual(res.status_int, 200)
 
         self.assertTrue(called['initiate_deletion'])
 
         req = webob.Request.blank("/images/%s" % image_id)
         req.method = 'HEAD'
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 200)
-        self.assertEquals(res.headers['x-image-meta-deleted'], 'True')
-        self.assertEquals(res.headers['x-image-meta-status'], 'deleted')
+        self.assertEqual(res.status_int, 200)
+        self.assertEqual(res.headers['x-image-meta-deleted'], 'True')
+        self.assertEqual(res.headers['x-image-meta-status'], 'deleted')
 
     def test_disable_purge_props(self):
         """
@@ -1312,7 +1312,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             req.headers[k] = v
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 400)
+        self.assertEqual(res.status_int, 400)
 
     def test_get_index_sort_name_asc(self):
         """
