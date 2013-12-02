@@ -27,12 +27,12 @@ if possible.
 
 from __future__ import print_function
 
-import commands
 import ConfigParser
 import datetime
 import json
 import os
 import pickle
+import subprocess
 import urlparse
 
 from migrate.versioning.repository import Repository
@@ -166,9 +166,12 @@ class TestMigrations(utils.BaseTestCase):
 
     def _reset_databases(self):
         def execute_cmd(cmd=None):
-            status, output = commands.getstatusoutput(cmd)
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT, shell=True)
+            output = proc.communicate()[0]
             LOG.debug(output)
-            self.assertEqual(0, status)
+            self.assertEqual(0, proc.returncode)
+
         for key, engine in self.engines.items():
             conn_string = self.test_databases[key]
             conn_pieces = urlparse.urlparse(conn_string)
