@@ -594,6 +594,17 @@ are already in a compressed format, eg qcow2. If set to True then
 compression will be enabled (provided it is supported by the swift
 proxy).
 
+* ``swift_store_retry_get_count``
+
+The number of times a Swift download will be retried before the request
+fails.
+
+Can only be specified in configuration files.
+
+`This option is specific to the Swift storage backend.`
+
+Optional. Default: ``0``
+
 
 Configuring the S3 Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
