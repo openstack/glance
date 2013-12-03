@@ -160,19 +160,20 @@ class TestStore(base.StoreClearingUnitTest):
         expected_contents = "*" * expected_size
         hash_code = hashlib.md5(expected_contents)
         expected_checksum = hash_code.hexdigest()
-        hashlib.md5 = mock.Mock(return_value=hash_code)
-        expected_location = format_location(
-            VMWARE_DATASTORE_CONF['vmware_server_host'],
-            VMWARE_DATASTORE_CONF['vmware_store_image_dir'],
-            expected_image_id,
-            VMWARE_DATASTORE_CONF['vmware_datacenter_path'],
-            VMWARE_DATASTORE_CONF['vmware_datastore_name'])
-        image = StringIO.StringIO(expected_contents)
-        with mock.patch('httplib.HTTPConnection') as HttpConn:
-            HttpConn.return_value = FakeHTTPConnection()
-            location, size, checksum, _ = self.store.add(expected_image_id,
-                                                         image,
-                                                         expected_size)
+        with mock.patch('hashlib.md5') as md5:
+            md5.return_value = hash_code
+            expected_location = format_location(
+                VMWARE_DATASTORE_CONF['vmware_server_host'],
+                VMWARE_DATASTORE_CONF['vmware_store_image_dir'],
+                expected_image_id,
+                VMWARE_DATASTORE_CONF['vmware_datacenter_path'],
+                VMWARE_DATASTORE_CONF['vmware_datastore_name'])
+            image = StringIO.StringIO(expected_contents)
+            with mock.patch('httplib.HTTPConnection') as HttpConn:
+                HttpConn.return_value = FakeHTTPConnection()
+                location, size, checksum, _ = self.store.add(expected_image_id,
+                                                             image,
+                                                             expected_size)
         self.assertEqual(expected_location, location)
         self.assertEqual(expected_size, size)
         self.assertEqual(expected_checksum, checksum)

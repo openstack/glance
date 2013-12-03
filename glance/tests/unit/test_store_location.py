@@ -462,19 +462,19 @@ class TestStoreLocation(base.StoreClearingUnitTest):
 
         self.stubs.Set(glance.store, 'get_size_from_backend',
                        fake_get_size_from_backend)
-        glance.store._check_image_location = mock.Mock()
-        loc1 = {'url': 'file:///fake1.img.tar.gz', 'metadata': {}}
-        loc2 = {'url': 'file:///fake2.img.tar.gz', 'metadata': {}}
+        with mock.patch('glance.store._check_image_location') as _:
+            loc1 = {'url': 'file:///fake1.img.tar.gz', 'metadata': {}}
+            loc2 = {'url': 'file:///fake2.img.tar.gz', 'metadata': {}}
 
-        # Test for insert location
-        image1 = FakeImageProxy()
-        locations = glance.store.StoreLocations(image1, [])
-        locations.insert(0, loc2)
-        self.assertEqual(image1.size, 1)
+            # Test for insert location
+            image1 = FakeImageProxy()
+            locations = glance.store.StoreLocations(image1, [])
+            locations.insert(0, loc2)
+            self.assertEqual(image1.size, 1)
 
-        # Test for set_attr of _locations_proxy
-        image2 = FakeImageProxy()
-        locations = glance.store.StoreLocations(image2, [loc1])
-        locations[0] = loc2
-        self.assertTrue(loc2 in locations)
-        self.assertEqual(image2.size, 1)
+            # Test for set_attr of _locations_proxy
+            image2 = FakeImageProxy()
+            locations = glance.store.StoreLocations(image2, [loc1])
+            locations[0] = loc2
+            self.assertTrue(loc2 in locations)
+            self.assertEqual(image2.size, 1)

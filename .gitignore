@@ -3,8 +3,9 @@
 *.log
 .glance-venv
 .venv
+.testrepository/
 .tox
-.coverage
+.coverage*
 cover/*
 nosetests.xml
 coverage.xml

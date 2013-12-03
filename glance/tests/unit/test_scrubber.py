@@ -42,6 +42,9 @@ class TestScrubber(test_utils.BaseTestCase):
     def tearDown(self):
         self.mox.UnsetStubs()
         shutil.rmtree(self.data_dir)
+        # These globals impact state outside of this test class, kill them.
+        scrubber._file_queue = None
+        scrubber._db_queue = None
         super(TestScrubber, self).tearDown()
 
     def _scrubber_cleanup_with_store_delete_exception(self, ex):
