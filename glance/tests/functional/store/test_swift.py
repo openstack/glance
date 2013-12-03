@@ -368,3 +368,45 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
         self.assertEqual('XXX', ''.join(get_iter))
 
         store.delete(location)
+
+    def test_delayed_delete_with_auth(self):
+        """Ensure delete works with delayed delete and auth
+
+        Reproduces LP bug 1238604.
+        """
+        swift_store_user = self.swift_config['swift_store_user']
+        tenant_name, username = swift_store_user.split(':')
+        tenant_id, auth_token, service_catalog = keystone_authenticate(
+            self.swift_config['swift_store_auth_address'],
+            self.swift_config['swift_store_auth_version'],
+            tenant_name,
+            username,
+            self.swift_config['swift_store_key'])
+
+        context = glance.context.RequestContext(
+            tenant=tenant_id,
+            service_catalog=service_catalog,
+            auth_tok=auth_token)
+        store = self.get_store(context=context)
+
+        image_id = uuidutils.generate_uuid()
+        image_data = StringIO.StringIO('data')
+        uri, _, _, _ = store.add(image_id, image_data, 4)
+
+        location = glance.store.location.Location(
+            self.store_name,
+            store.get_store_location_class(),
+            uri=uri,
+            image_id=image_id)
+
+        container_name = location.store_location.container
+        container, _ = swift_get_container(self.swift_client, container_name)
+
+        (get_iter, get_size) = store.get(location)
+        self.assertEqual(4, get_size)
+        self.assertEqual('data', ''.join(get_iter))
+
+        glance.store.schedule_delayed_delete_from_backend(context,
+                                                          uri,
+                                                          image_id)
+        store.delete(location)
