@@ -29,6 +29,15 @@ def define_image_properties_table(meta):
 
     images = define_images_table(meta)
 
+    # NOTE(dperaza) DB2: specify the UniqueConstraint option when creating the
+    # table will cause an index being created to specify the index
+    # name and skip the step of creating another index with the same columns.
+    # The index name is needed so it can be dropped and re-created later on.
+
+    constr_kwargs = {}
+    if meta.bind.name == 'ibm_db_sa':
+        constr_kwargs['name'] = 'ix_image_properties_image_id_key'
+
     image_properties = Table('image_properties',
                              meta,
                              Column('id',
@@ -50,13 +59,15 @@ def define_image_properties_table(meta):
                                     nullable=False,
                                     default=False,
                                     index=True),
-                             UniqueConstraint('image_id', 'key'),
+                             UniqueConstraint('image_id', 'key',
+                                              **constr_kwargs),
                              mysql_engine='InnoDB',
                              extend_existing=True)
 
-    Index('ix_image_properties_image_id_key',
-          image_properties.c.image_id,
-          image_properties.c.key)
+    if meta.bind.name != 'ibm_db_sa':
+        Index('ix_image_properties_image_id_key',
+              image_properties.c.image_id,
+              image_properties.c.key)
 
     return image_properties
 

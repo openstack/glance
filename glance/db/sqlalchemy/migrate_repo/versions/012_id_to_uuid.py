@@ -1,5 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
+# Copyright 2013 IBM Corp.
 # Copyright 2011 OpenStack Foundation
 # All Rights Reserved.
 #
@@ -45,6 +46,10 @@ def upgrade(migrate_engine):
     if dialect == "sqlite":
         _upgrade_sqlite(t_images, t_image_members, t_image_properties)
         _update_all_ids_to_uuids(t_images, t_image_members, t_image_properties)
+    elif dialect == "ibm_db_sa":
+        _upgrade_db2(t_images, t_image_members, t_image_properties)
+        _update_all_ids_to_uuids(t_images, t_image_members, t_image_properties)
+        _add_db2_constraints()
     else:
         _upgrade_other(t_images, t_image_members, t_image_properties, dialect)
 
@@ -62,6 +67,10 @@ def downgrade(migrate_engine):
     if dialect == "sqlite":
         _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties)
         _downgrade_sqlite(t_images, t_image_members, t_image_properties)
+    elif dialect == "ibm_db_sa":
+        _remove_db2_constraints()
+        _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties)
+        _downgrade_db2(t_images, t_image_members, t_image_properties)
     else:
         _downgrade_other(t_images, t_image_members, t_image_properties,
                          dialect)
@@ -135,6 +144,214 @@ def _upgrade_sqlite(t_images, t_image_members, t_image_properties):
         meta.bind.execute(command)
 
     _sqlite_table_swap(t_image_members, t_image_properties, t_images)
+
+
+def _upgrade_db2(t_images, t_image_members, t_image_properties):
+    """
+    Upgrade for DB2.
+    """
+    t_images.c.id.alter(sqlalchemy.String(36), primary_key=True)
+
+    image_members_backup = sqlalchemy.Table(
+                        'image_members_backup',
+                        meta,
+                        sqlalchemy.Column('id',
+                                          sqlalchemy.Integer(),
+                                          primary_key=True,
+                                          nullable=False),
+                        sqlalchemy.Column('image_id',
+                                          sqlalchemy.String(36),
+                                          nullable=False,
+                                          index=True),
+                        sqlalchemy.Column('member',
+                                          sqlalchemy.String(255),
+                                          nullable=False),
+                        sqlalchemy.Column('can_share',
+                                          sqlalchemy.Boolean(),
+                                          nullable=False,
+                                          default=False),
+                        sqlalchemy.Column('created_at',
+                                          sqlalchemy.DateTime(),
+                                          nullable=False),
+                        sqlalchemy.Column('updated_at',
+                                          sqlalchemy.DateTime()),
+                        sqlalchemy.Column('deleted_at',
+                                          sqlalchemy.DateTime()),
+                        sqlalchemy.Column('deleted',
+                                          sqlalchemy.Boolean(),
+                                          nullable=False,
+                                          default=False,
+                                          index=True),
+                        sqlalchemy.UniqueConstraint('image_id', 'member'),
+                        extend_existing=True)
+
+    image_properties_backup = sqlalchemy.Table(
+                        'image_properties_backup',
+                        meta,
+                        sqlalchemy.Column('id',
+                                          sqlalchemy.Integer(),
+                                          primary_key=True,
+                                          nullable=False),
+                        sqlalchemy.Column('image_id',
+                                          sqlalchemy.String(36),
+                                          nullable=False,
+                                          index=True),
+                        sqlalchemy.Column('name',
+                                          sqlalchemy.String(255),
+                                          nullable=False),
+                        sqlalchemy.Column('value',
+                                          sqlalchemy.Text()),
+                        sqlalchemy.Column('created_at',
+                                          sqlalchemy.DateTime(),
+                                          nullable=False),
+                        sqlalchemy.Column('updated_at',
+                                          sqlalchemy.DateTime()),
+                        sqlalchemy.Column('deleted_at',
+                                          sqlalchemy.DateTime()),
+                        sqlalchemy.Column('deleted',
+                                          sqlalchemy.Boolean(),
+                                          nullable=False,
+                                          default=False,
+                                          index=True),
+                        sqlalchemy.UniqueConstraint(
+                                'image_id', 'name',
+                                name='ix_image_properties_image_id_name'),
+                        extend_existing=True)
+
+    image_members_backup.create()
+    image_properties_backup.create()
+
+    sql_commands = [
+        """INSERT INTO image_members_backup
+            SELECT * FROM image_members;""",
+        """INSERT INTO image_properties_backup
+            SELECT * FROM image_properties;""",
+    ]
+
+    for command in sql_commands:
+        meta.bind.execute(command)
+
+    t_image_members.drop()
+    t_image_properties.drop()
+
+    image_members_backup.rename(name='image_members')
+    image_properties_backup.rename(name='image_properties')
+
+
+def _add_db2_constraints():
+    #Create the foreign keys
+    sql_commands = [
+        """ALTER TABLE image_members ADD CONSTRAINT member_image_id
+            FOREIGN KEY (image_id)
+            REFERENCES images (id);""",
+        """ALTER TABLE image_properties ADD CONSTRAINT property_image_id
+            FOREIGN KEY (image_id)
+            REFERENCES images (id);""",
+    ]
+    for command in sql_commands:
+        meta.bind.execute(command)
+
+
+def _remove_db2_constraints():
+    #remove the foreign keys constraints
+    sql_commands = [
+        """ALTER TABLE image_members DROP CONSTRAINT member_image_id;""",
+        """ALTER TABLE image_properties DROP CONSTRAINT property_image_id;"""
+    ]
+    for command in sql_commands:
+        meta.bind.execute(command)
+
+
+def _downgrade_db2(t_images, t_image_members, t_image_properties):
+    """
+    Downgrade for DB2.
+    """
+    t_images.c.id.alter(sqlalchemy.Integer(), primary_key=True)
+
+    image_members_old = sqlalchemy.Table(
+                        'image_members_old',
+                        meta,
+                        sqlalchemy.Column('id',
+                                          sqlalchemy.Integer(),
+                                          primary_key=True,
+                                          nullable=False),
+                        sqlalchemy.Column('image_id',
+                                          sqlalchemy.Integer(),
+                                          nullable=False,
+                                          index=True),
+                        sqlalchemy.Column('member',
+                                          sqlalchemy.String(255),
+                                          nullable=False),
+                        sqlalchemy.Column('can_share',
+                                          sqlalchemy.Boolean(),
+                                          nullable=False,
+                                          default=False),
+                        sqlalchemy.Column('created_at',
+                                          sqlalchemy.DateTime(),
+                                          nullable=False),
+                        sqlalchemy.Column('updated_at',
+                                          sqlalchemy.DateTime()),
+                        sqlalchemy.Column('deleted_at',
+                                          sqlalchemy.DateTime()),
+                        sqlalchemy.Column('deleted',
+                                          sqlalchemy.Boolean(),
+                                          nullable=False,
+                                          default=False,
+                                          index=True),
+                        sqlalchemy.UniqueConstraint('image_id', 'member'),
+                        extend_existing=True)
+
+    image_properties_old = sqlalchemy.Table(
+                        'image_properties_old',
+                        meta,
+                        sqlalchemy.Column('id',
+                                          sqlalchemy.Integer(),
+                                          primary_key=True,
+                                          nullable=False),
+                        sqlalchemy.Column('image_id',
+                                          sqlalchemy.Integer(),
+                                          nullable=False,
+                                          index=True),
+                        sqlalchemy.Column('name',
+                                          sqlalchemy.String(255),
+                                          nullable=False),
+                        sqlalchemy.Column('value',
+                                          sqlalchemy.Text()),
+                        sqlalchemy.Column('created_at',
+                                          sqlalchemy.DateTime(),
+                                          nullable=False),
+                        sqlalchemy.Column('updated_at',
+                                          sqlalchemy.DateTime()),
+                        sqlalchemy.Column('deleted_at',
+                                          sqlalchemy.DateTime()),
+                        sqlalchemy.Column('deleted',
+                                          sqlalchemy.Boolean(),
+                                          nullable=False,
+                                          default=False,
+                                          index=True),
+                        sqlalchemy.UniqueConstraint(
+                                'image_id', 'name',
+                                name='ix_image_properties_image_id_name'),
+                        extend_existing=True)
+
+    image_members_old.create()
+    image_properties_old.create()
+
+    sql_commands = [
+        """INSERT INTO image_members_old
+            SELECT * FROM image_members;""",
+        """INSERT INTO image_properties_old
+            SELECT * FROM image_properties;""",
+    ]
+
+    for command in sql_commands:
+        meta.bind.execute(command)
+
+    t_image_members.drop()
+    t_image_properties.drop()
+
+    image_members_old.rename(name='image_members')
+    image_properties_old.rename(name='image_properties')
 
 
 def _downgrade_sqlite(t_images, t_image_members, t_image_properties):
@@ -239,11 +456,11 @@ def _downgrade_other(t_images, t_image_members, t_image_properties, dialect):
     for fk in foreign_keys:
         fk.drop()
 
+    _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties)
+
     t_images.c.id.alter(sqlalchemy.Integer(), primary_key=True)
     t_image_members.c.image_id.alter(sqlalchemy.Integer())
     t_image_properties.c.image_id.alter(sqlalchemy.Integer())
-
-    _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties)
 
     for fk in foreign_keys:
         fk.create()
@@ -336,20 +553,20 @@ def _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties):
 
         t_images.update().\
             where(t_images.c.id == old_id).\
-            values(id=new_id).execute()
+            values(id=str(new_id)).execute()
 
         t_image_members.update().\
             where(t_image_members.c.image_id == old_id).\
-            values(image_id=new_id).execute()
+            values(image_id=str(new_id)).execute()
 
         t_image_properties.update().\
             where(t_image_properties.c.image_id == old_id).\
-            values(image_id=new_id).execute()
+            values(image_id=str(new_id)).execute()
 
         t_image_properties.update().\
             where(and_(or_(t_image_properties.c.name == 'kernel_id',
                            t_image_properties.c.name == 'ramdisk_id'),
                        t_image_properties.c.value == old_id)).\
-            values(value=new_id).execute()
+            values(value=str(new_id)).execute()
 
         new_id += 1
