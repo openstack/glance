@@ -59,6 +59,9 @@ store_opts = [
                       'glance-scrubber.conf')),
     cfg.BoolOpt('delayed_delete', default=False,
                 help=_('Turn on/off delayed delete.')),
+    cfg.BoolOpt('use_user_token', default=True,
+                help=_('Whether to pass through the user token when '
+                       'making requests to the registry.')),
     cfg.IntOpt('scrub_time', default=0,
                help=_('The amount of time in seconds to delay before '
                       'performing a delete.')),
@@ -290,7 +293,9 @@ def schedule_delayed_delete_from_backend(context, uri, image_id, **kwargs):
     # In future we can change it using DB based queued instead,
     # such as using image location's status to saving pending delete flag
     # when that property be added.
-    file_queue.add_location(image_id, uri)
+    if CONF.use_user_token is False:
+        context = None
+    file_queue.add_location(image_id, uri, user_context=context)
 
 
 def delete_image_from_backend(context, store_api, image_id, uri):
