@@ -685,6 +685,41 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(output.image_id, UUID1)
         self.assertNotEqual(output.created_at, output.updated_at)
 
+    def test_update_format_properties(self):
+        statuses_for_immutability = ['active', 'saving', 'killed']
+        request = unit_test_utils.get_fake_request(is_admin=True)
+        for status in statuses_for_immutability:
+            image = {
+                'id': uuidutils.generate_uuid(),
+                'status': status,
+                'disk_format': 'ari',
+                'container_format': 'ari',
+            }
+            self.db.image_create(None, image)
+            changes = [
+                {'op': 'replace', 'path': ['disk_format'], 'value': 'ami'},
+            ]
+            self.assertRaises(webob.exc.HTTPForbidden,
+                              self.controller.update,
+                              request, image['id'], changes)
+            changes = [
+                {'op': 'replace',
+                 'path': ['container_format'],
+                 'value': 'ami'},
+            ]
+            self.assertRaises(webob.exc.HTTPForbidden,
+                              self.controller.update,
+                              request, image['id'], changes)
+        self.db.image_update(None, image['id'], {'status': 'queued'})
+
+        changes = [
+            {'op': 'replace', 'path': ['disk_format'], 'value': 'raw'},
+            {'op': 'replace', 'path': ['container_format'], 'value': 'bare'},
+        ]
+        resp = self.controller.update(request, image['id'], changes)
+        self.assertEqual(resp.disk_format, 'raw')
+        self.assertEqual(resp.container_format, 'bare')
+
     def test_update_remove_property_while_over_limit(self):
         """
         Ensure that image properties can be removed.
