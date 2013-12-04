@@ -182,26 +182,27 @@ class FakeNotifier(object):
     def __init__(self, *_args, **kwargs):
         self.log = []
 
-    def warn(self, event_type, payload):
+    def _notify(self, event_type, payload, level):
         log = {}
-        log['notification_type'] = "WARN"
+        log['notification_type'] = level
         log['event_type'] = event_type
         log['payload'] = payload
         self.log.append(log)
+
+    def warn(self, event_type, payload):
+        self._notify(event_type, payload, 'WARN')
 
     def info(self, event_type, payload):
-        log = {}
-        log['notification_type'] = "INFO"
-        log['event_type'] = event_type
-        log['payload'] = payload
-        self.log.append(log)
+        self._notify(event_type, payload, 'INFO')
 
     def error(self, event_type, payload):
-        log = {}
-        log['notification_type'] = "ERROR"
-        log['event_type'] = event_type
-        log['payload'] = payload
-        self.log.append(log)
+        self._notify(event_type, payload, 'ERROR')
+
+    def debug(self, event_type, payload):
+        self._notify(event_type, payload, 'DEBUG')
+
+    def critical(self, event_type, payload):
+        self._notify(event_type, payload, 'CRITICAL')
 
     def get_logs(self):
         return self.log
