@@ -202,6 +202,12 @@ certificates provided during an SSL handshake. This is ignored if
 
 Optional. Default: not enabled.
 
+Configurating Registry Access
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are a number of configuration options in Glance that control how
+the API server accesses the registry server.
+
 * ``registry_client_protocol=PROTOCOL``
 
 If you run a secure Registry server, you need to set this value to ``https``
@@ -248,6 +254,53 @@ Optional. Default: ``600``.
 
 The period of time, in seconds, that the API server will wait for a registry
 request to complete. A value of '0' implies no timeout.
+
+* ``use_user_token=True``
+
+Optional. Default: True
+
+Pass the user token through for API requests to the registry.
+
+If 'use_user_token' is not in effect then admin credentials can be
+specified (see below). If admin credentials are specified then they are
+used to generate a token; this token rather than the original user's
+token is used for requests to the registry.
+
+* ``admin_user=USER``
+If 'use_user_token' is not in effect then admin credentials can be
+specified. Use this parameter to specify the username.
+
+Optional. Default: None
+
+* ``admin_password=PASSWORD``
+If 'use_user_token' is not in effect then admin credentials can be
+specified. Use this parameter to specify the password.
+
+Optional. Default: None
+
+* ``admin_tenant_name=TENANTNAME``
+If 'use_user_token' is not in effect then admin credentials can be
+specified. Use this parameter to specify the tenant name.
+
+Optional. Default: None
+
+* ``auth_url=URL``
+If 'use_user_token' is not in effect then admin credentials can be
+specified. Use this parameter to specify the Keystone endpoint.
+
+Optional. Default: None
+
+* ``auth_strategy=STRATEGY``
+If 'use_user_token' is not in effect then admin credentials can be
+specified. Use this parameter to specify the auth strategy.
+
+Optional. Default: keystone
+
+* ``auth_region=REGION``
+If 'use_user_token' is not in effect then admin credentials can be
+specified. Use this parameter to specify the region.
+
+Optional. Default: None
 
 
 Configuring Logging in Glance
