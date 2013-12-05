@@ -690,7 +690,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def test_add_publicize_image_authorized(self):
         rules = {"add_image": '@', "modify_image": '@',
-                 "publicize_image": '@'}
+                 "publicize_image": '@', "upload_image": '@'}
         self.set_policy_rules(rules)
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-is-public': 'true',
@@ -727,8 +727,26 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 403)
 
-    def test_add_copy_from_image_authorized(self):
-        rules = {"add_image": '@', "copy_from": '@'}
+    def test_add_copy_from_upload_image_unauthorized(self):
+        rules = {"add_image": '@', "copy_from": '@', "upload_image": '!'}
+        self.set_policy_rules(rules)
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-glance-api-copy-from': 'http://glance.com/i.ovf',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #F'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        req.headers['Content-Type'] = 'application/octet-stream'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 403)
+
+    def test_add_copy_from_image_authorized_upload_image_authorized(self):
+        rules = {"add_image": '@', "copy_from": '@', "upload_image": '@'}
         self.set_policy_rules(rules)
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
@@ -815,6 +833,84 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
+
+    def test_add_copy_from_upload_image_unauthorized(self):
+        rules = {"upload_image": '!', "modify_image": '@',
+                 "add_image": '@'}
+        self.set_policy_rules(rules)
+        self.config(image_size_cap=512)
+        fixture_headers = {
+            'x-image-meta-name': 'fake image #3',
+            'x-image-meta-container_format': 'ami',
+            'x-image-meta-disk_format': 'ami',
+            'transfer-encoding': 'chunked',
+            'content-type': 'application/octet-stream',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+
+        req.body_file = StringIO.StringIO('X' * (CONF.image_size_cap))
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 403)
+
+    def test_update_data_upload_image_unauthorized(self):
+        rules = {"upload_image": '!', "modify_image": '@',
+                 "add_image": '@'}
+        self.set_policy_rules(rules)
+        """Tests creates a queued image for no body and no loc header"""
+        self.config(image_size_cap=512)
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 201)
+
+        res_body = json.loads(res.body)['image']
+        self.assertEqual('queued', res_body['status'])
+        image_id = res_body['id']
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'PUT'
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.headers['transfer-encoding'] = 'chunked'
+        req.headers['x-image-disk-format'] = 'vhd'
+        req.headers['x-image-container-format'] = 'ovf'
+        req.body_file = StringIO.StringIO('X' * (CONF.image_size_cap))
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 403)
+
+    def test_update_copy_from_upload_image_unauthorized(self):
+        rules = {"upload_image": '!', "modify_image": '@',
+                 "add_image": '@', "copy_from": '@'}
+        self.set_policy_rules(rules)
+
+        fixture_headers = {'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 201)
+
+        res_body = json.loads(res.body)['image']
+        self.assertEqual('queued', res_body['status'])
+        image_id = res_body['id']
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'PUT'
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.headers['x-glance-api-copy-from'] = 'http://glance.com/i.ovf'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 403)
 
     def _do_test_post_image_content_missing_format(self, missing):
         """Tests creation of an image with missing format"""
