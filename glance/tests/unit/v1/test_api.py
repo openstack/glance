@@ -281,6 +281,24 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, 400)
         self.assertTrue('External sourcing not supported' in res.body)
 
+    def test_create_with_location_bad_store_uri(self):
+        fixture_headers = {
+            'x-image-meta-store': 'bad',
+            'x-image-meta-name': 'bogus',
+            'x-image-meta-location': 'swift+http://bah',
+            'x-image-meta-disk-format': 'qcow2',
+            'x-image-meta-container-format': 'bare',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 400)
+        self.assertTrue('Invalid location' in res.body)
+
     def test_create_image_with_too_many_properties(self):
         self.config(image_property_quota=1)
         another_request = unit_test_utils.get_fake_request(
@@ -874,6 +892,29 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 403)
+
+    def test_update_data_upload_bad_store_uri(self):
+        fixture_headers = {'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 201)
+
+        res_body = json.loads(res.body)['image']
+        self.assertEqual('queued', res_body['status'])
+        image_id = res_body['id']
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'PUT'
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.headers['x-image-disk-format'] = 'vhd'
+        req.headers['x-image-container-format'] = 'ovf'
+        req.headers['x-image-meta-location'] = 'swift+http://bla'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 400)
+        self.assertTrue('Invalid location' in res.body)
 
     def test_update_data_upload_image_unauthorized(self):
         rules = {"upload_image": '!', "modify_image": '@',
