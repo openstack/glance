@@ -196,6 +196,11 @@ def verify_default_store():
         raise RuntimeError(msg)
 
 
+def get_known_schemes():
+    """Returns list of known schemes"""
+    return location.SCHEME_TO_CLS_MAP.keys()
+
+
 def get_store_from_scheme(context, scheme, loc=None):
     """
     Given a scheme, return the appropriate store object

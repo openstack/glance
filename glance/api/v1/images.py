@@ -20,6 +20,7 @@
 """
 
 import copy
+import urlparse
 
 import eventlet
 from oslo.config import cfg
@@ -45,6 +46,7 @@ import glance.openstack.common.log as logging
 from glance.openstack.common import strutils
 import glance.registry.client.v1.api as registry
 from glance.store import (get_from_backend,
+                          get_known_schemes,
                           get_size_from_backend,
                           get_store_from_location,
                           get_store_from_scheme)
@@ -406,8 +408,11 @@ class Controller(controller.BaseController):
         If the above constraint is violated, we reject with 400 "Bad Request".
         """
         if source:
-            for scheme in ['s3', 'swift', 'http', 'rbd', 'sheepdog', 'cinder']:
-                if source.lower().startswith(scheme):
+            pieces = urlparse.urlparse(source)
+            schemes = [scheme for scheme in get_known_schemes()
+                       if scheme != 'file']
+            for scheme in schemes:
+                if pieces.scheme == scheme:
                     return source
             msg = _("External sourcing not supported for store %s") % source
             LOG.debug(msg)

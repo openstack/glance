@@ -263,6 +263,24 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, 400)
         self.assertTrue('Invalid container format' in res.body)
 
+    def test_create_with_location_unknown_scheme(self):
+        fixture_headers = {
+            'x-image-meta-store': 'bad',
+            'x-image-meta-name': 'bogus',
+            'x-image-meta-location': 'bad+scheme://localhost:0/image.qcow2',
+            'x-image-meta-disk-format': 'qcow2',
+            'x-image-meta-container-format': 'bare',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 400)
+        self.assertTrue('External sourcing not supported' in res.body)
+
     def test_create_image_with_too_many_properties(self):
         self.config(image_property_quota=1)
         another_request = unit_test_utils.get_fake_request(
