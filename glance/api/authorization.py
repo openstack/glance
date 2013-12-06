@@ -201,8 +201,9 @@ def _immutable_attr(target, attr, proxy=None):
         return value
 
     def forbidden(self, *args, **kwargs):
-        message = _("You are not permitted to modify '%s' on this image.")
-        raise exception.Forbidden(message % attr)
+        resource = getattr(self, 'resource_name', 'resource')
+        message = _("You are not permitted to modify '%s' on this %s.")
+        raise exception.Forbidden(message % (attr, resource))
 
     return property(get_attr, forbidden, forbidden)
 
@@ -264,6 +265,7 @@ class ImmutableImageProxy(object):
     def __init__(self, base, context):
         self.base = base
         self.context = context
+        self.resource_name = 'image'
 
     name = _immutable_attr('base', 'name')
     image_id = _immutable_attr('base', 'image_id')
@@ -304,6 +306,7 @@ class ImmutableImageProxy(object):
 class ImmutableMemberProxy(object):
     def __init__(self, base):
         self.base = base
+        self.resource_name = 'image member'
 
     id = _immutable_attr('base', 'id')
     image_id = _immutable_attr('base', 'image_id')
@@ -316,6 +319,7 @@ class ImmutableMemberProxy(object):
 class ImmutableTaskProxy(object):
     def __init__(self, base):
         self.base = base
+        self.resource_name = 'task'
 
     task_id = _immutable_attr('base', 'task_id')
     type = _immutable_attr('base', 'type')
