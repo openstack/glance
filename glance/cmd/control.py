@@ -202,9 +202,9 @@ def do_start(verb, pid_file, server, args):
 def do_check_status(pid_file, server):
     if os.path.exists(pid_file):
         pid = open(pid_file).read().strip()
-        print("%s running: %s" % (server, pid))
+        print("%s (pid %s) is running..." % (server, pid))
     else:
-        print("No %s running" % server)
+        print("%s is stopped" % server)
 
 
 def get_pid_file(server, pid_file):
@@ -245,7 +245,7 @@ def do_stop(server, args, graceful=False):
         except OSError:
             pass
         try:
-            print('Stopping %s  pid: %s  signal: %s' % (server, pid, sig))
+            print('Stopping %s (pid %s) with signal(%s)' % (server, pid, sig))
             os.kill(pid, sig)
         except OSError:
             print("Process %d not running" % pid)
@@ -258,7 +258,7 @@ def do_stop(server, args, graceful=False):
             print('Waited 15 seconds for pid %s (%s) to die; giving up' %
                   (pid, pid_file))
     if not did_anything:
-        print('No %s running' % server)
+        print('%s is already stopped' % server)
 
 
 def add_command_parsers(subparsers):
