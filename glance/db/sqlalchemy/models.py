@@ -219,7 +219,7 @@ class Task(BASE, GlanceBase):
     id = Column(String(36), primary_key=True, default=uuidutils.generate_uuid)
     type = Column(String(30))
     status = Column(String(30))
-    owner = Column(String(255))
+    owner = Column(String(255), nullable=False)
     expires_at = Column(DateTime, nullable=True)
 
 
