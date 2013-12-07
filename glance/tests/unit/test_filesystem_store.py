@@ -23,12 +23,13 @@ import hashlib
 import json
 import os
 import StringIO
+import uuid
 
 import mox
 
 from glance.common import exception
 from glance.openstack.common import units
-from glance.openstack.common import uuidutils
+
 from glance.store.filesystem import Store, ChunkedFile
 from glance.store.location import get_location_from_uri
 from glance.tests.unit import base
@@ -51,7 +52,7 @@ class TestStore(base.IsolatedUnitTest):
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
         # First add an image...
-        image_id = uuidutils.generate_uuid()
+        image_id = str(uuid.uuid4())
         file_contents = "chunk00000remainder"
         image_file = StringIO.StringIO(file_contents)
 
@@ -88,7 +89,7 @@ class TestStore(base.IsolatedUnitTest):
     def test_add(self):
         """Test that we can add an image via the filesystem backend"""
         ChunkedFile.CHUNKSIZE = 1024
-        expected_image_id = uuidutils.generate_uuid()
+        expected_image_id = str(uuid.uuid4())
         expected_file_size = 5 * units.Ki  # 5K
         expected_file_contents = "*" * expected_file_size
         expected_checksum = hashlib.md5(expected_file_contents).hexdigest()
@@ -118,7 +119,7 @@ class TestStore(base.IsolatedUnitTest):
         self.assertEqual(expected_file_size, new_image_file_size)
 
     def test_add_check_metadata_success(self):
-        expected_image_id = uuidutils.generate_uuid()
+        expected_image_id = str(uuid.uuid4())
         in_metadata = {'akey': u'some value', 'list': [u'1', u'2', u'3']}
         jsonfilename = os.path.join(self.test_dir,
                                     "storage_metadata.%s" % expected_image_id)
@@ -137,7 +138,7 @@ class TestStore(base.IsolatedUnitTest):
         self.assertEqual(metadata, in_metadata)
 
     def test_add_check_metadata_bad_data(self):
-        expected_image_id = uuidutils.generate_uuid()
+        expected_image_id = str(uuid.uuid4())
         in_metadata = {'akey': 10}  # only unicode is allowed
         jsonfilename = os.path.join(self.test_dir,
                                     "storage_metadata.%s" % expected_image_id)
@@ -156,7 +157,7 @@ class TestStore(base.IsolatedUnitTest):
         self.assertEqual(metadata, {})
 
     def test_add_check_metadata_bad_nosuch_file(self):
-        expected_image_id = uuidutils.generate_uuid()
+        expected_image_id = str(uuid.uuid4())
         jsonfilename = os.path.join(self.test_dir,
                                     "storage_metadata.%s" % expected_image_id)
 
@@ -177,7 +178,7 @@ class TestStore(base.IsolatedUnitTest):
         raises an appropriate exception
         """
         ChunkedFile.CHUNKSIZE = 1024
-        image_id = uuidutils.generate_uuid()
+        image_id = str(uuid.uuid4())
         file_size = 5 * units.Ki  # 5K
         file_contents = "*" * file_size
         image_file = StringIO.StringIO(file_contents)
@@ -192,7 +193,7 @@ class TestStore(base.IsolatedUnitTest):
 
     def _do_test_add_write_failure(self, errno, exception):
         ChunkedFile.CHUNKSIZE = 1024
-        image_id = uuidutils.generate_uuid()
+        image_id = str(uuid.uuid4())
         file_size = 5 * units.Ki  # 5K
         file_contents = "*" * file_size
         path = os.path.join(self.test_dir, image_id)
@@ -249,7 +250,7 @@ class TestStore(base.IsolatedUnitTest):
         failure.
         """
         ChunkedFile.CHUNKSIZE = 1024
-        image_id = uuidutils.generate_uuid()
+        image_id = str(uuid.uuid4())
         file_size = 5 * units.Ki  # 5K
         file_contents = "*" * file_size
         path = os.path.join(self.test_dir, image_id)
@@ -270,7 +271,7 @@ class TestStore(base.IsolatedUnitTest):
         Test we can delete an existing image in the filesystem store
         """
         # First add an image
-        image_id = uuidutils.generate_uuid()
+        image_id = str(uuid.uuid4())
         file_size = 5 * units.Ki  # 5K
         file_contents = "*" * file_size
         image_file = StringIO.StringIO(file_contents)

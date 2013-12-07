@@ -20,6 +20,7 @@
 SQLAlchemy models for glance data
 """
 import json
+import uuid
 
 from sqlalchemy import Column, Integer, String, BigInteger
 from sqlalchemy.ext.compiler import compiles
@@ -31,7 +32,6 @@ from sqlalchemy import Index, UniqueConstraint
 
 from glance.openstack.common.db.sqlalchemy import models
 from glance.openstack.common import timeutils
-from glance.openstack.common import uuidutils
 
 BASE = declarative_base()
 
@@ -123,7 +123,8 @@ class Image(BASE, GlanceBase):
                       Index('ix_images_deleted', 'deleted'),
                       Index('owner_image_idx', 'owner'),)
 
-    id = Column(String(36), primary_key=True, default=uuidutils.generate_uuid)
+    id = Column(String(36), primary_key=True,
+                default=lambda: str(uuid.uuid4()))
     name = Column(String(255))
     disk_format = Column(String(20))
     container_format = Column(String(20))
@@ -216,7 +217,8 @@ class Task(BASE, GlanceBase):
                       Index('ix_tasks_deleted', 'deleted'),
                       Index('ix_tasks_updated_at', 'updated_at'))
 
-    id = Column(String(36), primary_key=True, default=uuidutils.generate_uuid)
+    id = Column(String(36), primary_key=True,
+                default=lambda: str(uuid.uuid4()))
     type = Column(String(30))
     status = Column(String(30))
     owner = Column(String(255), nullable=False)

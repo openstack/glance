@@ -18,6 +18,7 @@
 import copy
 import datetime
 import os
+import uuid
 
 import mox
 import testtools
@@ -28,7 +29,7 @@ from glance.common import client as test_client
 from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.openstack.common import timeutils
-from glance.openstack.common import uuidutils
+
 import glance.registry.client.v1.api as rapi
 from glance.registry.api.v1.images import Controller as rcontroller
 from glance.registry.client.v1.api import client as rclient
@@ -36,7 +37,7 @@ from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
 
-_gen_uuid = uuidutils.generate_uuid
+_gen_uuid = lambda: str(uuid.uuid4())
 
 UUID1 = _gen_uuid()
 UUID2 = _gen_uuid()

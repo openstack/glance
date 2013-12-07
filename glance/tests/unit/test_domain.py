@@ -15,12 +15,13 @@
 #    under the License.
 
 import datetime
+import uuid
 
 from oslo.config import cfg
 
 from glance.common import exception
 from glance import domain
-from glance.openstack.common import uuidutils, timeutils
+from glance.openstack.common import timeutils
 import glance.tests.utils as test_utils
 import glance.tests.unit.utils as unittest_utils
 
@@ -331,7 +332,7 @@ class TestTask(test_utils.BaseTestCase):
         self.task = self.task_factory.new_task(task_type, task_input, owner)
 
     def test_task_invalid_status(self):
-        task_id = uuidutils.generate_uuid()
+        task_id = str(uuid.uuid4())
         status = 'blah'
         self.assertRaises(
             exception.InvalidTaskStatus,

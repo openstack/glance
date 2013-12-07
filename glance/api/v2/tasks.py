@@ -21,7 +21,6 @@ import urllib
 import webob.exc
 
 from oslo.config import cfg
-from glance.openstack.common import uuidutils
 
 import glance.db
 import glance.gateway
@@ -31,6 +30,7 @@ import glance.store
 from glance.api import policy
 from glance.common import wsgi
 from glance.common import exception
+from glance.common import utils
 import glance.openstack.common.jsonutils as json
 from glance.openstack.common import timeutils
 
@@ -131,7 +131,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         return filters
 
     def _validate_marker(self, marker):
-        if marker and not uuidutils.is_uuid_like(marker):
+        if marker and not utils.is_uuid_like(marker):
             msg = _('Invalid marker format')
             raise webob.exc.HTTPBadRequest(explanation=msg)
         return marker

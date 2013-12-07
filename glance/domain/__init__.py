@@ -16,13 +16,13 @@
 
 import collections
 import datetime
+import uuid
 
 from oslo.config import cfg
 
 from glance.common import exception
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
-from glance.openstack.common import uuidutils
 
 
 LOG = logging.getLogger(__name__)
@@ -81,7 +81,7 @@ class ImageFactory(object):
         self._check_reserved(extra_properties)
 
         if image_id is None:
-            image_id = uuidutils.generate_uuid()
+            image_id = str(uuid.uuid4())
         created_at = timeutils.utcnow()
         updated_at = created_at
         status = 'queued'
@@ -338,7 +338,7 @@ class Task(object):
 class TaskFactory(object):
 
     def new_task(self, task_type, task_input, owner):
-        task_id = uuidutils.generate_uuid()
+        task_id = str(uuid.uuid4())
         status = 'pending'
         result = None
         message = None

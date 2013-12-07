@@ -15,12 +15,13 @@
 
 import mock
 import StringIO
+import uuid
 
 import webob
 
 import glance.api.v2.image_data
 from glance.common import exception
-from glance.openstack.common import uuidutils
+
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
@@ -116,13 +117,13 @@ class TestImagesController(base.StoreClearingUnitTest):
         request = unit_test_utils.get_fake_request()
         self.image_repo.result = exception.NotFound()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.download,
-                          request, uuidutils.generate_uuid())
+                          request, str(uuid.uuid4()))
 
     def test_download_forbidden(self):
         request = unit_test_utils.get_fake_request()
         self.image_repo.result = exception.Forbidden()
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.download,
-                          request, uuidutils.generate_uuid())
+                          request, str(uuid.uuid4()))
 
     def test_download_get_image_location_forbidden(self):
         class ImageLocations(object):
@@ -134,7 +135,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.image_repo.result = image
         image.locations = ImageLocations()
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.download,
-                          request, uuidutils.generate_uuid())
+                          request, str(uuid.uuid4()))
 
     def test_upload(self):
         request = unit_test_utils.get_fake_request()
@@ -187,14 +188,14 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.image_repo.save = fake_save
         image.delete = mock.Mock()
         self.assertRaises(webob.exc.HTTPGone, self.controller.upload,
-                          request, uuidutils.generate_uuid(), 'ABC', 3)
+                          request, str(uuid.uuid4()), 'ABC', 3)
         self.assertTrue(image.delete.called)
 
     def test_upload_non_existent_image_before_save(self):
         request = unit_test_utils.get_fake_request()
         self.image_repo.result = exception.NotFound()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.upload,
-                          request, uuidutils.generate_uuid(), 'ABC', 3)
+                          request, str(uuid.uuid4()), 'ABC', 3)
 
     def test_upload_data_exists(self):
         request = unit_test_utils.get_fake_request()

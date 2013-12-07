@@ -21,6 +21,7 @@ import datetime
 import hashlib
 import json
 import StringIO
+import uuid
 
 from oslo.config import cfg
 import routes
@@ -35,7 +36,7 @@ import glance.context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
-from glance.openstack.common import uuidutils
+
 import glance.registry.client.v1.api as registry
 import glance.store.filesystem
 from glance.tests.unit import base
@@ -44,7 +45,7 @@ import glance.tests.unit.utils as unit_test_utils
 
 CONF = cfg.CONF
 
-_gen_uuid = uuidutils.generate_uuid
+_gen_uuid = lambda: str(uuid.uuid4())
 
 UUID1 = _gen_uuid()
 UUID2 = _gen_uuid()

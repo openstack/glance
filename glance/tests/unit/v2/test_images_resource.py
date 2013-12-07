@@ -15,6 +15,7 @@
 
 import datetime
 import json
+import uuid
 
 from oslo.config import cfg
 import testtools
@@ -22,7 +23,7 @@ import webob
 
 import glance.api.v2.images
 from glance.common import exception
-from glance.openstack.common import uuidutils
+
 import glance.schema
 import glance.store
 from glance.tests.unit import base
@@ -309,7 +310,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(0, len(images))
 
     def test_index_with_non_default_is_public_filter(self):
-        image = _db_fixture(uuidutils.generate_uuid(),
+        image = _db_fixture(str(uuid.uuid4()),
                             is_public=False,
                             owner=TENANT3)
         self.db.image_create(None, image)
@@ -389,7 +390,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(UUID1, actual[2])
 
     def test_index_with_marker_not_found(self):
-        fake_uuid = uuidutils.generate_uuid()
+        fake_uuid = str(uuid.uuid4())
         path = '/images'
         request = unit_test_utils.get_fake_request(path)
         self.assertRaises(webob.exc.HTTPBadRequest,
@@ -494,7 +495,7 @@ class TestImagesController(base.IsolatedUnitTest):
 
         # get the image properties into the odd state
         image = {
-            'id': uuidutils.generate_uuid(),
+            'id': str(uuid.uuid4()),
             'status': 'active',
             'properties': {'poo': 'bear'},
         }
@@ -509,7 +510,7 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_show_non_existent(self):
         request = unit_test_utils.get_fake_request()
-        image_id = uuidutils.generate_uuid()
+        image_id = str(uuid.uuid4())
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.show, request, image_id)
 
@@ -621,7 +622,7 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_update_image_doesnt_exist(self):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.update,
-                          request, uuidutils.generate_uuid(), changes=[])
+                          request, str(uuid.uuid4()), changes=[])
 
     def test_update_deleted_image_admin(self):
         request = unit_test_utils.get_fake_request(is_admin=True)
@@ -733,7 +734,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(is_admin=True)
         for status in statuses_for_immutability:
             image = {
-                'id': uuidutils.generate_uuid(),
+                'id': str(uuid.uuid4()),
                 'status': status,
                 'disk_format': 'ari',
                 'container_format': 'ari',
@@ -1568,7 +1569,7 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_delete_non_existent(self):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.delete,
-                          request, uuidutils.generate_uuid())
+                          request, str(uuid.uuid4()))
 
     def test_delete_already_deleted_image_admin(self):
         request = unit_test_utils.get_fake_request(is_admin=True)
@@ -1582,7 +1583,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           request, UUID4)
 
     def test_index_with_invalid_marker(self):
-        fake_uuid = uuidutils.generate_uuid()
+        fake_uuid = str(uuid.uuid4())
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.controller.index, request, marker=fake_uuid)
@@ -2107,7 +2108,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
                           self.deserializer.update, request)
 
     def test_index(self):
-        marker = uuidutils.generate_uuid()
+        marker = str(uuid.uuid4())
         path = '/images?limit=1&marker=%s&member_status=pending' % marker
         request = unit_test_utils.get_fake_request(path)
         expected = {'limit': 1,
@@ -2136,7 +2137,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
 
     def test_index_with_many_filter(self):
         name = 'My Little Image'
-        instance_id = uuidutils.generate_uuid()
+        instance_id = str(uuid.uuid4())
         path = '/images?name=%(name)s&id=%(instance_id)s' % locals()
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)
@@ -2183,7 +2184,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
                           self.deserializer.index, request)
 
     def test_index_marker(self):
-        marker = uuidutils.generate_uuid()
+        marker = str(uuid.uuid4())
         path = '/images?marker=%s' % marker
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)
