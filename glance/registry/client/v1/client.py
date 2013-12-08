@@ -20,10 +20,9 @@ Simple client class to speak with any RESTful service that implements
 the Glance Registry API
 """
 
-import json
-
 from glance.common.client import BaseClient
 from glance.common import crypt
+from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging
 from glance.registry.api.v1 import images
 
@@ -96,7 +95,7 @@ class RegistryClient(BaseClient):
         """
         params = self._extract_params(kwargs, images.SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images", params=params)
-        image_list = json.loads(res.read())['images']
+        image_list = jsonutils.loads(res.read())['images']
         for image in image_list:
             image = self.decrypt_metadata(image)
         return image_list
@@ -137,7 +136,7 @@ class RegistryClient(BaseClient):
         """
         params = self._extract_params(kwargs, images.SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images/detail", params=params)
-        image_list = json.loads(res.read())['images']
+        image_list = jsonutils.loads(res.read())['images']
         for image in image_list:
             image = self.decrypt_metadata(image)
         return image_list
@@ -145,7 +144,7 @@ class RegistryClient(BaseClient):
     def get_image(self, image_id):
         """Returns a mapping of image metadata from Registry."""
         res = self.do_request("GET", "/images/%s" % image_id)
-        data = json.loads(res.read())['image']
+        data = jsonutils.loads(res.read())['image']
         return self.decrypt_metadata(data)
 
     def add_image(self, image_metadata):
@@ -161,11 +160,11 @@ class RegistryClient(BaseClient):
 
         encrypted_metadata = self.encrypt_metadata(image_metadata['image'])
         image_metadata['image'] = encrypted_metadata
-        body = json.dumps(image_metadata)
+        body = jsonutils.dumps(image_metadata)
 
         res = self.do_request("POST", "/images", body=body, headers=headers)
         # Registry returns a JSONified dict(image=image_info)
-        data = json.loads(res.read())
+        data = jsonutils.loads(res.read())
         image = data['image']
         return self.decrypt_metadata(image)
 
@@ -180,7 +179,7 @@ class RegistryClient(BaseClient):
         encrypted_metadata = self.encrypt_metadata(image_metadata['image'])
         image_metadata['image'] = encrypted_metadata
         image_metadata['from_state'] = from_state
-        body = json.dumps(image_metadata)
+        body = jsonutils.dumps(image_metadata)
 
         headers = {
             'Content-Type': 'application/json',
@@ -191,7 +190,7 @@ class RegistryClient(BaseClient):
 
         res = self.do_request("PUT", "/images/%s" % image_id, body=body,
                               headers=headers)
-        data = json.loads(res.read())
+        data = jsonutils.loads(res.read())
         image = data['image']
         return self.decrypt_metadata(image)
 
@@ -200,20 +199,20 @@ class RegistryClient(BaseClient):
         Deletes Registry's information about an image
         """
         res = self.do_request("DELETE", "/images/%s" % image_id)
-        data = json.loads(res.read())
+        data = jsonutils.loads(res.read())
         image = data['image']
         return image
 
     def get_image_members(self, image_id):
         """Return a list of membership associations from Registry."""
         res = self.do_request("GET", "/images/%s/members" % image_id)
-        data = json.loads(res.read())['members']
+        data = jsonutils.loads(res.read())['members']
         return data
 
     def get_member_images(self, member_id):
         """Return a list of membership associations from Registry."""
         res = self.do_request("GET", "/shared-images/%s" % member_id)
-        data = json.loads(res.read())['shared_images']
+        data = jsonutils.loads(res.read())['shared_images']
         return data
 
     def replace_members(self, image_id, member_data):
@@ -224,7 +223,7 @@ class RegistryClient(BaseClient):
               'memberships' not in member_data):
             member_data = dict(memberships=[member_data])
 
-        body = json.dumps(member_data)
+        body = jsonutils.dumps(member_data)
 
         headers = {'Content-Type': 'application/json', }
 
@@ -238,7 +237,7 @@ class RegistryClient(BaseClient):
         headers = {}
         # Build up a body if can_share is specified
         if can_share is not None:
-            body = json.dumps(dict(member=dict(can_share=can_share)))
+            body = jsonutils.dumps(dict(member=dict(can_share=can_share)))
             headers['Content-Type'] = 'application/json'
 
         url = "/images/%s/members/%s" % (image_id, member_id)

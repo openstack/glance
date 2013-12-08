@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import re
 import urllib
 
@@ -28,6 +27,7 @@ import glance.db
 import glance.domain
 import glance.gateway
 import glance.notifier
+from glance.openstack.common import jsonutils as json
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 import glance.schema

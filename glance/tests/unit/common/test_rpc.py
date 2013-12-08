@@ -16,7 +16,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import datetime
-import json
 
 import mox
 from oslo.config import cfg
@@ -26,6 +25,7 @@ import webob
 from glance.common import exception
 from glance.common import rpc
 from glance.common import wsgi
+from glance.openstack.common import jsonutils
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
@@ -123,14 +123,14 @@ class TestRPCController(base.IsolatedUnitTest):
         api = create_api()
         req = webob.Request.blank('/rpc')
         req.method = 'POST'
-        req.body = json.dumps([
+        req.body = jsonutils.dumps([
             {
                 "command": "get_images",
                 "kwargs": {"keyword": 1}
             }
         ])
         res = req.get_response(api)
-        returned = json.loads(res.body)
+        returned = jsonutils.loads(res.body)
         self.assertTrue(isinstance(returned, list))
         self.assertEqual(returned[0], 1)
 
@@ -138,7 +138,7 @@ class TestRPCController(base.IsolatedUnitTest):
         api = create_api()
         req = webob.Request.blank('/rpc')
         req.method = 'POST'
-        req.body = json.dumps([
+        req.body = jsonutils.dumps([
             {
                 "command": "get_all_images",
                 "kwargs": {"keyword": 1}
@@ -148,7 +148,7 @@ class TestRPCController(base.IsolatedUnitTest):
         # Sending non-accepted keyword
         # to get_all_images method
         res = req.get_response(api)
-        returned = json.loads(res.body)
+        returned = jsonutils.loads(res.body)
         self.assertIn("_error", returned[0])
 
     def test_rpc_errors(self):
@@ -158,27 +158,27 @@ class TestRPCController(base.IsolatedUnitTest):
         req.content_type = 'application/json'
 
         # Body is not a list, it should fail
-        req.body = json.dumps({})
+        req.body = jsonutils.dumps({})
         res = req.get_response(api)
         self.assertEqual(res.status_int, 400)
 
         # cmd is not dict, it should fail.
-        req.body = json.dumps([None])
+        req.body = jsonutils.dumps([None])
         res = req.get_response(api)
         self.assertEqual(res.status_int, 400)
 
         # No command key, it should fail.
-        req.body = json.dumps([{}])
+        req.body = jsonutils.dumps([{}])
         res = req.get_response(api)
         self.assertEqual(res.status_int, 400)
 
         # kwargs not dict, it should fail.
-        req.body = json.dumps([{"command": "test", "kwargs": 200}])
+        req.body = jsonutils.dumps([{"command": "test", "kwargs": 200}])
         res = req.get_response(api)
         self.assertEqual(res.status_int, 400)
 
         # Command does not exist, it should fail.
-        req.body = json.dumps([{"command": "test"}])
+        req.body = jsonutils.dumps([{"command": "test"}])
         res = req.get_response(api)
         self.assertEqual(res.status_int, 404)
 
@@ -188,18 +188,18 @@ class TestRPCController(base.IsolatedUnitTest):
         req.method = 'POST'
         req.content_type = 'application/json'
 
-        req.body = json.dumps([{"command": "raise_value_error"}])
+        req.body = jsonutils.dumps([{"command": "raise_value_error"}])
         res = req.get_response(api)
         self.assertEqual(res.status_int, 200)
 
-        returned = json.loads(res.body)[0]
+        returned = jsonutils.loads(res.body)[0]
         self.assertEqual(returned['_error']['cls'], 'exceptions.ValueError')
 
-        req.body = json.dumps([{"command": "raise_weird_error"}])
+        req.body = jsonutils.dumps([{"command": "raise_weird_error"}])
         res = req.get_response(api)
         self.assertEqual(res.status_int, 200)
 
-        returned = json.loads(res.body)[0]
+        returned = jsonutils.loads(res.body)[0]
         self.assertEqual(returned['_error']['cls'],
                          'glance.common.exception.RPCError')
 

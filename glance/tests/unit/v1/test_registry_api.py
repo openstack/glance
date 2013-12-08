@@ -17,7 +17,6 @@
 #    under the License.
 
 import datetime
-import json
 import uuid
 
 from oslo.config import cfg
@@ -30,6 +29,7 @@ from glance.common import crypt
 from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
+from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 
 from glance.registry.api import v1 as rserver
@@ -90,7 +90,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
                    'min_disk': 5,
                    'checksum': None}
         res = self.get_api_response_ext(200, '/images/%s' % UUID2)
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
         image = res_dict['image']
         for k, v in fixture.iteritems():
             self.assertEqual(v, image[k])
@@ -147,7 +147,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         """
         fixture = {'id': UUID2, 'size': 19, 'checksum': None}
         res = self.get_api_response_ext(200, url='/')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 1)
@@ -162,7 +162,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         """
         fixture = {'id': UUID2, 'size': 19, 'checksum': None}
         res = self.get_api_response_ext(200)
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 1)
@@ -238,7 +238,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
 
         res = self.get_api_response_ext(200, url='/images?limit=1')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 1)
@@ -300,7 +300,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         # Verify both image1 and image2 are returned
         res = self.get_api_response_ext(200, url='/images?'
                                                  'property-distro=ubuntu')
-        images = json.loads(res.body)['images']
+        images = jsonutils.loads(res.body)['images']
         self.assertEqual(len(images), 2)
         self.assertEqual(images[0]['id'], image2_id)
         self.assertEqual(images[1]['id'], image1_id)
@@ -310,7 +310,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         # Verify neither images are returned
         res = self.get_api_response_ext(200, url='/images?'
                                                  'property-distro=fedora')
-        images = json.loads(res.body)['images']
+        images = jsonutils.loads(res.body)['images']
         self.assertEqual(len(images), 0)
 
         # Test index with filter containing one user-defined property but
@@ -318,7 +318,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         # Verify only image1 is returned.
         res = self.get_api_response_ext(200, url='/images?'
                                                  'property-arch=i386')
-        images = json.loads(res.body)['images']
+        images = jsonutils.loads(res.body)['images']
         self.assertEqual(len(images), 1)
         self.assertEqual(images[0]['id'], image1_id)
 
@@ -327,7 +327,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         # Verify only image1 is returned.
         res = self.get_api_response_ext(200, url='/images?'
                                                  'property-arch=x86_64')
-        images = json.loads(res.body)['images']
+        images = jsonutils.loads(res.body)['images']
         self.assertEqual(len(images), 1)
         self.assertEqual(images[0]['id'], image2_id)
 
@@ -335,7 +335,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         # Filter is 'property-foo=bar'.
         # Verify only image2 is returned.
         res = self.get_api_response_ext(200, url='/images?property-foo=bar')
-        images = json.loads(res.body)['images']
+        images = jsonutils.loads(res.body)['images']
         self.assertEqual(len(images), 1)
         self.assertEqual(images[0]['id'], image2_id)
 
@@ -343,7 +343,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         # .value is non-existent. Filter is 'property-foo=baz'.
         # Verify neither images are returned.
         res = self.get_api_response_ext(200, url='/images?property-foo=baz')
-        images = json.loads(res.body)['images']
+        images = jsonutils.loads(res.body)['images']
         self.assertEqual(len(images), 0)
 
         # Test index with filter containing multiple user-defined properties
@@ -352,7 +352,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         res = self.get_api_response_ext(200, url='/images?'
                                                  'property-arch=x86_64&'
                                                  'property-distro=ubuntu')
-        images = json.loads(res.body)['images']
+        images = jsonutils.loads(res.body)['images']
         self.assertEqual(len(images), 1)
         self.assertEqual(images[0]['id'], image2_id)
 
@@ -361,7 +361,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         # Verify only image1 is returned.
         res = self.get_api_response_ext(200, url='/images?property-arch=i386&'
                                                  'property-distro=ubuntu')
-        images = json.loads(res.body)['images']
+        images = jsonutils.loads(res.body)['images']
         self.assertEqual(len(images), 1)
         self.assertEqual(images[0]['id'], image1_id)
 
@@ -371,7 +371,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         res = self.get_api_response_ext(200, url='/images?'
                                                  'property-arch=random&'
                                                  'property-distro=ubuntu')
-        images = json.loads(res.body)['images']
+        images = jsonutils.loads(res.body)['images']
         self.assertEqual(len(images), 0)
 
         # Test index with filter containing multiple user-defined properties.
@@ -380,7 +380,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         res = self.get_api_response_ext(200, url='/images?'
                                                  'property-arch=random&'
                                                  'property-distro=random')
-        images = json.loads(res.body)['images']
+        images = jsonutils.loads(res.body)['images']
         self.assertEqual(len(images), 0)
 
         # Test index with filter containing multiple user-defined properties.
@@ -388,7 +388,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         # Verify neither images are returned.
         res = self.get_api_response_ext(200, url='/images?property-boo=far&'
                                                  'property-poo=far')
-        images = json.loads(res.body)['images']
+        images = jsonutils.loads(res.body)['images']
         self.assertEqual(len(images), 0)
 
         # Test index with filter containing multiple user-defined properties.
@@ -396,7 +396,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         # Verify neither images are returned.
         res = self.get_api_response_ext(200, url='/images?property-foo=bar&'
                                                  'property-poo=far')
-        images = json.loads(res.body)['images']
+        images = jsonutils.loads(res.body)['images']
         self.assertEqual(len(images), 0)
 
     def test_get_index_filter_name(self):
@@ -415,7 +415,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
 
         res = self.get_api_response_ext(200, url='/images?name=new name! #123')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 2)
@@ -665,7 +665,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
                    'status': 'active'}
 
         res = self.get_api_response_ext(200, url='/images/detail')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 1)
@@ -691,7 +691,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         url = '/images/detail?marker=%s&limit=1' % UUID3
         res = self.get_api_response_ext(200, url=url)
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 1)
@@ -742,7 +742,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         url = '/images/detail?name=new name! #123'
         res = self.get_api_response_ext(200, url=url)
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 2)
@@ -766,7 +766,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         res = self.get_api_response_ext(200,
                                         url='/images/detail?status=saving')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 1)
@@ -791,7 +791,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         url = '/images/detail?container_format=ovf'
         res = self.get_api_response_ext(200, url=url)
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 2)
@@ -814,7 +814,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
 
         res = self.get_api_response_ext(200, url='/images/detail?min_disk=7')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 1)
@@ -837,7 +837,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
 
         res = self.get_api_response_ext(200, url='/images/detail?min_ram=514')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 1)
@@ -861,7 +861,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         res = self.get_api_response_ext(200,
                                         url='/images/detail?disk_format=vhd')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 2)
@@ -884,7 +884,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
 
         res = self.get_api_response_ext(200, url='/images/detail?size_min=19')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 2)
@@ -907,7 +907,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
 
         res = self.get_api_response_ext(200, url='/images/detail?size_max=19')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 2)
@@ -936,7 +936,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         url = '/images/detail?size_min=18&size_max=19'
         res = self.get_api_response_ext(200, url=url)
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 2)
@@ -1039,7 +1039,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         res = self.get_api_response_ext(200, url=(
             '/images/detail?property-prop_123=v%20a'))
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 1)
@@ -1059,7 +1059,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         res = self.get_api_response_ext(200,
                                         url='/images/detail?is_public=None')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 3)
@@ -1076,7 +1076,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         res = self.get_api_response_ext(200,
                                         url='/images/detail?is_public=False')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 2)
@@ -1096,7 +1096,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         res = self.get_api_response_ext(200,
                                         url='/images/detail?is_public=True')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 1)
@@ -1135,7 +1135,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         res = self.get_api_response_ext(200,
                                         url='/images/detail?deleted=False')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
 
@@ -1156,7 +1156,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
         res = self.get_api_response_ext(200, api=api,
                                         url='/images/detail?is_public=False')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         images = res_dict['images']
         self.assertEqual(len(images), 1)
@@ -1208,11 +1208,11 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         """Tests that the /images POST registry API creates the image"""
 
         fixture = self.get_minimal_fixture()
-        body = json.dumps(dict(image=fixture))
+        body = jsonutils.dumps(dict(image=fixture))
 
         res = self.get_api_response_ext(200, body=body,
                                         method='POST', content_type='json')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         for k, v in fixture.iteritems():
             self.assertEqual(v, res_dict['image'][k])
@@ -1223,51 +1223,51 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
     def test_create_image_with_min_disk(self):
         """Tests that the /images POST registry API creates the image"""
         fixture = self.get_minimal_fixture(min_disk=5)
-        body = json.dumps(dict(image=fixture))
+        body = jsonutils.dumps(dict(image=fixture))
 
         res = self.get_api_response_ext(200, body=body,
                                         method='POST', content_type='json')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         self.assertEqual(5, res_dict['image']['min_disk'])
 
     def test_create_image_with_min_ram(self):
         """Tests that the /images POST registry API creates the image"""
         fixture = self.get_minimal_fixture(min_ram=256)
-        body = json.dumps(dict(image=fixture))
+        body = jsonutils.dumps(dict(image=fixture))
 
         res = self.get_api_response_ext(200, body=body,
                                         method='POST', content_type='json')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         self.assertEqual(256, res_dict['image']['min_ram'])
 
     def test_create_image_with_min_ram_default(self):
         """Tests that the /images POST registry API creates the image"""
         fixture = self.get_minimal_fixture()
-        body = json.dumps(dict(image=fixture))
+        body = jsonutils.dumps(dict(image=fixture))
 
         res = self.get_api_response_ext(200, body=body,
                                         method='POST', content_type='json')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         self.assertEqual(0, res_dict['image']['min_ram'])
 
     def test_create_image_with_min_disk_default(self):
         """Tests that the /images POST registry API creates the image"""
         fixture = self.get_minimal_fixture()
-        body = json.dumps(dict(image=fixture))
+        body = jsonutils.dumps(dict(image=fixture))
 
         res = self.get_api_response_ext(200, body=body,
                                         method='POST', content_type='json')
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         self.assertEqual(0, res_dict['image']['min_disk'])
 
     def test_create_image_with_bad_status(self):
         """Tests proper exception is raised if a bad status is set"""
         fixture = self.get_minimal_fixture(id=_gen_uuid(), status='bad status')
-        body = json.dumps(dict(image=fixture))
+        body = jsonutils.dumps(dict(image=fixture))
 
         res = self.get_api_response_ext(400, body=body,
                                         method='POST', content_type='json')
@@ -1278,7 +1278,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         fixture = self.get_minimal_fixture(id='asdf')
 
         self.get_api_response_ext(400, content_type='json', method='POST',
-                                  body=json.dumps(dict(image=fixture)))
+                                  body=jsonutils.dumps(dict(image=fixture)))
 
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
@@ -1286,13 +1286,13 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
                    'min_disk': 5,
                    'min_ram': 256,
                    'disk_format': 'raw'}
-        body = json.dumps(dict(image=fixture))
+        body = jsonutils.dumps(dict(image=fixture))
 
         res = self.get_api_response_ext(200, url='/images/%s' % UUID2,
                                         body=body, method='PUT',
                                         content_type='json')
 
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         self.assertNotEqual(res_dict['image']['created_at'],
                             res_dict['image']['updated_at'])
@@ -1306,7 +1306,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         non-existing image
         """
         fixture = {'status': 'killed'}
-        body = json.dumps(dict(image=fixture))
+        body = jsonutils.dumps(dict(image=fixture))
 
         self.get_api_response_ext(404, url='/images/%s' % _gen_uuid(),
                                   method='PUT', body=body, content_type='json')
@@ -1314,7 +1314,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
     def test_update_image_with_bad_status(self):
         """Tests that exception raised trying to set a bad status"""
         fixture = {'status': 'invalid'}
-        body = json.dumps(dict(image=fixture))
+        body = jsonutils.dumps(dict(image=fixture))
 
         res = self.get_api_response_ext(400, method='PUT', body=body,
                                         url='/images/%s' % UUID2,
@@ -1333,7 +1333,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
         test_rserv = rserver.API(self.mapper)
         api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
-        body = json.dumps(dict(image=extra_fixture))
+        body = jsonutils.dumps(dict(image=extra_fixture))
         self.get_api_response_ext(404, body=body, api=api,
                                   url='/images/%s' % UUID8, method='PUT',
                                   content_type='json')
@@ -1343,7 +1343,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         # Grab the original number of images
         res = self.get_api_response_ext(200)
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         orig_num_images = len(res_dict['images'])
 
@@ -1353,7 +1353,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         # Verify one less image
         res = self.get_api_response_ext(200)
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
 
         new_num_images = len(res_dict['images'])
         self.assertEqual(new_num_images, orig_num_images - 1)
@@ -1364,7 +1364,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         image = self.FIXTURES[0]
         res = self.get_api_response_ext(200, url='/images/%s' % image['id'],
                                         method='DELETE')
-        deleted_image = json.loads(res.body)['image']
+        deleted_image = jsonutils.loads(res.body)['image']
 
         self.assertEqual(image['id'], deleted_image['id'])
         self.assertTrue(deleted_image['deleted'])
@@ -1415,7 +1415,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         res = self.get_api_response_ext(200, url='/images/%s/members' % UUID2,
                                         method='GET')
 
-        memb_list = json.loads(res.body)
+        memb_list = jsonutils.loads(res.body)
         num_members = len(memb_list['members'])
         self.assertEqual(num_members, 0)
 
@@ -1450,7 +1450,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         res = self.get_api_response_ext(200, url='/shared-images/pattieblack',
                                         method='GET')
 
-        memb_list = json.loads(res.body)
+        memb_list = jsonutils.loads(res.body)
         num_members = len(memb_list['shared_images'])
         self.assertEqual(num_members, 0)
 
@@ -1461,7 +1461,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
                                                  is_admin=False)
         fixture = dict(member_id='pattieblack')
-        body = json.dumps(dict(image_memberships=fixture))
+        body = jsonutils.dumps(dict(image_memberships=fixture))
 
         self.get_api_response_ext(401, method='PUT', body=body,
                                   url='/images/%s/members' % UUID2,
@@ -1477,7 +1477,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.method = 'PUT'
         self.context.tenant = 'test2'
         req.content_type = 'application/json'
-        req.body = json.dumps(dict(image_memberships=fixture))
+        req.body = jsonutils.dumps(dict(image_memberships=fixture))
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 404)
 
@@ -1499,12 +1499,12 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         res = self.get_api_response_ext(200, url='/images/%s/members' % UUID8,
                                         method='GET')
 
-        memb_list = json.loads(res.body)
+        memb_list = jsonutils.loads(res.body)
         num_members = len(memb_list['members'])
         self.assertEqual(num_members, 1)
 
         fixture = dict(member_id='test1')
-        body = json.dumps(dict(image_memberships=fixture))
+        body = jsonutils.dumps(dict(image_memberships=fixture))
         self.get_api_response_ext(400, url='/images/%s/members' % UUID8,
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1524,7 +1524,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.headers['X-Auth-Token'] = 'test1:test1:'
         req.method = 'PUT'
         req.content_type = 'application/json'
-        req.body = json.dumps(dict(image_memberships=fixture))
+        req.body = jsonutils.dumps(dict(image_memberships=fixture))
 
         res = req.get_response(api)
         self.assertEqual(res.status_int, 403)
@@ -1545,7 +1545,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.get_response(self.api)
 
         fixture = [dict(member_id='test2', can_share=True)]
-        body = json.dumps(dict(memberships=fixture))
+        body = jsonutils.dumps(dict(memberships=fixture))
         self.get_api_response_ext(204, url='/images/%s/members' % UUID8,
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1566,7 +1566,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.method = 'PUT'
         req.get_response(self.api)
         fixture = dict(member_id='test3')
-        body = json.dumps(dict(memberships=fixture))
+        body = jsonutils.dumps(dict(memberships=fixture))
         self.get_api_response_ext(400, url='/images/%s/members' % UUID8,
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1587,7 +1587,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.get_response(self.api)
 
         fixture = [dict(member_id='test1', can_share=False)]
-        body = json.dumps(dict(memberships=fixture))
+        body = jsonutils.dumps(dict(memberships=fixture))
         self.get_api_response_ext(204, url='/images/%s/members' % UUID8,
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1613,7 +1613,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
         fixture = dict(can_share=True)
         test_uri = '/images/%s/members/test_add_member_positive'
-        body = json.dumps(dict(member=fixture))
+        body = jsonutils.dumps(dict(member=fixture))
         self.get_api_response_ext(204, url=test_uri % UUID8,
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1625,7 +1625,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         """
         fixture = dict(can_share=True)
         test_uri = '/images/%s/members/test_add_member_positive'
-        body = json.dumps(dict(member=fixture))
+        body = jsonutils.dumps(dict(member=fixture))
         self.get_api_response_ext(404, url=test_uri % _gen_uuid(),
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1646,7 +1646,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.headers['X-Auth-Token'] = 'test1:test1:'
         req.method = 'PUT'
         req.content_type = 'application/json'
-        req.body = json.dumps(dict(member=fixture))
+        req.body = jsonutils.dumps(dict(member=fixture))
 
         res = req.get_response(api)
         self.assertEqual(res.status_int, 403)
@@ -1663,7 +1663,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         fixture = [dict(can_share=True)]
         test_uri = '/images/%s/members/test_add_member_bad_request'
-        body = json.dumps(dict(member=fixture))
+        body = jsonutils.dumps(dict(member=fixture))
         self.get_api_response_ext(400, url=test_uri % UUID8,
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1771,7 +1771,7 @@ class TestRegistryAPILocations(base.IsolatedUnitTest,
         req = webob.Request.blank('/images/%s' % UUID1)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
         image = res_dict['image']
         self.assertEqual(self.FIXTURES[0]['locations'][0],
                          image['location_data'][0])
@@ -1784,7 +1784,7 @@ class TestRegistryAPILocations(base.IsolatedUnitTest,
         req = webob.Request.blank('/images/%s' % UUID2)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
         image = res_dict['image']
         self.assertEqual(self.FIXTURES[1]['locations'][0],
                          image['location_data'][0])
@@ -1820,11 +1820,11 @@ class TestRegistryAPILocations(base.IsolatedUnitTest,
         req = webob.Request.blank('/images')
         req.method = 'POST'
         req.content_type = 'application/json'
-        req.body = json.dumps(dict(image=fixture))
+        req.body = jsonutils.dumps(dict(image=fixture))
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        res_dict = json.loads(res.body)
+        res_dict = jsonutils.loads(res.body)
         image = res_dict['image']
         # NOTE(zhiyan) _normalize_image_location_for_db() function will
         # not re-encrypted the url within location.

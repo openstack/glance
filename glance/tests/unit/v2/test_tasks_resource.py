@@ -15,13 +15,13 @@
 #    under the License.
 
 import datetime
-import json
 import uuid
 
 import webob
 
 import glance.api.v2.tasks
 import glance.domain
+from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
@@ -342,7 +342,7 @@ class TestTasksDeserializer(test_utils.BaseTestCase):
 
     def test_create(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({
+        request.body = jsonutils.dumps({
             'type': 'import',
             'input': {'import_from':
                       'swift://cloud.foo/myaccount/mycontainer/path',
@@ -519,7 +519,7 @@ class TestTasksSerializer(test_utils.BaseTestCase):
         response = webob.Response(request=request)
         result = {'tasks': self.fixtures}
         self.serializer.index(response, result)
-        actual = json.loads(response.body)
+        actual = jsonutils.loads(response.body)
         self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
 
@@ -528,7 +528,7 @@ class TestTasksSerializer(test_utils.BaseTestCase):
         response = webob.Response(request=request)
         result = {'tasks': self.fixtures, 'next_marker': UUID2}
         self.serializer.index(response, result)
-        output = json.loads(response.body)
+        output = jsonutils.loads(response.body)
         self.assertEqual('/v2/tasks?marker=%s' % UUID2, output['next'])
 
     def test_index_carries_query_parameters(self):
@@ -537,7 +537,7 @@ class TestTasksSerializer(test_utils.BaseTestCase):
         response = webob.Response(request=request)
         result = {'tasks': self.fixtures, 'next_marker': UUID2}
         self.serializer.index(response, result)
-        output = json.loads(response.body)
+        output = jsonutils.loads(response.body)
         self.assertEqual('/v2/tasks?sort_key=id&sort_dir=asc&limit=10',
                          output['first'])
         expect_next = '/v2/tasks?sort_key=id&sort_dir=asc&limit=10&marker=%s'
@@ -560,7 +560,7 @@ class TestTasksSerializer(test_utils.BaseTestCase):
         }
         response = webob.Response()
         self.serializer.get(response, self.fixtures[0])
-        actual = json.loads(response.body)
+        actual = jsonutils.loads(response.body)
         self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
 
@@ -569,5 +569,5 @@ class TestTasksSerializer(test_utils.BaseTestCase):
         self.serializer.create(response, self.fixtures[0])
         self.assertEqual(response.status_int, 201)
         self.assertEqual(self.fixtures[0].task_id,
-                         json.loads(response.body)['id'])
+                         jsonutils.loads(response.body)['id'])
         self.assertEqual('application/json', response.content_type)

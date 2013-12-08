@@ -14,7 +14,6 @@
 #    under the License.
 
 import copy
-import json
 import webob
 
 from glance.api import policy
@@ -25,6 +24,7 @@ import glance.db
 import glance.domain
 import glance.gateway
 import glance.notifier
+from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 import glance.schema
 import glance.store
@@ -233,13 +233,13 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def create(self, response, image_member):
         image_member_view = self._format_image_member(image_member)
-        body = json.dumps(image_member_view, ensure_ascii=False)
+        body = jsonutils.dumps(image_member_view, ensure_ascii=False)
         response.unicode_body = unicode(body)
         response.content_type = 'application/json'
 
     def update(self, response, image_member):
         image_member_view = self._format_image_member(image_member)
-        body = json.dumps(image_member_view, ensure_ascii=False)
+        body = jsonutils.dumps(image_member_view, ensure_ascii=False)
         response.unicode_body = unicode(body)
         response.content_type = 'application/json'
 
@@ -251,13 +251,13 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             image_members_view.append(image_member_view)
         totalview = dict(members=image_members_view)
         totalview['schema'] = '/v2/schemas/members'
-        body = json.dumps(totalview, ensure_ascii=False)
+        body = jsonutils.dumps(totalview, ensure_ascii=False)
         response.unicode_body = unicode(body)
         response.content_type = 'application/json'
 
     def show(self, response, image_member):
         image_member_view = self._format_image_member(image_member)
-        body = json.dumps(image_member_view, ensure_ascii=False)
+        body = jsonutils.dumps(image_member_view, ensure_ascii=False)
         response.unicode_body = unicode(body)
         response.content_type = 'application/json'
 

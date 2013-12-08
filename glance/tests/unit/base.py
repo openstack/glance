@@ -15,13 +15,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import os
 import shutil
 
 import fixtures
 from oslo.config import cfg
 
+from glance.openstack.common import jsonutils
 from glance import store
 from glance.store import location
 from glance.store import sheepdog
@@ -84,5 +84,5 @@ class IsolatedUnitTest(StoreClearingUnitTest):
 
     def set_policy_rules(self, rules):
         fap = open(CONF.policy_file, 'w')
-        fap.write(json.dumps(rules))
+        fap.write(jsonutils.dumps(rules))
         fap.close()

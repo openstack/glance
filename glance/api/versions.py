@@ -16,12 +16,12 @@
 #    under the License.
 
 import httplib
-import json
 
 from oslo.config import cfg
 import webob.dec
 
 from glance.common import wsgi
+from glance.openstack.common import jsonutils
 
 
 CONF = cfg.CONF
@@ -61,7 +61,7 @@ class Controller(object):
         response = webob.Response(request=req,
                                   status=httplib.MULTIPLE_CHOICES,
                                   content_type='application/json')
-        response.body = json.dumps(dict(versions=version_objs))
+        response.body = jsonutils.dumps(dict(versions=version_objs))
         return response
 
     @webob.dec.wsgify(RequestClass=wsgi.Request)

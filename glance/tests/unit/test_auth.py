@@ -16,8 +16,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
-
 import stubout
 import webob
 
@@ -25,6 +23,7 @@ from glance.api import authorization
 from glance.common import auth
 from glance.common import exception
 import glance.domain
+from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 from glance.tests.unit import utils as unittest_utils
 from glance.tests import utils
@@ -326,7 +325,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
                     url.count("2.0") != 1):
                 self.fail("Invalid v2.0 token path (%s)" % url)
 
-            creds = json.loads(body)['auth']
+            creds = jsonutils.loads(body)['auth']
             username = creds['passwordCredentials']['username']
             password = creds['passwordCredentials']['password']
             tenant = creds['tenantName']
@@ -339,7 +338,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
                 resp.status = 200
                 body = mock_token.token
 
-            return FakeResponse(resp), json.dumps(body)
+            return FakeResponse(resp), jsonutils.dumps(body)
 
         mock_token = V2Token()
         mock_token.add_service('image', ['RegionOne'])

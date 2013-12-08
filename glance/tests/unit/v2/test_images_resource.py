@@ -14,7 +14,6 @@
 #    under the License.
 
 import datetime
-import json
 import uuid
 
 from oslo.config import cfg
@@ -23,7 +22,7 @@ import webob
 
 import glance.api.v2.images
 from glance.common import exception
-
+from glance.openstack.common import jsonutils
 import glance.schema
 import glance.store
 from glance.tests.unit import base
@@ -1449,7 +1448,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(output.min_ram, 128)
         self.addDetail('extra_properties',
                        testtools.content.json_content(
-                           json.dumps(output.extra_properties)))
+                           jsonutils.dumps(output.extra_properties)))
         self.assertEqual(len(output.extra_properties), 2)
         self.assertEqual(output.extra_properties['foo'], 'baz')
         self.assertEqual(output.extra_properties['kb'], 'dvorak')
@@ -1708,14 +1707,14 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
 
     def test_create_minimal(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({})
+        request.body = jsonutils.dumps({})
         output = self.deserializer.create(request)
         expected = {'image': {}, 'extra_properties': {}, 'tags': None}
         self.assertEqual(expected, output)
 
     def test_create_invalid_id(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'id': 'gabe'})
+        request.body = jsonutils.dumps({'id': 'gabe'})
         self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
                           request)
 
@@ -1726,7 +1725,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
 
     def test_create_full(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({
+        request.body = jsonutils.dumps({
             'id': UUID3,
             'name': 'image-1',
             'visibility': 'public',
@@ -1770,7 +1769,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
 
         for body in bodies:
             request = unit_test_utils.get_fake_request()
-            request.body = json.dumps(body)
+            request.body = jsonutils.dumps(body)
             self.assertRaises(webob.exc.HTTPForbidden,
                               self.deserializer.create, request)
 
@@ -1782,7 +1781,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
 
     def test_update_empty_body(self):
         request = self._get_fake_patch_request()
-        request.body = json.dumps([])
+        request.body = jsonutils.dumps([])
         output = self.deserializer.update(request)
         expected = {'changes': []}
         self.assertEqual(output, expected)
@@ -1790,7 +1789,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
     def test_update_unsupported_content_type(self):
         request = unit_test_utils.get_fake_request()
         request.content_type = 'application/json-patch'
-        request.body = json.dumps([])
+        request.body = jsonutils.dumps([])
         try:
             self.deserializer.update(request)
         except webob.exc.HTTPUnsupportedMediaType as e:
@@ -1812,7 +1811,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         ]
         for body in bodies:
             request = self._get_fake_patch_request()
-            request.body = json.dumps(body)
+            request.body = jsonutils.dumps(body)
             self.assertRaises(webob.exc.HTTPBadRequest,
                               self.deserializer.update, request)
 
@@ -1827,7 +1826,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         ]
         for change in changes:
             request = self._get_fake_patch_request()
-            request.body = json.dumps([change])
+            request.body = jsonutils.dumps([change])
             self.assertRaises(webob.exc.HTTPBadRequest,
                               self.deserializer.update, request)
 
@@ -1849,7 +1848,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
              'value': [{'url': 'scheme5://path5', 'metadata': {}},
                        {'url': 'scheme6://path6', 'metadata': {}}]},
         ]
-        request.body = json.dumps(body)
+        request.body = jsonutils.dumps(body)
         output = self.deserializer.update(request)
         expected = {'changes': [
             {'op': 'replace', 'path': ['name'], 'value': 'fedora'},
@@ -1887,7 +1886,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
              'value': [{'url': 'scheme5://path5', 'metadata': {}},
                        {'url': 'scheme6://path6', 'metadata': {}}]},
         ]
-        request.body = json.dumps(body)
+        request.body = jsonutils.dumps(body)
         output = self.deserializer.update(request)
         expected = {'changes': [
             {'op': 'replace', 'path': ['name'], 'value': 'fedora'},
@@ -1924,7 +1923,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
              'value': [{'url': 'scheme5://path5', 'metadata': {}},
                        {'url': 'scheme6://path6', 'metadata': {}}]}
         ]
-        request.body = json.dumps(body)
+        request.body = jsonutils.dumps(body)
         output = self.deserializer.update(request)
         expected = {'changes': [
             {'op': 'replace', 'path': ['id'], 'value': UUID1},
@@ -1954,7 +1953,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         for key, value in samples.items():
             request = self._get_fake_patch_request()
             body = [{'op': 'replace', 'path': '/%s' % key, 'value': value}]
-            request.body = json.dumps(body)
+            request.body = jsonutils.dumps(body)
             try:
                 self.deserializer.update(request)
             except webob.exc.HTTPForbidden:
@@ -1974,7 +1973,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         for key, value in samples.items():
             request = self._get_fake_patch_request()
             body = [{'op': 'replace', 'path': '/%s' % key, 'value': value}]
-            request.body = json.dumps(body)
+            request.body = jsonutils.dumps(body)
             try:
                 self.deserializer.update(request)
             except webob.exc.HTTPForbidden:
@@ -1993,7 +1992,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         for key, value in samples.items():
             request = self._get_fake_patch_request()
             body = [{'op': 'replace', 'path': '/%s' % key, 'value': value}]
-            request.body = json.dumps(body)
+            request.body = jsonutils.dumps(body)
             try:
                 self.deserializer.update(request)
             except webob.exc.HTTPForbidden:
@@ -2015,7 +2014,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         for key in keys:
             request = self._get_fake_patch_request()
             body = [{'op': 'replace', 'path': '%s' % key, 'value': 'dummy'}]
-            request.body = json.dumps(body)
+            request.body = jsonutils.dumps(body)
             try:
                 self.deserializer.update(request)
             except webob.exc.HTTPBadRequest:
@@ -2033,7 +2032,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         for encoded, decoded in samples.items():
             request = self._get_fake_patch_request()
             doc = [{'op': 'replace', 'path': '%s' % encoded, 'value': 'dummy'}]
-            request.body = json.dumps(doc)
+            request.body = jsonutils.dumps(doc)
             output = self.deserializer.update(request)
             self.assertEqual(output['changes'][0]['path'], decoded)
 
@@ -2045,7 +2044,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         for key, value in samples.items():
             request = self._get_fake_patch_request()
             body = [{'op': 'replace', 'path': '/%s' % key, 'value': value}]
-            request.body = json.dumps(body)
+            request.body = jsonutils.dumps(body)
             try:
                 self.deserializer.update(request)
             except webob.exc.HTTPBadRequest:
@@ -2056,42 +2055,42 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
     def test_update_v2_1_missing_operations(self):
         request = self._get_fake_patch_request()
         body = [{'path': '/colburn', 'value': 'arcata'}]
-        request.body = json.dumps(body)
+        request.body = jsonutils.dumps(body)
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.update, request)
 
     def test_update_v2_1_missing_value(self):
         request = self._get_fake_patch_request()
         body = [{'op': 'replace', 'path': '/colburn'}]
-        request.body = json.dumps(body)
+        request.body = jsonutils.dumps(body)
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.update, request)
 
     def test_update_v2_1_missing_path(self):
         request = self._get_fake_patch_request()
         body = [{'op': 'replace', 'value': 'arcata'}]
-        request.body = json.dumps(body)
+        request.body = jsonutils.dumps(body)
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.update, request)
 
     def test_update_v2_0_multiple_operations(self):
         request = self._get_fake_patch_request(content_type_minor_version=0)
         body = [{'replace': '/foo', 'add': '/bar', 'value': 'snore'}]
-        request.body = json.dumps(body)
+        request.body = jsonutils.dumps(body)
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.update, request)
 
     def test_update_v2_0_missing_operations(self):
         request = self._get_fake_patch_request(content_type_minor_version=0)
         body = [{'value': 'arcata'}]
-        request.body = json.dumps(body)
+        request.body = jsonutils.dumps(body)
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.update, request)
 
     def test_update_v2_0_missing_value(self):
         request = self._get_fake_patch_request(content_type_minor_version=0)
         body = [{'replace': '/colburn'}]
-        request.body = json.dumps(body)
+        request.body = jsonutils.dumps(body)
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.update, request)
 
@@ -2238,7 +2237,7 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
 
     def test_create(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'name': 'image-1', 'pants': 'on'})
+        request.body = jsonutils.dumps({'name': 'image-1', 'pants': 'on'})
         output = self.deserializer.create(request)
         expected = {
             'image': {'name': 'image-1'},
@@ -2249,7 +2248,7 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
 
     def test_create_bad_data(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'name': 'image-1', 'pants': 'borked'})
+        request.body = jsonutils.dumps({'name': 'image-1', 'pants': 'borked'})
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.create, request)
 
@@ -2257,7 +2256,7 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request()
         request.content_type = 'application/openstack-images-v2.1-json-patch'
         doc = [{'op': 'add', 'path': '/pants', 'value': 'off'}]
-        request.body = json.dumps(doc)
+        request.body = jsonutils.dumps(doc)
         output = self.deserializer.update(request)
         expected = {'changes': [
             {'op': 'add', 'path': ['pants'], 'value': 'off'},
@@ -2268,7 +2267,7 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request()
         request.content_type = 'application/openstack-images-v2.1-json-patch'
         doc = [{'op': 'add', 'path': '/pants', 'value': 'cutoffs'}]
-        request.body = json.dumps(doc)
+        request.body = jsonutils.dumps(doc)
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.update,
                           request)
@@ -2283,7 +2282,7 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
 
     def test_create(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'foo': 'bar'})
+        request.body = jsonutils.dumps({'foo': 'bar'})
         output = self.deserializer.create(request)
         expected = {'image': {},
                     'extra_properties': {'foo': 'bar'},
@@ -2292,7 +2291,7 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
 
     def test_create_with_numeric_property(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'abc': 123})
+        request.body = jsonutils.dumps({'abc': 123})
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.create, request)
 
@@ -2300,13 +2299,13 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request()
         request.content_type = 'application/openstack-images-v2.1-json-patch'
         doc = [{'op': 'add', 'path': '/foo', 'value': 123}]
-        request.body = json.dumps(doc)
+        request.body = jsonutils.dumps(doc)
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.update, request)
 
     def test_create_with_list_property(self):
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'foo': ['bar']})
+        request.body = jsonutils.dumps({'foo': ['bar']})
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.create, request)
 
@@ -2314,7 +2313,7 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request()
         request.content_type = 'application/openstack-images-v2.1-json-patch'
         doc = [{'op': 'add', 'path': '/foo', 'value': ['bar', 'baz']}]
-        request.body = json.dumps(doc)
+        request.body = jsonutils.dumps(doc)
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.update, request)
 
@@ -2322,7 +2321,7 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request()
         request.content_type = 'application/openstack-images-v2.1-json-patch'
         doc = [{'op': 'add', 'path': '/foo', 'value': 'bar'}]
-        request.body = json.dumps(doc)
+        request.body = jsonutils.dumps(doc)
         output = self.deserializer.update(request)
         change = {'op': 'add', 'path': ['foo'], 'value': 'bar'}
         self.assertEqual(output, {'changes': [change]})
@@ -2338,7 +2337,7 @@ class TestImagesDeserializerNoAdditionalProperties(test_utils.BaseTestCase):
     def test_create_with_additional_properties_disallowed(self):
         self.config(allow_additional_image_properties=False)
         request = unit_test_utils.get_fake_request()
-        request.body = json.dumps({'foo': 'bar'})
+        request.body = jsonutils.dumps({'foo': 'bar'})
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.create, request)
 
@@ -2346,7 +2345,7 @@ class TestImagesDeserializerNoAdditionalProperties(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request()
         request.content_type = 'application/openstack-images-v2.1-json-patch'
         doc = [{'op': 'add', 'path': '/foo', 'value': 'bar'}]
-        request.body = json.dumps(doc)
+        request.body = jsonutils.dumps(doc)
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.update, request)
 
@@ -2412,7 +2411,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         response = webob.Response(request=request)
         result = {'images': self.fixtures}
         self.serializer.index(response, result)
-        actual = json.loads(response.body)
+        actual = jsonutils.loads(response.body)
         for image in actual['images']:
             image['tags'] = set(image['tags'])
         self.assertEqual(expected, actual)
@@ -2423,7 +2422,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         response = webob.Response(request=request)
         result = {'images': self.fixtures, 'next_marker': UUID2}
         self.serializer.index(response, result)
-        output = json.loads(response.body)
+        output = jsonutils.loads(response.body)
         self.assertEqual('/v2/images?marker=%s' % UUID2, output['next'])
 
     def test_index_carries_query_parameters(self):
@@ -2432,7 +2431,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         response = webob.Response(request=request)
         result = {'images': self.fixtures, 'next_marker': UUID2}
         self.serializer.index(response, result)
-        output = json.loads(response.body)
+        output = jsonutils.loads(response.body)
         self.assertEqual('/v2/images?sort_key=id&sort_dir=asc&limit=10',
                          output['first'])
         expect_next = '/v2/images?sort_key=id&sort_dir=asc&limit=10&marker=%s'
@@ -2482,7 +2481,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         }
         response = webob.Response()
         self.serializer.show(response, self.fixtures[0])
-        actual = json.loads(response.body)
+        actual = jsonutils.loads(response.body)
         actual['tags'] = set(actual['tags'])
         self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
@@ -2502,7 +2501,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         }
         response = webob.Response()
         self.serializer.show(response, self.fixtures[1])
-        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual(expected, jsonutils.loads(response.body))
 
     def test_create(self):
         expected = {
@@ -2527,7 +2526,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
         self.assertEqual(response.status_int, 201)
-        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual(expected, jsonutils.loads(response.body))
         self.assertEqual('application/json', response.content_type)
         self.assertEqual(response.location, '/v2/images/%s' % UUID1)
 
@@ -2553,7 +2552,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         }
         response = webob.Response()
         self.serializer.update(response, self.fixtures[0])
-        actual = json.loads(response.body)
+        actual = jsonutils.loads(response.body)
         actual['tags'] = set(actual['tags'])
         self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
@@ -2616,7 +2615,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
         response = webob.Response(request=request)
         result = {u'images': self.fixtures}
         self.serializer.index(response, result)
-        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual(expected, jsonutils.loads(response.body))
         self.assertEqual('application/json', response.content_type)
 
     def test_show_full_fixture(self):
@@ -2643,7 +2642,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
         }
         response = webob.Response()
         self.serializer.show(response, self.fixtures[0])
-        actual = json.loads(response.body)
+        actual = jsonutils.loads(response.body)
         actual['tags'] = set(actual['tags'])
         self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
@@ -2673,7 +2672,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
         self.assertEqual(response.status_int, 201)
-        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual(expected, jsonutils.loads(response.body))
         self.assertEqual('application/json', response.content_type)
         self.assertEqual(response.location, '/v2/images/%s' % UUID1)
 
@@ -2701,7 +2700,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
         }
         response = webob.Response()
         self.serializer.update(response, self.fixtures[0])
-        actual = json.loads(response.body)
+        actual = jsonutils.loads(response.body)
         actual['tags'] = set(actual['tags'])
         self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
@@ -2746,7 +2745,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
         }
         response = webob.Response()
         self.serializer.show(response, self.fixture)
-        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual(expected, jsonutils.loads(response.body))
 
     def test_show_reports_invalid_data(self):
         self.fixture.extra_properties['color'] = 'invalid'
@@ -2768,7 +2767,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
         }
         response = webob.Response()
         self.serializer.show(response, self.fixture)
-        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual(expected, jsonutils.loads(response.body))
 
 
 class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
@@ -2802,7 +2801,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
         }
         response = webob.Response()
         serializer.show(response, self.fixture)
-        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual(expected, jsonutils.loads(response.body))
 
     def test_show_invalid_additional_property(self):
         """Ensure that the serializer passes through invalid additional
@@ -2828,7 +2827,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
         }
         response = webob.Response()
         serializer.show(response, self.fixture)
-        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual(expected, jsonutils.loads(response.body))
 
     def test_show_with_additional_properties_disabled(self):
         self.config(allow_additional_image_properties=False)
@@ -2850,7 +2849,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
         }
         response = webob.Response()
         serializer.show(response, self.fixture)
-        self.assertEqual(expected, json.loads(response.body))
+        self.assertEqual(expected, jsonutils.loads(response.body))
 
 
 class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
@@ -2884,13 +2883,13 @@ class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
         self.serializer.index(response,
                               {'images': [self.active_image,
                                           self.queued_image]})
-        return json.loads(response.body)['images']
+        return jsonutils.loads(response.body)['images']
 
     def _do_show(self, image):
         request = webob.Request.blank('/v2/images')
         response = webob.Response(request=request)
         self.serializer.show(response, image)
-        return json.loads(response.body)
+        return jsonutils.loads(response.body)
 
     def test_index_store_location_enabled(self):
         self.config(show_image_direct_url=True)
@@ -2909,7 +2908,7 @@ class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
         response = webob.Response(request=request)
         self.serializer.index(response,
                               {'images': [self.location_data_image]}),
-        images = json.loads(response.body)['images']
+        images = jsonutils.loads(response.body)['images']
         location = images[0]['locations'][0]
         self.assertEqual(location['url'], self.location_data_image_url)
         self.assertEqual(location['metadata'], self.location_data_image_meta)

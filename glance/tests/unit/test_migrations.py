@@ -29,7 +29,6 @@ from __future__ import print_function
 
 import ConfigParser
 import datetime
-import json
 import os
 import pickle
 import subprocess
@@ -46,6 +45,7 @@ import glance.db.migration as migration
 import glance.db.sqlalchemy.migrate_repo
 from glance.db.sqlalchemy.migration import versioning_api as migration_api
 from glance.db.sqlalchemy import models
+from glance.openstack.common import jsonutils
 from glance.openstack.common import log as logging
 from glance.openstack.common import timeutils
 
@@ -988,7 +988,7 @@ class TestMigrations(test_utils.BaseTestCase):
             where(image_locations.c.image_id == image_id).execute().fetchall()
 
         for r in records:
-            d = json.loads(r['meta_data'])
+            d = jsonutils.loads(r['meta_data'])
             self.assertEqual(d, meta_data)
 
     def _post_downgrade_029(self, engine):
