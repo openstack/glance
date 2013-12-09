@@ -45,6 +45,20 @@ def _enforce_image_tag_quota(tags):
                                               maximum=CONF.image_tag_quota)
 
 
+def _calc_required_size(context, image, locations):
+    required_size = None
+    if image.size:
+        required_size = image.size * len(locations)
+    else:
+        for location in locations:
+            size_from_backend = glance.store.get_size_from_backend(
+                                context, location['url'])
+            if size_from_backend:
+                required_size = size_from_backend * len(locations)
+                break
+    return required_size
+
+
 class ImageRepoProxy(glance.domain.proxy.Repo):
 
     def __init__(self, image_repo, context, db_api):
@@ -177,7 +191,7 @@ class QuotaImageLocationsProxy(object):
     def __iadd__(self, other):
         if not hasattr(other, '__iter__'):
             raise TypeError()
-        self._check_quota(len(list(other)))
+        self._check_quota(other)
         return self.locations.__iadd__(other)
 
     def __iter__(self, *args, **kwargs):
@@ -204,20 +218,24 @@ class QuotaImageLocationsProxy(object):
     def reverse(self, *args, **kwargs):
         return self.locations.reverse(*args, **kwargs)
 
-    def _check_quota(self, count):
-        glance.api.common.check_quota(
-            self.context, self.image.size * count, self.db_api)
+    def _check_quota(self, locations):
+        required_size = _calc_required_size(self.context,
+                                            self.image,
+                                            locations)
+        glance.api.common.check_quota(self.context,
+                                      required_size,
+                                      self.db_api)
 
     def append(self, object):
-        self._check_quota(1)
+        self._check_quota([object])
         return self.locations.append(object)
 
     def insert(self, index, object):
-        self._check_quota(1)
+        self._check_quota([object])
         return self.locations.insert(index, object)
 
     def extend(self, iter):
-        self._check_quota(len(list(iter)))
+        self._check_quota(iter)
         return self.locations.extend(iter)
 
 
@@ -277,7 +295,12 @@ class ImageProxy(glance.domain.proxy.Image):
     def locations(self, value):
         if not isinstance(value, (list, QuotaImageLocationsProxy)):
             raise exception.Invalid(_('Invalid locations: %s') % value)
+
+        required_size = _calc_required_size(self.context,
+                                            self.image,
+                                            value)
+
         glance.api.common.check_quota(
-            self.context, self.image.size * len(value), self.db_api,
+            self.context, required_size, self.db_api,
             image_id=self.image.image_id)
         self.image.locations = value

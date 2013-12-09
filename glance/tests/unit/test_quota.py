@@ -15,6 +15,7 @@
 
 import mock
 import mox
+import uuid
 
 from glance.common import exception
 import glance.quota
@@ -73,6 +74,10 @@ class FakeImage(object):
         self.size = 0
         for d in data:
             self.size = self. size + len(d)
+
+
+def fake_get_size_from_backend(context, uri):
+    return 1
 
 
 class TestImageQuota(test_utils.BaseTestCase):
@@ -235,6 +240,65 @@ class TestImageQuota(test_utils.BaseTestCase):
             self.fail('Should have raised the quota exception')
         except exception.StorageQuotaFull:
             pass
+
+    def test_append_location_for_queued_image(self):
+        context = FakeContext()
+        db_api = unit_test_utils.FakeDB()
+        base_image = FakeImage()
+        base_image.image_id = str(uuid.uuid4())
+        image = glance.quota.ImageProxy(base_image, context, db_api)
+        self.assertIsNone(image.size)
+
+        self.stubs.Set(glance.store, 'get_size_from_backend',
+                       fake_get_size_from_backend)
+        image.locations.append({'url': 'file:///fake.img.tar.gz',
+                                'metadata': {}})
+        self.assertIn({'url': 'file:///fake.img.tar.gz', 'metadata': {}},
+                      image.locations)
+
+    def test_insert_location_for_queued_image(self):
+        context = FakeContext()
+        db_api = unit_test_utils.FakeDB()
+        base_image = FakeImage()
+        base_image.image_id = str(uuid.uuid4())
+        image = glance.quota.ImageProxy(base_image, context, db_api)
+        self.assertIsNone(image.size)
+
+        self.stubs.Set(glance.store, 'get_size_from_backend',
+                       fake_get_size_from_backend)
+        image.locations.insert(0,
+                               {'url': 'file:///fake.img.tar.gz',
+                                'metadata': {}})
+        self.assertIn({'url': 'file:///fake.img.tar.gz', 'metadata': {}},
+                      image.locations)
+
+    def test_set_location_for_queued_image(self):
+        context = FakeContext()
+        db_api = unit_test_utils.FakeDB()
+        base_image = FakeImage()
+        base_image.image_id = str(uuid.uuid4())
+        image = glance.quota.ImageProxy(base_image, context, db_api)
+        self.assertIsNone(image.size)
+
+        self.stubs.Set(glance.store, 'get_size_from_backend',
+                       fake_get_size_from_backend)
+        image.locations = [{'url': 'file:///fake.img.tar.gz', 'metadata': {}}]
+        self.assertEqual([{'url': 'file:///fake.img.tar.gz', 'metadata': {}}],
+                         image.locations)
+
+    def test_iadd_location_for_queued_image(self):
+        context = FakeContext()
+        db_api = unit_test_utils.FakeDB()
+        base_image = FakeImage()
+        base_image.image_id = str(uuid.uuid4())
+        image = glance.quota.ImageProxy(base_image, context, db_api)
+        self.assertIsNone(image.size)
+
+        self.stubs.Set(glance.store, 'get_size_from_backend',
+                       fake_get_size_from_backend)
+        image.locations += [{'url': 'file:///fake.img.tar.gz', 'metadata': {}}]
+        self.assertIn({'url': 'file:///fake.img.tar.gz', 'metadata': {}},
+                      image.locations)
 
 
 class TestImagePropertyQuotas(test_utils.BaseTestCase):
