@@ -912,6 +912,32 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 403)
 
+    def test_update_copy_from_unauthorized(self):
+        rules = {"upload_image": '@', "modify_image": '@',
+                 "add_image": '@', "copy_from": '!'}
+        self.set_policy_rules(rules)
+
+        fixture_headers = {'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 201)
+
+        res_body = json.loads(res.body)['image']
+        self.assertEqual('queued', res_body['status'])
+        image_id = res_body['id']
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'PUT'
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.headers['x-glance-api-copy-from'] = 'http://glance.com/i.ovf'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 403)
+
     def _do_test_post_image_content_missing_format(self, missing):
         """Tests creation of an image with missing format"""
         fixture_headers = {'x-image-meta-store': 'file',

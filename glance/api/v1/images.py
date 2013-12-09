@@ -782,6 +782,8 @@ class Controller(controller.BaseController):
         is_public = image_meta.get('is_public')
         if is_public:
             self._enforce(req, 'publicize_image')
+        if Controller._copy_from(req):
+            self._enforce(req, 'copy_from')
         if image_data or Controller._copy_from(req):
             self._enforce(req, 'upload_image')
 
