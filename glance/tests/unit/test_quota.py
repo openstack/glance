@@ -190,56 +190,37 @@ class TestImageQuota(test_utils.BaseTestCase):
         image.locations = [new_location]
         self.assertEqual(image.locations, [new_location])
 
-    def test_exceed_append_location(self):
-        image_size = 10
-        max_images = 2
-        quota = image_size * max_images
+    def _make_image_with_quota(self, image_size=10, location_count=2):
+        quota = image_size * location_count
         self.config(user_storage_quota=quota)
-        image = self._get_image(image_size=image_size,
-                                location_count=max_images)
+        return self._get_image(image_size=image_size,
+                               location_count=location_count)
+
+    def test_exceed_append_location(self):
+        image = self._make_image_with_quota()
         self.assertRaises(exception.StorageQuotaFull,
                           image.locations.append,
                           {'url': 'file:///a/path', 'metadata': {}})
 
-    def test_exceed_append_location(self):
-        image_size = 10
-        max_images = 2
-        quota = image_size * max_images
-        self.config(user_storage_quota=quota)
-        image = self._get_image(image_size=image_size,
-                                location_count=max_images)
+    def test_exceed_insert_location(self):
+        image = self._make_image_with_quota()
         self.assertRaises(exception.StorageQuotaFull,
                           image.locations.insert,
                           0,
                           {'url': 'file:///a/path', 'metadata': {}})
 
     def test_exceed_extend_location(self):
-        image_size = 10
-        max_images = 2
-        quota = image_size * max_images
-        self.config(user_storage_quota=quota)
-        image = self._get_image(image_size=image_size,
-                                location_count=max_images)
+        image = self._make_image_with_quota()
         self.assertRaises(exception.StorageQuotaFull,
                           image.locations.extend,
                           [{'url': 'file:///a/path', 'metadata': {}}])
 
     def test_set_location_under(self):
-        image_size = 10
-        max_images = 1
-        quota = image_size * max_images
-        self.config(user_storage_quota=quota)
-        image = self._get_image(image_size=image_size,
-                                location_count=max_images)
+        image = self._make_image_with_quota(location_count=1)
         image.locations = [{'url': 'file:///a/path', 'metadata': {}}]
 
     def test_set_location_exceed(self):
-        image_size = 10
-        max_images = 1
-        quota = image_size * max_images
-        self.config(user_storage_quota=quota)
-        image = self._get_image(image_size=image_size,
-                                location_count=max_images)
+        image = self._make_image_with_quota(location_count=1)
         try:
             image.locations = [{'url': 'file:///a/path', 'metadata': {}},
                                {'url': 'file:///a/path2', 'metadata': {}}]
@@ -248,12 +229,7 @@ class TestImageQuota(test_utils.BaseTestCase):
             pass
 
     def test_iadd_location_exceed(self):
-        image_size = 10
-        max_images = 1
-        quota = image_size * max_images
-        self.config(user_storage_quota=quota)
-        image = self._get_image(image_size=image_size,
-                                location_count=max_images)
+        image = self._make_image_with_quota(location_count=1)
         try:
             image.locations += [{'url': 'file:///a/path', 'metadata': {}}]
             self.fail('Should have raised the quota exception')
