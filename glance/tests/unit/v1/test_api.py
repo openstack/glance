@@ -1623,6 +1623,154 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 404)
 
+    def test_get_index_filter_on_user_defined_properties(self):
+        """Check that image filtering works on user-defined properties"""
+
+        image1_id = _gen_uuid()
+        properties = {'distro': 'ubuntu', 'arch': 'i386'}
+        extra_fixture = {'id': image1_id,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'image-extra-1',
+                         'size': 18, 'properties': properties,
+                         'checksum': None}
+        db_api.image_create(self.context, extra_fixture)
+
+        image2_id = _gen_uuid()
+        properties = {'distro': 'ubuntu', 'arch': 'x86_64', 'foo': 'bar'}
+        extra_fixture = {'id': image2_id,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'ami',
+                         'container_format': 'ami',
+                         'name': 'image-extra-2',
+                         'size': 20, 'properties': properties,
+                         'checksum': None}
+        db_api.image_create(self.context, extra_fixture)
+
+        # Test index with filter containing one user-defined property.
+        # Filter is 'property-distro=ubuntu'.
+        # Verify both image1 and image2 are returned
+        req = webob.Request.blank('/images?property-distro=ubuntu')
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 2)
+        self.assertEqual(images[0]['id'], image2_id)
+        self.assertEqual(images[1]['id'], image1_id)
+
+        # Test index with filter containing one user-defined property but
+        # non-existent value. Filter is 'property-distro=fedora'.
+        # Verify neither images are returned
+        req = webob.Request.blank('/images?property-distro=fedora')
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 0)
+
+        # Test index with filter containing one user-defined property but
+        # unique value. Filter is 'property-arch=i386'.
+        # Verify only image1 is returned.
+        req = webob.Request.blank('/images?property-arch=i386')
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], image1_id)
+
+        # Test index with filter containing one user-defined property but
+        # unique value. Filter is 'property-arch=x86_64'.
+        # Verify only image1 is returned.
+        req = webob.Request.blank('/images?property-arch=x86_64')
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], image2_id)
+
+        # Test index with filter containing unique user-defined property.
+        # Filter is 'property-foo=bar'.
+        # Verify only image2 is returned.
+        req = webob.Request.blank('/images?property-foo=bar')
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], image2_id)
+
+        # Test index with filter containing unique user-defined property but
+        # .value is non-existent. Filter is 'property-foo=baz'.
+        # Verify neither images are returned.
+        req = webob.Request.blank('/images?property-foo=baz')
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 0)
+
+        # Test index with filter containing multiple user-defined properties
+        # Filter is 'property-arch=x86_64&property-distro=ubuntu'.
+        # Verify only image2 is returned.
+        req = webob.Request.blank('/images?property-arch=x86_64&'
+                                  'property-distro=ubuntu')
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], image2_id)
+
+        # Test index with filter containing multiple user-defined properties
+        # Filter is 'property-arch=i386&property-distro=ubuntu'.
+        # Verify only image1 is returned.
+        req = webob.Request.blank('/images?property-arch=i386&'
+                                  'property-distro=ubuntu')
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], image1_id)
+
+        # Test index with filter containing multiple user-defined properties.
+        # Filter is 'property-arch=random&property-distro=ubuntu'.
+        # Verify neither images are returned.
+        req = webob.Request.blank('/images?property-arch=random&'
+                                  'property-distro=ubuntu')
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 0)
+
+        # Test index with filter containing multiple user-defined properties.
+        # Filter is 'property-arch=random&property-distro=random'.
+        # Verify neither images are returned.
+        req = webob.Request.blank('/images?property-arch=random&'
+                                  'property-distro=random')
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 0)
+
+        # Test index with filter containing multiple user-defined properties.
+        # Filter is 'property-boo=far&property-poo=far'.
+        # Verify neither images are returned.
+        req = webob.Request.blank('/images?property-boo=far&'
+                                  'property-poo=far')
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 0)
+
+        # Test index with filter containing multiple user-defined properties.
+        # Filter is 'property-foo=bar&property-poo=far'.
+        # Verify neither images are returned.
+        req = webob.Request.blank('/images?property-foo=bar&'
+                                  'property-poo=far')
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 0)
+
     def test_get_images_detailed_unauthorized(self):
         rules = {"get_images": '!'}
         self.set_policy_rules(rules)

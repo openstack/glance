@@ -101,7 +101,7 @@ class TestDriver(test_utils.BaseTestCase):
                 'id': UUID1,
                 'created_at': dt1,
                 'updated_at': dt1,
-                'properties': {'foo': 'bar'},
+                'properties': {'foo': 'bar', 'far': 'boo'},
                 'size': 13,
             },
             {
@@ -235,7 +235,7 @@ class DriverTests(object):
     def test_image_update_properties(self):
         fixture = {'properties': {'ping': 'pong'}}
         image = self.db_api.image_update(self.adm_context, UUID1, fixture)
-        expected = {'ping': 'pong', 'foo': 'bar'}
+        expected = {'ping': 'pong', 'foo': 'bar', 'far': 'boo'}
         actual = dict((p['name'], p['value']) for p in image['properties'])
         self.assertEqual(expected, actual)
         self.assertNotEqual(image['created_at'], image['updated_at'])
@@ -320,6 +320,29 @@ class DriverTests(object):
                                            filters={'foo': 'bar'})
         self.assertEqual(len(images), 1)
         self.assertEqual(images[0]['id'], self.fixtures[0]['id'])
+
+    def test_image_get_all_with_filter_nonexistent_userdef_property(self):
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'faz': 'boo'})
+        self.assertEqual(len(images), 0)
+
+    def test_image_get_all_with_filter_userdef_prop_nonexistent_value(self):
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'foo': 'baz'})
+        self.assertEqual(len(images), 0)
+
+    def test_image_get_all_with_filter_multiple_user_defined_properties(self):
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'foo': 'bar',
+                                                    'far': 'boo'})
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], self.fixtures[0]['id'])
+
+    def test_image_get_all_with_filter_nonexistent_user_defined_property(self):
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'foo': 'bar',
+                                                    'faz': 'boo'})
+        self.assertEqual(len(images), 0)
 
     def test_image_get_all_with_filter_user_deleted_property(self):
         fixture = {'name': 'poo', 'value': 'bear', 'image_id': UUID1}

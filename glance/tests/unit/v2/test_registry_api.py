@@ -598,6 +598,116 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         for image in images:
             self.assertEqual('new name! #123', image['name'])
 
+    def test_get_index_filter_on_user_defined_properties(self):
+        """
+        Tests that the registry API returns list of
+        public images that have a specific user-defined properties.
+        """
+        properties = {'distro': 'ubuntu', 'arch': 'i386', 'type': 'kernel'}
+        extra_id = _gen_uuid()
+        extra_fixture = {'id': extra_id,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'image-extra-1',
+                         'size': 19, 'properties': properties,
+                         'checksum': None}
+        db_api.image_create(self.context, extra_fixture)
+
+        # testing with a common property.
+        req = webob.Request.blank('/rpc')
+        req.method = "POST"
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'filters': {'type': 'kernel'}},
+        }]
+        req.body = json.dumps(cmd)
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)[0]
+        self.assertEqual(len(images), 2)
+        self.assertEqual(images[0]['id'], extra_id)
+        self.assertEqual(images[1]['id'], UUID1)
+
+        # testing with a non-existent value for a common property.
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'filters': {'type': 'random'}},
+        }]
+        req.body = json.dumps(cmd)
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)[0]
+        self.assertEqual(len(images), 0)
+
+        # testing with a non-existent value for a common property.
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'filters': {'type': 'random'}},
+        }]
+        req.body = json.dumps(cmd)
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)[0]
+        self.assertEqual(len(images), 0)
+
+        # testing with a non-existent property.
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'filters': {'poo': 'random'}},
+        }]
+        req.body = json.dumps(cmd)
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)[0]
+        self.assertEqual(len(images), 0)
+
+        # testing with multiple existing properties.
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'filters': {'type': 'kernel', 'distro': 'ubuntu'}},
+        }]
+        req.body = json.dumps(cmd)
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)[0]
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], extra_id)
+
+        # testing with multiple existing properties but non-existent values.
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'filters': {'type': 'random', 'distro': 'random'}},
+        }]
+        req.body = json.dumps(cmd)
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)[0]
+        self.assertEqual(len(images), 0)
+
+        # testing with multiple non-existing properties.
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'filters': {'typo': 'random', 'poo': 'random'}},
+        }]
+        req.body = json.dumps(cmd)
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)[0]
+        self.assertEqual(len(images), 0)
+
+        # testing with one existing property and the other non-existing.
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'filters': {'type': 'kernel', 'poo': 'random'}},
+        }]
+        req.body = json.dumps(cmd)
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        images = json.loads(res.body)[0]
+        self.assertEqual(len(images), 0)
+
     def test_get_index_sort_default_created_at_desc(self):
         """
         Tests that the registry API returns list of

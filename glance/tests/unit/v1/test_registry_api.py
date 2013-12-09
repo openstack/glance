@@ -330,6 +330,127 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
             200, url='/images?marker=%s&limit=1' % UUID3)
         self.assertEqualImages(res, (UUID2,))
 
+    def test_get_index_filter_on_user_defined_properties(self):
+        """
+        Tests that /images registry API returns list of public images based
+        a filter on user-defined properties.
+        """
+        image1_id = _gen_uuid()
+        properties = {'distro': 'ubuntu', 'arch': 'i386'}
+        extra_fixture = self.get_fixture(id=image1_id, name='image-extra-1',
+                                         properties=properties)
+        db_api.image_create(self.context, extra_fixture)
+
+        image2_id = _gen_uuid()
+        properties = {'distro': 'ubuntu', 'arch': 'x86_64', 'foo': 'bar'}
+        extra_fixture = self.get_fixture(id=image2_id, name='image-extra-2',
+                                         properties=properties)
+        db_api.image_create(self.context, extra_fixture)
+
+        # Test index with filter containing one user-defined property.
+        # Filter is 'property-distro=ubuntu'.
+        # Verify both image1 and image2 are returned
+        res = self.get_api_response_ext(200, url='/images?'
+                                                 'property-distro=ubuntu')
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 2)
+        self.assertEqual(images[0]['id'], image2_id)
+        self.assertEqual(images[1]['id'], image1_id)
+
+        # Test index with filter containing one user-defined property but
+        # non-existent value. Filter is 'property-distro=fedora'.
+        # Verify neither images are returned
+        res = self.get_api_response_ext(200, url='/images?'
+                                                 'property-distro=fedora')
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 0)
+
+        # Test index with filter containing one user-defined property but
+        # unique value. Filter is 'property-arch=i386'.
+        # Verify only image1 is returned.
+        res = self.get_api_response_ext(200, url='/images?'
+                                                 'property-arch=i386')
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], image1_id)
+
+        # Test index with filter containing one user-defined property but
+        # unique value. Filter is 'property-arch=x86_64'.
+        # Verify only image1 is returned.
+        res = self.get_api_response_ext(200, url='/images?'
+                                                 'property-arch=x86_64')
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], image2_id)
+
+        # Test index with filter containing unique user-defined property.
+        # Filter is 'property-foo=bar'.
+        # Verify only image2 is returned.
+        res = self.get_api_response_ext(200, url='/images?property-foo=bar')
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], image2_id)
+
+        # Test index with filter containing unique user-defined property but
+        # .value is non-existent. Filter is 'property-foo=baz'.
+        # Verify neither images are returned.
+        res = self.get_api_response_ext(200, url='/images?property-foo=baz')
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 0)
+
+        # Test index with filter containing multiple user-defined properties
+        # Filter is 'property-arch=x86_64&property-distro=ubuntu'.
+        # Verify only image2 is returned.
+        res = self.get_api_response_ext(200, url='/images?'
+                                                 'property-arch=x86_64&'
+                                                 'property-distro=ubuntu')
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], image2_id)
+
+        # Test index with filter containing multiple user-defined properties
+        # Filter is 'property-arch=i386&property-distro=ubuntu'.
+        # Verify only image1 is returned.
+        res = self.get_api_response_ext(200, url='/images?property-arch=i386&'
+                                                 'property-distro=ubuntu')
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0]['id'], image1_id)
+
+        # Test index with filter containing multiple user-defined properties.
+        # Filter is 'property-arch=random&property-distro=ubuntu'.
+        # Verify neither images are returned.
+        res = self.get_api_response_ext(200, url='/images?'
+                                                 'property-arch=random&'
+                                                 'property-distro=ubuntu')
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 0)
+
+        # Test index with filter containing multiple user-defined properties.
+        # Filter is 'property-arch=random&property-distro=random'.
+        # Verify neither images are returned.
+        res = self.get_api_response_ext(200, url='/images?'
+                                                 'property-arch=random&'
+                                                 'property-distro=random')
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 0)
+
+        # Test index with filter containing multiple user-defined properties.
+        # Filter is 'property-boo=far&property-poo=far'.
+        # Verify neither images are returned.
+        res = self.get_api_response_ext(200, url='/images?property-boo=far&'
+                                                 'property-poo=far')
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 0)
+
+        # Test index with filter containing multiple user-defined properties.
+        # Filter is 'property-foo=bar&property-poo=far'.
+        # Verify neither images are returned.
+        res = self.get_api_response_ext(200, url='/images?property-foo=bar&'
+                                                 'property-poo=far')
+        images = json.loads(res.body)['images']
+        self.assertEqual(len(images), 0)
+
     def test_get_index_filter_name(self):
         """
         Tests that the /images registry API returns list of
