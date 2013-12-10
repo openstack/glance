@@ -204,9 +204,6 @@ class QuotaImageLocationsProxy(object):
     def reverse(self, *args, **kwargs):
         return self.locations.reverse(*args, **kwargs)
 
-    def __getitem__(self, *args, **kwargs):
-        return self.locations.__getitem__(*args, **kwargs)
-
     def _check_quota(self, count):
         glance.api.common.check_quota(
             self.context, self.image.size * count, self.db_api)
