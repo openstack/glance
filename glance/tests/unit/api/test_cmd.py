@@ -10,14 +10,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
+import mock
 import StringIO
 import sys
 
 import glance.cmd.api
+import glance.cmd.cache_cleaner
 import glance.common.config
 from glance.common import exception as exc
 import glance.common.wsgi
+import glance.image_cache.cleaner
 from glance.tests import utils as test_utils
 
 
@@ -67,3 +69,32 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
                        self._raise(failure))
         exit = self.assertRaises(SystemExit, glance.cmd.api.main)
         self.assertEqual(exit.code, 2)
+
+    @mock.patch.object(glance.common.config, 'parse_cache_args')
+    @mock.patch.object(glance.openstack.common.log, 'setup')
+    @mock.patch.object(glance.image_cache.ImageCache, 'init_driver')
+    @mock.patch.object(glance.image_cache.ImageCache, 'clean')
+    def test_cache_cleaner_main(self, mock_cache_clean,
+                                mock_cache_init_driver, mock_log_setup,
+                                mock_parse_config):
+        mock_cache_init_driver.return_value = None
+
+        manager = mock.MagicMock()
+        manager.attach_mock(mock_log_setup, 'mock_log_setup')
+        manager.attach_mock(mock_parse_config, 'mock_parse_config')
+        manager.attach_mock(mock_cache_init_driver, 'mock_cache_init_driver')
+        manager.attach_mock(mock_cache_clean, 'mock_cache_clean')
+        glance.cmd.cache_cleaner.main()
+        expected_call_sequence = [mock.call.mock_parse_config(),
+                                  mock.call.mock_log_setup('glance'),
+                                  mock.call.mock_cache_init_driver(),
+                                  mock.call.mock_cache_clean()]
+        self.assertEquals(expected_call_sequence, manager.mock_calls)
+
+    @mock.patch.object(glance.image_cache.base.CacheApp, '__init__')
+    def test_cache_cleaner_main_runtime_exception_handling(self, mock_cache):
+        mock_cache.return_value = None
+        self.stubs.Set(glance.image_cache.cleaner.Cleaner, 'run',
+                       self._raise(RuntimeError))
+        exit = self.assertRaises(SystemExit, glance.cmd.cache_cleaner.main)
+        self.assertEquals('ERROR: ', exit.code)
