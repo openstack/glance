@@ -669,20 +669,6 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(output.extra_properties['snitch'], 'golden')
         self.assertNotEqual(output.created_at, output.updated_at)
 
-    def test_update_add_property(self):
-        request = unit_test_utils.get_fake_request()
-        output = self.controller.show(request, UUID1)
-
-        changes = [
-            {'op': 'add', 'path': ['foo'], 'value': 'baz'},
-            {'op': 'add', 'path': ['snitch'], 'value': 'golden'},
-        ]
-        output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(output.extra_properties['foo'], 'baz')
-        self.assertEqual(output.extra_properties['snitch'], 'golden')
-        self.assertNotEqual(output.created_at, output.updated_at)
-
     def test_update_add_too_many_properties(self):
         self.config(image_property_quota=1)
         request = unit_test_utils.get_fake_request()
@@ -1221,11 +1207,13 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
 
         changes = [
-            {'op': 'add', 'path': ['murphy'], 'value': 'brown'},
+            {'op': 'add', 'path': ['foo'], 'value': 'baz'},
+            {'op': 'add', 'path': ['snitch'], 'value': 'golden'},
         ]
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(output.extra_properties, {'murphy': 'brown'})
+        self.assertEqual(output.extra_properties['foo'], 'baz')
+        self.assertEqual(output.extra_properties['snitch'], 'golden')
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_add_base_property(self):
