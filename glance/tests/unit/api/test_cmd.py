@@ -89,7 +89,7 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
                                   mock.call.mock_log_setup('glance'),
                                   mock.call.mock_cache_init_driver(),
                                   mock.call.mock_cache_clean()]
-        self.assertEquals(expected_call_sequence, manager.mock_calls)
+        self.assertEqual(expected_call_sequence, manager.mock_calls)
 
     @mock.patch.object(glance.image_cache.base.CacheApp, '__init__')
     def test_cache_cleaner_main_runtime_exception_handling(self, mock_cache):
@@ -97,4 +97,4 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         self.stubs.Set(glance.image_cache.cleaner.Cleaner, 'run',
                        self._raise(RuntimeError))
         exit = self.assertRaises(SystemExit, glance.cmd.cache_cleaner.main)
-        self.assertEquals('ERROR: ', exit.code)
+        self.assertEqual('ERROR: ', exit.code)

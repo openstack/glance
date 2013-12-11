@@ -1132,7 +1132,7 @@ class TestMigrations(utils.BaseTestCase):
 
         task_info_refs = task_info_table.select().execute().fetchall()
 
-        self.assertEquals(len(task_info_refs), 2)
+        self.assertEqual(len(task_info_refs), 2)
 
         for x in range(len(task_info_refs)):
             self.assertEqual(task_info_refs[x].task_id, data[x]['id'])
@@ -1151,7 +1151,7 @@ class TestMigrations(utils.BaseTestCase):
 
         tasks_table = get_table(engine, 'tasks')
         records = tasks_table.select().execute().fetchall()
-        self.assertEquals(len(records), 2)
+        self.assertEqual(len(records), 2)
 
         tasks = dict([(t.id, t) for t in records])
 

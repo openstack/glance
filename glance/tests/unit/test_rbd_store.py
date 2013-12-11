@@ -54,7 +54,7 @@ class TestStore(base.StoreClearingUnitTest):
 
         resize.assert_called()
         write.assert_called()
-        self.assertEquals(ret[1], self.data_len)
+        self.assertEqual(ret[1], self.data_len)
 
     def test_add_w_rbd_image_exception(self):
         def _fake_create_image(*args, **kwargs):
