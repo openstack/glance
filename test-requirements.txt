@@ -13,7 +13,7 @@ nose-exclude
 openstack.nose_plugin>=0.7
 mock>=1.0
 nosehtmloutput>=0.0.3
-sphinx>=1.1.2
+sphinx>=1.1.2,<1.2
 requests>=1.1
 testtools>=0.9.32
 psutil>=0.6.1,<1.0
