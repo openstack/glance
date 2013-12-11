@@ -306,24 +306,6 @@ class ImageLocationsProxy(object):
         self.context = context
         self.policy = policy
 
-    def __contains__(self, uri):
-        return uri in self.locations
-
-    def __len__(self):
-        return len(self.locations)
-
-    def __cast(self, other):
-        if isinstance(other, ImageLocationsProxy):
-            return other.locations
-        else:
-            return other
-
-    def __cmp__(self, other):
-        return cmp(self.locations, self.__cast(other))
-
-    def __iter__(self):
-        return iter(self.locations)
-
     def _get_checker(action, func_name):
         def _checker(self, *args, **kwargs):
             self.policy.enforce(self.context, action, {})
