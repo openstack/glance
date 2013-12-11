@@ -286,7 +286,7 @@ class BaseStore(glance.store.base.Store):
                     resp_chunk_size=self.CHUNKSIZE)
         except swiftclient.ClientException as e:
             if e.http_status == httplib.NOT_FOUND:
-                msg = _("Swift could not find object %s." % location.obj)
+                msg = _("Swift could not find object %s.") % location.obj
                 LOG.warn(msg)
                 raise exception.NotFound(msg)
             else:

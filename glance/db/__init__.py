@@ -244,9 +244,9 @@ class ImageMemberRepo(object):
             pass
         else:
             msg = _('The target member %(member_id)s is already '
-                    'associated with image %(image_id)s.' %
-                    dict(member_id=image_member.member_id,
-                         image_id=self.image.image_id))
+                    'associated with image %(image_id)s.') % {
+                        'member_id': image_member.member_id,
+                        'image_id': self.image.image_id}
             raise exception.Duplicate(msg)
 
         image_member_values = self._format_image_member_to_db(image_member)
