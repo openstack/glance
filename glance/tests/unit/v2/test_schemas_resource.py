@@ -44,3 +44,18 @@ class TestSchemasController(test_utils.BaseTestCase):
         expected = set(['{schema}', '{first}', '{next}'])
         actual = set([link['href'] for link in output['links']])
         self.assertEqual(actual, expected)
+
+    def test_member(self):
+        req = unit_test_utils.get_fake_request()
+        output = self.controller.member(req)
+        self.assertEqual(output['name'], 'member')
+        expected = set(['status', 'created_at', 'updated_at', 'image_id',
+                        'member_id', 'schema'])
+        self.assertEqual(expected, set(output['properties'].keys()))
+
+    def test_members(self):
+        req = unit_test_utils.get_fake_request()
+        output = self.controller.members(req)
+        self.assertEqual(output['name'], 'members')
+        expected = set(['schema', 'members'])
+        self.assertEqual(expected, set(output['properties'].keys()))

@@ -308,6 +308,11 @@ class TestImageMembersController(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
                           request, UUID2, TENANT4, status='accepted')
 
+    def test_update_non_existent_image(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT1)
+        self.assertRaises(webob.exc.HTTPNotFound, self.controller.update,
+                          request, '123', TENANT4, status='accepted')
+
     def test_update_invalid_status(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT4)
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,

@@ -53,6 +53,10 @@ class FakeCache(image_cache.ImageCache):
     def delete_cached_image(self, image_id):
         self.deleted_images.append(image_id)
 
+    def delete_all_cached_images(self):
+        self.delete_cached_image(self.get_cached_images().get('id'))
+        return 1
+
     def get_queued_images(self):
         return {'test': 'passed'}
 
@@ -61,6 +65,10 @@ class FakeCache(image_cache.ImageCache):
 
     def delete_queued_image(self, image_id):
         self.deleted_images.append(image_id)
+
+    def delete_all_queued_images(self):
+        self.delete_queued_image('deleted_img')
+        return 1
 
 
 class FakeController(cached_images.Controller):
@@ -87,11 +95,28 @@ class TestCachedImages(testtools.TestCase):
         result = self.controller.get_cached_images(req)
         self.assertEqual({'cached_images': {'id': 'test'}}, result)
 
-    def test_delete_cached_images(self):
+    def test_delete_cached_image(self):
         req = webob.Request.blank('')
         req.context = 'test'
         self.controller.delete_cached_image(req, image_id='test')
         self.assertEqual(['test'], self.controller.cache.deleted_images)
+
+    def test_delete_cached_images(self):
+        req = webob.Request.blank('')
+        req.context = 'test'
+        self.assertEqual({'num_deleted': 1},
+                         self.controller.delete_cached_images(req))
+        self.assertEqual(['test'], self.controller.cache.deleted_images)
+
+    def test_policy_enforce_forbidden(self):
+        def fake_enforce(context, action, target):
+            raise exception.Forbidden()
+
+        self.controller.policy.enforce = fake_enforce
+        req = webob.Request.blank('')
+        req.context = 'test'
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.controller.get_cached_images, req)
 
     def test_get_queued_images(self):
         req = webob.Request.blank('')
@@ -108,5 +133,13 @@ class TestCachedImages(testtools.TestCase):
         req = webob.Request.blank('')
         req.context = 'test'
         self.controller.delete_queued_image(req, 'deleted_img')
+        self.assertEqual(['deleted_img'],
+                         self.controller.cache.deleted_images)
+
+    def test_delete_queued_images(self):
+        req = webob.Request.blank('')
+        req.context = 'test'
+        self.assertEqual({'num_deleted': 1},
+                         self.controller.delete_queued_images(req))
         self.assertEqual(['deleted_img'],
                          self.controller.cache.deleted_images)
