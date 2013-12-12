@@ -47,6 +47,7 @@ from glance.openstack.common import strutils
 import glance.registry.client.v1.api as registry
 from glance.store import (get_from_backend,
                           get_known_schemes,
+                          get_known_stores,
                           get_size_from_backend,
                           get_store_from_location,
                           get_store_from_scheme)
@@ -486,6 +487,12 @@ class Controller(controller.BaseController):
         :raises HTTPBadRequest if image metadata is not valid
         """
         location = self._external_source(image_meta, req)
+        store = image_meta.get('store')
+        if store and store not in get_known_stores():
+            msg = _("Required store %s is invalid") % store
+            LOG.debug(msg)
+            raise HTTPBadRequest(explanation=msg,
+                                 content_type='text/plain')
 
         image_meta['status'] = ('active' if image_meta.get('size') == 0
                                 else 'queued')
