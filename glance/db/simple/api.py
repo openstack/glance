@@ -253,7 +253,7 @@ def _filter_images(images, filters, context,
             if not image['is_public'] == is_public:
                 continue
 
-        add = True
+        to_add = True
         for k, value in filters.iteritems():
             key = k
             if k.endswith('_min') or k.endswith('_max'):
@@ -265,29 +265,30 @@ def _filter_images(images, filters, context,
                             "with a non-numeric value.")
                     raise exception.InvalidFilterRangeValue(msg)
             if k.endswith('_min'):
-                add = image.get(key) >= value
+                to_add = image.get(key) >= value
             elif k.endswith('_max'):
-                add = image.get(key) <= value
+                to_add = image.get(key) <= value
             elif k != 'is_public' and image.get(k) is not None:
-                add = image.get(key) == value
+                to_add = image.get(key) == value
             elif k == 'tags':
                 filter_tags = value
                 image_tags = image_tag_get_all(context, image['id'])
                 for tag in filter_tags:
                     if tag not in image_tags:
-                        add = False
+                        to_add = False
                         break
             else:
-                properties = {}
+                to_add = False
                 for p in image['properties']:
                     properties = {p['name']: p['value'],
                                   'deleted': p['deleted']}
-                add = (properties.get(key) == value and
-                       properties.get('deleted') is False)
-            if not add:
+                    to_add |= (properties.get(key) == value and
+                               properties.get('deleted') is False)
+
+            if not to_add:
                 break
 
-        if add:
+        if to_add:
             filtered_images.append(image)
 
     return filtered_images

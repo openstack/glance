@@ -139,7 +139,8 @@ class TestImagesController(base.IsolatedUnitTest):
                         container_format='bare',
                         status='active',
                         tags=['redhat', '64bit', 'power'],
-                        properties={'hypervisor_type': 'kvm'}),
+                        properties={'hypervisor_type': 'kvm', 'foo': 'bar',
+                                    'bar': 'foo'}),
             _db_fixture(UUID3, owner=TENANT3, checksum=CHKSUM1,
                         name='3', size=512, is_public=True,
                         tags=['windows', '64bit', 'x86']),
@@ -444,6 +445,35 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertTrue(len(tags) == len(properties))
         self.assertTrue('64bit' in tags[0])
         self.assertEqual('kvm', properties[0]['hypervisor_type'])
+
+    def test_index_with_multiple_properties(self):
+        path = '/images?foo=bar&hypervisor_type=kvm'
+        request = unit_test_utils.get_fake_request(path)
+        output = self.controller.index(request,
+                                       filters={'foo': 'bar',
+                                                'hypervisor_type': 'kvm'})
+        properties = [image.extra_properties for image in output['images']]
+        self.assertEqual('kvm', properties[0]['hypervisor_type'])
+        self.assertEqual('bar', properties[0]['foo'])
+
+    def test_index_with_core_and_extra_property(self):
+        path = '/images?disk_format=raw&foo=bar'
+        request = unit_test_utils.get_fake_request(path)
+        output = self.controller.index(request,
+                                       filters={'foo': 'bar',
+                                                'disk_format': 'raw'})
+        properties = [image.extra_properties for image in output['images']]
+        self.assertEqual(1, len(output['images']))
+        self.assertEqual('raw', output['images'][0].disk_format)
+        self.assertEqual('bar', properties[0]['foo'])
+
+    def test_index_with_nonexistent_properties(self):
+        path = '/images?abc=xyz&pudding=banana'
+        request = unit_test_utils.get_fake_request(path)
+        output = self.controller.index(request,
+                                       filters={'abc': 'xyz',
+                                                'pudding': 'banana'})
+        self.assertEqual(len(output['images']), 0)
 
     def test_index_with_non_existent_tags(self):
         path = '/images?tag=fake'

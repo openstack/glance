@@ -59,11 +59,12 @@ class TestImages(functional.FunctionalTest):
         images = json.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
-        # Create an image (with a deployer-defined property)
+        # Create an image (with two deployer-defined properties)
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json'})
         data = json.dumps({'name': 'image-1', 'type': 'kernel', 'foo': 'bar',
-                           'disk_format': 'aki', 'container_format': 'aki'})
+                           'disk_format': 'aki', 'container_format': 'aki',
+                           'abc': 'xyz'})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(201, response.status_code)
         image_location_header = response.headers['Location']
@@ -84,6 +85,7 @@ class TestImages(functional.FunctionalTest):
             u'file',
             u'min_disk',
             u'foo',
+            u'abc',
             u'type',
             u'min_ram',
             u'schema',
@@ -101,6 +103,7 @@ class TestImages(functional.FunctionalTest):
             'file': '/v2/images/%s/file' % image_id,
             'min_disk': 0,
             'foo': 'bar',
+            'abc': 'xyz',
             'type': 'kernel',
             'min_ram': 0,
             'schema': '/v2/schemas/image',
@@ -115,6 +118,110 @@ class TestImages(functional.FunctionalTest):
         images = json.loads(response.text)['images']
         self.assertEqual(1, len(images))
         self.assertEqual(images[0]['id'], image_id)
+
+        # Create another image (with two deployer-defined properties)
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-2', 'type': 'kernel', 'bar': 'foo',
+                           'disk_format': 'aki', 'container_format': 'aki',
+                           'xyz': 'abc'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = json.loads(response.text)
+        image2_id = image['id']
+        checked_keys = set([
+            u'status',
+            u'name',
+            u'tags',
+            u'created_at',
+            u'updated_at',
+            u'visibility',
+            u'self',
+            u'protected',
+            u'id',
+            u'file',
+            u'min_disk',
+            u'bar',
+            u'xyz',
+            u'type',
+            u'min_ram',
+            u'schema',
+            u'disk_format',
+            u'container_format',
+        ])
+        self.assertEqual(set(image.keys()), checked_keys)
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-2',
+            'tags': [],
+            'visibility': 'private',
+            'self': '/v2/images/%s' % image2_id,
+            'protected': False,
+            'file': '/v2/images/%s/file' % image2_id,
+            'min_disk': 0,
+            'bar': 'foo',
+            'xyz': 'abc',
+            'type': 'kernel',
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(image[key], value, key)
+
+        # Image list should now have two entries
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(2, len(images))
+        self.assertEqual(images[0]['id'], image2_id)
+        self.assertEqual(images[1]['id'], image_id)
+
+        # Image list should list only image-2 as image-1 doesn't contain the
+        # property 'bar'
+        path = self._url('/v2/images?bar=foo')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(images[0]['id'], image2_id)
+
+        # Image list should list only image-1 as image-2 doesn't contain the
+        # property 'foo'
+        path = self._url('/v2/images?foo=bar')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(images[0]['id'], image_id)
+
+        # Image list should list only image-1 based on the filter
+        # 'foo=bar&abc=xyz'
+        path = self._url('/v2/images?foo=bar&abc=xyz')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(images[0]['id'], image_id)
+
+        # Image list should list only image-2 based on the filter
+        # 'bar=foo&xyz=abc'
+        path = self._url('/v2/images?bar=foo&xyz=abc')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(images[0]['id'], image2_id)
+
+        # Image list should not list anything as the filter 'foo=baz&abc=xyz'
+        # is not satisfied by either images
+        path = self._url('/v2/images?foo=baz&abc=xyz')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(0, len(images))
 
         # Get the image using the returned Location header
         response = requests.get(image_location_header, headers=self._headers())
@@ -248,7 +355,7 @@ class TestImages(functional.FunctionalTest):
         response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(200, response.status_code, response.text)
 
-        # Deletion should work
+        # Deletion should work. Deleting image-1
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
         self.assertEqual(204, response.status_code)
@@ -263,6 +370,19 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers()
         response = requests.get(path, headers=headers)
         self.assertEqual(404, response.status_code)
+
+        # Image list should now contain just image-2
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = json.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(images[0]['id'], image2_id)
+
+        # Deleting image-2 should work
+        path = self._url('/v2/images/%s' % image2_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(204, response.status_code)
 
         # Image list should now be empty
         path = self._url('/v2/images')
