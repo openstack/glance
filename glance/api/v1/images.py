@@ -672,8 +672,12 @@ class Controller(controller.BaseController):
 
     def _get_size(self, context, image_meta, location):
         # retrieve the image size from remote store (if not provided)
-        return image_meta.get('size', 0) or get_size_from_backend(context,
-                                                                  location)
+        try:
+            return (image_meta.get('size', 0) or
+                    get_size_from_backend(context, location))
+        except (exception.NotFound, exception.BadStoreUri) as e:
+            LOG.debug(e)
+            raise HTTPBadRequest(explanation=e.msg, content_type="text/plain")
 
     def _handle_source(self, req, image_id, image_meta, image_data):
         copy_from = self._copy_from(req)

@@ -14,6 +14,7 @@
 #    under the License.
 
 import httplib
+import socket
 
 import six.moves.urllib.parse as urlparse
 
@@ -145,9 +146,16 @@ class Store(glance.store.base.Store):
                         from glance.store.location.get_location_from_uri()
         """
         try:
-            return self._query(location, 'HEAD')[2]
+            size = self._query(location, 'HEAD')[2]
+        except socket.error:
+            reason = _("The HTTP URL is invalid.")
+            LOG.debug(reason)
+            raise exception.BadStoreUri(reason)
         except Exception:
+            # NOTE(flaper87): Catch more granular exceptions,
+            # keeping this branch for backwards compatibility.
             return 0
+        return size
 
     def _query(self, location, verb, depth=0):
         if depth > MAX_REDIRECTS:
@@ -163,6 +171,10 @@ class Store(glance.store.base.Store):
 
         # Check for bad status codes
         if resp.status >= 400:
+            if resp.status == httplib.NOT_FOUND:
+                reason = _("HTTP datastore could not find image at URI.")
+                LOG.debug(reason)
+                raise exception.NotFound(reason)
             reason = _("HTTP URL returned a %s status code.") % resp.status
             LOG.debug(reason)
             raise exception.BadStoreUri(loc.path, reason)
