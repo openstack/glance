@@ -644,43 +644,6 @@ class TestSSL(functional.FunctionalTest):
         self.stop_servers()
 
     @skip_if_disabled
-    def test_size_greater_2G_mysql(self):
-        """
-        A test against the actual datastore backend for the registry
-        to ensure that the image size property is not truncated.
-
-        :see https://bugs.launchpad.net/glance/+bug/739433
-        """
-
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
-
-        # 1. POST /images with public image named Image1
-        # attribute and a size of 5G. Use the HTTP engine with an
-        # X-Image-Meta-Location attribute to make Glance forego
-        # "adding" the image data.
-        # Verify a 201 OK is returned
-        headers = minimal_headers('Image1')
-        headers['X-Image-Meta-Location'] = 'https://example.com/fakeimage'
-        headers['X-Image-Meta-Size'] = str(FIVE_GB)
-        path = "https://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
-        https = httplib2.Http(disable_ssl_certificate_validation=True)
-        response, content = https.request(path, 'POST', headers=headers)
-        self.assertEqual(response.status, 201)
-
-        # 2. HEAD /images
-        # Verify image size is what was passed in, and not truncated
-        path = response.get('location')
-        https = httplib2.Http(disable_ssl_certificate_validation=True)
-        response, content = https.request(path, 'HEAD')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(response['x-image-meta-size'], str(FIVE_GB))
-        self.assertEqual(response['x-image-meta-name'], 'Image1')
-        self.assertEqual(response['x-image-meta-is_public'], 'True')
-
-        self.stop_servers()
-
-    @skip_if_disabled
     def test_traceback_not_consumed(self):
         """
         A test that errors coming from the POST API do not get consumed

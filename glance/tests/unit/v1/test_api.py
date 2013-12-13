@@ -40,6 +40,7 @@ from glance.openstack.common import timeutils
 
 import glance.registry.client.v1.api as registry
 import glance.store.filesystem
+from glance.store import http
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 from glance.tests import utils as test_utils
@@ -122,11 +123,13 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         for k, v in fixture_headers.iteritems():
             req.headers[k] = v
 
-        res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 201)
-        res_body = jsonutils.loads(res.body)['image']
-        self.assertEqual(format_value, res_body['disk_format'])
-        self.assertEqual(format_value, res_body['container_format'])
+        with mock.patch.object(http.Store, 'get_size') as mocked_size:
+            mocked_size.return_value = 0
+            res = req.get_response(self.api)
+            self.assertEqual(res.status_int, 201)
+            res_body = jsonutils.loads(res.body)['image']
+            self.assertEqual(format_value, res_body['disk_format'])
+            self.assertEqual(format_value, res_body['container_format'])
 
     def test_defaulted_amazon_format(self):
         for key in ('x-image-meta-disk-format',
@@ -240,8 +243,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         for k, v in fixture_headers.iteritems():
             req.headers[k] = v
 
-        res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 201)
+        with mock.patch.object(http.Store, 'get_size') as mocked_size:
+            mocked_size.return_value = 0
+            res = req.get_response(self.api)
+            self.assertEqual(res.status_int, 201)
 
     def test_configured_disk_format_bad(self):
         self.config(disk_formats=['foo'], group="image_format")
@@ -276,8 +281,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         for k, v in fixture_headers.iteritems():
             req.headers[k] = v
 
-        res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 201)
+        with mock.patch.object(http.Store, 'get_size') as mocked_size:
+            mocked_size.return_value = 0
+            res = req.get_response(self.api)
+            self.assertEqual(res.status_int, 201)
 
     def test_configured_container_format_bad(self):
         self.config(container_formats=['foo'], group="image_format")
@@ -331,9 +338,11 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         for k, v in fixture_headers.iteritems():
             req.headers[k] = v
 
-        res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 400)
-        self.assertIn('Invalid container format', res.body)
+        with mock.patch.object(http.Store, 'get_size') as mocked_size:
+            mocked_size.return_value = 0
+            res = req.get_response(self.api)
+            self.assertEqual(res.status_int, 400)
+            self.assertIn('Invalid container format', res.body)
 
     def test_create_with_bad_store_name(self):
         fixture_headers = {
@@ -482,8 +491,11 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images/%s" % image_id)
         req.method = 'PUT'
         req.headers['x-image-meta-location'] = 'http://localhost:0/images/123'
-        res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 200)
+
+        with mock.patch.object(http.Store, 'get_size') as mocked_size:
+            mocked_size.return_value = 0
+            res = req.get_response(self.api)
+            self.assertEqual(res.status_int, 200)
 
         res_body = jsonutils.loads(res.body)['image']
         # Once the location is set, the image should be activated
@@ -928,9 +940,6 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_add_location_with_conflict_image_size(self):
         """Tests creates an image from location and conflict image size"""
 
-        self.stubs.Set(glance.api.v1.images, 'get_size_from_backend',
-                       lambda *args, **kwargs: 2)
-
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
                            'x-image-meta-location': 'http://a/b/c.tar.gz',
@@ -941,10 +950,14 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images")
         req.headers['Content-Type'] = 'application/octet-stream'
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
-            req.headers[k] = v
-        res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 409)
+        with mock.patch.object(http.Store, 'get_size') as size:
+            size.return_value = 2
+
+            for k, v in fixture_headers.iteritems():
+                req.headers[k] = v
+
+            res = req.get_response(self.api)
+            self.assertEqual(res.status_int, 409)
 
     def test_add_copy_from_with_location(self):
         """Tests creates an image from copy-from and location"""
@@ -2109,10 +2122,13 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         for k, v in headers.iteritems():
             req.headers[k] = v
         req.method = 'POST'
-        res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 201)
-        res_body = jsonutils.loads(res.body)
-        self.assertNotIn('location', res_body['image'])
+
+        with mock.patch.object(http.Store, 'get_size') as size:
+            size.return_value = 0
+            res = req.get_response(self.api)
+            self.assertEqual(res.status_int, 201)
+            res_body = jsonutils.loads(res.body)
+            self.assertNotIn('location', res_body['image'])
 
     def test_image_is_checksummed(self):
         """Test that the image contents are checksummed properly"""

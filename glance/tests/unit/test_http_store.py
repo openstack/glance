@@ -159,7 +159,7 @@ class TestHttpStore(base.StoreClearingUnitTest):
 
         uri = "http://netloc/path/to/file.tar.gz"
         loc = get_location_from_uri(uri)
-        self.assertRaises(exception.BadStoreUri, self.store.get, loc)
+        self.assertRaises(exception.NotFound, self.store.get, loc)
 
     def test_https_get(self):
         uri = "https://netloc/path/to/file.tar.gz"

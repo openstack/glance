@@ -328,39 +328,6 @@ class TestApi(base.ApiTest):
         response, content = self.http.request(path, 'DELETE')
         self.assertEqual(response.status, 200)
 
-    def test_size_greater_2G_mysql(self):
-        """
-        A test against the actual datastore backend for the registry
-        to ensure that the image size property is not truncated.
-
-        :see https://bugs.launchpad.net/glance/+bug/739433
-        """
-
-        # 1. POST /images with public image named Image1
-        # attribute and a size of 5G. Use the HTTP engine with an
-        # X-Image-Meta-Location attribute to make Glance forego
-        # "adding" the image data.
-        # Verify a 201 OK is returned
-        headers = {'Content-Type': 'application/octet-stream',
-                   'X-Image-Meta-Location': 'http://example.com/fakeimage',
-                   'X-Image-Meta-Size': str(FIVE_GB),
-                   'X-Image-Meta-Name': 'Image1',
-                   'X-Image-Meta-disk_format': 'raw',
-                   'X-image-Meta-container_format': 'ovf',
-                   'X-Image-Meta-Is-Public': 'True'}
-        path = "/v1/images"
-        response, content = self.http.request(path, 'POST', headers=headers)
-        self.assertEqual(response.status, 201)
-
-        # 2. HEAD /images
-        # Verify image size is what was passed in, and not truncated
-        path = response.get('location')
-        response, content = self.http.request(path, 'HEAD')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(response['x-image-meta-size'], str(FIVE_GB))
-        self.assertEqual(response['x-image-meta-name'], 'Image1')
-        self.assertEqual(response['x-image-meta-is_public'], 'True')
-
     def test_v1_not_enabled(self):
         self.config(enable_v1_api=False)
         path = "/v1/images"
