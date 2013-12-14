@@ -293,7 +293,7 @@ class TestHelpers(test_utils.BaseTestCase):
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}}
         headers = utils.image_meta_to_http_headers(fixture)
         for k, v in headers.iteritems():
-            self.assert_(isinstance(v, unicode), "%s is not unicode" % v)
+            self.assertTrue(isinstance(v, unicode), "%s is not unicode" % v)
 
     def test_data_passed_properly_through_headers(self):
         """

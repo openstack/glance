@@ -303,8 +303,8 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
 
     def test_cache_manage_env(self):
         def_value = 'sometext12345678900987654321'
-        self.assertNotEquals(def_value,
-                             cache_manage.env('PATH', default=def_value))
+        self.assertNotEqual(def_value,
+                            cache_manage.env('PATH', default=def_value))
 
     def test_cache_manage_env_default(self):
         def_value = 'sometext12345678900987654321'
