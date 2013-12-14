@@ -76,9 +76,10 @@ class PropertyRules(object):
             raise exception.InvalidPropertyProtectionConfiguration()
 
         if self.prop_prot_rule_format not in ['policies', 'roles']:
-            msg = _("Invalid value '%s' for 'property_protection_rule_format'"
-                    ". The permitted values are 'roles' and 'policies'" %
-                    self.prop_prot_rule_format)
+            msg = _("Invalid value '%s' for "
+                    "'property_protection_rule_format'. "
+                    "The permitted values are "
+                    "'roles' and 'policies'") % self.prop_prot_rule_format
             LOG.error(msg)
             raise exception.InvalidPropertyProtectionConfiguration()
 
@@ -93,11 +94,11 @@ class PropertyRules(object):
                 if permissions:
                     if self.prop_prot_rule_format == 'policies':
                         if ',' in permissions:
-                            msg = _("Multiple policies '%s' not allowed for a"
-                                    " given operation. Policies can be "
-                                    "combined in the policy file" %
-                                    permissions)
-                            LOG.error(msg)
+                            LOG.error(
+                                _("Multiple policies '%s' not allowed"
+                                  "for a given operation. Policies can be "
+                                  "combined in the policy file"),
+                                permissions)
                             raise exception.\
                                 InvalidPropertyProtectionConfiguration()
                         self.prop_exp_mapping[compiled_rule] = property_exp
@@ -110,11 +111,10 @@ class PropertyRules(object):
                     property_dict[operation] = permissions
                 else:
                     property_dict[operation] = []
-                    msg = _(('Property protection on operation %s for rule '
-                            '%s is not found. No role will be allowed to '
-                            'perform this operation.' %
-                            (operation, property_exp)))
-                    LOG.warn(msg)
+                    LOG.warn(
+                        _('Property protection on operation %s for rule '
+                          '%s is not found. No role will be allowed to '
+                          'perform this operation.'), operation, property_exp)
 
             self.rules.append((compiled_rule, property_dict))
 
@@ -165,9 +165,9 @@ class PropertyRules(object):
                 rule_roles = rule.get(action)
                 if rule_roles:
                     if '@' in rule_roles and '!' in rule_roles:
-                        msg = _("Malformed property protection rule '%s': '@' "
-                                "and '!' are mutually exclusive"
-                                % property_name)
+                        msg = _(
+                            "Malformed property protection rule '%s': '@' "
+                            "and '!' are mutually exclusive") % property_name
                         LOG.error(msg)
                         raise webob.exc.HTTPInternalServerError(msg)
                     elif '@' in rule_roles:

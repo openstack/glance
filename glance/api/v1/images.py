@@ -678,9 +678,9 @@ class Controller(controller.BaseController):
                             image_size_store != image_size_meta):
                         msg = _("Provided image size must match the stored "
                                 "image size. (provided size: %(ps)d, "
-                                "stored size: %(ss)d)" %
-                                {"ps": image_size_meta,
-                                 "ss": image_size_store})
+                                "stored size: %(ss)d)") % {
+                                    "ps": image_size_meta,
+                                    "ss": image_size_store}
                         LOG.debug(msg)
                         raise HTTPConflict(explanation=msg,
                                            request=req,
