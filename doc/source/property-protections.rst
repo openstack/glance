@@ -52,6 +52,10 @@ roles that are permitted to perform that operation in the Glance API. **If any o
 the keys are not specified, then the glance api service will not start
 successfully.**
 
+In the list of user roles, ``@`` means all roles and ``!`` means no role.
+**If both @ and ! are specified for the same rule then the glance api service
+will not start**
+
 .. note::
 
   Only one policy rule is allowed per property operation. **If multiple are

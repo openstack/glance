@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import webob.exc
-
 from glance.api import policy
 from glance.common import exception
 from glance.common import property_utils
@@ -31,7 +29,6 @@ CONFIG_SECTIONS = [
     'spl_delete_prop',
     '^x_all_permitted.*',
     '^x_none_permitted.*',
-    'x_invalid_all_and_none',
     'x_none_read',
     'x_none_update',
     'x_none_delete',
@@ -64,6 +61,15 @@ class TestPropertyRulesWithRoles(base.IsolatedUnitTest):
 
     def test_property_protection_file_doesnt_exist(self):
         self.config(property_protection_file='fake-file.conf')
+        self.assertRaises(exception.InvalidPropertyProtectionConfiguration,
+                          property_utils.PropertyRules)
+
+    def test_property_protection_with_mutually_exclusive_rule(self):
+        exclusive_rules = {'.*': {'create': ['@', '!'],
+                                  'read': ['fake-role'],
+                                  'update': ['fake-role'],
+                                  'delete': ['fake-role']}}
+        self.set_property_protection_rules(exclusive_rules)
         self.assertRaises(exception.InvalidPropertyProtectionConfiguration,
                           property_utils.PropertyRules)
 
@@ -235,34 +241,6 @@ class TestPropertyRulesWithRoles(base.IsolatedUnitTest):
         self.rules_checker = property_utils.PropertyRules()
         self.assertFalse(self.rules_checker.check_property_rules(
             'x_none_permitted', 'delete', create_context(self.policy, [''])))
-
-    def test_check_property_rules_create_all_and_none(self):
-        self.rules_checker = property_utils.PropertyRules()
-        self.assertRaises(webob.exc.HTTPInternalServerError,
-                          self.rules_checker.check_property_rules,
-                          'x_invalid_all_and_none', 'create',
-                          create_context(self.policy, ['']))
-
-    def test_check_property_rules_read_all_and_none(self):
-        self.rules_checker = property_utils.PropertyRules()
-        self.assertRaises(webob.exc.HTTPInternalServerError,
-                          self.rules_checker.check_property_rules,
-                          'x_invalid_all_and_none', 'read',
-                          create_context(self.policy, ['']))
-
-    def test_check_property_rules_update_all_and_none(self):
-        self.rules_checker = property_utils.PropertyRules()
-        self.assertRaises(webob.exc.HTTPInternalServerError,
-                          self.rules_checker.check_property_rules,
-                          'x_invalid_all_and_none', 'update',
-                          create_context(self.policy, ['']))
-
-    def test_check_property_rules_delete_all_and_none(self):
-        self.rules_checker = property_utils.PropertyRules()
-        self.assertRaises(webob.exc.HTTPInternalServerError,
-                          self.rules_checker.check_property_rules,
-                          'x_invalid_all_and_none', 'delete',
-                          create_context(self.policy, ['']))
 
     def test_check_property_rules_read_none(self):
         self.rules_checker = property_utils.PropertyRules()
