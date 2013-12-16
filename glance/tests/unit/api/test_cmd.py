@@ -16,10 +16,12 @@ import sys
 
 import glance.cmd.api
 import glance.cmd.cache_cleaner
+import glance.cmd.cache_pruner
 import glance.common.config
 from glance.common import exception as exc
 import glance.common.wsgi
 import glance.image_cache.cleaner
+import glance.image_cache.pruner
 from glance.tests import utils as test_utils
 
 
@@ -97,4 +99,33 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         self.stubs.Set(glance.image_cache.cleaner.Cleaner, 'run',
                        self._raise(RuntimeError))
         exit = self.assertRaises(SystemExit, glance.cmd.cache_cleaner.main)
+        self.assertEqual('ERROR: ', exit.code)
+
+    @mock.patch.object(glance.common.config, 'parse_cache_args')
+    @mock.patch.object(glance.openstack.common.log, 'setup')
+    @mock.patch.object(glance.image_cache.ImageCache, 'init_driver')
+    @mock.patch.object(glance.image_cache.ImageCache, 'prune')
+    def test_cache_pruner_main(self, mock_cache_prune,
+                               mock_cache_init_driver, mock_log_setup,
+                               mock_parse_config):
+        mock_cache_init_driver.return_value = None
+
+        manager = mock.MagicMock()
+        manager.attach_mock(mock_log_setup, 'mock_log_setup')
+        manager.attach_mock(mock_parse_config, 'mock_parse_config')
+        manager.attach_mock(mock_cache_init_driver, 'mock_cache_init_driver')
+        manager.attach_mock(mock_cache_prune, 'mock_cache_prune')
+        glance.cmd.cache_pruner.main()
+        expected_call_sequence = [mock.call.mock_parse_config(),
+                                  mock.call.mock_log_setup('glance'),
+                                  mock.call.mock_cache_init_driver(),
+                                  mock.call.mock_cache_prune()]
+        self.assertEqual(expected_call_sequence, manager.mock_calls)
+
+    @mock.patch.object(glance.image_cache.base.CacheApp, '__init__')
+    def test_cache_pruner_main_runtime_exception_handling(self, mock_cache):
+        mock_cache.return_value = None
+        self.stubs.Set(glance.image_cache.pruner.Pruner, 'run',
+                       self._raise(RuntimeError))
+        exit = self.assertRaises(SystemExit, glance.cmd.cache_pruner.main)
         self.assertEqual('ERROR: ', exit.code)
