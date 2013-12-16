@@ -17,8 +17,8 @@
 
 import os
 import shutil
-import time
 import tempfile
+import time
 import uuid
 
 import eventlet

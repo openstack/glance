@@ -20,8 +20,8 @@ import mock
 from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import units
-import glance.store.rbd as rbd_store
 from glance.store.location import Location
+import glance.store.rbd as rbd_store
 from glance.store.rbd import StoreLocation
 from glance.tests.unit import base
 from glance.tests.unit.fake_rados import mock_rados

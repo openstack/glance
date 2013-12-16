@@ -34,9 +34,9 @@ from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.openstack.common import timeutils
 
+from glance.registry.api import v2 as rserver
 import glance.registry.client.v2.api as rapi
 from glance.registry.client.v2.api import client as rclient
-from glance.registry.api import v2 as rserver
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
 

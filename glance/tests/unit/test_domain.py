@@ -22,8 +22,8 @@ from oslo.config import cfg
 from glance.common import exception
 from glance import domain
 from glance.openstack.common import timeutils
-import glance.tests.utils as test_utils
 import glance.tests.unit.utils as unittest_utils
+import glance.tests.utils as test_utils
 
 
 CONF = cfg.CONF

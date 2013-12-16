@@ -19,9 +19,9 @@ from oslo.config import cfg
 import webob.exc
 
 from glance.common import exception
-from glance.openstack.common import excutils
 from glance.common import utils
 import glance.db
+from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 import glance.store

@@ -22,13 +22,13 @@ import tempfile
 import fixtures
 from oslo.config import cfg
 
-from glance import tests as glance_tests
 import glance.common.client
 from glance.common import config
 import glance.db.sqlalchemy.api
 import glance.db.sqlalchemy.migration
 import glance.registry.client.v1.client
 import glance.store
+from glance import tests as glance_tests
 from glance.tests import utils as test_utils
 
 

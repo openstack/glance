@@ -15,17 +15,17 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import json
 import datetime
+import json
 
 import mox
 from oslo.config import cfg
 import routes
 import webob
 
+from glance.common import exception
 from glance.common import rpc
 from glance.common import wsgi
-from glance.common import exception
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
 

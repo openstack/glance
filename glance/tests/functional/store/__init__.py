@@ -20,11 +20,11 @@ import uuid
 
 from oslo.config import cfg
 
+#NOTE(bcwaldon): importing this to get the default_store option
+import glance.api.v1.images
 from glance.common import exception
 
 import glance.store.location
-#NOTE(bcwaldon): importing this to get the default_store option
-import glance.api.v1.images
 
 CONF = cfg.CONF
 

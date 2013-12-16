@@ -19,9 +19,9 @@ import keystoneclient.v2_0.client
 from oslo.config import cfg
 
 import glance.context
+import glance.db.sqlalchemy.api as db_api
 import glance.openstack.common.log as logging
 import glance.registry.context
-import glance.db.sqlalchemy.api as db_api
 
 LOG = logging.getLogger(__name__)
 LOG.addHandler(logging.StreamHandler())

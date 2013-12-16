@@ -26,8 +26,8 @@ from glance.common import auth
 from glance.common import exception
 import glance.domain
 from glance.openstack.common import timeutils
-from glance.tests import utils
 from glance.tests.unit import utils as unittest_utils
+from glance.tests import utils
 
 
 TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'

@@ -13,8 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glance.api.v2 import images
 from glance.api.v2 import image_members
+from glance.api.v2 import images
 from glance.api.v2 import tasks
 from glance.common import wsgi
 
