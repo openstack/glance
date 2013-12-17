@@ -490,7 +490,14 @@ class Controller(controller.BaseController):
                                 else 'queued')
 
         if location:
-            store = get_store_from_location(location)
+            try:
+                store = get_store_from_location(location)
+            except exception.BadStoreUri:
+                msg = _("Invalid location %s") % location
+                LOG.debug(msg)
+                raise HTTPBadRequest(explanation=msg,
+                                     request=req,
+                                     content_type="text/plain")
             # check the store exists before we hit the registry, but we
             # don't actually care what it is at this point
             self.get_store_or_400(req, store)
@@ -840,8 +847,15 @@ class Controller(controller.BaseController):
         # Make image public in the backend store (if implemented)
         orig_or_updated_loc = location or orig_image_meta.get('location', None)
         if orig_or_updated_loc:
-            self.update_store_acls(req, id, orig_or_updated_loc,
-                                   public=is_public)
+            try:
+                self.update_store_acls(req, id, orig_or_updated_loc,
+                                       public=is_public)
+            except exception.BadStoreUri:
+                msg = _("Invalid location %s") % location
+                LOG.debug(msg)
+                raise HTTPBadRequest(explanation=msg,
+                                     request=req,
+                                     content_type="text/plain")
 
         if reactivating:
             msg = _("Attempted to update Location field for an image "
