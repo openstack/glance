@@ -244,6 +244,7 @@ class TestImages(functional.FunctionalTest):
         data = json.dumps([
             {'op': 'replace', 'path': '/name', 'value': 'image-2'},
             {'op': 'replace', 'path': '/disk_format', 'value': 'vhd'},
+            {'op': 'replace', 'path': '/container_format', 'value': 'ami'},
             {'op': 'replace', 'path': '/foo', 'value': 'baz'},
             {'op': 'add', 'path': '/ping', 'value': 'pong'},
             {'op': 'replace', 'path': '/protected', 'value': True},
@@ -318,6 +319,19 @@ class TestImages(functional.FunctionalTest):
         image = json.loads(response.text)
         self.assertEqual('8f113e38d28a79a5a451b16048cc2b72', image['checksum'])
         self.assertEqual('active', image['status'])
+
+        # `disk_format` and `container_format` cannot
+        # be replaced when the image is active.
+        immutable_paths = ['/disk_format', '/container_format']
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type})
+        path = self._url('/v2/images/%s' % image_id)
+        for immutable_path in immutable_paths:
+            data = json.dumps([
+                {'op': 'replace', 'path': immutable_path, 'value': 'ari'},
+            ])
+            response = requests.patch(path, headers=headers, data=data)
+            self.assertEqual(403, response.status_code)
 
         # Try to download the data that was just uploaded
         path = self._url('/v2/images/%s/file' % image_id)

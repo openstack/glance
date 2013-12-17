@@ -110,8 +110,8 @@ class Image(object):
         self.locations = kwargs.pop('locations', [])
         self.checksum = kwargs.pop('checksum', None)
         self.owner = kwargs.pop('owner', None)
-        self.disk_format = kwargs.pop('disk_format', None)
-        self.container_format = kwargs.pop('container_format', None)
+        self._disk_format = kwargs.pop('disk_format', None)
+        self._container_format = kwargs.pop('container_format', None)
         self.size = kwargs.pop('size', None)
         extra_properties = kwargs.pop('extra_properties', None) or {}
         self.extra_properties = ExtraProperties(extra_properties)
@@ -156,6 +156,30 @@ class Image(object):
     @tags.setter
     def tags(self, value):
         self._tags = set(value)
+
+    @property
+    def container_format(self):
+        return self._container_format
+
+    @container_format.setter
+    def container_format(self, value):
+        if hasattr(self, '_container_format') and self.status != 'queued':
+            msg = _("Attribute container_format can be only replaced "
+                    "for a queued image.")
+            raise exception.Forbidden(message=msg)
+        self._container_format = value
+
+    @property
+    def disk_format(self):
+        return self._disk_format
+
+    @disk_format.setter
+    def disk_format(self, value):
+        if hasattr(self, '_disk_format') and self.status != 'queued':
+            msg = _("Attribute disk_format can be only replaced "
+                    "for a queued image.")
+            raise exception.Forbidden(message=msg)
+        self._disk_format = value
 
     def delete(self):
         if self.protected:
