@@ -914,13 +914,6 @@ class TestImmutableTask(utils.BaseTestCase):
     def test_change_updated_at(self):
         self._test_change('updated_at', 'fake')
 
-    def test_run(self):
-        self.assertRaises(
-            NotImplementedError,
-            self.task.run,
-            'executor'
-        )
-
     def test_begin_processing(self):
         self.assertRaises(
             exception.Forbidden,
@@ -961,40 +954,32 @@ class TestTaskFactoryProxy(utils.BaseTestCase):
 
     def test_task_create_default_owner(self):
         owner = self.request1.context.owner
-        task = self.task_factory.new_task(
-            self.task_type,
-            self.task_input,
-            owner
-        )
+        task = self.task_factory.new_task(task_type=self.task_type,
+                                          task_input=self.task_input,
+                                          owner=owner)
         self.assertEqual(task.owner, TENANT1)
 
     def test_task_create_wrong_owner(self):
-        self.assertRaises(
-            exception.Forbidden,
-            self.task_factory.new_task,
-            self.task_type,
-            self.task_input,
-            self.owner
-        )
+        self.assertRaises(exception.Forbidden,
+                          self.task_factory.new_task,
+                          task_type=self.task_type,
+                          task_input=self.task_input,
+                          owner=self.owner)
 
     def test_task_create_owner_as_None(self):
-        self.assertRaises(
-            exception.Forbidden,
-            self.task_factory.new_task,
-            self.task_type,
-            self.task_input,
-            None
-        )
+        self.assertRaises(exception.Forbidden,
+                          self.task_factory.new_task,
+                          task_type=self.task_type,
+                          task_input=self.task_input,
+                          owner=None)
 
     def test_task_create_admin_context_owner_as_None(self):
         self.context.is_admin = True
-        self.assertRaises(
-            exception.Forbidden,
-            self.task_factory.new_task,
-            self.task_type,
-            self.task_input,
-            None
-        )
+        self.assertRaises(exception.Forbidden,
+                          self.task_factory.new_task,
+                          task_type=self.task_type,
+                          task_input=self.task_input,
+                          owner=None)
 
 
 class TestTaskRepoProxy(utils.BaseTestCase):

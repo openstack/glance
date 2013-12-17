@@ -262,14 +262,7 @@ class Task(object):
         return self._status
 
     def run(self, executor):
-        # NOTE(flwang): The task status won't be set here but handled by the
-        # executor.
-        # NOTE(nikhil): Ideally, a task should always be instantiated with an
-        # executor. However, we need to make that a part of the framework
-        # and we are planning to add such logic when Controller would
-        # be introduced.
-        if executor:
-            executor.run(self.task_id)
+        pass
 
     def _validate_task_status_transition(self, cur_status, new_status):
             valid_transitions = {
@@ -319,6 +312,7 @@ class Task(object):
 
 
 class TaskFactory(object):
+
     def new_task(self, task_type, task_input, owner):
         task_id = uuidutils.generate_uuid()
         status = 'pending'

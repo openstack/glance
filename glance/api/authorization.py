@@ -328,7 +328,7 @@ class ImmutableTaskProxy(object):
     updated_at = _immutable_attr('base', 'updated_at')
 
     def run(self, executor):
-        raise NotImplementedError()
+        self.base.run(executor)
 
     def begin_processing(self):
         message = _("You are not permitted to set status on this task.")
@@ -377,16 +377,14 @@ class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
             proxy_kwargs=None
         )
 
-    def new_task(self, task_type, task_input, owner):
+    def new_task(self, **kwargs):
+        owner = kwargs.get('owner', self.context.owner)
+
         #NOTE(nikhil): Unlike Images, Tasks are expected to have owner.
         # We currently do not allow even admins to set the owner to None.
         if owner is not None and (owner == self.context.owner
                                   or self.context.is_admin):
-            return super(TaskFactoryProxy, self).new_task(
-                task_type,
-                task_input,
-                owner
-            )
+            return super(TaskFactoryProxy, self).new_task(**kwargs)
         else:
             message = _("You are not permitted to create this task with "
                         "owner as: %s")
