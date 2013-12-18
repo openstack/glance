@@ -16,6 +16,7 @@
 #    under the License.
 
 import json
+import os
 import uuid
 
 import requests
@@ -1705,6 +1706,42 @@ class TestImages(functional.FunctionalTest):
             self.assertEqual(image['visibility'], 'private')
 
         self.stop_servers()
+
+    def test_update_locations(self):
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = json.dumps({'name': 'image-1', 'disk_format': 'aki',
+                           'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = json.loads(response.text)
+        image_id = image['id']
+        self.assertEqual(image['status'], 'queued')
+        self.assertNotIn('size', image)
+
+        file_path = os.path.join(self.test_dir, 'fake_image')
+        with open(file_path, 'w') as fap:
+            fap.write('glance')
+
+        # Update locations for the queued image
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type})
+        data = json.dumps([{'op': 'replace', 'path': '/locations',
+                            'value': [{'url': 'file://' + file_path,
+                                       'metadata': {}}]}])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
+
+        # The image size should be updated
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        image = json.loads(response.text)
+        self.assertEqual(image['size'], 6)
 
 
 class TestImageDirectURLVisibility(functional.FunctionalTest):
