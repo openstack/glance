@@ -712,8 +712,15 @@ def _image_get_disk_usage_by_owner(owner, session, image_id=None):
     if image_id is not None:
         query = query.filter(models.Image.id != image_id)
     query = query.filter(models.Image.size > 0)
+    query = query.filter(~models.Image.status.in_(['killed',
+                                                   'pending_delete',
+                                                   'deleted']))
     images = query.all()
-    total = sum([i.size * len(i.locations) for i in images])
+
+    total = 0
+    for i in images:
+        locations = [l for l in i.locations if not l['deleted']]
+        total += (i.size * len(locations))
     return total
 
 

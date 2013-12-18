@@ -1166,7 +1166,8 @@ class DriverQuotaTests(test_utils.BaseTestCase):
         super(DriverQuotaTests, self).setUp()
         self.owner_id1 = uuidutils.generate_uuid()
         self.context1 = context.RequestContext(
-            is_admin=False, auth_tok='user:user:user', user=self.owner_id1)
+            is_admin=False, user=self.owner_id1, tenant=self.owner_id1,
+            auth_tok='%s:%s:user' % (self.owner_id1, self.owner_id1))
         self.db_api = db_tests.get_db(self.config)
         db_tests.reset_db(self.db_api)
         self.addCleanup(timeutils.clear_time_override)
@@ -1229,6 +1230,29 @@ class DriverQuotaTests(test_utils.BaseTestCase):
 
         total = reduce(lambda x, y: x + y,
                        [f['size'] for f in self.owner1_fixtures]) + (sz * 2)
+        x = self.db_api.user_get_storage_usage(self.context1, self.owner_id1)
+        self.assertEqual(total, x)
+
+    def test_storage_quota_deleted_image(self):
+        # NOTE(flaper87): This needs to be tested for
+        # soft deleted images as well. Currently there's no
+        # good way to delete locations.
+        dt1 = timeutils.utcnow()
+        sz = 53
+        new_fixture_dict = {'id': 'SOMEID', 'created_at': dt1,
+                            'updated_at': dt1, 'size': sz,
+                            'owner': self.owner_id1}
+        new_fixture = build_image_fixture(**new_fixture_dict)
+        new_fixture['locations'].append({'url': 'file:///some/path/file',
+                                         'metadata': {}})
+        self.db_api.image_create(self.context1, new_fixture)
+
+        total = reduce(lambda x, y: x + y,
+                       [f['size'] for f in self.owner1_fixtures])
+        x = self.db_api.user_get_storage_usage(self.context1, self.owner_id1)
+        self.assertEqual(total + (sz * 2), x)
+
+        self.db_api.image_destroy(self.context1, 'SOMEID')
         x = self.db_api.user_get_storage_usage(self.context1, self.owner_id1)
         self.assertEqual(total, x)
 

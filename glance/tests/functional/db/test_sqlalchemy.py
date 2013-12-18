@@ -106,3 +106,11 @@ class TestSqlAlchemyTask(base.TaskTests):
         db_tests.load(get_db, reset_db)
         super(TestSqlAlchemyTask, self).setUp()
         self.addCleanup(db_tests.reset)
+
+
+class TestSqlAlchemyQuota(base.DriverQuotaTests):
+
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestSqlAlchemyQuota, self).setUp()
+        self.addCleanup(db_tests.reset)
