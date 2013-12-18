@@ -96,3 +96,11 @@ class TestSqlAlchemyDBDataIntegrity(base.TestDriver):
                        fake_paginate_query)
         images = self.db_api.image_get_all(self.context,
                                            sort_key='name')
+
+
+class TestSqlAlchemyQuota(base.DriverQuotaTests):
+
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestSqlAlchemyQuota, self).setUp()
+        self.addCleanup(db_tests.reset)
