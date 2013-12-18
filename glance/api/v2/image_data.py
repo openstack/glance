@@ -126,8 +126,9 @@ class ImageDataController(object):
         try:
             image = image_repo.get(image_id)
             if not image.locations:
-                reason = _("No image data could be found")
-                raise exception.NotFound(reason)
+                raise exception.ImageDataNotFound()
+        except exception.ImageDataNotFound as e:
+            raise webob.exc.HTTPNoContent(explanation=unicode(e))
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=unicode(e))
         except exception.Forbidden as e:

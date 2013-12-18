@@ -304,7 +304,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers()
         response = requests.get(path, headers=headers)
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(204, response.status_code)
 
         # Upload some image data
         path = self._url('/v2/images/%s/file' % image_id)

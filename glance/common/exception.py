@@ -319,3 +319,7 @@ class InvalidTaskStatusTransition(TaskException, Invalid):
 
 class DuplicateLocation(Duplicate):
     message = _("The location %(location)s already exists")
+
+
+class ImageDataNotFound(NotFound):
+    message = _("No image data could be found")

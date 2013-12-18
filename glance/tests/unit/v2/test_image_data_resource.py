@@ -109,7 +109,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_download_no_location(self):
         request = unit_test_utils.get_fake_request()
         self.image_repo.result = FakeImage('abcd')
-        self.assertRaises(webob.exc.HTTPNotFound, self.controller.download,
+        self.assertRaises(webob.exc.HTTPNoContent, self.controller.download,
                           request, unit_test_utils.UUID2)
 
     def test_download_non_existent_image(self):

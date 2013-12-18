@@ -210,12 +210,19 @@ class CacheFilter(wsgi.Middleware):
         images Resource, removing image file from the cache
         if necessary
         """
-        if not 200 <= self.get_status_code(resp) < 300:
+        status_code = self.get_status_code(resp)
+        if not 200 <= status_code < 300:
             return resp
 
         try:
             (image_id, method) = self._fetch_request_info(resp.request)
         except TypeError:
+            return resp
+
+        if method == 'GET' and status_code == 204:
+            # Bugfix:1251055 - Don't cache non-existent image files.
+            # NOTE: Both GET for an image without locations and DELETE return
+            # 204 but DELETE should be processed.
             return resp
 
         method_str = '_process_%s_response' % method
