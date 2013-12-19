@@ -60,13 +60,14 @@ USAGE = """%(prog)s [options] <SERVER> <COMMAND> [CONFPATH]
 
 Where <SERVER> is one of:
 
-    all, api, registry, scrubber
+    all, {0}
 
 And command is one of:
 
-    start, stop, shutdown, restart, reload, force-reload
+    {1}
 
-And CONFPATH is the optional configuration file to use."""
+And CONFPATH is the optional configuration file to use.""".\
+    format(', '.join(ALL_SERVERS), ', '.join(ALL_COMMANDS))
 
 exitcode = 0
 
