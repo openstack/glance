@@ -64,9 +64,9 @@ class ImageMembersController(object):
             member_repo = image.get_member_repo()
             new_member = image_member_factory.new_image_member(image,
                                                                member_id)
-            member = member_repo.add(new_member)
+            member_repo.add(new_member)
 
-            return member
+            return new_member
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=unicode(e))
         except exception.Forbidden as e:
@@ -98,7 +98,7 @@ class ImageMembersController(object):
             member_repo = image.get_member_repo()
             member = member_repo.get(member_id)
             member.status = status
-            member = member_repo.save(member)
+            member_repo.save(member)
             return member
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=unicode(e))

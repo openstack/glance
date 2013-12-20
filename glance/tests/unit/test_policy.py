@@ -63,20 +63,25 @@ class ImageFactoryStub(object):
 
 
 class MemberRepoStub(object):
-    def add(self, *args, **kwargs):
-        return 'member_repo_add'
+    def add(self, image_member):
+        image_member.output = 'member_repo_add'
 
     def get(self, *args, **kwargs):
         return 'member_repo_get'
 
-    def save(self, *args, **kwargs):
-        return 'member_repo_save'
+    def save(self, image_member):
+        image_member.output = 'member_repo_save'
 
     def list(self, *args, **kwargs):
         return 'member_repo_list'
 
-    def remove(self, *args, **kwargs):
-        return 'member_repo_remove'
+    def remove(self, image_member):
+        image_member.output = 'member_repo_remove'
+
+
+class ImageMembershipStub(object):
+    def __init__(self, output=None):
+        self.output = output
 
 
 class TaskRepoStub(object):
@@ -316,8 +321,9 @@ class TestMemberPolicy(test_utils.BaseTestCase):
         self.policy.enforce.assert_called_once_with({}, "add_member", {})
 
     def test_add_member_allowed(self):
-        output = self.member_repo.add('')
-        self.assertEqual(output, 'member_repo_add')
+        image_member = ImageMembershipStub()
+        self.member_repo.add(image_member)
+        self.assertEqual(image_member.output, 'member_repo_add')
         self.policy.enforce.assert_called_once_with({}, "add_member", {})
 
     def test_get_member_not_allowed(self):
@@ -336,8 +342,9 @@ class TestMemberPolicy(test_utils.BaseTestCase):
         self.policy.enforce.assert_called_once_with({}, "modify_member", {})
 
     def test_modify_member_allowed(self):
-        output = self.member_repo.save('')
-        self.assertEqual(output, 'member_repo_save')
+        image_member = ImageMembershipStub()
+        self.member_repo.save(image_member)
+        self.assertEqual(image_member.output, 'member_repo_save')
         self.policy.enforce.assert_called_once_with({}, "modify_member", {})
 
     def test_get_members_not_allowed(self):
@@ -356,8 +363,9 @@ class TestMemberPolicy(test_utils.BaseTestCase):
         self.policy.enforce.assert_called_once_with({}, "delete_member", {})
 
     def test_delete_member_allowed(self):
-        output = self.member_repo.remove('')
-        self.assertEqual(output, 'member_repo_remove')
+        image_member = ImageMembershipStub()
+        self.member_repo.remove(image_member)
+        self.assertEqual(image_member.output, 'member_repo_remove')
         self.policy.enforce.assert_called_once_with({}, "delete_member", {})
 
 
