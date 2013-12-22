@@ -23,7 +23,7 @@ class Controller(object):
     def __init__(self, custom_image_properties=None):
         self.image_schema = images.get_schema(custom_image_properties)
         self.image_collection_schema = images.get_collection_schema(
-                custom_image_properties)
+            custom_image_properties)
         self.member_schema = image_members.get_schema()
         self.member_collection_schema = image_members.get_collection_schema()
         self.task_schema = tasks.get_task_schema()

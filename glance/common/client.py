@@ -251,21 +251,21 @@ class BaseClient(object):
                 raise exception.ClientConnectionError(msg)
 
             if (self.key_file is not None and
-                not os.path.exists(self.key_file)):
+                    not os.path.exists(self.key_file)):
                 msg = _("The key file you specified %s does not "
                         "exist") % self.key_file
                 raise exception.ClientConnectionError(msg)
             connect_kwargs['key_file'] = self.key_file
 
             if (self.cert_file is not None and
-                not os.path.exists(self.cert_file)):
+                    not os.path.exists(self.cert_file)):
                 msg = _("The cert file you specified %s does not "
                         "exist") % self.cert_file
                 raise exception.ClientConnectionError(msg)
             connect_kwargs['cert_file'] = self.cert_file
 
             if (self.ca_file is not None and
-                not os.path.exists(self.ca_file)):
+                    not os.path.exists(self.ca_file)):
                 msg = _("The CA file you specified %s does not "
                         "exist") % self.ca_file
                 raise exception.ClientConnectionError(msg)

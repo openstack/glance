@@ -278,14 +278,14 @@ class TestImagePolicy(test_utils.BaseTestCase):
     def test_new_image_visibility(self):
         self.policy.enforce.side_effect = exception.Forbidden
         image_factory = glance.api.policy.ImageFactoryProxy(
-                self.image_factory_stub, {}, self.policy)
+            self.image_factory_stub, {}, self.policy)
         self.assertRaises(exception.Forbidden, image_factory.new_image,
                           visibility='public')
         self.policy.enforce.assert_called_once_with({}, "publicize_image", {})
 
     def test_new_image_visibility_public_allowed(self):
         image_factory = glance.api.policy.ImageFactoryProxy(
-                self.image_factory_stub, {}, self.policy)
+            self.image_factory_stub, {}, self.policy)
         image_factory.new_image(visibility='public')
         self.policy.enforce.assert_called_once_with({}, "publicize_image", {})
 

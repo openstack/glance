@@ -64,16 +64,16 @@ class TestCinderStore(store_tests.BaseTestCase, testtools.TestCase):
         try:
             self.cinder_config = parse_config(raw_config)
             ret = store_tests_swift.keystone_authenticate(
-                    self.cinder_config['test_cinder_store_auth_address'],
-                    self.cinder_config['test_cinder_store_auth_version'],
-                    self.cinder_config['test_cinder_store_tenant'],
-                    self.cinder_config['test_cinder_store_user'],
-                    self.cinder_config['test_cinder_store_key'])
+                self.cinder_config['test_cinder_store_auth_address'],
+                self.cinder_config['test_cinder_store_auth_version'],
+                self.cinder_config['test_cinder_store_tenant'],
+                self.cinder_config['test_cinder_store_user'],
+                self.cinder_config['test_cinder_store_key'])
             (tenant_id, auth_token, service_catalog) = ret
             self.context = glance.context.RequestContext(
-                    tenant=tenant_id,
-                    service_catalog=service_catalog,
-                    auth_tok=auth_token)
+                tenant=tenant_id,
+                service_catalog=service_catalog,
+                auth_tok=auth_token)
             self.cinder_client = cinder.get_cinderclient(self.context)
         except Exception as e:
             msg = "Cinder backend isn't set up: %s" % e

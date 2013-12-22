@@ -206,7 +206,7 @@ class KeystoneStrategy(BaseStrategy):
         req_body = json.dumps(creds)
 
         resp, resp_body = self._do_request(
-                token_url, 'POST', headers=headers, body=req_body)
+            token_url, 'POST', headers=headers, body=req_body)
 
         if resp.status == 200:
             resp_auth = json.loads(resp_body)['access']

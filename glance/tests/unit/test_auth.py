@@ -245,7 +245,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
             resp = webob.Response()
 
             if (headers.get('X-Auth-User') != 'user1' or
-                headers.get('X-Auth-Key') != 'pass'):
+                    headers.get('X-Auth-Key') != 'pass'):
                 resp.status = 401
             else:
                 resp.status = 200
@@ -282,10 +282,10 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
                 continue  # Expected
 
         no_strategy_creds = {
-                'username': 'user1',
-                'auth_url': 'http://localhost/redirect/',
-                'password': 'pass',
-                'region': 'RegionOne'
+            'username': 'user1',
+            'auth_url': 'http://localhost/redirect/',
+            'password': 'pass',
+            'region': 'RegionOne'
         }
 
         try:
@@ -323,7 +323,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
         def fake_do_request(cls, url, method, headers=None, body=None):
             if (not url.rstrip('/').endswith('v2.0/tokens') or
-                url.count("2.0") != 1):
+                    url.count("2.0") != 1):
                 self.fail("Invalid v2.0 token path (%s)" % url)
 
             creds = json.loads(body)['auth']
@@ -333,7 +333,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
             resp = webob.Response()
 
             if (username != 'user1' or password != 'pass' or
-                tenant != 'tenant-ok'):
+                    tenant != 'tenant-ok'):
                 resp.status = 401
             else:
                 resp.status = 200
@@ -382,11 +382,11 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
                 continue  # Expected
 
         no_region_creds = {
-                'username': 'user1',
-                'tenant': 'tenant-ok',
-                'auth_url': 'http://localhost/redirect/v2.0/',
-                'password': 'pass',
-                'strategy': 'keystone'
+            'username': 'user1',
+            'tenant': 'tenant-ok',
+            'auth_url': 'http://localhost/redirect/v2.0/',
+            'password': 'pass',
+            'strategy': 'keystone'
         }
 
         plugin = auth.KeystoneStrategy(no_region_creds)
@@ -405,12 +405,12 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
             pass  # Expected
 
         wrong_region_creds = {
-                'username': 'user1',
-                'tenant': 'tenant-ok',
-                'auth_url': 'http://localhost/redirect/v2.0/',
-                'password': 'pass',
-                'strategy': 'keystone',
-                'region': 'NonExistantRegion'
+            'username': 'user1',
+            'tenant': 'tenant-ok',
+            'auth_url': 'http://localhost/redirect/v2.0/',
+            'password': 'pass',
+            'strategy': 'keystone',
+            'region': 'NonExistantRegion'
         }
 
         try:
@@ -422,11 +422,11 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
             pass  # Expected
 
         no_strategy_creds = {
-                'username': 'user1',
-                'tenant': 'tenant-ok',
-                'auth_url': 'http://localhost/redirect/v2.0/',
-                'password': 'pass',
-                'region': 'RegionOne'
+            'username': 'user1',
+            'tenant': 'tenant-ok',
+            'auth_url': 'http://localhost/redirect/v2.0/',
+            'password': 'pass',
+            'region': 'RegionOne'
         }
 
         try:
@@ -640,13 +640,13 @@ class TestImmutableImage(utils.BaseTestCase):
         image_factory = glance.domain.ImageFactory()
         self.context = glance.context.RequestContext(tenant=TENANT1)
         image = image_factory.new_image(
-                image_id=UUID1,
-                name='Marvin',
-                owner=TENANT1,
-                disk_format='raw',
-                container_format='bare',
-                extra_properties={'foo': 'bar'},
-                tags=['ping', 'pong'],
+            image_id=UUID1,
+            name='Marvin',
+            owner=TENANT1,
+            disk_format='raw',
+            container_format='bare',
+            extra_properties={'foo': 'bar'},
+            tags=['ping', 'pong'],
         )
         self.image = authorization.ImmutableImageProxy(image, self.context)
 
@@ -774,7 +774,7 @@ class TestImmutableImage(utils.BaseTestCase):
                 return 'tiddlywinks'
 
         image = glance.api.authorization.ImmutableImageProxy(
-                FakeImage(), self.context)
+            FakeImage(), self.context)
         self.assertEqual(image.get_data(), 'tiddlywinks')
 
 

@@ -91,10 +91,10 @@ class BaseTestCase(object):
 
         store = self.get_store()
         location = glance.store.location.Location(
-                self.store_name,
-                store.get_store_location_class(),
-                uri=uri,
-                image_id=image_id)
+            self.store_name,
+            store.get_store_location_class(),
+            uri=uri,
+            image_id=image_id)
 
         (get_iter, get_size) = store.get(location)
         self.assertEqual(3, get_size)
@@ -118,9 +118,9 @@ class BaseTestCase(object):
 
         store = self.get_store()
         location = glance.store.location.Location(
-                self.store_name,
-                store.get_store_location_class(),
-                uri=image_uri)
+            self.store_name,
+            store.get_store_location_class(),
+            uri=image_uri)
 
         (get_iter, get_size) = store.get(location)
         self.assertEqual(3, get_size)

@@ -1533,7 +1533,7 @@ class TestApiWithFakeAuth(base.ApiTest):
         self.assertEqual(response.status, 200)
         image = json.loads(content)
         self.assertEqual(
-                '1', image['image']['properties']['x_all_permitted_joe_soap'])
+            '1', image['image']['properties']['x_all_permitted_joe_soap'])
 
         # Verify both admin and unknown role can read properties marked with
         # '@'
@@ -1545,9 +1545,9 @@ class TestApiWithFakeAuth(base.ApiTest):
                                               headers=auth_headers)
         self.assertEqual(response.status, 200)
         self.assertEqual('1', response.get(
-                'x-image-meta-property-x_all_permitted_admin'))
+            'x-image-meta-property-x_all_permitted_admin'))
         self.assertEqual('1', response.get(
-                'x-image-meta-property-x_all_permitted_joe_soap'))
+            'x-image-meta-property-x_all_permitted_joe_soap'))
         auth_headers = {
             'X-Auth-Token': 'user1:tenant1:joe_soap',
         }
@@ -1556,9 +1556,9 @@ class TestApiWithFakeAuth(base.ApiTest):
                                               headers=auth_headers)
         self.assertEqual(response.status, 200)
         self.assertEqual('1', response.get(
-                'x-image-meta-property-x_all_permitted_admin'))
+            'x-image-meta-property-x_all_permitted_admin'))
         self.assertEqual('1', response.get(
-                'x-image-meta-property-x_all_permitted_joe_soap'))
+            'x-image-meta-property-x_all_permitted_joe_soap'))
 
         # Verify both admin and unknown role can update properties marked with
         # '@'
@@ -1591,7 +1591,7 @@ class TestApiWithFakeAuth(base.ApiTest):
         self.assertEqual(response.status, 200)
         image = json.loads(content)
         self.assertEqual(
-                '2', image['image']['properties']['x_all_permitted_joe_soap'])
+            '2', image['image']['properties']['x_all_permitted_joe_soap'])
 
         # Verify both admin and unknown role can delete properties marked with
         # '@'

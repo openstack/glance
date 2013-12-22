@@ -203,7 +203,7 @@ def delete_all_cached_images(options, args):
 Remove all images from the cache.
     """
     if (not options.force and
-        not user_confirm("Delete all cached images?", default=False)):
+            not user_confirm("Delete all cached images?", default=False)):
         return SUCCESS
 
     client = get_client(options)
@@ -250,7 +250,7 @@ def delete_all_queued_images(options, args):
 Remove all images from the cache queue.
     """
     if (not options.force and
-        not user_confirm("Delete all queued images?", default=False)):
+            not user_confirm("Delete all queued images?", default=False)):
         return SUCCESS
 
     client = get_client(options)
@@ -269,16 +269,16 @@ def get_client(options):
     supplied to the CLI
     """
     return glance.image_cache.client.get_client(
-                host=options.host,
-                port=options.port,
-                username=options.os_username,
-                password=options.os_password,
-                tenant=options.os_tenant_name,
-                auth_url=options.os_auth_url,
-                auth_strategy=options.os_auth_strategy,
-                auth_token=options.os_auth_token,
-                region=options.os_region_name,
-                insecure=options.insecure)
+        host=options.host,
+        port=options.port,
+        username=options.os_username,
+        password=options.os_password,
+        tenant=options.os_tenant_name,
+        auth_url=options.os_auth_url,
+        auth_strategy=options.os_auth_strategy,
+        auth_token=options.os_auth_token,
+        region=options.os_region_name,
+        insecure=options.insecure)
 
 
 def env(*vars, **kwargs):

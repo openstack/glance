@@ -80,9 +80,9 @@ class ImageRepo(object):
     def list(self, marker=None, limit=None, sort_key='created_at',
              sort_dir='desc', filters=None, member_status='accepted'):
         db_api_images = self.db_api.image_get_all(
-                self.context, filters=filters, marker=marker, limit=limit,
-                sort_key=sort_key, sort_dir=sort_dir,
-                member_status=member_status)
+            self.context, filters=filters, marker=marker, limit=limit,
+            sort_key=sort_key, sort_dir=sort_dir,
+            member_status=member_status)
         images = []
         for db_api_image in db_api_images:
             tags = self.db_api.image_tag_get_all(self.context,
@@ -231,7 +231,7 @@ class ImageMemberRepo(object):
 
     def list(self):
         db_members = self.db_api.image_member_find(
-                        self.context, image_id=self.image.image_id)
+            self.context, image_id=self.image.image_id)
         image_members = []
         for db_member in db_members:
             image_members.append(self._format_image_member_from_db(db_member))
@@ -278,16 +278,16 @@ class ImageMemberRepo(object):
     def get(self, member_id):
         try:
             db_api_image_member = self.db_api.image_member_find(
-                                                        self.context,
-                                                        self.image.image_id,
-                                                        member_id)
+                self.context,
+                self.image.image_id,
+                member_id)
             if not db_api_image_member:
                 raise exception.NotFound()
         except (exception.NotFound, exception.Forbidden):
             raise exception.NotFound()
 
         image_member = self._format_image_member_from_db(
-                                                    db_api_image_member[0])
+            db_api_image_member[0])
         return image_member
 
 

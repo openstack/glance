@@ -187,7 +187,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
 
         # Queue second image and then cache it
         cmd = "%s --port=%d --force queue-image %s" % (
-                exe_cmd, api_port, ids[1])
+            exe_cmd, api_port, ids[1])
 
         exitcode, out, err = execute(cmd)
 
@@ -249,7 +249,7 @@ log_file = %(log_file)s
 
         # Queue third image and then delete it from queue
         cmd = "%s --port=%d --force queue-image %s" % (
-                exe_cmd, api_port, ids[2])
+            exe_cmd, api_port, ids[2])
 
         exitcode, out, err = execute(cmd)
 

@@ -249,7 +249,7 @@ class TestScrubber(functional.FunctionalTest):
         self.assertTrue(marker_uri is not None)
 
         decrypted_uri = crypt.urlsafe_decrypt(
-                self.api_server.metadata_encryption_key, marker_uri)
+            self.api_server.metadata_encryption_key, marker_uri)
         loc = StoreLocation({})
         loc.parse_uri(decrypted_uri)
 

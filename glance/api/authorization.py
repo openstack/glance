@@ -101,8 +101,8 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
 
     def get(self, member_id):
         if (self.context.is_admin or
-            self.context.owner == self.image.owner or
-            self.context.owner == member_id):
+                self.context.owner == self.image.owner or
+                self.context.owner == member_id):
             member = self.member_repo.get(member_id)
             return proxy_member(self.context, member)
         else:
@@ -112,7 +112,7 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
     def list(self, *args, **kwargs):
         members = self.member_repo.list(*args, **kwargs)
         if (self.context.is_admin or
-            self.context.owner == self.image.owner):
+                self.context.owner == self.image.owner):
             return [proxy_member(self.context, m) for m in members]
         for member in members:
             if member.member_id == self.context.owner:
@@ -122,7 +122,7 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
 
     def remove(self, image_member):
         if (self.image.owner == self.context.owner or
-            self.context.is_admin):
+                self.context.is_admin):
             self.member_repo.remove(image_member)
         else:
             message = _("You cannot delete image member for %s")
@@ -131,7 +131,7 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
 
     def add(self, image_member):
         if (self.image.owner == self.context.owner or
-            self.context.is_admin):
+                self.context.is_admin):
             return self.member_repo.add(image_member)
         else:
             message = _("You cannot add image member for %s")
@@ -140,7 +140,7 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
 
     def save(self, image_member):
         if (self.context.is_admin or
-            self.context.owner == image_member.member_id):
+                self.context.owner == image_member.member_id):
             updated_member = self.member_repo.save(image_member)
             return proxy_member(self.context, updated_member)
         else:

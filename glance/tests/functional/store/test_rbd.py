@@ -149,10 +149,10 @@ class TestRBDStore(store_tests.BaseTestCase, testtools.TestCase):
         self.assertEqual(image_checksum, add_checksum)
 
         location = glance.store.location.Location(
-                self.store_name,
-                store.get_store_location_class(),
-                uri=uri,
-                image_id=image_id)
+            self.store_name,
+            store.get_store_location_class(),
+            uri=uri,
+            image_id=image_id)
 
         self.assertEqual(image_size, store.get_size(location))
 

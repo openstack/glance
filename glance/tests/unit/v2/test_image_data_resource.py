@@ -98,7 +98,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.image_repo = FakeImageRepo()
         self.gateway = FakeGateway(self.image_repo)
         self.controller = glance.api.v2.image_data.ImageDataController(
-                gateway=self.gateway)
+            gateway=self.gateway)
 
     def test_download(self):
         request = unit_test_utils.get_fake_request()

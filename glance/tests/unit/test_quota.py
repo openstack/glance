@@ -312,9 +312,9 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         self.image_repo_mock = mock.Mock()
 
         self.image_repo_proxy = glance.quota.ImageRepoProxy(
-                                    self.image_repo_mock,
-                                    mock.Mock(),
-                                    mock.Mock())
+            self.image_repo_mock,
+            mock.Mock(),
+            mock.Mock())
 
     def test_save_image_with_image_property(self):
         self.config(image_property_quota=1)
@@ -376,9 +376,9 @@ class TestImageTagQuotas(test_utils.BaseTestCase):
 
         self.image_repo_mock = mock.Mock()
         self.image_repo_proxy = glance.quota.ImageRepoProxy(
-                                    self.image_repo_mock,
-                                    mock.Mock(),
-                                    mock.Mock())
+            self.image_repo_mock,
+            mock.Mock(),
+            mock.Mock())
 
     def test_replace_image_tag(self):
         self.config(image_tag_quota=1)
@@ -472,8 +472,8 @@ class TestImageMemberQuotas(test_utils.BaseTestCase):
         self.image = mock.Mock()
         self.base_image_member_factory = mock.Mock()
         self.image_member_factory = glance.quota.ImageMemberFactoryProxy(
-                                    self.base_image_member_factory, context,
-                                    db_api)
+            self.base_image_member_factory, context,
+            db_api)
 
     def test_new_image_member(self):
         self.config(image_member_quota=1)

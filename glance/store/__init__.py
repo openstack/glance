@@ -628,8 +628,8 @@ class ImageProxy(glance.domain.proxy.Image):
             'store_api': store_api,
         }
         super(ImageProxy, self).__init__(
-                image, member_repo_proxy_class=ImageMemberRepoProxy,
-                member_repo_proxy_kwargs=proxy_kwargs)
+            image, member_repo_proxy_class=ImageMemberRepoProxy,
+            member_repo_proxy_kwargs=proxy_kwargs)
 
     def delete(self):
         self.image.delete()
@@ -646,8 +646,8 @@ class ImageProxy(glance.domain.proxy.Image):
         if size is None:
             size = 0  # NOTE(markwash): zero -> unknown size
         location, size, checksum, loc_meta = self.store_api.add_to_backend(
-                self.context, CONF.default_store,
-                self.image.image_id, utils.CooperativeReader(data), size)
+            self.context, CONF.default_store,
+            self.image.image_id, utils.CooperativeReader(data), size)
         self.image.locations = [{'url': location, 'metadata': loc_meta}]
         self.image.size = size
         self.image.checksum = checksum

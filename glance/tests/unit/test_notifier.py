@@ -110,20 +110,20 @@ class TestImageNotifications(utils.BaseTestCase):
     def setUp(self):
         super(TestImageNotifications, self).setUp()
         self.image = ImageStub(
-                image_id=UUID1, name='image-1', status='active', size=1024,
-                created_at=DATETIME, updated_at=DATETIME, owner=TENANT1,
-                visibility='public', container_format='ami',
-                tags=['one', 'two'], disk_format='ami', min_ram=128,
-                min_disk=10, checksum='ca425b88f047ce8ec45ee90e813ada91',
-                locations=['http://127.0.0.1'])
+            image_id=UUID1, name='image-1', status='active', size=1024,
+            created_at=DATETIME, updated_at=DATETIME, owner=TENANT1,
+            visibility='public', container_format='ami',
+            tags=['one', 'two'], disk_format='ami', min_ram=128,
+            min_disk=10, checksum='ca425b88f047ce8ec45ee90e813ada91',
+            locations=['http://127.0.0.1'])
         self.context = glance.context.RequestContext(tenant=TENANT2,
                                                      user=USER1)
         self.image_repo_stub = ImageRepoStub()
         self.notifier = unit_test_utils.FakeNotifier()
         self.image_repo_proxy = glance.notifier.ImageRepoProxy(
-                self.image_repo_stub, self.context, self.notifier)
+            self.image_repo_stub, self.context, self.notifier)
         self.image_proxy = glance.notifier.ImageProxy(
-                self.image, self.context, self.notifier)
+            self.image, self.context, self.notifier)
 
     def test_image_save_notification(self):
         self.image_repo_proxy.save(self.image_proxy)

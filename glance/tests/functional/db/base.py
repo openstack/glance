@@ -293,7 +293,7 @@ class DriverTests(object):
         ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2,
                                        auth_tok='user:%s:user' % TENANT2)
         image = self.db_api.image_create(
-                ctxt1, {'status': 'queued', 'owner': TENANT1})
+            ctxt1, {'status': 'queued', 'owner': TENANT1})
         self.assertRaises(exception.Forbidden,
                           self.db_api.image_get, ctxt2, image['id'])
 
@@ -1609,9 +1609,9 @@ class TestVisibility(test_utils.BaseTestCase):
 
     def setup_contexts(self):
         self.admin_context = context.RequestContext(
-                is_admin=True, tenant=self.admin_tenant)
+            is_admin=True, tenant=self.admin_tenant)
         self.admin_none_context = context.RequestContext(
-                is_admin=True, tenant=None)
+            is_admin=True, tenant=None)
         self.tenant1_context = context.RequestContext(tenant=self.tenant1)
         self.tenant2_context = context.RequestContext(tenant=self.tenant2)
         self.none_context = context.RequestContext(tenant=None)

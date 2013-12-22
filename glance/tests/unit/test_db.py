@@ -103,7 +103,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.db = unit_test_utils.FakeDB()
         self.db.reset()
         self.context = glance.context.RequestContext(
-                user=USER1, tenant=TENANT1)
+            user=USER1, tenant=TENANT1)
         self.image_repo = glance.db.ImageRepo(self.context, self.db)
         self.image_factory = glance.domain.ImageFactory()
         self._create_images()
@@ -177,7 +177,7 @@ class TestImageRepo(test_utils.BaseTestCase):
 
     def _do_test_list_status(self, status, expected):
         self.context = glance.context.RequestContext(
-                        user=USER1, tenant=TENANT3)
+            user=USER1, tenant=TENANT3)
         self.image_repo = glance.db.ImageRepo(self.context, self.db)
         images = self.image_repo.list(member_status=status)
         self.assertEqual(expected, len(images))
@@ -330,7 +330,7 @@ class TestEncryptedLocations(test_utils.BaseTestCase):
         self.db = unit_test_utils.FakeDB()
         self.db.reset()
         self.context = glance.context.RequestContext(
-                user=USER1, tenant=TENANT1)
+            user=USER1, tenant=TENANT1)
         self.image_repo = glance.db.ImageRepo(self.context, self.db)
         self.image_factory = glance.domain.ImageFactory()
         self.crypt_key = '0123456789abcdef'
@@ -397,7 +397,7 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         self.db = unit_test_utils.FakeDB()
         self.db.reset()
         self.context = glance.context.RequestContext(
-                user=USER1, tenant=TENANT1)
+            user=USER1, tenant=TENANT1)
         self.image_repo = glance.db.ImageRepo(self.context, self.db)
         self.image_member_factory = glance.domain.ImageMemberFactory()
         self._create_images()
@@ -433,7 +433,7 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
     def test_list_no_members(self):
         image = self.image_repo.get(UUID2)
         self.image_member_repo_uuid2 = glance.db.ImageMemberRepo(
-                                                self.context, self.db, image)
+            self.context, self.db, image)
         image_members = self.image_member_repo_uuid2.list()
         image_member_ids = set([i.member_id for i in image_members])
         self.assertEqual(set([]), image_member_ids)

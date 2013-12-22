@@ -286,27 +286,27 @@ def main():
     global exitcode
 
     opts = [
-            cfg.SubCommandOpt('server',
-                              title='Server types',
-                              help='Available server types',
-                              handler=add_command_parsers),
-            cfg.StrOpt('pid-file',
-                       metavar='PATH',
-                       help='File to use as pid file. Default: '
-                       '/var/run/glance/$server.pid'),
-            cfg.IntOpt('await-child',
-                       metavar='DELAY',
-                       default=0,
-                       help='Period to wait for service death '
-                            'in order to report exit code '
-                            '(default is to not wait at all)'),
-            cfg.BoolOpt('capture-output',
-                        default=False,
-                        help='Capture stdout/err in syslog '
-                        'instead of discarding'),
-            cfg.BoolOpt('respawn',
-                        default=False,
-                        help='Restart service on unexpected death'),
+        cfg.SubCommandOpt('server',
+                          title='Server types',
+                          help='Available server types',
+                          handler=add_command_parsers),
+        cfg.StrOpt('pid-file',
+                   metavar='PATH',
+                   help='File to use as pid file. Default: '
+                   '/var/run/glance/$server.pid'),
+        cfg.IntOpt('await-child',
+                   metavar='DELAY',
+                   default=0,
+                   help='Period to wait for service death '
+                        'in order to report exit code '
+                        '(default is to not wait at all)'),
+        cfg.BoolOpt('capture-output',
+                    default=False,
+                    help='Capture stdout/err in syslog '
+                    'instead of discarding'),
+        cfg.BoolOpt('respawn',
+                    default=False,
+                    help='Restart service on unexpected death'),
     ]
     CONF.register_cli_opts(opts)
 
@@ -369,7 +369,7 @@ def main():
             do_start('Restart', pid_file, server, CONF.server.args)
 
     if (CONF.server.command == 'reload' or
-        CONF.server.command == 'force-reload'):
+            CONF.server.command == 'force-reload'):
         for server in CONF.server.servers:
             do_stop(server, CONF.server.args, graceful=True)
             pid_file = get_pid_file(server, CONF.pid_file)

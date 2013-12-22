@@ -148,12 +148,12 @@ class ApiTest(test_utils.BaseTestCase):
 
     def _configure_logging(self):
         self.config(default_log_levels=[
-                'amqplib=WARN',
-                'sqlalchemy=WARN',
-                'boto=WARN',
-                'suds=INFO',
-                'keystone=INFO',
-                'eventlet.wsgi.server=DEBUG'
+            'amqplib=WARN',
+            'sqlalchemy=WARN',
+            'boto=WARN',
+            'suds=INFO',
+            'keystone=INFO',
+            'eventlet.wsgi.server=DEBUG'
         ])
 
     def _setup_database(self):

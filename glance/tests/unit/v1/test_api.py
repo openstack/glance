@@ -304,7 +304,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_create_image_with_too_many_properties(self):
         self.config(image_property_quota=1)
         another_request = unit_test_utils.get_fake_request(
-                path='/images', method='POST')
+            path='/images', method='POST')
         headers = {'x-auth-token': 'user:tenant:joe_soap',
                    'x-image-meta-property-x_all_permitted': '1',
                    'x-image-meta-property-x_all_permitted_foo': '2'}
@@ -2880,9 +2880,9 @@ class TestImageSerializer(base.IsolatedUnitTest):
         self.receiving_user = 'fake_user'
         self.receiving_tenant = 2
         self.context = glance.context.RequestContext(
-                is_admin=True,
-                user=self.receiving_user,
-                tenant=self.receiving_tenant)
+            is_admin=True,
+            user=self.receiving_user,
+            tenant=self.receiving_tenant)
         self.serializer = glance.api.v1.images.ImageSerializer()
 
         def image_iter():
@@ -3139,7 +3139,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         """
         image_id = self._create_admin_image()
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'x-image-meta-property-x_owner_foo': 'bar'}
         for k, v in headers.iteritems():
@@ -3156,7 +3156,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         self.set_property_protections(use_policies=True)
         image_id = self._create_admin_image()
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:admin',
                    'x-image-meta-property-spl_create_prop_policy': 'bar'}
         for k, v in headers.iteritems():
@@ -3174,7 +3174,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         """
         image_id = self._create_admin_image()
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:fake_member',
                    'x-image-meta-property-x_owner_foo': 'bar'}
         for k, v in headers.iteritems():
@@ -3191,9 +3191,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         permitted role 'member' can read that protected property via HEAD
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                method='HEAD', path='/images/%s' % image_id)
+            method='HEAD', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:member'}
         for k, v in headers.iteritems():
             another_request.headers[k] = v
@@ -3208,9 +3208,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         HEAD
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                method='HEAD', path='/images/%s' % image_id)
+            method='HEAD', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:fake_role'}
         for k, v in headers.iteritems():
             another_request.headers[k] = v
@@ -3225,9 +3225,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         permitted role 'member' can read that protected property via GET
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                method='GET', path='/images/%s' % image_id)
+            method='GET', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:member'}
         for k, v in headers.iteritems():
             another_request.headers[k] = v
@@ -3242,9 +3242,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         GET
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                method='GET', path='/images/%s' % image_id)
+            method='GET', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:fake_role'}
         for k, v in headers.iteritems():
             another_request.headers[k] = v
@@ -3260,9 +3260,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         /images/detail
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                method='GET', path='/images/detail')
+            method='GET', path='/images/detail')
         headers = {'x-auth-token': 'user:tenant:member'}
         for k, v in headers.iteritems():
             another_request.headers[k] = v
@@ -3279,9 +3279,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         """
         self.set_property_protections(use_policies=True)
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                method='GET', path='/images/detail')
+            method='GET', path='/images/detail')
         headers = {'x-auth-token': 'user:tenant:member'}
         for k, v in headers.iteritems():
             another_request.headers[k] = v
@@ -3297,9 +3297,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         /images/detail
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                method='GET', path='/images/detail')
+            method='GET', path='/images/detail')
         headers = {'x-auth-token': 'user:tenant:fake_role'}
         for k, v in headers.iteritems():
             another_request.headers[k] = v
@@ -3317,9 +3317,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         """
         self.set_property_protections(use_policies=True)
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                method='GET', path='/images/detail')
+            method='GET', path='/images/detail')
         headers = {'x-auth-token': 'user:tenant:fake_role'}
         for k, v in headers.iteritems():
             another_request.headers[k] = v
@@ -3335,9 +3335,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         permitted role 'member' can update that protected property
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'x-image-meta-property-x_owner_foo': 'baz'}
         for k, v in headers.iteritems():
@@ -3353,9 +3353,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         """
         self.set_property_protections(use_policies=True)
         image_id = self._create_admin_image(
-                {'x-image-meta-property-spl_default_policy': 'bar'})
+            {'x-image-meta-property-spl_default_policy': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:admin',
                    'x-image-meta-property-spl_default_policy': 'baz'}
         for k, v in headers.iteritems():
@@ -3370,9 +3370,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         unpermitted role 'fake_role' can *not* update that protected property
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:fake_role',
                    'x-image-meta-property-x_owner_foo': 'baz'}
         for k, v in headers.iteritems():
@@ -3389,9 +3389,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         """
         self.set_property_protections(use_policies=True)
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:fake_role',
                    'x-image-meta-property-x_owner_foo': 'baz'}
         for k, v in headers.iteritems():
@@ -3406,9 +3406,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         Test protected property cannot be updated without read permission
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-spl_update_only_prop': 'foo'})
+            {'x-image-meta-property-spl_update_only_prop': 'foo'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:spl_role',
                    'x-image-meta-property-spl_update_only_prop': 'bar'}
         for k, v in headers.iteritems():
@@ -3424,9 +3424,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         access and the value is unchanged
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-spl_read_prop': 'foo'})
+            {'x-image-meta-property-spl_read_prop': 'foo'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:spl_role',
                    'x-image-meta-property-spl_read_prop': 'foo'}
         for k, v in headers.iteritems():
@@ -3442,9 +3442,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         permitted role 'member' can can delete that protected property
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'X-Glance-Registry-Purge-Props': 'True'}
         for k, v in headers.iteritems():
@@ -3460,9 +3460,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         """
         self.set_property_protections(use_policies=True)
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'X-Glance-Registry-Purge-Props': 'True'}
         for k, v in headers.iteritems():
@@ -3476,10 +3476,10 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         Test protected property cannot be deleted without read permission
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-x_owner_foo': 'bar'})
 
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:fake_role',
                    'X-Glance-Registry-Purge-Props': 'True'}
         for k, v in headers.iteritems():
@@ -3489,7 +3489,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         self.assertNotIn('x-image-meta-property-x_owner_foo', output.headers)
 
         another_request = unit_test_utils.get_fake_request(
-                method='HEAD', path='/images/%s' % image_id)
+            method='HEAD', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:admin'}
         for k, v in headers.iteritems():
             another_request.headers[k] = v
@@ -3504,10 +3504,10 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         Test protected property cannot be deleted without delete permission
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-spl_update_prop': 'foo'})
+            {'x-image-meta-property-spl_update_prop': 'foo'})
 
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:spl_role',
                    'X-Glance-Registry-Purge-Props': 'True'}
         for k, v in headers.iteritems():
@@ -3518,7 +3518,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
                       "spl_update_prop", output.body)
 
         another_request = unit_test_utils.get_fake_request(
-                method='HEAD', path='/images/%s' % image_id)
+            method='HEAD', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:admin'}
         for k, v in headers.iteritems():
             another_request.headers[k] = v
@@ -3526,7 +3526,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         self.assertEqual(output.status_int, 200)
         self.assertEqual('', output.body)
         self.assertEqual(
-                output.headers['x-image-meta-property-spl_update_prop'], 'foo')
+            output.headers['x-image-meta-property-spl_update_prop'], 'foo')
 
     def test_read_protected_props_leak_with_update(self):
         """
@@ -3534,10 +3534,10 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         are not disclosed
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-spl_update_prop': '0',
-                 'x-image-meta-property-foo': 'bar'})
+            {'x-image-meta-property-spl_update_prop': '0',
+             'x-image-meta-property-foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:spl_role',
                    'x-image-meta-property-spl_update_prop': '1',
                    'X-Glance-Registry-Purge-Props': 'False'}
@@ -3555,10 +3555,10 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         their property while the admin owned one is ignored transparently
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-admin_foo': 'bar',
-                 'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-admin_foo': 'bar',
+             'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'x-image-meta-property-x_owner_foo': 'baz'}
         for k, v in headers.iteritems():
@@ -3581,7 +3581,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         }
         image_id = self._create_admin_image(custom_props)
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
 
         # verify spl_role can update it's prop
         headers = {'x-auth-token': 'user:tenant:spl_role',
@@ -3611,10 +3611,10 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         their property while the admin owned one is ignored transparently
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-admin_foo': 'bar',
-                 'x-image-meta-property-x_owner_foo': 'bar'})
+            {'x-image-meta-property-admin_foo': 'bar',
+                'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'X-Glance-Registry-Purge-Props': 'True'}
         for k, v in headers.iteritems():
@@ -3637,7 +3637,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         }
         image_id = self._create_admin_image(custom_props)
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:spl_role',
                    'X-Glance-Registry-Purge-Props': 'True'}
         for k, v in headers.iteritems():
@@ -3652,7 +3652,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         """
         image_id = self._create_admin_image()
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:joe_soap',
                    'x-image-meta-property-x_all_permitted': '1'}
         for k, v in headers.iteritems():
@@ -3671,7 +3671,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         }
         image_id = self._create_admin_image(custom_props)
         another_request = unit_test_utils.get_fake_request(
-                method='HEAD', path='/images/%s' % image_id)
+            method='HEAD', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:joe_soap'}
         for k, v in headers.iteritems():
             another_request.headers[k] = v
@@ -3679,7 +3679,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         self.assertEqual(output.status_int, 200)
         self.assertEqual('', output.body)
         self.assertEqual(
-                output.headers['x-image-meta-property-x_all_permitted'], '1')
+            output.headers['x-image-meta-property-x_all_permitted'], '1')
 
     def test_update_non_protected_prop(self):
         """
@@ -3687,9 +3687,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         role
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_all_permitted': '1'})
+            {'x-image-meta-property-x_all_permitted': '1'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:joe_soap',
                    'x-image-meta-property-x_all_permitted': '2'}
         for k, v in headers.iteritems():
@@ -3704,9 +3704,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         role
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_all_permitted': '1'})
+            {'x-image-meta-property-x_all_permitted': '1'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:joe_soap',
                    'X-Glance-Registry-Purge-Props': 'True'}
         for k, v in headers.iteritems():
@@ -3721,7 +3721,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         """
         image_id = self._create_admin_image()
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'x-image-meta-property-x_none_permitted': '1'}
         for k, v in headers.iteritems():
@@ -3730,7 +3730,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         self.assertEqual(output.status_int, 403)
         # also check admin can not create
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:admin',
                    'x-image-meta-property-x_none_permitted_admin': '1'}
         for k, v in headers.iteritems():
@@ -3747,7 +3747,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         }
         image_id = self._create_admin_image(custom_props)
         another_request = unit_test_utils.get_fake_request(
-                method='HEAD', path='/images/%s' % image_id)
+            method='HEAD', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:member'}
         for k, v in headers.iteritems():
             another_request.headers[k] = v
@@ -3756,7 +3756,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         self.assertNotIn('x_none_read', output.headers)
         # also check admin can not read
         another_request = unit_test_utils.get_fake_request(
-                method='HEAD', path='/images/%s' % image_id)
+            method='HEAD', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:admin'}
         for k, v in headers.iteritems():
             another_request.headers[k] = v
@@ -3769,9 +3769,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         Verify a property protected by special char '!' is updatable by noone
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_none_update': '1'})
+            {'x-image-meta-property-x_none_update': '1'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'x-image-meta-property-x_none_update': '2'}
         for k, v in headers.iteritems():
@@ -3780,7 +3780,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         self.assertEqual(output.status_int, 403)
         # also check admin can't update property
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:admin',
                    'x-image-meta-property-x_none_update': '2'}
         for k, v in headers.iteritems():
@@ -3793,9 +3793,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         Verify a property protected by special char '!' is deletable by noone
         """
         image_id = self._create_admin_image(
-                {'x-image-meta-property-x_none_delete': '1'})
+            {'x-image-meta-property-x_none_delete': '1'})
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'X-Glance-Registry-Purge-Props': 'True'}
         for k, v in headers.iteritems():
@@ -3804,7 +3804,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         self.assertEqual(output.status_int, 403)
         # also check admin can't delete
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:admin',
                    'X-Glance-Registry-Purge-Props': 'True'}
         for k, v in headers.iteritems():
@@ -3846,7 +3846,7 @@ class TestAPIPropertyQuotas(base.IsolatedUnitTest):
         self.config(image_property_quota=1)
         image_id = self._create_admin_image()
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:joe_soap',
                    'x-image-meta-property-x_all_permitted': '1',
                    'x-image-meta-property-x_all_permitted_foo': '2'}
@@ -3878,7 +3878,7 @@ class TestAPIPropertyQuotas(base.IsolatedUnitTest):
         image_id = res_body['id']
 
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:joe_soap',
                    'x-glance-registry-purge-props': 'False',
                    'x-image-meta-property-x_all_permitted': '1'}
@@ -3910,7 +3910,7 @@ class TestAPIPropertyQuotas(base.IsolatedUnitTest):
         image_id = res_body['id']
 
         another_request = unit_test_utils.get_fake_request(
-                path='/images/%s' % image_id, method='PUT')
+            path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:joe_soap',
                    'x-glance-registry-purge-props': 'False',
                    'x-image-meta-property-x_all_permitted_create': '3',

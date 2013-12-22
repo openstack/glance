@@ -54,7 +54,7 @@ class TestSizeCheckedIter(testtools.TestCase):
         resp = self._get_webob_response()
         meta = self._get_image_metadata()
         checked_image = glance.api.common.size_checked_iter(
-                resp, meta, 4, ['AB', 'CD'], None)
+            resp, meta, 4, ['AB', 'CD'], None)
 
         self.assertEqual('AB', checked_image.next())
         self.assertEqual('CD', checked_image.next())
@@ -64,7 +64,7 @@ class TestSizeCheckedIter(testtools.TestCase):
         resp = self._get_webob_response()
         meta = self._get_image_metadata()
         checked_image = glance.api.common.size_checked_iter(
-                resp, meta, 3, ['AB', 'C'], None)
+            resp, meta, 3, ['AB', 'C'], None)
 
         self.assertEqual('AB', checked_image.next())
         self.assertEqual('C', checked_image.next())
@@ -74,7 +74,7 @@ class TestSizeCheckedIter(testtools.TestCase):
         resp = self._get_webob_response()
         meta = self._get_image_metadata()
         checked_image = glance.api.common.size_checked_iter(
-                resp, meta, 6, ['AB', '', 'CDE', 'F'], None)
+            resp, meta, 6, ['AB', '', 'CDE', 'F'], None)
 
         self.assertEqual('AB', checked_image.next())
         self.assertEqual('', checked_image.next())
@@ -87,7 +87,7 @@ class TestSizeCheckedIter(testtools.TestCase):
         resp = self._get_webob_response()
         meta = self._get_image_metadata()
         checked_image = glance.api.common.size_checked_iter(
-                resp, meta, 4, ['AB', 'CD', 'EF'], None)
+            resp, meta, 4, ['AB', 'CD', 'EF'], None)
 
         self.assertEqual('AB', checked_image.next())
         self.assertEqual('CD', checked_image.next())

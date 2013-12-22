@@ -559,9 +559,9 @@ class ReplicationUtilitiesTestCase(test_utils.BaseTestCase):
     def test_image_present(self):
         client = FakeImageService(None, 'noauth')
         self.assertTrue(glance_replicator._image_present(
-                client, '5dcddce0-cba5-4f18-9cf4-9853c7b207a6'))
+            client, '5dcddce0-cba5-4f18-9cf4-9853c7b207a6'))
         self.assertFalse(glance_replicator._image_present(
-                client, uuid.uuid4()))
+            client, uuid.uuid4()))
 
     def test_dict_diff(self):
         a = {'a': 1, 'b': 2, 'c': 3}

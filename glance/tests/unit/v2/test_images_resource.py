@@ -2722,10 +2722,10 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
         self.serializer = glance.api.v2.images.ResponseSerializer(schema)
 
         self.fixture = _domain_fixture(
-                UUID2, name='image-2', owner=TENANT2,
-                checksum='ca425b88f047ce8ec45ee90e813ada91',
-                created_at=DATETIME, updated_at=DATETIME, size=1024,
-                extra_properties=dict(color='green', mood='grouchy'))
+            UUID2, name='image-2', owner=TENANT2,
+            checksum='ca425b88f047ce8ec45ee90e813ada91',
+            created_at=DATETIME, updated_at=DATETIME, size=1024,
+            extra_properties=dict(color='green', mood='grouchy'))
 
     def test_show(self):
         expected = {
@@ -2777,10 +2777,10 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
         super(TestImagesSerializerWithAdditionalProperties, self).setUp()
         self.config(allow_additional_image_properties=True)
         self.fixture = _domain_fixture(
-                UUID2, name='image-2', owner=TENANT2,
-                checksum='ca425b88f047ce8ec45ee90e813ada91',
-                created_at=DATETIME, updated_at=DATETIME, size=1024,
-                extra_properties={'marx': 'groucho'})
+            UUID2, name='image-2', owner=TENANT2,
+            checksum='ca425b88f047ce8ec45ee90e813ada91',
+            created_at=DATETIME, updated_at=DATETIME, size=1024,
+            extra_properties={'marx': 'groucho'})
 
     def test_show(self):
         serializer = glance.api.v2.images.ResponseSerializer()
@@ -2859,24 +2859,24 @@ class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
         self.serializer = glance.api.v2.images.ResponseSerializer()
 
         self.active_image = _domain_fixture(
-                UUID1, name='image-1', visibility='public',
-                status='active', size=1024, created_at=DATETIME,
-                updated_at=DATETIME,
-                locations=[{'url': 'http://some/fake/location',
-                            'metadata': {}}])
+            UUID1, name='image-1', visibility='public',
+            status='active', size=1024, created_at=DATETIME,
+            updated_at=DATETIME,
+            locations=[{'url': 'http://some/fake/location',
+                        'metadata': {}}])
 
         self.queued_image = _domain_fixture(
-                UUID2, name='image-2', status='active',
-                created_at=DATETIME, updated_at=DATETIME,
-                checksum='ca425b88f047ce8ec45ee90e813ada91')
+            UUID2, name='image-2', status='active',
+            created_at=DATETIME, updated_at=DATETIME,
+            checksum='ca425b88f047ce8ec45ee90e813ada91')
 
         self.location_data_image_url = 'http://abc.com/somewhere'
         self.location_data_image_meta = {'key': 98231}
         self.location_data_image = _domain_fixture(
-                UUID2, name='image-2', status='active',
-                created_at=DATETIME, updated_at=DATETIME,
-                locations=[{'url': self.location_data_image_url,
-                            'metadata': self.location_data_image_meta}])
+            UUID2, name='image-2', status='active',
+            created_at=DATETIME, updated_at=DATETIME,
+            locations=[{'url': self.location_data_image_url,
+                        'metadata': self.location_data_image_meta}])
 
     def _do_index(self):
         request = webob.Request.blank('/v2/images')

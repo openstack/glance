@@ -714,7 +714,7 @@ class TestStoreImageRepo(utils.BaseTestCase):
         self.image_stub.visibility = 'private'
         member_repo = self.image.get_member_repo()
         membership = glance.domain.ImageMembership(
-                UUID1, TENANT3, None, None, status='accepted')
+            UUID1, TENANT3, None, None, status='accepted')
         member_repo.add(membership)
         self.assertIn('glug', self.store_api.acls)
         acls = self.store_api.acls['glug']
@@ -727,7 +727,7 @@ class TestStoreImageRepo(utils.BaseTestCase):
         self.image_stub.visibility = 'private'
         member_repo = self.image.get_member_repo()
         membership = glance.domain.ImageMembership(
-                UUID1, TENANT1, None, None, status='accepted')
+            UUID1, TENANT1, None, None, status='accepted')
         member_repo.remove(membership)
         self.assertIn('glug', self.store_api.acls)
         acls = self.store_api.acls['glug']
@@ -741,9 +741,9 @@ class TestImageFactory(utils.BaseTestCase):
     def setUp(self):
         super(TestImageFactory, self).setUp()
         self.image_factory = glance.store.ImageFactoryProxy(
-                                ImageFactoryStub(),
-                                glance.context.RequestContext(user=USER1),
-                                unit_test_utils.FakeStoreAPI())
+            ImageFactoryStub(),
+            glance.context.RequestContext(user=USER1),
+            unit_test_utils.FakeStoreAPI())
 
     def test_new_image(self):
         image = self.image_factory.new_image()

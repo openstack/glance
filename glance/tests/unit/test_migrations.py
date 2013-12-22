@@ -774,8 +774,8 @@ class TestMigrations(test_utils.BaseTestCase):
         images = get_table(engine, 'images')
         unquoted = 'swift://acct:usr:pass@example.com/container/obj-id'
         encrypted_unquoted = crypt.urlsafe_encrypt(
-                                    metadata_encryption_key,
-                                    unquoted, 64)
+            metadata_encryption_key,
+            unquoted, 64)
         data = []
         now = datetime.datetime.now()
         temp = dict(deleted=False,
@@ -840,13 +840,13 @@ class TestMigrations(test_utils.BaseTestCase):
         images = get_table(engine, 'images')
         now = datetime.datetime.now()
         base_values = {
-                'deleted': False,
-                'created_at': now,
-                'updated_at': now,
-                'status': 'active',
-                'is_public': True,
-                'min_disk': 0,
-                'min_ram': 0,
+            'deleted': False,
+            'created_at': now,
+            'updated_at': now,
+            'status': 'active',
+            'is_public': True,
+            'min_disk': 0,
+            'min_ram': 0,
         }
         data = [
             {'id': 'fake-19-1', 'location': 'http://glance.example.com'},

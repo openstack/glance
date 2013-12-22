@@ -342,7 +342,7 @@ class TestImageMembersController(test_utils.BaseTestCase):
         self.assertEqual(res.body, '')
         self.assertEqual(res.status_code, 204)
         found_member = self.db.image_member_find(
-                request.context, image_id=image_id, member=member_id)
+            request.context, image_id=image_id, member=member_id)
         self.assertEqual(found_member, [])
 
     def test_delete_by_member(self):
@@ -403,7 +403,7 @@ class TestImageMembersController(test_utils.BaseTestCase):
         member_id = 'fake-member-id'
         image_id = UUID2
         found_member = self.db.image_member_find(
-                request.context, image_id=image_id, member=member_id)
+            request.context, image_id=image_id, member=member_id)
         self.assertEqual(found_member, [])
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.delete,
                           request, image_id, member_id)

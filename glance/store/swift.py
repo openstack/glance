@@ -282,8 +282,8 @@ class BaseStore(glance.store.base.Store):
 
         try:
             resp_headers, resp_body = connection.get_object(
-                    container=location.container, obj=location.obj,
-                    resp_chunk_size=self.CHUNKSIZE)
+                container=location.container, obj=location.obj,
+                resp_chunk_size=self.CHUNKSIZE)
         except swiftclient.ClientException as e:
             if e.http_status == httplib.NOT_FOUND:
                 msg = _("Swift could not find object %s.") % location.obj
@@ -308,7 +308,7 @@ class BaseStore(glance.store.base.Store):
             connection = self.get_connection(location)
         try:
             resp_headers = connection.head_object(
-                    container=location.container, obj=location.obj)
+                container=location.container, obj=location.obj)
             return int(resp_headers.get('content-length', 0))
         except Exception:
             return 0
@@ -466,7 +466,7 @@ class BaseStore(glance.store.base.Store):
             manifest = None
             try:
                 headers = connection.head_object(
-                        location.container, location.obj)
+                    location.container, location.obj)
                 manifest = headers.get('x-object-manifest')
             except swiftclient.ClientException as e:
                 if e.http_status != httplib.NOT_FOUND:
@@ -475,7 +475,7 @@ class BaseStore(glance.store.base.Store):
                 # Delete all the chunks before the object manifest itself
                 obj_container, obj_prefix = manifest.split('/', 1)
                 segments = connection.get_container(
-                        obj_container, prefix=obj_prefix)[1]
+                    obj_container, prefix=obj_prefix)[1]
                 for segment in segments:
                     # TODO(jaypipes): This would be an easy area to parallelize
                     # since we're simply sending off parallelizable requests
@@ -585,10 +585,10 @@ class SingleTenantStore(BaseStore):
         os_options['service_type'] = self.service_type
 
         return swiftclient.Connection(
-                auth_url, user, location.key, insecure=self.insecure,
-                tenant_name=tenant_name, snet=self.snet,
-                auth_version=self.auth_version, os_options=os_options,
-                ssl_compression=self.ssl_compression)
+            auth_url, user, location.key, insecure=self.insecure,
+            tenant_name=tenant_name, snet=self.snet,
+            auth_version=self.auth_version, os_options=os_options,
+            ssl_compression=self.ssl_compression)
 
 
 class MultiTenantStore(BaseStore):
@@ -606,8 +606,8 @@ class MultiTenantStore(BaseStore):
             raise exception.BadStoreConfiguration(store_name="swift",
                                                   reason=reason)
         self.storage_url = auth.get_endpoint(
-                self.context.service_catalog, service_type=self.service_type,
-                endpoint_region=self.region, endpoint_type=self.endpoint_type)
+            self.context.service_catalog, service_type=self.service_type,
+            endpoint_region=self.region, endpoint_type=self.endpoint_type)
         if self.storage_url.startswith('http://'):
             self.scheme = 'swift+http'
         else:
@@ -664,12 +664,12 @@ class MultiTenantStore(BaseStore):
 
     def get_connection(self, location):
         return swiftclient.Connection(
-                None, self.context.user, None,
-                preauthurl=location.swift_url,
-                preauthtoken=self.context.auth_tok,
-                tenant_name=self.context.tenant,
-                auth_version='2', snet=self.snet, insecure=self.insecure,
-                ssl_compression=self.ssl_compression)
+            None, self.context.user, None,
+            preauthurl=location.swift_url,
+            preauthtoken=self.context.auth_tok,
+            tenant_name=self.context.tenant,
+            auth_version='2', snet=self.snet, insecure=self.insecure,
+            ssl_compression=self.ssl_compression)
 
 
 class ChunkReader(object):

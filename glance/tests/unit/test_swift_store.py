@@ -116,7 +116,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
                 msg = ('Image size:%d exceeds Swift max:%d' %
                        (read_len, MAX_SWIFT_OBJECT_SIZE))
                 raise swiftclient.ClientException(
-                        msg, http_status=httplib.REQUEST_ENTITY_TOO_LARGE)
+                    msg, http_status=httplib.REQUEST_ENTITY_TOO_LARGE)
             fixture_objects[fixture_key] = fixture_object
             fixture_headers[fixture_key] = {
                 'content-length': read_len,
@@ -272,7 +272,7 @@ class SwiftTests(object):
         raises an error
         """
         loc = get_location_from_uri("swift://%s:key@authurl/glance/noexist" % (
-                    self.swift_store_user))
+            self.swift_store_user))
         self.assertRaises(exception.NotFound,
                           self.store.get,
                           loc)
@@ -621,7 +621,7 @@ class SwiftTests(object):
         raises an error
         """
         loc = get_location_from_uri("swift://%s:key@authurl/glance/noexist" % (
-                self.swift_store_user))
+            self.swift_store_user))
         self.assertRaises(exception.NotFound, self.store.delete, loc)
 
     def test_read_acl_public(self):
@@ -831,7 +831,7 @@ class TestMultiTenantStoreConnections(base.IsolatedUnitTest):
         super(TestMultiTenantStoreConnections, self).setUp()
         self.stubs.Set(swiftclient, 'Connection', FakeConnection)
         self.context = glance.context.RequestContext(
-                user='user', tenant='tenant', auth_tok='0123')
+            user='user', tenant='tenant', auth_tok='0123')
         self.store = glance.store.swift.MultiTenantStore(self.context)
         specs = {'scheme': 'swift',
                  'auth_or_store_url': 'example.com',
@@ -901,8 +901,8 @@ class TestCreatingLocations(base.IsolatedUnitTest):
         fake_get_endpoint = FakeGetEndpoint('https://some_endpoint')
         self.stubs.Set(glance.common.auth, 'get_endpoint', fake_get_endpoint)
         context = glance.context.RequestContext(
-                user='user', tenant='tenant', auth_tok='123',
-                service_catalog={})
+            user='user', tenant='tenant', auth_tok='123',
+            service_catalog={})
         store = glance.store.swift.MultiTenantStore(context)
         location = store.create_location('image-id')
         self.assertEqual(location.scheme, 'swift+https')
@@ -917,8 +917,8 @@ class TestCreatingLocations(base.IsolatedUnitTest):
         fake_get_endpoint = FakeGetEndpoint('http://some_endpoint')
         self.stubs.Set(glance.common.auth, 'get_endpoint', fake_get_endpoint)
         context = glance.context.RequestContext(
-                user='user', tenant='tenant', auth_tok='123',
-                service_catalog={})
+            user='user', tenant='tenant', auth_tok='123',
+            service_catalog={})
         store = glance.store.swift.MultiTenantStore(context)
         location = store.create_location('image-id')
         self.assertEqual(location.scheme, 'swift+http')
@@ -929,8 +929,8 @@ class TestCreatingLocations(base.IsolatedUnitTest):
         fake_get_endpoint = FakeGetEndpoint('https://some_endpoint')
         self.stubs.Set(glance.common.auth, 'get_endpoint', fake_get_endpoint)
         context = glance.context.RequestContext(
-                user='user', tenant='tenant', auth_tok='123',
-                service_catalog={})
+            user='user', tenant='tenant', auth_tok='123',
+            service_catalog={})
         store = glance.store.swift.MultiTenantStore(context)
         self.assertEqual(fake_get_endpoint.endpoint_region, 'WestCarolina')
 
@@ -939,8 +939,8 @@ class TestCreatingLocations(base.IsolatedUnitTest):
         fake_get_endpoint = FakeGetEndpoint('https://some_endpoint')
         self.stubs.Set(glance.common.auth, 'get_endpoint', fake_get_endpoint)
         context = glance.context.RequestContext(
-                user='user', tenant='tenant', auth_tok='123',
-                service_catalog={})
+            user='user', tenant='tenant', auth_tok='123',
+            service_catalog={})
         store = glance.store.swift.MultiTenantStore(context)
         self.assertEqual(fake_get_endpoint.service_type, 'toy-store')
 
@@ -949,8 +949,8 @@ class TestCreatingLocations(base.IsolatedUnitTest):
         fake_get_endpoint = FakeGetEndpoint('https://some_endpoint')
         self.stubs.Set(glance.common.auth, 'get_endpoint', fake_get_endpoint)
         context = glance.context.RequestContext(
-                user='user', tenant='tenant', auth_tok='123',
-                service_catalog={})
+            user='user', tenant='tenant', auth_tok='123',
+            service_catalog={})
         store = glance.store.swift.MultiTenantStore(context)
         self.assertEqual(fake_get_endpoint.endpoint_type, 'InternalURL')
 

@@ -228,7 +228,7 @@ class Controller(controller.BaseController):
         if property_utils.is_property_protection_enabled():
             for key in update_props:
                 has_read = self.prop_enforcer.check_property_rules(
-                        key, 'read', req.context)
+                    key, 'read', req.context)
                 if ((self.prop_enforcer.check_property_rules(
                         key, 'update', req.context) is False and
                         image_meta['properties'][key] !=
@@ -829,7 +829,7 @@ class Controller(controller.BaseController):
             # modify certain core metadata keys
             for key in ACTIVE_IMMUTABLE:
                 if (orig_status == 'active' and image_meta.get(key) is not None
-                    and image_meta.get(key) != orig_image_meta.get(key)):
+                        and image_meta.get(key) != orig_image_meta.get(key)):
                     msg = _("Forbidden to modify '%s' of active image.") % key
                     raise HTTPForbidden(explanation=msg,
                                         request=req,
@@ -883,14 +883,14 @@ class Controller(controller.BaseController):
         orig_keys = set(orig_image_meta['properties'])
         new_keys = set(image_meta['properties'])
         self._enforce_update_protected_props(
-                orig_keys.intersection(new_keys), image_meta,
-                orig_image_meta, req)
+            orig_keys.intersection(new_keys), image_meta,
+            orig_image_meta, req)
         self._enforce_create_protected_props(
-                new_keys.difference(orig_keys), req)
+            new_keys.difference(orig_keys), req)
         if purge_props:
             self._enforce_delete_protected_props(
-                    orig_keys.difference(new_keys), image_meta,
-                    orig_image_meta, req)
+                orig_keys.difference(new_keys), image_meta,
+                orig_image_meta, req)
 
         self._enforce_image_property_quota(image_meta,
                                            orig_image_meta=orig_image_meta,
@@ -1137,7 +1137,7 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
         # image_meta['size'] should be an int, but could possibly be a str
         expected_size = int(image_meta['size'])
         response.app_iter = common.size_checked_iter(
-                response, image_meta, expected_size, image_iter, self.notifier)
+            response, image_meta, expected_size, image_iter, self.notifier)
         # Using app_iter blanks content-length, so we set it here...
         response.headers['Content-Length'] = str(image_meta['size'])
         response.headers['Content-Type'] = 'application/octet-stream'

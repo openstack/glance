@@ -1899,9 +1899,9 @@ class TestRegistryAPILocations(base.IsolatedUnitTest,
         self.assertEqual(image_entry['locations'][1]['url'],
                          encrypted_location_url2)
         decrypted_location_url1 = crypt.urlsafe_decrypt(
-                            encryption_key, image_entry['locations'][0]['url'])
+            encryption_key, image_entry['locations'][0]['url'])
         decrypted_location_url2 = crypt.urlsafe_decrypt(
-                            encryption_key, image_entry['locations'][1]['url'])
+            encryption_key, image_entry['locations'][1]['url'])
         self.assertEqual(location_url1, decrypted_location_url1)
         self.assertEqual(location_url2, decrypted_location_url2)
 

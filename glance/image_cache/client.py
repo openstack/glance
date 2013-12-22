@@ -99,18 +99,18 @@ def get_client(host, port=None, timeout=None, use_ssl=False, username=None,
 
     creds = {
         'username': username or
-                    os.getenv('OS_AUTH_USER', os.getenv('OS_USERNAME')),
+        os.getenv('OS_AUTH_USER', os.getenv('OS_USERNAME')),
         'password': password or
-                    os.getenv('OS_AUTH_KEY', os.getenv('OS_PASSWORD')),
+        os.getenv('OS_AUTH_KEY', os.getenv('OS_PASSWORD')),
         'tenant': tenant or
-                    os.getenv('OS_AUTH_TENANT', os.getenv('OS_TENANT_NAME')),
+        os.getenv('OS_AUTH_TENANT', os.getenv('OS_TENANT_NAME')),
         'auth_url': auth_url or
-                    os.getenv('OS_AUTH_URL'),
+        os.getenv('OS_AUTH_URL'),
         'strategy': force_strategy or
-                    auth_strategy or
-                    os.getenv('OS_AUTH_STRATEGY', 'noauth'),
+        auth_strategy or
+        os.getenv('OS_AUTH_STRATEGY', 'noauth'),
         'region': region or
-                    os.getenv('OS_REGION_NAME'),
+        os.getenv('OS_REGION_NAME'),
     }
 
     if creds['strategy'] == 'keystone' and not creds['auth_url']:
@@ -119,11 +119,11 @@ def get_client(host, port=None, timeout=None, use_ssl=False, username=None,
         raise exception.ClientConfigurationError(msg)
 
     return CacheClient(
-            host=host,
-            port=port,
-            timeout=timeout,
-            use_ssl=use_ssl,
-            auth_tok=auth_token or
-            os.getenv('OS_TOKEN'),
-            creds=creds,
-            insecure=insecure)
+        host=host,
+        port=port,
+        timeout=timeout,
+        use_ssl=use_ssl,
+        auth_tok=auth_token or
+        os.getenv('OS_TOKEN'),
+        creds=creds,
+        insecure=insecure)

@@ -205,10 +205,10 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
         self.assertEqual(image_checksum, add_checksum)
 
         location = glance.store.location.Location(
-                self.store_name,
-                store.get_store_location_class(),
-                uri=uri,
-                image_id=image_id)
+            self.store_name,
+            store.get_store_location_class(),
+            uri=uri,
+            image_id=image_id)
 
         # Store interface should still be respected even though
         # we are storing images in multiple Swift objects
@@ -322,16 +322,16 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
         swift_store_user = self.swift_config['swift_store_user']
         tenant_name, username = swift_store_user.split(':')
         tenant_id, auth_token, service_catalog = keystone_authenticate(
-                self.swift_config['swift_store_auth_address'],
-                self.swift_config['swift_store_auth_version'],
-                tenant_name,
-                username,
-                self.swift_config['swift_store_key'])
+            self.swift_config['swift_store_auth_address'],
+            self.swift_config['swift_store_auth_version'],
+            tenant_name,
+            username,
+            self.swift_config['swift_store_key'])
 
         context = glance.context.RequestContext(
-                tenant=tenant_id,
-                service_catalog=service_catalog,
-                auth_tok=auth_token)
+            tenant=tenant_id,
+            service_catalog=service_catalog,
+            auth_tok=auth_token)
         store = self.get_store(context=context)
 
         image_id = str(uuid.uuid4())
@@ -339,10 +339,10 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
         uri, _, _, _ = store.add(image_id, image_data, 3)
 
         location = glance.store.location.Location(
-                self.store_name,
-                store.get_store_location_class(),
-                uri=uri,
-                image_id=image_id)
+            self.store_name,
+            store.get_store_location_class(),
+            uri=uri,
+            image_id=image_id)
 
         read_tenant = str(uuid.uuid4())
         write_tenant = str(uuid.uuid4())

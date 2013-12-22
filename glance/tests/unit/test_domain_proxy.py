@@ -216,8 +216,8 @@ class TestImageMembershipFactory(test_utils.BaseTestCase):
 
     def test_proxy_wrapped_membership(self):
         proxy_factory = proxy.ImageMembershipFactory(
-                self.factory, member_proxy_class=FakeProxy,
-                member_proxy_kwargs={'a': 1})
+            self.factory, member_proxy_class=FakeProxy,
+            member_proxy_kwargs={'a': 1})
         self.factory.result = 'tyrion'
         membership = proxy_factory.new_image_member('jaime', 'cersei')
         self.assertTrue(isinstance(membership, FakeProxy))
@@ -228,7 +228,7 @@ class TestImageMembershipFactory(test_utils.BaseTestCase):
 
     def test_proxy_wrapped_image(self):
         proxy_factory = proxy.ImageMembershipFactory(
-                self.factory, image_proxy_class=FakeProxy)
+            self.factory, image_proxy_class=FakeProxy)
         self.factory.result = 'tyrion'
         image = FakeProxy('jaime')
         membership = proxy_factory.new_image_member(image, 'cersei')
@@ -241,10 +241,10 @@ class TestImageMembershipFactory(test_utils.BaseTestCase):
             pass
 
         proxy_factory = proxy.ImageMembershipFactory(
-                self.factory,
-                member_proxy_class=FakeProxy,
-                member_proxy_kwargs={'b': 2},
-                image_proxy_class=FakeProxy2)
+            self.factory,
+            member_proxy_class=FakeProxy,
+            member_proxy_kwargs={'b': 2},
+            image_proxy_class=FakeProxy2)
 
         self.factory.result = 'tyrion'
         image = FakeProxy2('jaime')

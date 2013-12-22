@@ -71,7 +71,7 @@ class SqliteConnection(sqlite3.Connection):
 
     def execute(self, *args, **kwargs):
         return self._timeout(lambda: sqlite3.Connection.execute(
-                                        self, *args, **kwargs))
+            self, *args, **kwargs))
 
     def commit(self):
         return self._timeout(lambda: sqlite3.Connection.commit(self))
