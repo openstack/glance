@@ -28,7 +28,6 @@ import webob
 
 import glance.api
 import glance.api.common
-from glance.api.v1 import images
 from glance.api.v1 import router
 import glance.common.config
 import glance.context
@@ -870,7 +869,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
 
-    def test_add_copy_from_upload_image_unauthorized(self):
+    def test_add_copy_from_upload_image_unauthorized_with_body(self):
         rules = {"upload_image": '!', "modify_image": '@',
                  "add_image": '@'}
         self.set_policy_rules(rules)
@@ -2777,7 +2776,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
                 is_admin=True,
                 user=self.receiving_user,
                 tenant=self.receiving_tenant)
-        self.serializer = images.ImageSerializer()
+        self.serializer = glance.api.v1.images.ImageSerializer()
 
         def image_iter():
             for x in ['chunk', '678911234', '56789']:
