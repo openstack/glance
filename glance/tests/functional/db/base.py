@@ -1217,7 +1217,7 @@ class DriverQuotaTests(test_utils.BaseTestCase):
     def test_storage_quota_multiple_locations(self):
         dt1 = timeutils.utcnow()
         sz = 53
-        new_fixture_dict = {'id': 'SOMEID', 'created_at': dt1,
+        new_fixture_dict = {'id': str(uuid.uuid4()), 'created_at': dt1,
                             'updated_at': dt1, 'size': sz,
                             'owner': self.owner_id1}
         new_fixture = build_image_fixture(**new_fixture_dict)
@@ -1236,7 +1236,8 @@ class DriverQuotaTests(test_utils.BaseTestCase):
         # good way to delete locations.
         dt1 = timeutils.utcnow()
         sz = 53
-        new_fixture_dict = {'id': 'SOMEID', 'created_at': dt1,
+        image_id = str(uuid.uuid4())
+        new_fixture_dict = {'id': image_id, 'created_at': dt1,
                             'updated_at': dt1, 'size': sz,
                             'owner': self.owner_id1}
         new_fixture = build_image_fixture(**new_fixture_dict)
@@ -1249,7 +1250,7 @@ class DriverQuotaTests(test_utils.BaseTestCase):
         x = self.db_api.user_get_storage_usage(self.context1, self.owner_id1)
         self.assertEqual(total + (sz * 2), x)
 
-        self.db_api.image_destroy(self.context1, 'SOMEID')
+        self.db_api.image_destroy(self.context1, image_id)
         x = self.db_api.user_get_storage_usage(self.context1, self.owner_id1)
         self.assertEqual(total, x)
 
