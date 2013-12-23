@@ -179,7 +179,7 @@ class TestMigrations(utils.BaseTestCase):
             if conn_string.startswith('sqlite'):
                 # We can just delete the SQLite database, which is
                 # the easiest and cleanest solution
-                db_path = conn_pieces.path.strip('/')
+                db_path = conn_pieces.path[1:]
                 if os.path.exists(db_path):
                     os.unlink(db_path)
                 # No need to recreate the SQLite DB. SQLite will
