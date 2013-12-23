@@ -45,6 +45,9 @@ class FakeImage(object):
         for d in data:
             self.size += len(d)
 
+    def __init__(self, **kwargs):
+        self.extra_properties = kwargs.get('extra_properties', {})
+
 
 class TestImageQuota(test_utils.BaseTestCase):
     def setUp(self):
@@ -342,13 +345,15 @@ class TestImageQuota(test_utils.BaseTestCase):
 class TestImagePropertyQuotas(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImagePropertyQuotas, self).setUp()
-        self.base_image = mock.Mock()
+        self.base_image = FakeImage()
         self.image = glance.quota.ImageProxy(self.base_image,
                                              mock.Mock(),
                                              mock.Mock(),
                                              mock.Mock())
 
         self.image_repo_mock = mock.Mock()
+        self.image_repo_mock.add.return_value = self.base_image
+        self.image_repo_mock.save.return_value = self.base_image
 
         self.image_repo_proxy = glance.quota.ImageRepoProxy(
             self.image_repo_mock,
@@ -404,12 +409,75 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
 
         self.image_repo_mock.add.assert_called_once_with(self.base_image)
 
+    def _quota_exceed_setup(self):
+        self.config(image_property_quota=2)
+        self.base_image.extra_properties = {'foo': 'bar', 'spam': 'ham'}
+        self.image = glance.quota.ImageProxy(self.base_image,
+                                             mock.Mock(),
+                                             mock.Mock(),
+                                             mock.Mock())
+
+    def test_modify_image_properties_when_quota_exceeded(self):
+        self._quota_exceed_setup()
+        self.config(image_property_quota=1)
+        self.image.extra_properties = {'foo': 'frob', 'spam': 'eggs'}
+        self.image_repo_proxy.save(self.image)
+        self.image_repo_mock.save.assert_called_once_with(self.base_image)
+        self.assertEqual('frob', self.base_image.extra_properties['foo'])
+        self.assertEqual('eggs', self.base_image.extra_properties['spam'])
+
+    def test_delete_image_properties_when_quota_exceeded(self):
+        self._quota_exceed_setup()
+        self.config(image_property_quota=1)
+        del self.image.extra_properties['foo']
+        self.image_repo_proxy.save(self.image)
+        self.image_repo_mock.save.assert_called_once_with(self.base_image)
+        self.assertNotIn('foo', self.base_image.extra_properties)
+        self.assertEqual('ham', self.base_image.extra_properties['spam'])
+
+    def test_exceed_quota_during_patch_operation(self):
+        self._quota_exceed_setup()
+        self.image.extra_properties['frob'] = 'baz'
+        self.image.extra_properties['lorem'] = 'ipsum'
+        self.assertEqual('bar', self.base_image.extra_properties['foo'])
+        self.assertEqual('ham', self.base_image.extra_properties['spam'])
+        self.assertEqual('baz', self.base_image.extra_properties['frob'])
+        self.assertEqual('ipsum', self.base_image.extra_properties['lorem'])
+
+        del self.image.extra_properties['frob']
+        del self.image.extra_properties['lorem']
+        self.image_repo_proxy.save(self.image)
+        call_args = mock.call(self.base_image)
+        self.assertEqual(call_args, self.image_repo_mock.save.call_args)
+        self.assertEqual('bar', self.base_image.extra_properties['foo'])
+        self.assertEqual('ham', self.base_image.extra_properties['spam'])
+        self.assertNotIn('frob', self.base_image.extra_properties)
+        self.assertNotIn('lorem', self.base_image.extra_properties)
+
+    def test_quota_exceeded_after_delete_image_properties(self):
+        self.config(image_property_quota=3)
+        self.base_image.extra_properties = {'foo': 'bar',
+                                            'spam': 'ham',
+                                            'frob': 'baz'}
+        self.image = glance.quota.ImageProxy(self.base_image,
+                                             mock.Mock(),
+                                             mock.Mock(),
+                                             mock.Mock())
+        self.config(image_property_quota=1)
+        del self.image.extra_properties['foo']
+        self.image_repo_proxy.save(self.image)
+        self.image_repo_mock.save.assert_called_once_with(self.base_image)
+        self.assertNotIn('foo', self.base_image.extra_properties)
+        self.assertEqual('ham', self.base_image.extra_properties['spam'])
+        self.assertEqual('baz', self.base_image.extra_properties['frob'])
+
 
 class TestImageTagQuotas(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImageTagQuotas, self).setUp()
         self.base_image = mock.Mock()
         self.base_image.tags = set([])
+        self.base_image.extra_properties = {}
         self.image = glance.quota.ImageProxy(self.base_image,
                                              mock.Mock(),
                                              mock.Mock(),
@@ -549,6 +617,7 @@ class TestImageLocationQuotas(test_utils.BaseTestCase):
         self.base_image = mock.Mock()
         self.base_image.locations = []
         self.base_image.size = 1
+        self.base_image.extra_properties = {}
         self.image = glance.quota.ImageProxy(self.base_image,
                                              mock.Mock(),
                                              mock.Mock(),

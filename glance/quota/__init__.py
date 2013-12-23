@@ -14,6 +14,8 @@
 
 import copy
 
+import six
+
 from oslo.config import cfg
 
 import glance.api.common
@@ -87,24 +89,26 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
                                              item_proxy_class=ImageProxy,
                                              item_proxy_kwargs=proxy_kwargs)
 
-    def _enforce_image_property_quota(self, image):
+    def _enforce_image_property_quota(self, attempted):
         if CONF.image_property_quota < 0:
             # If value is negative, allow unlimited number of properties
             return
 
-        attempted = len(image.extra_properties)
         maximum = CONF.image_property_quota
         if attempted > maximum:
-            raise exception.ImagePropertyLimitExceeded(attempted=attempted,
-                                                       maximum=maximum)
+            kwargs = {'attempted': attempted, 'maximum': maximum}
+            exc = exception.ImagePropertyLimitExceeded(**kwargs)
+            LOG.debug(six.text_type(exc))
+            raise exc
 
     def save(self, image):
-        self._enforce_image_property_quota(image)
-        super(ImageRepoProxy, self).save(image)
+        if image.added_new_properties():
+            self._enforce_image_property_quota(len(image.extra_properties))
+        return super(ImageRepoProxy, self).save(image)
 
     def add(self, image):
-        self._enforce_image_property_quota(image)
-        super(ImageRepoProxy, self).add(image)
+        self._enforce_image_property_quota(len(image.extra_properties))
+        return super(ImageRepoProxy, self).add(image)
 
 
 class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
@@ -117,7 +121,6 @@ class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
 
     def new_image(self, **kwargs):
         tags = kwargs.pop('tags', set([]))
-
         _enforce_image_tag_quota(tags)
         return super(ImageFactoryProxy, self).new_image(tags=tags, **kwargs)
 
@@ -277,6 +280,7 @@ class ImageProxy(glance.domain.proxy.Image):
         self.db_api = db_api
         self.store_utils = store_utils
         super(ImageProxy, self).__init__(image)
+        self.orig_props = set(image.extra_properties.keys())
 
     def set_data(self, data, size=None):
         remaining = glance.api.common.check_quota(
@@ -355,3 +359,7 @@ class ImageProxy(glance.domain.proxy.Image):
             self.context, required_size, self.db_api,
             image_id=self.image.image_id)
         self.image.locations = value
+
+    def added_new_properties(self):
+        current_props = set(self.image.extra_properties.keys())
+        return bool(current_props.difference(self.orig_props))
