@@ -281,7 +281,7 @@ class Store(glance.store.base.Store):
                 image.write(data, total - left, length)
                 left -= length
                 checksum.update(data)
-        except:
+        except Exception:
             # Note(zhiyan): clean up already received data when
             # error occurs such as ImageSizeLimitExceeded exception.
             with excutils.save_and_reraise_exception():

@@ -189,7 +189,7 @@ class Store(glance.store.base.Store):
         try:
             self.fs.put(image_file, _id=image_id)
             image = self._get_file(loc)
-        except:
+        except Exception:
             # Note(zhiyan): clean up already received data when
             # error occurs such as ImageSizeLimitExceeded exception.
             with excutils.save_and_reraise_exception():

@@ -581,7 +581,7 @@ class SwiftTests(object):
             self.config(**conf)
             self.store = Store()
             return self.store.add == self.store.add_disabled
-        except:
+        except Exception:
             return False
         return False
 

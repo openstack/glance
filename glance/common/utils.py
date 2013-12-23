@@ -356,7 +356,7 @@ def get_terminal_size():
             height_width = struct.unpack('hh', fcntl.ioctl(sys.stderr.fileno(),
                                          termios.TIOCGWINSZ,
                                          struct.pack('HH', 0, 0)))
-        except:
+        except Exception:
             pass
 
         if not height_width:
@@ -368,7 +368,7 @@ def get_terminal_size():
                 result = p.communicate()
                 if p.returncode == 0:
                     return tuple(int(x) for x in result[0].split())
-            except:
+            except Exception:
                 pass
 
         return height_width
@@ -379,7 +379,7 @@ def get_terminal_size():
             handle = windll.kernel32.GetStdHandle(-12)
             csbi = create_string_buffer(22)
             res = windll.kernel32.GetConsoleScreenBufferInfo(handle, csbi)
-        except:
+        except Exception:
             return None
         if res:
             import struct
@@ -440,7 +440,7 @@ def setup_remote_pydev_debug(host, port):
                         stdoutToServer=True,
                         stderrToServer=True)
         return True
-    except:
+    except Exception:
         LOG.exception(error_msg)
         raise
 

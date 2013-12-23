@@ -280,7 +280,7 @@ class Store(glance.store.base.Store):
                           errno.ENOSPC: exception.StorageFull(),
                           errno.EACCES: exception.StorageWriteDenied()}
             raise exceptions.get(e.errno, e)
-        except:
+        except Exception:
             self._delete_partial(filepath, image_id)
             raise
 

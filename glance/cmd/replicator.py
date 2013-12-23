@@ -624,7 +624,7 @@ def _check_upload_response_headers(headers, body):
             if 'image' in d and 'status' in d['image']:
                 return
 
-        except:
+        except Exception:
             raise UploadException('Image upload problem: %s' % body)
 
 

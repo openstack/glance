@@ -403,7 +403,7 @@ class Scrubber(object):
                 image_id_uri_list = queue.pop_all_locations()
             else:
                 image_id_uri_list = queue.get_all_locations()
-        except:
+        except Exception:
             LOG.error(_("Can not %s scrub jobs from queue.") %
                       'pop' if pop else 'get')
             return None
