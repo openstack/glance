@@ -67,7 +67,7 @@ def image_create(client, values):
 
 
 @_get_client
-def image_update(client, image_id, values, purge_props=False):
+def image_update(client, image_id, values, purge_props=False, from_state=None):
     """
     Set the given properties on an image and update it.
 
@@ -75,7 +75,7 @@ def image_update(client, image_id, values, purge_props=False):
     """
     return client.image_update(values=values,
                                image_id=image_id,
-                               purge_props=purge_props)
+                               purge_props=purge_props, from_state=from_state)
 
 
 @_get_client

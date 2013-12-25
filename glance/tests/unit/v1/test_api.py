@@ -20,6 +20,7 @@ import copy
 import datetime
 import hashlib
 import json
+import mock
 import StringIO
 
 from oslo.config import cfg
@@ -29,6 +30,7 @@ import webob
 import glance.api
 import glance.api.common
 from glance.api.v1 import router
+from glance.api.v1 import upload_utils
 import glance.common.config
 import glance.context
 from glance.db.sqlalchemy import api as db_api
@@ -1142,6 +1144,110 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
         self.assertEqual("pending_delete", res.headers['x-image-meta-status'])
+
+    def test_upload_to_image_status_saving(self):
+        """Test image upload conflict.
+
+        If an image is uploaded before an existing upload operation completes
+        to the same image, the original image should succeed and the
+        conflicting should fail and any data deleted.
+        """
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'some-foo-image'}
+
+        # create an image but don't upload yet.
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEquals(res.status_int, 201)
+        res_body = json.loads(res.body)['image']
+
+        image_id = res_body['id']
+        self.assertTrue('/images/%s' % image_id in res.headers['location'])
+
+        # verify the status is 'queued'
+        self.assertEqual('queued', res_body['status'])
+
+        orig_get_image_metadata = registry.get_image_metadata
+        orig_image_get = db_api._image_get
+        orig_image_update = db_api._image_update
+
+        # this will be used to track what is called and their order.
+        called = []
+        # use this to determine if we are within a db session i.e. atomic
+        # operation, that is setting our active state.
+        test_status = {'activate_session_started': False}
+        # We want first status check to be 'queued' so we get past the first
+        # guard.
+        test_status['queued_guard_passed'] = False
+
+        def mock_image_update(context, values, image_id, purge_props=False,
+                              from_state=None):
+            if values.get('status', None) == 'active':
+                # We only expect this state to be entered once.
+                if test_status['activate_session_started']:
+                    raise Exception("target session already started")
+
+                test_status['activate_session_started'] = True
+                called.append('update_active')
+
+            return orig_image_update(context, values, image_id,
+                                     purge_props=purge_props,
+                                     from_state=from_state)
+
+        def mock_image_get(*args, **kwargs):
+            """Force status to 'saving' if not within activate db session.
+
+            If we are in the activate db session we return 'active' which we
+            then expect to cause exception.Conflict to be raised since this
+            indicates that another upload has succeeded.
+            """
+            image = orig_image_get(*args, **kwargs)
+            if test_status['activate_session_started']:
+                called.append('image_get_active')
+                setattr(image, 'status', 'active')
+            else:
+                setattr(image, 'status', 'saving')
+
+            return image
+
+        def mock_get_image_metadata(*args, **kwargs):
+            """Force image status sequence.
+            """
+            called.append('get_image_meta')
+            meta = orig_get_image_metadata(*args, **kwargs)
+            if not test_status['queued_guard_passed']:
+                meta['status'] = 'queued'
+                test_status['queued_guard_passed'] = True
+
+            return meta
+
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'PUT'
+        req.headers['Content-Type'] = \
+            'application/octet-stream'
+        req.body = "chunk00000remainder"
+
+        mpo = mock.patch.object
+        with mpo(upload_utils, 'initiate_deletion') as mock_initiate_deletion:
+            with mpo(registry, 'get_image_metadata', mock_get_image_metadata):
+                with mpo(db_api, '_image_get', mock_image_get):
+                    with mpo(db_api, '_image_update', mock_image_update):
+                        res = req.get_response(self.api)
+                        self.assertEquals(res.status_int, 409)
+
+                        # Check expected call sequence
+                        self.assertEqual(['get_image_meta', 'get_image_meta',
+                                          'update_active', 'image_get_active'],
+                                         called)
+
+                        # Ensure cleanup occured.
+                        self.assertTrue(mock_initiate_deletion.called)
 
     def test_register_and_upload(self):
         """

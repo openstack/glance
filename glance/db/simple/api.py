@@ -542,7 +542,8 @@ def image_create(context, image_values):
 
 
 @log_call
-def image_update(context, image_id, image_values, purge_props=False):
+def image_update(context, image_id, image_values, purge_props=False,
+                 from_state=None):
     global DATA
     try:
         image = DATA['images'][image_id]

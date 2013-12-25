@@ -164,10 +164,11 @@ def add_image_metadata(context, image_meta):
 
 
 def update_image_metadata(context, image_id, image_meta,
-                          purge_props=False):
+                          purge_props=False, from_state=None):
     LOG.debug(_("Updating image metadata for image %s..."), image_id)
     c = get_registry_client(context)
-    return c.update_image(image_id, image_meta, purge_props)
+    return c.update_image(image_id, image_meta, purge_props=purge_props,
+                          from_state=from_state)
 
 
 def delete_image_metadata(context, image_id):

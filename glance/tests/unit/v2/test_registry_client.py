@@ -444,7 +444,8 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
     def test_image_update(self):
         """Tests that the registry API updates the image"""
         fixture = {'name': 'fake public image #2',
-                   'disk_format': 'vmdk'}
+                   'disk_format': 'vmdk',
+                   'status': 'saving'}
 
         self.assertTrue(self.client.image_update(image_id=UUID2,
                                                  values=fixture))
@@ -455,7 +456,36 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         for k, v in fixture.items():
             self.assertEqual(v, data[k])
 
-    def test_image_update_not_existing(self):
+    def test_image_update_conflict(self):
+        """Tests that the registry API updates the image"""
+        next_state = 'saving'
+        fixture = {'name': 'fake public image #2',
+                   'disk_format': 'vmdk',
+                   'status': next_state}
+
+        image = self.client.image_get(image_id=UUID2)
+        current = image['status']
+        self.assertEqual(current, 'active')
+
+        # image is in 'active' state so this should cause a failure.
+        from_state = 'saving'
+
+        self.assertRaises(exception.Conflict, self.client.image_update,
+                          image_id=UUID2, values=fixture,
+                          from_state=from_state)
+
+        try:
+            self.client.image_update(image_id=UUID2, values=fixture,
+                                     from_state=from_state)
+        except exception.Conflict as exc:
+            msg = (_('cannot transition from %(current)s to '
+                     '%(next)s in update (wanted '
+                     'from_state=%(from)s)') %
+                   {'current': current, 'next': next_state,
+                    'from': from_state})
+            self.assertEqual(str(exc), msg)
+
+    def _test_image_update_not_existing(self):
         """Tests non existing image update doesn't work"""
         fixture = self.get_fixture(status='bad status')
 
