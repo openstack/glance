@@ -213,6 +213,13 @@ class TestImagesController(base.StoreClearingUnitTest):
                           self.controller.upload,
                           request, unit_test_utils.UUID2, 'YYYYYYY', 7)
 
+    def test_image_size_limit_exceeded(self):
+        request = unit_test_utils.get_fake_request()
+        self.image_repo.result = exception.ImageSizeLimitExceeded()
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                          self.controller.upload,
+                          request, unit_test_utils.UUID1, 'YYYYYYY', 7)
+
     def test_upload_storage_forbidden(self):
         request = unit_test_utils.get_fake_request(user=unit_test_utils.USER2)
         image = FakeImage()
