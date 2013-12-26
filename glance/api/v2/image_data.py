@@ -101,7 +101,7 @@ class ImageDataController(object):
                                                       request=req)
 
         except exception.ImageSizeLimitExceeded as e:
-            msg = _("The incoming image is too large: %") % e
+            msg = _("The incoming image is too large: %s") % e
             LOG.error(msg)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
