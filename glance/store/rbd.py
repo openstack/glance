@@ -30,7 +30,6 @@ from glance.common import exception
 from glance.common import utils
 import glance.openstack.common.log as logging
 from glance.openstack.common import units
-import glance.store
 import glance.store.base
 import glance.store.location
 

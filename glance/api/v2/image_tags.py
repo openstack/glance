@@ -20,7 +20,6 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.db
-import glance.domain
 import glance.gateway
 import glance.notifier
 import glance.store
