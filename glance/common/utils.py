@@ -258,7 +258,17 @@ def get_image_meta_from_headers(response):
         try:
             result['size'] = int(result['size'])
         except ValueError:
-            raise exception.Invalid
+            extra = (_("Cannot convert image size '%s' to an integer.") %
+                     result['size'])
+            raise exception.InvalidParameterValue(value=result['size'],
+                                                  param='size',
+                                                  extra_msg=extra)
+        if result['size'] < 0:
+            extra = (_("Image size must be >= 0 ('%s' specified).") %
+                     result['size'])
+            raise exception.InvalidParameterValue(value=result['size'],
+                                                  param='size',
+                                                  extra_msg=extra)
     for key in ('is_public', 'deleted', 'protected'):
         if key in result:
             result[key] = strutils.bool_from_string(result[key])

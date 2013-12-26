@@ -1047,10 +1047,9 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
         result = {}
         try:
             result['image_meta'] = utils.get_image_meta_from_headers(request)
-        except exception.Invalid:
-            image_size_str = request.headers['x-image-meta-size']
-            msg = _("Incoming image size of %s was not convertible to "
-                    "an integer.") % image_size_str
+        except exception.InvalidParameterValue as e:
+            msg = unicode(e)
+            LOG.warn(msg, exc_info=True)
             raise HTTPBadRequest(explanation=msg, request=request)
 
         image_meta = result['image_meta']
