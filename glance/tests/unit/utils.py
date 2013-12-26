@@ -81,14 +81,7 @@ class FakeDB(object):
 
     @staticmethod
     def reset():
-        simple_db.DATA = {
-            'images': {},
-            'members': [],
-            'tags': {},
-            'locations': [],
-            'tasks': {},
-            'task_info': {}
-        }
+        simple_db.reset()
 
     def __getattr__(self, key):
         return getattr(simple_db, key)
