@@ -80,7 +80,6 @@ def version_control(version=None):
     """
     Place a database under migration control
     """
-    sql_connection = CONF.sql_connection
     try:
         _version_control(version)
     except versioning_exceptions.DatabaseAlreadyControlledError as e:
@@ -108,7 +107,6 @@ def db_sync(version=None, current_version=None):
 
     :retval version number
     """
-    sql_connection = CONF.sql_connection
     try:
         _version_control(current_version or 0)
     except versioning_exceptions.DatabaseAlreadyControlledError as e:
