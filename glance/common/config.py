@@ -40,6 +40,29 @@ paste_deploy_opts = [
     cfg.StrOpt('config_file',
                help=_('Name of the paste configuration file.')),
 ]
+image_format_opts = [
+    cfg.ListOpt('container_formats',
+                default=['ami', 'ari', 'aki', 'bare', 'ovf'],
+                help=_("Supported values for the 'container_format' "
+                       "image attribute"),
+                deprecated_opts=[cfg.DeprecatedOpt('container_formats',
+                                                   group='DEFAULT')]),
+    cfg.ListOpt('disk_formats',
+                default=['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2',
+                         'vdi', 'iso'],
+                help=_("Supported values for the 'disk_format' "
+                       "image attribute"),
+                deprecated_opts=[cfg.DeprecatedOpt('disk_formats',
+                                                   group='DEFAULT')]),
+]
+task_opts = [
+    cfg.IntOpt('task_time_to_live',
+               default=48,
+               help=_("Time in hours for which a task lives after, either "
+                      "succeeding or failing"),
+               deprecated_opts=[cfg.DeprecatedOpt('task_time_to_live',
+                                                  group='DEFAULT')]),
+]
 common_opts = [
     cfg.BoolOpt('allow_additional_image_properties', default=True,
                 help=_('Whether to allow users to specify image properties '
@@ -97,6 +120,8 @@ common_opts = [
 
 CONF = cfg.CONF
 CONF.register_opts(paste_deploy_opts, group='paste_deploy')
+CONF.register_opts(image_format_opts, group='image_format')
+CONF.register_opts(task_opts, group='task')
 CONF.register_opts(common_opts)
 
 

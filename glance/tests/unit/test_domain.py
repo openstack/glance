@@ -328,8 +328,12 @@ class TestTask(test_utils.BaseTestCase):
         task_input = ('{"import_from": "file:///home/a.img",'
                       ' "import_from_format": "qcow2"}')
         owner = TENANT1
+        task_ttl = CONF.task.task_time_to_live
         self.gateway = unittest_utils.FakeGateway()
-        self.task = self.task_factory.new_task(task_type, task_input, owner)
+        self.task = self.task_factory.new_task(task_type,
+                                               task_input,
+                                               owner,
+                                               task_time_to_live=task_ttl)
 
     def test_task_invalid_status(self):
         task_id = str(uuid.uuid4())
@@ -411,7 +415,7 @@ class TestTask(test_utils.BaseTestCase):
         self.task.succeed('{"location": "file://home"}')
         self.assertEqual(self.task.status, 'success')
         expected = (timeutils.utcnow() +
-                    datetime.timedelta(hours=CONF.task_time_to_live))
+                    datetime.timedelta(hours=CONF.task.task_time_to_live))
         self.assertEqual(
             self.task.expires_at,
             expected
@@ -424,7 +428,7 @@ class TestTask(test_utils.BaseTestCase):
         self.task.fail('{"message": "connection failed"}')
         self.assertEqual(self.task.status, 'failure')
         expected = (timeutils.utcnow() +
-                    datetime.timedelta(hours=CONF.task_time_to_live))
+                    datetime.timedelta(hours=CONF.task.task_time_to_live))
         self.assertEqual(
             self.task.expires_at,
             expected

@@ -227,7 +227,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertTrue('Invalid disk format' in res.body, res.body)
 
     def test_configured_disk_format_good(self):
-        self.config(disk_formats=['foo'])
+        self.config(disk_formats=['foo'], group="image_format")
         fixture_headers = {
             'x-image-meta-store': 'bad',
             'x-image-meta-name': 'bogus',
@@ -245,7 +245,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, 201)
 
     def test_configured_disk_format_bad(self):
-        self.config(disk_formats=['foo'])
+        self.config(disk_formats=['foo'], group="image_format")
         fixture_headers = {
             'x-image-meta-store': 'bad',
             'x-image-meta-name': 'bogus',
@@ -264,7 +264,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertTrue('Invalid disk format' in res.body, res.body)
 
     def test_configured_container_format_good(self):
-        self.config(container_formats=['foo'])
+        self.config(container_formats=['foo'], group="image_format")
         fixture_headers = {
             'x-image-meta-store': 'bad',
             'x-image-meta-name': 'bogus',
@@ -282,7 +282,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, 201)
 
     def test_configured_container_format_bad(self):
-        self.config(container_formats=['foo'])
+        self.config(container_formats=['foo'], group="image_format")
         fixture_headers = {
             'x-image-meta-store': 'bad',
             'x-image-meta-name': 'bogus',

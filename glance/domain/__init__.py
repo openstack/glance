@@ -18,35 +18,12 @@ import collections
 import datetime
 import uuid
 
-from oslo.config import cfg
-
 from glance.common import exception
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 
 
 LOG = logging.getLogger(__name__)
-
-
-image_format_opts = [
-    cfg.ListOpt('container_formats',
-                default=['ami', 'ari', 'aki', 'bare', 'ovf'],
-                help=_("Supported values for the 'container_format' "
-                       "image attribute")),
-    cfg.ListOpt('disk_formats',
-                default=['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2',
-                         'vdi', 'iso'],
-                help=_("Supported values for the 'disk_format' "
-                       "image attribute")),
-    cfg.IntOpt('task_time_to_live',
-               default=48,
-               help=_("Time in hours for which a task lives after, either "
-                      "succeeding or failing")),
-]
-
-
-CONF = cfg.CONF
-CONF.register_opts(image_format_opts)
 
 
 class ImageFactory(object):
@@ -288,7 +265,7 @@ class Task(object):
     _supported_task_status = ('pending', 'processing', 'success', 'failure')
 
     def __init__(self, task_id, type, status, input, result, owner, message,
-                 expires_at, created_at, updated_at):
+                 expires_at, created_at, updated_at, task_time_to_live=48):
 
         if type not in self._supported_task_type:
             raise exception.InvalidTaskType(type)
@@ -306,7 +283,7 @@ class Task(object):
         self.expires_at = expires_at
         # NOTE(nikhil): We use '_time_to_live' to determine how long a
         # task should live from the time it succeeds or fails.
-        self._time_to_live = datetime.timedelta(hours=CONF.task_time_to_live)
+        self._time_to_live = datetime.timedelta(hours=task_time_to_live)
         self.created_at = created_at
         self.updated_at = updated_at
 
@@ -366,7 +343,7 @@ class Task(object):
 
 class TaskFactory(object):
 
-    def new_task(self, task_type, task_input, owner):
+    def new_task(self, task_type, task_input, owner, task_time_to_live=48):
         task_id = str(uuid.uuid4())
         status = 'pending'
         result = None
@@ -386,5 +363,6 @@ class TaskFactory(object):
             message,
             expires_at,
             created_at,
-            updated_at
+            updated_at,
+            task_time_to_live
         )

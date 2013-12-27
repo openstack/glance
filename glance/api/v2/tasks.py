@@ -35,6 +35,7 @@ import glance.schema
 import glance.store
 
 CONF = cfg.CONF
+CONF.import_opt('task_time_to_live', 'glance.common.config', group='task')
 
 
 class TasksController(object):
@@ -52,10 +53,12 @@ class TasksController(object):
     def create(self, req, task):
         task_factory = self.gateway.get_task_factory(req.context)
         task_repo = self.gateway.get_task_repo(req.context)
+        live_time = CONF.task.task_time_to_live
         try:
             new_task = task_factory.new_task(task_type=task['type'],
                                              task_input=task['input'],
-                                             owner=req.context.owner)
+                                             owner=req.context.owner,
+                                             task_time_to_live=live_time)
             task_repo.add(new_task)
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))

@@ -3104,7 +3104,7 @@ class TestImageSchemaFormatConfiguration(test_utils.BaseTestCase):
         self.assertEqual(expected, actual)
 
     def test_custom_disk_formats(self):
-        self.config(disk_formats=['gabe'])
+        self.config(disk_formats=['gabe'], group="image_format")
         schema = glance.api.v2.images.get_schema()
         expected = ['gabe']
         actual = schema.properties['disk_format']['enum']
@@ -3117,7 +3117,7 @@ class TestImageSchemaFormatConfiguration(test_utils.BaseTestCase):
         self.assertEqual(expected, actual)
 
     def test_custom_container_formats(self):
-        self.config(container_formats=['mark'])
+        self.config(container_formats=['mark'], group="image_format")
         schema = glance.api.v2.images.get_schema()
         expected = ['mark']
         actual = schema.properties['container_format']['enum']

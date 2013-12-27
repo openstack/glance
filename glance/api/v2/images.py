@@ -35,8 +35,9 @@ import glance.store
 LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
-CONF.import_opt('disk_formats', 'glance.domain')
-CONF.import_opt('container_formats', 'glance.domain')
+CONF.import_opt('disk_formats', 'glance.common.config', group='image_format')
+CONF.import_opt('container_formats', 'glance.common.config',
+                group='image_format')
 
 
 class ImagesController(object):
@@ -677,13 +678,13 @@ def _get_base_properties():
             'type': 'string',
             'description': _('Format of the container'),
             'type': 'string',
-            'enum': CONF.container_formats,
+            'enum': CONF.image_format.container_formats,
         },
         'disk_format': {
             'type': 'string',
             'description': _('Format of the disk'),
             'type': 'string',
-            'enum': CONF.disk_formats,
+            'enum': CONF.image_format.disk_formats,
         },
         'created_at': {
             'type': 'string',
