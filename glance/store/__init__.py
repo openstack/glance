@@ -161,7 +161,11 @@ def create_stores():
         if not store_entry:
             continue
         store_cls = _get_store_class(store_entry)
-        store_instance = store_cls()
+        try:
+            store_instance = store_cls()
+        except exception.BadStoreConfiguration as e:
+            LOG.warn(_("%s Skipping store driver.") % unicode(e))
+            continue
         schemes = store_instance.get_schemes()
         if not schemes:
             raise BackendException('Unable to register store %s. '
