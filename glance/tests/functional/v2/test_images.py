@@ -16,17 +16,18 @@
 #    under the License.
 
 import json
+import uuid
 
 import requests
 
-from glance.openstack.common import uuidutils
+
 from glance.tests import functional
 
 
-TENANT1 = uuidutils.generate_uuid()
-TENANT2 = uuidutils.generate_uuid()
-TENANT3 = uuidutils.generate_uuid()
-TENANT4 = uuidutils.generate_uuid()
+TENANT1 = str(uuid.uuid4())
+TENANT2 = str(uuid.uuid4())
+TENANT3 = str(uuid.uuid4())
+TENANT4 = str(uuid.uuid4())
 
 
 class TestImages(functional.FunctionalTest):
@@ -2176,12 +2177,12 @@ class TestImageMembers(functional.FunctionalTest):
         # Adding 11 image members should fail since configured limit is 10
         path = self._url('/v2/images/%s/members' % image_fixture[1]['id'])
         for i in range(10):
-            body = json.dumps({'member': uuidutils.generate_uuid()})
+            body = json.dumps({'member': str(uuid.uuid4())})
             response = requests.post(path, headers=get_header('tenant1'),
                                      data=body)
             self.assertEqual(200, response.status_code)
 
-        body = json.dumps({'member': uuidutils.generate_uuid()})
+        body = json.dumps({'member': str(uuid.uuid4())})
         response = requests.post(path, headers=get_header('tenant1'),
                                  data=body)
         self.assertEqual(413, response.status_code)

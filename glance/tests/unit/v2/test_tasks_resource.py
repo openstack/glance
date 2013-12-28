@@ -16,13 +16,13 @@
 
 import datetime
 import json
+import uuid
 
 import webob
 
 import glance.api.v2.tasks
 import glance.domain
 from glance.openstack.common import timeutils
-from glance.openstack.common import uuidutils
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
@@ -235,7 +235,7 @@ class TestTasksController(test_utils.BaseTestCase):
         self.assertEquals(UUID2, actual[2])
 
     def test_index_with_marker_not_found(self):
-        fake_uuid = uuidutils.generate_uuid()
+        fake_uuid = str(uuid.uuid4())
         path = '/tasks'
         request = unit_test_utils.get_fake_request(path)
         self.assertRaises(webob.exc.HTTPBadRequest,
@@ -268,7 +268,7 @@ class TestTasksController(test_utils.BaseTestCase):
 
     def test_get_non_existent(self):
         request = unit_test_utils.get_fake_request()
-        task_id = uuidutils.generate_uuid()
+        task_id = str(uuid.uuid4())
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.get, request, task_id)
 
@@ -362,7 +362,7 @@ class TestTasksDeserializer(test_utils.BaseTestCase):
         self.assertEqual(expected, output)
 
     def test_index(self):
-        marker = uuidutils.generate_uuid()
+        marker = str(uuid.uuid4())
         path = '/tasks?limit=1&marker=%s' % marker
         request = unit_test_utils.get_fake_request(path)
         expected = {'limit': 1,
@@ -429,7 +429,7 @@ class TestTasksDeserializer(test_utils.BaseTestCase):
                           self.deserializer.index, request)
 
     def test_index_marker(self):
-        marker = uuidutils.generate_uuid()
+        marker = str(uuid.uuid4())
         path = '/tasks?marker=%s' % marker
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)

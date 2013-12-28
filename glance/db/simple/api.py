@@ -16,11 +16,11 @@
 
 import copy
 import functools
+import uuid
 
 from glance.common import exception
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
-from glance.openstack.common import uuidutils
 
 
 LOG = logging.getLogger(__name__)
@@ -87,7 +87,7 @@ def _get_session():
 def _image_locations_format(image_id, value, meta_data):
     dt = timeutils.utcnow()
     return {
-        'id': uuidutils.generate_uuid(),
+        'id': str(uuid.uuid4()),
         'image_id': image_id,
         'created_at': dt,
         'updated_at': dt,
@@ -111,7 +111,7 @@ def _image_property_format(image_id, name, value):
 def _image_member_format(image_id, tenant_id, can_share, status='pending'):
     dt = timeutils.utcnow()
     return {
-        'id': uuidutils.generate_uuid(),
+        'id': str(uuid.uuid4()),
         'image_id': image_id,
         'member': tenant_id,
         'can_share': can_share,
@@ -510,7 +510,7 @@ def _image_location_get_all(image_id):
 @log_call
 def image_create(context, image_values):
     global DATA
-    image_id = image_values.get('id', uuidutils.generate_uuid())
+    image_id = image_values.get('id', str(uuid.uuid4()))
 
     if image_id in DATA['images']:
         raise exception.Duplicate()
@@ -710,7 +710,7 @@ def task_create(context, values):
     global DATA
 
     task_values = copy.deepcopy(values)
-    task_id = task_values.get('id', uuidutils.generate_uuid())
+    task_id = task_values.get('id', str(uuid.uuid4()))
     required_attributes = ['type', 'status', 'input']
     allowed_attributes = ['id', 'type', 'status', 'input', 'result', 'owner',
                           'message', 'expires_at', 'created_at',

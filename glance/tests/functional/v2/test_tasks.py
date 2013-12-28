@@ -18,18 +18,18 @@
 
 import json
 import os
+import uuid
 
 import fixtures
 import requests
 
-from glance.openstack.common import uuidutils
 from glance.tests import functional
 
 
-TENANT1 = uuidutils.generate_uuid()
-TENANT2 = uuidutils.generate_uuid()
-TENANT3 = uuidutils.generate_uuid()
-TENANT4 = uuidutils.generate_uuid()
+TENANT1 = str(uuid.uuid4())
+TENANT2 = str(uuid.uuid4())
+TENANT3 = str(uuid.uuid4())
+TENANT4 = str(uuid.uuid4())
 
 
 class TestTasks(functional.FunctionalTest):

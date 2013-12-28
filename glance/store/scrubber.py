@@ -29,7 +29,6 @@ from glance.common import utils
 from glance import context
 from glance.openstack.common import lockutils
 import glance.openstack.common.log as logging
-import glance.openstack.common.uuidutils as uuidutils
 import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
@@ -214,7 +213,7 @@ class ScrubFileQueue(ScrubQueue):
         ret = []
         for root, dirs, files in os.walk(self.scrubber_datadir):
             for image_id in files:
-                if not uuidutils.is_uuid_like(image_id):
+                if not utils.is_uuid_like(image_id):
                     continue
                 with lockutils.lock("scrubber-%s" % image_id,
                                     lock_file_prefix='glance-', external=True):

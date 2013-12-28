@@ -29,13 +29,14 @@ import random
 import StringIO
 import urllib
 import urlparse
+import uuid
 
 import oslo.config.cfg
 import testtools
 
 from glance.common import exception
 import glance.common.utils as common_utils
-from glance.openstack.common import uuidutils
+
 import glance.store.swift
 import glance.tests.functional.store as store_tests
 
@@ -192,7 +193,7 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
             swift_store_large_object_chunk_size=2,  # 2 MB
         )
         store = self.get_store()
-        image_id = uuidutils.generate_uuid()
+        image_id = str(uuid.uuid4())
         image_size = 5242880  # 5 MB
         image_data = StringIO.StringIO('X' * image_size)
         image_checksum = 'eb7f8c3716b9f059cee7617a4ba9d0d3'
@@ -278,7 +279,7 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
         # Simulate exceeding 'image_size_cap' setting
         image_data = StringIO.StringIO('X' * image_size)
         image_data = common_utils.LimitingReader(image_data, image_size - 1)
-        image_id = uuidutils.generate_uuid()
+        image_id = str(uuid.uuid4())
         self.assertRaises(exception.ImageSizeLimitExceeded,
                           store.add,
                           image_id,
@@ -333,7 +334,7 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
                 auth_tok=auth_token)
         store = self.get_store(context=context)
 
-        image_id = uuidutils.generate_uuid()
+        image_id = str(uuid.uuid4())
         image_data = StringIO.StringIO('XXX')
         uri, _, _, _ = store.add(image_id, image_data, 3)
 
@@ -343,8 +344,8 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
                 uri=uri,
                 image_id=image_id)
 
-        read_tenant = uuidutils.generate_uuid()
-        write_tenant = uuidutils.generate_uuid()
+        read_tenant = str(uuid.uuid4())
+        write_tenant = str(uuid.uuid4())
         store.set_acls(location,
                        public=False,
                        read_tenants=[read_tenant],

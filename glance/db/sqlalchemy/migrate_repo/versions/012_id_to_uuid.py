@@ -22,10 +22,10 @@ there are known issues with these libraries so SQLite and non-SQLite
 migrations must be done separately.
 """
 
+import uuid
+
 import migrate
 import sqlalchemy
-
-from glance.openstack.common import uuidutils
 
 
 meta = sqlalchemy.MetaData()
@@ -522,7 +522,7 @@ def _update_all_ids_to_uuids(t_images, t_image_members, t_image_properties):
 
     for image in images:
         old_id = image["id"]
-        new_id = uuidutils.generate_uuid()
+        new_id = str(uuid.uuid4())
 
         t_images.update().\
             where(t_images.c.id == old_id).\

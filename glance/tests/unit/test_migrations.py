@@ -34,20 +34,22 @@ import os
 import pickle
 import subprocess
 import urlparse
+import uuid
 
 from migrate.versioning.repository import Repository
 from oslo.config import cfg
 import sqlalchemy
 
 from glance.common import crypt
+from glance.common import utils
 import glance.db.migration as migration
 import glance.db.sqlalchemy.migrate_repo
 from glance.db.sqlalchemy.migration import versioning_api as migration_api
 from glance.db.sqlalchemy import models
 from glance.openstack.common import log as logging
 from glance.openstack.common import timeutils
-from glance.openstack.common import uuidutils
-from glance.tests import utils
+
+from glance.tests import utils as test_utils
 
 
 CONF = cfg.CONF
@@ -114,7 +116,7 @@ def get_table(engine, name):
     return sqlalchemy.Table(name, metadata, autoload=True)
 
 
-class TestMigrations(utils.BaseTestCase):
+class TestMigrations(test_utils.BaseTestCase):
     """Test sqlalchemy-migrate migrations."""
 
     DEFAULT_CONFIG_FILE = os.path.join(os.path.dirname(__file__),
@@ -634,7 +636,7 @@ class TestMigrations(utils.BaseTestCase):
             self.assertEqual(len(rows), 1)
 
             row = rows[0]
-            self.assertTrue(uuidutils.is_uuid_like(row['id']))
+            self.assertTrue(utils.is_uuid_like(row['id']))
 
             uuids[name] = row['id']
 
@@ -677,7 +679,7 @@ class TestMigrations(utils.BaseTestCase):
             self.assertEqual(len(rows), 1)
 
             row = rows[0]
-            self.assertFalse(uuidutils.is_uuid_like(row['id']))
+            self.assertFalse(utils.is_uuid_like(row['id']))
 
             ids[name] = row['id']
 
@@ -720,7 +722,7 @@ class TestMigrations(utils.BaseTestCase):
                     min_ram=0)
         data = []
         for i, location in enumerate(unquoted_locations):
-            temp.update(location=location, id=uuidutils.generate_uuid())
+            temp.update(location=location, id=str(uuid.uuid4()))
             data.append(temp)
             images.insert().values(temp).execute()
         return data
@@ -802,7 +804,7 @@ class TestMigrations(utils.BaseTestCase):
                     min_disk=0,
                     min_ram=0)
         for i, location in enumerate(locations):
-            temp.update(location=location, id=uuidutils.generate_uuid())
+            temp.update(location=location, id=str(uuid.uuid4()))
             data.append(temp)
             images.insert().values(temp).execute()
         return data

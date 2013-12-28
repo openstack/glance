@@ -26,6 +26,7 @@ import shutil
 import socket
 import StringIO
 import subprocess
+import uuid
 
 import fixtures
 from oslo.config import cfg
@@ -35,6 +36,7 @@ import webob
 
 from glance.common import config
 from glance.common import exception
+from glance.common import utils
 from glance.common import wsgi
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
@@ -559,3 +561,22 @@ class HttplibWsgiAdapter(object):
         response = self.req.get_response(self.app)
         return FakeHTTPResponse(response.status_code, response.headers,
                                 response.body)
+
+
+class UUIDTestCase(testtools.TestCase):
+
+    def test_generate_uuid(self):
+        uuid_string = utils.generate_uuid()
+        self.assertTrue(isinstance(uuid_string, str))
+        self.assertEqual(len(uuid_string), 36)
+        # make sure there are 4 dashes
+        self.assertEqual(len(uuid_string.replace('-', '')), 32)
+
+    def test_is_uuid_like(self):
+        self.assertTrue(utils.is_uuid_like(str(uuid.uuid4())))
+
+    def test_id_is_uuid_like(self):
+        self.assertFalse(utils.is_uuid_like(1234567))
+
+    def test_name_is_uuid_like(self):
+        self.assertFalse(utils.is_uuid_like('zhongyueluo'))

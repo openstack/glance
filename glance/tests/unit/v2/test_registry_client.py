@@ -24,6 +24,7 @@ the registry's driver tests will be added.
 import copy
 import datetime
 import os
+import uuid
 
 import mox
 
@@ -32,7 +33,7 @@ from glance.common import exception
 from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.openstack.common import timeutils
-from glance.openstack.common import uuidutils
+
 import glance.registry.client.v2.api as rapi
 from glance.registry.client.v2.api import client as rclient
 from glance.registry.api import v2 as rserver
@@ -40,10 +41,10 @@ from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
 
-_gen_uuid = uuidutils.generate_uuid
+_gen_uuid = lambda: str(uuid.uuid4())
 
-UUID1 = _gen_uuid()
-UUID2 = _gen_uuid()
+UUID1 = str(uuid.uuid4())
+UUID2 = str(uuid.uuid4())
 
 #NOTE(bcwaldon): needed to init config_dir cli opt
 config.parse_args(args=[])
@@ -289,12 +290,14 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
 
     def test_image_get_index_limit(self):
         """Test correct number of images returned with limit param."""
-        extra_fixture = self.get_fixture(id=_gen_uuid(), name='new name! #123',
+        extra_fixture = self.get_fixture(id=_gen_uuid(),
+                                         name='new name! #123',
                                          status='saving')
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = self.get_fixture(id=_gen_uuid(), name='new name! #125',
+        extra_fixture = self.get_fixture(id=_gen_uuid(),
+                                         name='new name! #125',
                                          status='saving')
 
         db_api.image_create(self.context, extra_fixture)
@@ -322,12 +325,14 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
 
     def test_image_get_index_limit_None(self):
         """Test correct set of images returned with limit param == None."""
-        extra_fixture = self.get_fixture(id=_gen_uuid(), name='new name! #123',
+        extra_fixture = self.get_fixture(id=_gen_uuid(),
+                                         name='new name! #123',
                                          status='saving')
 
         db_api.image_create(self.context, extra_fixture)
 
-        extra_fixture = self.get_fixture(id=_gen_uuid(), name='new name! #125',
+        extra_fixture = self.get_fixture(id=_gen_uuid(),
+                                         name='new name! #125',
                                          status='saving')
 
         db_api.image_create(self.context, extra_fixture)
@@ -340,7 +345,8 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         Test correct set of public, name-filtered image returned. This
         is just a sanity check, we test the details call more in-depth.
         """
-        extra_fixture = self.get_fixture(id=_gen_uuid(), name='new name! #123')
+        extra_fixture = self.get_fixture(id=_gen_uuid(),
+                                         name='new name! #123')
 
         db_api.image_create(self.context, extra_fixture)
 

@@ -14,13 +14,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import uuid
+
 from oslo.config import cfg
 
 from glance.common import crypt
 from glance.common import exception
 import glance.context
 import glance.db
-from glance.openstack.common import uuidutils
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 
@@ -161,7 +162,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.assertEqual(image.locations, [])
 
     def test_get_not_found(self):
-        fake_uuid = uuidutils.generate_uuid()
+        fake_uuid = str(uuid.uuid4())
         exc = self.assertRaises(exception.NotFound, self.image_repo.get,
                                 fake_uuid)
         self.assertTrue(fake_uuid in unicode(exc))
@@ -300,7 +301,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.assertEqual(image.updated_at, current_update_time)
 
     def test_save_image_not_found(self):
-        fake_uuid = uuidutils.generate_uuid()
+        fake_uuid = str(uuid.uuid4())
         image = self.image_repo.get(UUID1)
         image.image_id = fake_uuid
         exc = self.assertRaises(exception.NotFound, self.image_repo.save,
@@ -315,7 +316,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.assertRaises(exception.NotFound, self.image_repo.get, UUID1)
 
     def test_remove_image_not_found(self):
-        fake_uuid = uuidutils.generate_uuid()
+        fake_uuid = str(uuid.uuid4())
         image = self.image_repo.get(UUID1)
         image.image_id = fake_uuid
         exc = self.assertRaises(exception.NotFound, self.image_repo.remove,
@@ -501,7 +502,7 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
                           TENANT2)
 
     def test_remove_image_member_does_not_exist(self):
-        fake_uuid = uuidutils.generate_uuid()
+        fake_uuid = str(uuid.uuid4())
         image = self.image_repo.get(UUID2)
         fake_member = glance.domain.ImageMemberFactory()\
                                    .new_image_member(image, TENANT4)
@@ -568,7 +569,7 @@ class TestTaskRepo(test_utils.BaseTestCase):
 
     def test_get_not_found(self):
         self.assertRaises(exception.NotFound, self.task_repo.get,
-                          uuidutils.generate_uuid())
+                          str(uuid.uuid4()))
 
     def test_get_forbidden(self):
         self.assertRaises(exception.NotFound, self.task_repo.get, UUID4)

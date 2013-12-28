@@ -18,6 +18,7 @@
 
 import datetime
 import json
+import uuid
 
 from oslo.config import cfg
 import routes
@@ -31,7 +32,7 @@ from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
-from glance.openstack.common import uuidutils
+
 from glance.registry.api import v1 as rserver
 import glance.store.filesystem
 from glance.tests.unit import base
@@ -39,7 +40,7 @@ from glance.tests import utils as test_utils
 
 CONF = cfg.CONF
 
-_gen_uuid = uuidutils.generate_uuid
+_gen_uuid = lambda: str(uuid.uuid4())
 
 UUID1 = _gen_uuid()
 UUID2 = _gen_uuid()
@@ -1919,15 +1920,15 @@ class TestSharability(test_utils.BaseTestCase):
         db_models.register_models(db_api._ENGINE)
 
     def test_is_image_sharable_as_admin(self):
-        TENANT1 = uuidutils.generate_uuid()
-        TENANT2 = uuidutils.generate_uuid()
+        TENANT1 = str(uuid.uuid4())
+        TENANT2 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
                                        auth_tok='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         ctxt2 = context.RequestContext(is_admin=True, user=TENANT2,
                                        auth_tok='user:%s:admin' % TENANT2,
                                        owner_is_tenant=False)
-        UUIDX = uuidutils.generate_uuid()
+        UUIDX = str(uuid.uuid4())
         #we need private image and context.owner should not match image owner
         image = db_api.image_create(ctxt1, {'id': UUIDX,
                                             'status': 'queued',
@@ -1938,11 +1939,11 @@ class TestSharability(test_utils.BaseTestCase):
         self.assertTrue(result)
 
     def test_is_image_sharable_owner_can_share(self):
-        TENANT1 = uuidutils.generate_uuid()
+        TENANT1 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
                                        auth_tok='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
-        UUIDX = uuidutils.generate_uuid()
+        UUIDX = str(uuid.uuid4())
         #we need private image and context.owner should not match image owner
         image = db_api.image_create(ctxt1, {'id': UUIDX,
                                             'status': 'queued',
@@ -1953,15 +1954,15 @@ class TestSharability(test_utils.BaseTestCase):
         self.assertTrue(result)
 
     def test_is_image_sharable_non_owner_cannot_share(self):
-        TENANT1 = uuidutils.generate_uuid()
-        TENANT2 = uuidutils.generate_uuid()
+        TENANT1 = str(uuid.uuid4())
+        TENANT2 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
                                        auth_tok='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
                                        auth_tok='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
-        UUIDX = uuidutils.generate_uuid()
+        UUIDX = str(uuid.uuid4())
         #we need private image and context.owner should not match image owner
         image = db_api.image_create(ctxt1, {'id': UUIDX,
                                             'status': 'queued',
@@ -1972,15 +1973,15 @@ class TestSharability(test_utils.BaseTestCase):
         self.assertFalse(result)
 
     def test_is_image_sharable_non_owner_can_share_as_image_member(self):
-        TENANT1 = uuidutils.generate_uuid()
-        TENANT2 = uuidutils.generate_uuid()
+        TENANT1 = str(uuid.uuid4())
+        TENANT2 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
                                        auth_tok='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
                                        auth_tok='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
-        UUIDX = uuidutils.generate_uuid()
+        UUIDX = str(uuid.uuid4())
         #we need private image and context.owner should not match image owner
         image = db_api.image_create(ctxt1, {'id': UUIDX,
                                             'status': 'queued',
@@ -1997,15 +1998,15 @@ class TestSharability(test_utils.BaseTestCase):
         self.assertTrue(result)
 
     def test_is_image_sharable_non_owner_as_image_member_without_sharing(self):
-        TENANT1 = uuidutils.generate_uuid()
-        TENANT2 = uuidutils.generate_uuid()
+        TENANT1 = str(uuid.uuid4())
+        TENANT2 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
                                        auth_tok='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
                                        auth_tok='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
-        UUIDX = uuidutils.generate_uuid()
+        UUIDX = str(uuid.uuid4())
         #we need private image and context.owner should not match image owner
         image = db_api.image_create(ctxt1, {'id': UUIDX,
                                             'status': 'queued',
@@ -2022,14 +2023,14 @@ class TestSharability(test_utils.BaseTestCase):
         self.assertFalse(result)
 
     def test_is_image_sharable_owner_is_none(self):
-        TENANT1 = uuidutils.generate_uuid()
+        TENANT1 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
                                        auth_tok='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         ctxt2 = context.RequestContext(is_admin=False, tenant=None,
                                        auth_tok='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
-        UUIDX = uuidutils.generate_uuid()
+        UUIDX = str(uuid.uuid4())
         #we need private image and context.owner should not match image owner
         image = db_api.image_create(ctxt1, {'id': UUIDX,
                                             'status': 'queued',

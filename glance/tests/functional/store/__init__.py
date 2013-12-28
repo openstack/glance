@@ -16,11 +16,12 @@
 #    under the License.
 
 import StringIO
+import uuid
 
 from oslo.config import cfg
 
 from glance.common import exception
-from glance.openstack.common import uuidutils
+
 import glance.store.location
 #NOTE(bcwaldon): importing this to get the default_store option
 import glance.api.v1.images
@@ -76,7 +77,7 @@ class BaseTestCase(object):
         """Add, get and delete an image"""
         store = self.get_store()
 
-        image_id = uuidutils.generate_uuid()
+        image_id = str(uuid.uuid4())
         image_data = StringIO.StringIO('XXX')
         image_checksum = 'bc9189406be84ec297464a514221406d'
         try:
@@ -108,7 +109,7 @@ class BaseTestCase(object):
 
     def test_get_remote_image(self):
         """Get an image that was created externally to Glance"""
-        image_id = uuidutils.generate_uuid()
+        image_id = str(uuid.uuid4())
         try:
             image_uri = self.stash_image(image_id, 'XXX')
         except NotImplementedError:

@@ -15,9 +15,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import uuid
+
 from glance.api import policy
 from glance.openstack.common import local
-from glance.openstack.common import uuidutils
 
 
 class RequestContext(object):
@@ -37,7 +38,7 @@ class RequestContext(object):
         self.read_only = read_only
         self._show_deleted = show_deleted
         self.owner_is_tenant = owner_is_tenant
-        self.request_id = uuidutils.generate_uuid()
+        self.request_id = str(uuid.uuid4())
         self.service_catalog = service_catalog
         self.policy_enforcer = policy_enforcer or policy.Enforcer()
         self.is_admin = is_admin
