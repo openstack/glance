@@ -1945,7 +1945,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_get_images_unauthorized(self):
         rules = {"get_images": '!'}
         self.set_policy_rules(rules)
-        req = webob.Request.blank('/images/detail')
+        req = webob.Request.blank('/images')
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 403)
 
