@@ -113,6 +113,8 @@ class TestImagesController(base.IsolatedUnitTest):
         self.policy = unit_test_utils.FakePolicyEnforcer()
         self.notifier = unit_test_utils.FakeNotifier()
         self.store = unit_test_utils.FakeStoreAPI()
+        for i in range(1, 4):
+            self.store.data['%s/fake_location_%i' % (BASE_URI, i)] = ('Z', 1)
         self._create_images()
         self._create_image_members()
         self.controller = glance.api.v2.images.ImagesController(self.db,
@@ -1354,6 +1356,125 @@ class TestImagesController(base.IsolatedUnitTest):
 
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
                           request, UUID1, changes)
+
+    def test_update_add_too_many_locations(self):
+        self.config(image_location_quota=1)
+        request = unit_test_utils.get_fake_request()
+        changes = [
+            {'op': 'add', 'path': ['locations', '-'],
+             'value': {'url': '%s/fake_location_1' % BASE_URI,
+                       'metadata': {}}},
+            {'op': 'add', 'path': ['locations', '-'],
+             'value': {'url': '%s/fake_location_2' % BASE_URI,
+                       'metadata': {}}},
+        ]
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                          self.controller.update, request,
+                          UUID1, changes)
+
+    def test_update_add_and_remove_too_many_locations(self):
+        request = unit_test_utils.get_fake_request()
+        changes = [
+            {'op': 'add', 'path': ['locations', '-'],
+             'value': {'url': '%s/fake_location_1' % BASE_URI,
+                       'metadata': {}}},
+            {'op': 'add', 'path': ['locations', '-'],
+             'value': {'url': '%s/fake_location_2' % BASE_URI,
+                       'metadata': {}}},
+        ]
+        self.controller.update(request, UUID1, changes)
+        self.config(image_location_quota=1)
+
+        # We must remove two properties to avoid being
+        # over the limit of 1 property
+        changes = [
+            {'op': 'remove', 'path': ['locations', '1']},
+            {'op': 'add', 'path': ['locations', '-'],
+             'value': {'url': '%s/fake_location_3' % BASE_URI,
+                       'metadata': {}}},
+        ]
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                          self.controller.update, request,
+                          UUID1, changes)
+
+    def test_update_add_unlimited_locations(self):
+        self.config(image_location_quota=-1)
+        request = unit_test_utils.get_fake_request()
+        changes = [
+            {'op': 'add', 'path': ['locations', '-'],
+             'value': {'url': '%s/fake_location_1' % BASE_URI,
+                       'metadata': {}}},
+        ]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output.image_id, UUID1)
+        self.assertNotEqual(output.created_at, output.updated_at)
+
+    def test_update_remove_location_while_over_limit(self):
+        """
+        Ensure that image locations can be removed.
+
+        Image locations should be able to be removed as long as the image has
+        fewer than the limited number of image locations after the
+        transaction.
+        """
+        request = unit_test_utils.get_fake_request()
+        changes = [
+            {'op': 'add', 'path': ['locations', '-'],
+             'value': {'url': '%s/fake_location_1' % BASE_URI,
+                       'metadata': {}}},
+            {'op': 'add', 'path': ['locations', '-'],
+             'value': {'url': '%s/fake_location_2' % BASE_URI,
+                       'metadata': {}}},
+        ]
+        self.controller.update(request, UUID1, changes)
+        self.config(image_location_quota=1)
+        self.config(show_multiple_locations=True)
+
+        # We must remove two locations to avoid being over
+        # the limit of 1 location
+        changes = [
+            {'op': 'remove', 'path': ['locations', '1']},
+            {'op': 'remove', 'path': ['locations', '1']},
+        ]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(len(output.locations), 1)
+        self.assertTrue('fake_location_2' in output.locations[0]['url'])
+        self.assertNotEqual(output.created_at, output.updated_at)
+
+    def test_update_add_and_remove_location_under_limit(self):
+        """
+        Ensure that image locations can be removed.
+
+        Image locations should be able to be added and removed simultaneously
+        as long as the image has fewer than the limited number of image
+        locations after the transaction.
+        """
+        self.config(show_multiple_locations=True)
+        request = unit_test_utils.get_fake_request()
+
+        changes = [
+            {'op': 'add', 'path': ['locations', '-'],
+             'value': {'url': '%s/fake_location_1' % BASE_URI,
+                       'metadata': {}}},
+        ]
+        self.controller.update(request, UUID1, changes)
+        self.config(image_location_quota=1)
+
+        # We must remove two properties to avoid being
+        # over the limit of 1 property
+        changes = [
+            {'op': 'remove', 'path': ['locations', '1']},
+            {'op': 'remove', 'path': ['locations', '1']},
+            {'op': 'add', 'path': ['locations', '-'],
+             'value': {'url': '%s/fake_location_3' % BASE_URI,
+                       'metadata': {}}},
+        ]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(len(output.locations), 1)
+        self.assertTrue('fake_location_3' in output.locations[0]['url'])
+        self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_remove_base_property(self):
         self.db.image_update(None, UUID1, {'properties': {'foo': 'bar'}})

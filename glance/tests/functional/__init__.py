@@ -315,6 +315,7 @@ class ApiServer(Server):
         self.image_member_quota = 10
         self.image_property_quota = 10
         self.image_tag_quota = 10
+        self.image_location_quota = 2
 
         self.needs_database = True
         default_sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
@@ -379,6 +380,7 @@ property_protection_rule_format = %(property_protection_rule_format)s
 image_member_quota=%(image_member_quota)s
 image_property_quota=%(image_property_quota)s
 image_tag_quota=%(image_tag_quota)s
+image_location_quota=%(image_location_quota)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
 """

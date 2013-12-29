@@ -297,6 +297,11 @@ class ImageTagLimitExceeded(LimitExceeded):
                 "tags. Attempted: %(attempted)s, Maximum: %(maximum)s")
 
 
+class ImageLocationLimitExceeded(LimitExceeded):
+    message = _("The limit has been exceeded on the number of allowed image "
+                "locations. Attempted: %(attempted)s, Maximum: %(maximum)s")
+
+
 class RPCError(GlanceException):
     message = _("%(cls)s exception was raised in the last rpc call: %(val)s")
 
