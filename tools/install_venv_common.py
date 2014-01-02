@@ -1,5 +1,3 @@
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
-
 # Copyright 2013 OpenStack Foundation
 # Copyright 2013 IBM Corp.
 #
@@ -114,15 +112,12 @@ class InstallVenv(object):
         print('Installing dependencies with pip (this can take a while)...')
 
         # First things first, make sure our venv has the latest pip and
-        # setuptools.
-        self.pip_install('pip>=1.3')
+        # setuptools and pbr
+        self.pip_install('pip>=1.4')
         self.pip_install('setuptools')
+        self.pip_install('pbr')
 
-        self.pip_install('-r', self.requirements)
-        self.pip_install('-r', self.test_requirements)
-
-    def post_process(self):
-        self.get_distro().post_process()
+        self.pip_install('-r', self.requirements, '-r', self.test_requirements)
 
     def parse_args(self, argv):
         """Parses command-line arguments."""
@@ -156,14 +151,6 @@ class Distro(InstallVenv):
                  ' requires virtualenv, please install it using your'
                  ' favorite package management tool' % self.project)
 
-    def post_process(self):
-        """Any distribution-specific post-processing gets done here.
-
-        In particular, this is useful for applying patches to code inside
-        the venv.
-        """
-        pass
-
 
 class Fedora(Distro):
     """This covers all Fedora-based distributions.
@@ -175,10 +162,6 @@ class Fedora(Distro):
         return self.run_command_with_code(['rpm', '-q', pkg],
                                           check_exit_code=False)[1] == 0
 
-    def apply_patch(self, originalfile, patchfile):
-        self.run_command(['patch', '-N', originalfile, patchfile],
-                         check_exit_code=False)
-
     def install_virtualenv(self):
         if self.check_cmd('virtualenv'):
             return
@@ -187,26 +170,3 @@ class Fedora(Distro):
             self.die("Please install 'python-virtualenv'.")
 
         super(Fedora, self).install_virtualenv()
-
-    def post_process(self):
-        """Workaround for a bug in eventlet.
-
-        This currently affects RHEL6.1, but the fix can safely be
-        applied to all RHEL and Fedora distributions.
-
-        This can be removed when the fix is applied upstream.
-
-        Nova: https://bugs.launchpad.net/nova/+bug/884915
-        Upstream: https://bitbucket.org/eventlet/eventlet/issue/89
-        RHEL: https://bugzilla.redhat.com/958868
-        """
-
-        # Install "patch" program if it's not there
-        if not self.check_pkg('patch'):
-            self.die("Please install 'patch'.")
-
-        # Apply the eventlet patch
-        self.apply_patch(os.path.join(self.venv, 'lib', self.py_version,
-                                      'site-packages',
-                                      'eventlet/green/subprocess.py'),
-                         'contrib/redhat-eventlet.patch')
