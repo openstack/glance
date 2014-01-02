@@ -328,3 +328,8 @@ class DuplicateLocation(Duplicate):
 
 class ImageDataNotFound(NotFound):
     message = _("No image data could be found")
+
+
+class InvalidParameterValue(Invalid):
+    message = _("Invalid value '%(value)s' for parameter '%(param)s': "
+                "%(extra_msg)s")

@@ -337,18 +337,22 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             'x-image-meta-name': 'bogus',
             'x-image-meta-location': 'http://example.com/image.tar.gz',
             'x-image-meta-disk-format': 'vhd',
-            'x-image-meta-size': 'invalid',
             'x-image-meta-container-format': 'bare',
         }
 
-        req = webob.Request.blank("/images")
-        req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
-            req.headers[k] = v
+        def exec_bad_size_test(bad_size, expected_substr):
+            fixture_headers['x-image-meta-size'] = bad_size
+            req = webob.Request.blank("/images",
+                                      method='POST',
+                                      headers=fixture_headers)
+            res = req.get_response(self.api)
+            self.assertEqual(res.status_int, 400)
+            self.assertTrue(expected_substr in res.body)
 
-        res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 400)
-        self.assertTrue('Incoming image size' in res.body)
+        expected = "Cannot convert image size 'invalid' to an integer."
+        exec_bad_size_test('invalid', expected)
+        expected = "Image size must be >= 0 ('-10' specified)."
+        exec_bad_size_test(-10, expected)
 
     def test_bad_image_name(self):
         fixture_headers = {
