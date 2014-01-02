@@ -23,15 +23,14 @@ import uuid
 import mox
 import testtools
 
+from glance.common import client as test_client
 from glance.common import config
 from glance.common import exception
-from glance.common import client as test_client
 from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.openstack.common import timeutils
-
-import glance.registry.client.v1.api as rapi
 from glance.registry.api.v1.images import Controller as rcontroller
+import glance.registry.client.v1.api as rapi
 from glance.registry.client.v1.api import client as rclient
 from glance.tests.unit import base
 from glance.tests import utils as test_utils

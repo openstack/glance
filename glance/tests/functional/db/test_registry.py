@@ -15,8 +15,8 @@
 
 from glance.api import CONF
 import glance.db.registry.api
-import glance.tests.functional.db as db_tests
 from glance.tests import functional
+import glance.tests.functional.db as db_tests
 from glance.tests.functional.db import base
 
 

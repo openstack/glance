@@ -36,13 +36,13 @@ import webob
 
 from glance.common import config
 from glance.common import exception
+from glance.common import property_utils
 from glance.common import utils
 from glance.common import wsgi
+from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import timeutils
-from glance import context
-from glance.common import property_utils
 
 CONF = cfg.CONF
 

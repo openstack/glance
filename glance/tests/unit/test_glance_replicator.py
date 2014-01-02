@@ -24,8 +24,8 @@ import uuid
 
 import fixtures
 
-from glance.tests import utils as test_utils
 from glance.cmd import replicator as glance_replicator
+from glance.tests import utils as test_utils
 
 
 IMG_RESPONSE_ACTIVE = {

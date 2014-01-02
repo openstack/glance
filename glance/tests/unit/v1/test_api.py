@@ -41,8 +41,8 @@ from glance.openstack.common import timeutils
 import glance.registry.client.v1.api as registry
 import glance.store.filesystem
 from glance.tests.unit import base
-from glance.tests import utils as test_utils
 import glance.tests.unit.utils as unit_test_utils
+from glance.tests import utils as test_utils
 
 CONF = cfg.CONF
 

@@ -22,17 +22,17 @@ import webob.exc
 
 from oslo.config import cfg
 
+from glance.api import policy
+from glance.common import exception
+from glance.common import utils
+from glance.common import wsgi
 import glance.db
 import glance.gateway
 import glance.notifier
-import glance.schema
-import glance.store
-from glance.api import policy
-from glance.common import wsgi
-from glance.common import exception
-from glance.common import utils
 import glance.openstack.common.jsonutils as json
 from glance.openstack.common import timeutils
+import glance.schema
+import glance.store
 
 CONF = cfg.CONF
 

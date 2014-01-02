@@ -41,9 +41,9 @@ import fixtures
 from sqlalchemy import create_engine
 import testtools
 
-from glance import tests as glance_tests
 from glance.common import utils
 from glance.openstack.common import units
+from glance import tests as glance_tests
 from glance.tests import utils as test_utils
 
 execute, get_unused_port = test_utils.execute, test_utils.get_unused_port
