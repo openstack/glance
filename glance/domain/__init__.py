@@ -136,7 +136,10 @@ class Image(object):
                 else:
                     msg = _('Properties %s must be set prior to saving data.')
                 raise ValueError(msg % ', '.join(missing))
-
+        # NOTE(flwang): Image size should be cleared as long as the image
+        # status is updated to 'queued'
+        if status == 'queued':
+            self.size = None
         self._status = status
 
     @property

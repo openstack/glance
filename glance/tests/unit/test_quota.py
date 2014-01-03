@@ -76,10 +76,6 @@ class FakeImage(object):
             self.size = self. size + len(d)
 
 
-def fake_get_size_from_backend(context, uri):
-    return 1
-
-
 class TestImageQuota(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImageQuota, self).setUp()
@@ -250,7 +246,7 @@ class TestImageQuota(test_utils.BaseTestCase):
         self.assertIsNone(image.size)
 
         self.stubs.Set(glance.store, 'get_size_from_backend',
-                       fake_get_size_from_backend)
+                       unit_test_utils.fake_get_size_from_backend)
         image.locations.append({'url': 'file:///fake.img.tar.gz',
                                 'metadata': {}})
         self.assertIn({'url': 'file:///fake.img.tar.gz', 'metadata': {}},
@@ -265,7 +261,7 @@ class TestImageQuota(test_utils.BaseTestCase):
         self.assertIsNone(image.size)
 
         self.stubs.Set(glance.store, 'get_size_from_backend',
-                       fake_get_size_from_backend)
+                       unit_test_utils.fake_get_size_from_backend)
         image.locations.insert(0,
                                {'url': 'file:///fake.img.tar.gz',
                                 'metadata': {}})
@@ -281,7 +277,7 @@ class TestImageQuota(test_utils.BaseTestCase):
         self.assertIsNone(image.size)
 
         self.stubs.Set(glance.store, 'get_size_from_backend',
-                       fake_get_size_from_backend)
+                       unit_test_utils.fake_get_size_from_backend)
         image.locations = [{'url': 'file:///fake.img.tar.gz', 'metadata': {}}]
         self.assertEqual([{'url': 'file:///fake.img.tar.gz', 'metadata': {}}],
                          image.locations)
@@ -295,7 +291,7 @@ class TestImageQuota(test_utils.BaseTestCase):
         self.assertIsNone(image.size)
 
         self.stubs.Set(glance.store, 'get_size_from_backend',
-                       fake_get_size_from_backend)
+                       unit_test_utils.fake_get_size_from_backend)
         image.locations += [{'url': 'file:///fake.img.tar.gz', 'metadata': {}}]
         self.assertIn({'url': 'file:///fake.img.tar.gz', 'metadata': {}},
                       image.locations)
