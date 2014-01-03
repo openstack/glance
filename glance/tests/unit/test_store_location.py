@@ -14,6 +14,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import mock
 
 from glance.common import exception
 from glance import context
@@ -427,3 +428,31 @@ class TestStoreLocation(base.StoreClearingUnitTest):
                               glance.store.get_store_from_scheme,
                               ctx,
                               store)
+
+    def test_add_location_for_image_without_size(self):
+        class FakeImageProxy():
+            size = None
+            context = None
+            store_api = mock.Mock()
+
+        def fake_get_size_from_backend(context, uri):
+            return 1
+
+        self.stubs.Set(glance.store, 'get_size_from_backend',
+                       fake_get_size_from_backend)
+        glance.store._check_image_location = mock.Mock()
+        loc1 = {'url': 'file:///fake1.img.tar.gz', 'metadata': {}}
+        loc2 = {'url': 'file:///fake2.img.tar.gz', 'metadata': {}}
+
+        # Test for insert location
+        image1 = FakeImageProxy()
+        locations = glance.store.StoreLocations(image1, [])
+        locations.insert(0, loc2)
+        self.assertEqual(image1.size, 1)
+
+        # Test for set_attr of _locations_proxy
+        image2 = FakeImageProxy()
+        locations = glance.store.StoreLocations(image2, [loc1])
+        locations[0] = loc2
+        self.assertTrue(loc2 in locations)
+        self.assertEqual(image2.size, 1)

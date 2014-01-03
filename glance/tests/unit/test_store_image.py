@@ -44,6 +44,7 @@ class ImageStub(object):
         self.status = status
         self.locations = locations or []
         self.visibility = visibility
+        self.size = 1
 
     def delete(self):
         self.status = 'deleted'

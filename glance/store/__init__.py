@@ -426,6 +426,17 @@ def _check_image_location(context, store_api, location):
     store_api.check_location_metadata(location['metadata'])
 
 
+def _set_image_size(context, image, locations):
+    if not image.size:
+        for location in locations:
+            size_from_backend = glance.store.get_size_from_backend(
+                context, location['url'])
+            if size_from_backend:
+                # NOTE(flwang): This assumes all locations have the same size
+                image.size = size_from_backend
+                break
+
+
 class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
     def __init__(self, factory, context, store_api):
         self.context = context
@@ -483,6 +494,9 @@ class StoreLocations(collections.MutableSequence):
             raise exception.DuplicateLocation(location=location['url'])
 
         self.value.insert(i, location)
+        _set_image_size(self.image_proxy.context,
+                        self.image_proxy,
+                        [location])
 
     def pop(self, i=-1):
         location = self.value.pop(i)
@@ -521,6 +535,9 @@ class StoreLocations(collections.MutableSequence):
         _check_image_location(self.image_proxy.context,
                               self.image_proxy.store_api, location)
         self.value.__setitem__(i, location)
+        _set_image_size(self.image_proxy.context,
+                        self.image_proxy,
+                        [location])
 
     def __delitem__(self, i):
         location = None
@@ -599,7 +616,7 @@ def _locations_proxy(target, attr):
 
                 if value.count(location) > 1:
                     raise exception.DuplicateLocation(location=location['url'])
-
+            _set_image_size(self.context, getattr(self, target), value)
             return setattr(getattr(self, target), attr, list(value))
 
     def del_attr(self):
