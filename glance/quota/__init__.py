@@ -261,9 +261,28 @@ class ImageProxy(glance.domain.proxy.Image):
                                              remaining=remaining)
 
         # NOTE(jbresnah) If two uploads happen at the same time and neither
-        # properly sets the size attribute than there is a race condition
-        # that will allow for the quota to be broken.  Thus we must recheck
-        # the quota after the upload and thus after we know the size
+        # properly sets the size attribute[1] then there is a race condition
+        # that will allow for the quota to be broken[2].  Thus we must recheck
+        # the quota after the upload and thus after we know the size.
+        #
+        # Also, when an upload doesn't set the size properly then the call to
+        # check_quota above returns None and so utils.LimitingReader is not
+        # used above. Hence the store (e.g.  filesystem store) may have to
+        # download the entire file before knowing the actual file size.  Here
+        # also we need to check for the quota again after the image has been
+        # downloaded to the store.
+        #
+        # [1] For e.g. when using chunked transfers the 'Content-Length'
+        #     header is not set.
+        # [2] For e.g.:
+        #       - Upload 1 does not exceed quota but upload 2 exceeds quota.
+        #         Both uploads are to different locations
+        #       - Upload 2 completes before upload 1 and writes image.size.
+        #       - Immediately, upload 1 completes and (over)writes image.size
+        #         with the smaller size.
+        #       - Now, to glance, image has not exceeded quota but, in
+        #         reality, the quota has been exceeded.
+
         try:
             glance.api.common.check_quota(
                 self.context, self.image.size, self.db_api,
@@ -273,7 +292,7 @@ class ImageProxy(glance.domain.proxy.Image):
                      % self.image.image_id)
             location = self.image.locations[0]['url']
             glance.store.safe_delete_from_backend(
-                location, self.context, self.image.image_id)
+                self.context, location, self.image.image_id)
             raise
 
     @property
