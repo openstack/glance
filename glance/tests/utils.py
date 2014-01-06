@@ -469,8 +469,8 @@ class RegistryAPIMixIn(object):
     def assertEqualImages(self, res, uuids, key='images', unjsonify=True):
         images = json.loads(res.body)[key] if unjsonify else res
         self.assertEqual(len(images), len(uuids))
-        for i, uuid in enumerate(uuids):
-            self.assertEqual(images[i]['id'], uuid)
+        for i, value in enumerate(uuids):
+            self.assertEqual(images[i]['id'], value)
 
 
 class FakeAuthMiddleware(wsgi.Middleware):
