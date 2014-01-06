@@ -274,7 +274,7 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
             return {
                 'id': 'test1',
                 'name': 'fake_image',
-                'status': 'Active',
+                'status': 'active',
                 'created_at': '',
                 'min_disk': '10G',
                 'min_ram': '1024M',

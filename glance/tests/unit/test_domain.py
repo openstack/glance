@@ -177,6 +177,15 @@ class TestImage(test_utils.BaseTestCase):
         self.assertRaises(ValueError, setattr,
                           self.image, 'status', 'active')
 
+    def test_delayed_delete(self):
+        self.config(delayed_delete=True)
+        self.image.status = 'active'
+        self.image.locations = [{'url': 'http://foo.bar/not.exists',
+                                 'metadata': {}}]
+        self.assertEqual(self.image.status, 'active')
+        self.image.delete()
+        self.assertEqual(self.image.status, 'pending_delete')
+
 
 class TestImageMember(test_utils.BaseTestCase):
 

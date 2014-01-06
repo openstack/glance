@@ -327,19 +327,23 @@ class TestImages(functional.FunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(204, response.status_code)
 
+        def _verify_image_checksum_and_status(checksum, status):
+            # Checksum should be populated and status should be active
+            path = self._url('/v2/images/%s' % image_id)
+            response = requests.get(path, headers=self._headers())
+            self.assertEqual(200, response.status_code)
+            image = jsonutils.loads(response.text)
+            self.assertEqual(checksum, image['checksum'])
+            self.assertEqual(status, image['status'])
+
         # Upload some image data
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
         self.assertEqual(204, response.status_code)
 
-        # Checksum should be populated and status should be active
-        path = self._url('/v2/images/%s' % image_id)
-        response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
-        image = jsonutils.loads(response.text)
-        self.assertEqual('8f113e38d28a79a5a451b16048cc2b72', image['checksum'])
-        self.assertEqual('active', image['status'])
+        expected_checksum = '8f113e38d28a79a5a451b16048cc2b72'
+        _verify_image_checksum_and_status(expected_checksum, 'active')
 
         # `disk_format` and `container_format` cannot
         # be replaced when the image is active.
@@ -356,23 +360,22 @@ class TestImages(functional.FunctionalTest):
 
         # Try to download the data that was just uploaded
         path = self._url('/v2/images/%s/file' % image_id)
-        headers = self._headers()
-        response = requests.get(path, headers=headers)
+        response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
-        self.assertEqual('8f113e38d28a79a5a451b16048cc2b72',
-                         response.headers['Content-MD5'])
+        self.assertEqual(expected_checksum, response.headers['Content-MD5'])
         self.assertEqual(response.text, 'ZZZZZ')
 
-        # Uploading duplicate data should be rejected with a 409
+        # Uploading duplicate data should be rejected with a 409. The
+        # original data should remain untouched.
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='XXX')
         self.assertEqual(409, response.status_code)
+        _verify_image_checksum_and_status(expected_checksum, 'active')
 
         # Ensure the size is updated to reflect the data uploaded
         path = self._url('/v2/images/%s' % image_id)
-        headers = self._headers()
-        response = requests.get(path, headers=headers)
+        response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         self.assertEqual(5, jsonutils.loads(response.text)['size'])
 

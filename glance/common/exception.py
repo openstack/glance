@@ -336,3 +336,8 @@ class ImageDataNotFound(NotFound):
 class InvalidParameterValue(Invalid):
     message = _("Invalid value '%(value)s' for parameter '%(param)s': "
                 "%(extra_msg)s")
+
+
+class InvalidImageStatusTransition(Invalid):
+    message = _("Image status transition from %(cur_status)s to"
+                " %(new_status)s is not allowed")
