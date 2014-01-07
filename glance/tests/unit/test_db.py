@@ -441,7 +441,8 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
     def test_save_image_member(self):
         image_member = self.image_member_repo.get(TENANT2)
         image_member.status = 'accepted'
-        image_member_updated = self.image_member_repo.save(image_member)
+        self.image_member_repo.save(image_member)
+        image_member_updated = self.image_member_repo.get(TENANT2)
         self.assertEqual(image_member.id, image_member_updated.id)
         self.assertEqual(image_member_updated.status, 'accepted')
 
@@ -450,8 +451,9 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         image_member = self.image_member_factory.new_image_member(image,
                                                                   TENANT4)
         self.assertTrue(image_member.id is None)
-        retreived_image_member = self.image_member_repo.add(image_member)
-        self.assertEqual(retreived_image_member.id, image_member.id)
+        self.image_member_repo.add(image_member)
+        retreived_image_member = self.image_member_repo.get(TENANT4)
+        self.assertIsNotNone(retreived_image_member.id)
         self.assertEqual(retreived_image_member.image_id,
                          image_member.image_id)
         self.assertEqual(retreived_image_member.member_id,
@@ -464,8 +466,9 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         image_member = self.image_member_factory.new_image_member(image,
                                                                   TENANT4)
         self.assertTrue(image_member.id is None)
-        retreived_image_member = self.image_member_repo.add(image_member)
-        self.assertEqual(retreived_image_member.id, image_member.id)
+        self.image_member_repo.add(image_member)
+        retreived_image_member = self.image_member_repo.get(TENANT4)
+        self.assertIsNotNone(retreived_image_member.id)
         self.assertEqual(retreived_image_member.image_id,
                          image_member.image_id)
         self.assertEqual(retreived_image_member.member_id,

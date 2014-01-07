@@ -278,7 +278,7 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
 
     def add(self, member):
         self.policy.enforce(self.context, 'add_member', {})
-        return self.member_repo.add(member)
+        self.member_repo.add(member)
 
     def get(self, member_id):
         self.policy.enforce(self.context, 'get_member', {})
@@ -286,7 +286,7 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
 
     def save(self, member):
         self.policy.enforce(self.context, 'modify_member', {})
-        return self.member_repo.save(member)
+        self.member_repo.save(member)
 
     def list(self, *args, **kwargs):
         self.policy.enforce(self.context, 'get_members', {})
@@ -294,7 +294,7 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
 
     def remove(self, member):
         self.policy.enforce(self.context, 'delete_member', {})
-        return self.member_repo.remove(member)
+        self.member_repo.remove(member)
 
 
 class ImageLocationsProxy(object):

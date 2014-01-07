@@ -708,11 +708,9 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
                                         read_tenants=member_ids)
 
     def add(self, member):
-        result = super(ImageMemberRepoProxy, self).add(member)
+        super(ImageMemberRepoProxy, self).add(member)
         self._set_acls()
-        return result
 
     def remove(self, member):
-        result = super(ImageMemberRepoProxy, self).remove(member)
+        super(ImageMemberRepoProxy, self).remove(member)
         self._set_acls()
-        return result

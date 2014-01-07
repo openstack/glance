@@ -246,7 +246,6 @@ class ImageMemberRepo(object):
         image_member.created_at = new_values['created_at']
         image_member.updated_at = new_values['updated_at']
         image_member.id = new_values['id']
-        return self._format_image_member_from_db(new_values)
 
     def remove(self, image_member):
         try:
@@ -264,7 +263,6 @@ class ImageMemberRepo(object):
         except (exception.NotFound, exception.Forbidden):
             raise exception.NotFound()
         image_member.updated_at = new_values['updated_at']
-        return self._format_image_member_from_db(new_values)
 
     def get(self, member_id):
         try:
