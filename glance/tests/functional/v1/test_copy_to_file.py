@@ -23,10 +23,10 @@ based storage backend.
 
 import hashlib
 import httplib2
-import json
 import tempfile
 import time
 
+from glance.openstack.common import jsonutils
 from glance.openstack.common import units
 from glance.tests import functional
 from glance.tests.functional.store_utils import (setup_http,
@@ -66,7 +66,7 @@ class TestCopyToFile(functional.FunctionalTest):
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
         self.assertEqual(response.status, 201, content)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
 
         original_image_id = data['image']['id']
 
@@ -82,7 +82,7 @@ class TestCopyToFile(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201, content)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
 
         copy_image_id = data['image']['id']
         self.assertNotEqual(copy_image_id, original_image_id)
@@ -178,7 +178,7 @@ class TestCopyToFile(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201, content)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
 
         copy_image_id = data['image']['id']
         self.assertEqual(data['image']['status'], 'queued', content)

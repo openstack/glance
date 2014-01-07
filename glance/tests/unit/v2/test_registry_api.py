@@ -17,7 +17,6 @@
 #    under the License.
 
 import datetime
-import json
 import uuid
 
 from oslo.config import cfg
@@ -29,6 +28,7 @@ import glance.common.config
 import glance.context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
+from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 
 from glance.registry.api import v2 as rserver
@@ -128,10 +128,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get',
             'kwargs': {'image_id': UUID2},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
         image = res_dict
         for k, v in fixture.iteritems():
             self.assertEqual(v, image[k])
@@ -147,9 +147,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get',
             'kwargs': {'image_id': _gen_uuid()},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
         self.assertEqual(res_dict["_error"]["cls"],
                          'glance.common.exception.NotFound')
 
@@ -169,12 +169,12 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'filters': fixture},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
 
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 1)
 
         for k, v in fixture.iteritems():
@@ -234,12 +234,12 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'marker': UUID4, "is_public": True},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
 
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         # should be sorted by created_at desc, id desc
         # page should start after marker 4
         self.assertEqual(len(images), 2)
@@ -272,11 +272,11 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'kwargs': {'marker': UUID3, 'sort_key': 'name',
                        'sort_dir': 'asc'},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 2)
 
     def test_get_index_marker_and_name_desc(self):
@@ -305,11 +305,11 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'kwargs': {'marker': UUID3, 'sort_key': 'name',
                        'sort_dir': 'desc'},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 0)
 
     def test_get_index_marker_and_disk_format_asc(self):
@@ -338,11 +338,11 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'kwargs': {'marker': UUID3, 'sort_key': 'disk_format',
                        'sort_dir': 'asc'},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 2)
 
     def test_get_index_marker_and_disk_format_desc(self):
@@ -371,11 +371,11 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'kwargs': {'marker': UUID3, 'sort_key': 'disk_format',
                        'sort_dir': 'desc'},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 0)
 
     def test_get_index_marker_and_container_format_asc(self):
@@ -404,11 +404,11 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'kwargs': {'marker': UUID3, 'sort_key': 'container_format',
                        'sort_dir': 'asc'},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 2)
 
     def test_get_index_marker_and_container_format_desc(self):
@@ -437,11 +437,11 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'kwargs': {'marker': UUID3, 'sort_key': 'container_format',
                        'sort_dir': 'desc'},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 0)
 
     def test_get_index_unknown_marker(self):
@@ -455,9 +455,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'marker': _gen_uuid()},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
-        result = json.loads(res.body)[0]
+        result = jsonutils.loads(res.body)[0]
 
         self.assertIn("_error", result)
         self.assertIn("NotFound", result["_error"]["cls"])
@@ -497,9 +497,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'limit': 1},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
         self.assertEqual(res.status_int, 200)
 
         images = res_dict
@@ -542,9 +542,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'marker': UUID3, 'limit': 1},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
         self.assertEqual(res.status_int, 200)
 
         images = res_dict
@@ -587,9 +587,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'filters': {'name': 'new name! #123'}},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
         self.assertEqual(res.status_int, 200)
 
         images = res_dict
@@ -622,10 +622,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'filters': {'type': 'kernel'}},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 2)
         self.assertEqual(images[0]['id'], extra_id)
         self.assertEqual(images[1]['id'], UUID1)
@@ -635,10 +635,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'filters': {'type': 'random'}},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 0)
 
         # testing with a non-existent value for a common property.
@@ -646,10 +646,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'filters': {'type': 'random'}},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 0)
 
         # testing with a non-existent property.
@@ -657,10 +657,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'filters': {'poo': 'random'}},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 0)
 
         # testing with multiple existing properties.
@@ -668,10 +668,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'filters': {'type': 'kernel', 'distro': 'ubuntu'}},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 1)
         self.assertEqual(images[0]['id'], extra_id)
 
@@ -680,10 +680,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'filters': {'type': 'random', 'distro': 'random'}},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 0)
 
         # testing with multiple non-existing properties.
@@ -691,10 +691,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'filters': {'typo': 'random', 'poo': 'random'}},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 0)
 
         # testing with one existing property and the other non-existing.
@@ -702,10 +702,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'filters': {'type': 'kernel', 'poo': 'random'}},
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        images = json.loads(res.body)[0]
+        images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 0)
 
     def test_get_index_sort_default_created_at_desc(self):
@@ -761,9 +761,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         cmd = [{
             'command': 'image_get_all',
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
         self.assertEqual(res.status_int, 200)
 
         images = res_dict
@@ -824,10 +824,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'sort_key': 'name', 'sort_dir': 'asc'}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
         self.assertEqual(len(images), 5)
@@ -873,10 +873,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'sort_key': 'status', 'sort_dir': 'asc'}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
         self.assertEqual(len(images), 4)
@@ -921,10 +921,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'sort_key': 'disk_format', 'sort_dir': 'asc'}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
         self.assertEqual(len(images), 4)
@@ -970,10 +970,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'kwargs': {'sort_key': 'container_format',
                        'sort_dir': 'desc'}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
         self.assertEqual(len(images), 4)
@@ -1018,10 +1018,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'kwargs': {'sort_key': 'size',
                        'sort_dir': 'asc'}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
         self.assertEqual(len(images), 4)
@@ -1072,10 +1072,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'kwargs': {'sort_key': 'created_at',
                        'sort_dir': 'asc'}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
         self.assertEqual(len(images), 4)
@@ -1128,10 +1128,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'kwargs': {'sort_key': 'updated_at',
                        'sort_dir': 'desc'}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
         self.assertEqual(len(images), 4)
@@ -1154,12 +1154,12 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_create',
             'kwargs': {'values': fixture}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
 
         self.assertEqual(res.status_int, 200)
 
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
 
         for k, v in fixture.iteritems():
             self.assertEqual(v, res_dict[k])
@@ -1182,12 +1182,12 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_create',
             'kwargs': {'values': fixture}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
 
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
 
         self.assertEqual(5, res_dict['min_disk'])
 
@@ -1206,12 +1206,12 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_create',
             'kwargs': {'values': fixture}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
 
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
 
         self.assertEqual(256, res_dict['min_ram'])
 
@@ -1229,12 +1229,12 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_create',
             'kwargs': {'values': fixture}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
 
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
 
         self.assertEqual(0, res_dict['min_ram'])
 
@@ -1252,12 +1252,12 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_create',
             'kwargs': {'values': fixture}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
 
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
 
         self.assertEqual(0, res_dict['min_disk'])
 
@@ -1275,12 +1275,12 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'kwargs': {'values': fixture,
                        'image_id': UUID2}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
 
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
 
         self.assertNotEqual(res_dict['created_at'],
                             res_dict['updated_at'])
@@ -1298,9 +1298,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'filters': {'deleted': False}}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
         self.assertEqual(res.status_int, 200)
 
         orig_num_images = len(res_dict)
@@ -1310,7 +1310,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_destroy',
             'kwargs': {'image_id': UUID2}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
@@ -1320,9 +1320,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_get_all',
             'kwargs': {'filters': {'deleted': False}}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
-        res_dict = json.loads(res.body)[0]
+        res_dict = jsonutils.loads(res.body)[0]
         self.assertEqual(res.status_int, 200)
 
         new_num_images = len(res_dict)
@@ -1338,11 +1338,11 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_destroy',
             'kwargs': {'image_id': image['id']}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
 
         self.assertEqual(res.status_int, 200)
-        deleted_image = json.loads(res.body)[0]
+        deleted_image = jsonutils.loads(res.body)[0]
 
         self.assertEqual(image['id'], deleted_image['id'])
         self.assertTrue(deleted_image['deleted'])
@@ -1358,10 +1358,10 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             'command': 'image_member_find',
             'kwargs': {'image_id': UUID2}
         }]
-        req.body = json.dumps(cmd)
+        req.body = jsonutils.dumps(cmd)
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
 
-        memb_list = json.loads(res.body)[0]
+        memb_list = jsonutils.loads(res.body)[0]
         self.assertEqual(len(memb_list), 0)

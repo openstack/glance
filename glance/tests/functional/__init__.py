@@ -25,7 +25,6 @@ and spinning down the servers.
 
 import atexit
 import datetime
-import json
 import logging
 import os
 import re
@@ -42,6 +41,7 @@ from sqlalchemy import create_engine
 import testtools
 
 from glance.common import utils
+from glance.openstack.common import jsonutils
 from glance.openstack.common import units
 from glance import tests as glance_tests
 from glance.tests import utils as test_utils
@@ -625,7 +625,7 @@ class FunctionalTest(test_utils.BaseTestCase):
 
     def set_policy_rules(self, rules):
         fap = open(self.policy_file, 'w')
-        fap.write(json.dumps(rules))
+        fap.write(jsonutils.dumps(rules))
         fap.close()
 
     def _reset_database(self, conn_string):

@@ -15,14 +15,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
-
 from oslo.config import cfg
 import webob.exc
 
 from glance.api import policy
 from glance.common import wsgi
 import glance.context
+from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging
 
 
@@ -106,7 +105,7 @@ class ContextMiddleware(BaseContextMiddleware):
         if req.headers.get('X-Service-Catalog') is not None:
             try:
                 catalog_header = req.headers.get('X-Service-Catalog')
-                service_catalog = json.loads(catalog_header)
+                service_catalog = jsonutils.loads(catalog_header)
             except ValueError:
                 raise webob.exc.HTTPInternalServerError(
                     _('Invalid service catalog json.'))

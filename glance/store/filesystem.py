@@ -21,7 +21,6 @@ A simple filesystem-backed store
 
 import errno
 import hashlib
-import json
 import os
 import urlparse
 
@@ -29,6 +28,7 @@ from oslo.config import cfg
 
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
@@ -164,7 +164,7 @@ class Store(glance.store.base.Store):
 
         try:
             with open(CONF.filesystem_store_metadata_file, 'r') as fptr:
-                metadata = json.load(fptr)
+                metadata = jsonutils.load(fptr)
             glance.store.check_location_metadata(metadata)
             return metadata
         except glance.store.BackendException as bee:

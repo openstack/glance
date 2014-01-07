@@ -18,13 +18,13 @@
 
 """Policy Engine For Glance"""
 
-import json
 import os.path
 
 from oslo.config import cfg
 
 from glance.common import exception
 import glance.domain.proxy
+from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import policy
 
@@ -107,7 +107,7 @@ class Enforcer(object):
             LOG.debug(_("Loading policy from %s") % self.policy_path)
             with open(self.policy_path) as fap:
                 raw_contents = fap.read()
-                rules_dict = json.loads(raw_contents)
+                rules_dict = jsonutils.loads(raw_contents)
                 self.policy_file_contents = dict(
                     (k, policy.parse_rule(v))
                     for k, v in rules_dict.items())

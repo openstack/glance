@@ -18,10 +18,10 @@
 """Functional test case that utilizes httplib2 against the API server"""
 
 import hashlib
-import json
 
 import httplib2
 
+from glance.openstack.common import jsonutils
 from glance.openstack.common import units
 from glance.tests import functional
 from glance.tests.utils import skip_if_disabled, minimal_headers
@@ -138,7 +138,7 @@ class TestApi(functional.FunctionalTest):
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         image_id = data['image']['id']
         self.assertEqual(data['image']['checksum'],
                          hashlib.md5(image_data).hexdigest())
@@ -208,7 +208,7 @@ class TestApi(functional.FunctionalTest):
              "name": "Image1",
              "checksum": "c2e5db72bd7fd153f53ede5da5a06de3",
              "size": 5120}]}
-        self.assertEqual(json.loads(content), expected_result)
+        self.assertEqual(jsonutils.loads(content), expected_result)
 
         # 6. GET /images/detail
         # Verify image and all its metadata
@@ -229,7 +229,7 @@ class TestApi(functional.FunctionalTest):
             "properties": {},
             "size": 5120}
 
-        image = json.loads(content)
+        image = jsonutils.loads(content)
 
         for expected_key, expected_value in expected_image.items():
             self.assertEqual(expected_value, image['images'][0][expected_key],
@@ -247,7 +247,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'PUT', headers=headers)
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(data['image']['properties']['arch'], "x86_64")
         self.assertEqual(data['image']['properties']['distro'], "Ubuntu")
 
@@ -281,7 +281,7 @@ class TestApi(functional.FunctionalTest):
             "properties": {'distro': 'Ubuntu', 'arch': 'x86_64'},
             "size": 5120}
 
-        image = json.loads(content)
+        image = jsonutils.loads(content)
 
         for expected_key, expected_value in expected_image.items():
             self.assertEqual(expected_value, image['images'][0][expected_key],
@@ -301,7 +301,7 @@ class TestApi(functional.FunctionalTest):
         path = "http://%s:%d/v1/images/detail" % ("127.0.0.1", self.api_port)
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)['images'][0]
+        data = jsonutils.loads(content)['images'][0]
         self.assertEqual(len(data['properties']), 1)
         self.assertEqual(data['properties']['arch'], "x86_64")
 
@@ -313,12 +313,12 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'PUT', headers=headers)
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
 
         path = "http://%s:%d/v1/images/detail" % ("127.0.0.1", self.api_port)
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)['images'][0]
+        data = jsonutils.loads(content)['images'][0]
         self.assertEqual(len(data['properties']), 2)
         self.assertEqual(data['properties']['arch'], "x86_64")
         self.assertEqual(data['properties']['distro'], "Ubuntu")
@@ -344,7 +344,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['members']), 2)
         self.assertEqual(data['members'][0]['member_id'], 'pattieblack')
         self.assertEqual(data['members'][1]['member_id'], 'pattiewhite')
@@ -365,7 +365,7 @@ class TestApi(functional.FunctionalTest):
             member_id = "foo%d" % i
             memberships.append(dict(member_id=member_id))
         http = httplib2.Http()
-        body = json.dumps(dict(memberships=memberships))
+        body = jsonutils.dumps(dict(memberships=memberships))
         response, content = http.request(path, 'PUT', body=body)
         self.assertEqual(response.status, 413)
 
@@ -378,7 +378,7 @@ class TestApi(functional.FunctionalTest):
             member_id = "foo%d" % i
             memberships.append(dict(member_id=member_id))
         http = httplib2.Http()
-        body = json.dumps(dict(memberships=memberships))
+        body = jsonutils.dumps(dict(memberships=memberships))
         response, content = http.request(path, 'PUT', body=body)
         self.assertEqual(response.status, 204)
 
@@ -401,7 +401,7 @@ class TestApi(functional.FunctionalTest):
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         image2_id = data['image']['id']
         self.assertEqual(data['image']['checksum'],
                          hashlib.md5(image_data).hexdigest())
@@ -427,7 +427,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        images = json.loads(content)['images']
+        images = jsonutils.loads(content)['images']
         self.assertEqual(len(images), 2)
         self.assertEqual(images[0]['id'], image2_id)
         self.assertEqual(images[1]['id'], image_id)
@@ -439,7 +439,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        images = json.loads(content)['images']
+        images = jsonutils.loads(content)['images']
         self.assertEqual(len(images), 2)
         self.assertEqual(images[0]['id'], image2_id)
         self.assertEqual(images[1]['id'], image_id)
@@ -451,7 +451,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        images = json.loads(content)['images']
+        images = jsonutils.loads(content)['images']
         self.assertEqual(len(images), 0)
 
         # 23. GET /images with filter on non-existent user-defined property
@@ -461,7 +461,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        images = json.loads(content)['images']
+        images = jsonutils.loads(content)['images']
         self.assertEqual(len(images), 0)
 
         # 24. GET /images with filter 'arch=i386'
@@ -471,7 +471,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        images = json.loads(content)['images']
+        images = jsonutils.loads(content)['images']
         self.assertEqual(len(images), 1)
         self.assertEqual(images[0]['id'], image2_id)
 
@@ -482,7 +482,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        images = json.loads(content)['images']
+        images = jsonutils.loads(content)['images']
         self.assertEqual(len(images), 1)
         self.assertEqual(images[0]['id'], image_id)
 
@@ -493,7 +493,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        images = json.loads(content)['images']
+        images = jsonutils.loads(content)['images']
         self.assertEqual(len(images), 1)
         self.assertEqual(images[0]['id'], image2_id)
 
@@ -516,7 +516,7 @@ class TestApi(functional.FunctionalTest):
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         fixture = [{'member_id': 'pattieblack', 'can_share': 'false'}]
-        body = json.dumps(dict(memberships=fixture))
+        body = jsonutils.dumps(dict(memberships=fixture))
         response, content = http.request(path, 'PUT', body=body)
         self.assertEqual(response.status, 404)
 
@@ -547,7 +547,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        images = json.loads(content)['images']
+        images = jsonutils.loads(content)['images']
         self.assertEqual(len(images), 0)
 
         self.stop_servers()

@@ -42,6 +42,7 @@ import webob.exc
 
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging
 
 
@@ -520,7 +521,7 @@ class JSONRequestDeserializer(object):
         return False
 
     def _sanitizer(self, obj):
-        """Sanitizer method that will be passed to json.loads."""
+        """Sanitizer method that will be passed to jsonutils.loads."""
         return obj
 
     def from_json(self, datastring):
@@ -540,7 +541,7 @@ class JSONRequestDeserializer(object):
 class JSONResponseSerializer(object):
 
     def _sanitizer(self, obj):
-        """Sanitizer method that will be passed to json.dumps."""
+        """Sanitizer method that will be passed to jsonutils.dumps."""
         if isinstance(obj, datetime.datetime):
             return obj.isoformat()
         if hasattr(obj, "to_dict"):
@@ -548,7 +549,7 @@ class JSONResponseSerializer(object):
         return obj
 
     def to_json(self, data):
-        return json.dumps(data, default=self._sanitizer)
+        return jsonutils.dumps(data, default=self._sanitizer)
 
     def default(self, response, result):
         response.content_type = 'application/json'

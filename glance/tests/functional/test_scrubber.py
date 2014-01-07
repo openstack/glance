@@ -15,7 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import os
 import sys
 import time
@@ -24,6 +23,7 @@ import httplib2
 import swiftclient
 
 from glance.common import crypt
+from glance.openstack.common import jsonutils
 from glance.openstack.common import units
 from glance.store.swift import StoreLocation
 from glance.tests import functional
@@ -66,7 +66,7 @@ class TestScrubber(functional.FunctionalTest):
         response, content = http.request(path, 'POST', body='XXX',
                                          headers=headers)
         self.assertEqual(response.status, 201)
-        image = json.loads(content)['image']
+        image = jsonutils.loads(content)['image']
         self.assertEqual('active', image['status'])
         image_id = image['id']
 
@@ -104,7 +104,7 @@ class TestScrubber(functional.FunctionalTest):
         response, content = http.request(path, 'POST', body='XXX',
                                          headers=headers)
         self.assertEqual(response.status, 201)
-        image = json.loads(content)['image']
+        image = jsonutils.loads(content)['image']
         self.assertEqual('active', image['status'])
         image_id = image['id']
 
@@ -163,7 +163,7 @@ class TestScrubber(functional.FunctionalTest):
                                          headers=headers)
         # ensure the request was successful and the image is active
         self.assertEqual(response.status, 201)
-        image = json.loads(content)['image']
+        image = jsonutils.loads(content)['image']
         self.assertEqual('active', image['status'])
         image_id = image['id']
 
@@ -224,7 +224,7 @@ class TestScrubber(functional.FunctionalTest):
         response, content = http.request(path, 'POST', body='XXX',
                                          headers=headers)
         self.assertEqual(response.status, 201)
-        image = json.loads(content)['image']
+        image = jsonutils.loads(content)['image']
         self.assertEqual('active', image['status'])
         image_id = image['id']
 
@@ -290,7 +290,7 @@ class TestScrubber(functional.FunctionalTest):
         response, content = http.request(path, 'POST', body='XXX',
                                          headers=headers)
         self.assertEqual(response.status, 201)
-        image = json.loads(content)['image']
+        image = jsonutils.loads(content)['image']
         self.assertEqual('active', image['status'])
         image_id = image['id']
 
@@ -360,7 +360,7 @@ class TestScrubber(functional.FunctionalTest):
         response, content = http.request(path, 'POST', body='XXX',
                                          headers=headers)
         self.assertEqual(response.status, 201)
-        image = json.loads(content)['image']
+        image = jsonutils.loads(content)['image']
         self.assertEqual('active', image['status'])
         image_id = image['id']
 

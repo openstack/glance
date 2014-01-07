@@ -19,7 +19,6 @@
 
 import errno
 import functools
-import json
 import os
 import shlex
 import shutil
@@ -42,6 +41,7 @@ from glance.common import wsgi
 from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
+from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 
 CONF = cfg.CONF
@@ -467,7 +467,7 @@ class RegistryAPIMixIn(object):
         return res
 
     def assertEqualImages(self, res, uuids, key='images', unjsonify=True):
-        images = json.loads(res.body)[key] if unjsonify else res
+        images = jsonutils.loads(res.body)[key] if unjsonify else res
         self.assertEqual(len(images), len(uuids))
         for i, value in enumerate(uuids):
             self.assertEqual(images[i]['id'], value)

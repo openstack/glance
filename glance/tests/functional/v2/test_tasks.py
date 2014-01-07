@@ -16,13 +16,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import os
 import uuid
 
 import fixtures
 import requests
 
+from glance.openstack.common import jsonutils
 from glance.tests import functional
 
 
@@ -70,14 +70,14 @@ class TestTasks(functional.FunctionalTest):
         path = self._url('/v2/tasks')
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
-        tasks = json.loads(response.text)['tasks']
+        tasks = jsonutils.loads(response.text)['tasks']
         self.assertEqual(0, len(tasks))
 
         # Create a task
         path = self._url('/v2/tasks')
         headers = self._headers({'content-type': 'application/json'})
 
-        data = json.dumps({
+        data = jsonutils.dumps({
             "type": "import",
             "input": {
                 "import_from": self.file_path,
@@ -92,7 +92,7 @@ class TestTasks(functional.FunctionalTest):
         self.assertEqual(201, response.status_code)
 
         # Returned task entity should have a generated id and status
-        task = json.loads(response.text)
+        task = jsonutils.loads(response.text)
         task_id = task['id']
         checked_keys = set([u'created_at',
                             u'expires_at',
@@ -124,7 +124,7 @@ class TestTasks(functional.FunctionalTest):
         path = self._url('/v2/tasks')
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
-        tasks = json.loads(response.text)['tasks']
+        tasks = jsonutils.loads(response.text)['tasks']
         self.assertEqual(1, len(tasks))
         self.assertEqual(tasks[0]['id'], task_id)
 

@@ -33,11 +33,11 @@ skipped.
 import datetime
 import hashlib
 import httplib2
-import json
 import os
 import tempfile
 import uuid
 
+from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 from glance.openstack.common import units
 
@@ -157,7 +157,7 @@ class TestSSL(functional.FunctionalTest):
                                           headers=headers,
                                           body=image_data)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(data['image']['checksum'],
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
@@ -228,7 +228,7 @@ class TestSSL(functional.FunctionalTest):
              "name": "Image1",
              "checksum": "c2e5db72bd7fd153f53ede5da5a06de3",
              "size": 5120}]}
-        self.assertEqual(json.loads(content), expected_result)
+        self.assertEqual(jsonutils.loads(content), expected_result)
 
         # 6. GET /images/detail
         # Verify image and all its metadata
@@ -249,7 +249,7 @@ class TestSSL(functional.FunctionalTest):
             "properties": {},
             "size": 5120}
 
-        image = json.loads(content)
+        image = jsonutils.loads(content)
 
         for expected_key, expected_value in expected_image.items():
             self.assertEqual(expected_value,
@@ -268,7 +268,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'PUT', headers=headers)
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(data['image']['properties']['arch'], "x86_64")
         self.assertEqual(data['image']['properties']['distro'], "Ubuntu")
 
@@ -291,7 +291,7 @@ class TestSSL(functional.FunctionalTest):
             "properties": {'distro': 'Ubuntu', 'arch': 'x86_64'},
             "size": 5120}
 
-        image = json.loads(content)
+        image = jsonutils.loads(content)
 
         for expected_key, expected_value in expected_image.items():
             self.assertEqual(expected_value,
@@ -312,7 +312,7 @@ class TestSSL(functional.FunctionalTest):
         path = "https://%s:%d/v1/images/detail" % ("127.0.0.1", self.api_port)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)['images'][0]
+        data = jsonutils.loads(content)['images'][0]
         self.assertEqual(len(data['properties']), 1)
         self.assertEqual(data['properties']['arch'], "x86_64")
 
@@ -324,12 +324,12 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'PUT', headers=headers)
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
 
         path = "https://%s:%d/v1/images/detail" % ("127.0.0.1", self.api_port)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)['images'][0]
+        data = jsonutils.loads(content)['images'][0]
         self.assertEqual(len(data['properties']), 2)
         self.assertEqual(data['properties']['arch'], "x86_64")
         self.assertEqual(data['properties']['distro'], "Ubuntu")
@@ -379,7 +379,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(data['image']['checksum'], None)
         self.assertEqual(data['image']['size'], 0)
         self.assertEqual(data['image']['container_format'], 'ovf')
@@ -395,7 +395,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(data['images'][0]['id'], image_id)
         self.assertEqual(data['images'][0]['checksum'], None)
         self.assertEqual(data['images'][0]['size'], 0)
@@ -426,7 +426,7 @@ class TestSSL(functional.FunctionalTest):
                                           headers=headers,
                                           body=image_data)
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(data['image']['checksum'],
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
@@ -449,7 +449,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(data['images'][0]['checksum'],
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['images'][0]['id'], image_id)
@@ -497,9 +497,9 @@ class TestSSL(functional.FunctionalTest):
              "links": [{
                  "rel": "self",
                  "href": "https://127.0.0.1:%d/v1/" % self.api_port}]}]}
-        versions_json = json.dumps(versions)
+        versions_json = jsonutils.dumps(versions)
         images = {'images': []}
-        images_json = json.dumps(images)
+        images_json = jsonutils.dumps(images)
 
         # 0. GET / with no Accept: header
         # Verify version choices returned.
@@ -745,7 +745,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are on")
         self.assertEqual(data['image']['is_public'], True)
 
@@ -761,7 +761,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are on")
         self.assertEqual(data['image']['is_public'], True)
 
@@ -777,7 +777,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are off")
         self.assertEqual(data['image']['is_public'], True)
 
@@ -792,7 +792,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(data['image']['is_public'], False)
 
         # 2. GET /images
@@ -800,7 +800,7 @@ class TestSSL(functional.FunctionalTest):
         path = "https://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 3)
 
         # 3. GET /images with name filter
@@ -810,7 +810,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 2)
         for image in data['images']:
             self.assertEqual(image['name'], "My Image!")
@@ -822,7 +822,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 3)
         for image in data['images']:
             self.assertEqual(image['status'], "queued")
@@ -832,7 +832,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 0)
 
         # 5. GET /images with container_format filter
@@ -842,7 +842,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 2)
         for image in data['images']:
             self.assertEqual(image['container_format'], "ovf")
@@ -854,7 +854,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 1)
         for image in data['images']:
             self.assertEqual(image['disk_format'], "vdi")
@@ -866,7 +866,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 2)
         for image in data['images']:
             self.assertTrue(image['size'] <= 20)
@@ -878,7 +878,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 2)
         for image in data['images']:
             self.assertTrue(image['size'] >= 20)
@@ -891,7 +891,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 4)
 
         # 10. Get /images with is_public=False filter
@@ -902,7 +902,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 1)
         for image in data['images']:
             self.assertEqual(image['name'], "My Private Image")
@@ -915,7 +915,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 3)
         for image in data['images']:
             self.assertNotEqual(image['name'], "My Private Image")
@@ -927,7 +927,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 2)
         for image in data['images']:
             self.assertEqual(image['properties']['pants'], "are on")
@@ -940,7 +940,7 @@ class TestSSL(functional.FunctionalTest):
             "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 1)
         for image in data['images']:
             self.assertEqual(image['properties']['pants'], "are on")
@@ -954,7 +954,7 @@ class TestSSL(functional.FunctionalTest):
                                                self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 3)
 
         # 15. GET /images with future changes-since filter
@@ -965,7 +965,7 @@ class TestSSL(functional.FunctionalTest):
                                                self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 0)
 
         self.stop_servers()
@@ -992,7 +992,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
 
         image_ids = [data['image']['id']]
 
@@ -1001,7 +1001,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
 
         image_ids.append(data['image']['id'])
 
@@ -1010,7 +1010,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
 
         image_ids.append(data['image']['id'])
 
@@ -1021,7 +1021,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 2)
         self.assertEqual(data['images'][0]['id'], image_ids[2])
         self.assertEqual(data['images'][1]['id'], image_ids[1])
@@ -1033,7 +1033,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 2)
         self.assertEqual(data['images'][0]['id'], image_ids[1])
         self.assertEqual(data['images'][1]['id'], image_ids[0])
@@ -1045,7 +1045,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 1)
         self.assertEqual(data['images'][0]['id'], image_ids[0])
 
@@ -1056,7 +1056,7 @@ class TestSSL(functional.FunctionalTest):
                "127.0.0.1", self.api_port, params)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 1)
         self.assertEqual(data['images'][0]['id'], image_ids[1])
 
@@ -1090,7 +1090,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
 
         image_ids = [data['image']['id']]
 
@@ -1105,7 +1105,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
 
         image_ids.append(data['image']['id'])
 
@@ -1120,7 +1120,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
 
         image_ids.append(data['image']['id'])
 
@@ -1130,7 +1130,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 3)
         self.assertEqual(data['images'][0]['id'], image_ids[2])
         self.assertEqual(data['images'][1]['id'], image_ids[1])
@@ -1143,7 +1143,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 3)
         self.assertEqual(data['images'][0]['id'], image_ids[1])
         self.assertEqual(data['images'][1]['id'], image_ids[0])
@@ -1156,7 +1156,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 3)
         self.assertEqual(data['images'][0]['id'], image_ids[0])
         self.assertEqual(data['images'][1]['id'], image_ids[2])
@@ -1168,7 +1168,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 2)
         self.assertEqual(data['images'][0]['id'], image_ids[2])
         self.assertEqual(data['images'][1]['id'], image_ids[1])
@@ -1180,7 +1180,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(response.status, 200)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
         self.assertEqual(len(data['images']), 0)
 
         self.stop_servers()
@@ -1213,7 +1213,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data = jsonutils.loads(content)
 
         image_id = data['image']['id']
 

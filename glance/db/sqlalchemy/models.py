@@ -19,7 +19,6 @@
 """
 SQLAlchemy models for glance data
 """
-import json
 import uuid
 
 from sqlalchemy import Column, Integer, String, BigInteger
@@ -31,6 +30,7 @@ from sqlalchemy.types import TypeDecorator
 from sqlalchemy import Index, UniqueConstraint
 
 from glance.openstack.common.db.sqlalchemy import models
+from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 
 BASE = declarative_base()
@@ -48,12 +48,12 @@ class JSONEncodedDict(TypeDecorator):
 
     def process_bind_param(self, value, dialect):
         if value is not None:
-            value = json.dumps(value)
+            value = jsonutils.dumps(value)
         return value
 
     def process_result_value(self, value, dialect):
         if value is not None:
-            value = json.loads(value)
+            value = jsonutils.loads(value)
         return value
 
 

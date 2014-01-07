@@ -16,10 +16,9 @@
 """Version-independent api tests"""
 
 
-import json
-
 import httplib2
 
+from glance.openstack.common import jsonutils
 from glance.tests import functional
 
 
@@ -60,7 +59,7 @@ class TestRootApi(functional.FunctionalTest):
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
         ]}
-        versions_json = json.dumps(versions)
+        versions_json = jsonutils.dumps(versions)
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
@@ -94,7 +93,7 @@ class TestRootApi(functional.FunctionalTest):
                 'links': [{'rel': 'self', 'href': url % '2'}],
             },
         ]}
-        versions_json = json.dumps(versions)
+        versions_json = jsonutils.dumps(versions)
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
@@ -123,7 +122,7 @@ class TestRootApi(functional.FunctionalTest):
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
         ]}
-        versions_json = json.dumps(versions)
+        versions_json = jsonutils.dumps(versions)
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
@@ -167,9 +166,9 @@ class TestRootApi(functional.FunctionalTest):
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
         ]}
-        versions_json = json.dumps(versions)
+        versions_json = jsonutils.dumps(versions)
         images = {'images': []}
-        images_json = json.dumps(images)
+        images_json = jsonutils.dumps(images)
 
         # 0. GET / with no Accept: header
         # Verify version choices returned.
