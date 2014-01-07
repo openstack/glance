@@ -187,7 +187,7 @@ class TestTasksController(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request(path, is_admin=True)
         output = self.controller.index(request, marker=UUID3)
         actual = set([task.task_id for task in output['tasks']])
-        self.assertEquals(1, len(actual))
+        self.assertEqual(1, len(actual))
         self.assertTrue(UUID2 in actual)
 
     def test_index_with_limit(self):
@@ -196,7 +196,7 @@ class TestTasksController(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request(path, is_admin=True)
         output = self.controller.index(request, limit=limit)
         actual = set([task.task_id for task in output['tasks']])
-        self.assertEquals(limit, len(actual))
+        self.assertEqual(limit, len(actual))
 
     def test_index_greater_than_limit_max(self):
         self.config(limit_param_default=1, api_limit_max=3)
@@ -204,7 +204,7 @@ class TestTasksController(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request(path, is_admin=True)
         output = self.controller.index(request, limit=4)
         actual = set([task.task_id for task in output['tasks']])
-        self.assertEquals(3, len(actual))
+        self.assertEqual(3, len(actual))
         self.assertTrue(output['next_marker'] not in output)
 
     def test_index_default_limit(self):
@@ -213,14 +213,14 @@ class TestTasksController(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request(path)
         output = self.controller.index(request)
         actual = set([task.task_id for task in output['tasks']])
-        self.assertEquals(1, len(actual))
+        self.assertEqual(1, len(actual))
 
     def test_index_with_sort_dir(self):
         path = '/tasks'
         request = unit_test_utils.get_fake_request(path, is_admin=True)
         output = self.controller.index(request, sort_dir='asc', limit=3)
         actual = [task.task_id for task in output['tasks']]
-        self.assertEquals(3, len(actual))
+        self.assertEqual(3, len(actual))
         self.assertEqual(sorted(set(actual)),
                          sorted(set([UUID1, UUID2, UUID3])))
 
@@ -229,10 +229,10 @@ class TestTasksController(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request(path, is_admin=True)
         output = self.controller.index(request, sort_key='created_at', limit=3)
         actual = [task.task_id for task in output['tasks']]
-        self.assertEquals(3, len(actual))
-        self.assertEquals(UUID4, actual[0])
-        self.assertEquals(UUID3, actual[1])
-        self.assertEquals(UUID2, actual[2])
+        self.assertEqual(3, len(actual))
+        self.assertEqual(UUID4, actual[0])
+        self.assertEqual(UUID3, actual[1])
+        self.assertEqual(UUID2, actual[2])
 
     def test_index_with_marker_not_found(self):
         fake_uuid = str(uuid.uuid4())
@@ -274,7 +274,7 @@ class TestTasksController(test_utils.BaseTestCase):
 
     def test_get_not_allowed(self):
         request = unit_test_utils.get_fake_request()
-        self.assertEquals(request.context.tenant, TENANT1)
+        self.assertEqual(request.context.tenant, TENANT1)
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.get, request, UUID4)
 
