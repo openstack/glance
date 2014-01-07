@@ -134,6 +134,80 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             for value in ('aki', 'ari', 'ami'):
                 self._do_test_defaulted_format(key, value)
 
+    def test_bad_min_disk_size_create(self):
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-min-disk': '-42',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 400)
+        self.assertTrue('Invalid value' in res.body, res.body)
+
+    def test_bad_min_disk_size_update(self):
+        fixture_headers = {'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 201)
+
+        res_body = jsonutils.loads(res.body)['image']
+        self.assertEqual('queued', res_body['status'])
+        image_id = res_body['id']
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'PUT'
+        req.headers['x-image-meta-min-disk'] = '-42'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 400)
+        self.assertTrue('Invalid value' in res.body, res.body)
+
+    def test_bad_min_ram_size_create(self):
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-min-ram': '-42',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 400)
+        self.assertTrue('Invalid value' in res.body, res.body)
+
+    def test_bad_min_ram_size_update(self):
+        fixture_headers = {'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 201)
+
+        res_body = jsonutils.loads(res.body)['image']
+        self.assertEqual('queued', res_body['status'])
+        image_id = res_body['id']
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'PUT'
+        req.headers['x-image-meta-min-ram'] = '-42'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 400)
+        self.assertTrue('Invalid value' in res.body, res.body)
+
     def test_bad_disk_format(self):
         fixture_headers = {
             'x-image-meta-store': 'bad',

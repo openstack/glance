@@ -573,6 +573,24 @@ class TestImagesController(base.IsolatedUnitTest):
                           extra_properties=image_properties,
                           tags=[])
 
+    def test_create_with_bad_min_disk_size(self):
+        request = unit_test_utils.get_fake_request()
+        image = {'min_disk': -42, 'name': 'image-1'}
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.controller.create, request,
+                          image=image,
+                          extra_properties={},
+                          tags=[])
+
+    def test_create_with_bad_min_ram_size(self):
+        request = unit_test_utils.get_fake_request()
+        image = {'min_ram': -42, 'name': 'image-1'}
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.controller.create, request,
+                          image=image,
+                          extra_properties={},
+                          tags=[])
+
     def test_create_public_image_as_admin(self):
         request = unit_test_utils.get_fake_request()
         image = {'name': 'image-1', 'visibility': 'public'}
@@ -619,6 +637,18 @@ class TestImagesController(base.IsolatedUnitTest):
         output_logs = self.notifier.get_logs()
         #NOTE(markwash): don't send a notification if nothing is updated
         self.assertTrue(len(output_logs) == 0)
+
+    def test_update_with_bad_min_disk(self):
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'replace', 'path': ['min_disk'], 'value': -42}]
+        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
+                          request, UUID1, changes=changes)
+
+    def test_update_with_bad_min_ram(self):
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'replace', 'path': ['min_ram'], 'value': -42}]
+        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
+                          request, UUID1, changes=changes)
 
     def test_update_image_doesnt_exist(self):
         request = unit_test_utils.get_fake_request()

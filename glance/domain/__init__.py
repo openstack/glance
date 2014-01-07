@@ -181,6 +181,32 @@ class Image(object):
             raise exception.Forbidden(message=msg)
         self._disk_format = value
 
+    @property
+    def min_disk(self):
+        return self._min_disk
+
+    @min_disk.setter
+    def min_disk(self, value):
+        if value and value < 0:
+            extra_msg = 'Cannot be a negative value'
+            raise exception.InvalidParameterValue(value=value,
+                                                  param='min_disk',
+                                                  extra_msg=extra_msg)
+        self._min_disk = value
+
+    @property
+    def min_ram(self):
+        return self._min_ram
+
+    @min_ram.setter
+    def min_ram(self, value):
+        if value and value < 0:
+            extra_msg = 'Cannot be a negative value'
+            raise exception.InvalidParameterValue(value=value,
+                                                  param='min_ram',
+                                                  extra_msg=extra_msg)
+        self._min_ram = value
+
     def delete(self):
         if self.protected:
             raise exception.ProtectedImageDelete(image_id=self.image_id)
