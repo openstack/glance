@@ -22,7 +22,6 @@ except ImportError:
     from ordereddict import OrderedDict
 
 from oslo.config import cfg
-import webob.exc
 
 import glance.api.policy
 from glance.common import exception
@@ -46,6 +45,11 @@ property_opts = [
 
 CONF = cfg.CONF
 CONF.register_opts(property_opts)
+
+# NOTE (spredzy): Due to the particularly lengthy name of the exception
+# and the number of occurence it is raise in this file, a variable is
+# created
+InvalidPropProtectConf = exception.InvalidPropertyProtectionConfiguration
 
 
 def is_property_protection_enabled():
@@ -73,7 +77,7 @@ class PropertyRules(object):
             msg = (_("Couldn't find property protection file %s:%s.") %
                     (CONF.property_protection_file, e))
             LOG.error(msg)
-            raise exception.InvalidPropertyProtectionConfiguration()
+            raise InvalidPropProtectConf()
 
         if self.prop_prot_rule_format not in ['policies', 'roles']:
             msg = _("Invalid value '%s' for "
@@ -81,7 +85,7 @@ class PropertyRules(object):
                     "The permitted values are "
                     "'roles' and 'policies'") % self.prop_prot_rule_format
             LOG.error(msg)
-            raise exception.InvalidPropertyProtectionConfiguration()
+            raise InvalidPropProtectConf()
 
         operations = ['create', 'read', 'update', 'delete']
         properties = CONFIG.sections()
@@ -99,8 +103,7 @@ class PropertyRules(object):
                                   "for a given operation. Policies can be "
                                   "combined in the policy file"),
                                 permissions)
-                            raise exception.\
-                                InvalidPropertyProtectionConfiguration()
+                            raise InvalidPropProtectConf()
                         self.prop_exp_mapping[compiled_rule] = property_exp
                         self._add_policy_rules(property_exp, operation,
                                                permissions)
@@ -108,6 +111,16 @@ class PropertyRules(object):
                     else:
                         permissions = [permission.strip() for permission in
                                        permissions.split(',')]
+                        if '@' in permissions and '!' in permissions:
+                            msg = (_(
+                                "Malformed property protection rule in "
+                                "[%(prop)s] %(op)s=%(perm)s: '@' and '!' "
+                                "are mutually exclusive") %
+                                dict(prop=property_exp,
+                                     op=operation,
+                                     perm=permissions))
+                            LOG.error(msg)
+                            raise InvalidPropProtectConf()
                     property_dict[operation] = permissions
                 else:
                     property_dict[operation] = []
@@ -125,7 +138,7 @@ class PropertyRules(object):
             msg = (_("Encountered a malformed property protection rule %s:%s.")
                    % (rule, e))
             LOG.error(msg)
-            raise exception.InvalidPropertyProtectionConfiguration()
+            raise InvalidPropProtectConf()
 
     def _add_policy_rules(self, property_exp, action, rule):
         """Add policy rules to the policy enforcer.
@@ -164,16 +177,10 @@ class PropertyRules(object):
             if rule_exp.search(str(property_name)):
                 rule_roles = rule.get(action)
                 if rule_roles:
-                    if '@' in rule_roles and '!' in rule_roles:
-                        msg = _(
-                            "Malformed property protection rule '%s': '@' "
-                            "and '!' are mutually exclusive") % property_name
-                        LOG.error(msg)
-                        raise webob.exc.HTTPInternalServerError(msg)
+                    if '!' in rule_roles:
+                        return False
                     elif '@' in rule_roles:
                         return True
-                    elif '!' in rule_roles:
-                        return False
                     if self.prop_prot_rule_format == 'policies':
                         prop_exp_key = self.prop_exp_mapping[rule_exp]
                         return self._check_policy(prop_exp_key, action,
