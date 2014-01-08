@@ -95,7 +95,6 @@ class TestTasks(functional.FunctionalTest):
         task = jsonutils.loads(response.text)
         task_id = task['id']
         checked_keys = set([u'created_at',
-                            u'expires_at',
                             u'id',
                             u'input',
                             u'owner',

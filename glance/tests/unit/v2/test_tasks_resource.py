@@ -479,9 +479,17 @@ class TestTasksSerializer(test_utils.BaseTestCase):
             _domain_fixture(UUID1, type='import', status='pending',
                             input={'loc': 'fake'}, result={}, owner=TENANT1,
                             message='', created_at=DATETIME,
-                            updated_at=DATETIME, expires_at=DATETIME),
+                            updated_at=DATETIME),
             _domain_fixture(UUID2, type='import', status='processing',
-                            input={'loc': 'foo'}, owner=TENANT2, message='',
+                            input={'loc': 'bake'}, owner=TENANT2, message='',
+                            created_at=DATETIME, updated_at=DATETIME,
+                            result={}),
+            _domain_fixture(UUID3, type='import', status='success',
+                            input={'loc': 'foo'}, owner=TENANT3, message='',
+                            created_at=DATETIME, updated_at=DATETIME,
+                            result={}, expires_at=DATETIME),
+            _domain_fixture(UUID4, type='import', status='failure',
+                            input={'loc': 'boo'}, owner=TENANT4, message='',
                             created_at=DATETIME, updated_at=DATETIME,
                             result={}, expires_at=DATETIME),
         ]
@@ -496,7 +504,6 @@ class TestTasksSerializer(test_utils.BaseTestCase):
                     'owner': TENANT1,
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
-                    'expires_at': ISOTIME,
                     'self': '/v2/tasks/%s' % UUID1,
                     'schema': '/v2/schemas/task',
                 },
@@ -505,10 +512,31 @@ class TestTasksSerializer(test_utils.BaseTestCase):
                     'type': 'import',
                     'status': 'processing',
                     'owner': TENANT2,
-                    'expires_at': ISOTIME,
                     'created_at': ISOTIME,
                     'updated_at': ISOTIME,
                     'self': '/v2/tasks/%s' % UUID2,
+                    'schema': '/v2/schemas/task',
+                },
+                {
+                    'id': UUID3,
+                    'type': 'import',
+                    'status': 'success',
+                    'owner': TENANT3,
+                    'expires_at': ISOTIME,
+                    'created_at': ISOTIME,
+                    'updated_at': ISOTIME,
+                    'self': '/v2/tasks/%s' % UUID3,
+                    'schema': '/v2/schemas/task',
+                },
+                {
+                    'id': UUID4,
+                    'type': 'import',
+                    'status': 'failure',
+                    'owner': TENANT4,
+                    'expires_at': ISOTIME,
+                    'created_at': ISOTIME,
+                    'updated_at': ISOTIME,
+                    'self': '/v2/tasks/%s' % UUID4,
                     'schema': '/v2/schemas/task',
                 },
             ],
@@ -545,6 +573,27 @@ class TestTasksSerializer(test_utils.BaseTestCase):
 
     def test_get(self):
         expected = {
+            'id': UUID4,
+            'type': 'import',
+            'status': 'failure',
+            'input': {'loc': 'boo'},
+            'result': {},
+            'owner': TENANT4,
+            'message': '',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
+            'expires_at': ISOTIME,
+            'self': '/v2/tasks/%s' % UUID4,
+            'schema': '/v2/schemas/task',
+        }
+        response = webob.Response()
+        self.serializer.get(response, self.fixtures[3])
+        actual = jsonutils.loads(response.body)
+        self.assertEqual(expected, actual)
+        self.assertEqual('application/json', response.content_type)
+
+    def test_get_ensure_expires_at_not_returned(self):
+        expected = {
             'id': UUID1,
             'type': 'import',
             'status': 'pending',
@@ -554,7 +603,6 @@ class TestTasksSerializer(test_utils.BaseTestCase):
             'message': '',
             'created_at': ISOTIME,
             'updated_at': ISOTIME,
-            'expires_at': ISOTIME,
             'self': '/v2/tasks/%s' % UUID1,
             'schema': '/v2/schemas/task',
         }
@@ -564,10 +612,47 @@ class TestTasksSerializer(test_utils.BaseTestCase):
         self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
 
+        expected = {
+            'id': UUID2,
+            'type': 'import',
+            'status': 'processing',
+            'input': {'loc': 'bake'},
+            'result': {},
+            'owner': TENANT2,
+            'message': '',
+            'created_at': ISOTIME,
+            'updated_at': ISOTIME,
+            'self': '/v2/tasks/%s' % UUID2,
+            'schema': '/v2/schemas/task',
+        }
+        response = webob.Response()
+        self.serializer.get(response, self.fixtures[1])
+        actual = jsonutils.loads(response.body)
+        self.assertEqual(expected, actual)
+        self.assertEqual('application/json', response.content_type)
+
     def test_create(self):
+        response = webob.Response()
+        self.serializer.create(response, self.fixtures[3])
+        self.assertEqual(response.status_int, 201)
+        self.assertEqual(self.fixtures[3].task_id,
+                         jsonutils.loads(response.body)['id'])
+        self.assertTrue('expires_at' in jsonutils.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
+
+    def test_create_ensure_expires_at_is_not_returned(self):
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
         self.assertEqual(response.status_int, 201)
         self.assertEqual(self.fixtures[0].task_id,
                          jsonutils.loads(response.body)['id'])
+        self.assertFalse('expires_at' in jsonutils.loads(response.body))
+        self.assertEqual('application/json', response.content_type)
+
+        response = webob.Response()
+        self.serializer.create(response, self.fixtures[1])
+        self.assertEqual(response.status_int, 201)
+        self.assertEqual(self.fixtures[1].task_id,
+                         jsonutils.loads(response.body)['id'])
+        self.assertFalse('expires_at' in jsonutils.loads(response.body))
         self.assertEqual('application/json', response.content_type)

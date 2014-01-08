@@ -234,7 +234,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         for key in attributes:
             task_view[key] = getattr(task, key)
         task_view['id'] = task.task_id
-        task_view['expires_at'] = timeutils.isotime(task.expires_at)
+        if task.expires_at:
+            task_view['expires_at'] = timeutils.isotime(task.expires_at)
         task_view['created_at'] = timeutils.isotime(task.created_at)
         task_view['updated_at'] = timeutils.isotime(task.updated_at)
         task_view['self'] = '/v2/tasks/%s' % task.task_id
