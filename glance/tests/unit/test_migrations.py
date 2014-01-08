@@ -1225,3 +1225,31 @@ class TestMigrations(test_utils.BaseTestCase):
     def _post_downgrade_033(self, engine):
         image_locations = get_table(engine, 'image_locations')
         self.assertNotIn('status', image_locations.c)
+
+    def _pre_upgrade_034(self, engine):
+        images = get_table(engine, 'images')
+
+        now = datetime.datetime.now()
+        image_id = 'fake_id_034'
+        temp = dict(deleted=False,
+                    created_at=now,
+                    updated_at=now,
+                    status='active',
+                    is_public=True,
+                    min_disk=0,
+                    min_ram=0,
+                    id=image_id)
+        images.insert().values(temp).execute()
+
+    def _check_034(self, engine, data):
+        images = get_table(engine, 'images')
+        self.assertIn('virtual_size', images.c)
+
+        result = (images.select()
+                  .where(images.c.id == 'fake_id_034')
+                  .execute().fetchone())
+        self.assertIsNone(result.virtual_size)
+
+    def _post_downgrade_034(self, engine):
+        images = get_table(engine, 'images')
+        self.assertNotIn('virtual_size', images.c)

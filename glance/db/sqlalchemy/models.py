@@ -125,6 +125,7 @@ class Image(BASE, GlanceBase):
     disk_format = Column(String(20))
     container_format = Column(String(20))
     size = Column(BigInteger)
+    virtual_size = Column(BigInteger)
     status = Column(String(30), nullable=False)
     is_public = Column(Boolean, nullable=False, default=False)
     checksum = Column(String(32))
