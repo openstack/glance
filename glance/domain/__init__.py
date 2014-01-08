@@ -307,22 +307,19 @@ class Task(object):
 
     _supported_task_status = ('pending', 'processing', 'success', 'failure')
 
-    def __init__(self, task_id, type, status, input, result, owner, message,
+    def __init__(self, task_id, task_type, status, owner,
                  expires_at, created_at, updated_at, task_time_to_live=48):
 
-        if type not in self._supported_task_type:
-            raise exception.InvalidTaskType(type)
+        if task_type not in self._supported_task_type:
+            raise exception.InvalidTaskType(task_type)
 
         if status not in self._supported_task_status:
             raise exception.InvalidTaskStatus(status)
 
         self.task_id = task_id
         self._status = status
-        self.type = type
-        self.input = input
-        self.result = result
+        self.type = task_type
         self.owner = owner
-        self.message = message
         self.expires_at = expires_at
         # NOTE(nikhil): We use '_time_to_live' to determine how long a
         # task should live from the time it succeeds or fails.
@@ -384,13 +381,23 @@ class Task(object):
         self.expires_at = timeutils.utcnow() + self._time_to_live
 
 
+class TaskDetails(object):
+
+    def __init__(self, task_id, task_input, message, result):
+        if task_id is None:
+            raise exception.TaskException(_('task_id is required to create '
+                                            'a new TaskDetails object'))
+        self.task_id = task_id
+        self.input = task_input
+        self.message = message
+        self.result = result
+
+
 class TaskFactory(object):
 
-    def new_task(self, task_type, task_input, owner, task_time_to_live=48):
+    def new_task(self, task_type, owner, task_time_to_live=48):
         task_id = str(uuid.uuid4())
         status = 'pending'
-        result = None
-        message = None
         # Note(nikhil): expires_at would be set on the task, only when it
         # succeeds or fails.
         expires_at = None
@@ -400,12 +407,12 @@ class TaskFactory(object):
             task_id,
             task_type,
             status,
-            task_input,
-            result,
             owner,
-            message,
             expires_at,
             created_at,
             updated_at,
             task_time_to_live
         )
+
+    def new_task_details(self, task_id, task_input, message=None, result=None):
+        return TaskDetails(task_id, task_input, message, result)

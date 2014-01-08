@@ -289,36 +289,42 @@ class ImageProxy(glance.domain.proxy.Image):
             self.notifier.info('image.activate', payload)
 
 
-class TaskRepoProxy(glance.domain.proxy.Repo):
+class TaskRepoProxy(glance.domain.proxy.TaskRepo):
 
     def __init__(self, task_repo, context, notifier):
         self.task_repo = task_repo
         self.context = context
         self.notifier = notifier
         proxy_kwargs = {'context': self.context, 'notifier': self.notifier}
-        super(TaskRepoProxy, self).__init__(task_repo,
-                                            item_proxy_class=TaskProxy,
-                                            item_proxy_kwargs=proxy_kwargs)
+        super(TaskRepoProxy, self) \
+            .__init__(task_repo,
+                      task_proxy_class=TaskProxy,
+                      task_proxy_kwargs=proxy_kwargs,
+                      task_details_proxy_class=TaskDetailsProxy,
+                      task_details_proxy_kwargs=proxy_kwargs)
 
-    def add(self, task):
+    def add(self, task, task_details=None):
         self.notifier.info('task.create',
                            format_task_notification(task))
-        return super(TaskRepoProxy, self).add(task)
+        super(TaskRepoProxy, self).add(task, task_details)
 
     def remove(self, task):
         payload = format_task_notification(task)
         payload['deleted'] = True
         payload['deleted_at'] = timeutils.isotime()
         self.notifier.info('task.delete', payload)
-        return super(TaskRepoProxy, self).add(task)
+        super(TaskRepoProxy, self).remove(task)
 
 
 class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
-    def __init__(self, factory, context, notifier):
+    def __init__(self, task_factory, context, notifier):
         kwargs = {'context': context, 'notifier': notifier}
-        super(TaskFactoryProxy, self).__init__(factory,
-                                               proxy_class=TaskProxy,
-                                               proxy_kwargs=kwargs)
+        super(TaskFactoryProxy, self).__init__(
+            task_factory,
+            task_proxy_class=TaskProxy,
+            task_proxy_kwargs=kwargs,
+            task_details_proxy_class=TaskDetailsProxy,
+            task_details_proxy_kwargs=kwargs)
 
 
 class TaskProxy(glance.domain.proxy.Task):
@@ -350,3 +356,12 @@ class TaskProxy(glance.domain.proxy.Task):
         self.notifier.info('task.failure',
                            format_task_notification(self.task))
         return super(TaskProxy, self).fail(message)
+
+
+class TaskDetailsProxy(glance.domain.proxy.TaskDetails):
+
+    def __init__(self, task_details, context, notifier):
+        self.task_details = task_details
+        self.context = context
+        self.notifier = notifier
+        super(TaskDetailsProxy, self).__init__(task_details)

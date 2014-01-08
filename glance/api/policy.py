@@ -357,34 +357,44 @@ class TaskProxy(glance.domain.proxy.Task):
         self.base.run(executor)
 
 
-class TaskRepoProxy(glance.domain.proxy.Repo):
+class TaskDetailsProxy(glance.domain.proxy.TaskDetails):
 
-    def __init__(self, task_repo, context, policy):
+    def __init__(self, task_details, context, policy):
+        self.task_details = task_details
         self.context = context
         self.policy = policy
+        super(TaskDetailsProxy, self).__init__(task_details)
+
+
+class TaskRepoProxy(glance.domain.proxy.TaskRepo):
+
+    def __init__(self, task_repo, context, task_policy):
+        self.context = context
+        self.policy = task_policy
         self.task_repo = task_repo
         proxy_kwargs = {'context': self.context, 'policy': self.policy}
-        super(TaskRepoProxy, self).__init__(
-            task_repo,
-            item_proxy_class=TaskProxy,
-            item_proxy_kwargs=proxy_kwargs
-        )
+        super(TaskRepoProxy,
+              self).__init__(task_repo,
+                             task_proxy_class=TaskProxy,
+                             task_proxy_kwargs=proxy_kwargs,
+                             task_details_proxy_class=TaskDetailsProxy,
+                             task_details_proxy_kwargs=proxy_kwargs)
 
-    def get(self, task_id):
+    def get_task_and_details(self, task_id):
         self.policy.enforce(self.context, 'get_task', {})
-        return super(TaskRepoProxy, self).get(task_id)
+        return super(TaskRepoProxy, self).get_task_and_details(task_id)
 
-    def list(self, *args, **kwargs):
+    def list_tasks(self, *args, **kwargs):
         self.policy.enforce(self.context, 'get_tasks', {})
-        return super(TaskRepoProxy, self).list(*args, **kwargs)
+        return super(TaskRepoProxy, self).list_tasks(*args, **kwargs)
 
-    def add(self, task):
+    def add(self, task, task_details=None):
         self.policy.enforce(self.context, 'add_task', {})
-        return super(TaskRepoProxy, self).add(task)
+        super(TaskRepoProxy, self).add(task, task_details)
 
-    def save(self, task):
+    def save(self, task, task_details=None):
         self.policy.enforce(self.context, 'modify_task', {})
-        return super(TaskRepoProxy, self).save(task)
+        super(TaskRepoProxy, self).save(task, task_details)
 
 
 class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
@@ -396,6 +406,7 @@ class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
         proxy_kwargs = {'context': self.context, 'policy': self.policy}
         super(TaskFactoryProxy, self).__init__(
             task_factory,
-            proxy_class=TaskProxy,
-            proxy_kwargs=proxy_kwargs
-        )
+            task_proxy_class=TaskProxy,
+            task_proxy_kwargs=proxy_kwargs,
+            task_details_proxy_class=TaskDetailsProxy,
+            task_details_proxy_kwargs=proxy_kwargs)

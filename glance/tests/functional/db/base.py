@@ -1463,9 +1463,9 @@ class TaskTests(test_utils.BaseTestCase):
             self.assertIsNone(task['deleted_at'])
             self.assertEqual(task['created_at'], fixture['created_at'])
             self.assertEqual(task['updated_at'], fixture['updated_at'])
-            self.assertEqual(task['input'], fixture['input'])
-            self.assertEqual(task['result'], fixture['result'])
-            self.assertEqual(task['message'], fixture['message'])
+            task_details_keys = ['input', 'message', 'result']
+            for key in task_details_keys:
+                self.assertFalse(key in task)
 
     def test_task_create(self):
         task_id = str(uuid.uuid4())

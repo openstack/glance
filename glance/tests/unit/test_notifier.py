@@ -20,6 +20,7 @@ import webob
 
 from glance.common import exception
 import glance.context
+from glance import domain
 from glance import notifier
 from glance.openstack.common import timeutils
 import glance.tests.unit.utils as unit_test_utils
@@ -388,16 +389,17 @@ class TestTaskNotifications(utils.BaseTestCase):
         super(TestTaskNotifications, self).setUp()
         self.task = TaskStub(
             task_id='aaa',
-            type='import',
+            task_type='import',
             status='pending',
-            input={"loc": "fake"},
-            result='',
             owner=TENANT2,
-            message='',
             expires_at=None,
             created_at=DATETIME,
             updated_at=DATETIME
         )
+        self.task_details = domain.TaskDetails(task_id=self.task.task_id,
+                                               task_input={"loc": "fake"},
+                                               result='',
+                                               message='')
         self.context = glance.context.RequestContext(
             tenant=TENANT2,
             user=USER1
@@ -414,6 +416,9 @@ class TestTaskNotifications(utils.BaseTestCase):
             self.context,
             self.notifier
         )
+        self.task_details_proxy = notifier.TaskDetailsProxy(self.task_details,
+                                                            self.context,
+                                                            self.notifier)
         timeutils.set_time_override()
 
     def tearDown(self):
@@ -421,7 +426,7 @@ class TestTaskNotifications(utils.BaseTestCase):
         timeutils.clear_time_override()
 
     def test_task_create_notification(self):
-        self.task_repo_proxy.add(self.task_proxy)
+        self.task_repo_proxy.add(self.task_proxy, self.task_details_proxy)
         output_logs = self.notifier.get_logs()
         self.assertEqual(len(output_logs), 1)
         output_log = output_logs[0]

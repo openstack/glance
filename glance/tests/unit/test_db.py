@@ -562,87 +562,97 @@ class TestTaskRepo(test_utils.BaseTestCase):
         [self.db.task_create(None, task) for task in self.tasks]
 
     def test_get(self):
-        task = self.task_repo.get(UUID1)
+        task, task_details = self.task_repo.get_task_and_details(UUID1)
         self.assertEqual(task.task_id, UUID1)
         self.assertEqual(task.type, 'import')
         self.assertEqual(task.status, 'pending')
-        self.assertEqual(task.input, self.fake_task_input)
-        self.assertEqual(task.result, '')
+        self.assertEqual(task.task_id, task_details.task_id)
+        self.assertEqual(task_details.input, self.fake_task_input)
+        self.assertEqual(task_details.result, '')
         self.assertEqual(task.owner, TENANT1)
 
     def test_get_not_found(self):
-        self.assertRaises(exception.NotFound, self.task_repo.get,
+        self.assertRaises(exception.NotFound,
+                          self.task_repo.get_task_and_details,
                           str(uuid.uuid4()))
 
     def test_get_forbidden(self):
-        self.assertRaises(exception.NotFound, self.task_repo.get, UUID4)
+        self.assertRaises(exception.NotFound,
+                          self.task_repo.get_task_and_details,
+                          UUID4)
 
     def test_list(self):
-        tasks = self.task_repo.list()
+        tasks = self.task_repo.list_tasks()
         task_ids = set([i.task_id for i in tasks])
         self.assertEqual(set([UUID1, UUID2, UUID3]), task_ids)
 
     def test_list_with_type(self):
         filters = {'type': 'import'}
-        tasks = self.task_repo.list(filters=filters)
+        tasks = self.task_repo.list_tasks(filters=filters)
         task_ids = set([i.task_id for i in tasks])
         self.assertEqual(set([UUID1, UUID2, UUID3]), task_ids)
 
     def test_list_with_status(self):
         filters = {'status': 'failure'}
-        tasks = self.task_repo.list(filters=filters)
+        tasks = self.task_repo.list_tasks(filters=filters)
         task_ids = set([i.task_id for i in tasks])
         self.assertEqual(set([UUID3]), task_ids)
 
     def test_list_with_marker(self):
-        full_tasks = self.task_repo.list()
+        full_tasks = self.task_repo.list_tasks()
         full_ids = [i.task_id for i in full_tasks]
-        marked_tasks = self.task_repo.list(marker=full_ids[0])
+        marked_tasks = self.task_repo.list_tasks(marker=full_ids[0])
         actual_ids = [i.task_id for i in marked_tasks]
         self.assertEqual(actual_ids, full_ids[1:])
 
     def test_list_with_last_marker(self):
-        tasks = self.task_repo.list()
-        marked_tasks = self.task_repo.list(marker=tasks[-1].task_id)
+        tasks = self.task_repo.list_tasks()
+        marked_tasks = self.task_repo.list_tasks(marker=tasks[-1].task_id)
         self.assertEqual(len(marked_tasks), 0)
 
     def test_limited_list(self):
-        limited_tasks = self.task_repo.list(limit=2)
+        limited_tasks = self.task_repo.list_tasks(limit=2)
         self.assertEqual(len(limited_tasks), 2)
 
     def test_list_with_marker_and_limit(self):
-        full_tasks = self.task_repo.list()
+        full_tasks = self.task_repo.list_tasks()
         full_ids = [i.task_id for i in full_tasks]
-        marked_tasks = self.task_repo.list(marker=full_ids[0], limit=1)
+        marked_tasks = self.task_repo.list_tasks(marker=full_ids[0], limit=1)
         actual_ids = [i.task_id for i in marked_tasks]
         self.assertEqual(actual_ids, full_ids[1:2])
 
     def test_sorted_list(self):
-        tasks = self.task_repo.list(sort_key='status', sort_dir='desc')
+        tasks = self.task_repo.list_tasks(sort_key='status', sort_dir='desc')
         task_ids = [i.task_id for i in tasks]
         self.assertEqual([UUID2, UUID1, UUID3], task_ids)
 
     def test_add_task(self):
         task_type = 'import'
-        task = self.task_factory.new_task(task_type, self.fake_task_input,
-                                          None)
+        task = self.task_factory.new_task(task_type, None)
         self.assertEqual(task.updated_at, task.created_at)
-        self.task_repo.add(task)
-        retrieved_task = self.task_repo.get(task.task_id)
+        task_details = self.task_factory.new_task_details(task.task_id,
+                                                          self.fake_task_input)
+
+        self.task_repo.add(task, task_details)
+        retrieved_task, retrieved_task_details = \
+            self.task_repo.get_task_and_details(task.task_id)
         self.assertEqual(retrieved_task.updated_at, task.updated_at)
+        self.assertEqual(retrieved_task_details.task_id,
+                         retrieved_task.task_id)
+        self.assertEqual(retrieved_task_details.input, task_details.input)
 
     def test_save_task(self):
-        task = self.task_repo.get(UUID1)
+        task, task_details = self.task_repo.get_task_and_details(UUID1)
         original_update_time = task.updated_at
         self.task_repo.save(task)
         current_update_time = task.updated_at
         self.assertTrue(current_update_time > original_update_time)
-        task = self.task_repo.get(UUID1)
+        task, task_details = self.task_repo.get_task_and_details(UUID1)
         self.assertEqual(task.updated_at, current_update_time)
 
     def test_remove_task(self):
-        task = self.task_repo.get(UUID1)
+        task, task_details = self.task_repo.get_task_and_details(UUID1)
         self.task_repo.remove(task)
         self.assertRaises(exception.NotFound,
-                          self.task_repo.get,
+                          self.task_repo.get_task_and_details,
                           task.task_id)

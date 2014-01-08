@@ -72,6 +72,13 @@ def proxy_task(context, task):
         return ImmutableTaskProxy(task)
 
 
+def proxy_task_details(context, task, task_details):
+    if is_task_mutable(context, task):
+        return task_details
+    else:
+        return ImmutableTaskDetailsProxy(task_details)
+
+
 class ImageRepoProxy(glance.domain.proxy.Repo):
 
     def __init__(self, image_repo, context):
@@ -325,9 +332,7 @@ class ImmutableTaskProxy(object):
     task_id = _immutable_attr('base', 'task_id')
     type = _immutable_attr('base', 'type')
     status = _immutable_attr('base', 'status')
-    input = _immutable_attr('base', 'input')
     owner = _immutable_attr('base', 'owner')
-    message = _immutable_attr('base', 'message')
     expires_at = _immutable_attr('base', 'expires_at')
     created_at = _immutable_attr('base', 'created_at')
     updated_at = _immutable_attr('base', 'updated_at')
@@ -346,6 +351,15 @@ class ImmutableTaskProxy(object):
     def fail(self, message):
         message = _("You are not permitted to set status on this task.")
         raise exception.Forbidden(message)
+
+
+class ImmutableTaskDetailsProxy(object):
+    def __init__(self, base):
+        self.base = base
+
+    input = _immutable_attr('base', 'input')
+    message = _immutable_attr('base', 'message')
+    result = _immutable_attr('base', 'result')
 
 
 class ImageProxy(glance.domain.proxy.Image):
@@ -371,6 +385,13 @@ class TaskProxy(glance.domain.proxy.Task):
         super(TaskProxy, self).__init__(task)
 
 
+class TaskDetailsProxy(glance.domain.proxy.TaskDetails):
+
+    def __init__(self, task_details):
+        self.task_details = task_details
+        super(TaskDetailsProxy, self).__init__(task_details)
+
+
 class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
 
     def __init__(self, task_factory, context):
@@ -378,9 +399,8 @@ class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
         self.context = context
         super(TaskFactoryProxy, self).__init__(
             task_factory,
-            proxy_class=TaskProxy,
-            proxy_kwargs=None
-        )
+            task_proxy_class=TaskProxy,
+            task_details_proxy_class=TaskDetailsProxy)
 
     def new_task(self, **kwargs):
         owner = kwargs.get('owner', self.context.owner)
@@ -396,17 +416,19 @@ class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
             raise exception.Forbidden(message % owner)
 
 
-class TaskRepoProxy(glance.domain.proxy.Repo):
+class TaskRepoProxy(glance.domain.proxy.TaskRepo):
 
     def __init__(self, task_repo, context):
         self.task_repo = task_repo
         self.context = context
         super(TaskRepoProxy, self).__init__(task_repo)
 
-    def get(self, task_id):
-        task = self.task_repo.get(task_id)
-        return proxy_task(self.context, task)
+    def get_task_and_details(self, task_id):
+        task, task_details = self.task_repo.get_task_and_details(task_id)
+        return proxy_task(self.context, task), proxy_task_details(self.context,
+                                                                  task,
+                                                                  task_details)
 
-    def list(self, *args, **kwargs):
-        tasks = self.task_repo.list(*args, **kwargs)
+    def list_tasks(self, *args, **kwargs):
+        tasks = self.task_repo.list_tasks(*args, **kwargs)
         return [proxy_task(self.context, t) for t in tasks]

@@ -864,9 +864,8 @@ class TestImmutableTask(utils.BaseTestCase):
         task_factory = glance.domain.TaskFactory()
         self.context = glance.context.RequestContext(tenant=TENANT2)
         task_type = 'import'
-        task_input = '{"loc": "fake"}'
         owner = TENANT2
-        task = task_factory.new_task(task_type, task_input, owner)
+        task = task_factory.new_task(task_type, owner)
         self.task = authorization.ImmutableTaskProxy(task)
 
     def _test_change(self, attr, value):
@@ -893,14 +892,8 @@ class TestImmutableTask(utils.BaseTestCase):
     def test_change_status(self):
         self._test_change('status', 'success')
 
-    def test_change_input(self):
-        self._test_change('input', {'foo': 'bar'})
-
     def test_change_owner(self):
         self._test_change('owner', 'fake')
-
-    def test_change_message(self):
-        self._test_change('message', 'fake')
 
     def test_change_expires_at(self):
         self._test_change('expires_at', 'fake')
@@ -952,7 +945,6 @@ class TestTaskFactoryProxy(utils.BaseTestCase):
     def test_task_create_default_owner(self):
         owner = self.request1.context.owner
         task = self.task_factory.new_task(task_type=self.task_type,
-                                          task_input=self.task_input,
                                           owner=owner)
         self.assertEqual(task.owner, TENANT1)
 
@@ -985,26 +977,25 @@ class TestTaskRepoProxy(utils.BaseTestCase):
         def __init__(self, fixtures):
             self.fixtures = fixtures
 
-        def get(self, task_id):
+        def get_task_and_details(self, task_id):
             for f in self.fixtures:
                 if f.task_id == task_id:
-                    return f
+                    return f, None
             else:
                 raise ValueError(task_id)
 
-        def list(self, *args, **kwargs):
+        def list_tasks(self, *args, **kwargs):
             return self.fixtures
 
     def setUp(self):
         super(TestTaskRepoProxy, self).setUp()
         task_factory = glance.domain.TaskFactory()
         task_type = 'import'
-        task_input = '{"loc": "fake"}'
         owner = None
         self.fixtures = [
-            task_factory.new_task(task_type, task_input, owner),
-            task_factory.new_task(task_type, task_input, owner),
-            task_factory.new_task(task_type, task_input, owner),
+            task_factory.new_task(task_type, owner),
+            task_factory.new_task(task_type, owner),
+            task_factory.new_task(task_type, owner),
         ]
         self.context = glance.context.RequestContext(tenant=TENANT1)
         task_repo = self.TaskRepoStub(self.fixtures)
@@ -1014,33 +1005,28 @@ class TestTaskRepoProxy(utils.BaseTestCase):
         )
 
     def test_get_mutable_task(self):
-        task = self.task_repo.get(self.fixtures[0].task_id)
+        task, _ = self.task_repo.get_task_and_details(self.fixtures[0].task_id)
         self.assertEqual(task.task_id, self.fixtures[0].task_id)
 
     def test_get_immutable_task(self):
-        task = self.task_repo.get(self.fixtures[1].task_id)
-        self.assertRaises(
-            exception.Forbidden,
-            setattr,
-            task,
-            'input',
-            'foo'
-        )
+        task_id = self.fixtures[1].task_id
+        task, task_details = self.task_repo.get_task_and_details(task_id)
+        self.assertRaises(exception.Forbidden,
+                          setattr,
+                          task_details,
+                          'input',
+                          'foo')
 
     def test_list(self):
-        tasks = self.task_repo.list()
+        tasks = self.task_repo.list_tasks()
         self.assertEqual(tasks[0].task_id, self.fixtures[0].task_id)
-        self.assertRaises(
-            exception.Forbidden,
-            setattr,
-            tasks[1],
-            'input',
-            'foo'
-        )
-        self.assertRaises(
-            exception.Forbidden,
-            setattr,
-            tasks[2],
-            'input',
-            'foo'
-        )
+        self.assertRaises(exception.Forbidden,
+                          setattr,
+                          tasks[1],
+                          'owner',
+                          'foo')
+        self.assertRaises(exception.Forbidden,
+                          setattr,
+                          tasks[2],
+                          'owner',
+                          'foo')
