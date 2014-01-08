@@ -30,9 +30,12 @@ import glance.db
 import glance.gateway
 import glance.notifier
 import glance.openstack.common.jsonutils as json
+import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 import glance.schema
 import glance.store
+
+LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
 
@@ -58,6 +61,9 @@ class TasksController(object):
                                              owner=req.context.owner)
             task_repo.add(new_task)
         except exception.Forbidden as e:
+            msg = (_("Forbidden to create task. Reason: %(reason)s")
+                   % {'reason': unicode(e)})
+            LOG.info(msg)
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
 
         return new_task
@@ -80,8 +86,10 @@ class TasksController(object):
                 result['next_marker'] = tasks[-1].task_id
         except (exception.NotFound, exception.InvalidSortKey,
                 exception.InvalidFilterRangeValue) as e:
+            LOG.info(unicode(e))
             raise webob.exc.HTTPBadRequest(explanation=unicode(e))
         except exception.Forbidden as e:
+            LOG.info(unicode(e))
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
         result['tasks'] = tasks
         return result
@@ -91,8 +99,14 @@ class TasksController(object):
             task_repo = self.gateway.get_task_repo(req.context)
             task = task_repo.get(task_id)
         except exception.NotFound as e:
+            msg = (_("Failed to find task %(task_id)s. Reason: %(reason)s") %
+                   {'task_id': task_id, 'reason': unicode(e)})
+            LOG.info(msg)
             raise webob.exc.HTTPNotFound(explanation=unicode(e))
         except exception.Forbidden as e:
+            msg = (_("Forbidden to get task %(task_id)s. Reason: %(reason)s") %
+                   {'task_id': task_id, 'reason': unicode(e)})
+            LOG.info(msg)
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
         return task
 
