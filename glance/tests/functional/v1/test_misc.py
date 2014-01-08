@@ -81,7 +81,7 @@ class TestMiscellaneous(functional.FunctionalTest):
         self.assertEqual(response['x-image-meta-name'], "Image1")
 
         # 4. GET /images/1
-        # Verify the api throws the apropriate 404 error
+        # Verify the api throws the appropriate 404 error
         path = "http://%s:%d/v1/images/1" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')

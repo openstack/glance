@@ -180,7 +180,7 @@ class Store(glance.store.base.Store):
                       % (CONF.filesystem_store_metadata_file, ioe))
             return {}
         except Exception as ex:
-            LOG.exception(_('An error occured processing the storage systems '
+            LOG.exception(_('An error occurred processing the storage systems '
                             'meta data file: %s.  An empty dictionary will be '
                             'returned to the client.') % str(ex))
             return {}

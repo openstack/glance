@@ -1114,7 +1114,7 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_create_locked_down_protected_prop(self):
         """
-        Verify a property protected by special char '!' is creatable by noone
+        Verify a property protected by special char '!' is creatable by no one
         """
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
@@ -1133,7 +1133,7 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_read_locked_down_protected_prop(self):
         """
-        Verify a property protected by special char '!' is readable by noone
+        Verify a property protected by special char '!' is readable by no one
         """
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['member'])
@@ -1149,7 +1149,7 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_update_locked_down_protected_prop(self):
         """
-        Verify a property protected by special char '!' is updatable by noone
+        Verify a property protected by special char '!' is updatable by no one
         """
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
@@ -1167,7 +1167,7 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_delete_locked_down_protected_prop(self):
         """
-        Verify a property protected by special char '!' is deletable by noone
+        Verify a property protected by special char '!' is deletable by no one
         """
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])

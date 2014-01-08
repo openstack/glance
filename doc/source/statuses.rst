@@ -52,7 +52,7 @@ Images in Glance can be in one the following statuses:
 
 * ``pending_delete``
 
-  This is similiar to `deleted`, however, Glance has not yet removed the
+  This is similar to `deleted`, however, Glance has not yet removed the
   image data. An image in this state is recoverable.
 
 

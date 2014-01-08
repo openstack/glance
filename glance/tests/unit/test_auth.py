@@ -409,7 +409,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
             'auth_url': 'http://localhost/redirect/v2.0/',
             'password': 'pass',
             'strategy': 'keystone',
-            'region': 'NonExistantRegion'
+            'region': 'NonExistentRegion'
         }
 
         try:

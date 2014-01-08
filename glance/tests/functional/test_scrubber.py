@@ -48,7 +48,7 @@ class TestScrubber(functional.FunctionalTest):
 
     def test_delayed_delete(self):
         """
-        test that images don't get deleted immediatly and that the scrubber
+        test that images don't get deleted immediately and that the scrubber
         scrubs them
         """
         self.cleanup()
@@ -404,7 +404,7 @@ class TestScrubber(functional.FunctionalTest):
         """
         NOTE(jkoelker) The build servers sometimes take longer than 15 seconds
         to scrub. Give it up to 5 min, checking checking every 15 seconds.
-        When/if it flips to deleted, bail immediatly.
+        When/if it flips to deleted, bail immediately.
         """
         http = httplib2.Http()
         wait_for = 300    # seconds

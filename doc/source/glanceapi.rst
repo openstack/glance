@@ -101,7 +101,7 @@ JSON-encoded mapping in the following format::
   The `checksum` field is an MD5 checksum of the image file data
 
   The `is_public` field is a boolean indicating whether the image is
-  publically available
+  publicly available
 
   The `min_ram` field is an integer specifying the minimum amount of
   ram needed to run this image on an instance, in megabytes
@@ -252,7 +252,7 @@ following shows an example of the HTTP headers returned from the above
   `x-image-meta-checksum` value
 
   The response's `x-image-meta-is_public` value is a boolean indicating
-  whether the image is publically available
+  whether the image is publicly available
 
   The response's `x-image-meta-owner` value is a string which may either
   be null or which will indicate the owner of the image
@@ -318,7 +318,7 @@ returned from the above ``GET`` request::
   `x-image-meta-checksum` value
 
   The response's `x-image-meta-is_public` value is a boolean indicating
-  whether the image is publically available
+  whether the image is publicly available
 
   The response's `x-image-meta-owner` value is a string which may either
   be null or which will indicate the owner of the image

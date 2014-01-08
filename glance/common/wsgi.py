@@ -284,7 +284,7 @@ class Server(object):
             signal.signal(signal.SIGTERM, signal.SIG_DFL)
             # ignore the interrupt signal to avoid a race whereby
             # a child worker receives the signal before the parent
-            # and is respawned unneccessarily as a result
+            # and is respawned unnecessarily as a result
             signal.signal(signal.SIGINT, signal.SIG_IGN)
             self.run_server()
             self.logger.info(_('Child %d exiting normally') % os.getpid())
