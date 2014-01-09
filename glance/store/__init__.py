@@ -303,19 +303,18 @@ def delete_image_from_backend(context, store_api, image_id, uri):
 
 
 def check_location_metadata(val, key=''):
-    t = type(val)
-    if t == dict:
+    if isinstance(val, dict):
         for key in val:
             check_location_metadata(val[key], key=key)
-    elif t == list:
+    elif isinstance(val, list):
         ndx = 0
         for v in val:
             check_location_metadata(v, key='%s[%d]' % (key, ndx))
             ndx = ndx + 1
-    elif t != unicode:
+    elif not isinstance(val, unicode):
         raise BackendException(_("The image metadata key %s has an invalid "
                                  "type of %s.  Only dict, list, and unicode "
-                                 "are supported.") % (key, str(t)))
+                                 "are supported.") % (key, type(val)))
 
 
 def store_add_to_backend(image_id, data, size, store):
@@ -334,7 +333,7 @@ def store_add_to_backend(image_id, data, size, store):
     """
     (location, size, checksum, metadata) = store.add(image_id, data, size)
     if metadata is not None:
-        if type(metadata) != dict:
+        if not isinstance(metadata, dict):
             msg = (_("The storage driver %s returned invalid metadata %s"
                      "This must be a dictionary type") %
                    (str(store), str(metadata)))
