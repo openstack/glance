@@ -2028,7 +2028,7 @@ class TestImageMembers(functional.FunctionalTest):
         self.assertEqual(3, len(images))
 
         # Image list should contain 0 shared images for TENANT3
-        # becuase default is accepted
+        # because default is accepted
         path = self._url('/v2/images?visibility=shared')
         response = requests.get(path, headers=get_header(TENANT3))
         self.assertEqual(200, response.status_code)

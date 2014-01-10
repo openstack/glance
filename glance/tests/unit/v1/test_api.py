@@ -1250,7 +1250,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                                           'update_active', 'image_get_active'],
                                          called)
 
-                        # Ensure cleanup occured.
+                        # Ensure cleanup occurred.
                         self.assertTrue(mock_initiate_deletion.called)
 
     def test_register_and_upload(self):
@@ -3553,7 +3553,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
     def test_update_protected_props_mix_no_read(self):
         """
         Create an image with two props - one only readable by admin, and one
-        readable/updatable by member.  Verify member can sucessfully update
+        readable/updatable by member.  Verify member can successfully update
         their property while the admin owned one is ignored transparently
         """
         image_id = self._create_admin_image(
@@ -3609,7 +3609,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
     def test_delete_protected_props_mix_no_read(self):
         """
         Create an image with two props - one only readable by admin, and one
-        readable/deletable by member.  Verify member can sucessfully delete
+        readable/deletable by member.  Verify member can successfully delete
         their property while the admin owned one is ignored transparently
         """
         image_id = self._create_admin_image(
@@ -3719,7 +3719,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
 
     def test_create_locked_down_protected_prop(self):
         """
-        Verify a property protected by special char '!' is creatable by noone
+        Verify a property protected by special char '!' is creatable by no one
         """
         image_id = self._create_admin_image()
         another_request = unit_test_utils.get_fake_request(
@@ -3742,7 +3742,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
 
     def test_read_locked_down_protected_prop(self):
         """
-        Verify a property protected by special char '!' is readable by noone
+        Verify a property protected by special char '!' is readable by no one
         """
         custom_props = {
             'x-image-meta-property-x_none_read': '1'
@@ -3768,7 +3768,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
 
     def test_update_locked_down_protected_prop(self):
         """
-        Verify a property protected by special char '!' is updatable by noone
+        Verify a property protected by special char '!' is updatable by no one
         """
         image_id = self._create_admin_image(
             {'x-image-meta-property-x_none_update': '1'})
@@ -3792,7 +3792,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
 
     def test_delete_locked_down_protected_prop(self):
         """
-        Verify a property protected by special char '!' is deletable by noone
+        Verify a property protected by special char '!' is deletable by no one
         """
         image_id = self._create_admin_image(
             {'x-image-meta-property-x_none_delete': '1'})

@@ -895,7 +895,7 @@ class DriverTests(object):
         result = self.db_api.is_image_visible(ctxt2, image)
         self.assertTrue(result)
 
-        # image should not be visible for a deleted memeber
+        # image should not be visible for a deleted member
         members = self.db_api.image_member_find(ctxt1, image_id=UUIDX)
         self.db_api.image_member_delete(ctxt1, members[0]['id'])
 

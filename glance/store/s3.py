@@ -45,7 +45,7 @@ s3_opts = [
                help=_('The S3 bucket to be used to store the Glance data.')),
     cfg.StrOpt('s3_store_object_buffer_dir',
                help=_('The local directory where uploads will be staged '
-                      'before they are transfered into S3.')),
+                      'before they are transferred into S3.')),
     cfg.BoolOpt('s3_store_create_bucket_on_put', default=False,
                 help=_('A boolean to determine if the S3 bucket should be '
                        'created on upload if it does not exist or if '

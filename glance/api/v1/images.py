@@ -603,7 +603,7 @@ class Controller(controller.BaseController):
         :param req: The WSGI/Webob Request object
         :param image_id: Opaque image identifier
         :param location: Location of where Glance stored this image
-        :param location_metadata: a dictionary of storage specfic information
+        :param location_metadata: a dictionary of storage specific information
         """
         image_meta = {}
         image_meta['location'] = location

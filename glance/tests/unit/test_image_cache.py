@@ -358,7 +358,7 @@ class ImageCacheTestCase(object):
         def consume(image_id):
             caching_iter = self.cache.get_caching_iter(image_id, None,
                                                        faulty_backend())
-            # excercise the caching_iter
+            # exercise the caching_iter
             list(caching_iter)
 
         image_id = '1'

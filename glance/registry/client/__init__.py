@@ -49,7 +49,7 @@ registry_client_ctx_opts = [
     cfg.StrOpt('admin_password', secret=True,
                help=_('The administrators password.')),
     cfg.StrOpt('admin_tenant_name', secret=True,
-               help=_('The tenant name of the adminstrative user.')),
+               help=_('The tenant name of the administrative user.')),
     cfg.StrOpt('auth_url',
                help=_('The URL to the keystone service.')),
     cfg.StrOpt('auth_strategy', default='noauth',

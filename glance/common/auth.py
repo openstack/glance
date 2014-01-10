@@ -138,7 +138,7 @@ class KeystoneStrategy(BaseStrategy):
                 if 'v2.0' not in auth_url:
                     auth_url = urlparse.urljoin(auth_url, 'v2.0/')
             else:
-                # If we sucessfully auth'd, then memorize the correct auth_url
+                # If we successfully auth'd, then memorize the correct auth_url
                 # for future use.
                 self.creds['auth_url'] = auth_url
                 break

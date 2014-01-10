@@ -1175,7 +1175,7 @@ def task_get_all(context, filters=None, marker=None, limit=None,
     tasks = []
     for task_ref in task_refs:
         # NOTE(venkatesh): call to task_ref.info does not make any
-        # seperate query call to fetch task info as it has been
+        # separate query call to fetch task info as it has been
         # eagerly loaded using joinedload(models.Task.info) method above.
         task_info_ref = task_ref.info
         tasks.append(_task_format(task_ref, task_info_ref))
