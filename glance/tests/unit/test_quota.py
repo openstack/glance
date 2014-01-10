@@ -497,3 +497,79 @@ class TestImageMemberQuotas(test_utils.BaseTestCase):
         self.assertRaises(exception.ImageMemberLimitExceeded,
                           self.image_member_factory.new_image_member,
                           self.image, 'fake_id')
+
+
+class TestImageLocationQuotas(test_utils.BaseTestCase):
+    def setUp(self):
+        super(TestImageLocationQuotas, self).setUp()
+        self.base_image = mock.Mock()
+        self.base_image.locations = []
+        self.base_image.size = 1
+        self.image = glance.quota.ImageProxy(self.base_image,
+                                             mock.Mock(),
+                                             mock.Mock())
+
+        self.image_repo_mock = mock.Mock()
+        self.image_repo_proxy = glance.quota.ImageRepoProxy(
+            self.image_repo_mock,
+            mock.Mock(),
+            mock.Mock())
+
+    def test_replace_image_location(self):
+        self.config(image_location_quota=1)
+        self.image.locations = [{"url": "file:///fake.img.tar.gz",
+                                 "metadata": {}
+                                 }]
+        self.assertEqual(len(self.image.locations), 1)
+
+    def test_replace_too_many_image_locations(self):
+        self.config(image_location_quota=1)
+        self.image.locations = [{"url": "file:///fake.img.tar.gz",
+                                 "metadata": {}}
+                                ]
+        locations = [
+            {"url": "file:///fake1.img.tar.gz", "metadata": {}},
+            {"url": "file:///fake2.img.tar.gz", "metadata": {}},
+            {"url": "file:///fake3.img.tar.gz", "metadata": {}}
+        ]
+        exc = self.assertRaises(exception.ImageLocationLimitExceeded,
+                                setattr, self.image, 'locations', locations)
+        self.assertTrue('Attempted: 3, Maximum: 1' in str(exc))
+        self.assertEqual(len(self.image.locations), 1)
+
+    def test_replace_unlimited_image_locations(self):
+        self.config(image_location_quota=-1)
+        self.image.locations = [{"url": "file:///fake.img.tar.gz",
+                                 "metadata": {}}
+                                ]
+        self.assertEqual(len(self.image.locations), 1)
+
+    def test_add_image_location(self):
+        self.config(image_location_quota=1)
+        location = {"url": "file:///fake.img.tar.gz", "metadata": {}}
+        self.image.locations.append(location)
+        self.assertEqual(len(self.image.locations), 1)
+
+    def test_add_too_many_image_locations(self):
+        self.config(image_location_quota=1)
+        location1 = {"url": "file:///fake1.img.tar.gz", "metadata": {}}
+        self.image.locations.append(location1)
+        location2 = {"url": "file:///fake2.img.tar.gz", "metadata": {}}
+        exc = self.assertRaises(exception.ImageLocationLimitExceeded,
+                                self.image.locations.append, location2)
+        self.assertTrue('Attempted: 2, Maximum: 1' in str(exc))
+
+    def test_add_unlimited_image_locations(self):
+        self.config(image_location_quota=-1)
+        location1 = {"url": "file:///fake1.img.tar.gz", "metadata": {}}
+        self.image.locations.append(location1)
+        self.assertEqual(len(self.image.locations), 1)
+
+    def test_remove_image_location_while_over_quota(self):
+        self.config(image_location_quota=1)
+        location1 = {"url": "file:///fake1.img.tar.gz", "metadata": {}}
+        self.image.locations.append(location1)
+        self.assertEqual(len(self.image.locations), 1)
+        self.config(image_location_quota=0)
+        self.image.locations.remove(location1)
+        self.assertEqual(len(self.image.locations), 0)

@@ -277,6 +277,28 @@ class TestImages(functional.FunctionalTest):
         response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(413, response.status_code, response.text)
 
+        # Adding 3 image locations should fail since configured limit is 2
+        for i in range(3):
+            file_path = os.path.join(self.test_dir, 'fake_image_%i' % i)
+            with open(file_path, 'w') as fap:
+                fap.write('glance')
+
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type})
+        changes = []
+        for i in range(3):
+            changes.append({'op': 'add', 'path': '/locations/-',
+                            'value': {'url': 'file://{0}'.format(
+                            os.path.join(self.test_dir,
+                                         'fake_image_%i' % i)),
+                            'metadata': {}},
+                            })
+
+        data = jsonutils.dumps(changes)
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(413, response.status_code, response.text)
+
         # Ensure the v2.0 json-patch content type is accepted
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.0-json-patch'

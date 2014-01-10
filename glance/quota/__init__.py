@@ -59,6 +59,19 @@ def _calc_required_size(context, image, locations):
     return required_size
 
 
+def _enforce_image_location_quota(image, locations, is_setter=False):
+    if CONF.image_location_quota < 0:
+        # If value is negative, allow unlimited number of locations
+        return
+
+    attempted = len(image.locations) + len(locations)
+    attempted = attempted if not is_setter else len(locations)
+    maximum = CONF.image_location_quota
+    if attempted > maximum:
+        raise exception.ImageLocationLimitExceeded(attempted=attempted,
+                                                   maximum=maximum)
+
+
 class ImageRepoProxy(glance.domain.proxy.Repo):
 
     def __init__(self, image_repo, context, db_api):
@@ -191,7 +204,7 @@ class QuotaImageLocationsProxy(object):
     def __iadd__(self, other):
         if not hasattr(other, '__iter__'):
             raise TypeError()
-        self._check_quota(other)
+        self._check_user_storage_quota(other)
         return self.locations.__iadd__(other)
 
     def __iter__(self, *args, **kwargs):
@@ -218,24 +231,25 @@ class QuotaImageLocationsProxy(object):
     def reverse(self, *args, **kwargs):
         return self.locations.reverse(*args, **kwargs)
 
-    def _check_quota(self, locations):
+    def _check_user_storage_quota(self, locations):
         required_size = _calc_required_size(self.context,
                                             self.image,
                                             locations)
         glance.api.common.check_quota(self.context,
                                       required_size,
                                       self.db_api)
+        _enforce_image_location_quota(self.image, locations)
 
     def append(self, object):
-        self._check_quota([object])
+        self._check_user_storage_quota([object])
         return self.locations.append(object)
 
     def insert(self, index, object):
-        self._check_quota([object])
+        self._check_user_storage_quota([object])
         return self.locations.insert(index, object)
 
     def extend(self, iter):
-        self._check_quota(iter)
+        self._check_user_storage_quota(iter)
         return self.locations.extend(iter)
 
 
@@ -293,6 +307,8 @@ class ImageProxy(glance.domain.proxy.Image):
 
     @locations.setter
     def locations(self, value):
+        _enforce_image_location_quota(self.image, value, is_setter=True)
+
         if not isinstance(value, (list, QuotaImageLocationsProxy)):
             raise exception.Invalid(_('Invalid locations: %s') % value)
 
