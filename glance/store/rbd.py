@@ -40,26 +40,31 @@ except ImportError:
     rados = None
     rbd = None
 
-DEFAULT_POOL = 'rbd'
-DEFAULT_CONFFILE = ''  # librados will locate the default conf file
+DEFAULT_POOL = 'images'
+DEFAULT_CONFFILE = '/etc/ceph/ceph.conf'
 DEFAULT_USER = None    # let librados decide based on the Ceph conf file
-DEFAULT_CHUNKSIZE = 4  # in MiB
+DEFAULT_CHUNKSIZE = 8  # in MiB
 DEFAULT_SNAPNAME = 'snap'
 
 LOG = logging.getLogger(__name__)
 
 rbd_opts = [
     cfg.IntOpt('rbd_store_chunk_size', default=DEFAULT_CHUNKSIZE,
-               help=_('Images will be chunked into objects of this size '
+               help=_('RADOS images will be chunked into objects of this size '
                       '(in megabytes). For best performance, this should be '
                       'a power of two.')),
     cfg.StrOpt('rbd_store_pool', default=DEFAULT_POOL,
                help=_('RADOS pool in which images are stored.')),
     cfg.StrOpt('rbd_store_user', default=DEFAULT_USER,
                help=_('RADOS user to authenticate as (only applicable if '
-                      'using cephx.)')),
+                      'using Cephx. If <None>, a default will be chosen based '
+                      'on the client. section in rbd_store_ceph_conf)')),
     cfg.StrOpt('rbd_store_ceph_conf', default=DEFAULT_CONFFILE,
-               help=_('Ceph configuration file path.')),
+               help=_('Ceph configuration file path. '
+                      'If <None>, librados will locate the default config. '
+                      'If using cephx authentication, this file should '
+                      'include a reference to the right keyring '
+                      'in a client.<USER> section')),
 ]
 
 CONF = cfg.CONF
