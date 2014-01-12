@@ -1168,7 +1168,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             req.headers[k] = v
 
         res = req.get_response(self.api)
-        self.assertEquals(res.status_int, 201)
+        self.assertEqual(res.status_int, 201)
         res_body = jsonutils.loads(res.body)['image']
 
         image_id = res_body['id']
@@ -1243,7 +1243,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                 with mpo(db_api, '_image_get', mock_image_get):
                     with mpo(db_api, '_image_update', mock_image_update):
                         res = req.get_response(self.api)
-                        self.assertEquals(res.status_int, 409)
+                        self.assertEqual(res.status_int, 409)
 
                         # Check expected call sequence
                         self.assertEqual(['get_image_meta', 'get_image_meta',
