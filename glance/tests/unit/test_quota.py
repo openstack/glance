@@ -131,8 +131,8 @@ class TestImageQuota(test_utils.BaseTestCase):
         if deleted:
             self.mox.StubOutWithMock(glance.store, 'safe_delete_from_backend')
             glance.store.safe_delete_from_backend(
-                base_image.locations[0]['url'],
                 context,
+                base_image.locations[0]['url'],
                 image.image_id)
 
         self.mox.ReplayAll()

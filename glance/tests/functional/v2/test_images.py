@@ -2284,7 +2284,7 @@ class TestQuotas(functional.FunctionalTest):
         base_headers.update(custom_headers or {})
         return base_headers
 
-    def test_image_upload_under_quota(self):
+    def _upload_image_test(self, data_src, expected_status):
         # Image list should be empty
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
@@ -2295,7 +2295,9 @@ class TestQuotas(functional.FunctionalTest):
         # Create an image (with a deployer-defined property)
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json'})
-        data = jsonutils.dumps({'name': 'image-2',
+        data = jsonutils.dumps({'name': 'testimg',
+                                'type': 'kernel',
+                                'foo': 'bar',
                                 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
@@ -2304,43 +2306,32 @@ class TestQuotas(functional.FunctionalTest):
         image_id = image['id']
 
         # upload data
-        data = 'x' * (self.user_storage_quota - 1)
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
-        response = requests.put(path, headers=headers, data=data)
-        self.assertEqual(204, response.status_code)
+        response = requests.put(path, headers=headers, data=data_src)
+        self.assertEqual(expected_status, response.status_code)
 
         # Deletion should work
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
         self.assertEqual(204, response.status_code)
 
+    def test_image_upload_under_quota(self):
+        data = 'x' * (self.user_storage_quota - 1)
+        self._upload_image_test(data, 204)
+
     def test_image_upload_exceed_quota(self):
-        # Image list should be empty
-        path = self._url('/v2/images')
-        response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
-        images = jsonutils.loads(response.text)['images']
-        self.assertEqual(0, len(images))
-
-        # Create an image (with a deployer-defined property)
-        path = self._url('/v2/images')
-        headers = self._headers({'content-type': 'application/json'})
-        data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
-                                'foo': 'bar', 'disk_format': 'aki',
-                                'container_format': 'aki'})
-        response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
-        image = jsonutils.loads(response.text)
-        image_id = image['id']
-
-        # upload data
         data = 'x' * (self.user_storage_quota + 1)
-        path = self._url('/v2/images/%s/file' % image_id)
-        headers = self._headers({'Content-Type': 'application/octet-stream'})
-        response = requests.put(path, headers=headers, data=data)
-        self.assertEqual(413, response.status_code)
+        self._upload_image_test(data, 413)
 
-        path = self._url('/v2/images/%s' % image_id)
-        response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+    def test_chunked_image_upload_under_quota(self):
+        def data_gen():
+            yield 'x' * (self.user_storage_quota - 1)
+
+        self._upload_image_test(data_gen(), 204)
+
+    def test_chunked_image_upload_exceed_quota(self):
+        def data_gen():
+            yield 'x' * (self.user_storage_quota + 1)
+
+        self._upload_image_test(data_gen(), 413)
