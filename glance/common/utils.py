@@ -254,21 +254,26 @@ def get_image_meta_from_headers(response):
                 raise exc.HTTPBadRequest(msg, content_type="text/plain")
             result[field_name] = value or None
     result['properties'] = properties
-    if 'size' in result:
-        try:
-            result['size'] = int(result['size'])
-        except ValueError:
-            extra = (_("Cannot convert image size '%s' to an integer.") %
-                     result['size'])
-            raise exception.InvalidParameterValue(value=result['size'],
-                                                  param='size',
-                                                  extra_msg=extra)
-        if result['size'] < 0:
-            extra = (_("Image size must be >= 0 ('%s' specified).") %
-                     result['size'])
-            raise exception.InvalidParameterValue(value=result['size'],
-                                                  param='size',
-                                                  extra_msg=extra)
+
+    for key in ('size', 'min_disk', 'min_ram'):
+        if key in result:
+            try:
+                result[key] = int(result[key])
+            except ValueError:
+                extra = (_("Cannot convert image %(key)s '%(value)s' "
+                           "to an integer.")
+                         % {'key': key, 'value': result[key]})
+                raise exception.InvalidParameterValue(value=result[key],
+                                                      param=key,
+                                                      extra_msg=extra)
+            if result[key] < 0:
+                extra = (_("Image %(key)s must be >= 0 "
+                           "('%(value)s' specified).")
+                         % {'key': key, 'value': result[key]})
+                raise exception.InvalidParameterValue(value=result[key],
+                                                      param=key,
+                                                      extra_msg=extra)
+
     for key in ('is_public', 'deleted', 'protected'):
         if key in result:
             result[key] = strutils.bool_from_string(result[key])

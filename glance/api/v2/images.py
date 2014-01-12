@@ -61,6 +61,8 @@ class ImagesController(object):
             raise webob.exc.HTTPBadRequest(explanation=unicode(dup))
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
+        except exception.InvalidParameterValue as e:
+            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
         except exception.LimitExceeded as e:
             LOG.info(unicode(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
@@ -126,6 +128,8 @@ class ImagesController(object):
             raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
+        except exception.InvalidParameterValue as e:
+            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
         except exception.StorageQuotaFull as e:
             msg = (_("Denying attempt to upload image because it exceeds the ."
                      "quota: %s") % e)
