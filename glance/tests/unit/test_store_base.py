@@ -15,8 +15,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from glance.common import exception
+from glance import store
 from glance.store import base as store_base
 from glance.tests.unit import base as test_base
+
+
+class FakeUnconfigurableStoreDriver(store_base.Store):
+    def configure(self):
+        raise exception.BadStoreConfiguration("Unconfigurable store driver.")
 
 
 class TestStoreBase(test_base.StoreClearingUnitTest):
@@ -45,3 +52,10 @@ class TestStoreBase(test_base.StoreClearingUnitTest):
         self.assertEqual(unicode, type(ret))
         self.assertEqual(ret, _("Caught '%(exception)s' exception.") %
                          {'exception': 'FakeException'})
+
+    def test_create_store_exclude_unconfigurable_drivers(self):
+        self.config(known_stores=[
+            "glance.tests.unit.test_store_base.FakeUnconfigurableStoreDriver",
+            "glance.store.filesystem.Store"])
+        count = store.create_stores()
+        self.assertEqual(count, 1)
