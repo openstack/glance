@@ -66,8 +66,9 @@ common_opts = [
                       'returned by a request')),
     cfg.BoolOpt('show_image_direct_url', default=False,
                 help=_('Whether to include the backend image storage location '
-                       'in image properties. Revealing storage location can be'
-                       'a security risk, so use this setting with caution!')),
+                       'in image properties. Revealing storage location can '
+                       'be a security risk, so use this setting with '
+                       'caution!')),
     cfg.BoolOpt('show_multiple_locations', default=False,
                 help=_('Whether to include the backend image locations '
                        'in image properties. Revealing storage location can '
