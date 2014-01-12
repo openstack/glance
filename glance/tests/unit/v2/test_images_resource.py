@@ -1186,12 +1186,15 @@ class TestImagesController(base.IsolatedUnitTest):
                           request, UUID1, changes)
 
     def test_update_replace_locations(self):
+        self.stubs.Set(glance.store, 'get_size_from_backend',
+                       unit_test_utils.fake_get_size_from_backend)
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(output.image_id, UUID1)
         self.assertEqual(len(output.locations), 0)
         self.assertEqual(output.status, 'queued')
+        self.assertEqual(output.size, None)
 
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         changes = [{'op': 'replace', 'path': ['locations'],
@@ -1450,6 +1453,8 @@ class TestImagesController(base.IsolatedUnitTest):
         as long as the image has fewer than the limited number of image
         locations after the transaction.
         """
+        self.stubs.Set(glance.store, 'get_size_from_backend',
+                       unit_test_utils.fake_get_size_from_backend)
         self.config(show_multiple_locations=True)
         request = unit_test_utils.get_fake_request()
 
@@ -1510,12 +1515,16 @@ class TestImagesController(base.IsolatedUnitTest):
                           self.controller.update, request, UUID1, changes)
 
     def test_update_remove_location(self):
+        self.stubs.Set(glance.store, 'get_size_from_backend',
+                       unit_test_utils.fake_get_size_from_backend)
+
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'remove', 'path': ['locations', '1']}]
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(output.image_id, UUID1)
         self.assertEqual(len(output.locations), 0)
         self.assertTrue(output.status == 'queued')
+        self.assertEqual(output.size, None)
 
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         changes = [{'op': 'add', 'path': ['locations', '-'],

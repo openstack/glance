@@ -51,8 +51,12 @@ def _calc_required_size(context, image, locations):
         required_size = image.size * len(locations)
     else:
         for location in locations:
-            size_from_backend = glance.store.get_size_from_backend(
-                context, location['url'])
+            size_from_backend = None
+            try:
+                size_from_backend = glance.store.get_size_from_backend(
+                    context, location['url'])
+            except (exception.UnknownScheme, exception.NotFound):
+                pass
             if size_from_backend:
                 required_size = size_from_backend * len(locations)
                 break
