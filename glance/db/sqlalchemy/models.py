@@ -19,19 +19,28 @@
 """
 SQLAlchemy models for glance data
 """
+
 import uuid
 
-from sqlalchemy import Column, Integer, String, BigInteger
+from sqlalchemy import BigInteger
+from sqlalchemy import Boolean
+from sqlalchemy import Column
+from sqlalchemy import DateTime
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import ForeignKey, DateTime, Boolean, Text
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy import ForeignKey
+from sqlalchemy import Index
+from sqlalchemy import Integer
+from sqlalchemy.orm import backref, relationship
+from sqlalchemy import String
+from sqlalchemy import Text
 from sqlalchemy.types import TypeDecorator
-from sqlalchemy import Index, UniqueConstraint
+from sqlalchemy import UniqueConstraint
 
 from glance.openstack.common.db.sqlalchemy import models
 from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
+
 
 BASE = declarative_base()
 
