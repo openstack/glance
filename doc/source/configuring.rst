@@ -177,7 +177,7 @@ manually run `glance-manage db sync`.
 
 Optional. Default: ``False``
 
-Configurating SSL Support
+Configuring SSL Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * ``cert_file=PATH``
@@ -202,7 +202,7 @@ certificates provided during an SSL handshake. This is ignored if
 
 Optional. Default: not enabled.
 
-Configurating Registry Access
+Configuring Registry Access
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are a number of configuration options in Glance that control how
