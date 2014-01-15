@@ -276,7 +276,7 @@ class ServerTest(test_utils.BaseTestCase):
     def test_create_pool(self):
         """Ensure the wsgi thread pool is an eventlet.greenpool.GreenPool."""
         actual = wsgi.Server(threads=1).create_pool()
-        self.assertTrue(isinstance(actual, eventlet.greenpool.GreenPool))
+        self.assertIsInstance(actual, eventlet.greenpool.GreenPool)
 
 
 class TestHelpers(test_utils.BaseTestCase):
@@ -297,7 +297,7 @@ class TestHelpers(test_utils.BaseTestCase):
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}}
         headers = utils.image_meta_to_http_headers(fixture)
         for k, v in headers.iteritems():
-            self.assertTrue(isinstance(v, unicode), "%s is not unicode" % v)
+            self.assertIsInstance(v, unicode)
 
     def test_data_passed_properly_through_headers(self):
         """

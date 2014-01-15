@@ -39,17 +39,17 @@ class TestStoreBase(test_base.StoreClearingUnitTest):
 
         exc = Exception('error message')
         ret = store_base._exception_to_unicode(exc)
-        self.assertEqual(unicode, type(ret))
+        self.assertIsInstance(ret, unicode)
         self.assertEqual(ret, 'error message')
 
         exc = Exception('\xa5 error message')
         ret = store_base._exception_to_unicode(exc)
-        self.assertEqual(unicode, type(ret))
+        self.assertIsInstance(ret, unicode)
         self.assertEqual(ret, ' error message')
 
         exc = FakeException('\xa5 error message')
         ret = store_base._exception_to_unicode(exc)
-        self.assertEqual(unicode, type(ret))
+        self.assertIsInstance(ret, unicode)
         self.assertEqual(ret, _("Caught '%(exception)s' exception.") %
                          {'exception': 'FakeException'})
 

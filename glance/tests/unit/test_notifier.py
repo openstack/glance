@@ -161,12 +161,12 @@ class TestImageNotifications(utils.BaseTestCase):
 
     def test_image_get(self):
         image = self.image_repo_proxy.get(UUID1)
-        self.assertTrue(isinstance(image, glance.notifier.ImageProxy))
+        self.assertIsInstance(image, glance.notifier.ImageProxy)
         self.assertEqual(image.image, 'image_from_get')
 
     def test_image_list(self):
         images = self.image_repo_proxy.list()
-        self.assertTrue(isinstance(images[0], glance.notifier.ImageProxy))
+        self.assertIsInstance(images[0], glance.notifier.ImageProxy)
         self.assertEqual(images[0].image, 'images_from_list')
 
     def test_image_get_data_notification(self):

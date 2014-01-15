@@ -306,7 +306,7 @@ class ImageCacheTestCase(object):
             with self.cache.driver.open_for_write(image_id) as cache_file:
                 raise IOError
         except Exception as e:
-            self.assertEqual(type(e), IOError)
+            self.assertIsInstance(e, IOError)
         self.assertFalse(self.cache.is_cached(image_id),
                          "Image %s was cached!" % image_id)
         # make sure it has tidied up

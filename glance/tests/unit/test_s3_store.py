@@ -190,8 +190,7 @@ class TestStore(base.StoreClearingUnitTest):
 
         def fake_S3Connection_init(*args, **kwargs):
             expected_cls = boto.s3.connection.OrdinaryCallingFormat
-            self.assertTrue(isinstance(kwargs.get('calling_format'),
-                                       expected_cls))
+            self.assertIsInstance(kwargs.get('calling_format'), expected_cls)
 
         self.stubs.Set(boto.s3.connection.S3Connection, '__init__',
                        fake_S3Connection_init)
@@ -205,8 +204,7 @@ class TestStore(base.StoreClearingUnitTest):
 
         def fake_S3Connection_init(*args, **kwargs):
             expected_cls = boto.s3.connection.SubdomainCallingFormat
-            self.assertTrue(isinstance(kwargs.get('calling_format'),
-                                       expected_cls))
+            self.assertIsInstance(kwargs.get('calling_format'), expected_cls)
 
         self.stubs.Set(boto.s3.connection.S3Connection, '__init__',
                        fake_S3Connection_init)
@@ -404,14 +402,14 @@ class TestStore(base.StoreClearingUnitTest):
 
     def test_calling_format_path(self):
         self.config(s3_store_bucket_url_format='path')
-        self.assertTrue(isinstance(glance.store.s3.get_calling_format(),
-                                   boto.s3.connection.OrdinaryCallingFormat))
+        self.assertIsInstance(glance.store.s3.get_calling_format(),
+                              boto.s3.connection.OrdinaryCallingFormat)
 
     def test_calling_format_subdomain(self):
         self.config(s3_store_bucket_url_format='subdomain')
-        self.assertTrue(isinstance(glance.store.s3.get_calling_format(),
-                                   boto.s3.connection.SubdomainCallingFormat))
+        self.assertIsInstance(glance.store.s3.get_calling_format(),
+                              boto.s3.connection.SubdomainCallingFormat)
 
     def test_calling_format_default(self):
-        self.assertTrue(isinstance(glance.store.s3.get_calling_format(),
-                                   boto.s3.connection.SubdomainCallingFormat))
+        self.assertIsInstance(glance.store.s3.get_calling_format(),
+                              boto.s3.connection.SubdomainCallingFormat)
