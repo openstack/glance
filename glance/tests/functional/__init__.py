@@ -650,9 +650,10 @@ class FunctionalTest(test_utils.BaseTestCase):
                 if auth_pieces[1].strip():
                     password = "-p%s" % auth_pieces[1]
             sql = ("drop database if exists %(database)s; "
-                   "create database %(database)s;") % locals()
+                   "create database %(database)s;") % {'database': database}
             cmd = ("mysql -u%(user)s %(password)s -h%(host)s "
-                   "-e\"%(sql)s\"") % locals()
+                   "-e\"%(sql)s\"") % {'user': user, 'password': password,
+                                       'host': host, 'sql': sql}
             exitcode, out, err = execute(cmd)
             self.assertEqual(0, exitcode)
 

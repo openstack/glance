@@ -154,15 +154,16 @@ Queues an image for caching
         return FAILURE
 
     if (not options.force and
-        not user_confirm("Queue image %s for caching?" % (image_id,),
-                         default=False)):
+        not user_confirm("Queue image %(image_id)s for caching?" %
+                         {'image_id': image_id}, default=False)):
         return SUCCESS
 
     client = get_client(options)
     client.queue_image_for_caching(image_id)
 
     if options.verbose:
-        print("Queued image %(image_id)s for caching" % locals())
+        print("Queued image %(image_id)s for caching" %
+              {'image_id': image_id})
 
     return SUCCESS
 
@@ -182,15 +183,15 @@ Deletes an image from the cache
         return FAILURE
 
     if (not options.force and
-        not user_confirm("Delete cached image %s?" % (image_id,),
-                         default=False)):
+        not user_confirm("Delete cached image %(image_id)s?" %
+                         {'image_id': image_id}, default=False)):
         return SUCCESS
 
     client = get_client(options)
     client.delete_cached_image(image_id)
 
     if options.verbose:
-        print("Deleted cached image %(image_id)s" % locals())
+        print("Deleted cached image %(image_id)s" % {'image_id': image_id})
 
     return SUCCESS
 
@@ -209,7 +210,8 @@ Remove all images from the cache.
     num_deleted = client.delete_all_cached_images()
 
     if options.verbose:
-        print("Deleted %(num_deleted)s cached images" % locals())
+        print("Deleted %(num_deleted)s cached images" %
+              {'num_deleted': num_deleted})
 
     return SUCCESS
 
@@ -229,15 +231,15 @@ Deletes an image from the cache
         return FAILURE
 
     if (not options.force and
-        not user_confirm("Delete queued image %s?" % (image_id,),
-                         default=False)):
+        not user_confirm("Delete queued image %(image_id)s?" %
+                         {'image_id': image_id}, default=False)):
         return SUCCESS
 
     client = get_client(options)
     client.delete_queued_image(image_id)
 
     if options.verbose:
-        print("Deleted queued image %(image_id)s" % locals())
+        print("Deleted queued image %(image_id)s" % {'image_id': image_id})
 
     return SUCCESS
 
@@ -256,7 +258,8 @@ Remove all images from the cache queue.
     num_deleted = client.delete_all_queued_images()
 
     if options.verbose:
-        print("Deleted %(num_deleted)s queued images" % locals())
+        print("Deleted %(num_deleted)s queued images" %
+              {'num_deleted': num_deleted})
 
     return SUCCESS
 
@@ -444,7 +447,7 @@ def lookup_command(parser, command_name):
         command = commands[command_name]
     except KeyError:
         parser.print_usage()
-        sys.exit("Unknown command: %s" % command_name)
+        sys.exit("Unknown command: %(cmd_name)s" % {'cmd_name': command_name})
 
     return command
 

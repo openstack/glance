@@ -300,7 +300,8 @@ def execute(cmd,
         msg = "Command %(cmd)s did not succeed. Returned an exit "\
               "code of %(exitcode)d."\
               "\n\nSTDOUT: %(out)s"\
-              "\n\nSTDERR: %(err)s" % locals()
+              "\n\nSTDERR: %(err)s" % {'cmd': cmd, 'exitcode': exitcode,
+                                       'out': out, 'err': err}
         if context:
             msg += "\n\nCONTEXT: %s" % context
         raise RuntimeError(msg)

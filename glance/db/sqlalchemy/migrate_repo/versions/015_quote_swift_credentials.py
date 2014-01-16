@@ -86,7 +86,8 @@ def legacy_parse_uri(uri, to_quote, image_id):
                    "like so: "
                    "swift+http://user:pass@authurl.com/v1/container/obj")
 
-        LOG.error(_("Invalid store uri for image %s: %s") % (image_id, reason))
+        LOG.error(_("Invalid store uri for image %(image_id)s: %(reason)s") %
+                  {'image_id': image_id, 'reason': reason})
         raise exception.BadStoreUri(message=reason)
 
     pieces = urlparse.urlparse(uri)
@@ -118,7 +119,7 @@ def legacy_parse_uri(uri, to_quote, image_id):
         if to_quote:
             if len(cred_parts) == 1:
                 reason = (_("Badly formed credentials '%(creds)s' in Swift "
-                            "URI") % locals())
+                            "URI") % {'creds': creds})
                 LOG.error(reason)
                 raise exception.BadStoreUri()
             elif len(cred_parts) == 3:
@@ -148,7 +149,7 @@ def legacy_parse_uri(uri, to_quote, image_id):
             path_parts.insert(0, netloc)
             auth_or_store_url = '/'.join(path_parts)
     except IndexError:
-        reason = _("Badly formed S3 URI: %s") % uri
+        reason = _("Badly formed S3 URI: %(uri)s") % {'uri': uri}
         LOG.error(message=reason)
         raise exception.BadStoreUri()
 

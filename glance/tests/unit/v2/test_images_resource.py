@@ -2285,7 +2285,8 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
     def test_index_with_many_filter(self):
         name = 'My Little Image'
         instance_id = str(uuid.uuid4())
-        path = '/images?name=%(name)s&id=%(instance_id)s' % locals()
+        path = ('/images?name=%(name)s&id=%(instance_id)s' %
+                {'name': name, 'instance_id': instance_id})
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)
         self.assertEqual(output['filters']['name'], name)
