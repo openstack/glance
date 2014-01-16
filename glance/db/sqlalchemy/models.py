@@ -178,6 +178,7 @@ class ImageLocation(BASE, GlanceBase):
     image = relationship(Image, backref=backref('locations'))
     value = Column(Text(), nullable=False)
     meta_data = Column(JSONEncodedDict(), default={})
+    status = Column(String(30), default='active', nullable=False)
 
 
 class ImageMember(BASE, GlanceBase):

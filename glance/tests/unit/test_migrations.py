@@ -1172,3 +1172,56 @@ class TestMigrations(test_utils.BaseTestCase):
         self.assertIsNone(task_2.input)
         self.assertIsNone(task_2.result)
         self.assertIsNone(task_2.message)
+
+    def _pre_upgrade_033(self, engine):
+        images = get_table(engine, 'images')
+        image_locations = get_table(engine, 'image_locations')
+
+        now = datetime.datetime.now()
+        image_id = 'fake_id_028_%d'
+        url = 'file:///some/place/onthe/fs_%d'
+        status_list = ['active', 'saving', 'queued', 'killed',
+                       'pending_delete', 'deleted']
+        image_id_list = []
+
+        for (idx, status) in enumerate(status_list):
+            temp = dict(deleted=False,
+                        created_at=now,
+                        updated_at=now,
+                        status=status,
+                        is_public=True,
+                        min_disk=0,
+                        min_ram=0,
+                        id=image_id % idx)
+            images.insert().values(temp).execute()
+
+            temp = dict(deleted=False,
+                        created_at=now,
+                        updated_at=now,
+                        image_id=image_id % idx,
+                        value=url % idx)
+            image_locations.insert().values(temp).execute()
+
+            image_id_list.append(image_id % idx)
+        return image_id_list
+
+    def _check_033(self, engine, data):
+        image_locations = get_table(engine, 'image_locations')
+
+        self.assertIn('status', image_locations.c)
+        self.assertEqual(image_locations.c['status'].type.length, 30)
+
+        status_list = ['active', 'active', 'active',
+                       'deleted', 'pending_delete', 'deleted']
+
+        for (idx, image_id) in enumerate(data):
+            results = image_locations.select()\
+                .where(image_locations.c.image_id == image_id).execute()
+            r = list(results)
+            self.assertEqual(len(r), 1)
+            self.assertTrue('status' in r[0])
+            self.assertEqual(r[0]['status'], status_list[idx])
+
+    def _post_downgrade_033(self, engine):
+        image_locations = get_table(engine, 'image_locations')
+        self.assertNotIn('status', image_locations.c)
