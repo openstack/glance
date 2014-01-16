@@ -122,7 +122,7 @@ class ImagesController(object):
                 change_method(req, image, change)
 
             if changes:
-                    image_repo.save(image)
+                image_repo.save(image)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
@@ -580,19 +580,30 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             image_view['updated_at'] = timeutils.isotime(image.updated_at)
 
             if CONF.show_multiple_locations:
-                if image.locations:
-                    image_view['locations'] = list(image.locations)
+                locations = list(image.locations)
+                if locations:
+                    image_view['locations'] = []
+                    for loc in locations:
+                        tmp = dict(loc)
+                        tmp.pop('id', None)
+                        tmp.pop('status', None)
+                        image_view['locations'].append(tmp)
                 else:
                     # NOTE (flwang): We will still show "locations": [] if
                     # image.locations is None to indicate it's allowed to show
                     # locations but it's just non-existent.
                     image_view['locations'] = []
+                    LOG.debug("There is not available location "
+                              "for image %s" % image.image_id)
 
-            if CONF.show_image_direct_url and image.locations:
-                # Choose best location configured strategy
-                best_location = (
-                    location_strategy.choose_best_location(image.locations))
-                image_view['direct_url'] = best_location['url']
+            if CONF.show_image_direct_url:
+                if image.locations:
+                    # Choose best location configured strategy
+                    l = location_strategy.choose_best_location(image.locations)
+                    image_view['direct_url'] = l['url']
+                else:
+                    LOG.debug("There is not available location "
+                              "for image %s" % image.image_id)
 
             image_view['tags'] = list(image.tags)
             image_view['self'] = self._get_image_href(image)

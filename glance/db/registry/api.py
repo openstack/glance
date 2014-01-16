@@ -227,6 +227,13 @@ def image_tag_get_all(client, image_id, session=None):
 
 
 @_get_client
+def image_location_delete(client, image_id, location_id, status, session=None):
+    """Delete an image location."""
+    client.image_location_delete(image_id=image_id, location_id=location_id,
+                                 status=status)
+
+
+@_get_client
 def user_get_storage_usage(client, owner_id, image_id=None, session=None):
     return client.user_get_storage_usage(owner_id=owner_id, image_id=image_id)
 

@@ -20,9 +20,9 @@ import uuid
 import six
 
 from glance.common import exception
+from glance.common import store_utils
 from glance.openstack.common import units
 import glance.quota
-import glance.store
 from glance.tests.unit import utils as unit_test_utils
 from glance.tests import utils as test_utils
 
@@ -56,14 +56,16 @@ class TestImageQuota(test_utils.BaseTestCase):
     def _get_image(self, location_count=1, image_size=10):
         context = FakeContext()
         db_api = unit_test_utils.FakeDB()
+        store_api = unit_test_utils.FakeStoreAPI()
+        store = unit_test_utils.FakeStoreUtils(store_api)
         base_image = FakeImage()
         base_image.image_id = 'xyz'
         base_image.size = image_size
-        image = glance.quota.ImageProxy(base_image, context, db_api)
+        image = glance.quota.ImageProxy(base_image, context, db_api, store)
         locations = []
         for i in range(location_count):
             locations.append({'url': 'file:///g/there/it/is%d' % i,
-                              'metadata': {}})
+                              'metadata': {}, 'status': 'active'})
         image_values = {'id': 'xyz', 'owner': context.owner,
                         'status': 'active', 'size': image_size,
                         'locations': locations}
@@ -75,9 +77,11 @@ class TestImageQuota(test_utils.BaseTestCase):
         self.config(user_storage_quota=str(quota))
         context = FakeContext()
         db_api = unit_test_utils.FakeDB()
+        store_api = unit_test_utils.FakeStoreAPI()
+        store = unit_test_utils.FakeStoreUtils(store_api)
         base_image = FakeImage()
         base_image.image_id = 'id'
-        image = glance.quota.ImageProxy(base_image, context, db_api)
+        image = glance.quota.ImageProxy(base_image, context, db_api, store)
         data = '*' * quota
         base_image.set_data(data, size=None)
         image.set_data(data)
@@ -87,9 +91,11 @@ class TestImageQuota(test_utils.BaseTestCase):
         self.config(user_storage_quota=config_quota)
         context = FakeContext()
         db_api = unit_test_utils.FakeDB()
+        store_api = unit_test_utils.FakeStoreAPI()
+        store = unit_test_utils.FakeStoreUtils(store_api)
         base_image = FakeImage()
         base_image.image_id = 'id'
-        image = glance.quota.ImageProxy(base_image, context, db_api)
+        image = glance.quota.ImageProxy(base_image, context, db_api, store)
         data = '*' * data_length
         base_image.set_data(data, size=None)
         image.set_data(data)
@@ -115,16 +121,18 @@ class TestImageQuota(test_utils.BaseTestCase):
         self.config(user_storage_quota=quota)
         context = FakeContext()
         db_api = unit_test_utils.FakeDB()
+        store_api = unit_test_utils.FakeStoreAPI()
+        store = unit_test_utils.FakeStoreUtils(store_api)
         base_image = FakeImage()
         base_image.image_id = 'id'
-        image = glance.quota.ImageProxy(base_image, context, db_api)
+        image = glance.quota.ImageProxy(base_image, context, db_api, store)
 
         if deleted:
-            with patch.object(glance.store, 'safe_delete_from_backend'):
-                glance.store.safe_delete_from_backend(
+            with patch.object(store_utils, 'safe_delete_from_backend'):
+                store_utils.safe_delete_from_backend(
                     context,
-                    base_image.locations[0]['url'],
-                    image.image_id)
+                    image.image_id,
+                    base_image.locations[0])
 
         self.assertRaises(exception.StorageQuotaFull,
                           image.set_data,
@@ -168,7 +176,8 @@ class TestImageQuota(test_utils.BaseTestCase):
                                   size=quota - 1)
 
     def test_append_location(self):
-        new_location = {'url': 'file:///a/path', 'metadata': {}}
+        new_location = {'url': 'file:///a/path', 'metadata': {},
+                        'status': 'active'}
         image = self._get_image()
         pre_add_locations = image.locations[:]
         image.locations.append(new_location)
@@ -176,7 +185,8 @@ class TestImageQuota(test_utils.BaseTestCase):
         self.assertEqual(image.locations, pre_add_locations)
 
     def test_insert_location(self):
-        new_location = {'url': 'file:///a/path', 'metadata': {}}
+        new_location = {'url': 'file:///a/path', 'metadata': {},
+                        'status': 'active'}
         image = self._get_image()
         pre_add_locations = image.locations[:]
         image.locations.insert(0, new_location)
@@ -184,7 +194,8 @@ class TestImageQuota(test_utils.BaseTestCase):
         self.assertEqual(image.locations, pre_add_locations)
 
     def test_extend_location(self):
-        new_location = {'url': 'file:///a/path', 'metadata': {}}
+        new_location = {'url': 'file:///a/path', 'metadata': {},
+                        'status': 'active'}
         image = self._get_image()
         pre_add_locations = image.locations[:]
         image.locations.extend([new_location])
@@ -192,7 +203,8 @@ class TestImageQuota(test_utils.BaseTestCase):
         self.assertEqual(image.locations, pre_add_locations)
 
     def test_iadd_location(self):
-        new_location = {'url': 'file:///a/path', 'metadata': {}}
+        new_location = {'url': 'file:///a/path', 'metadata': {},
+                        'status': 'active'}
         image = self._get_image()
         pre_add_locations = image.locations[:]
         image.locations += [new_location]
@@ -200,7 +212,8 @@ class TestImageQuota(test_utils.BaseTestCase):
         self.assertEqual(image.locations, pre_add_locations)
 
     def test_set_location(self):
-        new_location = {'url': 'file:///a/path', 'metadata': {}}
+        new_location = {'url': 'file:///a/path', 'metadata': {},
+                        'status': 'active'}
         image = self._get_image()
         image.locations = [new_location]
         self.assertEqual(image.locations, [new_location])
@@ -215,30 +228,36 @@ class TestImageQuota(test_utils.BaseTestCase):
         image = self._make_image_with_quota()
         self.assertRaises(exception.StorageQuotaFull,
                           image.locations.append,
-                          {'url': 'file:///a/path', 'metadata': {}})
+                          {'url': 'file:///a/path', 'metadata': {},
+                           'status': 'active'})
 
     def test_exceed_insert_location(self):
         image = self._make_image_with_quota()
         self.assertRaises(exception.StorageQuotaFull,
                           image.locations.insert,
                           0,
-                          {'url': 'file:///a/path', 'metadata': {}})
+                          {'url': 'file:///a/path', 'metadata': {},
+                           'status': 'active'})
 
     def test_exceed_extend_location(self):
         image = self._make_image_with_quota()
         self.assertRaises(exception.StorageQuotaFull,
                           image.locations.extend,
-                          [{'url': 'file:///a/path', 'metadata': {}}])
+                          [{'url': 'file:///a/path', 'metadata': {},
+                            'status': 'active'}])
 
     def test_set_location_under(self):
         image = self._make_image_with_quota(location_count=1)
-        image.locations = [{'url': 'file:///a/path', 'metadata': {}}]
+        image.locations = [{'url': 'file:///a/path', 'metadata': {},
+                            'status': 'active'}]
 
     def test_set_location_exceed(self):
         image = self._make_image_with_quota(location_count=1)
         try:
-            image.locations = [{'url': 'file:///a/path', 'metadata': {}},
-                               {'url': 'file:///a/path2', 'metadata': {}}]
+            image.locations = [{'url': 'file:///a/path', 'metadata': {},
+                                'status': 'active'},
+                               {'url': 'file:///a/path2', 'metadata': {},
+                                'status': 'active'}]
             self.fail('Should have raised the quota exception')
         except exception.StorageQuotaFull:
             pass
@@ -246,7 +265,8 @@ class TestImageQuota(test_utils.BaseTestCase):
     def test_iadd_location_exceed(self):
         image = self._make_image_with_quota(location_count=1)
         try:
-            image.locations += [{'url': 'file:///a/path', 'metadata': {}}]
+            image.locations += [{'url': 'file:///a/path', 'metadata': {},
+                                 'status': 'active'}]
             self.fail('Should have raised the quota exception')
         except exception.StorageQuotaFull:
             pass
@@ -254,12 +274,14 @@ class TestImageQuota(test_utils.BaseTestCase):
     def test_append_location_for_queued_image(self):
         context = FakeContext()
         db_api = unit_test_utils.FakeDB()
+        store_api = unit_test_utils.FakeStoreAPI()
+        store = unit_test_utils.FakeStoreUtils(store_api)
         base_image = FakeImage()
         base_image.image_id = str(uuid.uuid4())
-        image = glance.quota.ImageProxy(base_image, context, db_api)
+        image = glance.quota.ImageProxy(base_image, context, db_api, store)
         self.assertIsNone(image.size)
 
-        self.stubs.Set(glance.store, 'get_size_from_backend',
+        self.stubs.Set(store_api, 'get_size_from_backend',
                        unit_test_utils.fake_get_size_from_backend)
         image.locations.append({'url': 'file:///fake.img.tar.gz',
                                 'metadata': {}})
@@ -269,12 +291,14 @@ class TestImageQuota(test_utils.BaseTestCase):
     def test_insert_location_for_queued_image(self):
         context = FakeContext()
         db_api = unit_test_utils.FakeDB()
+        store_api = unit_test_utils.FakeStoreAPI()
+        store = unit_test_utils.FakeStoreUtils(store_api)
         base_image = FakeImage()
         base_image.image_id = str(uuid.uuid4())
-        image = glance.quota.ImageProxy(base_image, context, db_api)
+        image = glance.quota.ImageProxy(base_image, context, db_api, store)
         self.assertIsNone(image.size)
 
-        self.stubs.Set(glance.store, 'get_size_from_backend',
+        self.stubs.Set(store_api, 'get_size_from_backend',
                        unit_test_utils.fake_get_size_from_backend)
         image.locations.insert(0,
                                {'url': 'file:///fake.img.tar.gz',
@@ -285,12 +309,14 @@ class TestImageQuota(test_utils.BaseTestCase):
     def test_set_location_for_queued_image(self):
         context = FakeContext()
         db_api = unit_test_utils.FakeDB()
+        store_api = unit_test_utils.FakeStoreAPI()
+        store = unit_test_utils.FakeStoreUtils(store_api)
         base_image = FakeImage()
         base_image.image_id = str(uuid.uuid4())
-        image = glance.quota.ImageProxy(base_image, context, db_api)
+        image = glance.quota.ImageProxy(base_image, context, db_api, store)
         self.assertIsNone(image.size)
 
-        self.stubs.Set(glance.store, 'get_size_from_backend',
+        self.stubs.Set(store_api, 'get_size_from_backend',
                        unit_test_utils.fake_get_size_from_backend)
         image.locations = [{'url': 'file:///fake.img.tar.gz', 'metadata': {}}]
         self.assertEqual([{'url': 'file:///fake.img.tar.gz', 'metadata': {}}],
@@ -299,12 +325,14 @@ class TestImageQuota(test_utils.BaseTestCase):
     def test_iadd_location_for_queued_image(self):
         context = FakeContext()
         db_api = unit_test_utils.FakeDB()
+        store_api = unit_test_utils.FakeStoreAPI()
+        store = unit_test_utils.FakeStoreUtils(store_api)
         base_image = FakeImage()
         base_image.image_id = str(uuid.uuid4())
-        image = glance.quota.ImageProxy(base_image, context, db_api)
+        image = glance.quota.ImageProxy(base_image, context, db_api, store)
         self.assertIsNone(image.size)
 
-        self.stubs.Set(glance.store, 'get_size_from_backend',
+        self.stubs.Set(store_api, 'get_size_from_backend',
                        unit_test_utils.fake_get_size_from_backend)
         image.locations += [{'url': 'file:///fake.img.tar.gz', 'metadata': {}}]
         self.assertIn({'url': 'file:///fake.img.tar.gz', 'metadata': {}},
@@ -317,12 +345,14 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         self.base_image = mock.Mock()
         self.image = glance.quota.ImageProxy(self.base_image,
                                              mock.Mock(),
+                                             mock.Mock(),
                                              mock.Mock())
 
         self.image_repo_mock = mock.Mock()
 
         self.image_repo_proxy = glance.quota.ImageRepoProxy(
             self.image_repo_mock,
+            mock.Mock(),
             mock.Mock(),
             mock.Mock())
 
@@ -382,11 +412,13 @@ class TestImageTagQuotas(test_utils.BaseTestCase):
         self.base_image.tags = set([])
         self.image = glance.quota.ImageProxy(self.base_image,
                                              mock.Mock(),
+                                             mock.Mock(),
                                              mock.Mock())
 
         self.image_repo_mock = mock.Mock()
         self.image_repo_proxy = glance.quota.ImageRepoProxy(
             self.image_repo_mock,
+            mock.Mock(),
             mock.Mock(),
             mock.Mock())
 
@@ -478,12 +510,14 @@ class TestImageMemberQuotas(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImageMemberQuotas, self).setUp()
         db_api = unit_test_utils.FakeDB()
+        store_api = unit_test_utils.FakeStoreAPI()
+        store = unit_test_utils.FakeStoreUtils(store_api)
         context = FakeContext()
         self.image = mock.Mock()
         self.base_image_member_factory = mock.Mock()
         self.image_member_factory = glance.quota.ImageMemberFactoryProxy(
             self.base_image_member_factory, context,
-            db_api)
+            db_api, store)
 
     def test_new_image_member(self):
         self.config(image_member_quota=1)
@@ -517,11 +551,13 @@ class TestImageLocationQuotas(test_utils.BaseTestCase):
         self.base_image.size = 1
         self.image = glance.quota.ImageProxy(self.base_image,
                                              mock.Mock(),
+                                             mock.Mock(),
                                              mock.Mock())
 
         self.image_repo_mock = mock.Mock()
         self.image_repo_proxy = glance.quota.ImageRepoProxy(
             self.image_repo_mock,
+            mock.Mock(),
             mock.Mock(),
             mock.Mock())
 

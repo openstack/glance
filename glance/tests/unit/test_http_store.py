@@ -17,6 +17,7 @@ from six.moves import xrange
 import stubout
 
 from glance.common import exception
+from glance.common.store_utils import safe_delete_from_backend
 from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.registry.client.v1.api import configure_registry_client
@@ -24,7 +25,6 @@ from glance.store import delete_from_backend
 from glance.store.http import MAX_REDIRECTS
 from glance.store.http import Store
 from glance.store.location import get_location_from_uri
-from glance.store import safe_delete_from_backend
 from glance.tests import stubs as test_stubs
 from glance.tests.unit import base
 from glance.tests import utils
@@ -181,10 +181,10 @@ class TestHttpStore(base.StoreClearingUnitTest):
                           delete_from_backend, ctx, uri)
 
     def test_http_schedule_delete_swallows_error(self):
-        uri = "https://netloc/path/to/file.tar.gz"
+        uri = {"url": "https://netloc/path/to/file.tar.gz"}
         ctx = context.RequestContext()
         stub_out_registry_image_update(self.stubs)
         try:
-            safe_delete_from_backend(ctx, uri, 'image_id')
+            safe_delete_from_backend(ctx, 'image_id', uri)
         except exception.StoreDeleteNotSupported:
             self.fail('StoreDeleteNotSupported should be swallowed')

@@ -58,7 +58,9 @@ class RegistryClient(BaseClient):
                 for loc in image_metadata['location_data']:
                     url = crypt.urlsafe_decrypt(self.metadata_encryption_key,
                                                 loc['url'])
-                    ld.append({'url': url, 'metadata': loc['metadata']})
+                    ld.append({'id': loc['id'], 'url': url,
+                               'metadata': loc['metadata'],
+                               'status': loc['status']})
                 image_metadata['location_data'] = ld
         return image_metadata
 
@@ -78,7 +80,10 @@ class RegistryClient(BaseClient):
                     else:
                         url = crypt.urlsafe_encrypt(
                             self.metadata_encryption_key, loc['url'], 64)
-                    ld.append({'url': url, 'metadata': loc['metadata']})
+                    ld.append({'url': url, 'metadata': loc['metadata'],
+                               'status': loc['status'],
+                               # NOTE(zhiyan): New location has no ID field.
+                               'id': loc.get('id')})
                 image_metadata['location_data'] = ld
         return image_metadata
 

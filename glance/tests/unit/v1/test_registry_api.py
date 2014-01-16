@@ -58,7 +58,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
             return self.get_extra_fixture(
                 id, name,
                 locations=[{'url': "file:///%s/%s" % (self.test_dir, id),
-                            'metadata': {}}], **kwargs)
+                            'metadata': {}, 'status': 'active'}], **kwargs)
 
         self.FIXTURES = [
             _get_extra_fixture(UUID1, 'fake image #1', is_public=False,
@@ -1763,7 +1763,7 @@ class TestRegistryAPILocations(base.IsolatedUnitTest,
             return self.get_extra_fixture(
                 id, name,
                 locations=[{'url': "file:///%s/%s" % (self.test_dir, id),
-                            'metadata': {}}], **kwargs)
+                            'metadata': {}, 'status': 'active'}], **kwargs)
 
         self.FIXTURES = [
             _get_extra_fixture(UUID1, 'fake image #1', is_public=False,
@@ -1789,6 +1789,8 @@ class TestRegistryAPILocations(base.IsolatedUnitTest,
         self.assertEqual(res.status_int, 200)
         res_dict = jsonutils.loads(res.body)
         image = res_dict['image']
+        self.assertIn('id', image['location_data'][0])
+        image['location_data'][0].pop('id')
         self.assertEqual(self.FIXTURES[0]['locations'][0],
                          image['location_data'][0])
         self.assertEqual(self.FIXTURES[0]['locations'][0]['url'],
@@ -1802,6 +1804,8 @@ class TestRegistryAPILocations(base.IsolatedUnitTest,
         self.assertEqual(res.status_int, 200)
         res_dict = jsonutils.loads(res.body)
         image = res_dict['image']
+        self.assertIn('id', image['location_data'][0])
+        image['location_data'][0].pop('id')
         self.assertEqual(self.FIXTURES[1]['locations'][0],
                          image['location_data'][0])
         self.assertEqual(self.FIXTURES[1]['locations'][0]['url'],
@@ -1828,9 +1832,11 @@ class TestRegistryAPILocations(base.IsolatedUnitTest,
                    'size': 19,
                    'location': encrypted_location_url1,
                    'location_data': [{'url': encrypted_location_url1,
-                                      'metadata': {'key': 'value'}},
+                                      'metadata': {'key': 'value'},
+                                      'status': 'active'},
                                      {'url': encrypted_location_url2,
-                                      'metadata': {'key': 'value'}}]}
+                                      'metadata': {'key': 'value'},
+                                      'status': 'active'}]}
 
         self.config(metadata_encryption_key=encryption_key)
         req = webob.Request.blank('/images')

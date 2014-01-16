@@ -18,6 +18,7 @@ from glance.api import authorization
 from glance.api import policy
 from glance.api import property_protections
 from glance.common import property_utils
+from glance.common import store_utils
 import glance.db
 import glance.domain
 import glance.location
@@ -31,15 +32,16 @@ class Gateway(object):
                  policy_enforcer=None):
         self.db_api = db_api or glance.db.get_api()
         self.store_api = store_api or glance.store
+        self.store_utils = store_utils
         self.notifier = notifier or glance.notifier.Notifier()
         self.policy = policy_enforcer or policy.Enforcer()
 
     def get_image_factory(self, context):
         image_factory = glance.domain.ImageFactory()
         store_image_factory = glance.location.ImageFactoryProxy(
-            image_factory, context, self.store_api)
+            image_factory, context, self.store_api, self.store_utils)
         quota_image_factory = glance.quota.ImageFactoryProxy(
-            store_image_factory, context, self.db_api)
+            store_image_factory, context, self.db_api, self.store_utils)
         policy_image_factory = policy.ImageFactoryProxy(
             quota_image_factory, context, self.policy)
         notifier_image_factory = glance.notifier.ImageFactoryProxy(
@@ -59,7 +61,7 @@ class Gateway(object):
     def get_image_member_factory(self, context):
         image_factory = glance.domain.ImageMemberFactory()
         quota_image_factory = glance.quota.ImageMemberFactoryProxy(
-            image_factory, context, self.db_api)
+            image_factory, context, self.db_api, self.store_utils)
         policy_member_factory = policy.ImageMemberFactoryProxy(
             quota_image_factory, context, self.policy)
         authorized_image_factory = authorization.ImageMemberFactoryProxy(
@@ -69,9 +71,9 @@ class Gateway(object):
     def get_repo(self, context):
         image_repo = glance.db.ImageRepo(context, self.db_api)
         store_image_repo = glance.location.ImageRepoProxy(
-            image_repo, context, self.store_api)
+            image_repo, context, self.store_api, self.store_utils)
         quota_image_repo = glance.quota.ImageRepoProxy(
-            store_image_repo, context, self.db_api)
+            store_image_repo, context, self.db_api, self.store_utils)
         policy_image_repo = policy.ImageRepoProxy(
             quota_image_repo, context, self.policy)
         notifier_image_repo = glance.notifier.ImageRepoProxy(

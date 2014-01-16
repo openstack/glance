@@ -71,7 +71,10 @@ def _normalize_image_location_for_db(image_data):
     for l in locations:
         location_data_dict[l] = {}
     for l in location_data:
-        location_data_dict[l['url']] = l['metadata']
+        location_data_dict[l['url']] = {'metadata': l['metadata'],
+                                        'status': l['status'],
+                                        # Note(zhiyan): New location has no ID.
+                                        'id': l['id'] if 'id' in l else None}
 
     # NOTE(jbresnah) preserve original order.  tests assume original order,
     # should that be defined functionality
@@ -79,8 +82,21 @@ def _normalize_image_location_for_db(image_data):
     for ld in location_data:
         if ld['url'] not in ordered_keys:
             ordered_keys.append(ld['url'])
-    location_data = [{'url': l, 'metadata': location_data_dict[l]}
-                     for l in ordered_keys]
+
+    location_data = []
+    for loc in ordered_keys:
+        data = location_data_dict[loc]
+        if data:
+            location_data.append({'url': loc,
+                                  'metadata': data['metadata'],
+                                  'status': data['status'],
+                                  'id': data['id']})
+        else:
+            location_data.append({'url': loc,
+                                  'metadata': {},
+                                  'status': 'active',
+                                  'id': None})
+
     image_data['locations'] = location_data
     return image_data
 
@@ -492,11 +508,12 @@ class Controller(object):
 
 def _limit_locations(image):
     locations = image.pop('locations', [])
-    try:
-        image['location'] = locations[0]['url']
-    except IndexError:
-        image['location'] = None
     image['location_data'] = locations
+    image['location'] = None
+    for loc in locations:
+        if loc['status'] == 'active':
+            image['location'] = loc['url']
+            break
 
 
 def make_image_dict(image):

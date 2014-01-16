@@ -70,7 +70,7 @@ class FakeDB(object):
         images = [
             {'id': UUID1, 'owner': TENANT1, 'status': 'queued',
              'locations': [{'url': '%s/%s' % (BASE_URI, UUID1),
-                            'metadata': {}}]},
+                            'metadata': {}, 'status': 'queued'}]},
             {'id': UUID2, 'owner': TENANT1, 'status': 'queued'},
         ]
         [simple_db.image_create(None, image) for image in images]
@@ -89,6 +89,28 @@ class FakeDB(object):
 
     def __getattr__(self, key):
         return getattr(simple_db, key)
+
+
+class FakeStoreUtils(object):
+    def __init__(self, store_api):
+        self.store_api = store_api
+
+    def safe_delete_from_backend(self, context, id, location):
+        try:
+            del self.store_api.data[location['url']]
+        except KeyError:
+            pass
+
+    def schedule_delayed_delete_from_backend(self, context, id, location):
+        pass
+
+    def delete_image_location_from_backend(self, context,
+                                           image_id, location):
+        if CONF.delayed_delete:
+            self.schedule_delayed_delete_from_backend(context, image_id,
+                                                      location)
+        else:
+            self.safe_delete_from_backend(context, image_id, location)
 
 
 class FakeStoreAPI(object):
@@ -127,21 +149,6 @@ class FakeStoreAPI(object):
             return self.data[location]
         except KeyError:
             raise exception.NotFound()
-
-    def safe_delete_from_backend(self, context, uri, id, **kwargs):
-        try:
-            del self.data[uri]
-        except KeyError:
-            pass
-
-    def schedule_delayed_delete_from_backend(self, context, uri, id, **kwargs):
-        pass
-
-    def delete_image_from_backend(self, context, store_api, image_id, uri):
-        if CONF.delayed_delete:
-            self.schedule_delayed_delete_from_backend(context, uri, image_id)
-        else:
-            self.safe_delete_from_backend(context, uri, image_id)
 
     def get_size_from_backend(self, context, location):
         return self.get_from_backend(context, location)[1]
