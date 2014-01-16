@@ -101,7 +101,14 @@ class Controller(object):
         try:
             return self.db_api.image_get_all(context, filters=filters,
                                              **params)
-        except (exception.NotFound, exception.Forbidden) as e:
+        except exception.NotFound:
+            LOG.info(_("Invalid marker. Image %(id)s could not be "
+                       "found.") % {'id': params.get('marker')})
+            msg = _("Invalid marker. Image could not be found.")
+            raise exc.HTTPBadRequest(explanation=msg)
+        except exception.Forbidden:
+            LOG.info(_("Access denied to image %(id)s but returning "
+                       "'not found'") % {'id': params.get('marker')})
             msg = _("Invalid marker. Image could not be found.")
             raise exc.HTTPBadRequest(explanation=msg)
 
