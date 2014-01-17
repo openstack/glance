@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from six.moves import xrange
+
 from glance.api import policy
 from glance.common import exception
 from glance.common import property_utils

@@ -35,6 +35,7 @@ import uuid
 
 from migrate.versioning.repository import Repository
 from oslo.config import cfg
+from six.moves import xrange
 import sqlalchemy
 
 from glance.common import crypt

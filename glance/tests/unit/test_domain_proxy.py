@@ -15,6 +15,7 @@
 #    under the License.
 
 import mock
+from six.moves import xrange
 
 from glance.domain import proxy
 import glance.tests.utils as test_utils

@@ -21,6 +21,7 @@
 """Defines interface for DB access."""
 
 from oslo.config import cfg
+from six.moves import xrange
 import sqlalchemy
 import sqlalchemy.orm as sa_orm
 import sqlalchemy.sql as sa_sql

@@ -38,6 +38,7 @@ try:
     SENDFILE_SUPPORTED = True
 except ImportError:
     SENDFILE_SUPPORTED = False
+from six.moves import xrange
 
 from glance.common import auth
 from glance.common import exception, utils

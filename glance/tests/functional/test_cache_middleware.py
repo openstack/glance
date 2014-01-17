@@ -27,6 +27,7 @@ import sys
 import time
 
 import httplib2
+from six.moves import xrange
 
 from glance.openstack.common import jsonutils
 from glance.openstack.common import units
