@@ -91,7 +91,7 @@ class TestProxyRepoWrapping(test_utils.BaseTestCase):
         self.fake_repo.result = base_result
         method = getattr(self.proxy_repo, name)
         proxy_result = method(*args, **kwargs)
-        self.assertTrue(isinstance(proxy_result, FakeProxy))
+        self.assertIsInstance(proxy_result, FakeProxy)
         self.assertEqual(proxy_result.base, base_result)
         self.assertEqual(len(proxy_result.args), 0)
         self.assertEqual(proxy_result.kwargs, {'a': 1})
@@ -101,7 +101,7 @@ class TestProxyRepoWrapping(test_utils.BaseTestCase):
     def test_get(self):
         self.fake_repo.result = 'snarf'
         result = self.proxy_repo.get('some-id')
-        self.assertTrue(isinstance(result, FakeProxy))
+        self.assertIsInstance(result, FakeProxy)
         self.assertEqual(self.fake_repo.args, ('some-id',))
         self.assertEqual(self.fake_repo.kwargs, {})
         self.assertEqual(result.base, 'snarf')
@@ -115,7 +115,7 @@ class TestProxyRepoWrapping(test_utils.BaseTestCase):
         self.assertEqual(self.fake_repo.kwargs, {'prefix': 's'})
         self.assertEqual(len(results), 2)
         for i in xrange(2):
-            self.assertTrue(isinstance(results[i], FakeProxy))
+            self.assertIsInstance(results[i], FakeProxy)
             self.assertEqual(results[i].base, self.fake_repo.result[i])
             self.assertEqual(results[i].args, tuple())
             self.assertEqual(results[i].kwargs, {'a': 1})
@@ -132,7 +132,7 @@ class TestProxyRepoWrapping(test_utils.BaseTestCase):
         if result is None:
             self.assertTrue(proxy_result is None)
         else:
-            self.assertTrue(isinstance(proxy_result, FakeProxy))
+            self.assertIsInstance(proxy_result, FakeProxy)
             self.assertEqual(proxy_result.base, result)
             self.assertEqual(proxy_result.args, tuple())
             self.assertEqual(proxy_result.kwargs, {'a': 1})
@@ -184,7 +184,7 @@ class TestImageFactory(test_utils.BaseTestCase):
                                            proxy_kwargs={'dog': 'bark'})
         self.factory.result = 'stark'
         image = proxy_factory.new_image(a=1, b='two')
-        self.assertTrue(isinstance(image, FakeProxy))
+        self.assertIsInstance(image, FakeProxy)
         self.assertEqual(image.base, 'stark')
         self.assertEqual(self.factory.kwargs, {'a': 1, 'b': 'two'})
 
@@ -220,7 +220,7 @@ class TestImageMembershipFactory(test_utils.BaseTestCase):
             member_proxy_kwargs={'a': 1})
         self.factory.result = 'tyrion'
         membership = proxy_factory.new_image_member('jaime', 'cersei')
-        self.assertTrue(isinstance(membership, FakeProxy))
+        self.assertIsInstance(membership, FakeProxy)
         self.assertEqual(membership.base, 'tyrion')
         self.assertEqual(membership.kwargs, {'a': 1})
         self.assertEqual(self.factory.image, 'jaime')
@@ -249,7 +249,7 @@ class TestImageMembershipFactory(test_utils.BaseTestCase):
         self.factory.result = 'tyrion'
         image = FakeProxy2('jaime')
         membership = proxy_factory.new_image_member(image, 'cersei')
-        self.assertTrue(isinstance(membership, FakeProxy))
+        self.assertIsInstance(membership, FakeProxy)
         self.assertEqual(membership.base, 'tyrion')
         self.assertEqual(membership.kwargs, {'b': 2})
         self.assertEqual(self.factory.image, 'jaime')
@@ -280,7 +280,7 @@ class TestImage(test_utils.BaseTestCase):
                                   member_repo_proxy_kwargs={'a': 10})
         self.image.result = 'corn'
         member_repo = proxy_image.get_member_repo()
-        self.assertTrue(isinstance(member_repo, FakeProxy))
+        self.assertIsInstance(member_repo, FakeProxy)
         self.assertEqual(member_repo.base, 'corn')
 
 
@@ -326,5 +326,5 @@ class TestTaskFactory(test_utils.BaseTestCase):
             input=self.fake_input,
             owner=self.fake_owner
         )
-        self.assertTrue(isinstance(task, FakeProxy))
+        self.assertIsInstance(task, FakeProxy)
         self.assertEqual(task.base, 'fake_task')

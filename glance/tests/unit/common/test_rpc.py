@@ -130,7 +130,7 @@ class TestRPCController(base.IsolatedUnitTest):
         ])
         res = req.get_response(api)
         returned = jsonutils.loads(res.body)
-        self.assertTrue(isinstance(returned, list))
+        self.assertIsInstance(returned, list)
         self.assertEqual(returned[0], 1)
 
     def test_request_exc(self):
@@ -251,7 +251,7 @@ class TestRPCClient(base.IsolatedUnitTest):
     def test_non_str_or_dict_response(self):
         rst = self.client.count_images(images=[1, 2, 3, 4])
         self.assertEqual(rst, 4)
-        self.assertTrue(isinstance(rst, int))
+        self.assertIsInstance(rst, int)
 
 
 class TestRPCJSONSerializer(test_utils.BaseTestCase):

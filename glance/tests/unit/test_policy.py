@@ -230,7 +230,7 @@ class TestImagePolicy(test_utils.BaseTestCase):
         image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
                                                       {}, self.policy)
         output = image_repo.get(UUID1)
-        self.assertTrue(isinstance(output, glance.api.policy.ImageProxy))
+        self.assertIsInstance(output, glance.api.policy.ImageProxy)
         self.assertEqual(output.image, 'image_from_get')
         self.policy.enforce.assert_called_once_with({}, "get_image", {})
 
@@ -246,7 +246,7 @@ class TestImagePolicy(test_utils.BaseTestCase):
                                                       {}, self.policy)
         images = image_repo.list()
         for i, image in enumerate(images):
-            self.assertTrue(isinstance(image, glance.api.policy.ImageProxy))
+            self.assertIsInstance(image, glance.api.policy.ImageProxy)
             self.assertEqual(image.image, 'image_from_list_%d' % i)
             self.policy.enforce.assert_called_once_with({}, "get_images", {})
 
@@ -396,7 +396,7 @@ class TestTaskPolicy(test_utils.BaseTestCase):
             self.policy
         )
         output = task_repo.get(UUID1)
-        self.assertTrue(isinstance(output, glance.api.policy.TaskProxy))
+        self.assertIsInstance(output, glance.api.policy.TaskProxy)
         self.assertEqual(output.task, 'task_from_get')
 
     def test_get_tasks_not_allowed(self):
@@ -419,7 +419,7 @@ class TestTaskPolicy(test_utils.BaseTestCase):
         )
         tasks = task_repo.list()
         for i, task in enumerate(tasks):
-            self.assertTrue(isinstance(task, glance.api.policy.TaskProxy))
+            self.assertIsInstance(task, glance.api.policy.TaskProxy)
             self.assertEqual(task.task, 'task_from_list_%d' % i)
 
     def test_add_task_not_allowed(self):

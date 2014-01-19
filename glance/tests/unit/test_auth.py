@@ -124,13 +124,13 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
     def test_get_plugin_from_strategy_keystone(self):
         strategy = auth.get_plugin_from_strategy('keystone')
-        self.assertTrue(isinstance(strategy, auth.KeystoneStrategy))
+        self.assertIsInstance(strategy, auth.KeystoneStrategy)
         self.assertTrue(strategy.configure_via_auth)
 
     def test_get_plugin_from_strategy_keystone_configure_via_auth_false(self):
         strategy = auth.get_plugin_from_strategy('keystone',
                                                  configure_via_auth=False)
-        self.assertTrue(isinstance(strategy, auth.KeystoneStrategy))
+        self.assertIsInstance(strategy, auth.KeystoneStrategy)
         self.assertFalse(strategy.configure_via_auth)
 
     def test_required_creds(self):

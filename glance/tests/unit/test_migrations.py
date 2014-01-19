@@ -1007,7 +1007,7 @@ class TestMigrations(test_utils.BaseTestCase):
         for r in records:
             md = r['meta_data']
             d = pickle.loads(md)
-            self.assertEqual(type(d), dict)
+            self.assertIsInstance(d, dict)
 
     def _check_030(self, engine, data):
         table = "tasks"
