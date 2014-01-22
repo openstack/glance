@@ -26,6 +26,8 @@ CONFIG_SECTIONS = [
     'spl_update_prop',
     'spl_update_only_prop',
     'spl_delete_prop',
+    'x_foo_matcher',
+    'x_foo_*',
     '.*'
 ]
 
@@ -178,3 +180,14 @@ class TestPropertyRules(utils.BaseTestCase):
         for i in xrange(len(property_utils.CONFIG.sections())):
             self.assertEqual(property_utils.CONFIG.sections()[i],
                              self.rules_checker.rules[i][0].pattern)
+
+    def test_check_return_first_match(self):
+        self.rules_checker = property_utils.PropertyRules()
+        self.assertFalse(self.rules_checker.check_property_rules(
+            'x_foo_matcher', 'create', ['member']))
+        self.assertFalse(self.rules_checker.check_property_rules(
+            'x_foo_matcher', 'read', ['member']))
+        self.assertFalse(self.rules_checker.check_property_rules(
+            'x_foo_matcher', 'update', ['member']))
+        self.assertFalse(self.rules_checker.check_property_rules(
+            'x_foo_matcher', 'delete', ['member']))

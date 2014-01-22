@@ -99,6 +99,12 @@ class PropertyRules(object):
 
         for rule_exp, rule in self.rules:
             if rule_exp.search(str(property_name)):
-                if set(roles).intersection(set(rule.get(action))):
-                    return True
+                break
+        else:  # no matching rules
+            return False
+
+        rule_roles = rule.get(action)
+        if rule_roles:
+            if set(roles).intersection(set(rule_roles)):
+                return True
         return False
