@@ -173,16 +173,20 @@ class PropertyRules(object):
 
         for rule_exp, rule in self.rules:
             if rule_exp.search(str(property_name)):
-                rule_roles = rule.get(action)
-                if rule_roles:
-                    if '!' in rule_roles:
-                        return False
-                    elif '@' in rule_roles:
-                        return True
-                    if self.prop_prot_rule_format == 'policies':
-                        prop_exp_key = self.prop_exp_mapping[rule_exp]
-                        return self._check_policy(prop_exp_key, action,
-                                                  context)
-                    if set(roles).intersection(set(rule_roles)):
-                        return True
+                break
+        else:  # no matching rules
+            return False
+
+        rule_roles = rule.get(action)
+        if rule_roles:
+            if '!' in rule_roles:
+                return False
+            elif '@' in rule_roles:
+                return True
+            if self.prop_prot_rule_format == 'policies':
+                prop_exp_key = self.prop_exp_mapping[rule_exp]
+                return self._check_policy(prop_exp_key, action,
+                                          context)
+            if set(roles).intersection(set(rule_roles)):
+                return True
         return False

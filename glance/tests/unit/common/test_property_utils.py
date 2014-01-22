@@ -32,6 +32,8 @@ CONFIG_SECTIONS = [
     'x_none_read',
     'x_none_update',
     'x_none_delete',
+    'x_foo_matcher',
+    'x_foo_*',
     '.*'
 ]
 
@@ -287,6 +289,21 @@ class TestPropertyRulesWithRoles(base.IsolatedUnitTest):
             'x_none_delete', 'delete',
             create_context(self.policy, [''])))
 
+    def test_check_return_first_match(self):
+        self.rules_checker = property_utils.PropertyRules()
+        self.assertFalse(self.rules_checker.check_property_rules(
+            'x_foo_matcher', 'create',
+            create_context(self.policy, [''])))
+        self.assertFalse(self.rules_checker.check_property_rules(
+            'x_foo_matcher', 'read',
+            create_context(self.policy, [''])))
+        self.assertFalse(self.rules_checker.check_property_rules(
+            'x_foo_matcher', 'update',
+            create_context(self.policy, [''])))
+        self.assertFalse(self.rules_checker.check_property_rules(
+            'x_foo_matcher', 'delete',
+            create_context(self.policy, [''])))
+
 
 class TestPropertyRulesWithPolicies(base.IsolatedUnitTest):
 
@@ -440,4 +457,19 @@ class TestPropertyRulesWithPolicies(base.IsolatedUnitTest):
             create_context(self.policy, ['admin', 'member'])))
         self.assertFalse(self.rules_checker.check_property_rules(
             'x_none_delete', 'delete',
+            create_context(self.policy, [''])))
+
+    def test_check_return_first_match(self):
+        self.rules_checker = property_utils.PropertyRules()
+        self.assertFalse(self.rules_checker.check_property_rules(
+            'x_foo_matcher', 'create',
+            create_context(self.policy, [''])))
+        self.assertFalse(self.rules_checker.check_property_rules(
+            'x_foo_matcher', 'read',
+            create_context(self.policy, [''])))
+        self.assertFalse(self.rules_checker.check_property_rules(
+            'x_foo_matcher', 'update',
+            create_context(self.policy, [''])))
+        self.assertFalse(self.rules_checker.check_property_rules(
+            'x_foo_matcher', 'delete',
             create_context(self.policy, [''])))
