@@ -101,7 +101,7 @@ def _version_control(version):
 
 def db_sync(version=None, current_version=None):
     """
-    Place a database under migration control and perform an upgrade
+    Place a database under migration control and upgrade/downgrade it.
 
     :retval version number
     """
@@ -112,10 +112,13 @@ def db_sync(version=None, current_version=None):
 
     if current_version is None:
         current_version = int(db_version())
+
     if version is not None and int(version) < current_version:
-        downgrade(version=version)
+        return downgrade(version=version)
     elif version is None or int(version) > current_version:
-        upgrade(version=version)
+        return upgrade(version=version)
+    else:
+        return current_version
 
 
 def get_migrate_repo_path():

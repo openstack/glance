@@ -87,7 +87,7 @@ class DbCommands(object):
           help='Current Database version')
     def sync(self, version=None, current_version=None):
         """
-        Place a database under migration control and upgrade,
+        Place a database under migration control and upgrade/downgrade it,
         creating first if necessary.
         """
         migration.db_sync(version, current_version)
