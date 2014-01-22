@@ -1279,6 +1279,22 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         self.get_api_response_ext(400, content_type='json', method='POST',
                                   body=jsonutils.dumps(dict(image=fixture)))
 
+    def test_create_image_with_image_id_in_log(self):
+        """Tests correct image id in log message when creating image"""
+        fixture = self.get_minimal_fixture(
+            id='0564c64c-3545-4e34-abfb-9d18e5f2f2f9')
+        self.log_image_id = False
+
+        def fake_log_info(msg):
+            if 'Successfully created image ' \
+               '0564c64c-3545-4e34-abfb-9d18e5f2f2f9' in msg:
+                self.log_image_id = True
+        self.stubs.Set(rserver.images.LOG, 'info', fake_log_info)
+
+        self.get_api_response_ext(200, content_type='json', method='POST',
+                                  body=jsonutils.dumps(dict(image=fixture)))
+        self.assertTrue(self.log_image_id)
+
     def test_update_image(self):
         """Tests that the /images PUT registry API updates the image"""
         fixture = {'name': 'fake public image #2',

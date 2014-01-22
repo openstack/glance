@@ -392,9 +392,10 @@ class Controller(object):
         try:
             image_data = _normalize_image_location_for_db(image_data)
             image_data = self.db_api.image_create(req.context, image_data)
-            msg = _("Successfully created image %(id)s") % {'id': image_id}
+            image_data = dict(image=make_image_dict(image_data))
+            msg = _("Successfully created image %(id)s") % image_data['image']
             LOG.info(msg)
-            return dict(image=make_image_dict(image_data))
+            return image_data
         except exception.Duplicate:
             msg = _("Image with identifier %s already exists!") % image_id
             LOG.error(msg)
