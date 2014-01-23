@@ -829,6 +829,7 @@ class TestStoreAddToBackend(utils.BaseTestCase):
         store.add(self.image_id, mox.IgnoreArg(), self.size).AndReturn(
             (self.location, self.size, self.checksum, in_metadata))
         store.__str__ = lambda: "hello"
+        store.__unicode__ = lambda: "hello"
 
         self.mox.ReplayAll()
 
@@ -904,6 +905,7 @@ class TestStoreAddToBackend(utils.BaseTestCase):
         store.add(self.image_id, mox.IgnoreArg(), self.size).AndReturn(
             (self.location, self.size, self.checksum, []))
         store.__str__ = lambda: "hello"
+        store.__unicode__ = lambda: "hello"
 
         self.mox.ReplayAll()
 

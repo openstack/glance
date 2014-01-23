@@ -72,8 +72,9 @@ class PropertyRules(object):
             conf_file = CONF.find_file(CONF.property_protection_file)
             CONFIG.read(conf_file)
         except Exception as e:
-            msg = (_("Couldn't find property protection file %s:%s.") %
-                    (CONF.property_protection_file, e))
+            msg = (_("Couldn't find property protection file %(file)s: "
+                     "%(error)s.") % {'file': CONF.property_protection_file,
+                                      'error': e})
             LOG.error(msg)
             raise InvalidPropProtectConf()
 
@@ -123,9 +124,11 @@ class PropertyRules(object):
                 else:
                     property_dict[operation] = []
                     LOG.warn(
-                        _('Property protection on operation %s for rule '
-                          '%s is not found. No role will be allowed to '
-                          'perform this operation.'), operation, property_exp)
+                        _('Property protection on operation %(operation)s'
+                          ' for rule %(rule)s is not found. No role will be'
+                          ' allowed to perform this operation.') %
+                        {'operation': operation,
+                         'rule': property_exp})
 
             self.rules.append((compiled_rule, property_dict))
 
@@ -133,8 +136,9 @@ class PropertyRules(object):
         try:
             return re.compile(rule)
         except Exception as e:
-            msg = (_("Encountered a malformed property protection rule %s:%s.")
-                   % (rule, e))
+            msg = (_("Encountered a malformed property protection rule"
+                     " %(rule)s: %(error)s.") % {'rule': rule,
+                                                 'error': e})
             LOG.error(msg)
             raise InvalidPropProtectConf()
 

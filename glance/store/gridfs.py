@@ -180,8 +180,9 @@ class Store(glance.store.base.Store):
             raise exception.Duplicate(_("GridFS already has an image at "
                                         "location %s") % loc.get_uri())
 
-        LOG.debug(_("Adding a new image to GridFS with id %s and size %s") %
-                 (image_id, image_size))
+        LOG.debug(_("Adding a new image to GridFS with id %(id)s and "
+                    "size %(size)s") % {'id': image_id,
+                                        'size': image_size})
 
         try:
             self.fs.put(image_file, _id=image_id)
@@ -192,8 +193,10 @@ class Store(glance.store.base.Store):
             with excutils.save_and_reraise_exception():
                 self.fs.delete(image_id)
 
-        LOG.debug(_("Uploaded image %s, md5 %s, length %s to GridFS") %
-                 (image._id, image.md5, image.length))
+        LOG.debug(_("Uploaded image %(id)s, md5 %(md5)s, length %(length)s "
+                    "to GridFS") % {'id': image._id,
+                                    'md5': image.md5,
+                                    'length': image.length})
 
         return (loc.get_uri(), image.length, image.md5, {})
 
