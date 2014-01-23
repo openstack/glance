@@ -14,6 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from glance.common import exception
 import glance.db.sqlalchemy.api
 from glance.db.sqlalchemy import models as db_models
 import glance.tests.functional.db as db_tests
@@ -38,6 +39,27 @@ class TestSqlAlchemyDriver(base.TestDriver, base.DriverTests):
         db_tests.load(get_db, reset_db)
         super(TestSqlAlchemyDriver, self).setUp()
         self.addCleanup(db_tests.reset)
+
+    def test_get_image_with_invalid_long_image_id(self):
+        image_id = '343f9ba5-0197-41be-9543-16bbb32e12aa-xxxxxx'
+        self.assertRaises(exception.NotFound, self.db_api._image_get,
+                          self.context, image_id)
+
+    def test_image_tag_delete_with_invalid_long_image_id(self):
+        image_id = '343f9ba5-0197-41be-9543-16bbb32e12aa-xxxxxx'
+        self.assertRaises(exception.NotFound, self.db_api.image_tag_delete,
+                          self.context, image_id, 'fake')
+
+    def test_image_tag_get_all_with_invalid_long_image_id(self):
+        image_id = '343f9ba5-0197-41be-9543-16bbb32e12aa-xxxxxx'
+        self.assertRaises(exception.NotFound, self.db_api.image_tag_get_all,
+                          self.context, image_id)
+
+    def test_user_get_storage_usage_with_invalid_long_image_id(self):
+        image_id = '343f9ba5-0197-41be-9543-16bbb32e12aa-xxxxxx'
+        self.assertRaises(exception.NotFound,
+                          self.db_api.user_get_storage_usage,
+                          self.context, 'fake_owner_id', image_id)
 
 
 class TestSqlAlchemyVisibility(base.TestVisibility, base.VisibilityTests):

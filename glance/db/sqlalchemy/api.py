@@ -123,8 +123,23 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
     return image
 
 
+def _check_image_id(image_id):
+    """
+    check if the given image id is valid before executing operations. For
+    now, we only check its length. The original purpose of this method is
+    wrapping the different behaviors between MySql and DB2 when the image id
+    length is longer than the defined length in database model.
+    :param image_id: The id of the image we want to check
+    :return: Raise NoFound exception if given image id is invalid
+    """
+    if image_id and \
+            len(image_id) > models.Image.id.property.columns[0].type.length:
+        raise exception.NotFound()
+
+
 def _image_get(context, image_id, session=None, force_show_deleted=False):
     """Get an image or raise if it does not exist."""
+    _check_image_id(image_id)
     session = session or _get_session()
 
     try:
@@ -960,6 +975,7 @@ def image_tag_create(context, image_id, value, session=None):
 
 def image_tag_delete(context, image_id, value, session=None):
     """Delete an image tag."""
+    _check_image_id(image_id)
     session = session or _get_session()
     query = session.query(models.ImageTag)\
                    .filter_by(image_id=image_id)\
@@ -984,6 +1000,7 @@ def _image_tag_delete_all(context, image_id, delete_time=None, session=None):
 
 def image_tag_get_all(context, image_id, session=None):
     """Get a list of tags for a specific image."""
+    _check_image_id(image_id)
     session = session or _get_session()
     tags = session.query(models.ImageTag)\
                   .filter_by(image_id=image_id)\
@@ -994,6 +1011,7 @@ def image_tag_get_all(context, image_id, session=None):
 
 
 def user_get_storage_usage(context, owner_id, image_id=None, session=None):
+    _check_image_id(image_id)
     session = session or _get_session()
     total_size = _image_get_disk_usage_by_owner(
         owner_id, session, image_id=image_id)
