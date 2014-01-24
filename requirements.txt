@@ -21,6 +21,7 @@ pycrypto>=2.6
 iso8601>=0.1.8
 ordereddict
 oslo.config>=1.2.0
+stevedore>=0.12
 
 # For Swift storage backend.
 python-swiftclient>=1.5
