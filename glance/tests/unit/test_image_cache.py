@@ -22,6 +22,7 @@ import tempfile
 import time
 
 import fixtures
+from six.moves import xrange
 import stubout
 
 from glance.common import exception

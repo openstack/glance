@@ -21,6 +21,8 @@ import httplib2
 import os
 import sys
 
+from six.moves import xrange
+
 from glance.openstack.common import jsonutils
 from glance.openstack.common import units
 from glance.tests import functional

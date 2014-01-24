@@ -18,6 +18,7 @@ import sys
 import time
 
 import httplib2
+from six.moves import xrange
 import swiftclient
 
 from glance.common import crypt

@@ -24,6 +24,8 @@ import httplib2
 import tempfile
 import time
 
+from six.moves import xrange
+
 from glance.openstack.common import jsonutils
 from glance.openstack.common import units
 from glance.tests import functional
