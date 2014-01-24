@@ -70,9 +70,9 @@ class ImageDataController(object):
         except ValueError as e:
             LOG.debug("Cannot save data for image %s: %s", image_id, e)
             raise webob.exc.HTTPBadRequest(explanation=unicode(e))
-        except exception.Duplicate as e:
-            msg = (_("Unable to upload duplicate image data for image: %s") %
-                   image_id)
+
+        except exception.InvalidImageStatusTransition as e:
+            msg = unicode(e)
             LOG.debug(msg)
             raise webob.exc.HTTPConflict(explanation=msg, request=req)
 

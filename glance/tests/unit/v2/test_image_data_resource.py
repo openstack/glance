@@ -200,7 +200,9 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_upload_data_exists(self):
         request = unit_test_utils.get_fake_request()
         image = FakeImage()
-        image.set_data = Raise(exception.Duplicate)
+        exc = exception.InvalidImageStatusTransition(cur_status='active',
+                                                     new_status='queued')
+        image.set_data = Raise(exc)
         self.image_repo.result = image
         self.assertRaises(webob.exc.HTTPConflict, self.controller.upload,
                           request, unit_test_utils.UUID1, 'YYYY', 4)

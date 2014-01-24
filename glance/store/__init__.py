@@ -652,8 +652,6 @@ class ImageProxy(glance.domain.proxy.Image):
     def delete(self):
         self.image.delete()
         if self.image.locations:
-            if CONF.delayed_delete:
-                self.image.status = 'pending_delete'
             for location in self.image.locations:
                 self.store_api.delete_image_from_backend(self.context,
                                                          self.store_api,

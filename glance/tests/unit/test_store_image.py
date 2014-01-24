@@ -96,14 +96,6 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertRaises(exception.NotFound,
                           self.store_api.get_from_backend, {}, location['url'])
 
-    def test_image_delayed_delete(self):
-        self.config(delayed_delete=True)
-        image = glance.store.ImageProxy(self.image_stub, {}, self.store_api)
-        self.assertEqual(image.status, 'active')
-        image.delete()
-        self.assertEqual(image.status, 'pending_delete')
-        self.store_api.get_from_backend({}, image.locations[0]['url'])
-
     def test_image_get_data(self):
         image = glance.store.ImageProxy(self.image_stub, {}, self.store_api)
         self.assertEqual(image.get_data(), 'XXX')

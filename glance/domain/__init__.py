@@ -18,12 +18,28 @@ import collections
 import datetime
 import uuid
 
+from oslo.config import cfg
+
 from glance.common import exception
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 
 
+CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
+
+
+_delayed_delete_imported = False
+
+
+def _import_delayed_delete():
+    # glance.store (indirectly) imports glance.domain therefore we can't put
+    # the CONF.import_opt outside - we have to do it in a convoluted/indirect
+    # way!
+    global _delayed_delete_imported
+    if not _delayed_delete_imported:
+        CONF.import_opt('delayed_delete', 'glance.store')
+        _delayed_delete_imported = True
 
 
 class ImageFactory(object):
@@ -74,6 +90,18 @@ class ImageFactory(object):
 
 class Image(object):
 
+    valid_state_targets = {
+        # Each key denotes a "current" state for the image. Corresponding
+        # values list the valid states to which we can jump from that "current"
+        # state.
+        'queued': ('saving', 'active', 'deleted'),
+        'saving': ('active', 'killed', 'deleted'),
+        'active': ('queued', 'pending_delete', 'deleted'),
+        'killed': ('deleted'),
+        'pending_delete': ('deleted'),
+        'deleted': (),
+    }
+
     def __init__(self, image_id, status, created_at, updated_at, **kwargs):
         self.image_id = image_id
         self.status = status
@@ -103,16 +131,25 @@ class Image(object):
 
     @status.setter
     def status(self, status):
-        if (hasattr(self, '_status') and self._status == 'queued' and
-                status in ('saving', 'active')):
-            missing = [k for k in ['disk_format', 'container_format']
-                       if not getattr(self, k)]
-            if len(missing) > 0:
-                if len(missing) == 1:
-                    msg = _('Property %s must be set prior to saving data.')
-                else:
-                    msg = _('Properties %s must be set prior to saving data.')
-                raise ValueError(msg % ', '.join(missing))
+        has_status = hasattr(self, '_status')
+        if has_status:
+            if status not in self.valid_state_targets[self._status]:
+                kw = {'cur_status': self._status, 'new_status': status}
+                e = exception.InvalidImageStatusTransition(**kw)
+                LOG.debug(e)
+                raise e
+
+            if self._status == 'queued' and status in ('saving', 'active'):
+                missing = [k for k in ['disk_format', 'container_format']
+                           if not getattr(self, k)]
+                if len(missing) > 0:
+                    if len(missing) == 1:
+                        msg = _('Property %s must be set prior to '
+                                'saving data.')
+                    else:
+                        msg = _('Properties %s must be set prior to '
+                                'saving data.')
+                    raise ValueError(msg % ', '.join(missing))
         # NOTE(flwang): Image size should be cleared as long as the image
         # status is updated to 'queued'
         if status == 'queued':
@@ -190,7 +227,10 @@ class Image(object):
     def delete(self):
         if self.protected:
             raise exception.ProtectedImageDelete(image_id=self.image_id)
-        self.status = 'deleted'
+        if CONF.delayed_delete and self.locations:
+            self.status = 'pending_delete'
+        else:
+            self.status = 'deleted'
 
     def get_data(self):
         raise NotImplementedError()
