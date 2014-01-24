@@ -82,7 +82,8 @@ def register_scheme_map(scheme_map):
     """
     for (k, v) in scheme_map.items():
         if k not in SCHEME_TO_CLS_MAP:
-            LOG.debug("Registering scheme %s with %s", k, v)
+            LOG.debug(_("Registering scheme %(k)s with %(v)s") % {'k': k,
+                                                                  'v': v})
             SCHEME_TO_CLS_MAP[k] = v
 
 

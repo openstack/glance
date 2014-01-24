@@ -60,15 +60,15 @@ class ImagesController(object):
                                             tags=tags, **image)
             image_repo.add(image)
         except exception.DuplicateLocation as dup:
-            raise webob.exc.HTTPBadRequest(explanation=unicode(dup))
+            raise webob.exc.HTTPBadRequest(explanation=dup.msg)
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.InvalidParameterValue as e:
-            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.LimitExceeded as e:
             LOG.info(unicode(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
-                explanation=unicode(e), request=req, content_type='text/plain')
+                explanation=e.msg, request=req, content_type='text/plain')
 
         return image
 
@@ -93,9 +93,9 @@ class ImagesController(object):
                 result['next_marker'] = images[-1].image_id
         except (exception.NotFound, exception.InvalidSortKey,
                 exception.InvalidFilterRangeValue) as e:
-            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
         result['images'] = images
         return result
 
@@ -104,9 +104,9 @@ class ImagesController(object):
         try:
             return image_repo.get(image_id)
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
 
     @utils.mutating
     def update(self, req, image_id, changes):
@@ -123,11 +123,11 @@ class ImagesController(object):
             if changes:
                     image_repo.save(image)
         except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.InvalidParameterValue as e:
-            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.StorageQuotaFull as e:
             msg = (_("Denying attempt to upload image because it exceeds the ."
                      "quota: %s") % e)
@@ -137,7 +137,7 @@ class ImagesController(object):
         except exception.LimitExceeded as e:
             LOG.info(unicode(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
-                explanation=unicode(e), request=req, content_type='text/plain')
+                explanation=e.msg, request=req, content_type='text/plain')
 
         return image
 
@@ -192,7 +192,7 @@ class ImagesController(object):
             image.delete()
             image_repo.remove(image)
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             msg = (_("Failed to find image %(image_id)s to delete") %
                    {'image_id': image_id})
@@ -228,7 +228,7 @@ class ImagesController(object):
                 if image.status == 'queued':
                     image.status = 'active'
             except (exception.BadStoreUri, exception.DuplicateLocation) as bse:
-                raise webob.exc.HTTPBadRequest(explanation=unicode(bse))
+                raise webob.exc.HTTPBadRequest(explanation=bse.msg)
             except ValueError as ve:    # update image status failed.
                 raise webob.exc.HTTPBadRequest(explanation=unicode(ve))
 
@@ -243,7 +243,7 @@ class ImagesController(object):
             if image.status == 'queued':
                 image.status = 'active'
         except (exception.BadStoreUri, exception.DuplicateLocation) as bse:
-            raise webob.exc.HTTPBadRequest(explanation=unicode(bse))
+            raise webob.exc.HTTPBadRequest(explanation=bse.msg)
         except ValueError as ve:    # update image status failed.
             raise webob.exc.HTTPBadRequest(explanation=unicode(ve))
 
@@ -301,7 +301,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         try:
             self.schema.validate(body)
         except exception.InvalidObject as e:
-            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         image = {}
         properties = body
         tags = properties.pop('tags', None)
@@ -418,7 +418,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             try:
                 self.schema.validate(partial_image)
             except exception.InvalidObject as e:
-                raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+                raise webob.exc.HTTPBadRequest(explanation=e.msg)
 
     def _validate_path(self, op, path):
         path_root = path[0]
@@ -595,7 +595,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             image_view['schema'] = '/v2/schemas/image'
             image_view = self.schema.filter(image_view)  # domain
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
         return image_view
 
     def create(self, response, image):

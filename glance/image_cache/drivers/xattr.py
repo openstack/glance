@@ -59,6 +59,7 @@ import stat
 import time
 
 from oslo.config import cfg
+import six
 import xattr
 
 from glance.common import exception
@@ -281,13 +282,14 @@ class Driver(base.Driver):
                 os.unlink(self.get_image_filepath(image_id, 'queue'))
 
         def rollback(e):
-            set_attr('error', "%s" % e)
+            set_attr('error', six.text_type(e))
 
             invalid_path = self.get_image_filepath(image_id, 'invalid')
             LOG.debug(_("Fetch of cache file failed (%(e)s), rolling back by "
                         "moving '%(incomplete_path)s' to "
                         "'%(invalid_path)s'"),
-                      {'e': e, 'incomplete_path': incomplete_path,
+                      {'e': six.text_type(e),
+                       'incomplete_path': incomplete_path,
                        'invalid_path': invalid_path})
             os.rename(incomplete_path, invalid_path)
 

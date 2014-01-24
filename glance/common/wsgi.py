@@ -1,6 +1,7 @@
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # Copyright 2010 OpenStack Foundation
+# Copyright 2014 IBM Corp.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -41,6 +42,7 @@ import webob.exc
 
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import gettextutils
 from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging
 
@@ -512,6 +514,17 @@ class Request(webob.Request):
         else:
             return content_type
 
+    def best_match_language(self):
+        """Determines best available locale from the Accept-Language header.
+
+        :returns: the best language match or None if the 'Accept-Language'
+                  header was not available in the request.
+        """
+        if not self.accept_language:
+            return None
+        langs = gettextutils.get_available_languages('glance')
+        return self.accept_language.best_match(langs)
+
 
 class JSONRequestDeserializer(object):
     def has_body(self, request):
@@ -563,6 +576,23 @@ class JSONResponseSerializer(object):
         response.body = self.to_json(result)
 
 
+def translate_exception(req, e):
+    """Translates all translatable elements of the given exception."""
+
+    # The RequestClass attribute in the webob.dec.wsgify decorator
+    # does not guarantee that the request object will be a particular
+    # type; this check is therefore necessary.
+    if not hasattr(req, "best_match_language"):
+        return e
+
+    locale = req.best_match_language()
+
+    if isinstance(e, webob.exc.HTTPError):
+        e.explanation = gettextutils.translate(e.explanation, locale)
+        e.detail = gettextutils.translate(e.detail, locale)
+    return e
+
+
 class Resource(object):
     """
     WSGI app that handles (de)serialization and controller dispatch.
@@ -599,17 +629,22 @@ class Resource(object):
         action_args = self.get_action_args(request.environ)
         action = action_args.pop('action', None)
 
-        deserialized_request = self.dispatch(self.deserializer,
-                                             action, request)
-        action_args.update(deserialized_request)
+        try:
+            deserialized_request = self.dispatch(self.deserializer,
+                                                 action, request)
+            action_args.update(deserialized_request)
+            action_result = self.dispatch(self.controller, action,
+                                          request, **action_args)
+        except webob.exc.WSGIHTTPException as e:
+            exc_info = sys.exc_info()
+            raise translate_exception(request, e), None, exc_info[2]
 
-        action_result = self.dispatch(self.controller, action,
-                                      request, **action_args)
         try:
             response = webob.Response(request=request)
             self.dispatch(self.serializer, action, response, action_result)
             return response
-
+        except webob.exc.WSGIHTTPException as e:
+            return translate_exception(request, e)
         except webob.exc.HTTPException as e:
             return e
         # return unserializable result (typically a webob exc)

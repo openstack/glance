@@ -1066,7 +1066,7 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
         except exception.InvalidParameterValue as e:
             msg = unicode(e)
             LOG.warn(msg, exc_info=True)
-            raise HTTPBadRequest(explanation=msg, request=request)
+            raise HTTPBadRequest(explanation=e.msg, request=request)
 
         image_meta = result['image_meta']
         image_meta = validate_image_meta(request, image_meta)

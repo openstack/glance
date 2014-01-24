@@ -43,11 +43,11 @@ class Controller(object):
             image.tags.add(tag_value)
             image_repo.save(image)
         except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.ImageTagLimitExceeded as e:
-            raise webob.exc.HTTPRequestEntityTooLarge(explanation=unicode(e))
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=e.msg)
 
     @utils.mutating
     def delete(self, req, image_id, tag_value):
@@ -59,9 +59,9 @@ class Controller(object):
             image.tags.remove(tag_value)
             image_repo.save(image)
         except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):

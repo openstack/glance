@@ -16,6 +16,7 @@
 
 """Glance exception subclasses"""
 
+import six
 import six.moves.urllib.parse as urlparse
 
 _FATAL_EXCEPTION_FORMAT_ERRORS = False
@@ -40,15 +41,22 @@ class GlanceException(Exception):
         if not message:
             message = self.message
         try:
-            message = message % kwargs
+            if kwargs:
+                message = message % kwargs
         except Exception:
             if _FATAL_EXCEPTION_FORMAT_ERRORS:
                 raise
             else:
                 # at least get the core message out if something happened
                 pass
-
+        self.msg = message
         super(GlanceException, self).__init__(message)
+
+    def __unicode__(self):
+        # NOTE(flwang): By default, self.msg is an instance of Message, which
+        # can't be converted by str(). Based on the definition of
+        # __unicode__, it should return unicode always.
+        return six.text_type(self.msg)
 
 
 class MissingCredentialError(GlanceException):

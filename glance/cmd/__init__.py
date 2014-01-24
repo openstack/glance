@@ -14,4 +14,4 @@
 #    under the License.
 
 from glance.openstack.common import gettextutils
-gettextutils.install('glance')
+gettextutils.install('glance', lazy=True)

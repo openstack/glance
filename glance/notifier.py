@@ -14,9 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-import warnings
-
 from oslo.config import cfg
 from oslo import messaging
 import webob
@@ -70,7 +67,7 @@ class Notifier(object):
         if CONF.notifier_strategy != 'default':
             msg = _("notifier_strategy was deprecated in "
                     "favor of `notification_driver`")
-            warnings.warn(msg, DeprecationWarning)
+            LOG.warn(msg)
 
             # NOTE(flaper87): Use this to keep backwards
             # compatibility. We'll try to get an oslo.messaging

@@ -25,6 +25,8 @@ import eventlet
 import os
 import sys
 
+import six
+
 # Monkey patch socket, time, select, threads
 eventlet.patcher.monkey_patch(all=False, socket=True, time=True,
                               select=True, thread=True)
@@ -45,7 +47,7 @@ import glance.store
 
 
 def fail(returncode, e):
-    sys.stderr.write("ERROR: %s\n" % e)
+    sys.stderr.write("ERROR: %s\n" % six.text_type(e))
     sys.exit(returncode)
 
 

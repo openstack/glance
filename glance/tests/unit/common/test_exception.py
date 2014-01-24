@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import six
+
 from glance.common import exception
 from glance.tests import utils as test_utils
 
@@ -40,3 +42,7 @@ class GlanceExceptionTestCase(test_utils.BaseTestCase):
         self.assertTrue('test: 500' in
                         unicode(exception.GlanceException('test: %(code)s',
                                                           code=500)))
+
+    def test_non_unicode_error_msg(self):
+        exc = exception.GlanceException(str('test'))
+        self.assertIsInstance(six.text_type(exc), six.text_type)

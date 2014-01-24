@@ -66,7 +66,7 @@ class TasksController(object):
             msg = (_("Forbidden to create task. Reason: %(reason)s")
                    % {'reason': unicode(e)})
             LOG.info(msg)
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
 
         result = {'task': new_task, 'task_details': new_task_details}
         return result
@@ -94,10 +94,10 @@ class TasksController(object):
         except (exception.NotFound, exception.InvalidSortKey,
                 exception.InvalidFilterRangeValue) as e:
             LOG.info(unicode(e))
-            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.Forbidden as e:
             LOG.info(unicode(e))
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
         result['tasks'] = tasks
         return result
 
@@ -109,12 +109,12 @@ class TasksController(object):
             msg = (_("Failed to find task %(task_id)s. Reason: %(reason)s") %
                    {'task_id': task_id, 'reason': unicode(e)})
             LOG.info(msg)
-            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
             msg = (_("Forbidden to get task %(task_id)s. Reason: %(reason)s") %
                    {'task_id': task_id, 'reason': unicode(e)})
             LOG.info(msg)
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
         result = {'task': task, 'task_details': task_details}
         return result
 
@@ -197,7 +197,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         try:
             self.schema.validate(body)
         except exception.InvalidObject as e:
-            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         task = {}
         properties = body
         for key in self._required_properties:

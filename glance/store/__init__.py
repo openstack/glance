@@ -18,6 +18,7 @@ import copy
 import sys
 
 from oslo.config import cfg
+import six
 
 from glance.common import exception
 from glance.common import utils
@@ -305,7 +306,7 @@ def safe_delete_from_backend(context, uri, image_id, **kwargs):
         msg = _('Failed to delete image %s in store from URI')
         LOG.warn(msg % image_id)
     except exception.StoreDeleteNotSupported as e:
-        LOG.warn(str(e))
+        LOG.warn(six.text_type(e))
     except UnsupportedBackend:
         exc_type = sys.exc_info()[0].__name__
         msg = (_('Failed to delete image %(image_id)s from store '
@@ -369,8 +370,8 @@ def store_add_to_backend(image_id, data, size, store):
         if not isinstance(metadata, dict):
             msg = (_("The storage driver %(store)s returned invalid metadata "
                      "%(metadata)s. This must be a dictionary type") %
-                   {'store': store,
-                    'metadata': metadata})
+                   {'store': six.text_type(store),
+                    'metadata': six.text_type(metadata)})
             LOG.error(msg)
             raise BackendException(msg)
         try:
@@ -378,9 +379,9 @@ def store_add_to_backend(image_id, data, size, store):
         except BackendException as e:
             e_msg = (_("A bad metadata structure was returned from the "
                        "%(store)s storage driver: %(metadata)s.  %(error)s.") %
-                     {'store': store,
-                      'metadata': metadata,
-                      'error': e})
+                     {'store': six.text_type(store),
+                      'metadata': six.text_type(metadata),
+                      'error': six.text_type(e)})
             LOG.error(e_msg)
             raise BackendException(e_msg)
     return (location, size, checksum, metadata)
@@ -725,7 +726,7 @@ class ImageProxy(glance.domain.proxy.Image):
             except Exception as e:
                 LOG.warn(_('Get image %(id)s data failed: '
                            '%(err)s.') % {'id': self.image.image_id,
-                                          'err': e})
+                                          'err': six.text_type(e)})
                 err = e
         # tried all locations
         LOG.error(_('Glance tried all locations to get data for image %s '

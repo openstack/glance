@@ -178,7 +178,7 @@ class Controller(object):
                 if self.raise_exc:
                     raise
 
-                cls, val = e.__class__, str(e)
+                cls, val = e.__class__, six.text_type(e)
                 msg = (_("RPC Call Error: %(val)s\n%(tb)s") %
                        dict(val=val, tb=traceback.format_exc()))
                 LOG.error(msg)
@@ -188,7 +188,7 @@ class Controller(object):
                 module = cls.__module__
                 if module not in CONF.allowed_rpc_exception_modules:
                     cls = exception.RPCError
-                    val = str(exception.RPCError(cls=cls, val=val))
+                    val = six.text_type(exception.RPCError(cls=cls, val=val))
 
                 cls_path = "%s.%s" % (cls.__module__, cls.__name__)
                 result = {"_error": {"cls": cls_path, "val": val}}

@@ -15,6 +15,7 @@
 #    under the License.
 
 from oslo.config import cfg
+import six
 import webob.exc
 
 from glance.api import policy
@@ -94,13 +95,11 @@ class Controller(controller.BaseController):
             registry.delete_member(req.context, image_id, id)
             self._update_store_acls(req, image_id)
         except exception.NotFound as e:
-            msg = "%s" % e
-            LOG.debug(msg)
-            raise webob.exc.HTTPNotFound(msg)
+            LOG.debug(six.text_type(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            msg = "%s" % e
-            LOG.debug(msg)
-            raise webob.exc.HTTPNotFound(msg)
+            LOG.debug(six.text_type(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
 
         return webob.exc.HTTPNoContent()
 
@@ -152,17 +151,14 @@ class Controller(controller.BaseController):
             registry.add_member(req.context, image_id, id, can_share)
             self._update_store_acls(req, image_id)
         except exception.Invalid as e:
-            msg = "%s" % e
-            LOG.debug(msg)
-            raise webob.exc.HTTPBadRequest(explanation=msg)
+            LOG.debug(six.text_type(e))
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.NotFound as e:
-            msg = "%s" % e
-            LOG.debug(msg)
-            raise webob.exc.HTTPNotFound(msg)
+            LOG.debug(six.text_type(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            msg = "%s" % e
-            LOG.debug(msg)
-            raise webob.exc.HTTPNotFound(msg)
+            LOG.debug(six.text_type(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
 
         return webob.exc.HTTPNoContent()
 
@@ -190,17 +186,14 @@ class Controller(controller.BaseController):
             registry.replace_members(req.context, image_id, body)
             self._update_store_acls(req, image_id)
         except exception.Invalid as e:
-            msg = "%s" % e
-            LOG.debug(msg)
-            raise webob.exc.HTTPBadRequest(explanation=msg)
+            LOG.debug(six.text_type(e))
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.NotFound as e:
-            msg = "%s" % e
-            LOG.debug(msg)
-            raise webob.exc.HTTPNotFound(msg)
+            LOG.debug(six.text_type(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            msg = "%s" % e
-            LOG.debug(msg)
-            raise webob.exc.HTTPNotFound(msg)
+            LOG.debug(six.text_type(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
 
         return webob.exc.HTTPNoContent()
 
@@ -220,13 +213,11 @@ class Controller(controller.BaseController):
         try:
             members = registry.get_member_images(req.context, id)
         except exception.NotFound as e:
-            msg = "%s" % e
-            LOG.debug(msg)
-            raise webob.exc.HTTPNotFound(msg)
+            LOG.debug(six.text_type(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            msg = "%s" % e
-            LOG.debug(msg)
-            raise webob.exc.HTTPForbidden(msg)
+            LOG.debug(six.text_type(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
         return dict(shared_images=members)
 
     def _update_store_acls(self, req, image_id):

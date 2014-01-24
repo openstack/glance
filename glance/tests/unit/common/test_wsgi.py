@@ -1,4 +1,5 @@
 # Copyright 2010-2011 OpenStack Foundation
+# Copyright 2014 IBM Corp.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -16,18 +17,41 @@
 import datetime
 import socket
 
+from babel import localedata
 import eventlet.patcher
 import fixtures
+import gettext
 import mock
 import webob
 
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
+from glance.openstack.common import gettextutils
 from glance.tests import utils as test_utils
 
 
 class RequestTest(test_utils.BaseTestCase):
+
+    def _set_expected_languages(self, all_locales=[], avail_locales=None):
+        # Override localedata.locale_identifiers to return some locales.
+        def returns_some_locales(*args, **kwargs):
+            return all_locales
+
+        self.stubs.Set(localedata, 'locale_identifiers', returns_some_locales)
+
+        # Override gettext.find to return other than None for some languages.
+        def fake_gettext_find(lang_id, *args, **kwargs):
+            found_ret = '/glance/%s/LC_MESSAGES/glance.mo' % lang_id
+            if avail_locales is None:
+                # All locales are available.
+                return found_ret
+            languages = kwargs['languages']
+            if languages[0] in avail_locales:
+                return found_ret
+            return None
+
+        self.stubs.Set(gettext, 'find', fake_gettext_find)
 
     def test_content_type_missing(self):
         request = wsgi.Request.blank('/tests/123')
@@ -76,6 +100,50 @@ class RequestTest(test_utils.BaseTestCase):
         request.headers["Accept"] = "application/unsupported1"
         result = request.best_match_content_type()
         self.assertEqual(result, "application/json")
+
+    def test_language_accept_default(self):
+        request = wsgi.Request.blank('/tests/123')
+        request.headers["Accept-Language"] = "zz-ZZ,zz;q=0.8"
+        result = request.best_match_language()
+        self.assertIsNone(result)
+
+    def test_language_accept_none(self):
+        request = wsgi.Request.blank('/tests/123')
+        result = request.best_match_language()
+        self.assertIsNone(result)
+
+    def test_best_match_language_expected(self):
+        # If Accept-Language is a supported language, best_match_language()
+        # returns it.
+        self._set_expected_languages(all_locales=['it'])
+
+        req = wsgi.Request.blank('/', headers={'Accept-Language': 'it'})
+        self.assertEqual('it', req.best_match_language())
+
+    def test_request_match_language_unexpected(self):
+        # If Accept-Language is a language we do not support,
+        # best_match_language() returns None.
+        self._set_expected_languages(all_locales=['it'])
+
+        req = wsgi.Request.blank('/', headers={'Accept-Language': 'zh'})
+        self.assertIsNone(req.best_match_language())
+
+    @mock.patch.object(webob.acceptparse.AcceptLanguage, 'best_match')
+    def test_best_match_language_unknown(self, mock_best_match):
+        # Test that we are actually invoking language negotiation by webop
+        request = wsgi.Request.blank('/')
+        accepted = 'unknown-lang'
+        request.headers = {'Accept-Language': accepted}
+
+        mock_best_match.return_value = None
+
+        self.assertIsNone(request.best_match_language())
+
+        # If Accept-Language is missing or empty, match should be None
+        request.headers = {'Accept-Language': ''}
+        self.assertIsNone(request.best_match_language())
+        request.headers.pop('Accept-Language')
+        self.assertIsNone(request.best_match_language())
 
 
 class ResourceTest(test_utils.BaseTestCase):
@@ -170,6 +238,42 @@ class ResourceTest(test_utils.BaseTestCase):
 
         self.assertIsInstance(response, webob.exc.HTTPForbidden)
         self.assertEqual(response.status_code, 403)
+
+    @mock.patch.object(wsgi, 'translate_exception')
+    def test_resource_call_error_handle_localized(self,
+                                                  mock_translate_exception):
+        class Controller(object):
+            def delete(self, req, identity):
+                raise webob.exc.HTTPBadRequest(explanation='Not Found')
+
+        actions = {'action': 'delete', 'identity': 12}
+        env = {'wsgiorg.routing_args': [None, actions]}
+        request = wsgi.Request.blank('/tests/123', environ=env)
+        message_es = 'No Encontrado'
+
+        resource = wsgi.Resource(Controller(),
+                                 wsgi.JSONRequestDeserializer(),
+                                 None)
+        translated_exc = webob.exc.HTTPBadRequest(message_es)
+        mock_translate_exception.return_value = translated_exc
+
+        e = self.assertRaises(webob.exc.HTTPBadRequest,
+                              resource, request)
+        self.assertEqual(message_es, str(e))
+
+    @mock.patch.object(webob.acceptparse.AcceptLanguage, 'best_match')
+    @mock.patch.object(gettextutils, 'translate')
+    def test_translate_exception(self, mock_translate, mock_best_match):
+
+        mock_translate.return_value = 'No Encontrado'
+        mock_best_match.return_value = 'de'
+
+        req = wsgi.Request.blank('/tests/123')
+        req.headers["Accept-Language"] = "de"
+
+        e = webob.exc.HTTPNotFound(explanation='Not Found')
+        e = wsgi.translate_exception(req, e)
+        self.assertEqual('No Encontrado', e.explanation)
 
 
 class JSONResponseSerializerTest(test_utils.BaseTestCase):

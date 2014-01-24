@@ -92,7 +92,7 @@ class ImageDataController(object):
         except exception.InvalidImageStatusTransition as e:
             msg = unicode(e)
             LOG.debug(msg)
-            raise webob.exc.HTTPConflict(explanation=msg, request=req)
+            raise webob.exc.HTTPConflict(explanation=e.msg, request=req)
 
         except exception.Forbidden as e:
             msg = (_("Not allowed to upload image data for image %s") %
@@ -101,7 +101,7 @@ class ImageDataController(object):
             raise webob.exc.HTTPForbidden(explanation=msg, request=req)
 
         except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
 
         except exception.StorageFull as e:
             msg = _("Image storage media is full: %s") % e
@@ -149,11 +149,11 @@ class ImageDataController(object):
             if not image.locations:
                 raise exception.ImageDataNotFound()
         except exception.ImageDataNotFound as e:
-            raise webob.exc.HTTPNoContent(explanation=unicode(e))
+            raise webob.exc.HTTPNoContent(explanation=e.msg)
         except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
 
         return image
 
@@ -162,8 +162,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
     def upload(self, request):
         try:
             request.get_content_type(('application/octet-stream',))
-        except exception.InvalidContentType:
-            raise webob.exc.HTTPUnsupportedMediaType()
+        except exception.InvalidContentType as e:
+            raise webob.exc.HTTPUnsupportedMediaType(explanation=e.msg)
 
         image_size = request.content_length or None
         return {'size': image_size, 'data': request.body_file}
@@ -178,7 +178,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             # an iterator very strange
             response.app_iter = iter(image.get_data())
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
         #NOTE(saschpe): "response.app_iter = ..." currently resets Content-MD5
         # (https://github.com/Pylons/webob/issues/86), so it should be set
         # afterwards for the time being.

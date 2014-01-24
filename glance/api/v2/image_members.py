@@ -67,13 +67,13 @@ class ImageMembersController(object):
 
             return new_member
         except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.Duplicate as e:
-            raise webob.exc.HTTPConflict(explanation=unicode(e))
+            raise webob.exc.HTTPConflict(explanation=e.msg)
         except exception.ImageMemberLimitExceeded as e:
-            raise webob.exc.HTTPRequestEntityTooLarge(explanation=unicode(e))
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=e.msg)
 
     @utils.mutating
     def update(self, req, image_id, member_id, status):
@@ -100,9 +100,9 @@ class ImageMembersController(object):
             member_repo.save(member)
             return member
         except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
         except ValueError as e:
             raise webob.exc.HTTPBadRequest(explanation=unicode(e))
 
@@ -132,9 +132,9 @@ class ImageMembersController(object):
                 members.append(member)
             return dict(members=members)
         except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
 
     def show(self, req, image_id, member_id):
         """
@@ -157,7 +157,7 @@ class ImageMembersController(object):
             member = member_repo.get(member_id)
             return member
         except (exception.NotFound, exception.Forbidden) as e:
-            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
 
     @utils.mutating
     def delete(self, req, image_id, member_id):
@@ -173,9 +173,9 @@ class ImageMembersController(object):
             member_repo.remove(member)
             return webob.Response(body='', status=204)
         except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=unicode(e))
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):

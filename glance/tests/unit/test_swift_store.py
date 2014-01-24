@@ -424,7 +424,7 @@ class SwiftTests(object):
         except BackendException as e:
             exception_caught = True
             self.assertTrue("container noexist does not exist "
-                            "in Swift" in str(e))
+                            "in Swift" in six.text_type(e))
         self.assertTrue(exception_caught)
         self.assertEqual(SWIFT_PUT_OBJECT_CALLS, 0)
 
