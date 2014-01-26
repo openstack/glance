@@ -59,6 +59,7 @@ store_opts = [
                       'performing a delete.')),
 ]
 
+REGISTERED_STORES = set()
 CONF = cfg.CONF
 CONF.register_opts(store_opts)
 
@@ -135,6 +136,20 @@ class Indexable(object):
         return self.size
 
 
+def _register_stores(store_classes):
+    """
+    Given a set of store names, add them to a globally available set
+    of store names.
+    """
+    for store_cls in store_classes:
+        REGISTERED_STORES.add(store_cls.__module__.split('.')[2])
+    # NOTE (spredzy): The actual class name is filesystem but in order
+    # to maintain backward compatibility we need to keep the 'file' store
+    # as a known store
+    if 'filesystem' in REGISTERED_STORES:
+        REGISTERED_STORES.add('file')
+
+
 def _get_store_class(store_entry):
     store_cls = None
     try:
@@ -185,6 +200,7 @@ def create_stores():
                 store_count += 1
             else:
                 LOG.debug("Store %s already registered", store_cls)
+    _register_stores(store_classes)
     return store_count
 
 
@@ -201,6 +217,11 @@ def verify_default_store():
 def get_known_schemes():
     """Returns list of known schemes"""
     return location.SCHEME_TO_CLS_MAP.keys()
+
+
+def get_known_stores():
+    """Returns list of known stores"""
+    return list(REGISTERED_STORES)
 
 
 def get_store_from_scheme(context, scheme, loc=None):

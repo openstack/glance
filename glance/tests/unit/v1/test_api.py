@@ -228,7 +228,6 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_configured_disk_format_good(self):
         self.config(disk_formats=['foo'], group="image_format")
         fixture_headers = {
-            'x-image-meta-store': 'bad',
             'x-image-meta-name': 'bogus',
             'x-image-meta-location': 'http://localhost:0/image.tar.gz',
             'x-image-meta-disk-format': 'foo',
@@ -265,7 +264,6 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_configured_container_format_good(self):
         self.config(container_formats=['foo'], group="image_format")
         fixture_headers = {
-            'x-image-meta-store': 'bad',
             'x-image-meta-name': 'bogus',
             'x-image-meta-location': 'http://localhost:0/image.tar.gz',
             'x-image-meta-disk-format': 'raw',
@@ -322,7 +320,6 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def test_create_with_location_no_container_format(self):
         fixture_headers = {
-            'x-image-meta-store': 'bad',
             'x-image-meta-name': 'bogus',
             'x-image-meta-location': 'http://localhost:0/image.tar.gz',
             'x-image-meta-disk-format': 'vhd',
@@ -336,6 +333,23 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
         self.assertTrue('Invalid container format' in res.body)
+
+    def test_create_with_bad_store_name(self):
+        fixture_headers = {
+            'x-image-meta-store': 'bad',
+            'x-image-meta-name': 'bogus',
+            'x-image-meta-disk-format': 'qcow2',
+            'x-image-meta-container-format': 'bare',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 400)
+        self.assertTrue('Required store bad is invalid' in res.body)
 
     def test_create_with_location_unknown_scheme(self):
         fixture_headers = {
@@ -357,7 +371,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def test_create_with_location_bad_store_uri(self):
         fixture_headers = {
-            'x-image-meta-store': 'bad',
+            'x-image-meta-store': 'swift',
             'x-image-meta-name': 'bogus',
             'x-image-meta-location': 'swift+http://bah',
             'x-image-meta-disk-format': 'qcow2',
