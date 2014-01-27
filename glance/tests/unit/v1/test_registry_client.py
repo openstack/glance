@@ -518,7 +518,6 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         iso2 = timeutils.isotime(dt2)
 
         dt3 = timeutils.utcnow() + datetime.timedelta(2)
-        iso3 = timeutils.isotime(dt3)
 
         dt4 = timeutils.utcnow() + datetime.timedelta(3)
         iso4 = timeutils.isotime(dt4)

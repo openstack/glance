@@ -302,7 +302,7 @@ class ImageCacheTestCase(object):
         image_id = '1'
         self.assertFalse(self.cache.is_cached(image_id))
         try:
-            with self.cache.driver.open_for_write(image_id) as cache_file:
+            with self.cache.driver.open_for_write(image_id):
                 raise IOError
         except Exception as e:
             self.assertIsInstance(e, IOError)

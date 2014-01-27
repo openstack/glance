@@ -102,7 +102,6 @@ class TestMiscellaneous(functional.FunctionalTest):
         self.start_servers()
 
         api_port = self.api_port
-        registry_port = self.registry_port
 
         cmd = "curl -g http://127.0.0.1:%d/v1/images" % api_port
 

@@ -351,7 +351,7 @@ class Driver(base.Driver):
         LOG.debug(_("Queueing image '%s'."), image_id)
 
         # Touch the file to add it to the queue
-        with open(path, "w") as f:
+        with open(path, "w"):
             pass
 
         return True

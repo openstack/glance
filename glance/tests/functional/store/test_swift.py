@@ -436,7 +436,6 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
 
     def test_multitenant(self):
         """Ensure an image is properly configured when using multitenancy."""
-        fake_swift_admin = 'd2f68325-8e2c-4fb1-8c8b-89de2f3d9c4a'
         self.config(
             swift_store_multi_tenant=True,
         )

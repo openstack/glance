@@ -305,15 +305,11 @@ class TestImageMembersController(test_utils.BaseTestCase):
 
     def test_update_done_by_owner(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT1)
-        image_id = UUID2
-        member_id = TENANT4
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
                           request, UUID2, TENANT4, status='accepted')
 
     def test_update_invalid_status(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT4)
-        image_id = UUID2
-        member_id = TENANT4
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
                           request, UUID2, TENANT4, status='accept')
 
@@ -513,14 +509,12 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
     def test_create(self):
         request = unit_test_utils.get_fake_request()
         request.body = jsonutils.dumps({'member': TENANT1})
-        image_id = UUID1
         output = self.deserializer.create(request)
         expected = {'member_id': TENANT1}
         self.assertEqual(expected, output)
 
     def test_create_invalid(self):
         request = unit_test_utils.get_fake_request()
-        image_id = UUID1
         request.body = jsonutils.dumps({'mem': TENANT1})
         self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
                           request)
@@ -539,16 +533,12 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
     def test_update(self):
         request = unit_test_utils.get_fake_request()
         request.body = jsonutils.dumps({'status': 'accepted'})
-        image_id = UUID1
-        member_id = TENANT1
         output = self.deserializer.update(request)
         expected = {'status': 'accepted'}
         self.assertEqual(expected, output)
 
     def test_update_invalid(self):
         request = unit_test_utils.get_fake_request()
-        image_id = UUID1
-        member_id = TENANT1
         request.body = jsonutils.dumps({'mem': TENANT1})
         self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.update,
                           request)

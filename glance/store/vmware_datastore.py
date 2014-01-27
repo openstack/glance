@@ -209,8 +209,7 @@ class Store(glance.store.base.Store):
                 raise exception.BadStoreConfiguration(
                     store_name='vmware_datastore', reason=reason)
             else:
-                ds_validated = True
-
+                _datastore_info_valid = True
         self.store_image_dir = CONF.vmware_store_image_dir
 
     def _option_get(self, param):

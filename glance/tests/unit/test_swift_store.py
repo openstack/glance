@@ -586,7 +586,6 @@ class SwiftTests(object):
     def test_add_saves_and_reraises_and_not_uses_wildcard_raise(self):
         image_id = str(uuid.uuid4())
         swift_size = self.store.large_object_size = 1024
-        loc = 'swift+https://%s:key@localhost:8080/glance/%s'
         swift_contents = "*" * swift_size
         connection = mock.Mock()
 
@@ -966,7 +965,7 @@ class TestCreatingLocations(base.IsolatedUnitTest):
         context = glance.context.RequestContext(
             user='user', tenant='tenant', auth_tok='123',
             service_catalog={})
-        store = glance.store.swift.MultiTenantStore(context)
+        glance.store.swift.MultiTenantStore(context)
         self.assertEqual(fake_get_endpoint.endpoint_region, 'WestCarolina')
 
     def test_multi_tenant_location_custom_service_type(self):
@@ -976,7 +975,7 @@ class TestCreatingLocations(base.IsolatedUnitTest):
         context = glance.context.RequestContext(
             user='user', tenant='tenant', auth_tok='123',
             service_catalog={})
-        store = glance.store.swift.MultiTenantStore(context)
+        glance.store.swift.MultiTenantStore(context)
         self.assertEqual(fake_get_endpoint.service_type, 'toy-store')
 
     def test_multi_tenant_location_custom_endpoint_type(self):
@@ -986,7 +985,7 @@ class TestCreatingLocations(base.IsolatedUnitTest):
         context = glance.context.RequestContext(
             user='user', tenant='tenant', auth_tok='123',
             service_catalog={})
-        store = glance.store.swift.MultiTenantStore(context)
+        glance.store.swift.MultiTenantStore(context)
         self.assertEqual(fake_get_endpoint.endpoint_type, 'InternalURL')
 
 

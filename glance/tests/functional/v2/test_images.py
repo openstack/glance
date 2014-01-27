@@ -1213,8 +1213,8 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual('2', image['x_all_permitted_joe_soap'])
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
-        header = self._headers({'content-type': media_type,
-                                'X-Roles': 'joe_soap'})
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'joe_soap'})
         data = jsonutils.dumps([
             {'op': 'replace',
              'path': '/x_all_permitted_joe_soap', 'value': '3'}

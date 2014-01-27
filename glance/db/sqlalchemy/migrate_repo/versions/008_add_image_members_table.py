@@ -44,7 +44,7 @@ def get_image_properties_table(meta):
 
 
 def get_image_members_table(meta):
-    images = get_images_table(meta)
+    images = get_images_table(meta)  # noqa
 
     image_members = Table('image_members',
                           meta,

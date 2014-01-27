@@ -2531,7 +2531,6 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                 req.method = 'HEAD'
                 res = req.get_response(self.api)
                 self.assertEqual(res.status_int, 200)
-                orig_value = res.headers[k]
 
                 req = webob.Request.blank('/images/%s' % UUID2)
                 req.headers[k] = v
@@ -3348,8 +3347,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         permitted role 'member' can read that protected property via
         /images/detail
         """
-        image_id = self._create_admin_image(
-            {'x-image-meta-property-x_owner_foo': 'bar'})
+        self._create_admin_image({'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
             method='GET', path='/images/detail')
         headers = {'x-auth-token': 'user:tenant:member'}
@@ -3367,8 +3365,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         /images/detail
         """
         self.set_property_protections(use_policies=True)
-        image_id = self._create_admin_image(
-            {'x-image-meta-property-x_owner_foo': 'bar'})
+        self._create_admin_image({'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
             method='GET', path='/images/detail')
         headers = {'x-auth-token': 'user:tenant:member'}
@@ -3385,8 +3382,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         permitted role 'fake_role' can *not* read that protected property via
         /images/detail
         """
-        image_id = self._create_admin_image(
-            {'x-image-meta-property-x_owner_foo': 'bar'})
+        self._create_admin_image({'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
             method='GET', path='/images/detail')
         headers = {'x-auth-token': 'user:tenant:fake_role'}
@@ -3405,8 +3401,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         /images/detail
         """
         self.set_property_protections(use_policies=True)
-        image_id = self._create_admin_image(
-            {'x-image-meta-property-x_owner_foo': 'bar'})
+        self._create_admin_image({'x-image-meta-property-x_owner_foo': 'bar'})
         another_request = unit_test_utils.get_fake_request(
             method='GET', path='/images/detail')
         headers = {'x-auth-token': 'user:tenant:fake_role'}

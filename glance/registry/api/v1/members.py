@@ -311,7 +311,7 @@ class Controller(object):
         """
         try:
             members = self.db_api.image_member_find(req.context, member=id)
-        except exception.NotFound as e:
+        except exception.NotFound:
             msg = _("Member %(id)s not found")
             LOG.info(msg % {'id': id})
             msg = _("Membership could not be found.")

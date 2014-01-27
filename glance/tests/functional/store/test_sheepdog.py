@@ -42,7 +42,7 @@ class TestSheepdogStore(store_tests.BaseTestCase, testtools.TestCase):
                                        sheepdog.DEFAULT_CHUNKSIZE)
         try:
             image.create(512)
-        except BackendException as e:
+        except BackendException:
             msg = "Sheepdog cluster isn't set up"
             self.skipTest(msg)
         image.delete()

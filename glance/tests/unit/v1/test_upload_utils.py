@@ -196,9 +196,7 @@ class TestUploadUtils(base.StoreClearingUnitTest):
     def _test_upload_data_to_store_exception(self, exc_class, expected_class):
         req = unit_test_utils.get_fake_request()
 
-        location = "file://foo/bar"
         size = 10
-        checksum = "checksum"
 
         image_meta = {'id': unit_test_utils.UUID1,
                       'size': size}
@@ -227,9 +225,7 @@ class TestUploadUtils(base.StoreClearingUnitTest):
                                                          image_killed=True):
         req = unit_test_utils.get_fake_request()
 
-        location = "file://foo/bar"
         size = 10
-        checksum = "checksum"
 
         image_meta = {'id': unit_test_utils.UUID1,
                       'size': size}
