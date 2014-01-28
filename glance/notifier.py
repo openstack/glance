@@ -52,6 +52,12 @@ _STRATEGY_ALIASES = {
     "default": "noop",
 }
 
+_ALIASES = {
+    'glance.openstack.common.rpc.impl_kombu': 'rabbit',
+    'glance.openstack.common.rpc.impl_qpid': 'qpid',
+    'glance.openstack.common.rpc.impl_zmq': 'zmq',
+}
+
 
 class Notifier(object):
     """Uses a notification strategy to send out messages about events."""
@@ -68,19 +74,29 @@ class Notifier(object):
         # driver from the specified strategy.
         _strategy = strategy or CONF.notifier_strategy
         _driver = _STRATEGY_ALIASES.get(_strategy)
-
-        # NOTE(flaper87): The next 3 lines help
-        # with the migration to oslo.messaging.
-        # Without them, gate tests won't know
-        # what driver should be loaded.
-        # Once this patch lands, devstack will be
-        # updated and then these lines will be removed.
-        url = None
-        if _strategy in ['rabbit', 'qpid']:
-            url = _strategy + '://'
-
         publisher_id = CONF.default_publisher_id
-        self._transport = messaging.get_transport(CONF, url)
+
+        # NOTE(flaper87): Assume the user has configured
+        # the transport url.
+        self._transport = messaging.get_transport(CONF,
+                                                  aliases=_ALIASES)
+
+        # NOTE(flaper87): This needs to be checked
+        # here because the `get_transport` call
+        # registers `transport_url` into ConfigOpts.
+        if not CONF.transport_url:
+            # NOTE(flaper87): The next 3 lines help
+            # with the migration to oslo.messaging.
+            # Without them, gate tests won't know
+            # what driver should be loaded.
+            # Once this patch lands, devstack will be
+            # updated and then these lines will be removed.
+            url = None
+            if _strategy in ['rabbit', 'qpid']:
+                url = _strategy + '://'
+            self._transport = messaging.get_transport(CONF, url,
+                                                      aliases=_ALIASES)
+
         self._notifier = messaging.Notifier(self._transport,
                                             driver=_driver,
                                             publisher_id=publisher_id)

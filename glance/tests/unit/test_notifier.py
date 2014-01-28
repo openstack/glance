@@ -95,11 +95,24 @@ class TestNotifier(utils.BaseTestCase):
         nfier = notifier.Notifier('rabbit')
         self.assertIsNotNone(nfier._transport)
 
+    def test_load_qpid(self):
+        nfier = notifier.Notifier('qpid')
+        self.assertIsNotNone(nfier._transport)
+        self.assertEqual(str(nfier._transport._driver._url),
+                         'qpid:///')
+
     def test_custom_strategy(self):
         st = "glance.notifier.notify_noop.NoopStrategy"
         self.config(notifier_strategy=st)
         #NOTE(bcwaldon): the fact that Notifier is instantiated means we're ok
         notifier.Notifier()
+
+    def test_transport_url(self):
+        transport_url = "qpid://superhost:5672/"
+        self.config(transport_url=transport_url)
+        notify = notifier.Notifier()
+        self.assertEqual(str(notify._transport._driver._url),
+                         transport_url)
 
 
 class TestImageNotifications(utils.BaseTestCase):
