@@ -299,7 +299,9 @@ def replication_size(options, args):
             total_size += int(image['size'])
             count += 1
 
-    print(_('Total size is %d bytes across %d images') % (total_size, count))
+    print(_('Total size is %(size)d bytes across %(img_count)d images') %
+          {'size': total_size,
+           'img_count': count})
 
 
 def replication_dump(options, args):

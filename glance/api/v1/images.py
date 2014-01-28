@@ -169,8 +169,9 @@ class Controller(controller.BaseController):
 
         if len(props) > CONF.image_property_quota:
             msg = (_("The limit has been exceeded on the number of allowed "
-                     "image properties. Attempted: %s, Maximum: %s") %
-                   (len(props), CONF.image_property_quota))
+                     "image properties. Attempted: %(num)s, Maximum: "
+                     "%(quota)s") % {'num': len(props),
+                                     'quota': CONF.image_property_quota})
             LOG.info(msg)
             raise HTTPRequestEntityTooLarge(explanation=msg,
                                             request=req,

@@ -104,8 +104,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
             glance.api.common.check_quota(
                 req.context, size, db_api, image_id=image_id)
         except exception.StorageQuotaFull:
-            LOG.info(_('Cleaning up %s after exceeding the quota %s')
-                     % image_id)
+            LOG.info(_('Cleaning up %s after exceeding the quota') % image_id)
             glance.store.safe_delete_from_backend(
                 location, req.context, image_meta['id'])
             raise

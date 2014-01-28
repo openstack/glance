@@ -166,16 +166,18 @@ class Store(glance.store.base.Store):
             glance.store.check_location_metadata(metadata)
             return metadata
         except glance.store.BackendException as bee:
-            LOG.error(_('The JSON in the metadata file %s could not be used: '
-                        '%s  An empty dictionary will be returned '
-                        'to the client.')
-                      % (CONF.filesystem_store_metadata_file, str(bee)))
+            LOG.error(_('The JSON in the metadata file %(file)s could not be '
+                        'used: %(error)s  An empty dictionary will be '
+                        'returned to the client.') %
+                      {'file': CONF.filesystem_store_metadata_file,
+                       'error': str(bee)})
             return {}
         except IOError as ioe:
-            LOG.error(_('The path for the metadata file %s could not be '
-                        'opened: %s  An empty dictionary will be returned '
-                        'to the client.')
-                      % (CONF.filesystem_store_metadata_file, ioe))
+            LOG.error(_('The path for the metadata file %(file)s could not be '
+                        'opened: %(error)s  An empty dictionary will be '
+                        'returned to the client.') %
+                      {'file': CONF.filesystem_store_metadata_file,
+                       'error': ioe})
             return {}
         except Exception as ex:
             LOG.exception(_('An error occurred processing the storage systems '
@@ -297,5 +299,7 @@ class Store(glance.store.base.Store):
         try:
             os.unlink(filepath)
         except Exception as e:
-            msg = _('Unable to remove partial image data for image %s: %s')
-            LOG.error(msg % (id, e))
+            msg = _('Unable to remove partial image data for image %(id)s: '
+                    '%(error)s')
+            LOG.error(msg % {'id': id,
+                             'error': e})

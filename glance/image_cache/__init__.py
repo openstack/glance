@@ -261,8 +261,10 @@ class ImageCache(object):
             raise
         except Exception as e:
             LOG.exception(_("Exception encountered while tee'ing "
-                            "image '%s' into cache: %s. Continuing "
-                            "with response.") % (image_id, e))
+                            "image '%(image_id)s' into cache: %(error)s. "
+                            "Continuing with response.") %
+                          {'image_id': image_id,
+                           'error': e})
 
             # If no checksum provided continue responding even if
             # caching failed.

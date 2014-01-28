@@ -303,8 +303,9 @@ def safe_delete_from_backend(context, uri, image_id, **kwargs):
         LOG.warn(str(e))
     except UnsupportedBackend:
         exc_type = sys.exc_info()[0].__name__
-        msg = (_('Failed to delete image %s from store (%s)') %
-               (image_id, exc_type))
+        msg = (_('Failed to delete image %(image_id)s from store '
+                 '(%(error)s)') % {'image_id': image_id,
+                                   'error': exc_type})
         LOG.error(msg)
 
 
@@ -335,9 +336,11 @@ def check_location_metadata(val, key=''):
             check_location_metadata(v, key='%s[%d]' % (key, ndx))
             ndx = ndx + 1
     elif not isinstance(val, unicode):
-        raise BackendException(_("The image metadata key %s has an invalid "
-                                 "type of %s.  Only dict, list, and unicode "
-                                 "are supported.") % (key, type(val)))
+        raise BackendException(_("The image metadata key %(key)s has an "
+                                 "invalid type of %(val)s.  Only dict, list, "
+                                 "and unicode are supported.") %
+                               {'key': key,
+                                'val': type(val)})
 
 
 def store_add_to_backend(image_id, data, size, store):
@@ -357,17 +360,20 @@ def store_add_to_backend(image_id, data, size, store):
     (location, size, checksum, metadata) = store.add(image_id, data, size)
     if metadata is not None:
         if not isinstance(metadata, dict):
-            msg = (_("The storage driver %s returned invalid metadata %s"
-                     "This must be a dictionary type") %
-                   (str(store), str(metadata)))
+            msg = (_("The storage driver %(store)s returned invalid metadata "
+                     "%(metadata)s. This must be a dictionary type") %
+                   {'store': store,
+                    'metadata': metadata})
             LOG.error(msg)
             raise BackendException(msg)
         try:
             check_location_metadata(metadata)
         except BackendException as e:
             e_msg = (_("A bad metadata structure was returned from the "
-                       "%s storage driver: %s.  %s.") %
-                     (str(store), str(metadata), str(e)))
+                       "%(store)s storage driver: %(metadata)s.  %(error)s.") %
+                     {'store': store,
+                      'metadata': metadata,
+                      'error': e})
             LOG.error(e_msg)
             raise BackendException(e_msg)
     return (location, size, checksum, metadata)

@@ -228,36 +228,43 @@ class ImageProxy(glance.domain.proxy.Image):
             self.notifier.error('image.upload', msg)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg)
         except ValueError as e:
-            msg = (_("Cannot save data for image %s: %s")
-                   % (self.image.image_id, e))
+            msg = (_("Cannot save data for image %(image_id)s: %(error)s") %
+                   {'image_id': self.image.image_id,
+                    'error': e})
             self.notifier.error('image.upload', msg)
             raise webob.exc.HTTPBadRequest(explanation=unicode(e))
         except exception.Duplicate as e:
-            msg = (_("Unable to upload duplicate image data for image %s: %s")
-                   % (self.image.image_id, e))
+            msg = (_("Unable to upload duplicate image data for image"
+                     "%(image_id)s: %(error)s") %
+                   {'image_id': self.image.image_id,
+                    'error': e})
             self.notifier.error('image.upload', msg)
             raise webob.exc.HTTPConflict(explanation=msg)
         except exception.Forbidden as e:
-            msg = (_("Not allowed to upload image data for image %s: %s")
-                   % (self.image.image_id, e))
+            msg = (_("Not allowed to upload image data for image %(image_id)s:"
+                     " %(error)s") % {'image_id': self.image.image_id,
+                                      'error': e})
             self.notifier.error('image.upload', msg)
             raise webob.exc.HTTPForbidden(explanation=msg)
         except exception.NotFound as e:
-            msg = (_("Image %s could not be found after upload. The image may "
-                     "have been deleted during the upload: %s")
-                   % (self.image.image_id, e))
+            msg = (_("Image %(image_id)s could not be found after upload."
+                     " The image may have been deleted during the upload:"
+                     " %(error)s") % {'image_id': self.image.image_id,
+                                      'error': e})
             self.notifier.error('image.upload', msg)
             raise webob.exc.HTTPNotFound(explanation=unicode(e))
         except webob.exc.HTTPError as e:
-            msg = (_("Failed to upload image data for image %s"
-                     " due to HTTP error: %s")
-                   % (self.image.image_id, e))
+            msg = (_("Failed to upload image data for image %(image_id)s"
+                     " due to HTTP error: %(error)s") %
+                   {'image_id': self.image.image_id,
+                    'error': e})
             self.notifier.error('image.upload', msg)
             raise
         except Exception as e:
-            msg = (_("Failed to upload image data for image %s "
-                     "due to internal error: %s")
-                   % (self.image.image_id, e))
+            msg = (_("Failed to upload image data for image %(image_id)s "
+                     "due to internal error: %(error)s") %
+                   {'image_id': self.image.image_id,
+                    'error': e})
             self.notifier.error('image.upload', msg)
             raise
         else:

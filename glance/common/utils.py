@@ -505,13 +505,19 @@ def validate_key_cert(key_file, cert_file):
         cert_str = open(cert_file, "r").read()
         cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_str)
     except IOError as ioe:
-        raise RuntimeError(_("There is a problem with your %s "
-                             "%s.  Please verify it.  Error: %s")
-                           % (error_key_name, error_filename, ioe))
+        raise RuntimeError(_("There is a problem with your %(error_key_name)s "
+                             "%(error_filename)s.  Please verify it."
+                             "  Error: %(ioe)s") %
+                           {'error_key_name': error_key_name,
+                            'error_filename': error_filename,
+                            'ioe': ioe})
     except crypto.Error as ce:
-        raise RuntimeError(_("There is a problem with your %s "
-                             "%s.  Please verify it. OpenSSL error: %s")
-                           % (error_key_name, error_filename, ce))
+        raise RuntimeError(_("There is a problem with your %(error_key_name)s "
+                             "%(error_filename)s.  Please verify it. OpenSSL"
+                             " error: %(ce)s") %
+                           {'error_key_name': error_key_name,
+                            'error_filename': error_filename,
+                            'ce': ce})
 
     try:
         data = str(uuid.uuid4())
@@ -521,9 +527,11 @@ def validate_key_cert(key_file, cert_file):
         crypto.verify(cert, out, data, digest)
     except crypto.Error as ce:
         raise RuntimeError(_("There is a problem with your key pair.  "
-                             "Please verify that cert %s and key %s "
-                             "belong together.  OpenSSL error %s")
-                           % (cert_file, key_file, ce))
+                             "Please verify that cert %(cert_file)s and "
+                             "key %(key_file)s belong together.  OpenSSL "
+                             "error %(ce)s") % {'cert_file': cert_file,
+                                                'key_file': key_file,
+                                                'ce': ce})
 
 
 def get_test_suite_socket():

@@ -327,8 +327,10 @@ class BaseStore(glance.store.base.Store):
             try:
                 connection.delete_object(container, chunk)
             except Exception:
-                msg = _("Failed to delete orphaned chunk %s/%s")
-                LOG.exception(msg, container, chunk)
+                msg = _("Failed to delete orphaned chunk "
+                        "%(container)s/%(chunk)s")
+                LOG.exception(msg % {'container': container,
+                                     'chunk': chunk})
 
     def add(self, image_id, image_file, image_size, connection=None):
         location = self.create_location(image_id)

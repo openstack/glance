@@ -201,8 +201,10 @@ def _immutable_attr(target, attr, proxy=None):
 
     def forbidden(self, *args, **kwargs):
         resource = getattr(self, 'resource_name', 'resource')
-        message = _("You are not permitted to modify '%s' on this %s.")
-        raise exception.Forbidden(message % (attr, resource))
+        message = _("You are not permitted to modify '%(attr)s' on this "
+                    "%(resource)s.")
+        raise exception.Forbidden(message % {'attr': attr,
+                                             'resource': resource})
 
     return property(get_attr, forbidden, forbidden)
 

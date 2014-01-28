@@ -52,10 +52,11 @@ class ImageDataController(object):
                 image.set_data(data, size)
                 image_repo.save(image)
             except exception.NotFound as e:
-                msg = (_("Image %s could not be found after upload."
-                       "The image may have been deleted during the upload: %s "
-                       "Cleaning up the chunks uploaded")
-                       % (image_id, e))
+                msg = (_("Image %(id)s could not be found after upload."
+                         "The image may have been deleted during the upload: "
+                         "%(error)s Cleaning up the chunks uploaded") %
+                       {'id': image_id,
+                        'error': e})
                 LOG.warn(msg)
                 # NOTE(sridevi): Cleaning up the uploaded chunks.
                 try:
