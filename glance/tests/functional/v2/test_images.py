@@ -90,6 +90,7 @@ class TestImages(functional.FunctionalTest):
             u'schema',
             u'disk_format',
             u'container_format',
+            u'owner',
         ])
         self.assertEqual(set(image.keys()), checked_keys)
         expected_image = {
@@ -149,6 +150,7 @@ class TestImages(functional.FunctionalTest):
             u'schema',
             u'disk_format',
             u'container_format',
+            u'owner',
         ])
         self.assertEqual(set(image.keys()), checked_keys)
         expected_image = {

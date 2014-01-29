@@ -565,7 +565,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             image_view = dict(image.extra_properties)
             attributes = ['name', 'disk_format', 'container_format',
                           'visibility', 'size', 'status', 'checksum',
-                          'protected', 'min_ram', 'min_disk']
+                          'protected', 'min_ram', 'min_disk', 'owner']
             for key in attributes:
                 image_view[key] = getattr(image, key)
             image_view['id'] = image.image_id
@@ -664,6 +664,11 @@ def _get_base_properties():
             'type': 'string',
             'description': _('md5 hash of image contents. (READ-ONLY)'),
             'maxLength': 32,
+        },
+        'owner': {
+            'type': 'string',
+            'description': _('Owner of the image'),
+            'maxLength': 255,
         },
         'size': {
             'type': 'integer',

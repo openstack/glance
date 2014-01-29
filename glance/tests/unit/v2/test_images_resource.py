@@ -2551,6 +2551,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'self': '/v2/images/%s' % UUID1,
                     'file': '/v2/images/%s/file' % UUID1,
                     'schema': '/v2/schemas/image',
+                    'owner': '6838eb7b-6ded-434a-882c-b344c77fe8df',
                 },
                 {
                     'id': UUID2,
@@ -2639,6 +2640,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'self': '/v2/images/%s' % UUID1,
             'file': '/v2/images/%s/file' % UUID1,
             'schema': '/v2/schemas/image',
+            'owner': '6838eb7b-6ded-434a-882c-b344c77fe8df',
         }
         response = webob.Response()
         self.serializer.show(response, self.fixtures[0])
@@ -2683,6 +2685,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'self': '/v2/images/%s' % UUID1,
             'file': '/v2/images/%s/file' % UUID1,
             'schema': '/v2/schemas/image',
+            'owner': '6838eb7b-6ded-434a-882c-b344c77fe8df',
         }
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
@@ -2710,6 +2713,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'self': '/v2/images/%s' % UUID1,
             'file': '/v2/images/%s/file' % UUID1,
             'schema': '/v2/schemas/image',
+            'owner': '6838eb7b-6ded-434a-882c-b344c77fe8df',
         }
         response = webob.Response()
         self.serializer.update(response, self.fixtures[0])
@@ -2767,6 +2771,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
                     u'schema': u'/v2/schemas/image',
                     u'lang': u'Fran\u00E7ais',
                     u'dispos\u00E9': u'f\u00E2ch\u00E9',
+                    u'owner': u'6838eb7b-6ded-434a-882c-b344c77fe8df',
                 },
             ],
             u'first': u'/v2/images',
@@ -2800,6 +2805,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
             u'schema': u'/v2/schemas/image',
             u'lang': u'Fran\u00E7ais',
             u'dispos\u00E9': u'f\u00E2ch\u00E9',
+            u'owner': u'6838eb7b-6ded-434a-882c-b344c77fe8df',
         }
         response = webob.Response()
         self.serializer.show(response, self.fixtures[0])
@@ -2829,6 +2835,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
             u'schema': u'/v2/schemas/image',
             u'lang': u'Fran\u00E7ais',
             u'dispos\u00E9': u'f\u00E2ch\u00E9',
+            u'owner': u'6838eb7b-6ded-434a-882c-b344c77fe8df',
         }
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
@@ -2858,6 +2865,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
             u'schema': u'/v2/schemas/image',
             u'lang': u'Fran\u00E7ais',
             u'dispos\u00E9': u'f\u00E2ch\u00E9',
+            u'owner': u'6838eb7b-6ded-434a-882c-b344c77fe8df',
         }
         response = webob.Response()
         self.serializer.update(response, self.fixtures[0])
@@ -2897,6 +2905,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'tags': [],
             'size': 1024,
+            'owner': '2c014f32-55eb-467d-8fcb-4bd706012f81',
             'color': 'green',
             'created_at': ISOTIME,
             'updated_at': ISOTIME,
@@ -2919,6 +2928,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'tags': [],
             'size': 1024,
+            'owner': '2c014f32-55eb-467d-8fcb-4bd706012f81',
             'color': 'invalid',
             'created_at': ISOTIME,
             'updated_at': ISOTIME,
@@ -2959,6 +2969,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'self': '/v2/images/%s' % UUID2,
             'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
+            'owner': '2c014f32-55eb-467d-8fcb-4bd706012f81',
         }
         response = webob.Response()
         serializer.show(response, self.fixture)
@@ -2985,6 +2996,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'self': '/v2/images/%s' % UUID2,
             'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
+            'owner': '2c014f32-55eb-467d-8fcb-4bd706012f81',
         }
         response = webob.Response()
         serializer.show(response, self.fixture)
@@ -3002,6 +3014,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'tags': [],
             'size': 1024,
+            'owner': '2c014f32-55eb-467d-8fcb-4bd706012f81',
             'created_at': ISOTIME,
             'updated_at': ISOTIME,
             'self': '/v2/images/%s' % UUID2,
