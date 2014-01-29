@@ -94,8 +94,11 @@ class Image(object):
         # Each key denotes a "current" state for the image. Corresponding
         # values list the valid states to which we can jump from that "current"
         # state.
+        # NOTE(flwang): In v2, we are deprecating the 'killed' status, so it's
+        # allowed to restore image from 'saving' to 'queued' so that upload
+        # can be retried.
         'queued': ('saving', 'active', 'deleted'),
-        'saving': ('active', 'killed', 'deleted'),
+        'saving': ('active', 'killed', 'deleted', 'queued'),
         'active': ('queued', 'pending_delete', 'deleted'),
         'killed': ('deleted'),
         'pending_delete': ('deleted'),

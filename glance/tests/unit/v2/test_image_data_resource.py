@@ -218,7 +218,9 @@ class TestImagesController(base.StoreClearingUnitTest):
 
     def test_image_size_limit_exceeded(self):
         request = unit_test_utils.get_fake_request()
-        self.image_repo.result = exception.ImageSizeLimitExceeded()
+        image = FakeImage()
+        image.set_data = Raise(exception.ImageSizeLimitExceeded)
+        self.image_repo.result = image
         self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
                           self.controller.upload,
                           request, unit_test_utils.UUID1, 'YYYYYYY', 7)
@@ -289,6 +291,16 @@ class TestImagesController(base.StoreClearingUnitTest):
         }
         self.assertEqual(len(output_log), 3)
         self.assertEqual(output_log[2], activate_log)
+
+    def test_restore_image_when_upload_failed(self):
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage('fake')
+        image.set_data = Raise(exception.StorageWriteDenied)
+        self.image_repo.result = image
+        self.assertRaises(webob.exc.HTTPServiceUnavailable,
+                          self.controller.upload,
+                          request, unit_test_utils.UUID2, 'ZZZ', 3)
+        self.assertEqual(self.image_repo.saved_image.status, 'queued')
 
 
 class TestImageDataDeserializer(test_utils.BaseTestCase):
