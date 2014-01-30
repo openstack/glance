@@ -33,7 +33,7 @@ Paste
 jsonschema>=1.3.0,!=1.4.0
 python-cinderclient>=1.0.6
 python-keystoneclient>=0.4.1
-pyOpenSSL
+pyOpenSSL>=0.11
 
 # Required by openstack.common libraries
 six>=1.4.1
