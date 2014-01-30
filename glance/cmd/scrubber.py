@@ -34,8 +34,8 @@ from oslo.config import cfg
 
 from glance.common import config
 from glance.openstack.common import log
+from glance import scrubber
 import glance.store
-import glance.store.scrubber
 
 CONF = cfg.CONF
 
@@ -60,16 +60,16 @@ def main():
         glance.store.create_stores()
         glance.store.verify_default_store()
 
-        app = glance.store.scrubber.Scrubber(glance.store)
+        app = scrubber.Scrubber(glance.store)
 
         if CONF.daemon:
-            server = glance.store.scrubber.Daemon(CONF.wakeup_time)
+            server = scrubber.Daemon(CONF.wakeup_time)
             server.start(app)
             server.wait()
         else:
             import eventlet
             pool = eventlet.greenpool.GreenPool(1000)
-            scrubber = app.run(pool)
+            app.run(pool)
     except RuntimeError as e:
         sys.exit("ERROR: %s" % e)
 
