@@ -64,7 +64,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Glance'
-copyright = u'2010, OpenStack Foundation.'
+copyright = u'2010-2014, OpenStack Foundation.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -135,6 +135,8 @@ man_pages = [
     ('man/glancemanage', 'glance-manage', u'Glance Management Utility',
      [u'OpenStack'], 1),
     ('man/glanceregistry', 'glance-registry', u'Glance Registry Server',
+     [u'OpenStack'], 1),
+    ('man/glancereplicator', 'glance-replicator', u'Glance Replicator',
      [u'OpenStack'], 1),
     ('man/glancescrubber', 'glance-scrubber', u'Glance Scrubber Service',
      [u'OpenStack'], 1)

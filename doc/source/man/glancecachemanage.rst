@@ -7,9 +7,9 @@ Cache management utility
 ------------------------
 
 :Author: glance@lists.launchpad.net
-:Date:   2012-01-03
+:Date:   2014-01-16
 :Copyright: OpenStack LLC
-:Version: 2012.1-dev
+:Version: 2014.1
 :Manual section: 1
 :Manual group: cloud computing
 
@@ -68,18 +68,21 @@ OPTIONS
         Port the Glance API host listens on.
         Default: 9292
 
+  **-k, --insecure**
+        Explicitly allow glance to perform "insecure" SSL
+        (https) requests. The server's certificate will not be
+        verified against any certificate authorities. This
+        option should be used with caution.
+
   **-A TOKEN, --auth_token=TOKEN**
         Authentication token to use to identify the client to the glance server
 
   **-f, --force**
         Prevent select actions from requesting user confirmation
 
-SEE ALSO
-========
+  **-S STRATEGY, --os-auth-strategy=STRATEGY**
+        Authentication strategy (keystone or noauth)
 
-* `OpenStack Glance <http://glance.openstack.org>`__
+  .. include:: openstack_options.rst
 
-BUGS
-====
-
-* Glance is sourced in Launchpad so you can view current bugs at `OpenStack Glance <http://glance.openstack.org>`__
+  .. include:: footer.rst

@@ -6,6 +6,13 @@ glance-control
 Glance daemon start/stop/reload helper
 --------------------------------------
 
+:Author: glance@lists.launchpad.net
+:Date:   2014-01-16
+:Copyright: OpenStack LLC
+:Version: 2014.1
+:Manual section: 1
+:Manual group: cloud computing
+
 SYNOPSIS
 ========
 
@@ -13,82 +20,39 @@ SYNOPSIS
 
 Where <SERVER> is one of:
 
-    all, api, registry, scrubber
+    all, api, glance-api, registry, glance-registry, scrubber, glance-scrubber
 
 And command is one of:
 
-    start, stop, shutdown, restart, reload, force-reload
+    start, status, stop, shutdown, restart, reload, force-reload
 
 And CONFPATH is the optional configuration file to use.
 
 OPTIONS
-=======
+========
 
-  **--version**
-        show program's version number and exit
+  **General Options**
 
-  **-h, --help**
-        show this help message and exit
-
-  **--config-file=PATH**
-        Path to a config file to use. Multiple config files
-        can be specified, with values in later files taking
-        precedence. The default files used are: []
-
-  **-d, --debug**
-        Print debugging output
-
-  **--nodebug**
-        Do not print debugging output
-
-  **-v, --verbose**
-        Print more verbose output
-
-  **--noverbose**
-        Do not print more verbose output
-
-  **--log-config=PATH**
-        If this option is specified, the logging configuration
-        file specified is used and overrides any other logging
-        options specified. Please see the Python logging
-        module documentation for details on logging
-        configuration files.
-
-  **--log-format=FORMAT**
-        A logging.Formatter log message format string which
-        may use any of the available logging.LogRecord
-        attributes. Default: none
-
-  **--log-date-format=DATE_FORMAT**
-        Format string for %(asctime)s in log records. Default: none
-
-  **--log-file=PATH**
-        (Optional) Name of log file to output to. If not set,
-        logging will go to stdout.
-
-  **--log-dir=LOG_DIR**
-        (Optional) The directory to keep log files in (will be
-        prepended to --logfile)
-
-  **--use-syslog**
-        Use syslog for logging.
-
-  **--nouse-syslog**
-        Do not use syslog for logging.
-
-  **--syslog-log-facility=SYSLOG_LOG_FACILITY**
-        syslog facility to receive log lines
+  .. include:: general_options.rst
 
   **--pid-file=PATH**
         File to use as pid file. Default:
         /var/run/glance/$server.pid
 
-SEE ALSO
-========
+  **--await-child DELAY**
+        Period to wait for service death in order to report
+        exit code (default is to not wait at all)
 
-* `OpenStack Glance <http://glance.openstack.org>`__
+  **--capture-output**
+        Capture stdout/err in syslog instead of discarding
 
-BUGS
-====
+  **--nocapture-output**
+        The inverse of --capture-output
 
-* Glance is sourced in Launchpad so you can view current bugs at `OpenStack Glance <http://glance.openstack.org>`__
+  **--norespawn**
+        The inverse of --respawn
+
+  **--respawn**
+        Restart service on unexpected death
+
+  .. include:: footer.rst
