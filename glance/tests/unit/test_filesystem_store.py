@@ -23,7 +23,9 @@ import os
 import StringIO
 import uuid
 
+import fixtures
 import mox
+from oslo.config import cfg
 
 from glance.common import exception
 from glance.openstack.common import units
@@ -31,6 +33,8 @@ from glance.openstack.common import units
 from glance.store.filesystem import Store, ChunkedFile
 from glance.store.location import get_location_from_uri
 from glance.tests.unit import base
+
+CONF = cfg.CONF
 
 
 class TestStore(base.IsolatedUnitTest):
@@ -46,6 +50,106 @@ class TestStore(base.IsolatedUnitTest):
         """Clear the test environment"""
         super(TestStore, self).tearDown()
         ChunkedFile.CHUNKSIZE = self.orig_chunksize
+
+    def test_configure_add_single_datadir(self):
+        """
+        Tests filesystem specified by filesystem_store_datadir
+        are parsed correctly.
+        """
+        store = self.useFixture(fixtures.TempDir()).path
+        CONF.set_override('filesystem_store_datadir', store)
+        self.store.configure_add()
+        self.assertEqual(self.store.datadir, store)
+
+    def test_configure_add_with_single_and_multi_datadirs(self):
+        """
+        Tests BadStoreConfiguration exception is raised if both
+        filesystem_store_datadir and filesystem_store_datadirs are specified.
+        """
+        store_map = [self.useFixture(fixtures.TempDir()).path,
+                     self.useFixture(fixtures.TempDir()).path]
+        CONF.set_override('filesystem_store_datadirs',
+                          [store_map[0] + ":100",
+                           store_map[1] + ":200"])
+        self.assertRaises(exception.BadStoreConfiguration,
+                          self.store.configure_add)
+
+    def test_configure_add_without_single_and_multi_datadirs(self):
+        """
+        Tests BadStoreConfiguration exception is raised if neither
+        filesystem_store_datadir nor filesystem_store_datadirs are specified.
+        """
+        CONF.clear_override('filesystem_store_datadir')
+        self.assertRaises(exception.BadStoreConfiguration,
+                          self.store.configure_add)
+
+    def test_configure_add_with_multi_datadirs(self):
+        """
+        Tests multiple filesystem specified by filesystem_store_datadirs
+        are parsed correctly.
+        """
+        store_map = [self.useFixture(fixtures.TempDir()).path,
+                     self.useFixture(fixtures.TempDir()).path]
+        CONF.clear_override('filesystem_store_datadir')
+        CONF.set_override('filesystem_store_datadirs',
+                          [store_map[0] + ":100",
+                           store_map[1] + ":200"])
+        self.store.configure_add()
+
+        expected_priority_map = {100: [store_map[0]], 200: [store_map[1]]}
+        expected_priority_list = [200, 100]
+        self.assertEqual(self.store.priority_data_map, expected_priority_map)
+        self.assertEqual(self.store.priority_list, expected_priority_list)
+
+    def test_configure_add_invalid_priority(self):
+        """
+        Tests invalid priority specified by filesystem_store_datadirs
+        param raises BadStoreConfiguration exception.
+        """
+        CONF.clear_override('filesystem_store_datadir')
+        CONF.set_override('filesystem_store_datadirs',
+                          [self.useFixture(fixtures.TempDir()).path + ":100",
+                           self.useFixture(fixtures.TempDir()).path +
+                           ":invalid"])
+        self.assertRaises(exception.BadStoreConfiguration,
+                          self.store.configure_add)
+
+    def test_configure_add_same_dir_multiple_times(self):
+        """
+        Tests BadStoreConfiguration exception is raised if same directory
+        is specified multiple times in filesystem_store_datadirs.
+        """
+        store_map = [self.useFixture(fixtures.TempDir()).path,
+                     self.useFixture(fixtures.TempDir()).path]
+        CONF.clear_override('filesystem_store_datadir')
+        CONF.set_override('filesystem_store_datadirs',
+                          [store_map[0] + ":100",
+                           store_map[1] + ":200",
+                           store_map[0] + ":300"])
+        self.assertRaises(exception.BadStoreConfiguration,
+                          self.store.configure_add)
+
+    def test_configure_add_with_empty_datadir_path(self):
+        """
+        Tests BadStoreConfiguration exception is raised if empty directory
+        path is specified in filesystem_store_datadirs.
+        """
+        CONF.clear_override('filesystem_store_datadir')
+        CONF.set_override('filesystem_store_datadirs', [''])
+        self.assertRaises(exception.BadStoreConfiguration,
+                          self.store.configure_add)
+
+    def test_configure_add_with_readonly_datadir_path(self):
+        """
+        Tests BadStoreConfiguration exception is raised if directory
+        path specified in filesystem_store_datadirs is readonly.
+        """
+        readonly_dir = self.useFixture(fixtures.TempDir()).path
+        os.chmod(readonly_dir, 0o444)
+        CONF.clear_override('filesystem_store_datadir')
+        CONF.set_override('filesystem_store_datadirs', [readonly_dir])
+        self.assertRaises(exception.BadStoreConfiguration,
+                          self.store.configure_add)
 
     def test_get(self):
         """Test a "normal" retrieval of an image in chunks"""
@@ -115,6 +219,73 @@ class TestStore(base.IsolatedUnitTest):
 
         self.assertEqual(expected_file_contents, new_image_contents)
         self.assertEqual(expected_file_size, new_image_file_size)
+
+    def test_add_with_multiple_dirs(self):
+        """Test adding multiple filesystem directories."""
+        store_map = [self.useFixture(fixtures.TempDir()).path,
+                     self.useFixture(fixtures.TempDir()).path]
+        CONF.clear_override('filesystem_store_datadir')
+        CONF.set_override('filesystem_store_datadirs',
+                          [store_map[0] + ":100",
+                           store_map[1] + ":200"])
+        self.store.configure_add()
+
+        """Test that we can add an image via the filesystem backend"""
+        ChunkedFile.CHUNKSIZE = 1024
+        expected_image_id = str(uuid.uuid4())
+        expected_file_size = 5 * units.Ki  # 5K
+        expected_file_contents = "*" * expected_file_size
+        expected_checksum = hashlib.md5(expected_file_contents).hexdigest()
+        expected_location = "file://%s/%s" % (store_map[1],
+                                              expected_image_id)
+        image_file = StringIO.StringIO(expected_file_contents)
+
+        location, size, checksum, _ = self.store.add(expected_image_id,
+                                                     image_file,
+                                                     expected_file_size)
+
+        self.assertEqual(expected_location, location)
+        self.assertEqual(expected_file_size, size)
+        self.assertEqual(expected_checksum, checksum)
+
+        loc = get_location_from_uri(expected_location)
+        (new_image_file, new_image_size) = self.store.get(loc)
+        new_image_contents = ""
+        new_image_file_size = 0
+
+        for chunk in new_image_file:
+            new_image_file_size += len(chunk)
+            new_image_contents += chunk
+
+        self.assertEqual(expected_file_contents, new_image_contents)
+        self.assertEqual(expected_file_size, new_image_file_size)
+
+    def test_add_with_multiple_dirs_storage_full(self):
+        """
+        Test StorageFull exception is raised if no filesystem directory
+        is found that can store an image.
+        """
+        store_map = [self.useFixture(fixtures.TempDir()).path,
+                     self.useFixture(fixtures.TempDir()).path]
+        CONF.clear_override('filesystem_store_datadir')
+        CONF.set_override('filesystem_store_datadirs',
+                          [store_map[0] + ":100",
+                           store_map[1] + ":200"])
+        self.store.configure_add()
+
+        def fake_get_capacity_info(mount_point):
+            return 0
+
+        self.stubs.Set(self.store, '_get_capacity_info',
+                       fake_get_capacity_info)
+        ChunkedFile.CHUNKSIZE = 1024
+        expected_image_id = str(uuid.uuid4())
+        expected_file_size = 5 * units.Ki  # 5K
+        expected_file_contents = "*" * expected_file_size
+        image_file = StringIO.StringIO(expected_file_contents)
+
+        self.assertRaises(exception.StorageFull, self.store.add,
+                          expected_image_id, image_file, expected_file_size)
 
     def test_add_check_metadata_success(self):
         expected_image_id = str(uuid.uuid4())
