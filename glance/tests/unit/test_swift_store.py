@@ -33,7 +33,7 @@ from glance.openstack.common import units
 
 from glance.store import BackendException
 from glance.store.location import get_location_from_uri
-import glance.store.swift
+from glance.store.swift import swift_retry_iter
 from glance.tests.unit import base
 
 CONF = cfg.CONF
@@ -52,7 +52,8 @@ SWIFT_CONF = {'verbose': True,
               'swift_store_user': 'user',
               'swift_store_key': 'key',
               'swift_store_auth_address': 'localhost:8080',
-              'swift_store_container': 'glance'}
+              'swift_store_container': 'glance',
+              'swift_store_retry_get_count': 1}
 
 
 # We stub out as little as possible to ensure that the code paths
@@ -134,6 +135,13 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
             raise swiftclient.ClientException(msg,
                                               http_status=httplib.NOT_FOUND)
 
+        byte_range = None
+        headers = kwargs.get('headers', dict())
+        if headers is not None:
+            headers = dict((k.lower(), v) for k, v in headers.iteritems())
+            if 'range' in headers:
+                byte_range = headers.get('range')
+
         fixture = fixture_headers[fixture_key]
         if 'manifest' in fixture:
             # Large object manifest... we return a file containing
@@ -144,10 +152,16 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
             result = StringIO.StringIO()
             for key in chunk_keys:
                 result.write(fixture_objects[key].getvalue())
-            return fixture_headers[fixture_key], result
-
         else:
-            return fixture_headers[fixture_key], fixture_objects[fixture_key]
+            result = fixture_objects[fixture_key]
+
+        if byte_range is not None:
+            start = int(byte_range.split('=')[1].strip('-'))
+            result = StringIO.StringIO(result.getvalue()[start:])
+            fixture_headers[fixture_key]['content-length'] = len(
+                result.getvalue())
+
+        return fixture_headers[fixture_key], result
 
     def fake_head_object(url, token, container, name, **kwargs):
         # HEAD returns the list of headers for an object
@@ -245,6 +259,29 @@ class SwiftTests(object):
             data += chunk
         self.assertEqual(expected_data, data)
 
+    def test_get_with_retry(self):
+        """
+        Test a retrieval where Swift does not get the full image in a single
+        request.
+        """
+        uri = "swift://%s:key@auth_address/glance/%s" % (
+            self.swift_store_user, FAKE_UUID)
+        loc = get_location_from_uri(uri)
+        (image_swift, image_size) = self.store.get(loc)
+        resp_full = ''.join([chunk for chunk in image_swift.wrapped])
+        resp_half = resp_full[:len(resp_full) / 2]
+        image_swift.wrapped = swift_retry_iter(resp_half, image_size,
+                                               self.store,
+                                               loc.store_location)
+        self.assertEqual(image_size, 5120)
+
+        expected_data = "*" * FIVE_KB
+        data = ""
+
+        for chunk in image_swift:
+            data += chunk
+        self.assertEqual(expected_data, data)
+
     def test_get_with_http_auth(self):
         """
         Test a retrieval from Swift with an HTTP authurl. This is
@@ -301,7 +338,7 @@ class SwiftTests(object):
 
         loc = get_location_from_uri(expected_location)
         (new_image_swift, new_image_size) = self.store.get(loc)
-        new_image_contents = new_image_swift.getvalue()
+        new_image_contents = ''.join([chunk for chunk in new_image_swift])
         new_image_swift_size = len(new_image_swift)
 
         self.assertEqual(expected_swift_contents, new_image_contents)
@@ -358,7 +395,7 @@ class SwiftTests(object):
 
             loc = get_location_from_uri(expected_location)
             (new_image_swift, new_image_size) = self.store.get(loc)
-            new_image_contents = new_image_swift.getvalue()
+            new_image_contents = ''.join([chunk for chunk in new_image_swift])
             new_image_swift_size = len(new_image_swift)
 
             self.assertEqual(expected_swift_contents, new_image_contents)
@@ -422,7 +459,7 @@ class SwiftTests(object):
 
         loc = get_location_from_uri(expected_location)
         (new_image_swift, new_image_size) = self.store.get(loc)
-        new_image_contents = new_image_swift.getvalue()
+        new_image_contents = ''.join([chunk for chunk in new_image_swift])
         new_image_swift_size = len(new_image_swift)
 
         self.assertEqual(expected_swift_contents, new_image_contents)
@@ -470,8 +507,8 @@ class SwiftTests(object):
 
         loc = get_location_from_uri(expected_location)
         (new_image_swift, new_image_size) = self.store.get(loc)
-        new_image_contents = new_image_swift.getvalue()
-        new_image_swift_size = len(new_image_swift)
+        new_image_contents = ''.join([chunk for chunk in new_image_swift])
+        new_image_swift_size = len(new_image_contents)
 
         self.assertEqual(expected_swift_contents, new_image_contents)
         self.assertEqual(expected_swift_size, new_image_swift_size)
@@ -530,8 +567,8 @@ class SwiftTests(object):
 
         loc = get_location_from_uri(expected_location)
         (new_image_swift, new_image_size) = self.store.get(loc)
-        new_image_contents = new_image_swift.getvalue()
-        new_image_swift_size = len(new_image_swift)
+        new_image_contents = ''.join([chunk for chunk in new_image_swift])
+        new_image_swift_size = len(new_image_contents)
 
         self.assertEqual(expected_swift_contents, new_image_contents)
         self.assertEqual(expected_swift_size, new_image_swift_size)

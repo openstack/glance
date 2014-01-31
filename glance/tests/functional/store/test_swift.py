@@ -21,9 +21,11 @@ Swift backend
 """
 
 import ConfigParser
+import hashlib
 import os
 import os.path
 import random
+import string
 import StringIO
 import urllib
 import urlparse
@@ -290,6 +292,128 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
                                         prefix=image_id)
         segments = [segment['name'] for segment in container[1]]
         self.assertEqual(0, len(segments), 'Got segments %s' % segments)
+
+    def test_retries_fail_start_of_download(self):
+        """
+        Get an object from Swift where Swift does not complete the request
+        in one attempt. Fails at the start of the download.
+        """
+        self.config(
+            swift_store_retry_get_count=1,
+        )
+        store = self.get_store()
+        image_id = str(uuid.uuid4())
+        image_size = 1024 * 1024 * 5  # 5 MB
+        chars = string.ascii_uppercase + string.digits
+        image_data = ''.join(random.choice(chars) for x in range(image_size))
+        image_checksum = hashlib.md5(image_data)
+        uri, add_size, add_checksum, _ = store.add(image_id,
+                                                   image_data,
+                                                   image_size)
+
+        location = glance.store.location.Location(
+            self.store_name,
+            store.get_store_location_class(),
+            uri=uri,
+            image_id=image_id)
+
+        def iter_wrapper(iterable):
+            # raise StopIteration as soon as iteration begins
+            yield ''
+
+        (get_iter, get_size) = store.get(location)
+        get_iter.wrapped = glance.store.swift.swift_retry_iter(
+            iter_wrapper(get_iter.wrapped), image_size,
+            store, location.store_location)
+        self.assertEqual(image_size, get_size)
+        received_data = ''.join(get_iter.wrapped)
+        self.assertEqual(image_data, received_data)
+        self.assertEqual(image_checksum.hexdigest(),
+                         hashlib.md5(received_data).hexdigest())
+
+    def test_retries_fail_partway_through_download(self):
+        """
+        Get an object from Swift where Swift does not complete the request
+        in one attempt. Fails partway through the download.
+        """
+        self.config(
+            swift_store_retry_get_count=1,
+        )
+        store = self.get_store()
+        image_id = str(uuid.uuid4())
+        image_size = 1024 * 1024 * 5  # 5 MB
+        chars = string.ascii_uppercase + string.digits
+        image_data = ''.join(random.choice(chars) for x in range(image_size))
+        image_checksum = hashlib.md5(image_data)
+        uri, add_size, add_checksum, _ = store.add(image_id,
+                                                   image_data,
+                                                   image_size)
+
+        location = glance.store.location.Location(
+            self.store_name,
+            store.get_store_location_class(),
+            uri=uri,
+            image_id=image_id)
+
+        def iter_wrapper(iterable):
+            bytes_received = 0
+            for chunk in iterable:
+                yield chunk
+                bytes_received += len(chunk)
+                if bytes_received > (image_size / 2):
+                    raise StopIteration
+
+        (get_iter, get_size) = store.get(location)
+        get_iter.wrapped = glance.store.swift.swift_retry_iter(
+            iter_wrapper(get_iter.wrapped), image_size,
+            store, location.store_location)
+        self.assertEqual(image_size, get_size)
+        received_data = ''.join(get_iter.wrapped)
+        self.assertEqual(image_data, received_data)
+        self.assertEqual(image_checksum.hexdigest(),
+                         hashlib.md5(received_data).hexdigest())
+
+    def test_retries_fail_end_of_download(self):
+        """
+        Get an object from Swift where Swift does not complete the request
+        in one attempt. Fails at the end of the download
+        """
+        self.config(
+            swift_store_retry_get_count=1,
+        )
+        store = self.get_store()
+        image_id = str(uuid.uuid4())
+        image_size = 1024 * 1024 * 5  # 5 MB
+        chars = string.ascii_uppercase + string.digits
+        image_data = ''.join(random.choice(chars) for x in range(image_size))
+        image_checksum = hashlib.md5(image_data)
+        uri, add_size, add_checksum, _ = store.add(image_id,
+                                                   image_data,
+                                                   image_size)
+
+        location = glance.store.location.Location(
+            self.store_name,
+            store.get_store_location_class(),
+            uri=uri,
+            image_id=image_id)
+
+        def iter_wrapper(iterable):
+            bytes_received = 0
+            for chunk in iterable:
+                yield chunk
+                bytes_received += len(chunk)
+                if bytes_received == image_size:
+                    raise StopIteration
+
+        (get_iter, get_size) = store.get(location)
+        get_iter.wrapped = glance.store.swift.swift_retry_iter(
+            iter_wrapper(get_iter.wrapped), image_size,
+            store, location.store_location)
+        self.assertEqual(image_size, get_size)
+        received_data = ''.join(get_iter.wrapped)
+        self.assertEqual(image_data, received_data)
+        self.assertEqual(image_checksum.hexdigest(),
+                         hashlib.md5(received_data).hexdigest())
 
     def stash_image(self, image_id, image_data):
         container_name = self.swift_config['swift_store_container']

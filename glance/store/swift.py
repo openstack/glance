@@ -106,10 +106,48 @@ swift_opts = [
                        'https swift requests. Setting to False may improve '
                        'performance for images which are already in a '
                        'compressed format, eg qcow2.')),
+    cfg.IntOpt('swift_store_retry_get_count', default=0,
+               help=_('The number of times a Swift download will be retried '
+                      'before the request fails.'))
 ]
 
 CONF = cfg.CONF
 CONF.register_opts(swift_opts)
+
+
+def swift_retry_iter(resp_iter, length, store, location):
+    length = length if length else (resp_iter.len
+                                    if hasattr(resp_iter, 'len') else 0)
+    retries = 0
+    bytes_read = 0
+
+    while retries <= CONF.swift_store_retry_get_count:
+        try:
+            for chunk in resp_iter:
+                yield chunk
+                bytes_read += len(chunk)
+        except swiftclient.ClientException as e:
+            LOG.warn(_("Swift exception raised %s") % e)
+
+        if bytes_read != length:
+            if retries == CONF.swift_store_retry_get_count:
+                # terminate silently and let higher level decide
+                LOG.error(_("Stopping Swift retries after %d "
+                            "attempts") % retries)
+                break
+            else:
+                retries += 1
+                LOG.info(_("Retrying Swift connection "
+                           "(%(retries)d/%(max_retries)d) with "
+                           "range=%(start)d-%(end)d") %
+                         {'retries': retries,
+                          'max_retries': CONF.swift_store_retry_get_count,
+                          'start': bytes_read,
+                          'end': length})
+                (resp_headers, resp_iter) = store._get_object(location, None,
+                                                              bytes_read)
+        else:
+            break
 
 
 class StoreLocation(glance.store.location.StoreLocation):
@@ -273,15 +311,18 @@ class BaseStore(glance.store.base.Store):
         self.insecure = CONF.swift_store_auth_insecure
         self.ssl_compression = CONF.swift_store_ssl_compression
 
-    def get(self, location, connection=None):
-        location = location.store_location
+    def _get_object(self, location, connection=None, start=None):
         if not connection:
             connection = self.get_connection(location)
+        headers = {}
+        if start is not None:
+            bytes_range = 'bytes=%d-' % start
+            headers = {'Range': bytes_range}
 
         try:
             resp_headers, resp_body = connection.get_object(
                 container=location.container, obj=location.obj,
-                resp_chunk_size=self.CHUNKSIZE)
+                resp_chunk_size=self.CHUNKSIZE, headers=headers)
         except swiftclient.ClientException as e:
             if e.http_status == httplib.NOT_FOUND:
                 msg = _("Swift could not find object %s.") % location.obj
@@ -289,6 +330,12 @@ class BaseStore(glance.store.base.Store):
                 raise exception.NotFound(msg)
             else:
                 raise
+
+        return (resp_headers, resp_body)
+
+    def get(self, location, connection=None):
+        location = location.store_location
+        (resp_headers, resp_body) = self._get_object(location, connection)
 
         class ResponseIndexable(glance.store.Indexable):
             def another(self):
@@ -298,6 +345,8 @@ class BaseStore(glance.store.base.Store):
                     return ''
 
         length = int(resp_headers.get('content-length', 0))
+        if CONF.swift_store_retry_get_count > 0:
+            resp_body = swift_retry_iter(resp_body, length, self, location)
         return (ResponseIndexable(resp_body, length), length)
 
     def get_size(self, location, connection=None):
