@@ -662,15 +662,21 @@ class DriverTests(object):
 
     def test_image_paginate(self):
         """Paginate through a list of images using limit and marker"""
-        extra_uuids = [uuidutils.generate_uuid() for i in range(2)]
-        extra_images = [build_image_fixture(id=_id) for _id in extra_uuids]
+        now = timeutils.utcnow()
+        extra_uuids = [(str(uuid.uuid4()),
+                        now + datetime.timedelta(seconds=i * 5))
+                       for i in range(2)]
+        extra_images = [build_image_fixture(id=_id,
+                                            created_at=_dt,
+                                            updated_at=_dt)
+                        for _id, _dt in extra_uuids]
         self.create_images(extra_images)
 
         # Reverse uuids to match default sort of created_at
         extra_uuids.reverse()
 
         page = self.db_api.image_get_all(self.context, limit=2)
-        self.assertEquals(extra_uuids, [i['id'] for i in page])
+        self.assertEqual([i[0] for i in extra_uuids], [i['id'] for i in page])
         last = page[-1]['id']
 
         page = self.db_api.image_get_all(self.context, limit=2, marker=last)
