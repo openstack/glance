@@ -123,17 +123,27 @@ def check_quota(context, image_size, db_api, image_id=None):
     if remaining is None:
         return
 
+    user = getattr(context, 'user', '<unknown>')
+
     if image_size is None:
         #NOTE(jbresnah) When the image size is None it means that it is
         # not known.  In this case the only time we will raise an
         # exception is when there is no room left at all, thus we know
         # it will not fit
         if remaining <= 0:
+            LOG.info(_("User %(user)s attempted to upload an image of"
+                       " unknown size that will exceeed the quota."
+                       " %(remaining)d bytes remaining.")
+                     % {'user': user, 'remaining': remaining})
             raise exception.StorageQuotaFull(image_size=image_size,
                                              remaining=remaining)
         return
 
     if image_size > remaining:
+        LOG.info(_("User %(user)s attempted to upload an image of size"
+                   " %(size)d that will exceeed the quota. %(remaining)d"
+                   " bytes remaining.")
+                 % {'user': user, 'size': image_size, 'remaining': remaining})
         raise exception.StorageQuotaFull(image_size=image_size,
                                          remaining=remaining)
 
