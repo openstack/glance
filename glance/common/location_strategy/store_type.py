@@ -59,7 +59,8 @@ def init():
                'swift': ['swift', 'swift+https', 'swift+http'],
                'gridfs': ['gridfs'],
                'sheepdog': ['sheepdog'],
-               'cinder': ['cinder']}
+               'cinder': ['cinder'],
+               'vmware_datastore': ['vsphere']}
     _STORE_TO_SCHEME_MAP.clear()
     _STORE_TO_SCHEME_MAP.update(mapping)
 
