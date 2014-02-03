@@ -121,12 +121,8 @@ class ImagesController(object):
 
             if changes:
                     image_repo.save(image)
-
-        except exception.NotFound:
-            msg = (_("Failed to find image %(image_id)s to update") %
-                   {'image_id': image_id})
-            LOG.info(msg)
-            raise webob.exc.HTTPNotFound(explanation=msg)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=unicode(e))
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
         except exception.InvalidParameterValue as e:
