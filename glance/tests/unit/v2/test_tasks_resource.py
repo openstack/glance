@@ -95,14 +95,19 @@ class TestTasksController(test_utils.BaseTestCase):
 
     def _create_tasks(self):
         self.db.reset()
+        now = timeutils.utcnow()
+        times = [now + datetime.timedelta(seconds=5 * i) for i in range(4)]
         self.tasks = [
-            _db_fixture(UUID1, owner=TENANT1),
+            _db_fixture(UUID1, owner=TENANT1,
+                        created_at=times[0], updated_at=times[0]),
             # FIXME(venkatesh): change the type to include clone and export
             # once they are included as a valid types under Task domain model.
-            _db_fixture(UUID2, owner=TENANT2, type='import'),
-            _db_fixture(UUID3, owner=TENANT3, type='import'),
-            _db_fixture(UUID4, owner=TENANT4, type='import')
-        ]
+            _db_fixture(UUID2, owner=TENANT2, type='import',
+                        created_at=times[1], updated_at=times[1]),
+            _db_fixture(UUID3, owner=TENANT3, type='import',
+                        created_at=times[2], updated_at=times[2]),
+            _db_fixture(UUID4, owner=TENANT4, type='import',
+                        created_at=times[3], updated_at=times[3])]
         [self.db.task_create(None, task) for task in self.tasks]
 
     def test_index(self):
@@ -221,8 +226,7 @@ class TestTasksController(test_utils.BaseTestCase):
         output = self.controller.index(request, sort_dir='asc', limit=3)
         actual = [task.task_id for task in output['tasks']]
         self.assertEqual(3, len(actual))
-        self.assertEqual(sorted(set(actual)),
-                         sorted(set([UUID1, UUID2, UUID3])))
+        self.assertEqual(actual, [UUID1, UUID2, UUID3])
 
     def test_index_with_sort_key(self):
         path = '/tasks'
