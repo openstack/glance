@@ -289,6 +289,12 @@ def get_size_from_backend(context, uri):
     return store.get_size(loc)
 
 
+def validate_location(context, uri):
+    loc = location.get_location_from_uri(uri)
+    store = get_store_from_uri(context, uri, loc)
+    store.validate_location(uri)
+
+
 def delete_from_backend(context, uri, **kwargs):
     """Removes chunks of data from backend specified by uri"""
     loc = location.get_location_from_uri(uri)

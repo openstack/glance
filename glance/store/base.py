@@ -92,6 +92,13 @@ class Store(object):
         """
         pass
 
+    def validate_location(self, location):
+        """
+        Takes a location and validates it for the presence
+        of any account references
+        """
+        pass
+
     def get(self, location):
         """
         Takes a `glance.store.location.Location` object that indicates

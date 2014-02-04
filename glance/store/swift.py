@@ -23,9 +23,11 @@ import math
 
 from oslo.config import cfg
 import six.moves.urllib.parse as urlparse
+import urllib
 
 from glance.common import auth
 from glance.common import exception
+from glance.common import swift_store_utils
 from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 import glance.store
@@ -48,19 +50,10 @@ swift_opts = [
     cfg.BoolOpt('swift_enable_snet', default=False,
                 help=_('Whether to use ServiceNET to communicate with the '
                        'Swift storage servers.')),
-    cfg.StrOpt('swift_store_auth_address',
-               help=_('The address where the Swift authentication service '
-                      'is listening.')),
-    cfg.StrOpt('swift_store_user', secret=True,
-               help=_('The user to authenticate against the Swift '
-                      'authentication service.')),
-    cfg.StrOpt('swift_store_key', secret=True,
-               help=_('Auth key for the user authenticating against the '
-                      'Swift authentication service.')),
     cfg.StrOpt('swift_store_auth_version', default='2',
                help=_('Version of the authentication service to use. '
                       'Valid versions are 2 for keystone and 1 for swauth '
-                      'and rackspace.')),
+                      'and rackspace. (deprecated)')),
     cfg.BoolOpt('swift_store_auth_insecure', default=False,
                 help=_('If True, swiftclient won\'t check for a valid SSL '
                        'certificate when authenticating.')),
@@ -112,6 +105,8 @@ swift_opts = [
 
 CONF = cfg.CONF
 CONF.register_opts(swift_opts)
+
+SWIFT_STORE_REF_PARAMS = swift_store_utils.SwiftParams().params
 
 
 def swift_retry_iter(resp_iter, length, store, location):
@@ -179,11 +174,10 @@ class StoreLocation(glance.store.location.StoreLocation):
 
     def _get_credstring(self):
         if self.user and self.key:
-            return '%s:%s@' % (urlparse.quote(self.user),
-                               urlparse.quote(self.key))
+            return '%s:%s' % (urllib.quote(self.user), urllib.quote(self.key))
         return ''
 
-    def get_uri(self):
+    def get_uri(self, credentials_included=True):
         auth_or_store_url = self.auth_or_store_url
         if auth_or_store_url.startswith('http://'):
             auth_or_store_url = auth_or_store_url[len('http://'):]
@@ -195,36 +189,42 @@ class StoreLocation(glance.store.location.StoreLocation):
         container = self.container.strip('/')
         obj = self.obj.strip('/')
 
+        if not credentials_included:
+            #Used only in case of an add
+            #Get the current store from config
+            store = CONF.default_swift_reference
+
+            return '%s://%s/%s/%s' % ('swift+config', store, container, obj)
+        if self.scheme == 'swift+config':
+            if self.ssl_enabled == True:
+                self.scheme = 'swift+https'
+            else:
+                self.scheme = 'swift+http'
+        if credstring != '':
+            credstring = "%s@" % credstring
         return '%s://%s%s/%s/%s' % (self.scheme, credstring, auth_or_store_url,
                                     container, obj)
 
-    def parse_uri(self, uri):
-        """
-        Parse URLs. This method fixes an issue where credentials specified
-        in the URL are interpreted differently in Python 2.6.1+ than prior
-        versions of Python. It also deals with the peculiarity that new-style
-        Swift URIs have where a username can contain a ':', like so:
+    def _get_conf_value_from_account_ref(self, netloc):
+        try:
+            self.user = SWIFT_STORE_REF_PARAMS[netloc]['user']
+            self.key = SWIFT_STORE_REF_PARAMS[netloc]['key']
+            netloc = SWIFT_STORE_REF_PARAMS[netloc]['auth_address']
+            self.ssl_enabled = True
+            if netloc != '':
+                if netloc.startswith('http://'):
+                    self.ssl_enabled = False
+                    netloc = netloc[len('http://'):]
+                elif netloc.startswith('https://'):
+                    netloc = netloc[len('https://'):]
+        except KeyError:
+            reason = _("Badly formed Swift URI. Credentials not found for"
+                       "account reference")
+            LOG.debug(reason)
+            raise exception.BadStoreUri()
+        return netloc
 
-            swift://account:user:pass@authurl.com/container/obj
-        """
-        # Make sure that URIs that contain multiple schemes, such as:
-        # swift://user:pass@http://authurl.com/v1/container/obj
-        # are immediately rejected.
-        if uri.count('://') != 1:
-            reason = ("URI cannot contain more than one occurrence "
-                      "of a scheme. If you have specified a URI like "
-                      "swift://user:pass@http://authurl.com/v1/container/obj"
-                      ", you need to change it to use the "
-                      "swift+http:// scheme, like so: "
-                      "swift+http://user:pass@authurl.com/v1/container/obj")
-            LOG.debug("Invalid store URI: %(reason)s", {'reason': reason})
-            raise exception.BadStoreUri(message=reason)
-
-        pieces = urlparse.urlparse(uri)
-        assert pieces.scheme in ('swift', 'swift+http', 'swift+https')
-        self.scheme = pieces.scheme
-        netloc = pieces.netloc
-        path = pieces.path.lstrip('/')
+    def _form_uri_parts(self, netloc, path):
         if netloc != '':
             # > Python 2.6.1
             if '@' in netloc:
@@ -242,16 +242,24 @@ class StoreLocation(glance.store.location.StoreLocation):
             path = path[path.find('/'):].strip('/')
         if creds:
             cred_parts = creds.split(':')
-            if len(cred_parts) != 2:
+            if len(cred_parts) < 2:
                 reason = "Badly formed credentials in Swift URI."
                 LOG.debug(reason)
                 raise exception.BadStoreUri()
-            user, key = cred_parts
-            self.user = urlparse.unquote(user)
-            self.key = urlparse.unquote(key)
+            key = cred_parts.pop()
+            user = ':'.join(cred_parts)
+            creds = urllib.unquote(creds)
+            try:
+                self.user, self.key = creds.rsplit(':', 1)
+            except exception.BadStoreConfiguration:
+                self.user = urllib.unquote(user)
+                self.key = urllib.unquote(key)
         else:
             self.user = None
             self.key = None
+        return netloc, path
+
+    def _form_auth_or_store_url(self, netloc, path):
         path_parts = path.split('/')
         try:
             self.obj = path_parts.pop()
@@ -265,11 +273,52 @@ class StoreLocation(glance.store.location.StoreLocation):
             LOG.debug(reason)
             raise exception.BadStoreUri()
 
+    def parse_uri(self, uri):
+        """
+        Parse URLs. This method fixes an issue where credentials specified
+        in the URL are interpreted differently in Python 2.6.1+ than prior
+        versions of Python. It also deals with the peculiarity that new-style
+        Swift URIs have where a username can contain a ':', like so:
+
+            swift://account:user:pass@authurl.com/container/obj
+            and for system created locations with account reference
+            swift+config://account_reference/container/obj
+        """
+        # Make sure that URIs that contain multiple schemes, such as:
+        # swift://user:pass@http://authurl.com/v1/container/obj
+        # are immediately rejected.
+        if uri.count('://') != 1:
+            reason = _("URI cannot contain more than one occurrence "
+                       "of a scheme. If you have specified a URI like "
+                       "swift://user:pass@http://authurl.com/v1/container/obj"
+                       ", you need to change it to use the "
+                       "swift+http:// scheme, like so: "
+                       "swift+http://user:pass@authurl.com/v1/container/obj")
+            LOG.debug("Invalid store URI: %(reason)s", {'reason': reason})
+            raise exception.BadStoreUri(message=reason)
+
+        pieces = urlparse.urlparse(uri)
+        assert pieces.scheme in ('swift', 'swift+http', 'swift+https',
+                                 'swift+config')
+
+        self.scheme = pieces.scheme
+        netloc = pieces.netloc
+        path = pieces.path.lstrip('/')
+
+        # NOTE(Sridevi): Fix to map the account reference to the
+        # corresponding CONF value
+        if self.scheme == 'swift+config':
+            netloc = self._get_conf_value_from_account_ref(netloc)
+        else:
+            netloc, path = self._form_uri_parts(netloc, path)
+
+        self._form_auth_or_store_url(netloc, path)
+
     @property
     def swift_url(self):
         """
-        Creates a fully-qualified auth url that the Swift client library can
-        use. The scheme for the auth_url is determined using the scheme
+        Creates a fully-qualified auth address that the Swift client library
+        can use. The scheme for the auth_address is determined using the scheme
         included in the `location` field.
 
         HTTPS is assumed, unless 'swift+http' is specified.
@@ -277,6 +326,11 @@ class StoreLocation(glance.store.location.StoreLocation):
         if self.auth_or_store_url.startswith('http'):
             return self.auth_or_store_url
         else:
+            if self.scheme == 'swift+config':
+                if self.ssl_enabled == True:
+                    self.scheme = 'swift+https'
+                else:
+                    self.scheme = 'swift+http'
             if self.scheme in ('swift+https', 'swift'):
                 auth_scheme = 'https://'
             else:
@@ -296,7 +350,7 @@ class BaseStore(glance.store.base.Store):
     CHUNKSIZE = 65536
 
     def get_schemes(self):
-        return ('swift+https', 'swift', 'swift+http')
+        return ('swift+https', 'swift', 'swift+http', 'swift+config')
 
     def configure(self):
         _obj_size = self._option_get('swift_store_large_object_size')
@@ -363,8 +417,8 @@ class BaseStore(glance.store.base.Store):
     def _option_get(self, param):
         result = getattr(CONF, param)
         if not result:
-            reason = (_("Could not find %(param)s in configuration "
-                        "options.") % {'param': param})
+            reason = (_("Could not find %(param)s in configuration options.")
+                      % param)
             LOG.error(reason)
             raise exception.BadStoreConfiguration(store_name="swift",
                                                   reason=reason)
@@ -491,8 +545,13 @@ class BaseStore(glance.store.base.Store):
             # image data. We *really* should consider NOT returning
             # the location attribute from GET /images/<ID> and
             # GET /images/details
+            if swift_store_utils.is_multiple_swift_store_accounts_enabled():
+                include_creds = False
+            else:
+                include_creds = True
 
-            return (location.get_uri(), image_size, obj_etag, {})
+            return (location.get_uri(credentials_included=include_creds),
+                    image_size, obj_etag, {})
         except swiftclient.ClientException as e:
             if e.http_status == httplib.CONFLICT:
                 raise exception.Duplicate(_("Swift already has an image at "
@@ -587,14 +646,29 @@ class SingleTenantStore(BaseStore):
         self.auth_version = self._option_get('swift_store_auth_version')
 
     def configure_add(self):
-        self.auth_address = self._option_get('swift_store_auth_address')
+        default_swift_reference = \
+            SWIFT_STORE_REF_PARAMS.get(
+                CONF.default_swift_reference)
+        if default_swift_reference:
+            self.auth_address = default_swift_reference.get('auth_address')
+        if (not default_swift_reference) or (not self.auth_address):
+            reason = _("A value for swift_store_auth_address is required.")
+            LOG.error(reason)
+            raise exception.BadStoreConfiguration(store_name="swift",
+                                                  reason=reason)
         if self.auth_address.startswith('http://'):
             self.scheme = 'swift+http'
         else:
             self.scheme = 'swift+https'
         self.container = CONF.swift_store_container
-        self.user = self._option_get('swift_store_user')
-        self.key = self._option_get('swift_store_key')
+        self.user = default_swift_reference.get('user')
+        self.key = default_swift_reference.get('key')
+
+        if not (self.user or self.key):
+            reason = _("A value for swift_store_ref_params is required.")
+            LOG.error(reason)
+            raise exception.BadStoreConfiguration(store_name="swift",
+                                                  reason=reason)
 
     def create_location(self, image_id):
         specs = {'scheme': self.scheme,
@@ -604,6 +678,12 @@ class SingleTenantStore(BaseStore):
                  'user': self.user,
                  'key': self.key}
         return StoreLocation(specs)
+
+    def validate_location(self, uri):
+        pieces = urlparse.urlparse(uri)
+        if pieces.scheme in ['swift+config']:
+            reason = (_("Location credentials are invalid"))
+            raise exception.BadStoreUri(message=reason)
 
     def get_connection(self, location):
         if not location.user:

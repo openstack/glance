@@ -142,6 +142,10 @@ class InvalidPropertyProtectionConfiguration(Invalid):
     message = _("Invalid configuration in property protection file.")
 
 
+class InvalidSwiftStoreConfiguration(Invalid):
+    message = _("Invalid configuration in glance-swift conf file.")
+
+
 class InvalidFilterRangeValue(Invalid):
     message = _("Unable to filter using the specified range.")
 

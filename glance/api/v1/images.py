@@ -51,6 +51,7 @@ from glance.store import get_known_stores
 from glance.store import get_size_from_backend
 from glance.store import get_store_from_location
 from glance.store import get_store_from_scheme
+from glance.store import validate_location
 
 LOG = logging.getLogger(__name__)
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
@@ -707,6 +708,12 @@ class Controller(controller.BaseController):
             self.pool.spawn_n(self._upload_and_activate, req, image_meta)
         else:
             if location:
+                try:
+                    validate_location(req.context, location)
+                except (exception.BadStoreUri) as bse:
+                    raise HTTPBadRequest(explanation=unicode(bse),
+                                         request=req)
+
                 self._validate_image_for_activation(req, image_id, image_meta)
                 image_size_meta = image_meta.get('size')
                 if image_size_meta:

@@ -91,6 +91,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                             'metadata': {}}],
              'properties': {}}]
         self.context = glance.context.RequestContext(is_admin=True)
+        glance.api.v1.images.validate_location = mock.Mock()
         db_api.get_engine()
         self.destroy_fixtures()
         self.create_fixtures()
@@ -958,6 +959,28 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
             res = req.get_response(self.api)
             self.assertEqual(res.status_int, 409)
+
+    def test_add_location_with_invalid_location(self):
+        """Tests creates an image from location and conflict image size"""
+
+        mock_validate_location = mock.Mock()
+        glance.api.v1.images.validate_location = mock_validate_location
+        mock_validate_location.side_effect = exception.BadStoreUri()
+
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-location': 'http://a/b/c.tar.gz',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #F',
+                           'x-image-meta-size': '1'}
+
+        req = webob.Request.blank("/images")
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 400)
 
     def test_add_copy_from_with_location(self):
         """Tests creates an image from copy-from and location"""

@@ -1,0 +1,21 @@
+# glance-swift.conf.sample
+#
+# This file is an example config file when
+# multiple swift accounts/backing stores are enabled.
+#
+# Specify the reference name in []
+# For each section, specify the auth_address, user and key.
+#
+# WARNING:
+# * If any of auth_address, user or key is not specified,
+# the glance-api's swift store will fail to configure
+
+[ref1]
+user = tenant:user1
+key = key1
+auth_address = auth123@example.com
+
+[ref2]
+user = user2
+key = key2
+auth_address = http://auth345@example.com

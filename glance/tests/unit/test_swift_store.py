@@ -15,6 +15,8 @@
 
 """Tests the Swift backend store"""
 
+import copy
+import fixtures
 import hashlib
 import httplib
 import mock
@@ -23,19 +25,21 @@ import uuid
 
 from oslo.config import cfg
 import six
-import six.moves.urllib.parse as urlparse
 import stubout
 import swiftclient
 
 import glance.common.auth
 from glance.common import exception
+from glance.common import swift_store_utils
 from glance.common import utils
 from glance.openstack.common import units
 
 from glance.store import BackendException
 from glance.store.location import get_location_from_uri
+from glance.store import swift
 from glance.store.swift import swift_retry_iter
 from glance.tests.unit import base
+
 
 CONF = cfg.CONF
 
@@ -50,11 +54,15 @@ SWIFT_CONF = {'verbose': True,
               'debug': True,
               'known_stores': ['glance.store.swift.Store'],
               'default_store': 'swift',
+              'swift_store_auth_address': 'localhost:8080',
+              'swift_store_container': 'glance',
               'swift_store_user': 'user',
               'swift_store_key': 'key',
               'swift_store_auth_address': 'localhost:8080',
               'swift_store_container': 'glance',
-              'swift_store_retry_get_count': 1}
+              'swift_store_retry_get_count': 1,
+              'default_swift_reference': 'ref1'
+              }
 
 
 # We stub out as little as possible to ensure that the code paths
@@ -223,7 +231,7 @@ class SwiftTests(object):
 
     @property
     def swift_store_user(self):
-        return urlparse.quote(CONF.swift_store_user)
+        return 'tenant:user1'
 
     def test_get_size(self):
         """
@@ -234,6 +242,27 @@ class SwiftTests(object):
         loc = get_location_from_uri(uri)
         image_size = self.store.get_size(loc)
         self.assertEqual(image_size, 5120)
+
+    def test_validate_location_for_invalid_uri(self):
+        """
+        Test that validate location raises when the location contains
+        any account reference.
+        """
+        uri = "swift+config://store_1/glance/%s"
+        self.assertRaises(exception.BadStoreUri,
+                          self.store.validate_location,
+                          uri)
+
+    def test_validate_location_for_valid_uri(self):
+        """
+        Test that validate location verifies that the location does not
+        contain any account reference
+        """
+        uri = "swift://user:key@auth_address/glance/%s"
+        try:
+            self.assertIsNone(self.store.validate_location(uri))
+        except Exception:
+            self.fail('Location uri validation failed')
 
     def test_get_size_with_multi_tenant_on(self):
         """Test that single tenant uris work with multi tenant on."""
@@ -315,13 +344,16 @@ class SwiftTests(object):
 
     def test_add(self):
         """Test that we can add an image via the swift backend"""
+        swift_store_utils.is_multiple_swift_store_accounts_enabled = \
+            mock.Mock(return_value=False)
+        reload(swift)
+        self.store = Store()
         expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
         expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
         expected_image_id = str(uuid.uuid4())
-        loc = 'swift+https://%s:key@localhost:8080/glance/%s'
-        expected_location = loc % (self.swift_store_user,
-                                   expected_image_id)
+        loc = "swift+https://tenant%%3Auser1:key@localhost:8080/glance/%s"
+        expected_location = loc % (expected_image_id)
         image_swift = six.StringIO(expected_swift_contents)
 
         global SWIFT_PUT_OBJECT_CALLS
@@ -345,35 +377,48 @@ class SwiftTests(object):
         self.assertEqual(expected_swift_contents, new_image_contents)
         self.assertEqual(expected_swift_size, new_image_swift_size)
 
+    def test_add_multi_store(self):
+
+        conf = copy.deepcopy(SWIFT_CONF)
+        conf['default_swift_reference'] = 'store_2'
+        self.config(**conf)
+        reload(swift)
+        self.store = Store()
+
+        expected_swift_size = FIVE_KB
+        expected_swift_contents = "*" * expected_swift_size
+        expected_image_id = str(uuid.uuid4())
+        image_swift = six.StringIO(expected_swift_contents)
+        global SWIFT_PUT_OBJECT_CALLS
+        SWIFT_PUT_OBJECT_CALLS = 0
+        loc = 'swift+config://store_2/glance/%s'
+
+        expected_location = loc % (expected_image_id)
+
+        location, size, checksum, arg = self.store.add(expected_image_id,
+                                                       image_swift,
+                                                       expected_swift_size)
+        self.assertEqual(expected_location, location)
+
     def test_add_auth_url_variations(self):
         """
         Test that we can add an image via the swift backend with
         a variety of different auth_address values
         """
+        swift_store_utils.is_multiple_swift_store_accounts_enabled = \
+            mock.Mock(return_value=True)
+        conf = copy.deepcopy(SWIFT_CONF)
+        self.config(**conf)
+
         variations = {
-            'http://localhost:80': 'swift+http://%s:key@localhost:80'
-                                   '/glance/%s',
-            'http://localhost': 'swift+http://%s:key@localhost/glance/%s',
-            'http://localhost/v1': 'swift+http://%s:key@localhost'
-                                   '/v1/glance/%s',
-            'http://localhost/v1/': 'swift+http://%s:key@localhost'
-                                    '/v1/glance/%s',
-            'https://localhost': 'swift+https://%s:key@localhost/glance/%s',
-            'https://localhost:8080': 'swift+https://%s:key@localhost:8080'
-                                      '/glance/%s',
-            'https://localhost/v1': 'swift+https://%s:key@localhost'
-                                    '/v1/glance/%s',
-            'https://localhost/v1/': 'swift+https://%s:key@localhost'
-                                     '/v1/glance/%s',
-            'localhost': 'swift+https://%s:key@localhost/glance/%s',
-            'localhost:8080/v1': 'swift+https://%s:key@localhost:8080'
-                                 '/v1/glance/%s',
+            'store_4': 'swift+config://store_4/glance/%s',
+            'store_5': 'swift+config://store_5/glance/%s',
+            'store_6': 'swift+config://store_6/glance/%s'
         }
 
         for variation, expected_location in variations.items():
             image_id = str(uuid.uuid4())
-            expected_location = expected_location % (
-                self.swift_store_user, image_id)
+            expected_location = expected_location % image_id
             expected_swift_size = FIVE_KB
             expected_swift_contents = "*" * expected_swift_size
             expected_checksum = \
@@ -383,8 +428,9 @@ class SwiftTests(object):
 
             global SWIFT_PUT_OBJECT_CALLS
             SWIFT_PUT_OBJECT_CALLS = 0
-
-            self.config(swift_store_auth_address=variation)
+            conf['default_swift_reference'] = variation
+            self.config(**conf)
+            reload(swift)
             self.store = Store()
             location, size, checksum, _ = self.store.add(image_id, image_swift,
                                                          expected_swift_size)
@@ -407,8 +453,13 @@ class SwiftTests(object):
         Tests that adding an image with a non-existing container
         raises an appropriate exception
         """
-        self.config(swift_store_create_container_on_put=False,
-                    swift_store_container='noexist')
+        conf = copy.deepcopy(SWIFT_CONF)
+        conf['swift_store_user'] = 'tenant:user'
+        conf['swift_store_create_container_on_put'] = False
+        conf['swift_store_container'] = 'noexist'
+        self.config(**conf)
+        reload(swift)
+
         self.store = Store()
 
         image_swift = six.StringIO("nevergonnamakeit")
@@ -434,20 +485,24 @@ class SwiftTests(object):
         Tests that adding an image with a non-existing container
         creates the container automatically if flag is set
         """
+        swift_store_utils.is_multiple_swift_store_accounts_enabled = \
+            mock.Mock(return_value=True)
         expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
         expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
         expected_image_id = str(uuid.uuid4())
-        loc = 'swift+https://%s:key@localhost:8080/noexist/%s'
-        expected_location = loc % (self.swift_store_user,
-                                   expected_image_id)
+        loc = 'swift+config://ref1/noexist/%s'
+        expected_location = loc % (expected_image_id)
         image_swift = six.StringIO(expected_swift_contents)
 
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS = 0
-
-        self.config(swift_store_create_container_on_put=True,
-                    swift_store_container='noexist')
+        conf = copy.deepcopy(SWIFT_CONF)
+        conf['swift_store_user'] = 'tenant:user'
+        conf['swift_store_create_container_on_put'] = True
+        conf['swift_store_container'] = 'noexist'
+        self.config(**conf)
+        reload(swift)
         self.store = Store()
         location, size, checksum, _ = self.store.add(expected_image_id,
                                                      image_swift,
@@ -473,19 +528,19 @@ class SwiftTests(object):
         and then verify that there have been a number of calls to
         put_object()...
         """
+        swift_store_utils.is_multiple_swift_store_accounts_enabled = \
+            mock.Mock(return_value=True)
         expected_swift_size = FIVE_KB
         expected_swift_contents = "*" * expected_swift_size
         expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
         expected_image_id = str(uuid.uuid4())
-        loc = 'swift+https://%s:key@localhost:8080/glance/%s'
-        expected_location = loc % (self.swift_store_user,
-                                   expected_image_id)
+        loc = 'swift+config://ref1/glance/%s'
+        expected_location = loc % (expected_image_id)
         image_swift = six.StringIO(expected_swift_contents)
 
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS = 0
 
-        self.config(swift_store_container='glance')
         self.store = Store()
         orig_max_size = self.store.large_object_size
         orig_temp_size = self.store.large_object_chunk_size
@@ -530,9 +585,8 @@ class SwiftTests(object):
         expected_swift_contents = "*" * expected_swift_size
         expected_checksum = hashlib.md5(expected_swift_contents).hexdigest()
         expected_image_id = str(uuid.uuid4())
-        loc = 'swift+https://%s:key@localhost:8080/glance/%s'
-        expected_location = loc % (self.swift_store_user,
-                                   expected_image_id)
+        loc = 'swift+config://ref1/glance/%s'
+        expected_location = loc % (expected_image_id)
         image_swift = six.StringIO(expected_swift_contents)
 
         global SWIFT_PUT_OBJECT_CALLS
@@ -540,7 +594,7 @@ class SwiftTests(object):
 
         # Temporarily set Swift MAX_SWIFT_OBJECT_SIZE to 1KB and add our image,
         # explicitly setting the image_length to 0
-        self.config(swift_store_container='glance')
+
         self.store = Store()
         orig_max_size = self.store.large_object_size
         orig_temp_size = self.store.large_object_chunk_size
@@ -621,23 +675,25 @@ class SwiftTests(object):
             return False
         return False
 
-    def test_no_user(self):
+    def test_no_store_credentials(self):
         """
-        Tests that options without user disables the add method
+        Tests that options without a valid credentials disables the add method
         """
-        self.assertTrue(self._option_required('swift_store_user'))
-
-    def test_no_key(self):
-        """
-        Tests that options without key disables the add method
-        """
-        self.assertTrue(self._option_required('swift_store_key'))
+        swift.SWIFT_STORE_REF_PARAMS = {'ref1': {'auth_address':
+                                        'authurl.com', 'user': '',
+                                        'key': ''}}
+        self.store = Store()
+        self.assertEqual(self.store.add, self.store.add_disabled)
 
     def test_no_auth_address(self):
         """
         Tests that options without auth address disables the add method
         """
-        self.assertTrue(self._option_required('swift_store_auth_address'))
+        swift.SWIFT_STORE_REF_PARAMS = {'ref1': {'auth_address':
+                                        '', 'user': 'user1',
+                                        'key': 'key1'}}
+        self.store = Store()
+        self.assertEqual(self.store.add, self.store.add_disabled)
 
     def test_delete(self):
         """
@@ -645,6 +701,16 @@ class SwiftTests(object):
         """
         uri = "swift://%s:key@authurl/glance/%s" % (
             self.swift_store_user, FAKE_UUID)
+        loc = get_location_from_uri(uri)
+        self.store.delete(loc)
+
+        self.assertRaises(exception.NotFound, self.store.get, loc)
+
+    def test_delete_with_reference_params(self):
+        """
+        Test we can delete an existing image in the swift store
+        """
+        uri = "swift+config://ref1/glance/%s" % (FAKE_UUID)
         loc = get_location_from_uri(uri)
         self.store.delete(loc)
 
@@ -712,14 +778,20 @@ class TestStoreAuthV1(base.StoreClearingUnitTest, SwiftTests):
     def getConfig(self):
         conf = SWIFT_CONF.copy()
         conf['swift_store_auth_version'] = '1'
-        conf['swift_store_user'] = 'user'
+        conf['swift_store_user'] = 'tenant:user1'
         return conf
 
     def setUp(self):
         """Establish a clean test environment"""
         conf = self.getConfig()
         self.config(**conf)
+        conf_file = 'glance-swift.conf'
+        self.test_dir = self.useFixture(fixtures.TempDir()).path
+        self.swift_config_file = self._copy_data_file(conf_file, self.test_dir)
+        conf.update({'swift_store_config_file': conf_file})
+        self.config(swift_store_config_file=self.swift_config_file)
         super(TestStoreAuthV1, self).setUp()
+        swift.SWIFT_STORE_REF_PARAMS = swift_store_utils.SwiftParams().params
         self.stubs = stubout.StubOutForTesting()
         stub_out_swiftclient(self.stubs, conf['swift_store_auth_version'])
         self.store = Store()
@@ -730,15 +802,12 @@ class TestStoreAuthV2(TestStoreAuthV1):
 
     def getConfig(self):
         conf = super(TestStoreAuthV2, self).getConfig()
-        conf['swift_store_user'] = 'tenant:user'
         conf['swift_store_auth_version'] = '2'
+        conf['swift_store_user'] = 'tenant:user1'
         return conf
 
     def test_v2_with_no_tenant(self):
-        conf = self.getConfig()
-        conf['swift_store_user'] = 'failme'
-        uri = "swift://%s:key@auth_address/glance/%s" % (
-            conf['swift_store_user'], FAKE_UUID)
+        uri = "swift://failme:key@auth_address/glance/%s" % (FAKE_UUID)
         loc = get_location_from_uri(uri)
         self.assertRaises(exception.BadStoreUri,
                           self.store.get,
@@ -779,8 +848,8 @@ class TestSingleTenantStoreConnections(base.IsolatedUnitTest):
         self.store = glance.store.swift.SingleTenantStore()
         specs = {'scheme': 'swift',
                  'auth_or_store_url': 'example.com/v2/',
-                 'user': 'tenant:user',
-                 'key': 'abcdefg',
+                 'user': 'tenant:user1',
+                 'key': 'key1',
                  'container': 'cont',
                  'obj': 'object'}
         self.location = glance.store.swift.StoreLocation(specs)
@@ -789,10 +858,10 @@ class TestSingleTenantStoreConnections(base.IsolatedUnitTest):
         connection = self.store.get_connection(self.location)
         self.assertEqual(connection.authurl, 'https://example.com/v2/')
         self.assertEqual(connection.auth_version, '2')
-        self.assertEqual(connection.user, 'user')
+        self.assertEqual(connection.user, 'user1')
         self.assertEqual(connection.tenant_name, 'tenant')
-        self.assertEqual(connection.key, 'abcdefg')
         self.assertFalse(connection.snet)
+        self.assertEqual(connection.key, 'key1')
         self.assertIsNone(connection.preauthurl)
         self.assertIsNone(connection.preauthtoken)
         self.assertFalse(connection.insecure)
@@ -863,13 +932,34 @@ class TestSingleTenantStoreConnections(base.IsolatedUnitTest):
         connection = self.store.get_connection(self.location)
         self.assertTrue(connection.snet)
 
+    def test_bad_location_uri(self):
+        self.store.configure()
+        self.location.uri = 'http://bad_uri://'
+        self.assertRaises(exception.BadStoreUri,
+                          self.location.parse_uri,
+                          self.location.uri)
+
+    def test_bad_location_uri_invalid_credentials(self):
+        self.store.configure()
+        self.location.uri = 'swift://bad_creds@uri/cont/obj'
+        self.assertRaises(exception.BadStoreUri,
+                          self.location.parse_uri,
+                          self.location.uri)
+
+    def test_bad_location_uri_invalid_object_path(self):
+        self.store.configure()
+        self.location.uri = 'swift://user:key@uri/cont'
+        self.assertRaises(exception.BadStoreUri,
+                          self.location.parse_uri,
+                          self.location.uri)
+
 
 class TestMultiTenantStoreConnections(base.IsolatedUnitTest):
     def setUp(self):
         super(TestMultiTenantStoreConnections, self).setUp()
         self.stubs.Set(swiftclient, 'Connection', FakeConnection)
         self.context = glance.context.RequestContext(
-            user='user', tenant='tenant', auth_tok='0123')
+            user='tenant:user1', tenant='tenant', auth_tok='0123')
         self.store = glance.store.swift.MultiTenantStore(self.context)
         specs = {'scheme': 'swift',
                  'auth_or_store_url': 'example.com',
@@ -882,7 +972,7 @@ class TestMultiTenantStoreConnections(base.IsolatedUnitTest):
         connection = self.store.get_connection(self.location)
         self.assertIsNone(connection.authurl)
         self.assertEqual(connection.auth_version, '2')
-        self.assertEqual(connection.user, 'user')
+        self.assertEqual(connection.user, 'tenant:user1')
         self.assertEqual(connection.tenant_name, 'tenant')
         self.assertIsNone(connection.key)
         self.assertFalse(connection.snet)
@@ -910,29 +1000,44 @@ class FakeGetEndpoint(object):
 
 
 class TestCreatingLocations(base.IsolatedUnitTest):
+    def setUp(self):
+        conf = copy.deepcopy(SWIFT_CONF)
+        self.config(**conf)
+        reload(swift)
+        super(TestCreatingLocations, self).setUp()
+
     def test_single_tenant_location(self):
-        self.config(swift_store_auth_address='example.com/v2',
-                    swift_store_container='container',
-                    swift_store_user='tenant:user',
-                    swift_store_key='auth_key')
-        store = glance.store.swift.SingleTenantStore()
+        conf = copy.deepcopy(SWIFT_CONF)
+        conf['swift_store_container'] = 'container'
+        conf_file = "glance-swift.conf"
+        test_dir = self.useFixture(fixtures.TempDir()).path
+        self.swift_config_file = self._copy_data_file(conf_file, test_dir)
+        conf.update({'swift_store_config_file': self.swift_config_file})
+        conf['default_swift_reference'] = 'ref1'
+        self.config(**conf)
+        reload(swift)
+
+        store = swift.SingleTenantStore()
         location = store.create_location('image-id')
         self.assertEqual(location.scheme, 'swift+https')
-        self.assertEqual(location.swift_url, 'https://example.com/v2')
+        self.assertEqual(location.swift_url, 'https://example.com')
         self.assertEqual(location.container, 'container')
         self.assertEqual(location.obj, 'image-id')
-        self.assertEqual(location.user, 'tenant:user')
-        self.assertEqual(location.key, 'auth_key')
+        self.assertEqual(location.user, 'tenant:user1')
+        self.assertEqual(location.key, 'key1')
 
     def test_single_tenant_location_http(self):
-        self.config(swift_store_auth_address='http://example.com/v2',
-                    swift_store_container='container',
-                    swift_store_user='tenant:user',
-                    swift_store_key='auth_key')
+        conf_file = "glance-swift.conf"
+        test_dir = self.useFixture(fixtures.TempDir()).path
+        self.swift_config_file = self._copy_data_file(conf_file, test_dir)
+        self.config(swift_store_container='container',
+                    default_swift_reference='ref2',
+                    swift_store_config_file=self.swift_config_file)
+        swift.SWIFT_STORE_REF_PARAMS = swift_store_utils.SwiftParams().params
         store = glance.store.swift.SingleTenantStore()
         location = store.create_location('image-id')
         self.assertEqual(location.scheme, 'swift+http')
-        self.assertEqual(location.swift_url, 'http://example.com/v2')
+        self.assertEqual(location.swift_url, 'http://example.com')
 
     def test_multi_tenant_location(self):
         self.config(swift_store_container='container')
@@ -994,6 +1099,10 @@ class TestCreatingLocations(base.IsolatedUnitTest):
 
 
 class TestChunkReader(base.StoreClearingUnitTest):
+    def setUp(self):
+        conf = copy.deepcopy(SWIFT_CONF)
+        self.config(**conf)
+        super(TestChunkReader, self).setUp()
 
     def test_read_all_data(self):
         """

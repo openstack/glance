@@ -636,13 +636,33 @@ proxy).
 
 The number of times a Swift download will be retried before the request
 fails.
+Optional. Default: ``0``
+
+Configuring Multiple Swift Accounts/Stores
+------------------------------------------
+
+In order to not store Swift account credentials in the database, and to
+have support for multiple accounts (or multiple Swift backing stores), a
+reference is stored in the database and the corresponding configuration
+(credentials/ parameters) details are stored in the configuration file.
+Optional.  Default: not enabled.
+
+The location for this file is specified using the ``swift_store_config_file`` config file
+in the section ``[DEFAULT]``. **If an incorrect value is specified, Glance API Swift store
+service will not be configured.**
+* ``swift_store_config_file=PATH``
+
+`This option is specific to the Swift storage backend.`
+
+* ``default_swift_reference=DEFAULT_REFERENCE``
+
+Required when multiple Swift accounts/backing stores are configured.
 
 Can only be specified in configuration files.
 
 `This option is specific to the Swift storage backend.`
 
-Optional. Default: ``0``
-
+It is the default swift reference that is used to add any new images.
 * ``swift_store_auth_insecure``
 
 If True, bypass SSL certificate verification for Swift.
