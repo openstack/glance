@@ -663,7 +663,6 @@ def _get_base_properties():
         'checksum': {
             'type': 'string',
             'description': _('md5 hash of image contents. (READ-ONLY)'),
-            'type': 'string',
             'maxLength': 32,
         },
         'size': {
@@ -673,13 +672,11 @@ def _get_base_properties():
         'container_format': {
             'type': 'string',
             'description': _('Format of the container'),
-            'type': 'string',
             'enum': CONF.image_format.container_formats,
         },
         'disk_format': {
             'type': 'string',
             'description': _('Format of the disk'),
-            'type': 'string',
             'enum': CONF.image_format.disk_formats,
         },
         'created_at': {
