@@ -15,7 +15,7 @@ mock>=1.0
 nosehtmloutput>=0.0.3
 sphinx>=1.1.2,<1.2
 requests>=1.1
-testtools>=0.9.32
+testtools>=0.9.34
 psutil>1.1.0
 
 # Optional packages that should be installed when testing
