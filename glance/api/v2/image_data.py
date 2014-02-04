@@ -41,6 +41,22 @@ class ImageDataController(object):
                                              notifier, policy)
         self.gateway = gateway
 
+    def _restore(self, image_repo, image):
+        """
+        Restore the image to queued status.
+
+        :param image_repo: The instance of ImageRepo
+        :param image: The image will be restored
+        """
+        try:
+            if image_repo and image:
+                image.status = 'queued'
+                image_repo.save(image)
+        except Exception as e:
+            msg = _("Unable to restore image %(image_id)s: %(e)s") % \
+                {'image_id': image.image_id, 'e': unicode(e)}
+            LOG.exception(msg)
+
     @utils.mutating
     def upload(self, req, image_id, data, size):
         image_repo = self.gateway.get_repo(req.context)
@@ -70,6 +86,7 @@ class ImageDataController(object):
 
         except ValueError as e:
             LOG.debug("Cannot save data for image %s: %s", image_id, e)
+            self._restore(image_repo, image)
             raise webob.exc.HTTPBadRequest(explanation=unicode(e))
 
         except exception.InvalidImageStatusTransition as e:
@@ -89,34 +106,40 @@ class ImageDataController(object):
         except exception.StorageFull as e:
             msg = _("Image storage media is full: %s") % e
             LOG.error(msg)
+            self._restore(image_repo, image)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
         except exception.StorageQuotaFull as e:
             msg = _("Image exceeds the storage quota: %s") % e
             LOG.error(msg)
+            self._restore(image_repo, image)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
         except exception.ImageSizeLimitExceeded as e:
             msg = _("The incoming image is too large: %s") % e
             LOG.error(msg)
+            self._restore(image_repo, image)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
         except exception.StorageWriteDenied as e:
             msg = _("Insufficient permissions on image storage media: %s") % e
             LOG.error(msg)
+            self._restore(image_repo, image)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
                                                    request=req)
 
         except webob.exc.HTTPError as e:
             LOG.error(_("Failed to upload image data due to HTTP error"))
+            self._restore(image_repo, image)
             raise
 
         except Exception as e:
             LOG.exception(_("Failed to upload image data due to "
                             "internal error"))
+            self._restore(image_repo, image)
             raise
 
     def download(self, req, image_id):
