@@ -24,8 +24,8 @@ import glance.context
 import glance.domain.proxy
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
+from glance import scrubber
 from glance.store import location
-from glance.store import scrubber
 
 LOG = logging.getLogger(__name__)
 
