@@ -18,10 +18,10 @@
 import copy
 import datetime
 import hashlib
-import mock
 import StringIO
 import uuid
 
+import mock
 from oslo.config import cfg
 import routes
 import webob
@@ -31,6 +31,7 @@ import glance.api.common
 from glance.api.v1 import router
 from glance.api.v1 import upload_utils
 import glance.common.config
+from glance.common import exception
 import glance.context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
@@ -1201,6 +1202,27 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
         self.assertEqual("deleted", res.headers['x-image-meta-status'])
+
+    @mock.patch.object(glance.store.filesystem.Store, 'delete')
+    def test_image_status_when_delete_fails(self, mock_fsstore_delete):
+        """
+        Tests that the image status set to active if deletion of image fails.
+        """
+        mock_fsstore_delete.side_effect = exception.Forbidden()
+
+        # trigger the v1 delete api
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 403)
+        self.assertTrue('Forbidden to delete image' in res.body)
+
+        # check image metadata is still there with active state
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+        self.assertEqual("active", res.headers['x-image-meta-status'])
 
     def test_delete_pending_delete_image(self):
         """

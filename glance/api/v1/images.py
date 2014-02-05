@@ -994,21 +994,28 @@ class Controller(controller.BaseController):
         else:
             status = 'deleted'
 
+        ori_status = image['status']
+
         try:
-            # Delete the image from the registry first, since we rely on it
+            # Update the image from the registry first, since we rely on it
             # for authorization checks.
             # See https://bugs.launchpad.net/glance/+bug/1065187
             image = registry.update_image_metadata(req.context, id,
                                                    {'status': status})
-            registry.delete_image_metadata(req.context, id)
 
-            # The image's location field may be None in the case
-            # of a saving or queued image, therefore don't ask a backend
-            # to delete the image if the backend doesn't yet store it.
-            # See https://bugs.launchpad.net/glance/+bug/747799
-            if image['location']:
-                upload_utils.initiate_deletion(req, image['location'], id,
-                                               CONF.delayed_delete)
+            try:
+                # The image's location field may be None in the case
+                # of a saving or queued image, therefore don't ask a backend
+                # to delete the image if the backend doesn't yet store it.
+                # See https://bugs.launchpad.net/glance/+bug/747799
+                if image['location']:
+                    upload_utils.initiate_deletion(req, image['location'], id,
+                                                   CONF.delayed_delete)
+            except Exception as e:
+                registry.update_image_metadata(req.context, id,
+                                               {'status': ori_status})
+                raise e
+            registry.delete_image_metadata(req.context, id)
         except exception.NotFound as e:
             msg = _("Failed to find image to delete: %(e)s") % {'e': e}
             for line in msg.split('\n'):
