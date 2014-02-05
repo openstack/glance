@@ -26,7 +26,7 @@ from __future__ import print_function
 import os
 import sys
 
-import install_venv_common as install_venv
+from tools import install_venv_common as install_venv
 
 
 def print_help():
