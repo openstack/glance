@@ -1278,8 +1278,8 @@ class TaskTests(test_utils.BaseTestCase):
                 'input': {'import_from': 'file:///a.img',
                           'import_from_format': 'qcow2',
                           'image_properties': {
-                          "name": "GreatStack 1.22",
-                          "tags": ["lamp", "custom"]
+                              "name": "GreatStack 1.22",
+                              "tags": ["lamp", "custom"]
                           }},
             },
             {
@@ -1288,17 +1288,18 @@ class TaskTests(test_utils.BaseTestCase):
                 'input': {'import_from': 'file:///b.img',
                           'import_from_format': 'qcow2',
                           'image_properties': {
-                          "name": "GreatStack 1.23",
-                          "tags": ["lamp", "good"]
+                              "name": "GreatStack 1.23",
+                              "tags": ["lamp", "good"]
                           }},
             },
             {
                 'owner': self.context.owner,
                 "type": "export",
                 "input": {
-                "export_uuid": "deadbeef-dead-dead-dead-beefbeefbeef",
-                "export_to": "swift://cloud.foo/myaccount/mycontainer/path",
-                "export_format": "qcow2"
+                    "export_uuid": "deadbeef-dead-dead-dead-beefbeefbeef",
+                    "export_to":
+                        "swift://cloud.foo/myaccount/mycontainer/path",
+                    "export_format": "qcow2"
                 }
             },
         ]

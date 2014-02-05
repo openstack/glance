@@ -106,12 +106,12 @@ class TestTasks(functional.FunctionalTest):
             'status': 'pending',
             'type': 'import',
             'input': {
-            "import_from": self.file_path,
-            "import_from_format": "qcow2",
-            "image_properties": {
-                'disk_format': 'vhd',
-                'container_format': 'ovf'
-            }},
+                "import_from": self.file_path,
+                "import_from_format": "qcow2",
+                "image_properties": {
+                    'disk_format': 'vhd',
+                    'container_format': 'ovf'
+                }},
             'schema': '/v2/schemas/task',
         }
         for key, value in expected_task.items():

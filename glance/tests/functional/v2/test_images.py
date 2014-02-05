@@ -288,9 +288,9 @@ class TestImages(functional.FunctionalTest):
         for i in range(3):
             changes.append({'op': 'add', 'path': '/locations/-',
                             'value': {'url': 'file://{0}'.format(
-                            os.path.join(self.test_dir,
-                                         'fake_image_%i' % i)),
-                            'metadata': {}},
+                                os.path.join(self.test_dir,
+                                             'fake_image_%i' % i)),
+                                      'metadata': {}},
                             })
 
         data = jsonutils.dumps(changes)
