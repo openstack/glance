@@ -70,12 +70,13 @@ def validate_image_meta(req, values):
 
     if 'disk_format' in values:
         if disk_format not in CONF.image_format.disk_formats:
-            msg = "Invalid disk format '%s' for image." % disk_format
+            msg = _("Invalid disk format '%s' for image.") % disk_format
             raise HTTPBadRequest(explanation=msg, request=req)
 
     if 'container_format' in values:
         if container_format not in CONF.image_format.container_formats:
-            msg = "Invalid container format '%s' for image." % container_format
+            msg = _("Invalid container format '%s' "
+                    "for image.") % container_format
             raise HTTPBadRequest(explanation=msg, request=req)
 
     if name and len(name) > 255:
@@ -376,9 +377,10 @@ class Controller(controller.BaseController):
             if param in SUPPORTED_FILTERS or param.startswith('property-'):
                 query_filters[param] = req.params.get(param)
                 if not filters.validate(param, query_filters[param]):
-                    raise HTTPBadRequest('Bad value passed to filter %s '
-                                         'got %s' % (param,
-                                                     query_filters[param]))
+                    raise HTTPBadRequest(_('Bad value passed to filter '
+                                           '%(filter)s got %(val)s')
+                                         % {'filter': param,
+                                            'val': query_filters[param]})
         return query_filters
 
     def meta(self, req, id):
@@ -631,9 +633,9 @@ class Controller(controller.BaseController):
         except exception.Duplicate:
             # Delete image data since it has been supersceded by another
             # upload.
-            LOG.debug("duplicate operation - deleting image data for %s "
-                      "(location:%s)" %
-                      (image_id, image_meta['location']))
+            LOG.debug(_("duplicate operation - deleting image data for %(id)s "
+                      "(location:%(location)s)") %
+                      {'id': image_id, 'location': image_meta['location']})
             upload_utils.initiate_deletion(req, image_meta['location'],
                                            image_id, CONF.delayed_delete)
             # Then propagate the exception.
