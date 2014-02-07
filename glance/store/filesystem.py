@@ -369,7 +369,7 @@ class Store(glance.store.base.Store):
         :image_size size of image being uploaded.
         :returns best_datadir as directory path of the best priority datadir.
         :raises exception.StorageFull if there is no datadir in
-                self.priority_data_map that can accomodate the image.
+                self.priority_data_map that can accommodate the image.
         """
         if not self.multiple_datadirs:
             return self.datadir
@@ -383,7 +383,7 @@ class Store(glance.store.base.Store):
                     max_free_space = free_space
                     best_datadir = datadir
 
-            # If datadir is found which can accomodate image and has maximum
+            # If datadir is found which can accommodate image and has maximum
             # free space for the given priority then break the loop,
             # else continue to lookup further.
             if best_datadir:
