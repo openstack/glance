@@ -188,7 +188,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         fake_uuid = str(uuid.uuid4())
         exc = self.assertRaises(exception.NotFound, self.image_repo.get,
                                 fake_uuid)
-        self.assertTrue(fake_uuid in unicode(exc))
+        self.assertIn(fake_uuid, unicode(exc))
 
     def test_get_forbidden(self):
         self.assertRaises(exception.NotFound, self.image_repo.get, UUID4)
@@ -329,7 +329,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         image.image_id = fake_uuid
         exc = self.assertRaises(exception.NotFound, self.image_repo.save,
                                 image)
-        self.assertTrue(fake_uuid in unicode(exc))
+        self.assertIn(fake_uuid, unicode(exc))
 
     def test_remove_image(self):
         image = self.image_repo.get(UUID1)
@@ -344,7 +344,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         image.image_id = fake_uuid
         exc = self.assertRaises(exception.NotFound, self.image_repo.remove,
                                 image)
-        self.assertTrue(fake_uuid in unicode(exc))
+        self.assertIn(fake_uuid, unicode(exc))
 
 
 class TestEncryptedLocations(test_utils.BaseTestCase):
@@ -473,7 +473,7 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         image = self.image_repo.get(UUID1)
         image_member = self.image_member_factory.new_image_member(image,
                                                                   TENANT4)
-        self.assertTrue(image_member.id is None)
+        self.assertIsNone(image_member.id)
         self.image_member_repo.add(image_member)
         retreived_image_member = self.image_member_repo.get(TENANT4)
         self.assertIsNotNone(retreived_image_member.id)
@@ -488,7 +488,7 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         image = self.image_repo.get(UUID1)
         image_member = self.image_member_factory.new_image_member(image,
                                                                   TENANT4)
-        self.assertTrue(image_member.id is None)
+        self.assertIsNone(image_member.id)
         self.image_member_repo.add(image_member)
         retreived_image_member = self.image_member_repo.get(TENANT4)
         self.assertIsNotNone(retreived_image_member.id)
@@ -536,7 +536,7 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         exc = self.assertRaises(exception.NotFound,
                                 self.image_member_repo.remove,
                                 fake_member)
-        self.assertTrue(fake_uuid in unicode(exc))
+        self.assertIn(fake_uuid, unicode(exc))
 
 
 class TestTaskRepo(test_utils.BaseTestCase):

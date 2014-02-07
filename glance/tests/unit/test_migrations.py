@@ -960,7 +960,7 @@ class TestMigrations(test_utils.BaseTestCase):
 
     def _check_020(self, engine, data):
         images = get_table(engine, 'images')
-        self.assertFalse('location' in images.c)
+        self.assertNotIn('location', images.c)
 
     def _pre_upgrade_026(self, engine):
         image_locations = get_table(engine, 'image_locations')
@@ -996,7 +996,7 @@ class TestMigrations(test_utils.BaseTestCase):
         r = list(results)
         self.assertEqual(len(r), 1)
         self.assertEqual(r[0]['value'], 'file:///some/place/onthe/fs')
-        self.assertTrue('meta_data' in r[0])
+        self.assertIn('meta_data', r[0])
         x = pickle.loads(r[0]['meta_data'])
         self.assertEqual(x, {})
 
@@ -1304,7 +1304,7 @@ class TestMigrations(test_utils.BaseTestCase):
                 .where(image_locations.c.image_id == image_id).execute()
             r = list(results)
             self.assertEqual(len(r), 1)
-            self.assertTrue('status' in r[0])
+            self.assertIn('status', r[0])
             self.assertEqual(r[0]['status'], status_list[idx])
 
     def _post_downgrade_033(self, engine):

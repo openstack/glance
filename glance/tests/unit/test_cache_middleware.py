@@ -29,12 +29,12 @@ class TestCacheMiddlewareURLMatching(testtools.TestCase):
     def test_v1_no_match_detail(self):
         req = webob.Request.blank('/v1/images/detail')
         out = glance.api.middleware.cache.CacheFilter._match_request(req)
-        self.assertTrue(out is None)
+        self.assertIsNone(out)
 
     def test_v1_no_match_detail_with_query_params(self):
         req = webob.Request.blank('/v1/images/detail?limit=10')
         out = glance.api.middleware.cache.CacheFilter._match_request(req)
-        self.assertTrue(out is None)
+        self.assertIsNone(out)
 
     def test_v1_match_id_with_query_param(self):
         req = webob.Request.blank('/v1/images/asdf?ping=pong')
@@ -49,12 +49,12 @@ class TestCacheMiddlewareURLMatching(testtools.TestCase):
     def test_v2_no_match_bad_path(self):
         req = webob.Request.blank('/v2/images/asdf')
         out = glance.api.middleware.cache.CacheFilter._match_request(req)
-        self.assertTrue(out is None)
+        self.assertIsNone(out)
 
     def test_no_match_unknown_version(self):
         req = webob.Request.blank('/v3/images/asdf')
         out = glance.api.middleware.cache.CacheFilter._match_request(req)
-        self.assertTrue(out is None)
+        self.assertIsNone(out)
 
 
 class TestCacheMiddlewareRequestStashCacheInfo(testtools.TestCase):
@@ -191,7 +191,7 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         self.stubs.Set(cache_filter, '_process_v1_request',
                        fake_process_v1_request)
         cache_filter.process_request(request)
-        self.assertTrue(image_id in cache_filter.cache.deleted_images)
+        self.assertIn(image_id, cache_filter.cache.deleted_images)
 
     def test_v1_process_request_image_fetch(self):
 
@@ -263,7 +263,7 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         self.stubs.Set(cache_filter.cache, 'get_image_size',
                        fake_get_image_size)
         cache_filter._verify_metadata(image_meta)
-        self.assertTrue(image_meta['size'] == image_size)
+        self.assertEqual(image_size, image_meta['size'])
 
     def test_v2_process_request_response_headers(self):
         def dummy_img_iterator():

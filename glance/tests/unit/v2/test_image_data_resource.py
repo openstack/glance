@@ -390,7 +390,7 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         self.serializer.download(response, image)
         self.assertEqual('ZZZ', response.body)
         self.assertEqual('3', response.headers['Content-Length'])
-        self.assertFalse('Content-MD5' in response.headers)
+        self.assertNotIn('Content-MD5', response.headers)
         self.assertEqual('application/octet-stream',
                          response.headers['Content-Type'])
 

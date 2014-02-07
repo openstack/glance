@@ -76,7 +76,7 @@ class TestProtectedImageRepoProxy(utils.BaseTestCase):
         self.assertEqual(result_extra_props['spl_read_prop'], 'r')
         self.assertEqual(result_extra_props['spl_update_prop'], 'u')
         self.assertEqual(result_extra_props['spl_delete_prop'], 'd')
-        self.assertFalse('forbidden' in result_extra_props.keys())
+        self.assertNotIn('forbidden', result_extra_props.keys())
 
     def test_list_image(self):
         result_images = self.image_repo.list()
@@ -86,14 +86,14 @@ class TestProtectedImageRepoProxy(utils.BaseTestCase):
         self.assertEqual(result_extra_props['spl_read_prop'], 'r')
         self.assertEqual(result_extra_props['spl_update_prop'], 'u')
         self.assertEqual(result_extra_props['spl_delete_prop'], 'd')
-        self.assertFalse('forbidden' in result_extra_props.keys())
+        self.assertNotIn('forbidden', result_extra_props.keys())
 
         result_extra_props = result_images[1].extra_properties
         self.assertEqual(result_extra_props, {})
 
         result_extra_props = result_images[2].extra_properties
         self.assertEqual(result_extra_props['spl_read_prop'], 'r')
-        self.assertFalse('forbidden' in result_extra_props.keys())
+        self.assertNotIn('forbidden', result_extra_props.keys())
 
 
 class TestProtectedImageProxy(utils.BaseTestCase):
@@ -116,7 +116,7 @@ class TestProtectedImageProxy(utils.BaseTestCase):
             image, context, self.property_rules)
         result_extra_props = result_image.extra_properties
         self.assertEqual(result_extra_props['spl_read_prop'], 'read')
-        self.assertFalse('spl_fake_prop' in result_extra_props.keys())
+        self.assertNotIn('spl_fake_prop', result_extra_props.keys())
 
 
 class TestExtraPropertiesProxy(utils.BaseTestCase):

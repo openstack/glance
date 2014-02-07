@@ -29,7 +29,7 @@ class GlanceExceptionTestCase(test_utils.BaseTestCase):
         self.assertEqual(unicode(exc), 'default message')
 
     def test_specified_error_msg(self):
-        self.assertTrue('test' in unicode(exception.GlanceException('test')))
+        self.assertIn('test', unicode(exception.GlanceException('test')))
 
     def test_default_error_msg_with_kwargs(self):
         class FakeGlanceException(exception.GlanceException):
@@ -39,9 +39,9 @@ class GlanceExceptionTestCase(test_utils.BaseTestCase):
         self.assertEqual(unicode(exc), "default message: 500")
 
     def test_specified_error_msg_with_kwargs(self):
-        self.assertTrue('test: 500' in
-                        unicode(exception.GlanceException('test: %(code)s',
-                                                          code=500)))
+        self.assertIn('test: 500',
+                      unicode(exception.GlanceException('test: %(code)s',
+                                                        code=500)))
 
     def test_non_unicode_error_msg(self):
         exc = exception.GlanceException(str('test'))

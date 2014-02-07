@@ -36,9 +36,9 @@ class UtilsTestCase(test_utils.BaseTestCase):
         for key in key_list:
             for plaintext in plaintext_list:
                 ciphertext = crypt.urlsafe_encrypt(key, plaintext, blocksize)
-                self.assertTrue(ciphertext != plaintext)
+                self.assertNotEqual(ciphertext, plaintext)
                 text = crypt.urlsafe_decrypt(key, ciphertext)
-                self.assertTrue(plaintext == text)
+                self.assertEqual(plaintext, text)
 
     def test_empty_metadata_headers(self):
         """Ensure unset metadata is not encoded in HTTP headers"""
@@ -58,10 +58,10 @@ class UtilsTestCase(test_utils.BaseTestCase):
 
         headers = utils.image_meta_to_http_headers(metadata)
 
-        self.assertFalse('x-image-meta-snafu' in headers)
-        self.assertFalse('x-image-meta-uset' in headers)
-        self.assertFalse('x-image-meta-snafu' in headers)
-        self.assertFalse('x-image-meta-property-arch' in headers)
+        self.assertNotIn('x-image-meta-snafu', headers)
+        self.assertNotIn('x-image-meta-uset', headers)
+        self.assertNotIn('x-image-meta-snafu', headers)
+        self.assertNotIn('x-image-meta-property-arch', headers)
 
         self.assertEqual(headers.get('x-image-meta-foo'), 'bar')
         self.assertEqual(headers.get('x-image-meta-bells'), 'whistles')

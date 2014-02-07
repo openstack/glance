@@ -277,7 +277,7 @@ class TestImageNotifications(utils.BaseTestCase):
         output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'ERROR')
         self.assertEqual(output_log['event_type'], 'image.upload')
-        self.assertTrue('Modern Major General' in output_log['payload'])
+        self.assertIn('Modern Major General', output_log['payload'])
 
     def test_image_set_data_value_error(self):
         def data_iterator():
@@ -294,7 +294,7 @@ class TestImageNotifications(utils.BaseTestCase):
         output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'ERROR')
         self.assertEqual(output_log['event_type'], 'image.upload')
-        self.assertTrue('value wrong' in output_log['payload'])
+        self.assertIn('value wrong', output_log['payload'])
 
     def test_image_set_data_duplicate(self):
         def data_iterator():
@@ -311,7 +311,7 @@ class TestImageNotifications(utils.BaseTestCase):
         output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'ERROR')
         self.assertEqual(output_log['event_type'], 'image.upload')
-        self.assertTrue('Cant have duplicates' in output_log['payload'])
+        self.assertIn('Cant have duplicates', output_log['payload'])
 
     def test_image_set_data_storage_write_denied(self):
         def data_iterator():
@@ -328,7 +328,7 @@ class TestImageNotifications(utils.BaseTestCase):
         output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'ERROR')
         self.assertEqual(output_log['event_type'], 'image.upload')
-        self.assertTrue('The Very Model' in output_log['payload'])
+        self.assertIn('The Very Model', output_log['payload'])
 
     def test_image_set_data_forbidden(self):
         def data_iterator():
@@ -345,7 +345,7 @@ class TestImageNotifications(utils.BaseTestCase):
         output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'ERROR')
         self.assertEqual(output_log['event_type'], 'image.upload')
-        self.assertTrue('Not allowed' in output_log['payload'])
+        self.assertIn('Not allowed', output_log['payload'])
 
     def test_image_set_data_not_found(self):
         def data_iterator():
@@ -362,7 +362,7 @@ class TestImageNotifications(utils.BaseTestCase):
         output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'ERROR')
         self.assertEqual(output_log['event_type'], 'image.upload')
-        self.assertTrue('Not found' in output_log['payload'])
+        self.assertIn('Not found', output_log['payload'])
 
     def test_image_set_data_HTTP_error(self):
         def data_iterator():
@@ -379,7 +379,7 @@ class TestImageNotifications(utils.BaseTestCase):
         output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'ERROR')
         self.assertEqual(output_log['event_type'], 'image.upload')
-        self.assertTrue('Http issue' in output_log['payload'])
+        self.assertIn('Http issue', output_log['payload'])
 
     def test_image_set_data_error(self):
         def data_iterator():
@@ -396,7 +396,7 @@ class TestImageNotifications(utils.BaseTestCase):
         output_log = output_logs[0]
         self.assertEqual(output_log['notification_type'], 'ERROR')
         self.assertEqual(output_log['event_type'], 'image.upload')
-        self.assertTrue('Failed' in output_log['payload'])
+        self.assertIn('Failed', output_log['payload'])
 
 
 class TestTaskNotifications(utils.BaseTestCase):

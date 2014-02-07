@@ -41,8 +41,8 @@ class TestImageFactory(test_utils.BaseTestCase):
 
     def test_minimal_new_image(self):
         image = self.image_factory.new_image()
-        self.assertTrue(image.image_id is not None)
-        self.assertTrue(image.created_at is not None)
+        self.assertIsNotNone(image.image_id)
+        self.assertIsNotNone(image.created_at)
         self.assertEqual(image.created_at, image.updated_at)
         self.assertEqual(image.status, 'queued')
         self.assertEqual(image.visibility, 'private')
@@ -51,7 +51,7 @@ class TestImageFactory(test_utils.BaseTestCase):
         self.assertIsNone(image.size)
         self.assertEqual(image.min_disk, 0)
         self.assertEqual(image.min_ram, 0)
-        self.assertEqual(image.protected, False)
+        self.assertFalse(image.protected)
         self.assertIsNone(image.disk_format)
         self.assertIsNone(image.container_format)
         self.assertEqual(image.extra_properties, {})
@@ -62,7 +62,7 @@ class TestImageFactory(test_utils.BaseTestCase):
             image_id=UUID1, name='image-1', min_disk=256,
             owner=TENANT1)
         self.assertEqual(image.image_id, UUID1)
-        self.assertTrue(image.created_at is not None)
+        self.assertIsNotNone(image.created_at)
         self.assertEqual(image.created_at, image.updated_at)
         self.assertEqual(image.status, 'queued')
         self.assertEqual(image.visibility, 'private')
@@ -71,7 +71,7 @@ class TestImageFactory(test_utils.BaseTestCase):
         self.assertIsNone(image.size)
         self.assertEqual(image.min_disk, 256)
         self.assertEqual(image.min_ram, 0)
-        self.assertEqual(image.protected, False)
+        self.assertFalse(image.protected)
         self.assertIsNone(image.disk_format)
         self.assertIsNone(image.container_format)
         self.assertEqual(image.extra_properties, {})
@@ -85,7 +85,7 @@ class TestImageFactory(test_utils.BaseTestCase):
             extra_properties=extra_properties, tags=tags)
 
         self.assertEqual(image.image_id, UUID1)
-        self.assertTrue(image.created_at is not None)
+        self.assertIsNotNone(image.created_at)
         self.assertEqual(image.created_at, image.updated_at)
         self.assertEqual(image.status, 'queued')
         self.assertEqual(image.visibility, 'private')
@@ -94,7 +94,7 @@ class TestImageFactory(test_utils.BaseTestCase):
         self.assertIsNone(image.size)
         self.assertEqual(image.min_disk, 0)
         self.assertEqual(image.min_ram, 0)
-        self.assertEqual(image.protected, False)
+        self.assertFalse(image.protected)
         self.assertIsNone(image.disk_format)
         self.assertIsNone(image.container_format)
         self.assertEqual(image.extra_properties, {'foo': 'bar'})
@@ -221,10 +221,10 @@ class TestImageMemberFactory(test_utils.BaseTestCase):
         image_member = self.image_member_factory.new_image_member(image,
                                                                   member_id)
         self.assertEqual(image_member.image_id, image.image_id)
-        self.assertTrue(image_member.created_at is not None)
+        self.assertIsNotNone(image_member.created_at)
         self.assertEqual(image_member.created_at, image_member.updated_at)
         self.assertEqual(image_member.status, 'pending')
-        self.assertTrue(image_member.member_id is not None)
+        self.assertIsNotNone(image_member.member_id)
 
 
 class TestExtraProperties(test_utils.BaseTestCase):

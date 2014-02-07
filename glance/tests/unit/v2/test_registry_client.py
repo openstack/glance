@@ -418,7 +418,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
             self.assertEqual(v, data[k])
 
         # Test status was updated properly
-        self.assertTrue('status' in data.keys())
+        self.assertIn('status', data)
         self.assertEqual('active', data['status'])
 
     def test_image_create_with_properties(self):
@@ -439,7 +439,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
             self.assertEqual(v, new_image[k])
 
         # Test status was updated properly
-        self.assertTrue('status' in new_image.keys())
+        self.assertIn('status', new_image.keys())
         self.assertEqual('active', new_image['status'])
 
     def test_image_create_already_exists(self):

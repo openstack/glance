@@ -307,7 +307,7 @@ class TestRPCJSONDeserializer(test_utils.BaseTestCase):
         request = wsgi.Request.blank('/')
         request.method = 'POST'
         request.body = 'asdf'
-        self.assertTrue('Content-Length' in request.headers)
+        self.assertIn('Content-Length', request.headers)
         self.assertTrue(rpc.RPCJSONDeserializer().has_body(request))
 
     def test_no_body_no_content_length(self):
@@ -344,7 +344,7 @@ class TestRPCJSONDeserializer(test_utils.BaseTestCase):
         request.method = 'POST'
         request.body = 'fake_body'
         request.headers['transfer-encoding'] = 0
-        self.assertTrue('transfer-encoding' in request.headers)
+        self.assertIn('transfer-encoding', request.headers)
         self.assertTrue(rpc.RPCJSONDeserializer().has_body(request))
 
     def test_to_json_with_date_format_value(self):
