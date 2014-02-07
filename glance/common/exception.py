@@ -150,10 +150,6 @@ class AuthorizationRedirect(GlanceException):
     message = _("Redirecting to %(uri)s for authorization.")
 
 
-class DatabaseMigrationError(GlanceException):
-    message = _("There was an error migrating the database.")
-
-
 class ClientConnectionError(GlanceException):
     message = _("There was an error connecting to a server")
 
