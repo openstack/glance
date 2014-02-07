@@ -367,9 +367,9 @@ class TestImageNotifications(utils.BaseTestCase):
         def data_iterator():
             self.notifier.log = []
             yield 'abcde'
-            raise Exception('Failed')
+            raise exception.GlanceException('Failed')
 
-        self.assertRaises(Exception,
+        self.assertRaises(exception.GlanceException,
                           self.image_proxy.set_data, data_iterator(), 10)
 
         output_logs = self.notifier.get_logs()
