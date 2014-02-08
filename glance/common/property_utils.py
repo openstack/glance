@@ -45,7 +45,7 @@ CONF = cfg.CONF
 CONF.register_opts(property_opts)
 
 # NOTE (spredzy): Due to the particularly lengthy name of the exception
-# and the number of occurence it is raise in this file, a variable is
+# and the number of occurrence it is raise in this file, a variable is
 # created
 InvalidPropProtectConf = exception.InvalidPropertyProtectionConfiguration
 

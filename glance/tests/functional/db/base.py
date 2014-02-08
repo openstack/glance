@@ -933,7 +933,7 @@ class DriverTests(object):
         actual = self.db_api.image_tag_get_all(self.context, UUID1)
         self.assertEqual([], actual)
 
-    def test_image_tag_get_all_non_existant_image(self):
+    def test_image_tag_get_all_non_existent_image(self):
         bad_image_id = str(uuid.uuid4())
         actual = self.db_api.image_tag_get_all(self.context, bad_image_id)
         self.assertEqual([], actual)

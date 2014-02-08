@@ -75,19 +75,19 @@ def get_ordered_locations(locations, uri_key='url', **kwargs):
     """
     def _foreach_store_type_preference():
         store_types = CONF.store_type_location_strategy.store_type_preference
-        for prefered_store in store_types:
-            prefered_store = str(prefered_store).strip()
-            if not prefered_store:
+        for preferred_store in store_types:
+            preferred_store = str(preferred_store).strip()
+            if not preferred_store:
                 continue
-            yield prefered_store
+            yield preferred_store
 
     if not locations:
         return locations
 
     preferences = {}
     others = []
-    for prefered_store in _foreach_store_type_preference():
-        preferences[prefered_store] = []
+    for preferred_store in _foreach_store_type_preference():
+        preferences[preferred_store] = []
 
     for location in locations:
         uri = location.get(uri_key)
@@ -109,8 +109,8 @@ def get_ordered_locations(locations, uri_key='url', **kwargs):
     ret = []
     # NOTE(zhiyan): While configuration again since py26 does not support
     # ordereddict container.
-    for prefered_store in _foreach_store_type_preference():
-        ret.extend(preferences[prefered_store])
+    for preferred_store in _foreach_store_type_preference():
+        ret.extend(preferences[preferred_store])
 
     ret.extend(others)
 
