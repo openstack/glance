@@ -303,16 +303,16 @@ def create_options(parser):
     :param parser: The option parser
     """
     parser.add_option('-v', '--verbose', default=False, action="store_true",
-                      help="Print more verbose output")
+                      help="Print more verbose output.")
     parser.add_option('-d', '--debug', default=False, action="store_true",
-                      help="Print debugging output")
+                      help="Print debugging output.")
     parser.add_option('-H', '--host', metavar="ADDRESS", default="0.0.0.0",
                       help="Address of Glance API host. "
-                           "Default: %default")
+                           "Default: %default.")
     parser.add_option('-p', '--port', dest="port", metavar="PORT",
                       type=int, default=9292,
                       help="Port the Glance API host listens on. "
-                           "Default: %default")
+                           "Default: %default.")
     parser.add_option('-k', '--insecure', dest="insecure",
                       default=False, action="store_true",
                       help="Explicitly allow glance to perform \"insecure\" "
@@ -322,12 +322,12 @@ def create_options(parser):
     parser.add_option('-f', '--force', dest="force", metavar="FORCE",
                       default=False, action="store_true",
                       help="Prevent select actions from requesting "
-                           "user confirmation")
+                           "user confirmation.")
 
     parser.add_option('--os-auth-token',
                       dest='os_auth_token',
                       default=env('OS_AUTH_TOKEN'),
-                      help='Defaults to env[OS_AUTH_TOKEN]')
+                      help='Defaults to env[OS_AUTH_TOKEN].')
     parser.add_option('-A', '--os_auth_token', '--auth_token',
                       dest='os_auth_token',
                       help=optparse.SUPPRESS_HELP)
@@ -335,7 +335,7 @@ def create_options(parser):
     parser.add_option('--os-username',
                       dest='os_username',
                       default=env('OS_USERNAME'),
-                      help='Defaults to env[OS_USERNAME]')
+                      help='Defaults to env[OS_USERNAME].')
     parser.add_option('-I', '--os_username',
                       dest='os_username',
                       help=optparse.SUPPRESS_HELP)
@@ -343,7 +343,7 @@ def create_options(parser):
     parser.add_option('--os-password',
                       dest='os_password',
                       default=env('OS_PASSWORD'),
-                      help='Defaults to env[OS_PASSWORD]')
+                      help='Defaults to env[OS_PASSWORD].')
     parser.add_option('-K', '--os_password',
                       dest='os_password',
                       help=optparse.SUPPRESS_HELP)
@@ -351,7 +351,7 @@ def create_options(parser):
     parser.add_option('--os-region-name',
                       dest='os_region_name',
                       default=env('OS_REGION_NAME'),
-                      help='Defaults to env[OS_REGION_NAME]')
+                      help='Defaults to env[OS_REGION_NAME].')
     parser.add_option('-R', '--os_region_name',
                       dest='os_region_name',
                       help=optparse.SUPPRESS_HELP)
@@ -359,7 +359,7 @@ def create_options(parser):
     parser.add_option('--os-tenant-id',
                       dest='os_tenant_id',
                       default=env('OS_TENANT_ID'),
-                      help='Defaults to env[OS_TENANT_ID]')
+                      help='Defaults to env[OS_TENANT_ID].')
     parser.add_option('--os_tenant_id',
                       dest='os_tenant_id',
                       help=optparse.SUPPRESS_HELP)
@@ -367,21 +367,21 @@ def create_options(parser):
     parser.add_option('--os-tenant-name',
                       dest='os_tenant_name',
                       default=env('OS_TENANT_NAME'),
-                      help='Defaults to env[OS_TENANT_NAME]')
+                      help='Defaults to env[OS_TENANT_NAME].')
     parser.add_option('-T', '--os_tenant_name',
                       dest='os_tenant_name',
                       help=optparse.SUPPRESS_HELP)
 
     parser.add_option('--os-auth-url',
                       default=env('OS_AUTH_URL'),
-                      help='Defaults to env[OS_AUTH_URL]')
+                      help='Defaults to env[OS_AUTH_URL].')
     parser.add_option('-N', '--os_auth_url',
                       dest='os_auth_url',
                       help=optparse.SUPPRESS_HELP)
 
     parser.add_option('-S', '--os_auth_strategy', dest="os_auth_strategy",
                       metavar="STRATEGY", default=None,
-                      help="Authentication strategy (keystone or noauth)")
+                      help="Authentication strategy (keystone or noauth).")
 
 
 def parse_options(parser, cli_args):

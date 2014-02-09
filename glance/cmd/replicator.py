@@ -737,19 +737,19 @@ def main():
 
     # Options
     oparser.add_option('-c', '--chunksize', action="store", default=65536,
-                       help="Amount of data to transfer per HTTP write")
+                       help="Amount of data to transfer per HTTP write.")
     oparser.add_option('-d', '--debug', action="store_true", default=False,
-                       help="Print debugging information")
+                       help="Print debugging information.")
     oparser.add_option('-D', '--dontreplicate', action="store",
                        default=('created_at date deleted_at location '
                                 'updated_at'),
-                       help="List of fields to not replicate")
+                       help="List of fields to not replicate.")
     oparser.add_option('-m', '--metaonly', action="store_true", default=False,
-                       help="Only replicate metadata, not images")
+                       help="Only replicate metadata, not images.")
     oparser.add_option('-l', '--logfile', action="store", default='',
-                       help="Path of file to log to")
+                       help="Path of file to log to.")
     oparser.add_option('-s', '--syslog', action="store_true", default=False,
-                       help="Log to syslog instead of a file")
+                       help="Log to syslog instead of a file.")
     oparser.add_option('-t', '--token', action="store", default='',
                        help=("Pass in your authentication token if you have "
                              "one. If you use this option the same token is "
@@ -761,7 +761,7 @@ def main():
                        help=("Pass in your authentication token if you have "
                              "one. This is the token used for the slave."))
     oparser.add_option('-v', '--verbose', action="store_true", default=False,
-                       help="Print more verbose output")
+                       help="Print more verbose output.")
 
     (options, command, args) = parse_options(oparser, sys.argv[1:])
 

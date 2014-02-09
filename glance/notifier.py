@@ -36,7 +36,7 @@ notifier_opts = [
                       'default). (DEPRECATED)')),
 
     cfg.StrOpt('default_publisher_id', default="image.localhost",
-               help='Default publisher_id for outgoing notifications'),
+               help='Default publisher_id for outgoing notifications.'),
 ]
 
 CONF = cfg.CONF

@@ -41,8 +41,8 @@ gridfs_opts = [
                     "or a mongodb URI, or a list of hostnames / mongodb URIs. "
                     "If host is an IPv6 literal it must be enclosed "
                     "in '[' and ']' characters following the RFC2732 "
-                    "URL syntax (e.g. '[::1]' for localhost)"),
-    cfg.StrOpt('mongodb_store_db', default=None, help='Database to use'),
+                    "URL syntax (e.g. '[::1]' for localhost)."),
+    cfg.StrOpt('mongodb_store_db', default=None, help='Database to use.'),
 ]
 
 CONF = cfg.CONF

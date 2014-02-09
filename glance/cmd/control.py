@@ -292,20 +292,20 @@ def main():
         cfg.StrOpt('pid-file',
                    metavar='PATH',
                    help='File to use as pid file. Default: '
-                   '/var/run/glance/$server.pid'),
+                   '/var/run/glance/$server.pid.'),
         cfg.IntOpt('await-child',
                    metavar='DELAY',
                    default=0,
                    help='Period to wait for service death '
                         'in order to report exit code '
-                        '(default is to not wait at all)'),
+                        '(default is to not wait at all).'),
         cfg.BoolOpt('capture-output',
                     default=False,
                     help='Capture stdout/err in syslog '
-                    'instead of discarding'),
+                    'instead of discarding it.'),
         cfg.BoolOpt('respawn',
                     default=False,
-                    help='Restart service on unexpected death'),
+                    help='Restart service on unexpected death.'),
     ]
     CONF.register_cli_opts(opts)
 

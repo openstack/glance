@@ -56,13 +56,13 @@ rbd_opts = [
     cfg.StrOpt('rbd_store_user', default=DEFAULT_USER,
                help=_('RADOS user to authenticate as (only applicable if '
                       'using Cephx. If <None>, a default will be chosen based '
-                      'on the client. section in rbd_store_ceph_conf)')),
+                      'on the client. section in rbd_store_ceph_conf).')),
     cfg.StrOpt('rbd_store_ceph_conf', default=DEFAULT_CONFFILE,
                help=_('Ceph configuration file path. '
                       'If <None>, librados will locate the default config. '
                       'If using cephx authentication, this file should '
                       'include a reference to the right keyring '
-                      'in a client.<USER> section')),
+                      'in a client.<USER> section.')),
 ]
 
 CONF = cfg.CONF

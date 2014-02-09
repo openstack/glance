@@ -31,25 +31,25 @@ cinder_opts = [
     cfg.StrOpt('cinder_catalog_info',
                default='volume:cinder:publicURL',
                help='Info to match when looking for cinder in the service '
-                    'catalog. Format is : separated values of the form: '
-                    '<service_type>:<service_name>:<endpoint_type>'),
+                    'catalog. Format is: separated values of the form: '
+                    '<service_type>:<service_name>:<endpoint_type>.'),
     cfg.StrOpt('cinder_endpoint_template',
                default=None,
                help='Override service catalog lookup with template for cinder '
-                    'endpoint e.g. http://localhost:8776/v1/%(project_id)s'),
+                    'endpoint e.g. http://localhost:8776/v1/%(project_id)s.'),
     cfg.StrOpt('os_region_name',
                default=None,
-               help='Region name of this node'),
+               help='Region name of this node.'),
     cfg.StrOpt('cinder_ca_certificates_file',
                default=None,
-               help='Location of ca certicates file to use for cinder client '
+               help='Location of CA certicates file to use for cinder client '
                     'requests.'),
     cfg.IntOpt('cinder_http_retries',
                default=3,
-               help='Number of cinderclient retries on failed http calls'),
+               help='Number of cinderclient retries on failed http calls.'),
     cfg.BoolOpt('cinder_api_insecure',
                 default=False,
-                help='Allow to perform insecure SSL requests to cinder'),
+                help='Allow to perform insecure SSL requests to cinder.'),
 ]
 
 CONF = cfg.CONF

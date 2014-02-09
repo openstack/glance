@@ -37,7 +37,7 @@ scrubber_opts = [
                help=_('Directory that the scrubber will use to track '
                       'information about what to delete. '
                       'Make sure this is set in glance-api.conf and '
-                      'glance-scrubber.conf')),
+                      'glance-scrubber.conf.')),
     cfg.IntOpt('scrub_time', default=0,
                help=_('The amount of time in seconds to delay before '
                       'performing a delete.')),
