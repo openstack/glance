@@ -21,6 +21,7 @@ import webob.exc
 
 from glance.api import policy
 from glance.common import exception
+from glance.common import location_strategy
 from glance.common import utils
 from glance.common import wsgi
 import glance.db
@@ -582,7 +583,10 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
                     image_view['locations'] = []
 
             if CONF.show_image_direct_url and image.locations:
-                image_view['direct_url'] = image.locations[0]['url']
+                # Choose best location configured strategy
+                best_location = (
+                    location_strategy.choose_best_location(image.locations))
+                image_view['direct_url'] = best_location['url']
 
             image_view['tags'] = list(image.tags)
             image_view['self'] = self._get_image_href(image)

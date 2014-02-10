@@ -20,6 +20,7 @@ from oslo.config import cfg
 
 from glance.common import crypt
 from glance.common import exception
+from glance.common import location_strategy
 import glance.domain
 import glance.domain.proxy
 from glance.openstack.common import importutils
@@ -105,7 +106,7 @@ class ImageRepo(object):
             min_disk=db_image['min_disk'],
             min_ram=db_image['min_ram'],
             protected=db_image['protected'],
-            locations=locations,
+            locations=location_strategy.get_ordered_locations(locations),
             checksum=db_image['checksum'],
             owner=db_image['owner'],
             disk_format=db_image['disk_format'],
