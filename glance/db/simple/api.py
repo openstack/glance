@@ -513,6 +513,12 @@ def image_destroy(context, image_id):
         DATA['images'][image_id]['deleted'] = True
         DATA['images'][image_id]['deleted_at'] = timeutils.utcnow()
 
+        # NOTE(flaper87): Move the image to one of the deleted statuses
+        # if it hasn't been done yet.
+        if (DATA['images'][image_id]['status'] not in
+                ['deleted', 'pending_delete']):
+            DATA['images'][image_id]['status'] = 'deleted'
+
         _image_locations_set(image_id, [])
 
         for prop in DATA['images'][image_id]['properties']:
@@ -654,6 +660,11 @@ def user_get_storage_usage(context, owner_id, image_id=None, session=None):
     images = image_get_all(context, filters={'owner': owner_id})
     total = 0
     for image in images:
+        if image['status'] in ['killed', 'pending_delete', 'deleted']:
+            continue
+
         if image['id'] != image_id:
-            total = total + (image['size'] * len(image['locations']))
+            locations = [l for l in image['locations']
+                         if not l.get('deleted', False)]
+            total += (image['size'] * len(locations))
     return total
