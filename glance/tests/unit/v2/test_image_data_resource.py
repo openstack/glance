@@ -37,12 +37,13 @@ class Raise(object):
 
 class FakeImage(object):
     def __init__(self, image_id=None, data=None, checksum=None, size=0,
-                 locations=None, container_format='bear', disk_format='rawr',
-                 status=None):
+                 virtual_size=0, locations=None, container_format='bear',
+                 disk_format='rawr', status=None):
         self.image_id = image_id
         self.data = data
         self.checksum = checksum
         self.size = size
+        self.virtual_size = virtual_size
         self.locations = locations
         self.container_format = container_format
         self.disk_format = disk_format
@@ -250,6 +251,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         prepare_payload = output['meta'].copy()
         prepare_payload['checksum'] = None
         prepare_payload['size'] = None
+        prepare_payload['virtual_size'] = None
         prepare_payload['location'] = None
         prepare_payload['status'] = 'queued'
         del prepare_payload['updated_at']

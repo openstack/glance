@@ -268,13 +268,14 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
     _disallowed_properties = ['direct_url', 'self', 'file', 'schema']
     _readonly_properties = ['created_at', 'updated_at', 'status', 'checksum',
-                            'size', 'direct_url', 'self', 'file', 'schema']
+                            'size', 'virtual_size', 'direct_url', 'self',
+                            'file', 'schema']
     _reserved_properties = ['owner', 'is_public', 'location', 'deleted',
                             'deleted_at']
     _base_properties = ['checksum', 'created_at', 'container_format',
                         'disk_format', 'id', 'min_disk', 'min_ram', 'name',
-                        'size', 'status', 'tags', 'updated_at', 'visibility',
-                        'protected']
+                        'size', 'virtual_size', 'status', 'tags',
+                        'updated_at', 'visibility', 'protected']
     _path_depth_limits = {'locations': {'add': 2, 'remove': 2, 'replace': 1}}
 
     def __init__(self, schema=None):
@@ -565,8 +566,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         try:
             image_view = dict(image.extra_properties)
             attributes = ['name', 'disk_format', 'container_format',
-                          'visibility', 'size', 'status', 'checksum',
-                          'protected', 'min_ram', 'min_disk', 'owner']
+                          'visibility', 'size', 'virtual_size', 'status',
+                          'checksum', 'protected', 'min_ram', 'min_disk',
+                          'owner']
             for key in attributes:
                 image_view[key] = getattr(image, key)
             image_view['id'] = image.image_id
@@ -677,6 +679,10 @@ def _get_base_properties():
         'size': {
             'type': 'integer',
             'description': _('Size of image file in bytes (READ-ONLY)'),
+        },
+        'virtual_size': {
+            'type': 'integer',
+            'description': _('Virtual size of image in bytes (READ-ONLY)'),
         },
         'container_format': {
             'type': 'string',

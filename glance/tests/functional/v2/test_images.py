@@ -233,7 +233,8 @@ class TestImages(functional.FunctionalTest):
         image = jsonutils.loads(response.text)
         self.assertEqual(image_id, image['id'])
         self.assertFalse('checksum' in image)
-        self.assertFalse('size' in image)
+        self.assertNotIn('size', image)
+        self.assertNotIn('virtual_size', image)
         self.assertEqual('bar', image['foo'])
         self.assertEqual(False, image['protected'])
         self.assertEqual('kernel', image['type'])
@@ -408,7 +409,8 @@ class TestImages(functional.FunctionalTest):
         response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(200, response.status_code, response.text)
         image = jsonutils.loads(response.text)
-        self.assertTrue('size' not in image)
+        self.assertNotIn('size', image)
+        self.assertNotIn('virtual_size', image)
         self.assertEqual('queued', image['status'])
 
         # Deletion should work. Deleting image-1
@@ -1765,6 +1767,7 @@ class TestImages(functional.FunctionalTest):
         image_id = image['id']
         self.assertEqual(image['status'], 'queued')
         self.assertNotIn('size', image)
+        self.assertNotIn('virtual_size', image)
 
         file_path = os.path.join(self.test_dir, 'fake_image')
         with open(file_path, 'w') as fap:

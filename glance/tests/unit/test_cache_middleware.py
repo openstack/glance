@@ -285,6 +285,7 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
                 'disk_format': 'raw',
                 'container_format': 'bare',
                 'size': '123456789',
+                'virtual_size': '123456789',
                 'is_public': 'public',
                 'deleted': False,
                 'updated_at': '',

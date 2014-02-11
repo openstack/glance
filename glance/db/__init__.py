@@ -43,7 +43,7 @@ BASE_MODEL_ATTRS = set(['id', 'created_at', 'updated_at', 'deleted_at',
                         'deleted'])
 
 
-IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size',
+IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size', 'virtual_size',
                                       'disk_format', 'container_format',
                                       'min_disk', 'min_ram', 'is_public',
                                       'locations', 'checksum', 'owner',
@@ -112,6 +112,7 @@ class ImageRepo(object):
             disk_format=db_image['disk_format'],
             container_format=db_image['container_format'],
             size=db_image['size'],
+            virtual_size=db_image['virtual_size'],
             extra_properties=properties,
             tags=db_tags
         )
@@ -139,6 +140,7 @@ class ImageRepo(object):
             'disk_format': image.disk_format,
             'container_format': image.container_format,
             'size': image.size,
+            'virtual_size': image.virtual_size,
             'is_public': image.visibility == 'public',
             'properties': dict(image.extra_properties),
         }

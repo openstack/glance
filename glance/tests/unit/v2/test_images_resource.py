@@ -63,6 +63,7 @@ def _db_fixture(id, **kwargs):
         'status': 'queued',
         'tags': [],
         'size': None,
+        'virtual_size': None,
         'locations': [],
         'protected': False,
         'disk_format': None,
@@ -84,6 +85,7 @@ def _domain_fixture(id, **kwargs):
         'owner': None,
         'status': 'queued',
         'size': None,
+        'virtual_size': None,
         'locations': [],
         'protected': False,
         'disk_format': None,
@@ -127,7 +129,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.db.reset()
         self.images = [
             _db_fixture(UUID1, owner=TENANT1, checksum=CHKSUM,
-                        name='1', size=256,
+                        name='1', size=256, virtual_size=1024,
                         is_public=True,
                         locations=[{'url': '%s/%s' % (BASE_URI, UUID1),
                                     'metadata': {}}],
@@ -135,7 +137,7 @@ class TestImagesController(base.IsolatedUnitTest):
                         container_format='bare',
                         status='active'),
             _db_fixture(UUID2, owner=TENANT1, checksum=CHKSUM1,
-                        name='2', size=512,
+                        name='2', size=512, virtual_size=2048,
                         is_public=True,
                         disk_format='raw',
                         container_format='bare',
@@ -144,9 +146,10 @@ class TestImagesController(base.IsolatedUnitTest):
                         properties={'hypervisor_type': 'kvm', 'foo': 'bar',
                                     'bar': 'foo'}),
             _db_fixture(UUID3, owner=TENANT3, checksum=CHKSUM1,
-                        name='3', size=512, is_public=True,
-                        tags=['windows', '64bit', 'x86']),
-            _db_fixture(UUID4, owner=TENANT4, name='4', size=1024),
+                        name='3', size=512, virtual_size=2048,
+                        is_public=True, tags=['windows', '64bit', 'x86']),
+            _db_fixture(UUID4, owner=TENANT4, name='4',
+                        size=1024, virtual_size=3072),
         ]
         [self.db.image_create(None, image) for image in self.images]
 
@@ -283,6 +286,37 @@ class TestImagesController(base.IsolatedUnitTest):
         output = self.controller.index(request,
                                        filters={'size_min': 512,
                                                 'size_max': 512})
+        self.assertEqual(2, len(output['images']))
+        actual = set([image.image_id for image in output['images']])
+        expected = set([UUID2, UUID3])
+        self.assertEqual(actual, expected)
+
+    def test_index_virtual_size_max_filter(self):
+        ref = '/images?virtual_size_max=2048'
+        request = unit_test_utils.get_fake_request(ref)
+        output = self.controller.index(request,
+                                       filters={'virtual_size_max': 2048})
+        self.assertEqual(3, len(output['images']))
+        actual = set([image.image_id for image in output['images']])
+        expected = set([UUID1, UUID2, UUID3])
+        self.assertEqual(actual, expected)
+
+    def test_index_virtual_size_min_filter(self):
+        ref = '/images?virtual_size_min=2048'
+        request = unit_test_utils.get_fake_request(ref)
+        output = self.controller.index(request,
+                                       filters={'virtual_size_min': 2048})
+        self.assertEqual(2, len(output['images']))
+        actual = set([image.image_id for image in output['images']])
+        expected = set([UUID2, UUID3])
+        self.assertEqual(actual, expected)
+
+    def test_index_virtual_size_range_filter(self):
+        path = '/images?virtual_size_min=512&virtual_size_max=2048'
+        request = unit_test_utils.get_fake_request(path)
+        output = self.controller.index(request,
+                                       filters={'virtual_size_min': 2048,
+                                                'virtual_size_max': 2048})
         self.assertEqual(2, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID2, UUID3])
@@ -1921,6 +1955,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             #{'status': 'saving'},
             {'direct_url': 'http://example.com'},
             #{'size': 10},
+            #{'virtual_size': 10},
             #{'checksum': 'asdf'},
             {'self': 'http://example.com'},
             {'file': 'http://example.com'},
@@ -2126,6 +2161,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             'status': 'active',
             'checksum': 'abcdefghijklmnopqrstuvwxyz012345',
             'size': 9001,
+            'virtual_size': 9001,
             'created_at': ISOTIME,
             'updated_at': ISOTIME,
         }
@@ -2519,10 +2555,11 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         self.fixtures = [
             #NOTE(bcwaldon): This first fixture has every property defined
             _domain_fixture(UUID1, name='image-1', size=1024,
-                            created_at=DATETIME, updated_at=DATETIME,
-                            owner=TENANT1, visibility='public',
-                            container_format='ami', tags=['one', 'two'],
-                            disk_format='ami', min_ram=128, min_disk=10,
+                            virtual_size=3072, created_at=DATETIME,
+                            updated_at=DATETIME, owner=TENANT1,
+                            visibility='public', container_format='ami',
+                            tags=['one', 'two'], disk_format='ami',
+                            min_ram=128, min_disk=10,
                             checksum='ca425b88f047ce8ec45ee90e813ada91'),
 
             #NOTE(bcwaldon): This second fixture depends on default behavior
@@ -2541,6 +2578,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'protected': False,
                     'tags': set(['one', 'two']),
                     'size': 1024,
+                    'virtual_size': 3072,
                     'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
                     'container_format': 'ami',
                     'disk_format': 'ami',
@@ -2630,6 +2668,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'protected': False,
             'tags': set(['one', 'two']),
             'size': 1024,
+            'virtual_size': 3072,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'container_format': 'ami',
             'disk_format': 'ami',
@@ -2675,6 +2714,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'protected': False,
             'tags': ['two', 'one'],
             'size': 1024,
+            'virtual_size': 3072,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'container_format': 'ami',
             'disk_format': 'ami',
@@ -2703,6 +2743,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'protected': False,
             'tags': set(['one', 'two']),
             'size': 1024,
+            'virtual_size': 3072,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'container_format': 'ami',
             'disk_format': 'ami',
@@ -2733,6 +2774,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
             _domain_fixture(UUID1, **{
                 'name': u'OpenStack\u2122-1',
                 'size': 1024,
+                'virtual_size': 3072,
                 'tags': [u'\u2160', u'\u2161'],
                 'created_at': DATETIME,
                 'updated_at': DATETIME,
@@ -2759,6 +2801,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
                     u'protected': False,
                     u'tags': [u'\u2161', u'\u2160'],
                     u'size': 1024,
+                    u'virtual_size': 3072,
                     u'checksum': u'ca425b88f047ce8ec45ee90e813ada91',
                     u'container_format': u'ami',
                     u'disk_format': u'ami',
@@ -2793,6 +2836,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
             u'protected': False,
             u'tags': set([u'\u2160', u'\u2161']),
             u'size': 1024,
+            u'virtual_size': 3072,
             u'checksum': u'ca425b88f047ce8ec45ee90e813ada91',
             u'container_format': u'ami',
             u'disk_format': u'ami',
@@ -2823,6 +2867,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
             u'protected': False,
             u'tags': [u'\u2161', u'\u2160'],
             u'size': 1024,
+            u'virtual_size': 3072,
             u'checksum': u'ca425b88f047ce8ec45ee90e813ada91',
             u'container_format': u'ami',
             u'disk_format': u'ami',
@@ -2853,6 +2898,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
             u'protected': False,
             u'tags': set([u'\u2160', u'\u2161']),
             u'size': 1024,
+            u'virtual_size': 3072,
             u'checksum': u'ca425b88f047ce8ec45ee90e813ada91',
             u'container_format': u'ami',
             u'disk_format': u'ami',
@@ -2889,11 +2935,12 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
         schema = glance.api.v2.images.get_schema(custom_image_properties)
         self.serializer = glance.api.v2.images.ResponseSerializer(schema)
 
+        props = dict(color='green', mood='grouchy')
         self.fixture = _domain_fixture(
             UUID2, name='image-2', owner=TENANT2,
             checksum='ca425b88f047ce8ec45ee90e813ada91',
             created_at=DATETIME, updated_at=DATETIME, size=1024,
-            extra_properties=dict(color='green', mood='grouchy'))
+            virtual_size=3072, extra_properties=props)
 
     def test_show(self):
         expected = {
@@ -2905,6 +2952,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'tags': [],
             'size': 1024,
+            'virtual_size': 3072,
             'owner': '2c014f32-55eb-467d-8fcb-4bd706012f81',
             'color': 'green',
             'created_at': ISOTIME,
@@ -2928,6 +2976,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'tags': [],
             'size': 1024,
+            'virtual_size': 3072,
             'owner': '2c014f32-55eb-467d-8fcb-4bd706012f81',
             'color': 'invalid',
             'created_at': ISOTIME,
@@ -2950,7 +2999,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             UUID2, name='image-2', owner=TENANT2,
             checksum='ca425b88f047ce8ec45ee90e813ada91',
             created_at=DATETIME, updated_at=DATETIME, size=1024,
-            extra_properties={'marx': 'groucho'})
+            virtual_size=3072, extra_properties={'marx': 'groucho'})
 
     def test_show(self):
         serializer = glance.api.v2.images.ResponseSerializer()
@@ -2964,6 +3013,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'marx': 'groucho',
             'tags': [],
             'size': 1024,
+            'virtual_size': 3072,
             'created_at': ISOTIME,
             'updated_at': ISOTIME,
             'self': '/v2/images/%s' % UUID2,
@@ -2991,6 +3041,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'marx': 123,
             'tags': [],
             'size': 1024,
+            'virtual_size': 3072,
             'created_at': ISOTIME,
             'updated_at': ISOTIME,
             'self': '/v2/images/%s' % UUID2,
@@ -3014,6 +3065,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
             'tags': [],
             'size': 1024,
+            'virtual_size': 3072,
             'owner': '2c014f32-55eb-467d-8fcb-4bd706012f81',
             'created_at': ISOTIME,
             'updated_at': ISOTIME,
@@ -3033,8 +3085,8 @@ class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
 
         self.active_image = _domain_fixture(
             UUID1, name='image-1', visibility='public',
-            status='active', size=1024, created_at=DATETIME,
-            updated_at=DATETIME,
+            status='active', size=1024, virtual_size=3072,
+            created_at=DATETIME, updated_at=DATETIME,
             locations=[{'url': 'http://some/fake/location',
                         'metadata': {}}])
 

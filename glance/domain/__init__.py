@@ -44,7 +44,7 @@ def _import_delayed_delete():
 
 class ImageFactory(object):
     _readonly_properties = ['created_at', 'updated_at', 'status', 'checksum',
-                            'size']
+                            'size', 'virtual_size']
     _reserved_properties = ['owner', 'is_public', 'locations',
                             'deleted', 'deleted_at', 'direct_url', 'self',
                             'file', 'schema']
@@ -121,6 +121,7 @@ class Image(object):
         self._disk_format = kwargs.pop('disk_format', None)
         self._container_format = kwargs.pop('container_format', None)
         self.size = kwargs.pop('size', None)
+        self.virtual_size = kwargs.pop('virtual_size', None)
         extra_properties = kwargs.pop('extra_properties', None) or {}
         self.extra_properties = ExtraProperties(extra_properties)
         self.tags = kwargs.pop('tags', None) or []
@@ -157,6 +158,7 @@ class Image(object):
         # status is updated to 'queued'
         if status == 'queued':
             self.size = None
+            self.virtual_size = None
         self._status = status
 
     @property

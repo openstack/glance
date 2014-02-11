@@ -70,10 +70,11 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
             self.get_extra_fixture(
                 id=UUID1, name='fake image #1', is_public=False,
                 disk_format='ami', container_format='ami', size=13,
+                virtual_size=26, properties={'type': 'kernel'},
                 location="swift://user:passwd@acct/container/obj.tar.0",
-                properties={'type': 'kernel'}, created_at=uuid1_time),
+                created_at=uuid1_time),
             self.get_extra_fixture(id=UUID2, name='fake image #2',
-                                   properties={}, size=19,
+                                   properties={}, size=19, virtual_size=38,
                                    location="file:///tmp/glance-tests/2",
                                    created_at=uuid2_time)]
         self.destroy_fixtures()
@@ -204,14 +205,16 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         UUID3 = _gen_uuid()
         extra_fixture = self.get_fixture(id=UUID3, name='asdf',
                                          disk_format='ami',
-                                         container_format='ami', size=100)
+                                         container_format='ami',
+                                         size=100, virtual_size=200)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
         extra_fixture = self.get_fixture(id=UUID4, name='asdf',
                                          disk_format='iso',
-                                         container_format='bare', size=2)
+                                         container_format='bare',
+                                         size=2, virtual_size=4)
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -384,7 +387,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
     def test_image_get(self):
         """Tests that the detailed info about an image returned"""
         fixture = self.get_fixture(id=UUID1, name='fake image #1',
-                                   is_public=False, size=13,
+                                   is_public=False, size=13, virtual_size=26,
                                    disk_format='ami', container_format='ami')
 
         data = self.client.image_get(image_id=UUID1)
