@@ -36,52 +36,24 @@
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
-import distutils.version as dist_version
 import os
 import re
 
-import migrate
 from migrate.changeset import ansisql
 from migrate.changeset.databases import sqlite
-from migrate.versioning import util as migrate_util
+from migrate import exceptions as versioning_exceptions
+from migrate.versioning import api as versioning_api
+from migrate.versioning.repository import Repository
 import sqlalchemy
 from sqlalchemy.schema import UniqueConstraint
 
 from glance.openstack.common.db import exception
 from glance.openstack.common.db.sqlalchemy import session as db_session
-from glance.openstack.common.gettextutils import _  # noqa
+from glance.openstack.common.gettextutils import _
 
-
-@migrate_util.decorator
-def patched_with_engine(f, *a, **kw):
-    url = a[0]
-    engine = migrate_util.construct_engine(url, **kw)
-
-    try:
-        kw['engine'] = engine
-        return f(*a, **kw)
-    finally:
-        if isinstance(engine, migrate_util.Engine) and engine is not url:
-            migrate_util.log.debug('Disposing SQLAlchemy engine %s', engine)
-            engine.dispose()
-
-
-# TODO(jkoelker) When migrate 0.7.3 is released and nova depends
-#                on that version or higher, this can be removed
-MIN_PKG_VERSION = dist_version.StrictVersion('0.7.3')
-if (not hasattr(migrate, '__version__') or
-        dist_version.StrictVersion(migrate.__version__) < MIN_PKG_VERSION):
-    migrate_util.with_engine = patched_with_engine
-
-
-# NOTE(jkoelker) Delay importing migrate until we are patched
-from migrate import exceptions as versioning_exceptions
-from migrate.versioning import api as versioning_api
-from migrate.versioning.repository import Repository
-
-_REPOSITORY = None
 
 get_engine = db_session.get_engine
 
@@ -220,11 +192,28 @@ def db_sync(abs_path, version=None, init_version=0):
 
     current_version = db_version(abs_path, init_version)
     repository = _find_migrate_repo(abs_path)
+    _db_schema_sanity_check()
     if version is None or version > current_version:
         return versioning_api.upgrade(get_engine(), repository, version)
     else:
         return versioning_api.downgrade(get_engine(), repository,
                                         version)
+
+
+def _db_schema_sanity_check():
+    engine = get_engine()
+    if engine.name == 'mysql':
+        onlyutf8_sql = ('SELECT TABLE_NAME,TABLE_COLLATION '
+                        'from information_schema.TABLES '
+                        'where TABLE_SCHEMA=%s and '
+                        'TABLE_COLLATION NOT LIKE "%%utf8%%"')
+
+        table_names = [res[0] for res in engine.execute(onlyutf8_sql,
+                                                        engine.url.database)]
+        if len(table_names) > 0:
+            raise ValueError(_('Tables "%s" have non utf8 collation, '
+                               'please make sure all tables are CHARSET=utf8'
+                               ) % ','.join(table_names))
 
 
 def db_version(abs_path, init_version):
@@ -241,14 +230,15 @@ def db_version(abs_path, init_version):
         engine = get_engine()
         meta.reflect(bind=engine)
         tables = meta.tables
-        if len(tables) == 0:
+        if len(tables) == 0 or 'alembic_version' in tables:
             db_version_control(abs_path, init_version)
             return versioning_api.db_version(get_engine(), repository)
         else:
-            # Some pre-Essex DB's may not be version controlled.
-            # Require them to upgrade using Essex first.
             raise exception.DbMigrationError(
-                message=_("Upgrade DB using Essex release first."))
+                message=_(
+                    "The database is not under version control, but has "
+                    "tables. Please stamp the current version of the schema "
+                    "manually."))
 
 
 def db_version_control(abs_path, version=None):
@@ -270,9 +260,6 @@ def _find_migrate_repo(abs_path):
 
     :param abs_path: Absolute path to migrate repository
     """
-    global _REPOSITORY
     if not os.path.exists(abs_path):
         raise exception.DbMigrationError("Path %s not found" % abs_path)
-    if _REPOSITORY is None:
-        _REPOSITORY = Repository(abs_path)
-    return _REPOSITORY
+    return Repository(abs_path)

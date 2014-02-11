@@ -1,5 +1,3 @@
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
-
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # Copyright 2010-2011 OpenStack Foundation.
@@ -18,6 +16,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import re
 
 from migrate.changeset import UniqueConstraint
@@ -38,9 +37,7 @@ from sqlalchemy import String
 from sqlalchemy import Table
 from sqlalchemy.types import NullType
 
-from glance.openstack.common.gettextutils import _  # noqa
-
-from glance.openstack.common import log as logging
+from glance.openstack.common.gettextutils import _
 from glance.openstack.common import timeutils
 
 
@@ -96,7 +93,7 @@ def paginate_query(query, model, limit, sort_keys, marker=None,
     if 'id' not in sort_keys:
         # TODO(justinsb): If this ever gives a false-positive, check
         # the actual primary key, rather than assuming its id
-        LOG.warn(_('Id not in sort_keys; is sort_keys unique?'))
+        LOG.warning(_('Id not in sort_keys; is sort_keys unique?'))
 
     assert(not (sort_dir and sort_dirs))
 
@@ -135,9 +132,9 @@ def paginate_query(query, model, limit, sort_keys, marker=None,
 
         # Build up an array of sort criteria as in the docstring
         criteria_list = []
-        for i in range(0, len(sort_keys)):
+        for i in range(len(sort_keys)):
             crit_attrs = []
-            for j in range(0, i):
+            for j in range(i):
                 model_attr = getattr(model, sort_keys[j])
                 crit_attrs.append((model_attr == marker_values[j]))
 
@@ -499,3 +496,52 @@ def _change_deleted_column_type_to_id_type_sqlite(migrate_engine, table_name,
         where(new_table.c.deleted == deleted).\
         values(deleted=default_deleted_value).\
         execute()
+
+
+def get_connect_string(backend, database, user=None, passwd=None):
+    """Get database connection
+
+    Try to get a connection with a very specific set of values, if we get
+    these then we'll run the tests, otherwise they are skipped
+    """
+    args = {'backend': backend,
+            'user': user,
+            'passwd': passwd,
+            'database': database}
+    if backend == 'sqlite':
+        template = '%(backend)s:///%(database)s'
+    else:
+        template = "%(backend)s://%(user)s:%(passwd)s@localhost/%(database)s"
+    return template % args
+
+
+def is_backend_avail(backend, database, user=None, passwd=None):
+    try:
+        connect_uri = get_connect_string(backend=backend,
+                                         database=database,
+                                         user=user,
+                                         passwd=passwd)
+        engine = sqlalchemy.create_engine(connect_uri)
+        connection = engine.connect()
+    except Exception:
+        # intentionally catch all to handle exceptions even if we don't
+        # have any backend code loaded.
+        return False
+    else:
+        connection.close()
+        engine.dispose()
+        return True
+
+
+def get_db_connection_info(conn_pieces):
+    database = conn_pieces.path.strip('/')
+    loc_pieces = conn_pieces.netloc.split('@')
+    host = loc_pieces[1]
+
+    auth_pieces = loc_pieces[0].split(':')
+    user = auth_pieces[0]
+    password = ""
+    if len(auth_pieces) > 1:
+        password = auth_pieces[1].strip()
+
+    return (user, password, database, host)
