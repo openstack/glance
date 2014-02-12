@@ -30,7 +30,8 @@ from oslo.config import cfg
 from glance.common import exception
 from glance.openstack.common import units
 
-from glance.store.filesystem import Store, ChunkedFile
+from glance.store.filesystem import ChunkedFile
+from glance.store.filesystem import Store
 from glance.store.location import get_location_from_uri
 from glance.tests.unit import base
 

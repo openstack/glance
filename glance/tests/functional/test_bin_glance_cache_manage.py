@@ -26,7 +26,8 @@ from six.moves import xrange
 from glance.openstack.common import jsonutils
 from glance.openstack.common import units
 from glance.tests import functional
-from glance.tests.utils import execute, minimal_headers
+from glance.tests.utils import execute
+from glance.tests.utils import minimal_headers
 
 FIVE_KB = 5 * units.Ki
 

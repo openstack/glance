@@ -23,7 +23,8 @@ import os
 import stat
 import time
 
-from eventlet import sleep, timeout
+from eventlet import sleep
+from eventlet import timeout
 from oslo.config import cfg
 import sqlite3
 

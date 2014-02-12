@@ -17,7 +17,7 @@
 from sqlalchemy.schema import (Column, MetaData, Table, Index)
 
 from glance.db.sqlalchemy.migrate_repo.schema import (
-    Boolean, DateTime, String, Text, create_tables, drop_tables)
+    Boolean, DateTime, String, Text, create_tables, drop_tables)  # noqa
 
 
 def define_tasks_table(meta):

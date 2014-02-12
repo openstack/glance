@@ -27,7 +27,8 @@ from glance.openstack.common import units
 
 from glance.store.location import get_location_from_uri
 import glance.store.s3
-from glance.store.s3 import Store, get_s3_location
+from glance.store.s3 import get_s3_location
+from glance.store.s3 import Store
 from glance.store import UnsupportedBackend
 from glance.tests.unit import base
 

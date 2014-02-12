@@ -16,7 +16,7 @@
 from sqlalchemy.schema import (Column, MetaData, Table)
 
 from glance.db.sqlalchemy.migrate_repo.schema import (
-    Boolean, DateTime, Integer, String, Text, create_tables, drop_tables)
+    Boolean, DateTime, Integer, String, Text, create_tables, drop_tables)  # noqa
 
 
 def define_images_table(meta):

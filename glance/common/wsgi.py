@@ -29,7 +29,8 @@ import sys
 import time
 
 import eventlet
-from eventlet.green import socket, ssl
+from eventlet.green import socket
+from eventlet.green import ssl
 import eventlet.greenio
 import eventlet.wsgi
 from oslo.config import cfg

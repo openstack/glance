@@ -29,8 +29,8 @@ from six.moves import xrange
 from glance.openstack.common import jsonutils
 from glance.openstack.common import units
 from glance.tests import functional
-from glance.tests.functional.store_utils import (setup_http,
-                                                 get_http_uri)
+from glance.tests.functional.store_utils import get_http_uri
+from glance.tests.functional.store_utils import setup_http
 from glance.tests.utils import skip_if_disabled
 
 FIVE_KB = 5 * units.Ki

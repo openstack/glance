@@ -44,7 +44,8 @@ from glance.common import config
 from glance.common import exception
 from glance.db import migration as db_migration
 from glance.openstack.common.db.sqlalchemy import migration
-from glance.openstack.common import log, strutils
+from glance.openstack.common import log
+from glance.openstack.common import strutils
 
 CONF = cfg.CONF
 CONF.import_group("database", "glance.openstack.common.db.sqlalchemy.session")

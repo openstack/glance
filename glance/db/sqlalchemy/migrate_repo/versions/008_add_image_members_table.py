@@ -18,7 +18,7 @@ from sqlalchemy import *  # noqa
 
 from glance.db.sqlalchemy.migrate_repo.schema import (
     Boolean, DateTime, Integer, String, create_tables,
-    drop_tables, from_migration_import)
+    drop_tables, from_migration_import)  # noqa
 
 
 def get_images_table(meta):
