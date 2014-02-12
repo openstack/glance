@@ -14,7 +14,7 @@
 #    under the License.
 
 """
-This auth module is intended to allow Openstack client-tools to select from a
+This auth module is intended to allow OpenStack client-tools to select from a
 variety of authentication strategies, including NoAuth (the default), and
 Keystone (an identity management system).
 
