@@ -18,10 +18,10 @@
 import hashlib
 import httplib
 import urllib
-import urlparse
 
 import netaddr
 from oslo.config import cfg
+import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
 import glance.openstack.common.log as logging

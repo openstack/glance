@@ -21,9 +21,9 @@ import hashlib
 import httplib
 import math
 import urllib
-import urlparse
 
 from oslo.config import cfg
+import six.moves.urllib.parse as urlparse
 
 from glance.common import auth
 from glance.common import exception

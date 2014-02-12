@@ -17,7 +17,7 @@
 from __future__ import absolute_import
 
 from oslo.config import cfg
-import urlparse
+import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
 from glance.openstack.common import excutils

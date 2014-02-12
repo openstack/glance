@@ -14,7 +14,8 @@
 #    under the License.
 
 import httplib
-import urlparse
+
+import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
 import glance.openstack.common.log as logging

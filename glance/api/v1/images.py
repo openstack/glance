@@ -18,10 +18,10 @@
 """
 
 import copy
-import urlparse
 
 import eventlet
 from oslo.config import cfg
+import six.moves.urllib.parse as urlparse
 from webob.exc import (HTTPNotFound,
                        HTTPConflict,
                        HTTPBadRequest,

@@ -24,9 +24,9 @@ import ConfigParser
 import os
 import os.path
 import urllib
-import urlparse
 
 import oslo.config.cfg
+import six.moves.urllib.parse as urlparse
 import testtools
 
 import glance.store.s3
