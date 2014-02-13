@@ -19,6 +19,8 @@ import copy
 import datetime
 import uuid
 
+import mock
+
 from glance.common import exception
 from glance import context
 from glance.openstack.common import timeutils
@@ -88,7 +90,6 @@ class TestDriver(test_utils.BaseTestCase):
         db_tests.reset_db(self.db_api)
         self.fixtures = self.build_image_fixtures()
         self.create_images(self.fixtures)
-        self.addCleanup(timeutils.clear_time_override)
 
     def build_image_fixtures(self):
         dt1 = timeutils.utcnow()
@@ -129,8 +130,9 @@ class DriverTests(object):
         fixture = {'name': 'mark', 'size': 12, 'status': 'queued'}
         self.db_api.image_create(self.context, fixture)
 
-    def test_image_create_defaults(self):
-        timeutils.set_time_override()
+    @mock.patch.object(timeutils, 'utcnow')
+    def test_image_create_defaults(self, mock_utcnow):
+        mock_utcnow.return_value = datetime.datetime.utcnow()
         create_time = timeutils.utcnow()
         values = {'status': 'queued',
                   'created_at': create_time,
@@ -944,8 +946,9 @@ class DriverTests(object):
         self.assertRaises(exception.NotFound, self.db_api.image_tag_delete,
                           self.context, UUID1, 'snap')
 
-    def test_image_member_create(self):
-        timeutils.set_time_override()
+    @mock.patch.object(timeutils, 'utcnow')
+    def test_image_member_create(self, mock_utcnow):
+        mock_utcnow.return_value = datetime.datetime.utcnow()
         memberships = self.db_api.image_member_find(self.context)
         self.assertEqual([], memberships)
 
@@ -1167,7 +1170,6 @@ class DriverQuotaTests(test_utils.BaseTestCase):
             auth_tok='%s:%s:user' % (self.owner_id1, self.owner_id1))
         self.db_api = db_tests.get_db(self.config)
         db_tests.reset_db(self.db_api)
-        self.addCleanup(timeutils.clear_time_override)
         dt1 = timeutils.utcnow()
         dt2 = dt1 + datetime.timedelta(microseconds=5)
         fixtures = [
@@ -1267,7 +1269,6 @@ class TaskTests(test_utils.BaseTestCase):
         self.db_api = db_tests.get_db(self.config)
         self.fixtures = self.build_task_fixtures()
         db_tests.reset_db(self.db_api)
-        self.addCleanup(timeutils.clear_time_override)
 
     def build_task_fixtures(self):
         self.context.tenant = str(uuid.uuid4())

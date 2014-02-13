@@ -76,14 +76,14 @@ class GlanceBase(models.ModelBase, models.TimestampMixin):
         from glance.db.sqlalchemy import api as db_api
         super(GlanceBase, self).save(session or db_api.get_session())
 
-    created_at = Column(DateTime, default=timeutils.utcnow,
+    created_at = Column(DateTime, default=lambda: timeutils.utcnow(),
                         nullable=False)
     # TODO(vsergeyev): Column `updated_at` have no default value in
     #                  openstack common code. We should decide, is this value
     #                  required and make changes in oslo (if required) or
     #                  in glance (if not).
-    updated_at = Column(DateTime, default=timeutils.utcnow,
-                        nullable=False, onupdate=timeutils.utcnow)
+    updated_at = Column(DateTime, default=lambda: timeutils.utcnow(),
+                        nullable=False, onupdate=lambda: timeutils.utcnow())
     # TODO(boris-42): Use SoftDeleteMixin instead of deleted Column after
     #                 migration that provides UniqueConstraints and change
     #                 type of this column.

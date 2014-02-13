@@ -16,6 +16,7 @@
 
 import datetime
 
+import mock
 import webob
 
 from glance.common import exception
@@ -432,11 +433,13 @@ class TestTaskNotifications(utils.BaseTestCase):
         self.task_details_proxy = notifier.TaskDetailsProxy(self.task_details,
                                                             self.context,
                                                             self.notifier)
-        timeutils.set_time_override()
+        self.patcher = mock.patch.object(timeutils, 'utcnow')
+        mock_utcnow = self.patcher.start()
+        mock_utcnow.return_value = datetime.datetime.utcnow()
 
     def tearDown(self):
         super(TestTaskNotifications, self).tearDown()
-        timeutils.clear_time_override()
+        self.patcher.stop()
 
     def test_task_create_notification(self):
         self.task_repo_proxy.add(self.task_proxy, self.task_details_proxy)
