@@ -114,6 +114,19 @@ class TestNotifier(utils.BaseTestCase):
         self.assertEqual(str(notify._transport._driver._url),
                          transport_url)
 
+    def test_notification_driver_option(self):
+        self.config(rpc_backend='qpid')
+        self.config(notification_driver='messaging')
+        self.config(notifier_strategy='rabbit')
+        notify = notifier.Notifier()
+        self.assertEqual(str(notify._transport._driver._url),
+                         'rabbit:///')
+
+        self.config(notifier_strategy='default')
+        notify = notifier.Notifier()
+        self.assertEqual(str(notify._transport._driver._url),
+                         'qpid:///')
+
 
 class TestImageNotifications(utils.BaseTestCase):
     """Test Image Notifications work"""

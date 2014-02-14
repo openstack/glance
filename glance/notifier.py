@@ -64,16 +64,20 @@ class Notifier(object):
 
     def __init__(self, strategy=None):
 
+        _driver = None
+        _strategy = strategy
+
         if CONF.notifier_strategy != 'default':
             msg = _("notifier_strategy was deprecated in "
                     "favor of `notification_driver`")
             warnings.warn(msg, DeprecationWarning)
 
-        # NOTE(flaper87): Use this to keep backwards
-        # compatibility. We'll try to get an oslo.messaging
-        # driver from the specified strategy.
-        _strategy = strategy or CONF.notifier_strategy
-        _driver = _STRATEGY_ALIASES.get(_strategy)
+            # NOTE(flaper87): Use this to keep backwards
+            # compatibility. We'll try to get an oslo.messaging
+            # driver from the specified strategy.
+            _strategy = strategy or CONF.notifier_strategy
+            _driver = _STRATEGY_ALIASES.get(_strategy)
+
         publisher_id = CONF.default_publisher_id
 
         # NOTE(flaper87): Assume the user has configured
