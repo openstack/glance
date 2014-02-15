@@ -38,7 +38,7 @@ class GzipMiddlewareTest(functional.FunctionalTest):
         # Accept-Encoding: Identity
         headers = {'Accept-Encoding': 'identity'}
         response, content = request('images', headers=headers)
-        self.assertEqual(response.get("-content-encoding"), None)
+        self.assertIsNone(response.get("-content-encoding"))
 
         # Accept-Encoding: gzip
         headers = {'Accept-Encoding': 'gzip'}

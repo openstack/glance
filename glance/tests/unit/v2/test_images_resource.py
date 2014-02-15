@@ -1257,7 +1257,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(output.image_id, UUID1)
         self.assertEqual(len(output.locations), 0)
         self.assertEqual(output.status, 'queued')
-        self.assertEqual(output.size, None)
+        self.assertIsNone(output.size)
 
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         changes = [{'op': 'replace', 'path': ['locations'],
@@ -1587,7 +1587,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(output.image_id, UUID1)
         self.assertEqual(len(output.locations), 0)
         self.assertTrue(output.status == 'queued')
-        self.assertEqual(output.size, None)
+        self.assertIsNone(output.size)
 
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         changes = [{'op': 'add', 'path': ['locations', '-'],
@@ -1770,9 +1770,9 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_invalid_locations_op_pos(self):
         pos = self.controller._get_locations_op_pos(None, 2, True)
-        self.assertEqual(pos, None)
+        self.assertIsNone(pos)
         pos = self.controller._get_locations_op_pos('1', None, True)
-        self.assertEqual(pos, None)
+        self.assertIsNone(pos)
 
 
 class TestImagesControllerPolicies(base.IsolatedUnitTest):

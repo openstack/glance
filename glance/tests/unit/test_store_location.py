@@ -154,7 +154,7 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         self.assertEqual("https://example.com", loc.swift_url)
         self.assertEqual("images", loc.container)
         self.assertEqual("1", loc.obj)
-        self.assertEqual(None, loc.user)
+        self.assertIsNone(loc.user)
         self.assertEqual(uri, loc.get_uri())
 
         uri = 'swift+https://user:pass@authurl.com/images/1'
@@ -203,8 +203,8 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         self.assertEqual("http://storeurl.com/v1", loc.swift_url)
         self.assertEqual("container", loc.container)
         self.assertEqual("12345", loc.obj)
-        self.assertEqual(None, loc.user)
-        self.assertEqual(None, loc.key)
+        self.assertIsNone(loc.user)
+        self.assertIsNone(loc.key)
         self.assertEqual(uri, loc.get_uri())
 
         bad_uri = 'swif://'
@@ -231,7 +231,7 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         self.assertEqual("example.com", loc.s3serviceurl)
         self.assertEqual("images", loc.bucket)
         self.assertEqual("1", loc.key)
-        self.assertEqual(None, loc.accesskey)
+        self.assertIsNone(loc.accesskey)
         self.assertEqual(uri, loc.get_uri())
 
         uri = 's3+https://accesskey:pass@s3serviceurl.com/images/1'
@@ -288,18 +288,18 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         loc.parse_uri(uri)
 
         self.assertEqual('imagename', loc.image)
-        self.assertEqual(None, loc.fsid)
-        self.assertEqual(None, loc.pool)
-        self.assertEqual(None, loc.snapshot)
+        self.assertIsNone(loc.fsid)
+        self.assertIsNone(loc.pool)
+        self.assertIsNone(loc.snapshot)
 
         uri = u'rbd://imagename'
         loc = glance.store.rbd.StoreLocation({})
         loc.parse_uri(uri)
 
         self.assertEqual('imagename', loc.image)
-        self.assertEqual(None, loc.fsid)
-        self.assertEqual(None, loc.pool)
-        self.assertEqual(None, loc.snapshot)
+        self.assertIsNone(loc.fsid)
+        self.assertIsNone(loc.pool)
+        self.assertIsNone(loc.snapshot)
 
         uri = 'rbd://fsid/pool/image/snap'
         loc = glance.store.rbd.StoreLocation({})

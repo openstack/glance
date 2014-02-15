@@ -789,8 +789,8 @@ class TestSingleTenantStoreConnections(base.IsolatedUnitTest):
         self.assertEqual(connection.tenant_name, 'tenant')
         self.assertEqual(connection.key, 'abcdefg')
         self.assertFalse(connection.snet)
-        self.assertEqual(connection.preauthurl, None)
-        self.assertEqual(connection.preauthtoken, None)
+        self.assertIsNone(connection.preauthurl)
+        self.assertIsNone(connection.preauthtoken)
         self.assertFalse(connection.insecure)
         self.assertEqual(connection.os_options,
                          {'service_type': 'object-store',
@@ -814,7 +814,7 @@ class TestSingleTenantStoreConnections(base.IsolatedUnitTest):
         connection = self.store.get_connection(self.location)
         self.assertEqual(connection.auth_version, '1')
         self.assertEqual(connection.user, 'auth_v1_user')
-        self.assertEqual(connection.tenant_name, None)
+        self.assertIsNone(connection.tenant_name)
 
     def test_connection_invalid_user(self):
         self.store.configure()
@@ -876,11 +876,11 @@ class TestMultiTenantStoreConnections(base.IsolatedUnitTest):
     def test_basic_connection(self):
         self.store.configure()
         connection = self.store.get_connection(self.location)
-        self.assertEqual(connection.authurl, None)
+        self.assertIsNone(connection.authurl)
         self.assertEqual(connection.auth_version, '2')
         self.assertEqual(connection.user, 'user')
         self.assertEqual(connection.tenant_name, 'tenant')
-        self.assertEqual(connection.key, None)
+        self.assertIsNone(connection.key)
         self.assertFalse(connection.snet)
         self.assertEqual(connection.preauthurl, 'https://example.com')
         self.assertEqual(connection.preauthtoken, '0123')
@@ -943,8 +943,8 @@ class TestCreatingLocations(base.IsolatedUnitTest):
         self.assertEqual(location.swift_url, 'https://some_endpoint')
         self.assertEqual(location.container, 'container_image-id')
         self.assertEqual(location.obj, 'image-id')
-        self.assertEqual(location.user, None)
-        self.assertEqual(location.key, None)
+        self.assertIsNone(location.user)
+        self.assertIsNone(location.key)
         self.assertEqual(fake_get_endpoint.service_type, 'object-store')
 
     def test_multi_tenant_location_http(self):
