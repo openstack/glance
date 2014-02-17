@@ -53,7 +53,7 @@ store_opts = [
                help=_('Directory that the scrubber will use to track '
                       'information about what to delete. '
                       'Make sure this is set in glance-api.conf and '
-                      'glance-scrubber.conf')),
+                      'glance-scrubber.conf.')),
     cfg.BoolOpt('delayed_delete', default=False,
                 help=_('Turn on/off delayed delete.')),
     cfg.BoolOpt('use_user_token', default=True,

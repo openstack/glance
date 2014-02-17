@@ -54,14 +54,14 @@ swift_opts = [
                       'is listening.')),
     cfg.StrOpt('swift_store_user', secret=True,
                help=_('The user to authenticate against the Swift '
-                      'authentication service')),
+                      'authentication service.')),
     cfg.StrOpt('swift_store_key', secret=True,
                help=_('Auth key for the user authenticating against the '
                       'Swift authentication service.')),
     cfg.StrOpt('swift_store_auth_version', default='2',
                help=_('Version of the authentication service to use. '
                       'Valid versions are 2 for keystone and 1 for swauth '
-                      'and rackspace')),
+                      'and rackspace.')),
     cfg.BoolOpt('swift_store_auth_insecure', default=False,
                 help=_('If True, swiftclient won\'t check for a valid SSL '
                        'certificate when authenticating.')),
@@ -85,7 +85,7 @@ swift_opts = [
     cfg.IntOpt('swift_store_large_object_size',
                default=DEFAULT_LARGE_OBJECT_SIZE,
                help=_('The size, in MB, that Glance will start chunking image '
-                      'files and do a large object manifest in Swift')),
+                      'files and do a large object manifest in Swift.')),
     cfg.IntOpt('swift_store_large_object_chunk_size',
                default=DEFAULT_LARGE_OBJECT_CHUNK_SIZE,
                help=_('The amount of data written to a temporary disk buffer '

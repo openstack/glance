@@ -36,7 +36,7 @@ image_cache_opts = [
                help=_('The maximum size in bytes that the cache can use.')),
     cfg.IntOpt('image_cache_stall_time', default=86400,  # 24 hours
                help=_('The amount of time to let an image remain in the '
-                      'cache without being accessed')),
+                      'cache without being accessed.')),
     cfg.StrOpt('image_cache_dir',
                help=_('Base directory that the Image Cache uses.')),
 ]

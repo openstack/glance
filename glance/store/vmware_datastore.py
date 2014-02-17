@@ -73,7 +73,7 @@ vmware_opts = [
                       'will be stored in the VMware datastore.')),
     cfg.BoolOpt('vmware_api_insecure',
                 default=False,
-                help=_('Allow to perform insecure SSL requests to ESX/VC')),
+                help=_('Allow to perform insecure SSL requests to ESX/VC.')),
 ]
 
 CONF = cfg.CONF
