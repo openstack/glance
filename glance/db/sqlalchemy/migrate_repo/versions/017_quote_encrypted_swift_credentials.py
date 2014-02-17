@@ -28,9 +28,9 @@ Fixes bug #1081043
 """
 import types  # noqa
 import urllib
-import urlparse
 
 from oslo.config import cfg
+import six.moves.urllib.parse as urlparse
 import sqlalchemy
 
 from glance.common import crypt

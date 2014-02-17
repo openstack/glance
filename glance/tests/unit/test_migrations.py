@@ -30,12 +30,12 @@ import datetime
 import os
 import pickle
 import subprocess
-import urlparse
 import uuid
 
 from migrate.versioning import api as migration_api
 from migrate.versioning.repository import Repository
 from oslo.config import cfg
+import six.moves.urllib.parse as urlparse
 from six.moves import xrange
 import sqlalchemy
 

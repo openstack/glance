@@ -37,7 +37,7 @@ that it stores in its storage backends. It **may contain** security
 credentials and is **not** user-facing.
 """
 
-import urlparse
+import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
 import glance.openstack.common.log as logging

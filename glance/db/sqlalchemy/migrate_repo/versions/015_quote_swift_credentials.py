@@ -14,8 +14,8 @@
 #    under the License.
 
 import urllib
-import urlparse
 
+import six.moves.urllib.parse as urlparse
 import sqlalchemy
 
 from glance.common import exception

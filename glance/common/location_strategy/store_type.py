@@ -15,10 +15,9 @@
 
 """Storage preference based location strategy module"""
 
-import urlparse
-
 from oslo.config import cfg
 import six
+import six.moves.urllib.parse as urlparse
 
 store_type_opts = [
     cfg.ListOpt("store_type_preference",

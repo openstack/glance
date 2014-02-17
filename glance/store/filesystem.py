@@ -20,9 +20,9 @@ A simple filesystem-backed store
 import errno
 import hashlib
 import os
-import urlparse
 
 from oslo.config import cfg
+import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
 from glance.common import utils

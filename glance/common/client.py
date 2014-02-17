@@ -25,7 +25,6 @@ import httplib
 import os
 import re
 import urllib
-import urlparse
 
 try:
     from eventlet.green import socket, ssl
@@ -38,6 +37,8 @@ try:
     SENDFILE_SUPPORTED = True
 except ImportError:
     SENDFILE_SUPPORTED = False
+
+import six.moves.urllib.parse as urlparse
 from six.moves import xrange
 
 from glance.common import auth

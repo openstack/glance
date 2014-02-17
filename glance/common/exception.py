@@ -16,7 +16,7 @@
 
 """Glance exception subclasses"""
 
-import urlparse
+import six.moves.urllib.parse as urlparse
 
 _FATAL_EXCEPTION_FORMAT_ERRORS = False
 

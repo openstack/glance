@@ -32,9 +32,9 @@ import socket
 import sys
 import tempfile
 import time
-import urlparse
 
 import fixtures
+import six.moves.urllib.parse as urlparse
 from sqlalchemy import create_engine
 import testtools
 

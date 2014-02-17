@@ -28,10 +28,10 @@ import random
 import string
 import StringIO
 import urllib
-import urlparse
 import uuid
 
 import oslo.config.cfg
+import six.moves.urllib.parse as urlparse
 import testtools
 
 from glance.common import exception

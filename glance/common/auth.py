@@ -28,9 +28,9 @@ Keystone (an identity management system).
     > auth_plugin.management_url
     http://service_endpoint/
 """
-import urlparse
-
 import httplib2
+
+import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
 from glance.openstack.common import jsonutils
