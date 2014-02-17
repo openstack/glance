@@ -25,4 +25,4 @@ qpid-python
 xattr>=0.4
 
 # Documentation
-oslo.sphinx
+oslosphinx
