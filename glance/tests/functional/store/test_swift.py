@@ -513,7 +513,7 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
             auth_tok=auth_token)
         store = self.get_store(context=context)
 
-        image_id = uuidutils.generate_uuid()
+        image_id = str(uuid.uuid4())
         image_data = StringIO.StringIO('data')
         uri, _, _, _ = store.add(image_id, image_data, 4)
 
