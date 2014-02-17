@@ -11,8 +11,9 @@
 #    under the License.
 
 import mock
-import StringIO
 import sys
+
+import six
 
 import glance.cmd.api
 import glance.cmd.cache_cleaner
@@ -41,7 +42,7 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         super(TestGlanceApiCmd, self).setUp()
         self.__argv_backup = sys.argv
         sys.argv = ['glance-api']
-        self.stderr = StringIO.StringIO()
+        self.stderr = six.StringIO()
         sys.stderr = self.stderr
 
         self.stubs.Set(glance.common.config, 'load_paste_app',

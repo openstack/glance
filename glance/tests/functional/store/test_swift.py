@@ -26,10 +26,10 @@ import os
 import os.path
 import random
 import string
-import StringIO
 import uuid
 
 import oslo.config.cfg
+import six
 import six.moves.urllib.parse as urlparse
 import testtools
 
@@ -194,7 +194,7 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
         store = self.get_store()
         image_id = str(uuid.uuid4())
         image_size = 5242880  # 5 MB
-        image_data = StringIO.StringIO('X' * image_size)
+        image_data = six.StringIO('X' * image_size)
         image_checksum = 'eb7f8c3716b9f059cee7617a4ba9d0d3'
         uri, add_size, add_checksum, _ = store.add(image_id,
                                                    image_data,
@@ -276,7 +276,7 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
                                         non_image_obj)
 
         # Simulate exceeding 'image_size_cap' setting
-        image_data = StringIO.StringIO('X' * image_size)
+        image_data = six.StringIO('X' * image_size)
         image_data = common_utils.LimitingReader(image_data, image_size - 1)
         image_id = str(uuid.uuid4())
         self.assertRaises(exception.ImageSizeLimitExceeded,
@@ -455,7 +455,7 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
         store = self.get_store(context=context)
 
         image_id = str(uuid.uuid4())
-        image_data = StringIO.StringIO('XXX')
+        image_data = six.StringIO('XXX')
         uri, _, _, _ = store.add(image_id, image_data, 3)
 
         location = glance.store.location.Location(
@@ -512,7 +512,7 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
         store = self.get_store(context=context)
 
         image_id = str(uuid.uuid4())
-        image_data = StringIO.StringIO('data')
+        image_data = six.StringIO('data')
         uri, _, _, _ = store.add(image_id, image_data, 4)
 
         location = glance.store.location.Location(

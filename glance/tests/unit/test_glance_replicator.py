@@ -14,12 +14,12 @@
 
 import copy
 import os
-import StringIO
 import sys
 import UserDict
 import uuid
 
 import fixtures
+import six
 
 from glance.cmd import replicator as glance_replicator
 from glance.openstack.common import jsonutils
@@ -106,7 +106,7 @@ class FakeHTTPConnection(object):
     def getresponse(self):
         class FakeResponse(object):
             def __init__(self, (code, body, headers)):
-                self.body = StringIO.StringIO(body)
+                self.body = six.StringIO(body)
                 self.headers = headers
                 self.status = code
 
@@ -241,7 +241,7 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
 class FakeHttpResponse(object):
     def __init__(self, headers, data):
         self.headers = headers
-        self.data = StringIO.StringIO(data)
+        self.data = six.StringIO(data)
 
     def getheaders(self):
         return self.headers
@@ -339,7 +339,7 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
 
         stdout = sys.stdout
         orig_img_service = glance_replicator.get_image_service
-        sys.stdout = StringIO.StringIO()
+        sys.stdout = six.StringIO()
         try:
             glance_replicator.get_image_service = get_image_service
             glance_replicator.replication_size(options, args)

@@ -13,8 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import StringIO
-
+import six
 import stubout
 
 from glance.common import exception
@@ -91,7 +90,7 @@ class TestStore(base.StoreClearingUnitTest):
         self.assertRaises(exception.ImageSizeLimitExceeded,
                           self.store.add,
                           'fake_image_id',
-                          utils.LimitingReader(StringIO.StringIO('xx'), 1),
+                          utils.LimitingReader(six.StringIO('xx'), 1),
                           2)
         self.assertEqual(self.store.fs.called_commands,
                          ['exists', 'put', 'delete'])

@@ -20,12 +20,12 @@ import errno
 import hashlib
 import json
 import os
-import StringIO
 import uuid
 
 import fixtures
 import mox
 from oslo.config import cfg
+import six
 
 from glance.common import exception
 from glance.openstack.common import units
@@ -157,7 +157,7 @@ class TestStore(base.IsolatedUnitTest):
         # First add an image...
         image_id = str(uuid.uuid4())
         file_contents = "chunk00000remainder"
-        image_file = StringIO.StringIO(file_contents)
+        image_file = six.StringIO(file_contents)
 
         location, size, checksum, _ = self.store.add(image_id,
                                                      image_file,
@@ -198,7 +198,7 @@ class TestStore(base.IsolatedUnitTest):
         expected_checksum = hashlib.md5(expected_file_contents).hexdigest()
         expected_location = "file://%s/%s" % (self.test_dir,
                                               expected_image_id)
-        image_file = StringIO.StringIO(expected_file_contents)
+        image_file = six.StringIO(expected_file_contents)
 
         location, size, checksum, _ = self.store.add(expected_image_id,
                                                      image_file,
@@ -239,7 +239,7 @@ class TestStore(base.IsolatedUnitTest):
         expected_checksum = hashlib.md5(expected_file_contents).hexdigest()
         expected_location = "file://%s/%s" % (store_map[1],
                                               expected_image_id)
-        image_file = StringIO.StringIO(expected_file_contents)
+        image_file = six.StringIO(expected_file_contents)
 
         location, size, checksum, _ = self.store.add(expected_image_id,
                                                      image_file,
@@ -283,7 +283,7 @@ class TestStore(base.IsolatedUnitTest):
         expected_image_id = str(uuid.uuid4())
         expected_file_size = 5 * units.Ki  # 5K
         expected_file_contents = "*" * expected_file_size
-        image_file = StringIO.StringIO(expected_file_contents)
+        image_file = six.StringIO(expected_file_contents)
 
         self.assertRaises(exception.StorageFull, self.store.add,
                           expected_image_id, image_file, expected_file_size)
@@ -299,7 +299,7 @@ class TestStore(base.IsolatedUnitTest):
             json.dump(in_metadata, fptr)
         expected_file_size = 10
         expected_file_contents = "*" * expected_file_size
-        image_file = StringIO.StringIO(expected_file_contents)
+        image_file = six.StringIO(expected_file_contents)
 
         location, size, checksum, metadata = self.store.add(expected_image_id,
                                                             image_file,
@@ -318,7 +318,7 @@ class TestStore(base.IsolatedUnitTest):
             json.dump(in_metadata, fptr)
         expected_file_size = 10
         expected_file_contents = "*" * expected_file_size
-        image_file = StringIO.StringIO(expected_file_contents)
+        image_file = six.StringIO(expected_file_contents)
 
         location, size, checksum, metadata = self.store.add(expected_image_id,
                                                             image_file,
@@ -334,7 +334,7 @@ class TestStore(base.IsolatedUnitTest):
         self.config(filesystem_store_metadata_file=jsonfilename)
         expected_file_size = 10
         expected_file_contents = "*" * expected_file_size
-        image_file = StringIO.StringIO(expected_file_contents)
+        image_file = six.StringIO(expected_file_contents)
 
         location, size, checksum, metadata = self.store.add(expected_image_id,
                                                             image_file,
@@ -351,12 +351,12 @@ class TestStore(base.IsolatedUnitTest):
         image_id = str(uuid.uuid4())
         file_size = 5 * units.Ki  # 5K
         file_contents = "*" * file_size
-        image_file = StringIO.StringIO(file_contents)
+        image_file = six.StringIO(file_contents)
 
         location, size, checksum, _ = self.store.add(image_id,
                                                      image_file,
                                                      file_size)
-        image_file = StringIO.StringIO("nevergonnamakeit")
+        image_file = six.StringIO("nevergonnamakeit")
         self.assertRaises(exception.Duplicate,
                           self.store.add,
                           image_id, image_file, 0)
@@ -367,7 +367,7 @@ class TestStore(base.IsolatedUnitTest):
         file_size = 5 * units.Ki  # 5K
         file_contents = "*" * file_size
         path = os.path.join(self.test_dir, image_id)
-        image_file = StringIO.StringIO(file_contents)
+        image_file = six.StringIO(file_contents)
 
         m = mox.Mox()
         m.StubOutWithMock(__builtin__, 'open')
@@ -424,7 +424,7 @@ class TestStore(base.IsolatedUnitTest):
         file_size = 5 * units.Ki  # 5K
         file_contents = "*" * file_size
         path = os.path.join(self.test_dir, image_id)
-        image_file = StringIO.StringIO(file_contents)
+        image_file = six.StringIO(file_contents)
 
         def fake_Error(size):
             raise AttributeError()
@@ -444,7 +444,7 @@ class TestStore(base.IsolatedUnitTest):
         image_id = str(uuid.uuid4())
         file_size = 5 * units.Ki  # 5K
         file_contents = "*" * file_size
-        image_file = StringIO.StringIO(file_contents)
+        image_file = six.StringIO(file_contents)
 
         location, size, checksum, _ = self.store.add(image_id,
                                                      image_file,

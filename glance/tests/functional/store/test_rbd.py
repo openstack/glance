@@ -22,10 +22,10 @@ RBD backend. This backend must be running Ceph Bobtail (0.56) or later.
 
 import ConfigParser
 import os
-import StringIO
 import uuid
 
 import oslo.config.cfg
+import six
 import testtools
 
 from glance.common import exception
@@ -135,7 +135,7 @@ class TestRBDStore(store_tests.BaseTestCase, testtools.TestCase):
 
         image_id = unicode(str(uuid.uuid4()))
         image_size = 300
-        image_data = StringIO.StringIO('X' * image_size)
+        image_data = six.StringIO('X' * image_size)
         image_checksum = '41757066eaff7c4c6c965556b4d3c6c5'
 
         uri, add_size, add_checksum = store.add(image_id,

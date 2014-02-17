@@ -14,9 +14,9 @@
 #    under the License.
 
 import mock
-import StringIO
 import uuid
 
+import six
 import webob
 
 import glance.api.v2.image_data
@@ -327,7 +327,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         request.headers['Content-Type'] = 'application/octet-stream'
         # If we use body_file, webob assumes we want to do a chunked upload,
         # ignoring the Content-Length header
-        request.body_file = StringIO.StringIO('YYY')
+        request.body_file = six.StringIO('YYY')
         output = self.deserializer.upload(request)
         data = output.pop('data')
         self.assertEqual(data.read(), 'YYY')
@@ -337,7 +337,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
     def test_upload_chunked_with_content_length(self):
         request = unit_test_utils.get_fake_request()
         request.headers['Content-Type'] = 'application/octet-stream'
-        request.body_file = StringIO.StringIO('YYY')
+        request.body_file = six.StringIO('YYY')
         # The deserializer shouldn't care if the Content-Length is
         # set when the user is attempting to send chunked data.
         request.headers['Content-Length'] = 3

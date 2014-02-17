@@ -13,9 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import StringIO
-
 import mock
+import six
 
 from glance.common import exception
 from glance.common import utils
@@ -43,7 +42,7 @@ class TestStore(base.StoreClearingUnitTest):
         self.location = StoreLocation(self.store_specs)
         # Provide enough data to get more than one chunk iteration.
         self.data_len = 3 * units.Ki
-        self.data_iter = StringIO.StringIO('*' * self.data_len)
+        self.data_iter = six.StringIO('*' * self.data_len)
 
     def test_add_w_image_size_zero(self):
         """Assert that correct size is returned even though 0 was provided."""

@@ -18,12 +18,12 @@
 import copy
 import datetime
 import hashlib
-import StringIO
 import uuid
 
 import mock
 from oslo.config import cfg
 import routes
+import six
 import webob
 
 import glance.api
@@ -532,7 +532,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images")
         req.method = 'POST'
 
-        req.body_file = StringIO.StringIO('X' * (CONF.image_size_cap + 1))
+        req.body_file = six.StringIO('X' * (CONF.image_size_cap + 1))
         for k, v in fixture_headers.iteritems():
             req.headers[k] = v
 
@@ -979,7 +979,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images")
         req.method = 'POST'
 
-        req.body_file = StringIO.StringIO('X' * (CONF.image_size_cap))
+        req.body_file = six.StringIO('X' * (CONF.image_size_cap))
         for k, v in fixture_headers.iteritems():
             req.headers[k] = v
 
@@ -1034,7 +1034,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.headers['transfer-encoding'] = 'chunked'
         req.headers['x-image-disk-format'] = 'vhd'
         req.headers['x-image-container-format'] = 'ovf'
-        req.body_file = StringIO.StringIO('X' * (CONF.image_size_cap))
+        req.body_file = six.StringIO('X' * (CONF.image_size_cap))
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 403)
 
@@ -1655,7 +1655,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images/%s" % image_id)
         req.method = 'PUT'
 
-        req.body_file = StringIO.StringIO('X' * (CONF.image_size_cap + 1))
+        req.body_file = six.StringIO('X' * (CONF.image_size_cap + 1))
         for k, v in fixture_headers.iteritems():
             req.headers[k] = v
 

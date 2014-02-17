@@ -13,10 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import StringIO
 import uuid
 
 from oslo.config import cfg
+import six
 
 #NOTE(bcwaldon): importing this to get the default_store option
 import glance.api.v1.images
@@ -76,7 +76,7 @@ class BaseTestCase(object):
         store = self.get_store()
 
         image_id = str(uuid.uuid4())
-        image_data = StringIO.StringIO('XXX')
+        image_data = six.StringIO('XXX')
         image_checksum = 'bc9189406be84ec297464a514221406d'
         try:
             uri, add_size, add_checksum, _ = store.add(image_id, image_data, 3)

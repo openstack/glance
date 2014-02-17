@@ -18,11 +18,11 @@
 import hashlib
 import httplib
 import mock
-import StringIO
 import tempfile
 import uuid
 
 from oslo.config import cfg
+import six
 import six.moves.urllib.parse as urlparse
 import stubout
 import swiftclient
@@ -69,7 +69,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
         }
     }
     fixture_objects = {'glance/%s' % FAKE_UUID:
-                       StringIO.StringIO("*" * FIVE_KB)}
+                       six.StringIO("*" * FIVE_KB)}
 
     def fake_head_container(url, token, container, **kwargs):
         if container not in fixture_containers:
@@ -99,7 +99,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
                                                 'etag': etag}
                 return etag
             if hasattr(contents, 'read'):
-                fixture_object = StringIO.StringIO()
+                fixture_object = six.StringIO()
                 chunk = contents.read(CHUNKSIZE)
                 checksum = hashlib.md5()
                 while chunk:
@@ -108,7 +108,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
                     chunk = contents.read(CHUNKSIZE)
                 etag = checksum.hexdigest()
             else:
-                fixture_object = StringIO.StringIO(contents)
+                fixture_object = six.StringIO(contents)
                 etag = hashlib.md5(fixture_object.getvalue()).hexdigest()
             read_len = fixture_object.len
             if read_len > MAX_SWIFT_OBJECT_SIZE:
@@ -149,7 +149,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
             chunk_keys = sorted([k for k in fixture_headers.keys()
                                  if k.startswith(fixture_key) and
                                  k != fixture_key])
-            result = StringIO.StringIO()
+            result = six.StringIO()
             for key in chunk_keys:
                 result.write(fixture_objects[key].getvalue())
         else:
@@ -157,7 +157,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
 
         if byte_range is not None:
             start = int(byte_range.split('=')[1].strip('-'))
-            result = StringIO.StringIO(result.getvalue()[start:])
+            result = six.StringIO(result.getvalue()[start:])
             fixture_headers[fixture_key]['content-length'] = len(
                 result.getvalue())
 
@@ -321,7 +321,7 @@ class SwiftTests(object):
         loc = 'swift+https://%s:key@localhost:8080/glance/%s'
         expected_location = loc % (self.swift_store_user,
                                    expected_image_id)
-        image_swift = StringIO.StringIO(expected_swift_contents)
+        image_swift = six.StringIO(expected_swift_contents)
 
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS = 0
@@ -378,7 +378,7 @@ class SwiftTests(object):
             expected_checksum = \
                 hashlib.md5(expected_swift_contents).hexdigest()
 
-            image_swift = StringIO.StringIO(expected_swift_contents)
+            image_swift = six.StringIO(expected_swift_contents)
 
             global SWIFT_PUT_OBJECT_CALLS
             SWIFT_PUT_OBJECT_CALLS = 0
@@ -410,7 +410,7 @@ class SwiftTests(object):
                     swift_store_container='noexist')
         self.store = Store()
 
-        image_swift = StringIO.StringIO("nevergonnamakeit")
+        image_swift = six.StringIO("nevergonnamakeit")
 
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS = 0
@@ -440,7 +440,7 @@ class SwiftTests(object):
         loc = 'swift+https://%s:key@localhost:8080/noexist/%s'
         expected_location = loc % (self.swift_store_user,
                                    expected_image_id)
-        image_swift = StringIO.StringIO(expected_swift_contents)
+        image_swift = six.StringIO(expected_swift_contents)
 
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS = 0
@@ -479,7 +479,7 @@ class SwiftTests(object):
         loc = 'swift+https://%s:key@localhost:8080/glance/%s'
         expected_location = loc % (self.swift_store_user,
                                    expected_image_id)
-        image_swift = StringIO.StringIO(expected_swift_contents)
+        image_swift = six.StringIO(expected_swift_contents)
 
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS = 0
@@ -532,7 +532,7 @@ class SwiftTests(object):
         loc = 'swift+https://%s:key@localhost:8080/glance/%s'
         expected_location = loc % (self.swift_store_user,
                                    expected_image_id)
-        image_swift = StringIO.StringIO(expected_swift_contents)
+        image_swift = six.StringIO(expected_swift_contents)
 
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS = 0
@@ -578,7 +578,7 @@ class SwiftTests(object):
         Tests that adding an image with an existing identifier
         raises an appropriate exception
         """
-        image_swift = StringIO.StringIO("nevergonnamakeit")
+        image_swift = six.StringIO("nevergonnamakeit")
         self.assertRaises(exception.Duplicate,
                           self.store.add,
                           FAKE_UUID, image_swift, 0)
@@ -597,7 +597,7 @@ class SwiftTests(object):
             except Exception:
                 pass
 
-        image_swift = StringIO.StringIO(swift_contents)
+        image_swift = six.StringIO(swift_contents)
         connection.put_object.side_effect = exception.ClientConnectionError
         self.store._delete_stale_chunks = fake_delete_chunk
 

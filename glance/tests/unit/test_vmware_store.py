@@ -16,10 +16,10 @@
 """Tests the VMware Datastore backend store"""
 
 import hashlib
-import StringIO
 import uuid
 
 import mock
+import six
 
 from glance.common import exception
 from glance.openstack.common import units
@@ -167,7 +167,7 @@ class TestStore(base.StoreClearingUnitTest):
                 expected_image_id,
                 VMWARE_DATASTORE_CONF['vmware_datacenter_path'],
                 VMWARE_DATASTORE_CONF['vmware_datastore_name'])
-            image = StringIO.StringIO(expected_contents)
+            image = six.StringIO(expected_contents)
             with mock.patch('httplib.HTTPConnection') as HttpConn:
                 HttpConn.return_value = FakeHTTPConnection()
                 location, size, checksum, _ = self.store.add(expected_image_id,
