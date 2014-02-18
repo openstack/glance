@@ -1070,7 +1070,6 @@ class TestMigrations(test_utils.BaseTestCase):
         images.insert().values(temp).execute()
 
         locations_table = get_table(engine, 'image_locations')
-        data = image_id
         locations = [
             ('file://ab', '{"a": "yo yo"}'),
             ('file://ab', '{}'),

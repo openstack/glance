@@ -355,7 +355,7 @@ class GetSocketTestCase(test_utils.BaseTestCase):
         self.useFixture(fixtures.MonkeyPatch(
             'glance.common.wsgi.eventlet.listen',
             lambda *x, **y: None))
-        sock = wsgi.get_socket(1234)
+        wsgi.get_socket(1234)
         self.assertTrue(mock.call().setsockopt(
             socket.SOL_SOCKET,
             socket.SO_REUSEADDR,

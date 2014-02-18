@@ -68,7 +68,7 @@ def safe_kill(req, image_id):
     """
     try:
         _kill(req, image_id)
-    except Exception as e:
+    except Exception:
         LOG.exception(_("Unable to kill image %(id)s: ") % {'id': image_id})
 
 

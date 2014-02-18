@@ -101,8 +101,7 @@ class TestSqlAlchemyDBDataIntegrity(base.TestDriver):
 
         self.stubs.Set(self.db_api, '_paginate_query',
                        fake_paginate_query)
-        images = self.db_api.image_get_all(self.context,
-                                           sort_key='created_at')
+        self.db_api.image_get_all(self.context, sort_key='created_at')
 
     def test_paginate_non_redundant_sort_keys(self):
         original_method = self.db_api._paginate_query
@@ -115,8 +114,7 @@ class TestSqlAlchemyDBDataIntegrity(base.TestDriver):
 
         self.stubs.Set(self.db_api, '_paginate_query',
                        fake_paginate_query)
-        images = self.db_api.image_get_all(self.context,
-                                           sort_key='name')
+        self.db_api.image_get_all(self.context, sort_key='name')
 
 
 class TestSqlAlchemyTask(base.TaskTests):

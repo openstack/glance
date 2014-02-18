@@ -281,7 +281,7 @@ class ImageProxy(glance.domain.proxy.Image):
             data = utils.LimitingReader(data, remaining)
         try:
             self.image.set_data(data, size=size)
-        except exception.ImageSizeLimitExceeded as ex:
+        except exception.ImageSizeLimitExceeded:
             raise exception.StorageQuotaFull(image_size=size,
                                              remaining=remaining)
 

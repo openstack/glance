@@ -16,7 +16,6 @@
 import os
 import shutil
 import tempfile
-import time
 import uuid
 
 import eventlet
@@ -52,7 +51,6 @@ class TestScrubber(test_utils.BaseTestCase):
 
         uri = 'file://some/path/%s' % (fname)
         id = 'helloworldid'
-        now = time.time()
         scrub = scrubber.Scrubber(glance.store)
         scrub.registry = self.mox.CreateMockAnything()
         scrub.registry.get_image(id).AndReturn({'status': 'pending_delete'})

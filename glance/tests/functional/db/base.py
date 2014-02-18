@@ -1331,8 +1331,8 @@ class TaskTests(test_utils.BaseTestCase):
 
     def test_task_get_all_marker(self):
         for fixture in self.fixtures:
-            task = self.db_api.task_create(self.context,
-                                           build_task_fixture(**fixture))
+            self.db_api.task_create(self.context,
+                                    build_task_fixture(**fixture))
         tasks = self.db_api.task_get_all(self.context, sort_key='id')
         task_ids = [t['id'] for t in tasks]
         tasks = self.db_api.task_get_all(self.context, sort_key='id',

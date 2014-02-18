@@ -738,7 +738,6 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_update_add_too_many_properties(self):
         self.config(image_property_quota=1)
         request = unit_test_utils.get_fake_request()
-        output = self.controller.show(request, UUID1)
 
         changes = [
             {'op': 'add', 'path': ['foo'], 'value': 'baz'},
@@ -1055,7 +1054,7 @@ class TestImagesController(base.IsolatedUnitTest):
             {'op': 'replace', 'path': ['x_owner_foo'], 'value': 'baz'},
         ]
         self.assertRaises(webob.exc.HTTPConflict, self.controller.update,
-                          request, UUID1, changes)
+                          another_request, created_image.image_id, changes)
 
     def test_prop_protection_with_delete_and_permitted_role(self):
         enforcer = glance.api.policy.Enforcer()
@@ -1097,7 +1096,7 @@ class TestImagesController(base.IsolatedUnitTest):
             {'op': 'remove', 'path': ['x_owner_foo']}
         ]
         self.assertRaises(webob.exc.HTTPConflict, self.controller.update,
-                          request, UUID1, changes)
+                          another_request, created_image.image_id, changes)
 
     def test_create_non_protected_prop(self):
         """
@@ -1115,7 +1114,7 @@ class TestImagesController(base.IsolatedUnitTest):
                          '1')
         another_request = unit_test_utils.get_fake_request(roles=['joe_soap'])
         extra_props = {'x_all_permitted_2': '2'}
-        created_image = self.controller.create(request, image=image,
+        created_image = self.controller.create(another_request, image=image,
                                                extra_properties=extra_props,
                                                tags=[])
         self.assertEqual(created_image.extra_properties['x_all_permitted_2'],
@@ -1229,7 +1228,7 @@ class TestImagesController(base.IsolatedUnitTest):
             {'op': 'replace', 'path': ['x_none_update'], 'value': 'baz'},
         ]
         self.assertRaises(webob.exc.HTTPConflict, self.controller.update,
-                          request, UUID1, changes)
+                          another_request, created_image.image_id, changes)
 
     def test_delete_locked_down_protected_prop(self):
         """
@@ -1247,7 +1246,7 @@ class TestImagesController(base.IsolatedUnitTest):
             {'op': 'remove', 'path': ['x_none_delete']}
         ]
         self.assertRaises(webob.exc.HTTPConflict, self.controller.update,
-                          request, UUID1, changes)
+                          another_request, created_image.image_id, changes)
 
     def test_update_replace_locations(self):
         self.stubs.Set(glance.store, 'get_size_from_backend',
@@ -1677,7 +1676,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         self.assertTrue(filter(lambda k: UUID1 in k, self.store.data))
         try:
-            image = self.controller.delete(request, UUID1)
+            self.controller.delete(request, UUID1)
             output_logs = self.notifier.get_logs()
             self.assertEqual(len(output_logs), 1)
             output_log = output_logs[0]
@@ -1770,7 +1769,6 @@ class TestImagesController(base.IsolatedUnitTest):
                           self.controller.index, request, marker=fake_uuid)
 
     def test_invalid_locations_op_pos(self):
-        request = unit_test_utils.get_fake_request()
         pos = self.controller._get_locations_op_pos(None, 2, True)
         self.assertEqual(pos, None)
         pos = self.controller._get_locations_op_pos('1', None, True)

@@ -108,19 +108,18 @@ class TestStore(base.StoreClearingUnitTest):
         class FakeCookieJar:
             pass
 
-        with mock.patch.object(Store, 'configure') as store:
-            self.store.scheme = VMWARE_DATASTORE_CONF['default_store']
-            self.store.server_host = (
-                VMWARE_DATASTORE_CONF['vmware_server_host'])
-            self.store.datacenter_path = (
-                VMWARE_DATASTORE_CONF['vmware_datacenter_path'])
-            self.store.datastore_name = (
-                VMWARE_DATASTORE_CONF['vmware_datastore_name'])
-            self.store.api_insecure = (
-                VMWARE_DATASTORE_CONF['vmware_api_insecure'])
-            self.store._session = FakeSession()
-            self.store._session.invoke_api = mock.Mock()
-            self.store._session.wait_for_task = mock.Mock()
+        self.store.scheme = VMWARE_DATASTORE_CONF['default_store']
+        self.store.server_host = (
+            VMWARE_DATASTORE_CONF['vmware_server_host'])
+        self.store.datacenter_path = (
+            VMWARE_DATASTORE_CONF['vmware_datacenter_path'])
+        self.store.datastore_name = (
+            VMWARE_DATASTORE_CONF['vmware_datastore_name'])
+        self.store.api_insecure = (
+            VMWARE_DATASTORE_CONF['vmware_api_insecure'])
+        self.store._session = FakeSession()
+        self.store._session.invoke_api = mock.Mock()
+        self.store._session.wait_for_task = mock.Mock()
 
         self.store.store_image_dir = (
             VMWARE_DATASTORE_CONF['vmware_store_image_dir'])

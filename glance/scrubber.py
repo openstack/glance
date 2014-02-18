@@ -340,7 +340,7 @@ class ScrubDBQueue(ScrubQueue):
         try:
             image = self.registry.get_image(image_id)
             return image['status'] == 'pending_delete'
-        except exception.NotFound as e:
+        except exception.NotFound:
             return False
 
 
