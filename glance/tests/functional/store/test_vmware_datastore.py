@@ -24,9 +24,9 @@ VMware Datastore backend
 import ConfigParser
 import httplib
 import os
-import urllib
 
 import oslo.config.cfg
+import six.moves.urllib.parse as urlparse
 import testtools
 
 from glance.store.vmware import api
@@ -125,7 +125,7 @@ class TestVMwareDatastoreStore(store_tests.BaseTestCase, testtools.TestCase):
                                          'ha-datacenter')
         param_list = {'dcPath': dc_path,
                       'dsName': self.vmware_config['vmware_datastore_name']}
-        query = urllib.urlencode(param_list)
+        query = urlparse.urlencode(param_list)
         conn = (httplib.HTTPConnection(server_ip)
                 if self.vmware_config['vmware_api_insecure'] == 'True'
                 else httplib.HTTPSConnection(server_ip))

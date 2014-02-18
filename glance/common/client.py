@@ -24,7 +24,6 @@ import functools
 import httplib
 import os
 import re
-import urllib
 
 try:
     from eventlet.green import socket, ssl
@@ -387,7 +386,7 @@ class BaseClient(object):
         """
         Create a URL object we can use to pass to _do_request().
         """
-        action = urllib.quote(action)
+        action = urlparse.quote(action)
         path = '/'.join([self.doc_root or '', action.lstrip('/')])
         scheme = "https" if self.use_ssl else "http"
         netloc = "%s:%d" % (self.host, self.port)
@@ -400,7 +399,7 @@ class BaseClient(object):
                 if not isinstance(value, basestring):
                     value = str(value)
                 params[key] = strutils.safe_encode(value)
-            query = urllib.urlencode(params)
+            query = urlparse.urlencode(params)
         else:
             query = None
 

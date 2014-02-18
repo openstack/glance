@@ -25,8 +25,9 @@ import optparse
 import os
 import re
 import sys
-import urllib
 import uuid
+
+import six.moves.urllib.parse as urlparse
 
 from glance.openstack.common import jsonutils
 
@@ -145,7 +146,7 @@ class ImageService(object):
 
         while True:
             url = '/v1/images/detail'
-            query = urllib.urlencode(params)
+            query = urlparse.urlencode(params)
             if query:
                 url += '?%s' % query
 

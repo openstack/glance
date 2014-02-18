@@ -23,7 +23,6 @@ S3 backend
 import ConfigParser
 import os
 import os.path
-import urllib
 
 import oslo.config.cfg
 import six.moves.urllib.parse as urlparse
@@ -115,7 +114,7 @@ class TestS3Store(store_tests.BaseTestCase, testtools.TestCase):
         s3_put_object(self.s3_client, bucket_name, image_id, 'XXX')
 
         s3_store_host = urlparse.urlparse(self.s3_config['s3_store_host'])
-        access_key = urllib.quote(self.s3_config['s3_store_access_key'])
+        access_key = urlparse.quote(self.s3_config['s3_store_access_key'])
         secret_key = self.s3_config['s3_store_secret_key']
         auth_chunk = '%s:%s' % (access_key, secret_key)
         netloc = '%s@%s' % (auth_chunk, s3_store_host.netloc)

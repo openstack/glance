@@ -27,7 +27,6 @@ import os.path
 import random
 import string
 import StringIO
-import urllib
 import uuid
 
 import oslo.config.cfg
@@ -426,7 +425,7 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
         # build this URL
         auth_url = self.swift_config['swift_store_auth_address']
         auth_url = urlparse.urlparse(auth_url)
-        user = urllib.quote(self.swift_config['swift_store_user'])
+        user = urlparse.quote(self.swift_config['swift_store_user'])
         key = self.swift_config['swift_store_key']
         netloc = ''.join(('%s:%s' % (user, key), '@', auth_url.netloc))
         path = os.path.join(auth_url.path, container_name, image_id)

@@ -27,7 +27,6 @@ migration performs the following steps for every entry in the images table:
 Fixes bug #1081043
 """
 import types  # noqa
-import urllib
 
 from oslo.config import cfg
 import six.moves.urllib.parse as urlparse
@@ -198,8 +197,8 @@ def legacy_parse_uri(uri, to_quote, image_id):
                 LOG.debug(reason)
                 raise exception.BadStoreUri()
             user, key = cred_parts
-            user = urllib.unquote(user)
-            key = urllib.unquote(key)
+            user = urlparse.unquote(user)
+            key = urlparse.unquote(key)
     else:
         user = None
         key = None
@@ -224,8 +223,8 @@ def legacy_parse_uri(uri, to_quote, image_id):
     credstring = ''
     if user and key:
         if to_quote:
-            quote_user = urllib.quote(user)
-            quote_key = urllib.quote(key)
+            quote_user = urlparse.quote(user)
+            quote_key = urlparse.quote(key)
         else:
             quote_user = user
             quote_key = key
