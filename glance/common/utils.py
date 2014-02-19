@@ -388,7 +388,8 @@ def get_terminal_size():
 
     def _get_terminal_size_win32():
         try:
-            from ctypes import windll, create_string_buffer
+            from ctypes import create_string_buffer
+            from ctypes import windll
             handle = windll.kernel32.GetStdHandle(-12)
             csbi = create_string_buffer(22)
             res = windll.kernel32.GetConsoleScreenBufferInfo(handle, csbi)

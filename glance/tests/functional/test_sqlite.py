@@ -17,7 +17,9 @@
 
 
 from glance.tests import functional
-from glance.tests.utils import execute, depends_on_exe, skip_if_disabled
+from glance.tests.utils import depends_on_exe
+from glance.tests.utils import execute
+from glance.tests.utils import skip_if_disabled
 
 
 class TestSqlite(functional.FunctionalTest):

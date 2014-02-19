@@ -40,7 +40,8 @@ from glance.openstack.common import timeutils
 from glance.openstack.common import units
 
 from glance.tests import functional
-from glance.tests.utils import skip_if_disabled, minimal_headers
+from glance.tests.utils import minimal_headers
+from glance.tests.utils import skip_if_disabled
 
 FIVE_KB = 5 * units.Ki
 FIVE_GB = 5 * units.Gi

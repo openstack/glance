@@ -33,7 +33,8 @@ import glance.registry  # noqa
 import glance.store.filesystem as fs_store
 import glance.store.s3 as s3_store
 from glance.tests import utils as test_utils
-from glance.tests.utils import skip_if_disabled, xattr_writes_supported
+from glance.tests.utils import skip_if_disabled
+from glance.tests.utils import xattr_writes_supported
 
 FIXTURE_LENGTH = 1024
 FIXTURE_DATA = '*' * FIXTURE_LENGTH

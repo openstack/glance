@@ -20,12 +20,14 @@ from glance.common import exception
 from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.registry.client.v1.api import configure_registry_client
-from glance.store import (delete_from_backend,
-                          safe_delete_from_backend)
-from glance.store.http import Store, MAX_REDIRECTS
+from glance.store import delete_from_backend
+from glance.store.http import MAX_REDIRECTS
+from glance.store.http import Store
 from glance.store.location import get_location_from_uri
+from glance.store import safe_delete_from_backend
+from glance.tests import stubs as test_stubs
 from glance.tests.unit import base
-from glance.tests import utils, stubs as test_stubs
+from glance.tests import utils
 
 
 # The response stack is used to return designated responses in order;

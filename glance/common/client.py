@@ -27,7 +27,8 @@ import re
 import urllib
 
 try:
-    from eventlet.green import socket, ssl
+    from eventlet.green import socket
+    from eventlet.green import ssl
 except ImportError:
     import socket
     import ssl
@@ -42,7 +43,8 @@ import six.moves.urllib.parse as urlparse
 from six.moves import xrange
 
 from glance.common import auth
-from glance.common import exception, utils
+from glance.common import exception
+from glance.common import utils
 import glance.openstack.common.log as logging
 from glance.openstack.common import strutils
 

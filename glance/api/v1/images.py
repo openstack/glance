@@ -22,11 +22,11 @@ import copy
 import eventlet
 from oslo.config import cfg
 import six.moves.urllib.parse as urlparse
-from webob.exc import (HTTPNotFound,
-                       HTTPConflict,
-                       HTTPBadRequest,
-                       HTTPForbidden,
-                       HTTPRequestEntityTooLarge)
+from webob.exc import HTTPBadRequest
+from webob.exc import HTTPConflict
+from webob.exc import HTTPForbidden
+from webob.exc import HTTPNotFound
+from webob.exc import HTTPRequestEntityTooLarge
 from webob import Response
 
 from glance.api import common
@@ -43,12 +43,12 @@ from glance import notifier
 import glance.openstack.common.log as logging
 from glance.openstack.common import strutils
 import glance.registry.client.v1.api as registry
-from glance.store import (get_from_backend,
-                          get_known_schemes,
-                          get_known_stores,
-                          get_size_from_backend,
-                          get_store_from_location,
-                          get_store_from_scheme)
+from glance.store import get_from_backend
+from glance.store import get_known_schemes
+from glance.store import get_known_stores
+from glance.store import get_size_from_backend
+from glance.store import get_store_from_location
+from glance.store import get_store_from_scheme
 
 LOG = logging.getLogger(__name__)
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
