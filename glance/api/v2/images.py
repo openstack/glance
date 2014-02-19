@@ -426,7 +426,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         limits = self._path_depth_limits.get(path_root, {})
         if len(path) != limits.get(op, 1):
             msg = _("Invalid JSON pointer for this resource: "
-                    "\'/%s\'") % '/'.join(path)
+                    "'/%s'") % '/'.join(path)
             raise webob.exc.HTTPBadRequest(explanation=unicode(msg))
 
     def _parse_json_schema_change(self, raw_change, draft_version):

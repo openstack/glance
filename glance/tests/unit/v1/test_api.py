@@ -2526,7 +2526,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                 res = req.get_response(self.api)
                 self.assertEqual(res.status_int, 403)
                 prop = k[len('x-image-meta-'):]
-                self.assertNotEqual(res.body.find("Forbidden to modify \'%s\' "
+                self.assertNotEqual(res.body.find("Forbidden to modify '%s' "
                                                   "of active "
                                                   "image" % prop), -1)
 
