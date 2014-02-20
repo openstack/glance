@@ -39,6 +39,7 @@ try:
 except ImportError:
     SENDFILE_SUPPORTED = False
 
+import six
 import six.moves.urllib.parse as urlparse
 from six.moves import xrange
 
@@ -399,7 +400,7 @@ class BaseClient(object):
                 if value is None:
                     del params[key]
                     continue
-                if not isinstance(value, basestring):
+                if not isinstance(value, six.string_types):
                     value = str(value)
                 params[key] = strutils.safe_encode(value)
             query = urllib.urlencode(params)
@@ -466,7 +467,7 @@ class BaseClient(object):
                 return method.lower() in ('post', 'put')
 
             def _simple(body):
-                return body is None or isinstance(body, basestring)
+                return body is None or isinstance(body, six.string_types)
 
             def _filelike(body):
                 return hasattr(body, 'read')
