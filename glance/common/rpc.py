@@ -20,6 +20,7 @@ import datetime
 import traceback
 
 from oslo.config import cfg
+import six
 from webob import exc
 
 from glance.common import client
@@ -145,7 +146,7 @@ class Controller(object):
 
             command, kwargs = cmd.get("command"), cmd.get("kwargs")
 
-            if (not command or not isinstance(command, basestring) or
+            if (not command or not isinstance(command, six.string_types) or
                     (kwargs and not isinstance(kwargs, dict))):
                 msg = _("Wrong command structure: %s") % (str(cmd))
                 raise exc.HTTPBadRequest(explanation=msg)
