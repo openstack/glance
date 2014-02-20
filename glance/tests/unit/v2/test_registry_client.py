@@ -625,7 +625,7 @@ class TestRegistryV2ClientApi(base.IsolatedUnitTest):
         self.config(auth_region=expected['region'])
         self.stubs.Set(os, 'getenv', lambda x: None)
 
-        self.assertEqual(rapi._CLIENT_CREDS, None)
+        self.assertIsNone(rapi._CLIENT_CREDS)
         rapi.configure_registry_admin_creds()
         self.assertEqual(rapi._CLIENT_CREDS, expected)
 
@@ -638,6 +638,6 @@ class TestRegistryV2ClientApi(base.IsolatedUnitTest):
         self.config(auth_strategy='test_strategy')
         self.config(auth_region=expected['region'])
 
-        self.assertEqual(rapi._CLIENT_CREDS, None)
+        self.assertIsNone(rapi._CLIENT_CREDS)
         rapi.configure_registry_admin_creds()
         self.assertEqual(rapi._CLIENT_CREDS, expected)

@@ -169,7 +169,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.image_repo.result = image
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', None)
         self.assertEqual(image.data, 'YYYY')
-        self.assertEqual(image.size, None)
+        self.assertIsNone(image.size)
 
     def test_upload_invalid(self):
         request = unit_test_utils.get_fake_request()

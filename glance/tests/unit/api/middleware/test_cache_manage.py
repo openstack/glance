@@ -42,7 +42,7 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
         resource = self.cache_manage_filter.process_request(bogus_request)
 
         #check
-        self.assertEqual(None, resource)
+        self.assertIsNone(resource)
 
     @mock.patch.object(cached_images.Controller, "get_cached_images")
     def test_get_cached_images(self,

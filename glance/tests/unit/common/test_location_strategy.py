@@ -129,8 +129,8 @@ class TestLocationStrategy(base.IsolatedUnitTest):
         self.assertEqual(original_locs, ordered_locs)
 
     def test_choose_best_location_with_none_or_empty_locations(self):
-        self.assertEqual(location_strategy.choose_best_location(None), None)
-        self.assertEqual(location_strategy.choose_best_location([]), None)
+        self.assertIsNone(location_strategy.choose_best_location(None))
+        self.assertIsNone(location_strategy.choose_best_location([]))
 
     def test_choose_best_location(self):
         self.config(location_strategy='location_order')

@@ -803,7 +803,7 @@ class TestImageFactoryProxy(utils.BaseTestCase):
     def test_admin_can_set_owner_to_none(self):
         self.context.is_admin = True
         image = self.image_factory.new_image(owner=None)
-        self.assertEqual(image.owner, None)
+        self.assertIsNone(image.owner)
 
     def test_admin_still_gets_default_tenant(self):
         self.context.is_admin = True
