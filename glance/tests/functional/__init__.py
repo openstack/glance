@@ -25,7 +25,6 @@ import atexit
 import datetime
 import logging
 import os
-import re
 import shutil
 import signal
 import socket
@@ -844,43 +843,6 @@ class FunctionalTest(test_utils.BaseTestCase):
         self.add_log_details(failed)
 
         return msg if expect_launch else None
-
-    def reload_server(self,
-                      server,
-                      expect_launch,
-                      expect_exit=True,
-                      expected_exitcode=0,
-                      **kwargs):
-        """
-        Reload a running server
-
-        Any kwargs passed to this method will override the configuration
-        value in the conf file used in starting the server.
-
-        :param server: the server to launch
-        :param expect_launch: true iff the server is expected to
-                              successfully start
-        :param expect_exit: true iff the launched process is expected
-                            to exit in a timely fashion
-        :param expected_exitcode: expected exitcode from the launcher
-        """
-        self.cleanup()
-
-        # Start up the requested server
-        exitcode, out, err = server.reload(expect_exit=expect_exit,
-                                           expected_exitcode=expected_exitcode,
-                                           **kwargs)
-        if expect_exit:
-            self.assertEqual(expected_exitcode, exitcode,
-                             "Failed to spin up the requested server. "
-                             "Got: %s" % err)
-
-            self.assertTrue(re.search("Restarting glance-[a-z]+ with", out))
-
-        self.launched_servers.append(server)
-
-        launch_msg = self.wait_for_servers([server], expect_launch)
-        self.assertTrue(launch_msg is None, launch_msg)
 
     def stop_server(self, server, name):
         """

@@ -135,15 +135,6 @@ class TestUtils(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPBadRequest,
                           utils.get_image_meta_from_headers, resp)
 
-    def test_add_features_to_http_headers(self):
-        features_test1 = {'x-image-meta-size': 'test'}
-        url = ("http://glance.example.com/v1/"
-               "images/71c675ab-d94f-49cd-a114-e12490b328d9")
-        headers = {"x-image-meta-uri": url}
-        self.assertRaises(exception.UnsupportedHeaderFeature,
-                          utils.add_features_to_http_headers,
-                          features_test1, headers)
-
     def test_image_meta(self):
         image_meta = {'x-image-meta-size': 'test'}
         image_meta_properties = {'properties': {'test': "test"}}
