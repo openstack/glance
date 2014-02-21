@@ -112,6 +112,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
 
 CONF = cfg.CONF
 CONF.import_opt('filesystem_store_datadir', 'glance.store.filesystem')
+CONF.import_opt('backend', 'glance.openstack.common.db.api', group='database')
 
 
 class ApiTest(test_utils.BaseTestCase):
