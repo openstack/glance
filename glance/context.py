@@ -25,10 +25,13 @@ class RequestContext(object):
     accesses the system, as well as additional request information.
     """
 
+    user_idt_format = '{user} {tenant} {domain} {user_domain} {p_domain}'
+
     def __init__(self, auth_tok=None, user=None, tenant=None, roles=None,
                  is_admin=False, read_only=False, show_deleted=False,
                  owner_is_tenant=True, service_catalog=None,
-                 policy_enforcer=None):
+                 policy_enforcer=None, domain=None, user_domain=None,
+                 project_domain=None):
         self.auth_tok = auth_tok
         self.user = user
         self.tenant = tenant
@@ -40,6 +43,9 @@ class RequestContext(object):
         self.service_catalog = service_catalog
         self.policy_enforcer = policy_enforcer or policy.Enforcer()
         self.is_admin = is_admin
+        self.domain = domain
+        self.user_domain = user_domain
+        self.project_domain = project_domain
         if not self.is_admin:
             self.is_admin = \
                 self.policy_enforcer.check_is_admin(self)
@@ -50,6 +56,14 @@ class RequestContext(object):
     def to_dict(self):
         # NOTE(ameade): These keys are named to correspond with the default
         # format string for logging the context in openstack common
+
+        user_idt = (
+            self.user_idt_format.format(user=self.user or '-',
+                                        tenant=self.tenant or '-',
+                                        domain=self.domain or '-',
+                                        user_domain=self.user_domain or '-',
+                                        p_domain=self.project_domain or '-'))
+
         return {
             'request_id': self.request_id,
 
@@ -67,6 +81,7 @@ class RequestContext(object):
             'roles': self.roles,
             'auth_token': self.auth_tok,
             'service_catalog': self.service_catalog,
+            'user_identity': user_idt
         }
 
     @classmethod

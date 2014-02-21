@@ -167,3 +167,12 @@ class TestContext(utils.BaseTestCase):
         ctx = context.RequestContext()
         self.assertTrue(hasattr(local.store, 'context'))
         self.assertEqual(ctx, local.store.context)
+
+    def test_user_identity(self):
+        ctx = context.RequestContext(user="user",
+                                     tenant="tenant",
+                                     domain="domain",
+                                     user_domain="user-domain",
+                                     project_domain="project-domain")
+        self.assertEqual('user tenant domain user-domain project-domain',
+                         ctx.to_dict()["user_identity"])
