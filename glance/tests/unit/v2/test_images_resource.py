@@ -1353,7 +1353,7 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_update_add_locations_insertion(self):
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'add', 'path': ['locations', '1'],
+        changes = [{'op': 'add', 'path': ['locations', '0'],
                     'value': new_location}]
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(output.image_id, UUID1)
@@ -1454,7 +1454,7 @@ class TestImagesController(base.IsolatedUnitTest):
         # We must remove two properties to avoid being
         # over the limit of 1 property
         changes = [
-            {'op': 'remove', 'path': ['locations', '1']},
+            {'op': 'remove', 'path': ['locations', '0']},
             {'op': 'add', 'path': ['locations', '-'],
              'value': {'url': '%s/fake_location_3' % BASE_URI,
                        'metadata': {}}},
@@ -1499,8 +1499,8 @@ class TestImagesController(base.IsolatedUnitTest):
         # We must remove two locations to avoid being over
         # the limit of 1 location
         changes = [
-            {'op': 'remove', 'path': ['locations', '1']},
-            {'op': 'remove', 'path': ['locations', '1']},
+            {'op': 'remove', 'path': ['locations', '0']},
+            {'op': 'remove', 'path': ['locations', '0']},
         ]
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(output.image_id, UUID1)
@@ -1532,8 +1532,8 @@ class TestImagesController(base.IsolatedUnitTest):
         # We must remove two properties to avoid being
         # over the limit of 1 property
         changes = [
-            {'op': 'remove', 'path': ['locations', '1']},
-            {'op': 'remove', 'path': ['locations', '1']},
+            {'op': 'remove', 'path': ['locations', '0']},
+            {'op': 'remove', 'path': ['locations', '0']},
             {'op': 'add', 'path': ['locations', '-'],
              'value': {'url': '%s/fake_location_3' % BASE_URI,
                        'metadata': {}}},
@@ -1582,7 +1582,7 @@ class TestImagesController(base.IsolatedUnitTest):
                        unit_test_utils.fake_get_size_from_backend)
 
         request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'remove', 'path': ['locations', '1']}]
+        changes = [{'op': 'remove', 'path': ['locations', '0']}]
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(output.image_id, UUID1)
         self.assertEqual(len(output.locations), 0)
@@ -1603,7 +1603,7 @@ class TestImagesController(base.IsolatedUnitTest):
         changes = [{'op': 'remove', 'path': ['locations', None]}]
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
                           request, UUID1, changes)
-        changes = [{'op': 'remove', 'path': ['locations', '0']}]
+        changes = [{'op': 'remove', 'path': ['locations', '-1']}]
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
                           request, UUID1, changes)
         changes = [{'op': 'remove', 'path': ['locations', '99']}]
@@ -1621,7 +1621,7 @@ class TestImagesController(base.IsolatedUnitTest):
                        fake_delete_image_from_backend)
 
         request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'remove', 'path': ['locations', '1']}]
+        changes = [{'op': 'remove', 'path': ['locations', '0']}]
         self.assertRaises(webob.exc.HTTPInternalServerError,
                           self.controller.update, request, UUID1, changes)
 

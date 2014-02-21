@@ -204,8 +204,7 @@ class ImagesController(object):
             return None
         pos = max_pos if allow_max else max_pos - 1
         if path_pos.isdigit():
-            # NOTE(zhiyan): locations index from '1' by client perspective
-            pos = int(path_pos) - 1
+            pos = int(path_pos)
         elif path_pos != '-':
             return None
         if (not allow_max) and (pos not in range(max_pos)):
