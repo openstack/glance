@@ -14,7 +14,7 @@
 #    under the License.
 
 import mock
-import mox
+from mock import patch
 import uuid
 
 from glance.common import exception
@@ -24,39 +24,6 @@ from glance.tests.unit import utils as unit_test_utils
 from glance.tests import utils as test_utils
 
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
-
-
-class ImageRepoStub(object):
-    def get(self, *args, **kwargs):
-        return 'image_from_get'
-
-    def save(self, *args, **kwargs):
-        return 'image_from_save'
-
-    def add(self, *args, **kwargs):
-        return 'image_from_add'
-
-    def list(self, *args, **kwargs):
-        return ['image_from_list_0', 'image_from_list_1']
-
-
-class ImageStub(object):
-    def __init__(self, image_id, visibility='private'):
-        self.image_id = image_id
-        self.visibility = visibility
-        self.status = 'active'
-
-    def delete(self):
-        self.status = 'deleted'
-
-
-class ImageFactoryStub(object):
-    def new_image(self, image_id=None, name=None, visibility='private',
-                  min_disk=0, min_ram=0, protected=False, owner=None,
-                  disk_format=None, container_format=None,
-                  extra_properties=None, tags=None, **other_args):
-        self.visibility = visibility
-        return 'new_image'
 
 
 class FakeContext(object):
@@ -73,17 +40,15 @@ class FakeImage(object):
     def set_data(self, data, size=None):
         self.size = 0
         for d in data:
-            self.size = self. size + len(d)
+            self.size += len(d)
 
 
 class TestImageQuota(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImageQuota, self).setUp()
-        self.mox = mox.Mox()
 
     def tearDown(self):
         super(TestImageQuota, self).tearDown()
-        self.mox.UnsetStubs()
 
     def _get_image(self, location_count=1, image_size=10):
         context = FakeContext()
@@ -125,23 +90,28 @@ class TestImageQuota(test_utils.BaseTestCase):
         image = glance.quota.ImageProxy(base_image, context, db_api)
 
         if deleted:
-            self.mox.StubOutWithMock(glance.store, 'safe_delete_from_backend')
-            glance.store.safe_delete_from_backend(
-                context,
-                base_image.locations[0]['url'],
-                image.image_id)
+            with patch.object(glance.store, 'safe_delete_from_backend'):
+                glance.store.safe_delete_from_backend(
+                    context,
+                    base_image.locations[0]['url'],
+                    image.image_id)
 
-        self.mox.ReplayAll()
         self.assertRaises(exception.StorageQuotaFull,
                           image.set_data,
                           data,
                           size=size)
-        self.mox.VerifyAll()
 
     def test_quota_exceeded_no_size(self):
         quota = 10
         data = '*' * (quota + 1)
-        self._quota_exceeded_size(quota, data)
+        #NOTE(jbresnah) When the image size is None it means that it is
+        # not known.  In this case the only time we will raise an
+        # exception is when there is no room left at all, thus we know
+        # it will not fit.
+        # That's why 'get_remaining_quota' is mocked with return_value = 0.
+        with patch.object(glance.api.common, 'get_remaining_quota',
+                          return_value=0):
+            self._quota_exceeded_size(quota, data)
 
     def test_quota_exceeded_with_right_size(self):
         quota = 10
