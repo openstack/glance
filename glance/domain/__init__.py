@@ -56,7 +56,7 @@ class ImageFactory(object):
 
     def _check_unexpected(self, kwargs):
         if kwargs:
-            msg = 'new_image() got unexpected keywords %s'
+            msg = _('new_image() got unexpected keywords %s')
             raise TypeError(msg % kwargs.keys())
 
     def _check_reserved(self, properties):
@@ -126,7 +126,7 @@ class Image(object):
         self.extra_properties = ExtraProperties(extra_properties)
         self.tags = kwargs.pop('tags', None) or []
         if kwargs:
-            message = "__init__() got unexpected keyword argument '%s'"
+            message = _("__init__() got unexpected keyword argument '%s'")
             raise TypeError(message % kwargs.keys()[0])
 
     @property
@@ -168,7 +168,8 @@ class Image(object):
     @visibility.setter
     def visibility(self, visibility):
         if visibility not in ('public', 'private'):
-            raise ValueError('Visibility must be either "public" or "private"')
+            raise ValueError(_('Visibility must be either "public" '
+                               'or "private"'))
         self._visibility = visibility
 
     @property
@@ -210,7 +211,7 @@ class Image(object):
     @min_disk.setter
     def min_disk(self, value):
         if value and value < 0:
-            extra_msg = 'Cannot be a negative value'
+            extra_msg = _('Cannot be a negative value')
             raise exception.InvalidParameterValue(value=value,
                                                   param='min_disk',
                                                   extra_msg=extra_msg)
@@ -223,7 +224,7 @@ class Image(object):
     @min_ram.setter
     def min_ram(self, value):
         if value and value < 0:
-            extra_msg = 'Cannot be a negative value'
+            extra_msg = _('Cannot be a negative value')
             raise exception.InvalidParameterValue(value=value,
                                                   param='min_ram',
                                                   extra_msg=extra_msg)

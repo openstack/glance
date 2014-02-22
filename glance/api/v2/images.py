@@ -194,7 +194,7 @@ class ImagesController(object):
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
         except exception.NotFound as e:
-            msg = ("Failed to find image %(image_id)s to delete" %
+            msg = (_("Failed to find image %(image_id)s to delete") %
                    {'image_id': image_id})
             LOG.info(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
@@ -293,7 +293,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
     def _check_allowed(cls, image):
         for key in cls._disallowed_properties:
             if key in image:
-                msg = "Attribute \'%s\' is read-only." % key
+                msg = _("Attribute '%s' is read-only.") % key
                 raise webob.exc.HTTPForbidden(explanation=unicode(msg))
 
     def create(self, request):
@@ -392,10 +392,10 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
     def _validate_change(self, change):
         path_root = change['path'][0]
         if path_root in self._readonly_properties:
-            msg = "Attribute \'%s\' is read-only." % path_root
+            msg = _("Attribute '%s' is read-only.") % path_root
             raise webob.exc.HTTPForbidden(explanation=unicode(msg))
         if path_root in self._reserved_properties:
-            msg = "Attribute \'%s\' is reserved." % path_root
+            msg = _("Attribute '%s' is reserved.") % path_root
             raise webob.exc.HTTPForbidden(explanation=unicode(msg))
 
         if change['op'] == 'delete':
