@@ -57,17 +57,19 @@ class TasksController(object):
         live_time = CONF.task.task_time_to_live
         try:
             new_task = task_factory.new_task(task_type=task['type'],
-                                             task_input=task['input'],
                                              owner=req.context.owner,
                                              task_time_to_live=live_time)
-            task_repo.add(new_task)
+            new_task_details = task_factory.new_task_details(new_task.task_id,
+                                                             task['input'])
+            task_repo.add(new_task, new_task_details)
         except exception.Forbidden as e:
             msg = (_("Forbidden to create task. Reason: %(reason)s")
                    % {'reason': unicode(e)})
             LOG.info(msg)
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
 
-        return new_task
+        result = {'task': new_task, 'task_details': new_task_details}
+        return result
 
     def index(self, req, marker=None, limit=None, sort_key='created_at',
               sort_dir='desc', filters=None):
@@ -82,7 +84,11 @@ class TasksController(object):
 
         task_repo = self.gateway.get_task_repo(req.context)
         try:
-            tasks = task_repo.list(marker, limit, sort_key, sort_dir, filters)
+            tasks = task_repo.list_tasks(marker,
+                                         limit,
+                                         sort_key,
+                                         sort_dir,
+                                         filters)
             if len(tasks) != 0 and len(tasks) == limit:
                 result['next_marker'] = tasks[-1].task_id
         except (exception.NotFound, exception.InvalidSortKey,
@@ -98,7 +104,7 @@ class TasksController(object):
     def get(self, req, task_id):
         try:
             task_repo = self.gateway.get_task_repo(req.context)
-            task = task_repo.get(task_id)
+            task, task_details = task_repo.get_task_and_details(task_id)
         except exception.NotFound as e:
             msg = (_("Failed to find task %(task_id)s. Reason: %(reason)s") %
                    {'task_id': task_id, 'reason': unicode(e)})
@@ -109,7 +115,8 @@ class TasksController(object):
                    {'task_id': task_id, 'reason': unicode(e)})
             LOG.info(msg)
             raise webob.exc.HTTPForbidden(explanation=unicode(e))
-        return task
+        result = {'task': task, 'task_details': task_details}
+        return result
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
@@ -226,11 +233,15 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         self.partial_task_schema = partial_task_schema \
             or _get_partial_task_schema()
 
-    def _format_task(self, task, schema):
+    def _format_task(self, schema, task, task_details=None):
         task_view = {}
-        attributes = ['type', 'status', 'input', 'result', 'owner', 'message']
-        for key in attributes:
+        task_attributes = ['type', 'status', 'owner']
+        task_details_attributes = ['input', 'result', 'message']
+        for key in task_attributes:
             task_view[key] = getattr(task, key)
+        if task_details:
+            for key in task_details_attributes:
+                task_view[key] = getattr(task_details, key)
         task_view['id'] = task.task_id
         if task.expires_at:
             task_view['expires_at'] = timeutils.isotime(task.expires_at)
@@ -241,12 +252,19 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         task_view = schema.filter(task_view)  # domain
         return task_view
 
-    def create(self, response, task):
+    def create(self, response, result):
         response.status_int = 201
-        self.get(response, task)
+        task = result['task']
+        task_details = result['task_details']
+        self._get(response, task, task_details)
 
-    def get(self, response, task):
-        task_view = self._format_task(task, self.task_schema)
+    def get(self, response, result):
+        task = result['task']
+        task_details = result['task_details']
+        self._get(response, task, task_details)
+
+    def _get(self, response, task, task_details):
+        task_view = self._format_task(self.task_schema, task, task_details)
         body = json.dumps(task_view, ensure_ascii=False)
         response.unicode_body = unicode(body)
         response.content_type = 'application/json'
@@ -256,8 +274,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         params.pop('marker', None)
         query = urllib.urlencode(params)
         body = {
-            'tasks': [self._format_task(i, self.partial_task_schema)
-                      for i in result['tasks']],
+            'tasks': [self._format_task(self.partial_task_schema, task)
+                      for task in result['tasks']],
             'first': '/v2/tasks',
             'schema': '/v2/schemas/tasks',
         }

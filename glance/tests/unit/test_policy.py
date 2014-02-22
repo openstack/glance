@@ -85,13 +85,13 @@ class ImageMembershipStub(object):
 
 
 class TaskRepoStub(object):
-    def get(self, *args, **kwargs):
-        return 'task_from_get'
+    def get_task_and_details(self, *args, **kwargs):
+        return 'task_from_get', 'task_details_from_get'
 
     def add(self, *args, **kwargs):
         return 'task_from_add'
 
-    def list(self, *args, **kwargs):
+    def list_tasks(self, *args, **kwargs):
         return ['task_from_list_0', 'task_from_list_1']
 
 
@@ -385,7 +385,9 @@ class TestTaskPolicy(test_utils.BaseTestCase):
             {},
             self.policy
         )
-        self.assertRaises(exception.Forbidden, task_repo.get, UUID1)
+        self.assertRaises(exception.Forbidden,
+                          task_repo.get_task_and_details,
+                          UUID1)
 
     def test_get_task_allowed(self):
         rules = {"get_task": True}
@@ -395,9 +397,9 @@ class TestTaskPolicy(test_utils.BaseTestCase):
             {},
             self.policy
         )
-        output = task_repo.get(UUID1)
-        self.assertIsInstance(output, glance.api.policy.TaskProxy)
-        self.assertEqual(output.task, 'task_from_get')
+        task, task_details = task_repo.get_task_and_details(UUID1)
+        self.assertIsInstance(task, glance.api.policy.TaskProxy)
+        self.assertEqual(task.task, 'task_from_get')
 
     def test_get_tasks_not_allowed(self):
         rules = {"get_tasks": False}
@@ -407,7 +409,7 @@ class TestTaskPolicy(test_utils.BaseTestCase):
             {},
             self.policy
         )
-        self.assertRaises(exception.Forbidden, task_repo.list)
+        self.assertRaises(exception.Forbidden, task_repo.list_tasks)
 
     def test_get_tasks_allowed(self):
         rules = {"get_task": True}
@@ -417,7 +419,7 @@ class TestTaskPolicy(test_utils.BaseTestCase):
             {},
             self.policy
         )
-        tasks = task_repo.list()
+        tasks = task_repo.list_tasks()
         for i, task in enumerate(tasks):
             self.assertIsInstance(task, glance.api.policy.TaskProxy)
             self.assertEqual(task.task, 'task_from_list_%d' % i)

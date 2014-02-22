@@ -814,8 +814,7 @@ def task_get_all(context, filters=None, marker=None, limit=None,
 
     filtered_tasks = []
     for task in tasks:
-        task_info = DATA['task_info'][task['id']]
-        filtered_tasks.append(_format_task_from_db(task, task_info))
+        filtered_tasks.append(_format_task_from_db(task, task_info_ref=None))
 
     return filtered_tasks
 

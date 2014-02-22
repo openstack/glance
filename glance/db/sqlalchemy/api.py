@@ -1153,8 +1153,7 @@ def task_get_all(context, filters=None, marker=None, limit=None,
     filters = filters or {}
 
     session = _get_session()
-    query = session.query(models.Task)\
-        .options(sa_orm.joinedload(models.Task.info))
+    query = session.query(models.Task)
 
     if not (context.is_admin or admin_as_user == True) and \
             context.owner is not None:
@@ -1191,11 +1190,7 @@ def task_get_all(context, filters=None, marker=None, limit=None,
 
     tasks = []
     for task_ref in task_refs:
-        # NOTE(venkatesh): call to task_ref.info does not make any
-        # separate query call to fetch task info as it has been
-        # eagerly loaded using joinedload(models.Task.info) method above.
-        task_info_ref = task_ref.info
-        tasks.append(_task_format(task_ref, task_info_ref))
+        tasks.append(_task_format(task_ref, task_info_ref=None))
 
     return tasks
 
