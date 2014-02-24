@@ -643,6 +643,15 @@ Can only be specified in configuration files.
 
 Optional. Default: ``0``
 
+* ``swift_store_auth_insecure``
+
+If True, bypass SSL certificate verification for Swift.
+
+Can only be specified in configuration files.
+
+`This option is specific to the Swift storage backend.`
+
+Optional. Default: ``False``
 
 Configuring the S3 Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

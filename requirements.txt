@@ -25,7 +25,7 @@ stevedore>=0.14
 netaddr>=0.7.6
 
 # For Swift storage backend.
-python-swiftclient>=1.6
+python-swiftclient>=2.0.2
 
 # For VMware storage backed.
 oslo.vmware>=0.2                        # Apache-2.0
