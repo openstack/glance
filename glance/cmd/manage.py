@@ -43,12 +43,13 @@ from oslo.config import cfg
 from glance.common import config
 from glance.common import exception
 from glance.db import migration as db_migration
+from glance.db.sqlalchemy import api as db_api
 from glance.openstack.common.db.sqlalchemy import migration
 from glance.openstack.common import log
 from glance.openstack.common import strutils
 
 CONF = cfg.CONF
-CONF.import_group("database", "glance.openstack.common.db.sqlalchemy.session")
+CONF.import_group("database", "glance.openstack.common.db.options")
 
 
 # Decorators for actions
@@ -67,23 +68,30 @@ class DbCommands(object):
 
     def version(self):
         """Print database's current migration level"""
-        print(migration.db_version(db_migration.MIGRATE_REPO_PATH,
+        print(migration.db_version(db_api.get_engine(),
+                                   db_migration.MIGRATE_REPO_PATH,
                                    db_migration.INIT_VERSION))
 
     @args('--version', metavar='<version>', help='Database version')
     def upgrade(self, version=None):
         """Upgrade the database's migration level"""
-        migration.db_sync(db_migration.MIGRATE_REPO_PATH, version)
+        migration.db_sync(db_api.get_engine(),
+                          db_migration.MIGRATE_REPO_PATH,
+                          version)
 
     @args('--version', metavar='<version>', help='Database version')
     def downgrade(self, version=None):
         """Downgrade the database's migration level"""
-        migration.db_sync(db_migration.MIGRATE_REPO_PATH, version)
+        migration.db_sync(db_api.get_engine(),
+                          db_migration.MIGRATE_REPO_PATH,
+                          version)
 
     @args('--version', metavar='<version>', help='Database version')
     def version_control(self, version=None):
         """Place a database under migration control"""
-        migration.db_version_control(db_migration.MIGRATE_REPO_PATH, version)
+        migration.db_version_control(db_api.get_engine(),
+                                     db_migration.MIGRATE_REPO_PATH,
+                                     version)
 
     @args('--version', metavar='<version>', help='Database version')
     @args('--current_version', metavar='<version>',
@@ -94,9 +102,12 @@ class DbCommands(object):
         creating first if necessary.
         """
         if current_version is not None:
-            migration.db_version_control(db_migration.MIGRATE_REPO_PATH,
+            migration.db_version_control(db_api.get_engine(),
+                                         db_migration.MIGRATE_REPO_PATH,
                                          current_version)
-        migration.db_sync(db_migration.MIGRATE_REPO_PATH, version)
+        migration.db_sync(db_api.get_engine(),
+                          db_migration.MIGRATE_REPO_PATH,
+                          version)
 
 
 class DbLegacyCommands(object):

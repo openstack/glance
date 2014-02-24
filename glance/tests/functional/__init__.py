@@ -35,10 +35,10 @@ import time
 
 import fixtures
 import six.moves.urllib.parse as urlparse
-from sqlalchemy import create_engine
 import testtools
 
 from glance.common import utils
+from glance.db.sqlalchemy import api as db_api
 from glance.openstack.common import jsonutils
 from glance.openstack.common import units
 from glance import tests as glance_tests
@@ -915,8 +915,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         DB verification within the functional tests.
         The raw result set is returned.
         """
-        engine = create_engine(self.registry_server.sql_connection,
-                               pool_recycle=30)
+        engine = db_api.get_engine()
         return engine.execute(sql)
 
     def copy_data_file(self, file_name, dst_dir):
